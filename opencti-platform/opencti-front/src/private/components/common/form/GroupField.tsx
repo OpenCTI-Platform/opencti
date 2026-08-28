@@ -4,7 +4,8 @@ import { graphql } from 'react-relay';
 import { GroupFieldQuery$data } from '@components/common/form/__generated__/GroupFieldQuery.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -20,9 +21,7 @@ const useStyles = makeStyles({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
+
 });
 
 export const groupsQuery = graphql`
@@ -112,30 +111,32 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
+      // MUI hid its clear indicator here with display:none; the library defaults
+      // clearable to true, so the affordance must be declined explicitly.
       style={style}
       name={name}
       multiple={multiple}
       disabled={disabled}
-      textfieldprops={{
-        variant: 'standard',
-        label: label ?? t_i18n('Groups'),
-        helperText: helpertext,
-        onFocus: searchGroups,
-      }}
+      label={label ?? t_i18n('Groups')}
+      helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={groups}
-      onInputChange={searchGroups}
+      // searchGroups takes no argument: it either shows the predefined groups or
+      // fetches the full list, so the cause gate only avoids redundant fetches.
+      onInputChange={(_search: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') searchGroups();
+      }}
+      onFocusInput={() => searchGroups()}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: { color: string; label: string; labelInList?: string }) => (
-        <li {...renderProps}>
+      renderOption={(option: { color: string; label: string; labelInList?: string }) => (
+        <>
           <div className={classes.icon} style={{ color: option.color }}>
             <ItemIcon type="Group" />
           </div>
           <div className={classes.text}>{option.labelInList ?? option.label}</div>
-        </li>
+        </>
       )}
-      classes={{ clearIndicator: classes.autoCompleteIndicator }}
     />
   );
 };

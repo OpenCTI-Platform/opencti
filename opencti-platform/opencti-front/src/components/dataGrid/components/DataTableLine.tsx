@@ -1,5 +1,6 @@
 import React, { CSSProperties, useMemo } from 'react';
-import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
+import { Skeleton, Box } from '@mui/material';
+import { Checkbox, IconButton } from '@filigran/design-system';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
@@ -207,15 +208,9 @@ const DataTableLine = ({
           >
             {startsWithAction && (
               <Checkbox
+                aria-label={t_i18n('Select line')}
                 onClick={handleSelectLine}
-                sx={{
-                  marginRight: 1,
-                  flex: '0 0 auto',
-                  paddingLeft: 0,
-                  '&:hover': {
-                    background: 'transparent',
-                  },
-                }}
+                className="mr-2"
                 checked={
                   (selectAll
                     && !((data.id || 'id') in (deSelectedElements || {})))
@@ -250,9 +245,13 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton aria-label={t_i18n('Open link')} onClick={() => (link ? navigate(link) : undefined)}>
-                <KeyboardArrowRightOutlined />
-              </IconButton>
+              <IconButton
+                variant="default"
+                priority="tertiary"
+                aria-label={t_i18n('Open link')}
+                onClick={() => (link ? navigate(link) : undefined)}
+                icon={<KeyboardArrowRightOutlined />}
+              />
             )}
           </div>
         )}

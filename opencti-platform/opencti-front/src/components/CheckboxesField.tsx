@@ -4,10 +4,10 @@ import FormControl from '@mui/material/FormControl';
 import { ButtonGroup, FormLabel } from '@mui/material';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Button from '@common/button/Button';
 import { useFormatter } from './i18n';
 import { FieldOption } from '../utils/field';
+import { Checkbox } from '@filigran/design-system';
 
 type CheckboxesFieldProps = FieldProps<FieldOption[]> & {
   label: string;
@@ -74,7 +74,7 @@ const CheckboxesField = ({
               <Checkbox
                 checked={isChecked(item)}
                 name={item.value}
-                onChange={() => toggle(item)}
+                onCheckedChange={() => toggle(item)}
               />
             )}
           />

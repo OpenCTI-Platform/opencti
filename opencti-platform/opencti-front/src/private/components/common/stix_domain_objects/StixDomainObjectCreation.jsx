@@ -1,7 +1,7 @@
 import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/lab/Alert';
-import { Select, Stack } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
+import { Stack } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import * as R from 'ramda';
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
@@ -793,17 +793,17 @@ const StixDomainPanel = ({
       )}
     >
       {renderUnavailableBulkMessage()}
-      <Select
-        value={type}
-        onChange={(event) => setType(event.target.value)}
-        fullWidth={true}
-        size="small"
-      >
-        {availableEntityTypes.map((availableType) => (
-          <MenuItem key={availableType.value} value={availableType.value}>
-            {availableType.label}
-          </MenuItem>
-        ))}
+      <Select value={type} onValueChange={setType}>
+        <SelectTrigger aria-label={t_i18n('Entity type')}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent aria-label={t_i18n('Entity type')}>
+          {availableEntityTypes.map((availableType) => (
+            <SelectItem key={availableType.value} value={availableType.value}>
+              {availableType.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
       </Select>
       <div style={{ marginTop: '20px' }}>
         {renderEntityCreationInterface()}

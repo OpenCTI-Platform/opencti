@@ -3,7 +3,8 @@ import Dialog from '@common/dialog/Dialog';
 import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
-import { IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
+import { List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { FunctionComponent, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from 'src/components/i18n';
@@ -58,15 +59,17 @@ const AddNotes: FunctionComponent<AddNotesProps> = ({
   return (
     <>
       <IconButton
-        color="primary"
+        variant="default"
+        priority="tertiary"
+        size="sm"
         aria-label={t_i18n('Add')}
         onClick={handleOpen}
-        size="small"
-      >
-        <Add
-          fontSize="small"
-        />
-      </IconButton>
+        icon={(
+          <Add
+            fontSize="small"
+          />
+        )}
+      />
       <Drawer
         open={open}
         onClose={handleClose}

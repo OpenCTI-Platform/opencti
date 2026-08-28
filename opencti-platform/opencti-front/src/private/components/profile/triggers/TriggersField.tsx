@@ -4,7 +4,8 @@ import { Field } from 'formik';
 import { CampaignOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { triggersQueriesKnowledgeSearchQuery } from './TriggersQueries';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
@@ -25,9 +26,6 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -96,13 +94,13 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   const handleCloseTriggerCreation = () => {
     setTriggerCreation(false);
   };
-  const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchTriggers = (search: string) => {
     const filtersContent = [{ key: 'trigger_type', values: ['live'] }];
     if (recipientId) {
       filtersContent.push({ key: 'authorized_members.id', values: [recipientId] });
     }
     fetchQuery(triggersQueriesKnowledgeSearchQuery, {
-      search: event && event.target.value,
+      search,
       includeAuthorities: !!recipientId,
       filters: {
         mode: 'and',
@@ -141,33 +139,30 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   return (
     <div>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         style={style}
         name={name}
         multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('Triggers'),
-          helperText: helpertext,
-          onFocus: searchTriggers,
-        }}
+        label={t_i18n('Triggers')}
+        helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={triggers}
-        onInputChange={searchTriggers}
-        openCreate={handleOpenTriggerCreation}
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchTriggers(search);
+        }}
+        onFocusInput={() => searchTriggers('')}
+        onCreateOption={handleOpenTriggerCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props}>
+        renderOption={(option: FieldOption) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <CampaignOutlined />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
       <TriggerLiveCreation
         contextual={true}

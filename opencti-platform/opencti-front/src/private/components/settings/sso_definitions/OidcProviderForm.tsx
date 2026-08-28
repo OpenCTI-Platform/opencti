@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Accordion from '@mui/material/Accordion';
@@ -18,7 +17,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Add, Delete, ErrorOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -419,7 +418,7 @@ const OidcProviderForm = ({
                   label={t_i18n('Configuration name')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* Provider routing — right below Configuration name */}
@@ -526,7 +525,7 @@ const OidcProviderForm = ({
                   label={t_i18n('Issuer')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <Field
                   component={TextField}
@@ -535,7 +534,7 @@ const OidcProviderForm = ({
                   label={t_i18n('Client ID')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <SecretFieldControl
                   secretInfo={(data?.configuration?.client_secret ?? null) as SecretInfo | null}
@@ -553,7 +552,7 @@ const OidcProviderForm = ({
                   name="button_label_override"
                   label={t_i18n('Login button label')}
                   fullWidth
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* --- Protocol & Scopes --- */}
@@ -580,7 +579,7 @@ const OidcProviderForm = ({
                       name="scopes"
                       label={t_i18n('Scopes (comma-separated, defaults to openid email profile)')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -588,7 +587,7 @@ const OidcProviderForm = ({
                       name="audience"
                       label={t_i18n('Audience')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -596,7 +595,7 @@ const OidcProviderForm = ({
                       name="logout_callback_url"
                       label={t_i18n('Logout callback URL')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                   </AccordionDetails>
                 </Accordion>
@@ -639,15 +638,15 @@ const OidcProviderForm = ({
                               }}
                             >
                               <Field
-                                component={SelectField}
+                                component={SelectFieldFds}
                                 variant="standard"
                                 name={`extra_conf[${index}].type`}
                                 label={t_i18n('Type')}
                                 containerstyle={{ width: '20%' }}
                               >
-                                <MenuItem value="String">String</MenuItem>
-                                <MenuItem value="Number">Number</MenuItem>
-                                <MenuItem value="Boolean">Boolean</MenuItem>
+                                <SelectItem value="String">String</SelectItem>
+                                <SelectItem value="Number">Number</SelectItem>
+                                <SelectItem value="Boolean">Boolean</SelectItem>
                               </Field>
                               <Field
                                 component={TextField}

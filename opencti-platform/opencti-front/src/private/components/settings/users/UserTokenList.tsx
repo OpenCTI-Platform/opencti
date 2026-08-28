@@ -1,6 +1,6 @@
 import { Delete } from '@mui/icons-material';
-import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
-import { Paper } from '@filigran/design-system';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { IconButton, Paper } from '@filigran/design-system';
 // MIXED FILE, declared as such: the <Paper> tag is the library's, but
 // `TableContainer component=` has to stay MUI's Paper — a component passed to
 // MUI as a prop receives MUI props (`variant`, `sx`) that the library Paper
@@ -152,12 +152,13 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
                   <TableCell align="right">
                     <Tooltip title={t_i18n('Revoke')}>
                       <IconButton
-                        color="primary"
+                        variant="default"
+                        priority="tertiary"
+                        size="sm"
+                        aria-label={t_i18n('Revoke')}
                         onClick={() => handleOpenDelete({ id: token.id, name: token.name || '' })}
-                        size="small"
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                        icon={<Delete fontSize="small" />}
+                      />
                     </Tooltip>
                   </TableCell>
                 </TableRow>

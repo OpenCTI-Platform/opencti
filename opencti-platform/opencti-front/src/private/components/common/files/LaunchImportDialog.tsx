@@ -9,12 +9,11 @@ import { ImportFilesContentFileLine_file$data } from '@components/data/import/__
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import React, { useEffect, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
@@ -275,7 +274,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               title={t_i18n('Launch an import')}
             >
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -293,20 +292,20 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                     connector?.xtm_one_intent ? intentAgentCounts[connector.xtm_one_intent] : undefined,
                   );
                   return (
-                    <MenuItem
+                    <SelectItem
                       key={connector?.id}
-                      value={connector?.id}
+                      value={connector?.id ?? ''}
                       disabled={disabled || !connector?.active || noAgents}
                     >
                       {connector?.name}
                       {noAgents ? ` (${t_i18n('No agent available')})` : ''}
-                    </MenuItem>
+                    </SelectItem>
                   );
                 })}
               </Field>
               {isXtmOneConfigured && selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="configuration"
                   label={t_i18n('Select agent')}
@@ -314,15 +313,15 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   containerstyle={{ marginTop: 20, width: '100%' }}
                 >
                   {availableAgents.map((agent) => (
-                    <MenuItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
+                    <SelectItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
                       {agent.name}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
                 </Field>
               )}
               {!isDraftContext && (
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="validation_mode"
                   label={t_i18n('Validation mode')}
@@ -330,8 +329,8 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                 >
-                  <MenuItem value="draft">Draft</MenuItem>
-                  <MenuItem value="workbench">Workbench</MenuItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="workbench">Workbench</SelectItem>
                 </Field>
               )}
               {values.validation_mode === 'draft' && (
@@ -378,7 +377,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               )}
               {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="configuration"
                   label={t_i18n('Configuration')}
@@ -387,9 +386,9 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   onChange={handleSetCsvMapper}
                 >
                   {selectedConnector?.configurations?.map((config) => (
-                    <MenuItem key={config.id} value={config.configuration}>
+                    <SelectItem key={config.id} value={config.configuration}>
                       {config.name}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
                 </Field>
               ) : (

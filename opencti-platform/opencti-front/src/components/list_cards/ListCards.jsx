@@ -4,10 +4,9 @@ import { compose, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
+
 import { ArrowDownward, ArrowUpward, FileDownloadOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -48,8 +47,8 @@ const styles = (theme) => ({
 });
 
 class ListCards extends Component {
-  sortBy(event) {
-    this.props.handleSort(event.target.value, this.props.orderAsc);
+  sortBy(value) {
+    this.props.handleSort(value, this.props.orderAsc);
   }
 
   reverse() {
@@ -109,29 +108,26 @@ class ListCards extends Component {
                   />
                 )}
                 <div className={classes.sortFieldContainer}>
-                  <InputLabel classes={{ root: classes.sortFieldLabel }}>
-                    {t('Sort by')}
-                  </InputLabel>
                   <FormControl>
                     <Select
                       name="sort-by"
                       value={sortBy}
-                      size="small"
-                      variant="outlined"
-                      onChange={this.sortBy.bind(this)}
-                      inputProps={{
-                        name: 'sort-by',
-                        id: 'sort-by',
-                      }}
+                      onValueChange={this.sortBy.bind(this)}
                     >
-                      <MenuItem key="_score" value="_score">
-                        {t('Score')}
-                      </MenuItem>
-                      {toPairs(dataColumns).map((dataColumn) => (
-                        <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
-                          {t(dataColumn[1].label)}
-                        </MenuItem>
-                      ))}
+                      <SelectLabel>{t('Sort by')}</SelectLabel>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent aria-label={t('Sort by')}>
+                        <SelectItem key="_score" value="_score">
+                          {t('Score')}
+                        </SelectItem>
+                        {toPairs(dataColumns).map((dataColumn) => (
+                          <SelectItem key={dataColumn[0]} value={dataColumn[0]}>
+                            {t(dataColumn[1].label)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </FormControl>
                   <IconButton

@@ -1,14 +1,33 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Collapse, Grid, IconButton, List, ListItem, MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Collapse, Grid, List, ListItem, Tooltip, Typography } from '@mui/material';
+// The configuration picker is single-value and the connector picker is
+// multi-value, so a library Select and a library Combobox sit on the same row;
+// the Select is aliased because the file also names a Combobox.
+import {
+  Combobox,
+  ComboboxChips,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxTrigger,
+  IconButton,
+  Select as FdsSelect,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@filigran/design-system';
 import { TransitionGroup } from 'react-transition-group';
 import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFilesDialog';
-import { useTheme } from '@mui/styles';
+
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesContextQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
+
 import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../../utils/ai/agentApi';
 
 interface ImportFilesListProps {
@@ -16,7 +35,6 @@ interface ImportFilesListProps {
 }
 
 const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }) => {
-  const theme = useTheme<Theme>();
   const { files, setFiles, importMode } = useImportFilesContext();
   const { t_i18n } = useFormatter();
   const { xtmOneConfigured } = useChatbot();
@@ -244,44 +262,37 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                           <>
                             {/* Column 3: Select - Show all connectors but disable those that haven't matching file type */}
                             <Grid item xs={3}>
-                              <Select
-                                variant="standard"
-                                fullWidth
+                              <Combobox<string>
                                 multiple
-                                displayEmpty
-                                renderValue={(selectedIds) => {
-                                  if (selectedIds.length === 0) {
-                                    return canSelectConnectors ? t_i18n('No active connectors') : t_i18n('Select a connector');
-                                  }
-
-                                  // Displays connectors name
-                                  return selectedIds
-                                    .map((id) => connectorsForImport?.find((c) => c?.id === id)?.name)
-                                    .join(', ');
+                                labelPosition="none"
+                                className="w-full"
+                                options={(connectorsForImport ?? []).map((c) => c?.id as string)}
+                                value={(connectors ?? []).map((c) => c?.id as string)}
+                                getOptionLabel={(id) => {
+                                  const c = connectorsForImport?.find((x) => x?.id === id);
+                                  return `${c?.name ?? id}${connectorMissingAgent(c?.xtm_one_intent) ? ` (${t_i18n('No agent available')})` : ''}`;
                                 }}
-                                value={connectors?.map((c) => c?.id)}
-                                onChange={(e) => handleConnectorChange(file.name, e.target.value as string[])}
+                                isOptionDisabled={(id) => {
+                                  const c = connectorsForImport?.find((x) => x?.id === id);
+                                  return !c?.active
+                                    || !c?.connector_scope?.includes(file.type)
+                                    || connectorMissingAgent(c?.xtm_one_intent);
+                                }}
+                                onValueChange={(val) => handleConnectorChange(file.name, (val ?? []) as string[])}
                               >
-                                <MenuItem value="" disabled>
-                                  {t_i18n('Select a connector')}
-                                </MenuItem>
-                                {connectorsForImport?.map((connector) => (
-                                  <MenuItem
-                                    key={connector?.id}
-                                    value={connector?.id}
-                                    disabled={
-                                      !connector?.active
-                                      || !connector?.connector_scope?.includes(file.type)
-                                      || connectorMissingAgent(connector?.xtm_one_intent)
-                                    }
-                                  >
-                                    {connector?.name}
-                                    {connectorMissingAgent(connector?.xtm_one_intent)
-                                      ? ` (${t_i18n('No agent available')})`
-                                      : ''}
-                                  </MenuItem>
-                                ))}
-                              </Select>
+                                <ComboboxField>
+                                  <ComboboxChips aria-label={t_i18n('Select a connector')} />
+                                  <ComboboxInput
+                                    aria-label={t_i18n('Select a connector')}
+                                    placeholder={canSelectConnectors ? t_i18n('No active connectors') : t_i18n('Select a connector')}
+                                  />
+                                  <ComboboxControls>
+                                    <ComboboxClear />
+                                    <ComboboxTrigger />
+                                  </ComboboxControls>
+                                </ComboboxField>
+                                <ComboboxContent listAriaLabel={t_i18n('Select a connector')} />
+                              </Combobox>
                             </Grid>
 
                             {/* Column 4: Configuration (CSV Mapper or XTM One Agent) */}
@@ -289,52 +300,47 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                               && (
                                 <Grid item xs={3}>
                                   {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
-                                    <Select
-                                      variant="standard"
-                                      fullWidth
+                                    <FdsSelect
                                       value={configuration || ''}
-                                      onChange={(e) => handleMapperChange(file.name, e.target.value as string)}
+                                      onValueChange={(value) => handleMapperChange(file.name, value)}
                                       error={!configuration}
-                                      displayEmpty
-                                      sx={{
-                                        '& .MuiSelect-select': {
-                                          color: !configuration ? theme.palette.error.main : 'inherit',
-                                        },
-                                      }}
                                     >
-                                      <MenuItem value="" disabled>
-                                        {t_i18n('Select a configuration')}
-                                      </MenuItem>
-                                      {connectorsForImport
-                                        ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
-                                        ?.configurations?.map((mapper) => (
-                                          <MenuItem key={mapper?.id} value={mapper?.configuration}>
-                                            {mapper?.name}
-                                          </MenuItem>
-                                        ))}
-                                    </Select>
+                                      <SelectTrigger aria-label={t_i18n('Select a configuration')}>
+                                        {/* Radix shows the placeholder for the empty value, so the
+                                            disabled empty MenuItem that stood in for it is gone. */}
+                                        <SelectValue placeholder={t_i18n('Select a configuration')} />
+                                      </SelectTrigger>
+                                      <SelectContent aria-label={t_i18n('Select a configuration')}>
+                                        {connectorsForImport
+                                          ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
+                                          ?.configurations?.map((mapper) => (
+                                            <SelectItem key={mapper?.id} value={mapper?.configuration ?? ''}>
+                                              {mapper?.name}
+                                            </SelectItem>
+                                          ))}
+                                      </SelectContent>
+                                    </FdsSelect>
                                   )}
                                   {(() => {
                                     const intent = getXtmOneIntentForFile(connectors);
                                     const agents = intent ? agentsByIntent[intent] : null;
                                     if (!intent || !agents || agents.length === 0) return null;
                                     return (
-                                      <Select
-                                        variant="standard"
-                                        fullWidth
+                                      <FdsSelect
                                         value={getAgentSlugFromConfig(configuration)}
-                                        onChange={(e) => handleAgentChange(file.name, e.target.value as string)}
-                                        displayEmpty
+                                        onValueChange={(value) => handleAgentChange(file.name, value)}
                                       >
-                                        <MenuItem value="" disabled>
-                                          {t_i18n('Select agent')}
-                                        </MenuItem>
-                                        {agents.map((agent) => (
-                                          <MenuItem key={agent.id} value={agent.slug}>
-                                            {agent.name}
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
+                                        <SelectTrigger aria-label={t_i18n('Select agent')}>
+                                          <SelectValue placeholder={t_i18n('Select agent')} />
+                                        </SelectTrigger>
+                                        <SelectContent aria-label={t_i18n('Select agent')}>
+                                          {agents.map((agent) => (
+                                            <SelectItem key={agent.id} value={agent.slug}>
+                                              {agent.name}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </FdsSelect>
                                     );
                                   })()}
                                 </Grid>
@@ -362,13 +368,12 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                   {/* Column 5: Delete Button */}
                   <Grid item xs={0.5}>
                     <IconButton
+                      variant="default"
+                      priority="tertiary"
                       aria-label={t_i18n('Remove file')}
-                      edge="end"
                       onClick={() => removeFile(file.name)}
-                      color="primary"
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
+                      icon={<DeleteOutlined />}
+                    />
                   </Grid>
                 </Grid>
               </ListItem>

@@ -133,7 +133,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             name="emailObject"
             fullWidth
             required
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           {fileType === 'text/html' && (
             <FormControlLabel
@@ -169,7 +169,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             fullWidth
             value={fileName}
             disabled
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <div style={{
             marginTop: theme.spacing(2),

@@ -6,9 +6,7 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import Button from '@common/button/Button';
-import { SelectChangeEvent } from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { FieldProps } from 'formik';
 import { OverrideFormData } from '@components/settings/users/edition/UserEditionConfidence';
 import ConfidenceField from '@components/common/form/ConfidenceField';
@@ -86,15 +84,6 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
 
   // -- MUI Autocomplete --
 
-  const searchType = (event: React.SyntheticEvent) => {
-    const selectChangeEvent = event as SelectChangeEvent;
-    const val = selectChangeEvent?.target.value ?? '';
-    return entityTypesToOverride.filter(
-      (type) => type.value.includes(val)
-        || t_i18n(`entity_${type.label}`).includes(val),
-    );
-  };
-
   const overrideLabel = (
     idx: number,
     override: OverrideFormData,
@@ -120,7 +109,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
               {overrideLabel(index, value)}
             </Typography>
             <Tooltip title={t_i18n('Delete')}>
-              <IconButton color="error" onClick={handleDeleteOverride}>
+              <IconButton color="error" onClick={handleDeleteOverride} aria-label={t_i18n('Delete')}>
                 <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -128,34 +117,18 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
         </AccordionSummary>
         <AccordionDetails style={{ width: '100%' }}>
           <>
-            <MUIAutocomplete<AvailableEntityOption, false, boolean>
+            <Combobox<AvailableEntityOption>
               selectOnFocus
               openOnFocus
-              autoHighlight
+              clearable={false}
               getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
-              noOptionsText={t_i18n('No available options')}
               options={entityTypesToOverride}
-              disableClearable
-              getOptionDisabled={(option) => currentOverrides?.some((selectedOption) => selectedOption.entity_type === option.id)}
+              isOptionDisabled={(option) => currentOverrides?.some((selectedOption) => selectedOption.entity_type === option.id)}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={entityTypesToOverride.find((e) => e.id === value.entity_type) || null}
-              onInputChange={(event) => searchType(event)}
-              onChange={(_, selectedValue) => handleSubmitEntityType(selectedValue)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={t_i18n('Entity type')}
-                  variant="outlined"
-                  size="small"
-                />
-              )}
-              // Need to ignore because there is a property key in the object but the
-              // type given by MUI does not reference it
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              renderOption={({ key, ...props }, option) => (
-                // Separate key and other props because asked by React to avoid warnings.
-                <li key={key} {...props}>
+              onValueChange={(selectedValue) => handleSubmitEntityType(selectedValue as AvailableEntityOption | null)}
+              renderOption={(option) => (
+                <>
                   <div style={{
                     paddingTop: 4,
                     display: 'inline-block',
@@ -172,9 +145,21 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
                   >
                     {t_i18n(`entity_${option.label}`)}
                   </div>
-                </li>
+                </>
               )}
-            />
+            >
+              <ComboboxLabel>{t_i18n('Entity type')}</ComboboxLabel>
+              <ComboboxField>
+                <ComboboxInput />
+                <ComboboxControls>
+                  <ComboboxTrigger />
+                </ComboboxControls>
+              </ComboboxField>
+              <ComboboxContent
+                emptyMessage={t_i18n('No available options')}
+                listAriaLabel={t_i18n('Entity type')}
+              />
+            </Combobox>
             {value.entity_type && (
               <ConfidenceField
                 name={`${name}.max_confidence`}

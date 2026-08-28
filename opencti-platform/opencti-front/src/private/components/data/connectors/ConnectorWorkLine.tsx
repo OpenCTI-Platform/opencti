@@ -158,6 +158,7 @@ const ConnectorWorkLine: FunctionComponent<
           intent={(workErrors ?? []).length >= 0 ? 'destructive' : undefined}
           onClick={() => handleOpenDrawerErrors(workErrors ?? [])}
           size="small"
+          keepMui
         >
           {workErrors?.length} {t_i18n('errors')}
         </Button>

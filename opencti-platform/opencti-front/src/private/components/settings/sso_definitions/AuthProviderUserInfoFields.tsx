@@ -56,7 +56,7 @@ const AuthProviderUserInfoFields = ({
           placeholder={emailPlaceholder}
           fullWidth
           required={emailRequired}
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
         <Field
           component={TextField}
@@ -66,7 +66,7 @@ const AuthProviderUserInfoFields = ({
           placeholder={namePlaceholder}
           fullWidth
           required={nameRequired}
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
         <Field
           component={TextField}
@@ -75,7 +75,7 @@ const AuthProviderUserInfoFields = ({
           label={t_i18n('First name expression')}
           placeholder={firstnamePlaceholder}
           fullWidth
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
         <Field
           component={TextField}
@@ -84,7 +84,7 @@ const AuthProviderUserInfoFields = ({
           label={t_i18n('Last name expression')}
           placeholder={lastnamePlaceholder}
           fullWidth
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
       </Box>
     </Paper>

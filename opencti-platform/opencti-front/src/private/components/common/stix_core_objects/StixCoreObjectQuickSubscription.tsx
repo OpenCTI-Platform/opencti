@@ -12,12 +12,11 @@ import {
 import { stixCoreObjectTriggersFragment } from '@components/common/stix_core_objects/stixCoreObjectTriggersUtils';
 import { Badge, ListItemButton, ListItemIcon, Stack, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
+
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles, useTheme } from '@mui/styles';
@@ -28,7 +27,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { useRefetchableFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import Tag from '../../../../components/common/tag/Tag';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -51,6 +50,7 @@ import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEdition
 import { triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import NotifierField from '../form/NotifierField';
+import { Checkbox } from '@filigran/design-system';
 
 interface InstanceTriggerEditionFormValues {
   id: string;
@@ -357,28 +357,22 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                     />
                     <NotifierField name="notifiers" onChange={setFieldValue} />
                     <Field
-                      component={AutocompleteField}
+                      component={ComboboxField}
                       name="event_types"
                       style={fieldSpacingContainerStyle}
                       multiple={true}
-                      textfieldprops={{
-                        variant: 'standard',
-                        label: t_i18n('Triggering on'),
-                      }}
+                      label={t_i18n('Triggering on')}
                       options={instanceEventTypesOptions}
                       onChange={setFieldValue}
-                      renderOption={(
-                        props: React.HTMLAttributes<HTMLLIElement>,
-                        option: { value: string; label: string },
-                      ) => (
-                        <MenuItem value={option.value} {...props}>
+                      renderOption={(option: { value: string; label: string }) => (
+                        <>
                           <Checkbox
                             checked={values.event_types
                               .map((n) => n.value)
                               .includes(option.value)}
                           />
-                          <ListItemText primary={option.label} />
-                        </MenuItem>
+                          <span>{option.label}</span>
+                        </>
                       )}
                     />
                     {multipleInstanceTrigger && instanceTriggerFilters && (

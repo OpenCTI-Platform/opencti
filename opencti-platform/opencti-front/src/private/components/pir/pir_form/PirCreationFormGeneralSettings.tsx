@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { Field, useFormikContext } from 'formik';
 import React from 'react';
-import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { PirCreationFormData } from '@components/pir/pir_form/pir-form-utils';
 import Alert from '@mui/material/Alert';
@@ -24,7 +23,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { PirCreationFormGeneralSettingsRedisStreamQuery } from './__generated__/PirCreationFormGeneralSettingsRedisStreamQuery.graphql';
 import { daysAgo, minutesBetweenDates } from '../../../../utils/Time';
 
@@ -60,7 +59,7 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         component={TextField}
         variant="standard"
         label={t_i18n('Name')}
-        style={fieldSpacingContainerStyle}
+        className="mt-5"
       />
       <Field
         component={MarkdownField}
@@ -70,7 +69,7 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         style={fieldSpacingContainerStyle}
       />
       <Field
-        component={SelectField}
+        component={SelectFieldFds}
         required
         variant="standard"
         name="pir_rescan_days"
@@ -78,11 +77,12 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         fullWidth={true}
         containerstyle={{ marginTop: 20, width: '100%' }}
         helpertext={t_i18n('How far back to rescan at creation. If the PIR engine has less history than this period, only the history period will be taken')}
+        numeric
       >
-        <MenuItem value={0}>{t_i18n('No rescan')}</MenuItem>
-        <MenuItem value={1}>{t_i18n('1 day')}</MenuItem>
-        <MenuItem value={30}>{t_i18n('1 month')}</MenuItem>
-        <MenuItem value={182}>{t_i18n('6 months')}</MenuItem>
+        <SelectItem value="0">{t_i18n('No rescan')}</SelectItem>
+        <SelectItem value="1">{t_i18n('1 day')}</SelectItem>
+        <SelectItem value="30">{t_i18n('1 month')}</SelectItem>
+        <SelectItem value="182">{t_i18n('6 months')}</SelectItem>
       </Field>
       {showRescanAlert
         && (

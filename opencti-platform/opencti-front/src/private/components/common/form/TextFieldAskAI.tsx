@@ -9,12 +9,10 @@ import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data
 import { TextFieldAskAIMakeShorterMutation, TextFieldAskAIMakeShorterMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
 import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
 import DialogActions from '@mui/material/DialogActions';
-import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
 import Menu from '@mui/material/Menu';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import React, { CSSProperties, FunctionComponent, useRef, useState } from 'react';
@@ -359,19 +357,20 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             onClose={handleCloseToneOptions}
             title={t_i18n('Select options')}
           >
-            <FormControl style={{ width: '100%' }}>
-              <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-              <Select
-                labelId="tone"
-                value={tone}
-                onChange={(event) => setTone(event.target.value as 'tactical' | 'operational' | 'strategic')}
-                fullWidth={true}
-              >
-                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-              </Select>
-            </FormControl>
+            <Select
+              value={tone}
+              onValueChange={(value) => setTone(value as 'tactical' | 'operational' | 'strategic')}
+            >
+              <SelectLabel>{t_i18n('Tone')}</SelectLabel>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent aria-label={t_i18n('Tone')}>
+                <SelectItem value="tactical">{t_i18n('Tactical')}</SelectItem>
+                <SelectItem value="operational">{t_i18n('Operational')}</SelectItem>
+                <SelectItem value="strategic">{t_i18n('Strategic')}</SelectItem>
+              </SelectContent>
+            </Select>
             <DialogActions>
               <Button variant="secondary" onClick={handleCloseToneOptions}>
                 {t_i18n('Cancel')}

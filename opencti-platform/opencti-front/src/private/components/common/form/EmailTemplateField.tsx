@@ -5,9 +5,9 @@ import { EmailTemplateFieldQuery } from '@components/common/form/__generated__/E
 import useEnterpriseEdition from 'src/utils/hooks/useEnterpriseEdition';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField, { asSingleValue } from '../../../../components/ComboboxField';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
@@ -47,7 +47,10 @@ interface EmailTemplateFieldComponentProps {
   name: string;
   style?: React.CSSProperties;
   helperText?: string;
-  onChange?: (name: string, value: FieldOption[]) => void;
+  // Declared as an array, but this field is mounted multiple={false} and its one
+  // caller passes Formik's setFieldValue, which accepts anything — so the array
+  // never arrived. Typed as the field actually behaves.
+  onChange?: (name: string, value: EmailTemplateFieldOption | null) => void;
   required?: boolean;
   queryRef: PreloadedQuery<EmailTemplateFieldQuery>;
 }
@@ -69,30 +72,25 @@ const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponent
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         name={name}
         multiple={false}
         disabled={false}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t_i18n('Email templates'),
-          helperText,
-        }}
+        label={label ?? t_i18n('Email templates')}
+        helperText={helperText}
         required={required}
-        onChange={onChange}
+        onChange={asSingleValue(onChange)}
         style={fieldSpacingContainerStyle ?? style}
         noOptionsText={t_i18n('No available options')}
         options={emailTemplates}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: EmailTemplateFieldOption,
-        ) => (
-          <li {...props} key={option.value.id} style={{ display: 'flex', alignItems: 'center' }}>
+        renderOption={(option: EmailTemplateFieldOption) => (
+          <>
             <ItemIcon color="#afb505" type="EmailTemplate" />
             <div style={{ flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: { display: 'none' } }}
       />
     </div>
   );
@@ -105,13 +103,12 @@ const EmailTemplateFieldLoader = (props: EmailTemplateFieldProps) => {
   return queryRef ? (
     <React.Suspense fallback={(
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
         disabled={true}
-        fullWidth={true}
         options={[]}
         renderOption={() => null}
-        textfieldprops={{ label }}
+        label={label}
       />
     )}
     >
@@ -132,14 +129,13 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
     return (
       <EETooltip title={t_i18n('Only available in EE')}>
         <Field
-          component={AutocompleteField}
+          component={ComboboxField}
           name={name}
           disabled={true}
-          fullWidth={true}
           options={[]}
           style={fieldSpacingContainerStyle}
           renderOption={() => null}
-          textfieldprops={{ label: t_i18n('Email template') }}
+          label={t_i18n('Email template')}
         />
       </EETooltip>
     );

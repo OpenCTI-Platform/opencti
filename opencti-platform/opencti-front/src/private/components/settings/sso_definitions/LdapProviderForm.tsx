@@ -8,14 +8,13 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Add, Delete, ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -364,7 +363,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Configuration name')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -383,7 +382,7 @@ const LdapProviderForm = ({
                 label={t_i18n('LDAP URL')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -392,7 +391,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Bind DN')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <SecretFieldControl
                 secretInfo={(data?.configuration?.bind_credentials ?? null) as SecretInfo | null}
@@ -409,7 +408,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Search base')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -418,7 +417,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Search filter')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -427,7 +426,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Group base')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -436,7 +435,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Group filter')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
 
               <AuthProviderUserInfoFields />
@@ -446,7 +445,7 @@ const LdapProviderForm = ({
                 name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
 
               {/* --- Search & Authentication --- */}
@@ -467,7 +466,7 @@ const LdapProviderForm = ({
                     name="search_attributes"
                     label={t_i18n('Search attributes (comma-separated)')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -475,7 +474,7 @@ const LdapProviderForm = ({
                     name="username_field"
                     label={t_i18n('Username field')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -483,7 +482,7 @@ const LdapProviderForm = ({
                     name="password_field"
                     label={t_i18n('Password field')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -491,7 +490,7 @@ const LdapProviderForm = ({
                     name="credentials_lookup"
                     label={t_i18n('Credentials lookup')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -499,7 +498,7 @@ const LdapProviderForm = ({
                     name="group_search_attributes"
                     label={t_i18n('Group search attributes (comma-separated)')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 </AccordionDetails>
               </Accordion>
@@ -542,15 +541,15 @@ const LdapProviderForm = ({
                             }}
                           >
                             <Field
-                              component={SelectField}
+                              component={SelectFieldFds}
                               variant="standard"
                               name={`extra_conf[${index}].type`}
                               label={t_i18n('Type')}
                               containerstyle={{ width: '20%' }}
                             >
-                              <MenuItem value="String">String</MenuItem>
-                              <MenuItem value="Number">Number</MenuItem>
-                              <MenuItem value="Boolean">Boolean</MenuItem>
+                              <SelectItem value="String">String</SelectItem>
+                              <SelectItem value="Number">Number</SelectItem>
+                              <SelectItem value="Boolean">Boolean</SelectItem>
                             </Field>
                             <Field
                               component={TextField}

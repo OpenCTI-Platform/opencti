@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -84,19 +84,19 @@ const eventIdToDate = (eventId: string, dateFormatter: (date: string | Date) => 
 const getOutOfDepthStatus = (
   estimatedOutOfDepth: number | null | undefined,
   t_i18n: (key: string) => string,
-): { label: string; hexColor: string } => {
+): { label: string; severity: 'low' | 'high' | 'critical' } => {
   if (!estimatedOutOfDepth) {
-    return { label: t_i18n('Healthy'), hexColor: '#2e7d32' };
+    return { label: t_i18n('Healthy'), severity: 'low' };
   }
   const ONE_HOUR = 3600;
   const ONE_DAY = 86400;
   if (estimatedOutOfDepth < ONE_HOUR) {
-    return { label: formatDuration(estimatedOutOfDepth), hexColor: '#c62828' };
+    return { label: formatDuration(estimatedOutOfDepth), severity: 'critical' };
   }
   if (estimatedOutOfDepth < ONE_DAY) {
-    return { label: formatDuration(estimatedOutOfDepth), hexColor: '#d84315' };
+    return { label: formatDuration(estimatedOutOfDepth), severity: 'high' };
   }
-  return { label: formatDuration(estimatedOutOfDepth), hexColor: '#2e7d32' };
+  return { label: formatDuration(estimatedOutOfDepth), severity: 'low' };
 };
 
 interface MetricRowProps {
@@ -180,17 +180,7 @@ const SyncConsumersDrawer: FunctionComponent<SyncConsumersDrawerProps> = ({
           <Box sx={{ ml: 'auto' }}>
             <Chip
               label={depthStatus.label}
-              style={{
-                fontSize: 12,
-                lineHeight: '12px',
-                borderRadius: 4,
-                height: 25,
-                width: 125,
-                textAlign: 'center',
-                backgroundColor: `${depthStatus.hexColor}33`,
-                color: depthStatus.hexColor,
-                border: `2px solid ${depthStatus.hexColor}`,
-              }}
+              severity={depthStatus.severity}
             />
           </Box>
         </ListItem>

@@ -2,10 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router-dom';
@@ -92,8 +89,7 @@ const EntitiesDetailsRightsBar = () => {
     }
   }, [selectedEntities]);
 
-  const handleSelectEntity = (event: SelectChangeEvent) => {
-    const { value } = event.target;
+  const handleSelectEntity = (value: string) => {
     const entity = selectedEntities.find((el) => el.id === value);
     if (!entity) {
       selectDetailsPreviewObject(uniqSelectedEntities[0]);
@@ -132,25 +128,27 @@ const EntitiesDetailsRightsBar = () => {
         })}
       </Label>
       <div style={{ display: 'flex' }}>
-        <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
-          <InputLabel id="label" variant="outlined">
-            {t_i18n('Object')}
-          </InputLabel>
+        {/* The FormControl/InputLabel/Select triple collapses into the library
+            compound: SelectLabel replaces InputLabel and carries the
+            association, so the hand-rolled `labelId`/`label` pair goes with it. */}
+        <div style={{ flex: 'grow', width: '100%' }}>
           <Select
-            labelId="label"
-            label={t_i18n('Object')}
-            fullWidth={true}
-            onChange={handleSelectEntity}
             value={detailsPreviewSelected.id}
-            variant="outlined"
+            onValueChange={handleSelectEntity}
           >
-            {uniqSelectedEntities.map((entity) => (
-              <MenuItem key={entity.id} value={entity.id}>
-                {entity.label}
-              </MenuItem>
-            ))}
+            <SelectLabel>{t_i18n('Object')}</SelectLabel>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Object')}>
+              {uniqSelectedEntities.map((entity) => (
+                <SelectItem key={entity.id} value={entity.id}>
+                  {entity.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
         {/* Need to be handled */}
         {hasOverviewPage && (
           <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>

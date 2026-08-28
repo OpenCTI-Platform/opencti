@@ -161,31 +161,16 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 textOverflow="ellipsis"
               >
                 <Tag
-                  label={(
-                    <span>
-                      <strong>{t_i18n('Period: ')}</strong>
-                      {data.period}
-                    </span>
-                  )}
+                  label={`${t_i18n('Period: ')}${data.period}`}
                 />
                 {currentTime.length > 1 && (
                   <Tag
-                    label={(
-                      <span>
-                        <strong>{t_i18n('Day: ')}</strong>
-                        {day}
-                      </span>
-                    )}
+                    label={`${t_i18n('Day: ')}${day}`}
                   />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
                   <Tag
-                    label={(
-                      <span>
-                        <strong>{t_i18n('Time: ')}</strong>
-                        {nt(time)}
-                      </span>
-                    )}
+                    label={`${t_i18n('Time: ')}${nt(time)}`}
                   />
                 )}
               </Stack>

@@ -354,7 +354,7 @@ const IngestionCatalogConnectorCreation = ({
                   >
                     <Field
                       component={TextField}
-                      style={fieldSpacingContainerStyle}
+                      className="mt-5"
                       variant="standard"
                       name="display_name"
                       label={t_i18n('Display name')}
@@ -367,7 +367,7 @@ const IngestionCatalogConnectorCreation = ({
 
                     <Field
                       component={TextField}
-                      style={fieldSpacingContainerStyle}
+                      className="mt-5"
                       variant="standard"
                       name="name"
                       label={t_i18n('Instance name')}

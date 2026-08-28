@@ -6,9 +6,8 @@ import type { WidgetSavedFilterChipsQuery } from './__generated__/WidgetSavedFil
 import type { ChipOwnProps } from '@mui/material';
 import { removeFrontendIdAndEmptyFiltersFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { useFormatter } from 'src/components/i18n';
-import { useTheme } from '@mui/material/styles';
 
 const widgetSavedFilterChipsQuery = graphql`
   query WidgetSavedFilterChipsQuery($id: ID!) {
@@ -32,7 +31,6 @@ const WidgetSavedFilterChipsComponent = ({
   chipColor,
 }: WidgetSavedFilterChipsComponentProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const { savedFilter } = usePreloadedQuery(widgetSavedFilterChipsQuery, queryRef);
 
   // Parse defensively: savedFilter may be null (deleted/inaccessible)
@@ -53,8 +51,8 @@ const WidgetSavedFilterChipsComponent = ({
     return (
       <Chip
         label={t_i18n('Saved filter unavailable')}
-        size="small"
-        sx={{ marginLeft: 1, backgroundColor: theme.palette.warning.main, color: theme.palette.warning.contrastText }}
+        severity="high"
+        style={{ marginLeft: 8 }}
       />
     );
   }

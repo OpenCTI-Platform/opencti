@@ -150,7 +150,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
@@ -160,7 +160,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <FieldArray
             name="decay_points"
@@ -232,7 +232,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
@@ -242,7 +242,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             fullWidth={true}
             type="number"
             onSubmit={handleSubmitField}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={SwitchField}

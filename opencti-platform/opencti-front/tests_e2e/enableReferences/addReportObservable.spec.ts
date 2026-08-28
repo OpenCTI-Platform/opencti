@@ -203,7 +203,9 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
       await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
       await containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9').click();
       await expect(commitMessagePage.getPage()).toBeVisible();
-      await commitMessagePage.getAddNewReferenceButton().click();
+      // The create affordance moved into the panel with the conversion, so the
+    // typed text is what opens the form — and it prefills the source name.
+    await commitMessagePage.openNewReferenceForm('SourceTest');
       await commitMessagePage.fillNewReferenceSourceNameInput('SourceTest');
       await commitMessagePage.fillNewReferenceExternalIDInput('SourceTest');
       await commitMessagePage.getNewReferenceCreateButton().click();

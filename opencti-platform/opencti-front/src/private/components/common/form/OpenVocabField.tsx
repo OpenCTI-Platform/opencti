@@ -1,9 +1,9 @@
-import { HTMLAttributes, Suspense } from 'react';
+import { Suspense } from 'react';
 import { Field } from 'formik';
-import { MenuItem, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { OpenVocabFieldQuery } from './__generated__/OpenVocabFieldQuery.graphql';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -54,7 +54,9 @@ interface OpenVocabFieldComponentProps {
   disabled?: boolean;
   multiple?: boolean;
   disabledOptions?: string[];
-  onFocus?: (name: string, value: VocabFieldOption) => void;
+  // Narrowed to one argument: AutocompleteField called this as `onFocus?.(name)`,
+  // so the second parameter was declared and never delivered.
+  onFocus?: (name: string) => void;
   onChange?: (name: string, value: string | string[]) => void;
   onSubmit?: (name: string, value: string | string[]) => void;
 }
@@ -105,36 +107,33 @@ const OpenVocabFieldComponent = ({
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       name={name}
       required={required}
-      onFocus={isEdition ? onFocus : undefined}
+      onFocusInput={isEdition && onFocus ? () => onFocus(name) : undefined}
       onChange={(_: string, v: VocabFieldValue) => internalOnChange(v)}
-      fullWidth
       disabled={disabled}
       multiple={multiple}
       style={containerStyle}
       options={openVocabList}
-      renderOption={(
-        optionProps: HTMLAttributes<HTMLDivElement>,
-        { value, description }: VocabFieldOption,
-      ) => (
-        <Tooltip
-          {...optionProps}
-          key={value}
-          title={description}
-          placement="bottom-start"
-        >
-          <MenuItem value={value}>{value}</MenuItem>
+      // The MenuItem this used to render was MUI row styling, not a select item:
+      // the library row provides its own, so only the tooltip is kept.
+      renderOption={({ value, description }: VocabFieldOption) => (
+        <Tooltip title={description} placement="bottom-start">
+          <span>{value}</span>
         </Tooltip>
       )}
       groupBy={Array.isArray(type) ? (o: VocabFieldOption) => o.category : undefined}
-      getOptionDisabled={(o: VocabFieldOption) => disabledOptions.includes(o.value)}
-      isOptionEqualToValue={(o: VocabFieldOption, v: VocabFieldOption | string) => o.value === (typeof v === 'string' ? v : v?.value)}
-      textfieldprops={{
-        label,
-        helperText,
-      }}
+      isOptionDisabled={(o: VocabFieldOption) => disabledOptions.includes(o.value)}
+      // No custom identity here on purpose. The library calls
+      // `isOptionEqualToValue(selected, option)` — SELECTED FIRST — while MUI's
+      // contract is `(option, value)`. This site's function read `.value` off the
+      // first argument only, so with string values it never matched, the option
+      // was never marked selected, and re-clicking it APPENDED a duplicate
+      // instead of toggling it off. ComboboxField's default unwraps whichever
+      // side is an object and is therefore order-agnostic.
+      label={label}
+      helperText={helperText}
     />
   );
 };
@@ -170,18 +169,15 @@ const OpenVocabField = (props: OpenVocabFieldProps) => {
 
   const FallbackAutoComplete = (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       name={name}
       required={required}
       disabled
-      fullWidth
       multiple={multiple}
       style={containerStyle}
       options={[]}
       renderOption={() => null}
-      textfieldprops={{
-        label,
-      }}
+      label={label}
     />
   );
 

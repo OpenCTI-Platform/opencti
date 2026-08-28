@@ -6,7 +6,7 @@ import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { MoreVert } from '@mui/icons-material';
 import { DatabaseImportOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
@@ -98,18 +98,18 @@ class SyncLineLineComponent extends Component {
     const { node, t } = this.props;
     const metrics = node.consumer_metrics;
     if (!metrics) {
-      return { label: t('No data'), hexColor: null };
+      return { label: t('No data'), severity: 'neutral' };
     }
     const ONE_HOUR = 3600;
     const ONE_DAY = 86400;
     const { estimatedOutOfDepth } = metrics;
     if (estimatedOutOfDepth > 0 && estimatedOutOfDepth < ONE_HOUR) {
-      return { label: t('At risk'), hexColor: '#c62828' };
+      return { label: t('At risk'), severity: 'critical' };
     }
     if (estimatedOutOfDepth >= ONE_HOUR && estimatedOutOfDepth < ONE_DAY) {
-      return { label: t('Degraded'), hexColor: '#d84315' };
+      return { label: t('Degraded'), severity: 'high' };
     }
-    return { label: t('Healthy'), hexColor: '#2e7d32' };
+    return { label: t('Healthy'), severity: 'low' };
   }
 
   render() {
@@ -183,15 +183,7 @@ class SyncLineLineComponent extends Component {
                       : (
                           <Chip
                             label={health.label}
-                            style={{
-                              fontSize: 12,
-                              lineHeight: '12px',
-                              borderRadius: 4,
-                              height: 20,
-                              backgroundColor: `${health.hexColor}33`,
-                              color: health.hexColor,
-                              border: `2px solid ${health.hexColor}`,
-                            }}
+                            severity={health.severity}
                           />
                         )}
                   </div>
