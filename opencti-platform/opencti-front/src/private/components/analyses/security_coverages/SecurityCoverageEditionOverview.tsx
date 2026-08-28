@@ -378,7 +378,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
                 onSubmit={handleSubmitField}
                 label={t_i18n('Source external link')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}

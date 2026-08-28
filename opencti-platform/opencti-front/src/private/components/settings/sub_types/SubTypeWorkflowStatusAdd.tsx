@@ -110,7 +110,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
                 label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>

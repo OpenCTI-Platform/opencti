@@ -198,7 +198,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <IngestionSchedulingField />
               <Field
@@ -207,7 +207,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 name="uri"
                 label={t_i18n('TAXII server URL')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <Field
                 component={SelectField}
@@ -228,7 +228,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 name="collection"
                 label={t_i18n('TAXII Collection')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <Field
                 component={SelectField}
@@ -258,7 +258,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                     name="username"
                     label={t_i18n('Username')}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="password"
@@ -280,7 +280,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                     name="cert"
                     label={t_i18n('Certificate (base64)')}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="key"
@@ -292,7 +292,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                     name="ca"
                     label={t_i18n('CA certificate (base64)')}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                 </>
               )}

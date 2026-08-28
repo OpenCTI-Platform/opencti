@@ -190,7 +190,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             fullWidth={true}
             required={field.isMandatory}
             helperText={field.description}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         );
 
@@ -216,7 +216,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             fullWidth={true}
             required={field.isMandatory}
             helperText={field.description}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         );
 
@@ -490,7 +490,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             fullWidth={true}
             required={field.isMandatory}
             helperText={field.description}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         );
     }

@@ -419,7 +419,7 @@ const OidcProviderForm = ({
                   label={t_i18n('Configuration name')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* Provider routing — right below Configuration name */}
@@ -526,7 +526,7 @@ const OidcProviderForm = ({
                   label={t_i18n('Issuer')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <Field
                   component={TextField}
@@ -535,7 +535,7 @@ const OidcProviderForm = ({
                   label={t_i18n('Client ID')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <SecretFieldControl
                   secretInfo={(data?.configuration?.client_secret ?? null) as SecretInfo | null}
@@ -553,7 +553,7 @@ const OidcProviderForm = ({
                   name="button_label_override"
                   label={t_i18n('Login button label')}
                   fullWidth
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* --- Protocol & Scopes --- */}
@@ -580,7 +580,7 @@ const OidcProviderForm = ({
                       name="scopes"
                       label={t_i18n('Scopes (comma-separated, defaults to openid email profile)')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -588,7 +588,7 @@ const OidcProviderForm = ({
                       name="audience"
                       label={t_i18n('Audience')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -596,7 +596,7 @@ const OidcProviderForm = ({
                       name="logout_callback_url"
                       label={t_i18n('Logout callback URL')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                   </AccordionDetails>
                 </Accordion>

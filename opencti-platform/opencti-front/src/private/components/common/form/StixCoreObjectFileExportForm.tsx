@@ -460,7 +460,7 @@ const StixCoreObjectFileExportForm = ({
                           variant="standard"
                           name="exportFileName"
                           label={t_i18n('Export file name')}
-                          style={fieldSpacingContainerStyle}
+                          className="mt-5"
                         />
                       )}
                       {values.connector.value !== BUILT_IN_HTML_TO_PDF.value && (

@@ -609,7 +609,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             handleFieldChange(`${fieldPath}.label`, label);
             handleFieldChange(`${fieldPath}.name`, name || field.id);
           }}
-          style={{ marginTop: 20 }}
+          className="mt-5"
         />
 
         <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
@@ -925,7 +925,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             handleFieldChange(`fields.${fieldIndex}.label`, label);
             handleFieldChange(`fields.${fieldIndex}.name`, name || field.id); // Use field.id as fallback
           }}
-          style={{ marginTop: 20 }}
+          className="mt-5"
         />
 
         {(field.type === 'select' || field.type === 'multiselect') && (() => {
@@ -1027,7 +1027,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               handleFieldChange(`fields.${fieldIndex}.defaultValue`, value);
             }}
             type={field.type === 'number' ? 'number' : 'text'}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             helperText={(() => {
               if (field.type === 'datetime' || field.type === 'date') {
                 return t_i18n('Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)');
@@ -1192,7 +1192,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           fullWidth
           value={entity.label}
           onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.label`, e.target.value)}
-          style={{ marginTop: 20 }}
+          className="mt-5"
         />
 
         <FormControlLabel
@@ -1727,7 +1727,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   label={t_i18n('Default name')}
                   value={formData.draftDefaults?.name?.defaultValue || ''}
                   onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
-                  style={{ marginBottom: 20 }}
+                  className="mb-5"
                 />
               </Box>
 

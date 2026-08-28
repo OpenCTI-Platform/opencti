@@ -181,7 +181,7 @@ const PlaybookCreation = () => {
                   variant="standard"
                   name="description"
                   label={t_i18n('Description')}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                   fullWidth
                 />
                 <FormButtonContainer>

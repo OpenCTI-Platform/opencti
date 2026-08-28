@@ -164,7 +164,7 @@ const PublicDashboardCreationFormComponent = ({
             component={TextField}
             variant="standard"
             label={t_i18n('Name')}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onChange={(_: string, val: string) => {
               setFieldValue('uri_key', generatePublicDashboardUriKey(val));
             }}

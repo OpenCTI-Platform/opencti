@@ -473,7 +473,7 @@ const SamlProviderForm = ({
                   label={t_i18n('Configuration name')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* Provider routing — right below Configuration name */}
@@ -580,7 +580,7 @@ const SamlProviderForm = ({
                   label={t_i18n('Issuer')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <Field
                   component={TextField}
@@ -589,7 +589,7 @@ const SamlProviderForm = ({
                   label={t_i18n('Entry point')}
                   fullWidth
                   required
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
                 <Field
                   component={TextField}
@@ -619,7 +619,7 @@ const SamlProviderForm = ({
                   name="button_label_override"
                   label={t_i18n('Login button label')}
                   fullWidth
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                 />
 
                 {/* --- Security & Signing --- */}
@@ -659,7 +659,7 @@ const SamlProviderForm = ({
                       name="digest_algorithm"
                       label={t_i18n('Digest algorithm')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -667,7 +667,7 @@ const SamlProviderForm = ({
                       name="identifier_format"
                       label={t_i18n('Identifier format (NameID)')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -743,7 +743,7 @@ const SamlProviderForm = ({
                       name="authn_context"
                       label={t_i18n('Authentication context (comma-separated)')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}
@@ -751,7 +751,7 @@ const SamlProviderForm = ({
                       name="sso_binding_type"
                       label={t_i18n('SSO Binding type')}
                       fullWidth
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                   </AccordionDetails>
                 </Accordion>

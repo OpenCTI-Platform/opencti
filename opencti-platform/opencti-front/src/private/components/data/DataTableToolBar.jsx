@@ -1579,7 +1579,7 @@ class DataTableToolBar extends Component {
                   label={t('Values')}
                   fullWidth={true}
                   onFocus={this.searchContainers.bind(this, i)}
-                  style={{ marginTop: 3 }}
+                  className="mt-1"
                 />
               )}
               noOptionsText={t('No available options')}
@@ -1624,7 +1624,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchMarkingDefinitions.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1660,7 +1660,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchLabels.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1695,7 +1695,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchIdentities.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1730,7 +1730,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchStatuses.bind(this, i, selectedTypes)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1775,7 +1775,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchExternalReferences.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1811,7 +1811,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchAssignees.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1847,7 +1847,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchParticipants.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1886,7 +1886,7 @@ class DataTableToolBar extends Component {
                 label={t('Select Value')}
                 fullWidth={true}
                 onFocus={this.searchVocabulary.bind(this, i, selectedField)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1920,7 +1920,7 @@ class DataTableToolBar extends Component {
                 label={t('Select Value')}
                 fullWidth={true}
                 onFocus={this.searchVocabulary.bind(this, i, selectedField)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -1952,7 +1952,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchUsers.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -2000,7 +2000,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchKillChains.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -2049,7 +2049,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchActionInputOrganizations.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -2085,7 +2085,7 @@ class DataTableToolBar extends Component {
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchGroups.bind(this, i)}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -2119,7 +2119,7 @@ class DataTableToolBar extends Component {
                 variant="standard"
                 label={t('Values')}
                 fullWidth={true}
-                style={{ marginTop: 3 }}
+                className="mt-1"
               />
             )}
             noOptionsText={t('No available options')}
@@ -3244,7 +3244,7 @@ class DataTableToolBar extends Component {
                       label={t('Values')}
                       fullWidth={true}
                       onFocus={this.searchContainers.bind(this, 0)}
-                      style={{ marginTop: 3 }}
+                      className="mt-1"
                     />
                   )}
                   noOptionsText={t('No available options')}
@@ -3356,7 +3356,7 @@ class DataTableToolBar extends Component {
                       label={t('Values')}
                       fullWidth={true}
                       onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
+                      className="mt-1"
                     />
                   )}
                   noOptionsText={t('No available options')}
@@ -3426,7 +3426,7 @@ class DataTableToolBar extends Component {
                       label={t('Values')}
                       fullWidth={true}
                       onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
+                      className="mt-1"
                     />
                   )}
                   noOptionsText={t('No available options')}

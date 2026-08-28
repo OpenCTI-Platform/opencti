@@ -220,7 +220,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               name="uri"
               label={t_i18n('Remote OpenCTI URL')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               disabled={true}
             />
             <PasswordTextField
@@ -235,7 +235,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               name="dd"
               label={t_i18n('Remote OpenCTI stream ID')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               value={
                 streams.find((s) => s.id === initialValues.stream_id)?.label ?? EMPTY_VALUE
               }

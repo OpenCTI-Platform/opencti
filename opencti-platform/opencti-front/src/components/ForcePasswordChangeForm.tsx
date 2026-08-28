@@ -96,7 +96,7 @@ const ForcePasswordChangeForm = ({
               label={t_i18n('New password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              className="mt-4"
             />
             <Field
               component={TextField}
@@ -104,7 +104,7 @@ const ForcePasswordChangeForm = ({
               label={t_i18n('Confirmation')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              className="mt-4"
             />
           </Box>
           <Stack

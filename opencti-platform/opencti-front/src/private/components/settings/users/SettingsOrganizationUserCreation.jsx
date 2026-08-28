@@ -177,7 +177,7 @@ const SettingsOrganizationUserCreation = ({
                 name="user_email"
                 label={t_i18n('Email address')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -185,7 +185,7 @@ const SettingsOrganizationUserCreation = ({
                 name="firstname"
                 label={t_i18n('Firstname')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -193,7 +193,7 @@ const SettingsOrganizationUserCreation = ({
                 name="lastname"
                 label={t_i18n('Lastname')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={MarkdownField}
@@ -211,7 +211,7 @@ const SettingsOrganizationUserCreation = ({
                 name="password"
                 label={t_i18n('Password')}
                 type="password"
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 fullWidth={true}
               />
               <Field
@@ -221,7 +221,7 @@ const SettingsOrganizationUserCreation = ({
                 label={t_i18n('Confirmation')}
                 type="password"
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <ObjectOrganizationField
                 outlined={false}

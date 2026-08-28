@@ -60,7 +60,7 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         component={TextField}
         variant="standard"
         label={t_i18n('Name')}
-        style={fieldSpacingContainerStyle}
+        className="mt-5"
       />
       <Field
         component={MarkdownField}

@@ -315,7 +315,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                     label={t_i18n('Remote OpenCTI URL')}
                     fullWidth={true}
                     disabled={streams.length > 0}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="token"

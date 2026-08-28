@@ -154,7 +154,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     name="label"
                     label={t_i18n('Label')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -179,7 +179,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                         name="min_value"
                         label={t_i18n('Min value')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
                       <Field
                         component={TextField}
@@ -188,7 +188,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                         name="max_value"
                         label={t_i18n('Max value')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
                     </>
                   )}

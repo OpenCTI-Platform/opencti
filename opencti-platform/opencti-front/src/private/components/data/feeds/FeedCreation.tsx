@@ -486,7 +486,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         name="description"
                         label={t_i18n('Description')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
                       <Alert
                         icon={false}
@@ -530,7 +530,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         name="separator"
                         label={t_i18n('Separator')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
                       <Field
                         component={TextField}

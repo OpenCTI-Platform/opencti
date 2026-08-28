@@ -110,7 +110,7 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
           label={label}
           fullWidth={true}
           onFocus={searchAssociatedEntities}
-          style={{ marginTop: 3 }}
+          className="mt-1"
         />
       )}
       noOptionsText={t_i18n('No available options')}

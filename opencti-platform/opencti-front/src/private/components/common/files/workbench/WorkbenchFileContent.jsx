@@ -1843,7 +1843,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -1913,7 +1913,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2314,7 +2314,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth={true}
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2365,7 +2365,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth={true}
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2536,7 +2536,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes.MD5"
                                 label={t_i18n('hash_md5')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
@@ -2544,7 +2544,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes_SHA-1"
                                 label={t_i18n('hash_sha-1')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
@@ -2552,7 +2552,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes_SHA-256"
                                 label={t_i18n('hash_sha-256')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
@@ -2560,7 +2560,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes.SHA-512"
                                 label={t_i18n('hash_sha-512')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                             </div>
                           );
@@ -2575,7 +2575,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2645,7 +2645,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2776,7 +2776,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2849,7 +2849,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}

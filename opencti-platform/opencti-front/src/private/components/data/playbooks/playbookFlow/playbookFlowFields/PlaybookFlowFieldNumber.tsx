@@ -34,7 +34,7 @@ const PlaybookFlowFieldNumber = ({
       name={name}
       label={label}
       component={TextField}
-      style={fieldSpacingContainerStyle}
+      className="mt-5"
     />
   );
 };

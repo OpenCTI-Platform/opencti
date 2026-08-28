@@ -188,7 +188,7 @@ const DefaultValueField = ({
         name={name}
         label={label}
         fullWidth={true}
-        style={{ marginTop: 20 }}
+        className="mt-5"
         disabled={disabled}
       />
     );
@@ -232,7 +232,7 @@ const DefaultValueField = ({
       name={name}
       label={label}
       fullWidth={true}
-      style={{ marginTop: 20 }}
+      className="mt-5"
       disabled={disabled}
     />
   );

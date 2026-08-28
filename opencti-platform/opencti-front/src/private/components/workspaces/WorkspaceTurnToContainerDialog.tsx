@@ -193,7 +193,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
             label={t_i18n('Container')}
             fullWidth={true}
             onFocus={(event: React.SyntheticEvent<Element, Event>) => searchContainers(event)}
-            style={{ marginTop: 3 }}
+            className="mt-1"
           />
         )}
         noOptionsText={t_i18n('No available options')}

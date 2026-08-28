@@ -156,7 +156,7 @@ const FileIndexingConfiguration: FunctionComponent<
               label={t_i18n('Max file size (in MB)')}
               fullWidth={true}
               type="number"
-              style={{ marginBottom: 20 }}
+              className="mb-5"
               onChange={submitForm}
             />
             <Field

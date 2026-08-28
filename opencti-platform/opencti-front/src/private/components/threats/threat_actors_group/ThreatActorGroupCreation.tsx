@@ -273,7 +273,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
               label={t_i18n('Score')}
               fullWidth={true}
               type="number"
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatedByField
               name="createdBy"

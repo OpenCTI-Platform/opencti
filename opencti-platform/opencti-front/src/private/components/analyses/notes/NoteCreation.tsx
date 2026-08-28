@@ -234,7 +234,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             label={t_i18n('Abstract')}
             required={(mandatoryAttributes.includes('attribute_abstract'))}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             askAi={true}
           />
           <Field

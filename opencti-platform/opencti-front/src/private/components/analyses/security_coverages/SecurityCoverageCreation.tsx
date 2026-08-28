@@ -765,7 +765,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   name="external_uri"
                   label={t_i18n('Source external link')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                 />
               </>
             )}

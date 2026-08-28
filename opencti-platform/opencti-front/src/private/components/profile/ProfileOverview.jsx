@@ -319,7 +319,7 @@ const ProfileOverviewComponent = (props) => {
                 disabled={external}
                 label={t('Email address')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <ObjectOrganizationField
@@ -335,7 +335,7 @@ const ProfileOverviewComponent = (props) => {
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <Field
@@ -344,7 +344,7 @@ const ProfileOverviewComponent = (props) => {
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <Field

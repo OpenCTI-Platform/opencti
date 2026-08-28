@@ -165,7 +165,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onSubmit={handleSubmitField}
           />
           <Alert

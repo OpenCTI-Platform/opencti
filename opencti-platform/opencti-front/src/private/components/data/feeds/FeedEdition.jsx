@@ -436,7 +436,7 @@ const FeedEditionContainer = (props) => {
                       name="description"
                       label={t_i18n('Description')}
                       fullWidth={true}
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Alert
                       icon={false}
@@ -481,7 +481,7 @@ const FeedEditionContainer = (props) => {
                       name="separator"
                       label={t_i18n('Separator')}
                       fullWidth={true}
-                      style={{ marginTop: 20 }}
+                      className="mt-5"
                     />
                     <Field
                       component={TextField}

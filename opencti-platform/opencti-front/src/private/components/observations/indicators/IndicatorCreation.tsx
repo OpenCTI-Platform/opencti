@@ -332,7 +332,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             type="number"
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={MarkdownField}

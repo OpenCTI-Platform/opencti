@@ -105,7 +105,7 @@ const LoginForm = () => {
               label={t_i18n('Password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              className="mt-4"
             />
             <Stack
               mt={3}

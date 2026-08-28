@@ -417,7 +417,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
                 label={t_i18n('Password validation')}
                 type="password"
                 fullWidth={true}
-                style={{ marginTop: theme.spacing(2) }}
+                className="mt-4"
               />
             </Form>
           )}

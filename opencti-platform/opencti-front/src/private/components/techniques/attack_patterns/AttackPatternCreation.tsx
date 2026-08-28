@@ -198,7 +198,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             label={t_i18n('External ID')}
             required={(mandatoryAttributes.includes('x_mitre_id'))}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={MarkdownField}
