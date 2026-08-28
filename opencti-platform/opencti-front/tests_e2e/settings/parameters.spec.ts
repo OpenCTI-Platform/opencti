@@ -27,7 +27,7 @@ test('Check Logo replacement', { tag: ['@ce', '@group1'] }, async ({ page }) => 
   expect(logoSrc).toContain('static/images/logo');
 
   // Set Dark theme logo to the Google logo
-  openThemeEditMenu('Dark', page);
+  openThemeEditMenu('Filigran Dark', page);
   await page
     .locator('input[name="theme_logo"]')
     .fill('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
@@ -48,7 +48,7 @@ test('Check Logo replacement', { tag: ['@ce', '@group1'] }, async ({ page }) => 
   expect(logoSrc).not.toContain('static/images/logo');
 
   // Reset logo
-  openThemeEditMenu('Dark', page);
+  openThemeEditMenu('Filigran Dark', page);
   await page
     .locator('input[name="theme_logo"]')
     .fill('');
