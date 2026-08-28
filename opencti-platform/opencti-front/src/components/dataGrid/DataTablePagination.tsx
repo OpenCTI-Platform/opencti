@@ -230,16 +230,7 @@ const DataTablePagination = ({
       </ButtonGroup>
       <Suspense>
         <NestedMenuButton
-          menuButtonProps={{
-            variant: 'outlined',
-            size: 'small',
-            color: 'primary',
-            style: {
-              padding: 6,
-              minWidth: 36,
-              border: 'none',
-            },
-          }}
+          menuButtonLabel={t_i18n('Table settings')}
           menuButtonChildren={<TableTuneIcon />}
           options={nestedMenuOptions}
           menuLevels={2}

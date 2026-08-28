@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import React, { useContext, useState } from 'react';
+import { FDS } from './fds-tokens.generated';
 import { isNotEmptyField } from '../utils/utils';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { UserContext } from '../utils/hooks/useAuth';
@@ -73,7 +74,7 @@ const TopBanner = ({
     <div style={{
       position: 'fixed',
       zIndex: 1202,
-      color: '#000000',
+      color: FDS.scalars['--gray-900'],
       width: '100%',
       padding: 4,
       borderRadius: 0,
@@ -94,8 +95,8 @@ const TopBanner = ({
           sx={{
             marginLeft: 1,
             height: '24px',
-            backgroundColor: '#ffffff',
-            color: '#000000',
+            backgroundColor: FDS.scalars['--white-1000'],
+            color: FDS.scalars['--gray-900'],
             padding: '1px 6px',
             textTransform: 'none',
             '& .MuiButton-endIcon': {
@@ -113,7 +114,7 @@ const TopBanner = ({
           aria-label="close"
           size="small"
           onClick={handleDismiss}
-          style={{ position: 'absolute', right: 8, color: '#000000' }}
+          style={{ position: 'absolute', right: 8, color: FDS.scalars['--gray-900'] }}
         >
           <Close fontSize="inherit" />
         </IconButton>
