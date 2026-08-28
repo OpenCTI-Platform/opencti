@@ -21,7 +21,7 @@ export default class IntrusionSetDetailsPage {
   }
 
   getVictimologyTab() {
-    return this.page.getByRole('menuitem', { name: 'Victimology' }).click();
+    return this.page.getByRole('link', { name: 'Victimology' }).click();
   }
 
   getCreateRelationshipButton() {
