@@ -10,6 +10,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import { ListItemButton } from '@mui/material';
 import Box from '@mui/material/Box';
+import { useFormatter } from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
@@ -43,7 +44,8 @@ const styles = (theme) => ({
   },
 });
 
-const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
+const RoleLineComponent = ({ classes, dataColumns, node }) => {
+  const { fd } = useFormatter();
   const { isSensitive } = useSensitiveModifications('roles', node.standard_id);
 
   return (
