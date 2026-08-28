@@ -20,8 +20,13 @@ export default class DashboardWidgetsPageModel {
     this.filters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-0'));
     this.subFilters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-1'));
     this.titleField = new TextFieldPageModel(this.page, 'Title', 'text');
-    this.dateAttributeMain = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-0'));
-    this.dateAttributeSub = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-1'));
+    // Named 'Relative time' until now, which was never this field's own label: on
+    // MUI several Selects here set labelId="relative" while DashboardRelativeDateSelect
+    // renders <InputLabel id="relative">Relative time</InputLabel> elsewhere on the
+    // page. Duplicate ids resolve to the FIRST match, so unrelated fields all
+    // answered to that name. Converted, each field carries its own.
+    this.dateAttributeMain = new SelectFieldPageModel(this.page, 'Date attribute', false, this.page.getByTestId('widget-params-selection-0'), true);
+    this.dateAttributeSub = new SelectFieldPageModel(this.page, 'Date attribute', false, this.page.getByTestId('widget-params-selection-1'), true);
     this.attributeFieldMain = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-0'), true);
     this.attributeFieldSub = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-1'), true);
   }

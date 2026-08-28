@@ -28,9 +28,9 @@ every library Select has and no MUI Select does.
 | | mounts |
 |---|---|
 | Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 157 |
-| Converted — direct library composition (`Select` / `Combobox`) | 112 |
-| **Converted total** | **269** |
-| **Remaining on MUI** | **22** |
+| Converted — direct library composition (`Select` / `Combobox`) | 122 |
+| **Converted total** | **279** |
+| **Remaining on MUI** | **12** |
 | **Total selection fields** | **291** |
 
 The denominator is DERIVED, not fixed. It was 292 while `CreatedByField` was
@@ -39,7 +39,7 @@ consumes the `AutocompleteField` adapter, whose single mount the census counts
 once at the adapter file — so the site stops being counted on its own and the
 total drops to 291. Converting it again puts the mount, and the 292, back.
 
-## The 22 remaining, every one with a reason
+## The 12 remaining, every one with a reason
 
 ### Not a site — the two legacy adapters themselves (2)
 
@@ -54,7 +54,7 @@ They must outlive their consumers, so they are not convertible work.
 appears here: it composes the library directly and its four consumers went with
 it.
 
-### Parked with a recorded reason (20 mounts)
+### Parked with a recorded reason (10 mounts)
 
 The last two rows are consumers of the `SelectField` adapter, not MUI mounts of
 their own: their mount is already counted once at the adapter file above. They
@@ -72,7 +72,6 @@ are listed here so the four adapter consumers each carry a visible reason.
 | `ConnectorsStatusFilters` | 2 | EE-gated, unverifiable on this instance |
 | `ListFilters` (add-filter) | 1 | reverted to MUI — see below |
 | `CreatedByField` (via `AutocompleteField`) | 0 — via the adapter | reverted to MUI — see below |
-| `WidgetCreationParameters` + `WidgetAttributesInput` | 10 | reverted to MUI a second time — see below |
 | `AuthorizedMembersField` + list item | 0 — via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
 | `StixCoreObjectFilesAndHistory` | 0 — via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
 
@@ -80,7 +79,7 @@ are listed here so the four adapter consumers each carry a visible reason.
 
 Empty. Every mount that was pending a decision has been converted.
 
-2 adapters + 20 parked + 0 not done = the 22 remaining mounts.
+2 adapters + 10 parked + 0 not done = the 12 remaining mounts.
 
 #### The two e2e parkings, and what is actually known
 
@@ -217,11 +216,20 @@ field exists there in either version — the labels in that container are "Sort 
 "Date attribute"), and "Attribute" twice. The only "Relative time" in the product
 is `DashboardRelativeDateSelect`, which is parked on MUI and lives elsewhere.
 
-**The open question, for whoever takes this:** the test passes on the base branch,
-so on MUI something does satisfy that locator inside that container. Establish
-what, before touching the conversion again. The conversion has now been reverted
-three times on evidence that turned out, twice, to be about something else.
+**The open question is now answered, and the cluster is converted again.**
 
-Recommendation: reconvert, and fix `DashboardWidgets.pageModel.ts` rather than the
-component — but only once someone has watched that container render on a running
-platform. Do not revert a fourth time on a locator error alone.
+`DashboardRelativeDateSelect` defaults `labelId = 'relative'` and renders
+`<InputLabel id="relative">Relative time</InputLabel>`. The MUI
+`WidgetCreationParameters` declared **three more** `id="relative"` labels
+("Interval", "Sort mode", and the date attribute one) and their Selects each set
+`labelId="relative"`, i.e. `aria-labelledby="relative"`.
+
+A DOM id must be unique. With duplicates the reference resolves to the FIRST
+`#relative` in the document, so several unrelated Selects were all announced as
+**"Relative time"** — a real pre-existing accessibility defect, and the name the
+page model was written against. Converting gave each field its own correct name
+and broke a locator that depended on the bug.
+
+So the fix belongs in the test, and that is where it went:
+`DashboardWidgets.pageModel.ts` now names the field "Date attribute", its own
+label, with `exact`.
