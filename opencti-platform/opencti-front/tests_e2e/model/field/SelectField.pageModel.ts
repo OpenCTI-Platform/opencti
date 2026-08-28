@@ -9,8 +9,13 @@ export default class SelectFieldPageModel {
     private readonly label: string,
     private readonly multiple: boolean,
     readonly rootLocator?: Locator,
+    // `getByRole` matches the accessible name by SUBSTRING, so a field named
+    // "Attribute" also resolves the one named "Date attribute" sitting beside
+    // it. Opt in where two fields in the same container share a word; left off
+    // by default so no existing call site changes behaviour.
+    private readonly exact: boolean = false,
   ) {
-    this.inputLocator = (rootLocator ?? page).getByRole('combobox', { name: label });
+    this.inputLocator = (rootLocator ?? page).getByRole('combobox', { name: label, exact });
     this.parentLocator = this.inputLocator.locator('../..');
   }
 

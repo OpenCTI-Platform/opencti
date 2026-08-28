@@ -22,8 +22,8 @@ export default class DashboardWidgetsPageModel {
     this.titleField = new TextFieldPageModel(this.page, 'Title', 'text');
     this.dateAttributeMain = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-0'));
     this.dateAttributeSub = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-1'));
-    this.attributeFieldMain = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-0'));
-    this.attributeFieldSub = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-1'));
+    this.attributeFieldMain = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-0'), true);
+    this.attributeFieldSub = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-1'), true);
   }
 
   getCreateWidgetButton() {
