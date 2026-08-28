@@ -308,7 +308,7 @@ ListCards.propTypes = {
   numberOfElements: PropTypes.object,
   helpers: PropTypes.object,
   createButton: PropTypes.object,
-  additionalHeaderButtons: PropTypes.arrayOf[React.ReactNode],
+  additionalHeaderButtons: PropTypes.arrayOf(PropTypes.node),
 };
 
 export default compose(withStyles(styles))(ListCards);

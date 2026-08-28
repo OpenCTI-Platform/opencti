@@ -70,9 +70,9 @@ const StixCoreRelationshipStixCoreRelationshipsLinesContainer = (props) => {
                 ? stixCoreRelationship.to
                 : stixCoreRelationship.from;
               const restricted = stixCoreRelationship.from === null || remoteNode === null;
-              const link = `${resolveLink(remoteNode.entity_type)}/${
-                remoteNode.id
-              }`;
+              const link = restricted
+                ? null
+                : `${resolveLink(remoteNode.entity_type)}/${remoteNode.id}`;
               return (
                 <ListItem
                   key={stixCoreRelationship.id}
@@ -101,8 +101,9 @@ const StixCoreRelationshipStixCoreRelationshipsLinesContainer = (props) => {
                   )}
                 >
                   <ListItemButton
-                    component={Link}
-                    to={link}
+                    {...(restricted
+                      ? { disabled: true }
+                      : { component: Link, to: link })}
                   >
                     <ListItemIcon>
                       <ItemIcon
@@ -113,11 +114,15 @@ const StixCoreRelationshipStixCoreRelationshipsLinesContainer = (props) => {
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        remoteNode.observable_value
-                          ? remoteNode.observable_value
-                          : remoteNode.name
+                        restricted
+                          ? t_i18n('Restricted')
+                          : remoteNode.observable_value || remoteNode.name
                       }
-                      secondary={t_i18n(`entity_${remoteNode.entity_type}`)}
+                      secondary={
+                        restricted
+                          ? t_i18n('Restricted')
+                          : t_i18n(`entity_${remoteNode.entity_type}`)
+                      }
                     />
                   </ListItemButton>
                 </ListItem>
