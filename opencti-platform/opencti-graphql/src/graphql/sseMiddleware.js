@@ -733,7 +733,6 @@ const createSseMiddleware = () => {
                           let objectsRefs = eventData.data.object_refs;
                           if (objectsRefs?.length > 0) {
                             objectsRefs = objectsRefs.filter((ref) => cache.has(ref));
-                            logApp.info('filtered objectsRefs', { objectsRefs });
                             eventData.data.object_refs = objectsRefs;
                           }
                           await client.sendEvent(eventId, event, eventData);
