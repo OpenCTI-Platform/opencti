@@ -5,7 +5,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Box, ListItemButton, Tooltip } from '@mui/material';
 import { InformationOutline } from 'mdi-material-ui';
 import type { Theme } from '../../../../components/Theme';
@@ -15,7 +15,6 @@ import { SecurityCoverageVulnerabilities_securityCoverage$data } from './__gener
 import SecurityCoverageScores from './SecurityCoverageScores';
 import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
 import ItemIcon from '../../../../components/ItemIcon';
-import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import Label from '../../../../components/common/label/Label';
 import Alert from '../../../../components/Alert';
 import { dedupeCoveredEntities } from './securityCoverageAggregation';
@@ -24,12 +23,10 @@ const MAX_VULNERABILITIES = 5000;
 
 interface SecurityCoverageVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
-  relay: RelayRefetchProp;
 }
 
 const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCoverageVulnerabilitiesProps> = ({
   securityCoverage,
-  relay,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -71,14 +68,6 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={(
-                  <StixCoreRelationshipPopover
-                    objectId={securityCoverage.id}
-                    stixCoreRelationshipId={vulnerabilityEntity.relationship_id}
-                    onDelete={() => relay.refetch({ id: securityCoverage.id })}
-                    isCoverage={true}
-                  />
-                )}
               >
                 <ListItemButton
                   component={Link}
@@ -111,15 +100,11 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
   );
 };
 
-const SecurityCoverageVulnerabilities = createRefetchContainer(
+const SecurityCoverageVulnerabilities = createFragmentContainer(
   SecurityCoverageVulnerabilitiesComponent,
   {
     securityCoverage: graphql`
       fragment SecurityCoverageVulnerabilities_securityCoverage on SecurityCoverage {
-        id
-        name
-        parent_types
-        entity_type
         vulnerabilities: coveredVulnerabilities(
           orderBy: created_at
           orderMode: asc
@@ -143,13 +128,6 @@ const SecurityCoverageVulnerabilities = createRefetchContainer(
       }
     `,
   },
-  graphql`
-    query SecurityCoverageVulnerabilitiesRefetchQuery($id: String!) {
-      securityCoverage(id: $id) {
-        ...SecurityCoverageVulnerabilities_securityCoverage
-      }
-    }
-  `,
 );
 
 export default SecurityCoverageVulnerabilities;
