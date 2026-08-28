@@ -1,5 +1,5 @@
 import React, { CSSProperties, useMemo } from 'react';
-import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
+import { Skeleton, IconButton, Box } from '@mui/material';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
 import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
+import { Checkbox } from '@filigran/design-system';
 
 const cellContainerStyle = (theme: Theme) => ({
   display: 'flex',
@@ -207,15 +208,9 @@ const DataTableLine = ({
           >
             {startsWithAction && (
               <Checkbox
+                aria-label={t_i18n('Select line')}
                 onClick={handleSelectLine}
-                sx={{
-                  marginRight: 1,
-                  flex: '0 0 auto',
-                  paddingLeft: 0,
-                  '&:hover': {
-                    background: 'transparent',
-                  },
-                }}
+                className="mr-2"
                 checked={
                   (selectAll
                     && !((data.id || 'id') in (deSelectedElements || {})))
