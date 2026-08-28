@@ -186,6 +186,12 @@ That second name existed only because the accessible-name work gave that Select 
 real label. So a correct fix surfaced a latent defect in a test selector, and the
 conversion was never at fault. The fix went in the selector, never in the labels.
 
+It took TWO fixes, and the first was not enough. With the selector disambiguated
+the trigger resolved and was clicked, and the test then timed out one step later
+on `getByRole('listbox', { name: 'Attribute' })` — the PANEL had no accessible
+name either, because the converter emits a bare `<SelectContent>`. Both the
+trigger and its listbox have to be named. The guard now checks both.
+
 A red E2E on a converted field is not evidence that the conversion is wrong. Read
 the error text before reverting: "resolved to 2 elements" and "element(s) not
 found" are opposite diagnoses.
