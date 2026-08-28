@@ -30,8 +30,10 @@ interface ExternalReferenceComponentProps {
     id: string;
     name: string;
     active: boolean;
+    only_contextual: boolean;
     connector_scope: string[];
     updated_at: string;
+    configurations: { id: string; name: string; configuration: string }[];
   }[];
 }
 

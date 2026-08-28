@@ -186,7 +186,7 @@ const FileManager = ({
   classes,
   connectorsExport,
   connectorsImport,
-  isArtifact,
+  isArtifact = false,
   directDownload = false,
 }) => {
   useInitCreateRelationshipContext();

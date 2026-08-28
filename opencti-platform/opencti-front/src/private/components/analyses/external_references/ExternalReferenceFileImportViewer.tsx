@@ -64,8 +64,8 @@ const importValidation = (t: (value: string) => string, configurations: boolean)
 
 interface ExternalReferenceFileImportViewerComponentProps {
   externalReference: ExternalReferenceFileImportViewer_entity$data;
-  disableImport: boolean;
-  connectors: Record<
+  disableImport?: boolean;
+  connectors?: Record<
     string,
     {
       id: string;

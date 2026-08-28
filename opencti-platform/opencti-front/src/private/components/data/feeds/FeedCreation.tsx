@@ -145,10 +145,10 @@ interface FeedAddInput {
 
 interface FeedCreationFormProps {
   paginationOptions: PaginationOptions;
-  open: boolean;
-  isDuplicated: boolean;
-  onDrawerClose: () => void;
-  feed: FeedAddInput | undefined;
+  open?: boolean;
+  isDuplicated?: boolean;
+  onDrawerClose?: () => void;
+  feed?: FeedAddInput | undefined;
 }
 
 const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
@@ -200,7 +200,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     helpers.handleClearAllFilters();
     setFeedAttributes({ 0: {} });
     if (isDuplicated) {
-      onDrawerClose();
+      onDrawerClose?.();
     }
   };
 

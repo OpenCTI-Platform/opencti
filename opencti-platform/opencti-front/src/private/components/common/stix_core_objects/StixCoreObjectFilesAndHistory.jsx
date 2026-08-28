@@ -142,8 +142,8 @@ const StixCoreObjectFilesAndHistory = ({
   classes,
   connectorsExport,
   connectorsImport,
-  withoutRelations,
-  bypassEntityId,
+  withoutRelations = false,
+  bypassEntityId = false,
 }) => {
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
