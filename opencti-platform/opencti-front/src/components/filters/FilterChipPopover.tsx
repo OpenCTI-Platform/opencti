@@ -1,27 +1,12 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import { AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
-import {
-  Chip,
-  Combobox,
-  ComboboxChips,
-  ComboboxClear,
-  ComboboxContent,
-  ComboboxControls,
-  ComboboxField,
-  ComboboxInput,
-  ComboboxLabel,
-  ComboboxTrigger,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@filigran/design-system';
+import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
+import { Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Checkbox from '@mui/material/Checkbox';
 import Popover from '@mui/material/Popover';
 import { useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { addDays, subDays } from 'date-fns';
 import { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
@@ -339,72 +324,90 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     };
 
     return (
-      <Combobox<FilterOptionValue>
+      <Autocomplete
+        // FDS-ORNAMENT: stays on MUI for this round. Its input endAdornment
+        // carries the search-scope selector for STIX object types, which is the
+        // gap #155 closes with `adornment` on ComboboxField. FIFTH ornament site.
+        // See fds-migration/LIBRARY-FEEDBACK.md
         multiple
         key={fKey}
-        className="w-full"
         value={selectedOptions}
         inputValue={autocompleteInputValues[fKey] || ''}
         getOptionLabel={(option) => option.label ?? ''}
+        noOptionsText={t_i18n('No available options')}
         options={options}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        onInputChange={(newInputValue, meta) => {
-          if (meta.cause === 'type' || meta.cause === 'clear') {
+        onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
+          if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
             setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: newInputValue }));
           }
-          if (meta.cause === 'type') {
+          if (event && reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT) {
             const syntheticEvent = { target: { value: newInputValue } } as unknown as SyntheticEvent;
             searchEntities(fKey, cacheEntities, setCacheEntities, syntheticEvent, !!subKey);
           }
         }}
-        onValueChange={(next, meta) => {
-          // The handler branches on MUI's reason, which the library's cause
-          // vocabulary does not reproduce one-to-one: removing a single chip
-          // reports 'clear', same as emptying the field. The reason is derived
-          // from the value delta instead, which is what MUI's own reasons mean.
-          const nextValues = (next ?? []) as FilterOptionValue[];
-          const reason = nextValues.length === 0
-            ? AUTOCOMPLETE_KEY_ACTIONS.CLEAR
-            : (nextValues.length > selectedOptions.length
-                ? AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION
-                : AUTOCOMPLETE_KEY_ACTIONS.REMOVE_OPTION);
-          handleAutocompleteChange(meta.event as SyntheticEvent, nextValues, reason as AutocompleteChangeReason);
-        }}
+        onChange={handleAutocompleteChange}
+        disableCloseOnSelect
         isOptionEqualToValue={(option, val) => option.value === val.value}
-        isOptionDisabled={(option) => {
-          const actualFilterValues = subKey ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? [] : filterValues;
-          return disabled && actualFilterValues.includes(option.value) && actualFilterValues.length === 1;
-        }}
-        renderOption={(option) => {
+        renderInput={(paramsInput) => (
+          <TextField
+            {...paramsInput}
+            slotProps={{
+              input: {
+                ...paramsInput.InputProps,
+                endAdornment: isStixObjectTypes.includes(fKey)
+                  ? renderSearchScopeSelection(fKey)
+                  : paramsInput.InputProps.endAdornment,
+              },
+            }}
+            label={t_i18n(fLabel)}
+            variant="outlined"
+            size="small"
+            fullWidth={true}
+            autoFocus={true}
+            onFocus={(event) => {
+              searchEntities(
+                fKey,
+                cacheEntities,
+                setCacheEntities,
+                event,
+                !!subKey,
+              );
+            }}
+          />
+        )}
+        renderOption={(props, option) => {
           const actualFilterValues = subKey ? filterValues.filter((fVal) => fVal && fVal.key === subKey).at(0)?.values ?? [] : filterValues;
           const checked = actualFilterValues.includes(option.value);
+          const disabledOptions = disabled && checked && actualFilterValues.length === 1;
+
+          // Extract key from props to avoid React warning
+          const { key, ...otherProps } = props;
+
           return (
-            <Tooltip title={option.label} followCursor>
-              <span style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                <Checkbox checked={checked} />
+            <Tooltip title={option.label} key={key || option.value} followCursor>
+              <li
+                {...otherProps}
+                aria-disabled={disabledOptions}
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  padding: 0,
+                  margin: 0,
+                  pointerEvents: disabledOptions ? 'none' : undefined,
+                }}
+              >
+                <Checkbox checked={checked} disabled={disabledOptions} />
                 <ItemIcon type={option.type} color={option.color} />
-                <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
-              </span>
+                <span style={{ padding: '0 4px 0 4px' }}>
+                  {option.label}
+                </span>
+              </li>
             </Tooltip>
           );
         }}
-      >
-        <ComboboxLabel>{t_i18n(fLabel)}</ComboboxLabel>
-        {/* #155: the search-scope selector is interactive, so it takes the
-            host-owned `adornment` slot rather than a presentational icon. */}
-        <ComboboxField adornment={isStixObjectTypes.includes(fKey) ? renderSearchScopeSelection(fKey) : undefined}>
-          <ComboboxChips aria-label={t_i18n(fLabel)} />
-          <ComboboxInput
-            autoFocus
-            onFocus={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey)}
-          />
-          <ComboboxControls>
-            <ComboboxClear />
-            <ComboboxTrigger />
-          </ComboboxControls>
-        </ComboboxField>
-        <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n(fLabel)} />
-      </Combobox>
+      />
     );
   };
   const getSpecificFilter = (fDefinition?: FilterDefinition, subKey?: string, disabled = false): ReactNode => {
