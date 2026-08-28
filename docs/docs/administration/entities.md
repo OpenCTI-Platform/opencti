@@ -53,10 +53,7 @@ In addition, the available statuses are defined by a collection of status templa
 
 ### Entity status sync between platforms
 
-!!! note "Experimental feature"
-    Entity status sync is an experimental feature: its behavior may evolve in future releases.
-
-By default, when an entity is imported from another OpenCTI platform through an [OpenCTI-to-OpenCTI live stream synchronizer](../usage/import/internal-streams.md), its processing status isn't preserved: the remote platform's internal status reference isn't recognized locally, so the imported entity ends up with no visible "Processing status" udpate.
+By default, when an entity is imported from another OpenCTI platform through an [OpenCTI-to-OpenCTI live stream synchronizer](../usage/import/internal-streams.md), its processing status isn't preserved: the remote platform's internal status reference isn't recognized locally, so the imported entity ends up with no visible "Processing status" update.
 
 Enable **Entity status sync** to keep the processing status consistent across platforms instead, provided both platforms define a Workflow with statuses that share the same name for that entity type.
 
