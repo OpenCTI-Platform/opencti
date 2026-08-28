@@ -88,19 +88,22 @@ const AskArianeButton = () => {
 
   return (
     <>
-      <EETooltip
-        title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
-      >
-        <Button
-          variant="ia"
-          priority="tertiary"
-          onClick={toggleChatbot}
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+      {/* The EE badge is a sibling at a 4px gap, never nested in the button. */}
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        <EETooltip
+          title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
         >
-          {t_i18n('Ask Ariane')}
-          <EEChip clickable={false} style={{ marginInlineStart: 8 }} />
-        </Button>
-      </EETooltip>
+          <Button
+            variant="ia"
+            priority="tertiary"
+            onClick={toggleChatbot}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+          >
+            {t_i18n('Ask Ariane')}
+          </Button>
+        </EETooltip>
+        <EEChip clickable={false} style={{ marginInlineStart: 0 }} />
+      </span>
 
       {/* V3 XTM One panel (xtm_one_token configured) */}
       {isChatbotEnabled && isOpen && !useLegacy && xtmOneConfigured === true && (
