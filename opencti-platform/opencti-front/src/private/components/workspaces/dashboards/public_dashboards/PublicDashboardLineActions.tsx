@@ -1,6 +1,7 @@
 import { PublicDashboards_PublicDashboard$data } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboards_PublicDashboard.graphql';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { IconButton, Menu, MenuItem, MenuProps } from '@mui/material';
+import { Menu, MenuItem, MenuProps } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
@@ -88,12 +89,12 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
   return (
     <>
       <IconButton
+        variant="default"
+        priority="tertiary"
         aria-label={t_i18n('Open menu')}
         onClick={(event) => setAnchor(event.currentTarget)}
-        color="primary"
-      >
-        <MoreVert />
-      </IconButton>
+        icon={<MoreVert />}
+      />
 
       <Menu
         key={publicDashboard.uri_key}

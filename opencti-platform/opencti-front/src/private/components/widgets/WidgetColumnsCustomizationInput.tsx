@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
+import { List, ListItem, ListItemIcon, ListItemText, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
@@ -91,9 +92,13 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                               height: 42,
                             }}
                             secondaryAction={(
-                              <IconButton aria-label={t_i18n('Close')} onClick={() => handleToggleColumn(column.attribute)}>
-                                <Close />
-                              </IconButton>
+                              <IconButton
+                                variant="default"
+                                priority="tertiary"
+                                aria-label={t_i18n('Close')}
+                                onClick={() => handleToggleColumn(column.attribute)}
+                                icon={<Close />}
+                              />
                             )}
                           >
                             <ListItemIcon {...providedDrag.dragHandleProps}>

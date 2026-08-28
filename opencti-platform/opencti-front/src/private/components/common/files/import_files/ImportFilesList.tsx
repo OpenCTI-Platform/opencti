@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Collapse, Grid, IconButton, List, ListItem, MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Collapse, Grid, List, ListItem, MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { TransitionGroup } from 'react-transition-group';
 import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFilesDialog';
@@ -362,13 +363,12 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                   {/* Column 5: Delete Button */}
                   <Grid item xs={0.5}>
                     <IconButton
+                      variant="default"
+                      priority="tertiary"
                       aria-label={t_i18n('Remove file')}
-                      edge="end"
                       onClick={() => removeFile(file.name)}
-                      color="primary"
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
+                      icon={<DeleteOutlined />}
+                    />
                   </Grid>
                 </Grid>
               </ListItem>

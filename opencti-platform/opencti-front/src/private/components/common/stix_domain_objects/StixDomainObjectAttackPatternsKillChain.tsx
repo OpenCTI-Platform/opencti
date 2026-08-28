@@ -27,7 +27,7 @@ import StixCoreRelationships from '@components/common/stix_core_relationships/St
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
-import { IconButton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import {
   StixDomainObjectAttackPatternsKillChainOverlapQuery$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainOverlapQuery.graphql';
@@ -347,11 +347,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   }
                 >
                   <IconButton
-                    color={isModeOnlyActive ? 'secondary' : 'primary'}
+                    variant="default"
+                    priority="tertiary"
+                    active={isModeOnlyActive}
+                    aria-label={
+                      isModeOnlyActive
+                        ? t_i18n('Display the whole matrix')
+                        : t_i18n('Display only used techniques')
+                    }
                     onClick={() => setIsModeOnlyActive((value) => !value)}
-                  >
-                    <VisibilityOutlined />
-                  </IconButton>
+                    icon={<VisibilityOutlined />}
+                  />
                 </Tooltip>
               </Stack>
 

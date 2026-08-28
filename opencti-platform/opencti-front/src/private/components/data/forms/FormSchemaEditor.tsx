@@ -8,7 +8,6 @@ import {
   Box,
   FormControl,
   FormControlLabel,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -18,6 +17,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Formik, useFormikContext } from 'formik';
 import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -585,16 +585,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {field.label || t_i18n('New Field')}
           </Typography>
           <IconButton
+            variant="default"
+            priority="tertiary"
             aria-label={t_i18n('Delete')}
-            size="small"
+            size="sm"
             onClick={() => {
               const updatedRelationships = [...formData.relationships];
               updatedRelationships[relationshipIndex].fields = updatedRelationships[relationshipIndex].fields?.filter((_field, i) => i !== index);
               updateFormData((prev) => ({ ...prev, relationships: updatedRelationships }));
             }}
-          >
-            <DeleteOutlined color="primary" />
-          </IconButton>
+            icon={<DeleteOutlined />}
+          />
         </div>
 
         <TextField
@@ -781,31 +782,34 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Typography>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
+              variant="default"
+              priority="tertiary"
               aria-label={t_i18n('Move up')}
-              size="small"
+              size="sm"
               onClick={() => handleMoveFieldUp(entityId, field.id)}
               disabled={isFirstInEntity}
               title={t_i18n('Move up')}
-            >
-              <ArrowUpward fontSize="small" color={isFirstInEntity ? 'disabled' : 'primary'} />
-            </IconButton>
+              icon={<ArrowUpward fontSize="small" />}
+            />
             <IconButton
+              variant="default"
+              priority="tertiary"
               aria-label={t_i18n('Move down')}
-              size="small"
+              size="sm"
               onClick={() => handleMoveFieldDown(entityId, field.id)}
               disabled={isLastInEntity}
               title={t_i18n('Move down')}
-            >
-              <ArrowDownward fontSize="small" color={isLastInEntity ? 'disabled' : 'primary'} />
-            </IconButton>
+              icon={<ArrowDownward fontSize="small" />}
+            />
             {(!field.isMandatory || isInParsedMode) && (
               <IconButton
+                variant="default"
+                priority="tertiary"
                 aria-label={t_i18n('Delete')}
-                size="small"
+                size="sm"
                 onClick={() => handleRemoveField(field.id)}
-              >
-                <DeleteOutlined fontSize="small" color="primary" />
-              </IconButton>
+                icon={<DeleteOutlined fontSize="small" />}
+              />
             )}
           </div>
         </div>
@@ -984,15 +988,16 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                     style={{ flex: 1, marginRight: 10 }}
                   />
                   <IconButton
+                    variant="default"
+                    priority="tertiary"
                     aria-label={t_i18n('Delete')}
-                    size="small"
+                    size="sm"
                     onClick={() => {
                       const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
                       handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
                     }}
-                  >
-                    <DeleteOutlined fontSize="small" color="primary" />
-                  </IconButton>
+                    icon={<DeleteOutlined fontSize="small" />}
+                  />
                 </Box>
               ))}
               <Button
@@ -1135,13 +1140,14 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {displayLabel}
           </Typography>
           <IconButton
+            variant="default"
+            priority="tertiary"
             aria-label={t_i18n('Remove')}
-            size="small"
+            size="sm"
             onClick={() => handleRemoveAdditionalEntity(entity.id)}
-            style={{ alignSelf: 'flex-start' }}
-          >
-            <DeleteOutlined color="primary" />
-          </IconButton>
+            className="self-start"
+            icon={<DeleteOutlined />}
+          />
         </div>
 
         <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
@@ -1463,12 +1469,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Relationship')} {index + 1}
           </Typography>
           <IconButton
+            variant="default"
+            priority="tertiary"
             aria-label={t_i18n('Remove')}
-            size="small"
+            size="sm"
             onClick={() => handleRemoveRelationship(relationship.id)}
-          >
-            <DeleteOutlined color="primary" />
-          </IconButton>
+            icon={<DeleteOutlined />}
+          />
         </div>
 
         <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>

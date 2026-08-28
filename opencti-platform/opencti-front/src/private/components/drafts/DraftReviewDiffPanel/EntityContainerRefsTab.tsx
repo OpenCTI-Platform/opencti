@@ -1,9 +1,8 @@
 import React, { FunctionComponent, Suspense } from 'react';
+import { Chip, IconButton } from '@filigran/design-system';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import LaunchIcon from '@mui/icons-material/Launch';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
@@ -71,9 +70,7 @@ const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabC
               <Box sx={{ width: 120 }}>
                 <Chip
                   label={isAdd ? t_i18n('Added to') : t_i18n('Removed from')}
-                  color={isAdd ? 'success' : 'error'}
-                  size="small"
-                  sx={{ borderRadius: '4px', height: 24, fontSize: 12, fontWeight: 600 }}
+                  severity={isAdd ? 'low' : 'critical'}
                 />
               </Box>
               <Box sx={{ flex: 1, pr: 2 }}>
@@ -87,15 +84,14 @@ const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabC
                 </Typography>
                 {containerLink && (
                   <IconButton
+                    asChild
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     aria-label={t_i18n('Open link in new tab')}
-                    component={Link}
-                    to={containerLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="small"
-                    sx={{ width: 26, height: 26, borderRadius: '4px', color: 'primary.main', backgroundColor: 'action.hover', flexShrink: 0 }}
+                    icon={<LaunchIcon sx={{ fontSize: 18 }} />}
                   >
-                    <LaunchIcon sx={{ fontSize: 18 }} />
+                    <Link to={containerLink} target="_blank" rel="noopener noreferrer" />
                   </IconButton>
                 )}
               </Box>

@@ -6,7 +6,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { HelpOutlined, MoreVertOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
@@ -25,7 +25,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import { alpha } from '@mui/material/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -33,24 +32,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-  },
-  positive: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
-    color: theme.palette.error.main,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  negative: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
-    color: theme.palette.success.main,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -299,11 +280,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 style={{ width: dataColumns.x_opencti_negative.width }}
               >
                 <Chip
-                  classes={{
-                    root: data.x_opencti_negative
-                      ? classes.negative
-                      : classes.positive,
-                  }}
+                  severity={data.x_opencti_negative ? 'low' : 'critical'}
                   label={
                     data.x_opencti_negative
                       ? t_i18n('False positive')

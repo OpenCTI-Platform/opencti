@@ -4,8 +4,8 @@ import * as Yup from 'yup';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
-import { FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from '@mui/material';
-import { Paper } from '@filigran/design-system';
+import { FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { IconButton, Paper } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
@@ -266,13 +266,13 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               {t_i18n('Ticks')}
             </Typography>
             <IconButton
-              color="secondary"
+              variant="default"
+              priority="tertiary"
+              className={classes.createButton}
               aria-label="Add"
               onClick={addTickRow}
-              classes={{ root: classes.createButton }}
-            >
-              <Add fontSize="small" />
-            </IconButton>
+              icon={<Add fontSize="small" />}
+            />
           </div>
           {tickDefinition.ticks.map((tick, index) => (
             <ScaleConfigurationLine

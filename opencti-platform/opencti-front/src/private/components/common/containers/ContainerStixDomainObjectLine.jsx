@@ -10,7 +10,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
@@ -47,24 +47,6 @@ const useStyles = makeStyles((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chip: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-  chipNoLink: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -192,16 +174,13 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                   'Data-Source',
                 ].includes(node.entity_type) ? (
                       <Chip
-                        classes={{ root: classes.chipNoLink }}
+                        severity="neutral"
                         label={n(node.containersNumber.total)}
                       />
                     ) : (
-                      <Chip
-                        classes={{ root: classes.chip }}
-                        label={n(node.containersNumber.total)}
-                        component={Link}
-                        to={linkAnalyses}
-                      />
+                      <Link to={linkAnalyses}>
+                        <Chip severity="neutral" label={n(node.containersNumber.total)} />
+                      </Link>
                     )}
               </div>
               <div

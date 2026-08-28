@@ -1,6 +1,6 @@
 import { Handle, NodeProps, Position } from 'reactflow';
-import { hexToRGB } from '../../../../../../utils/Colors';
-import { Chip, useTheme } from '@mui/material';
+import { useTheme } from '@mui/material';
+import { Chip } from '@filigran/design-system';
 import { NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 
@@ -26,19 +26,16 @@ const StatusNode = ({ id, data }: NodeProps) => {
       />
       <Chip
         key={id}
+        color={color}
         style={{
           fontSize: 12,
           height: NODE_SIZE.height,
           textTransform: 'uppercase',
           borderRadius: 4,
-          backgroundColor: hexToRGB(color),
-          color: color,
-          border: `1px solid ${color}`,
           minWidth: NODE_SIZE.width,
           cursor: 'pointer',
           position: 'relative',
         }}
-        variant="outlined"
         label={snakeCaseToSentenceCase(name)}
       />
       <Handle

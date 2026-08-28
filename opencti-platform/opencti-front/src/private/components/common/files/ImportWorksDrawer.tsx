@@ -8,10 +8,9 @@ import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/imp
 import { ArchitectureOutlined, DeleteOutlined } from '@mui/icons-material';
 import { DrawerProps, Tooltip } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import { useTheme } from '@mui/styles';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
@@ -20,9 +19,7 @@ import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { Theme } from '../../../../components/Theme';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
-import { hexToRGB } from '../../../../utils/Colors';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$variables } from './__generated__/ImportWorksDrawerQuery.graphql';
 
@@ -146,7 +143,6 @@ const FileWorksComponent = ({
   queryRef: PreloadedQuery<ImportWorksDrawerQuery>;
   refetch: () => void;
 }) => {
-  const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
@@ -236,14 +232,14 @@ const FileWorksComponent = ({
           </>
         );
 
-        const color = useMemo(() => {
+        const severity = useMemo(() => {
           if (isError) {
-            return theme.palette.error.main;
+            return 'critical' as const;
           }
           if (status === 'progress' || status === 'wait') {
-            return theme.palette.warn.main;
+            return 'high' as const;
           }
-          return theme.palette.success.main;
+          return 'low' as const;
         }, [isError, status]);
         return (
           <Tooltip
@@ -259,20 +255,9 @@ const FileWorksComponent = ({
             }}
           >
             <Chip
-              variant="outlined"
               label={isError ? t_i18n('Error') : t_i18n(status)}
-              style={{
-                fontSize: 12,
-                lineHeight: '12px',
-                height: 20,
-                float: 'left',
-                textTransform: 'uppercase',
-                borderRadius: 4,
-                width: 90,
-                color,
-                borderColor: color,
-                backgroundColor: hexToRGB(color),
-              }}
+              severity={severity}
+              style={{ float: 'left' }}
             />
           </Tooltip>
         );

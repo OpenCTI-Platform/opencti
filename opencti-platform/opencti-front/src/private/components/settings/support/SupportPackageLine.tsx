@@ -10,20 +10,17 @@ import { DeleteOutlined, DownloadingOutlined, GetAppOutlined } from '@mui/icons-
 import Tooltip from '@mui/material/Tooltip';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CircularProgress from '@mui/material/CircularProgress';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { SupportPackageLineForceZipMutation$data } from '@components/settings/support/__generated__/SupportPackageLineForceZipMutation.graphql';
 import { APP_BASE_PATH, handleError, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { deleteNode } from '../../../../utils/store';
-import { hexToRGB } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { minutesBetweenDates, now } from '../../../../utils/Time';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../../components/Theme';
 
 const styles = {
   bodyItem: {
@@ -50,8 +47,6 @@ const styles = {
     textOverflow: 'ellipsis',
   },
 };
-
-type PackageStatus = 'IN_PROGRESS' | 'READY' | 'IN_ERROR' | 'TIMEOUT' | '%future added value';
 
 const SupportPackageLineForceZipMutation = graphql`
   mutation SupportPackageLineForceZipMutation(    
@@ -96,13 +91,12 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   paginationOptions,
   dataColumns,
 }) => {
-  const theme = useTheme<Theme>();
-  const packageStatusColors: { [key in PackageStatus]: string } = {
-    IN_PROGRESS: theme.palette.primary.main || '#0fbcff',
-    READY: theme.palette.success.main || '#17AB1F',
-    IN_ERROR: theme.palette.error.main || '#F14337',
-    TIMEOUT: theme.palette.error.main || '#F14337',
-    '%future added value': theme.palette.common.grey || '#95969D',
+  const packageStatusSeverity: Record<string, 'info' | 'low' | 'critical' | 'neutral'> = {
+    IN_PROGRESS: 'info',
+    READY: 'low',
+    IN_ERROR: 'critical',
+    TIMEOUT: 'critical',
+    '%future added value': 'neutral',
   };
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);
@@ -224,13 +218,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               </div>
               <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem, paddingLeft: 15 }}>
                 <Chip
-                  style={{
-                    color: packageStatusColors[finalStatus],
-                    borderColor: packageStatusColors[finalStatus],
-                    backgroundColor: hexToRGB(packageStatusColors[finalStatus]),
-                    ...styles.chipInList,
-                    ...styles.label,
-                  }}
+                  severity={packageStatusSeverity[finalStatus]}
                   label={t_i18n(finalStatus)}
                 />
               </div>

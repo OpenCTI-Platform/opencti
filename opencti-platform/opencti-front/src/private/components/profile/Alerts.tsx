@@ -7,8 +7,7 @@ import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { Badge, Tooltip } from '@mui/material';
-import Chip from '@mui/material/Chip';
-import { indigo } from '@mui/material/colors';
+import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import { FunctionComponent, Suspense, useState } from 'react';
@@ -19,8 +18,6 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import { chipInListBasicStyle } from '../../../utils/chipStyle';
-import { hexToRGB } from '../../../utils/Colors';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -31,7 +28,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
-import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { getFirstOperation, iconSelector } from './notifications/notificationUtils';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
@@ -132,6 +129,22 @@ interface AlertsLineActionsProps {
   data: AlertsLine_node$data;
   setNotificationToDelete: (notification: AlertsLine_node$data) => void;
 }
+
+// Event type is categorical, so the tone carries the distinction without
+// asserting a level: create -> low, update -> info, delete -> critical,
+// several at once -> medium.
+const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
+  switch (operation) {
+    case 'update':
+      return 'info';
+    case 'delete':
+      return 'critical';
+    case 'multiple':
+      return 'medium';
+    default:
+      return 'low';
+  }
+};
 
 const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   data,
@@ -278,21 +291,13 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
         return (
           <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
             <Chip
-              style={{ fontSize: 12,
-                height: 20,
-                float: 'left',
-                width: 150,
-                textTransform: 'uppercase',
-                borderRadius: 4,
-                backgroundColor: hexToRGB(colors[firstOperation] ?? indigo[500], 0.08),
-                color: colors[firstOperation] ?? indigo[500],
-                border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
-              }}
+              severity={operationSeverity(firstOperation)}
               label={
                 events.length > 1
                   ? t_i18n('Multiple')
                   : (eventTypes[firstOperation] ?? firstOperation)
               }
+              style={{ float: 'left' }}
             />
           </div>
         );
@@ -348,16 +353,9 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           >
             <Tooltip title={name ?? EMPTY_VALUE}>
               <Chip
-                style={{
-                  ...chipInListBasicStyle,
-                  width: 100,
-                  marginRight: 10,
-                }}
-                color={notification_type === 'live'
-                  ? 'warning'
-                  : 'secondary'}
-                variant="outlined"
+                severity={notification_type === 'live' ? 'high' : 'info'}
                 label={name ?? EMPTY_VALUE}
+                style={{ marginRight: 10 }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
