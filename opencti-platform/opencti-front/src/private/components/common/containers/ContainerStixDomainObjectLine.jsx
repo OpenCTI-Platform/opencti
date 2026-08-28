@@ -5,12 +5,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
-import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
@@ -25,6 +24,7 @@ import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -47,24 +47,6 @@ const useStyles = makeStyles((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chip: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-  chipNoLink: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -127,7 +109,6 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           }
         >
           <Checkbox
-            edge="start"
             disabled={isOnlyThroughInference}
             checked={
               (selectAll
@@ -135,7 +116,6 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 && !(node.id in (deSelectedElements || {})))
               || node.id in (selectedElements || {})
             }
-            disableRipple={true}
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -192,16 +172,13 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                   'Data-Source',
                 ].includes(node.entity_type) ? (
                       <Chip
-                        classes={{ root: classes.chipNoLink }}
+                        severity="neutral"
                         label={n(node.containersNumber.total)}
                       />
                     ) : (
-                      <Chip
-                        classes={{ root: classes.chip }}
-                        label={n(node.containersNumber.total)}
-                        component={Link}
-                        to={linkAnalyses}
-                      />
+                      <Link to={linkAnalyses}>
+                        <Chip severity="neutral" label={n(node.containersNumber.total)} />
+                      </Link>
                     )}
               </div>
               <div
@@ -390,7 +367,9 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox
+          disabled={true}
+        />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />

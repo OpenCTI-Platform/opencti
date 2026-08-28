@@ -3,7 +3,6 @@ import IconButton from '@common/button/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -39,6 +38,7 @@ import FormFields from './FormFields';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import TextareaField from '../../../../../components/TextareaField';
+import { Checkbox } from '@filigran/design-system';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -971,7 +971,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                   control={(
                     <Checkbox
                       checked={isDraft}
-                      onChange={(e) => setIsDraft(e.target.checked)}
+                      onCheckedChange={(checked) => setIsDraft(checked === true)}
                       disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                     />
                   )}

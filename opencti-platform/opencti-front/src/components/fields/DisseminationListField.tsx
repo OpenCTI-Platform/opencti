@@ -1,10 +1,9 @@
 import { graphql } from 'react-relay';
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import MenuItem from '@mui/material/MenuItem';
 import { Field } from 'formik';
 import { DisseminationListFieldQuery$data } from './__generated__/DisseminationListFieldQuery.graphql';
 import { fetchQuery } from '../../relay/environment';
-import SelectField from './SelectField';
+import SelectFieldFds, { SelectItem } from './SelectFieldFds';
 import { useFormatter } from '../i18n';
 
 export const disseminationListFieldQuery = graphql`
@@ -46,15 +45,15 @@ const DisseminationListField: FunctionComponent = () => {
 
   return (
     <Field
-      component={SelectField}
+      component={SelectFieldFds}
       label={t_i18n('Dissemination list')}
       name="disseminationListId"
       required
     >
       {lists?.edges?.map((edge) => (
-        <MenuItem key={edge.node.id} value={edge.node.id}>
+        <SelectItem key={edge.node.id} value={edge.node.id}>
           {edge.node.name}
-        </MenuItem>
+        </SelectItem>
       ))}
     </Field>
   );

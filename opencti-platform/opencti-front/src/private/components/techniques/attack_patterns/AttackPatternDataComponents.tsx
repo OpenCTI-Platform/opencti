@@ -84,6 +84,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                     <Tooltip title={t_i18n('Delete relationship')}>
                       <IconButton
                         onClick={() => removeDataComponent(dataComponent.id)}
+                        aria-label={t_i18n('Delete relationship')}
                       >
                         <Delete />
                       </IconButton>

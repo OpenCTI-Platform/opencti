@@ -247,7 +247,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               label={t_i18n('Latitude')}
               required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
@@ -255,7 +255,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               label={t_i18n('Longitude')}
               required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatedByField
               name="createdBy"

@@ -143,7 +143,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       {({ isSubmitting, handleReset, submitForm, setFieldValue, values }) => (
         <Form>
           <Field
-            style={{ marginBottom: 20 }}
+            className="mb-5"
             component={TextField}
             variant="standard"
             name="name"

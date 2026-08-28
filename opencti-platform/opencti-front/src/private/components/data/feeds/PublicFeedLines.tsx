@@ -5,7 +5,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItem from '@mui/material/ListItem';
-import { IconButton, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { ContentCopy, OpenInNew } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { FeedLineDummy } from './FeedLine';
@@ -123,14 +124,22 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
       secondaryAction={(
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your csv client')}>
-            <IconButton onClick={copyClick} color="primary">
-              <ContentCopy />
-            </IconButton>
+            <IconButton
+              onClick={copyClick}
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n('Copy uri to clipboard for your csv client')}
+              icon={<ContentCopy />}
+            />
           </Tooltip>
           <Tooltip title={t_i18n('Access CSV feeds directly in your browser')}>
-            <IconButton onClick={browseClick} color="primary">
-              <OpenInNew />
-            </IconButton>
+            <IconButton
+              onClick={browseClick}
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n('Access CSV feeds directly in your browser')}
+              icon={<OpenInNew />}
+            />
           </Tooltip>
         </>
       )}

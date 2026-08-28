@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../components/Theme';
@@ -89,16 +90,14 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
       {resourceLink && (
         <Tooltip title={t_i18n('Open in XTM Hub')}>
           <IconButton
-            component="a"
-            href={resourceLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            size="small"
-            color="primary"
+            asChild
+            variant="default"
+            priority="tertiary"
+            size="sm"
             aria-label={t_i18n('Open in XTM Hub')}
-            sx={{ flexShrink: 0 }}
+            icon={<OpenInNewOutlined fontSize="small" />}
           >
-            <OpenInNewOutlined fontSize="small" />
+            <a href={resourceLink} target="_blank" rel="noopener noreferrer" />
           </IconButton>
         </Tooltip>
       )}

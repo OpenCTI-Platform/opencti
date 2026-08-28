@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { Autocomplete, TextField } from '@mui/material';
+import { Combobox, type ComboboxChangeMeta, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { AssociatedEntityFieldQuery$data } from './__generated__/AssociatedEntityFieldQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
@@ -58,8 +58,10 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
   const [inputValue, setInputValue] = useState<string>('');
   const [value, setValue] = useState<AssociatedEntityOption | null>(null);
 
-  const searchAssociatedEntities = (event: React.SyntheticEvent, newValue?: string) => {
-    if (!event) return;
+  // The `if (!event) return` guard is gone with the event: MUI reported an input
+  // change for every reason, and only a real one carried an event. The cause
+  // vocabulary says the same thing without the sentinel.
+  const searchAssociatedEntities = (newValue?: string) => {
     setInputValue(newValue || '');
     fetchQuery(associatedEntityFieldQuery, {
       search: newValue ?? '',
@@ -84,7 +86,9 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
       });
   };
 
-  const handleChangeSelectedValue = (event: React.SyntheticEvent, newSelectedValue: AssociatedEntityOption | null) => {
+  const handleChangeSelectedValue = (newSelectedValue: AssociatedEntityOption | null, event?: React.SyntheticEvent | Event | null) => {
+    // Kept: this field sits inside clickable rows, and the original stopped the
+    // selection from bubbling into them.
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -94,42 +98,44 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
   };
 
   return (
-    <Autocomplete
-      size="small"
-      fullWidth={true}
+    <Combobox<AssociatedEntityOption>
       selectOnFocus={true}
-      autoHighlight={true}
-      getOptionLabel={(option) => (option.label ?? '')}
+      getOptionLabel={(option) => (option?.label ?? '')}
       value={value ?? null}
       multiple={false}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          name={name}
-          variant="standard"
-          label={label}
-          fullWidth={true}
-          onFocus={searchAssociatedEntities}
-          style={{ marginTop: 3 }}
-        />
-      )}
-      noOptionsText={t_i18n('No available options')}
       options={associatedEntities}
-      onInputChange={searchAssociatedEntities}
+      onInputChange={(newValue: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') searchAssociatedEntities(newValue);
+      }}
       inputValue={inputValue || ''}
-      onChange={handleChangeSelectedValue}
+      onValueChange={(next, meta) => handleChangeSelectedValue(
+        next as AssociatedEntityOption | null,
+        meta.event,
+      )}
       isOptionEqualToValue={(option, val) => {
         return option.value === val.value;
       }}
-      renderOption={(props, option) => (
-        <li {...props} key={props.key || ''}>
+      renderOption={(option) => (
+        <>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>
             <ItemIcon type={option.type} />
           </div>
           <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
-        </li>
+        </>
       )}
-    />
+    >
+      <ComboboxLabel>{label}</ComboboxLabel>
+      <ComboboxField>
+        <ComboboxInput name={name} onFocus={() => searchAssociatedEntities('')} />
+        <ComboboxControls>
+          <ComboboxTrigger />
+        </ComboboxControls>
+      </ComboboxField>
+      <ComboboxContent
+        emptyMessage={t_i18n('No available options')}
+        listAriaLabel={label}
+      />
+    </Combobox>
   );
 };
 

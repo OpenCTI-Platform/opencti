@@ -10,7 +10,6 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
@@ -19,7 +18,7 @@ import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { truncate } from '../../../../utils/String';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
@@ -526,7 +525,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 </div>
               </div>
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="relationship_type"
                 label={t('Relationship type')}
@@ -535,9 +534,9 @@ class StixNestedRefRelationshipCreation extends Component {
               >
                 {R.map(
                   (type) => (
-                    <MenuItem key={type} value={type}>
+                    <SelectItem key={type} value={type}>
                       {t(`relationship_${type}`)}
-                    </MenuItem>
+                    </SelectItem>
                   ),
                   relationshipTypes,
                 )}

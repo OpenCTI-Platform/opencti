@@ -318,7 +318,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
                 name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
             </>
           )}

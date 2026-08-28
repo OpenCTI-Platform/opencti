@@ -193,6 +193,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
             <Tag
               key={tag}
               label={tag}
+              deleteLabel={`${t_i18n('Remove')} ${tag}`}
               onDelete={deleteTag(tag)}
             />
           ),

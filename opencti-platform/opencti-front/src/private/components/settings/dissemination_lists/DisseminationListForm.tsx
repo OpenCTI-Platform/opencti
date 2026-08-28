@@ -11,6 +11,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import { parseEmailList } from '../../../../utils/email';
 import { MESSAGING$ } from '../../../../relay/environment';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import TextareaField from '../../../../components/TextareaField';
 
 export interface DisseminationListFormData {
   name: string;
@@ -85,14 +86,12 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
             style={{ marginTop: theme.spacing(2) }}
           />
           <Field
-            component={TextField}
+            component={TextareaField}
             name="emails"
             label={t_i18n('Emails (1 / line)')}
             onSubmit={onUpdate}
-            fullWidth={true}
-            multiline={true}
             rows={20}
-            style={{ marginTop: theme.spacing(2) }}
+            className="mt-4"
             required
             onBeforePaste={(pastedText: string) => {
               // on pasting data, we try to extract emails

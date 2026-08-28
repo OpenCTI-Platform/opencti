@@ -93,6 +93,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                     onClick={openLifecycleDialog}
                     startIcon={<TroubleshootOutlined />}
                     color={indicator.decay_exclusion_applied_rule ? 'warn' : 'primary'}
+                    keepMui
                   >
                     {t_i18n('Lifecycle')}
                   </Button>

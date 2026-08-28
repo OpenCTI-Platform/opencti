@@ -3,7 +3,8 @@ import { Field } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { NotifierFieldSearchQuery$data } from './__generated__/NotifierFieldSearchQuery.graphql';
@@ -20,9 +21,6 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -59,10 +57,8 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [notifiersTemplates, setNotifiersTemplates] = useState<FieldOption[]>([]);
-  const searchNotifiers = (event: React.ChangeEvent<HTMLInputElement>) => {
-    fetchQuery(NotifierFieldQuery, {
-      search: event && event.target.value ? event.target.value : '',
-    })
+  const searchNotifiers = (search: string) => {
+    fetchQuery(NotifierFieldQuery, { search })
       .toPromise()
       .then((data) => {
         const notifierOptions = (
@@ -81,36 +77,36 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         name={name}
         multiple={true}
         style={fieldSpacingContainerStyle ?? style}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t_i18n('Notifiers'),
-          helperText: helpertext,
-          onFocus: searchNotifiers,
-        }}
+        label={label ?? t_i18n('Notifiers')}
+        helperText={helpertext}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={notifiersTemplates}
-        onInputChange={searchNotifiers}
+        // Fires on the keystroke only: `select`, `clear` and `reset` reach this
+        // callback too, and querying on them is the bug the pre-library sites
+        // guarded against by testing for a DOM event.
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchNotifiers(search);
+        }}
+        onFocusInput={() => searchNotifiers('')}
         isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value
         }
         onChange={onChange}
         groupBy={(option: FieldOption) => option.type}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props} key={option.value}>
+        renderOption={(option: FieldOption) => (
+          <>
             <div className={classes.icon}>
               <ItemIcon type="Notifier" />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>
   );

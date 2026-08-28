@@ -20,12 +20,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
 import { AccountBalanceOutlined } from '@mui/icons-material';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { Checkbox } from '@filigran/design-system';
 
 const userEditionOrganizationsAdminAddMutation = graphql`
   mutation UserEditionOrganizationsAdminAddMutation(
@@ -73,8 +73,8 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
   const [promoteMemberMutation] = useApiMutation(userEditionOrganizationsAdminAddMutation);
   const [demoteMemberMutation] = useApiMutation(userEditionOrganizationsAdminRemoveMutation);
 
-  const handleToggle = (organizationId, event) => {
-    if (event.target.checked) {
+  const handleToggle = (organizationId, checked) => {
+    if (checked) {
       promoteMemberMutation({
         variables: {
           id: organizationId,
@@ -103,7 +103,7 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
           <ListItem
             key={organization.id}
             divider={true}
-            secondaryAction={<Checkbox onChange={(event) => handleToggle(organization.id, event)} checked={isAdmin} />}
+            secondaryAction={<Checkbox onCheckedChange={(state) => handleToggle(organization.id, state === true)} checked={isAdmin} />}
           >
             <ListItemIcon color="primary">
               <AccountBalanceOutlined />

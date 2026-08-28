@@ -1,8 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { ClearOutlined, DateRangeOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
-import { useTheme } from '@mui/material/styles';
+import { IconButton } from '@filigran/design-system';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
@@ -29,7 +28,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   setDateInput,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const generateErrorMessage = (values: string[]) => {
@@ -122,26 +120,24 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
               <>
                 {dateInput[valueOrder] && (
                   <IconButton
-                    size="small"
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     onClick={handleClear}
-                    sx={{ marginRight: -1 }}
                     aria-label="clear"
-                  >
-                    <ClearOutlined fontSize="small" />
-                  </IconButton>
+                    style={{ marginRight: -8 }}
+                    icon={<ClearOutlined fontSize="small" />}
+                  />
                 )}
                 <IconButton
-                  size="small"
-                  sx={{
-                    marginLeft: 0.5,
-                    marginRight: -2,
-                    color: theme.palette.text.primary,
-                  }}
+                  variant="default"
+                  priority="tertiary"
+                  size="sm"
                   onClick={() => setIsDatePickerOpen(true)}
                   aria-label="open date picker"
-                >
-                  <DateRangeOutlined fontSize="small" />
-                </IconButton>
+                  style={{ marginLeft: 4, marginRight: -16 }}
+                  icon={<DateRangeOutlined fontSize="small" />}
+                />
               </>
             ),
           },
