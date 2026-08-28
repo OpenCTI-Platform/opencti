@@ -1,7 +1,6 @@
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import React, { FunctionComponent } from 'react';
@@ -22,6 +21,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -272,12 +272,10 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
         }
       >
         <Checkbox
-          edge="start"
           checked={
             (selectAll && !(data.id in (deSelectedElements || {})))
             || data.id in (selectedElements || {})
           }
-          disableRipple={true}
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>

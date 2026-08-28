@@ -1,5 +1,6 @@
 import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback, useRef } from 'react';
 import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps } from '@mui/material';
+import { Input } from '@filigran/design-system';
 import { fieldToTextField } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
@@ -100,24 +101,89 @@ const TextField = (props: TextFieldProps) => {
 
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
 
+  const helper = detectDuplicate && !showError ? (
+    <StixDomainObjectDetectDuplicate types={detectDuplicate} value={meta.value} />
+  ) : props.helperText;
+
+  const askAiSlot = askAi && enabled && configured ? (
+    <TextFieldAskAI
+      currentValue={value as string ?? ''}
+      setFieldValue={(val) => {
+        setFieldValue(name, val);
+        if (typeof onSubmit === 'function') onSubmit(name, val || '');
+      }}
+      format="text"
+      disabled={props.disabled}
+    />
+  ) : null;
+
+  // Props the design-system Input can actually place. `className` reaches its
+  // root wrapper; everything else it spreads onto the inner <input>. So a prop
+  // that must act on the field GROUP (style, sx, size) cannot be honoured here:
+  // OpenCTI's `style={{ marginTop: 20 }}` idiom would land on the input box and
+  // push it away from its own label. Those sites keep the MUI field.
+  const placeable = new Set([
+    'id', 'name', 'type', 'label', 'required', 'placeholder', 'disabled',
+    'autoFocus', 'className', 'value', 'error', 'helperText', 'variant',
+    'fullWidth', 'onChange', 'onFocus', 'onBlur', 'onKeyDown', 'onSubmit',
+  ]);
+  // Native <input> attributes are placeable too: the Input spreads them onto
+  // the inner <input>, which is exactly where they belong.
+  const nativeAttrs = new Set([
+    'step', 'min', 'max', 'maxLength', 'minLength', 'autoComplete',
+    'readOnly', 'inputMode', 'pattern', 'spellCheck', 'tabIndex', 'title',
+  ]);
+  const forwardable = (k: string) => nativeAttrs.has(k)
+    || k.startsWith('data-') || k.startsWith('aria-');
+  // Abandon on anything unrecognised rather than dropping it silently.
+  const unplaceable = Object.keys(otherProps).filter(
+    (k) => !placeable.has(k) && !forwardable(k),
+  );
+
+  const outOfContract = props.multiline ? 'multiline'
+    : props.select ? 'select'
+      : startAdornment ? 'interactive leading adornment'
+        : onBeforePaste ? 'onBeforePaste'
+          : (props.type && !['text', 'password', 'number', 'email'].includes(props.type)) ? `type="${props.type}"`
+              : (props.label !== undefined && typeof props.label !== 'string') ? 'non-string label'
+                  : unplaceable.length > 0 ? `unplaceable props: ${unplaceable.join(', ')}`
+                    : null;
+
+  const passthrough = Object.fromEntries(
+    Object.entries(otherProps).filter(([k]) => forwardable(k)),
+  );
+
+  if (!outOfContract) {
+    return (
+      <Input
+        id={props.id}
+        name={name}
+        type={props.type as 'text' | 'password' | 'number' | 'email' | undefined}
+        label={typeof props.label === 'string' ? props.label : undefined}
+        required={props.required}
+        placeholder={props.placeholder}
+        disabled={props.disabled}
+        autoFocus={props.autoFocus}
+        className={props.className}
+        value={(value as string) ?? ''}
+        error={showError ? (meta.error as string) : undefined}
+        helperText={helper}
+        endIcon={askAiSlot ? { type: 'icon', icon: askAiSlot } : undefined}
+        onChange={internalOnChange}
+        onFocus={internalOnFocus}
+        onBlur={internalOnBlur}
+        onKeyDown={internalOnKeyDown}
+        {...passthrough}
+      />
+    );
+  }
+
   return (
     <MuiTextField
       {...otherProps}
       value={value ?? ''}
       error={showError}
-      helperText={
-
-        detectDuplicate && !showError ? (
-          <StixDomainObjectDetectDuplicate
-            types={detectDuplicate}
-            value={meta.value}
-          />
-        ) : showError ? (
-          meta.error
-        ) : (
-          props.helperText
-        )
-      }
+      helperText={showError ? meta.error : helper}
       onChange={internalOnChange}
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
@@ -126,19 +192,7 @@ const TextField = (props: TextFieldProps) => {
       slotProps={{
         input: {
           startAdornment,
-          endAdornment: askAi && (enabled && configured) && (
-            <TextFieldAskAI
-              currentValue={value as string ?? ''}
-              setFieldValue={(val) => {
-                setFieldValue(name, val);
-                if (typeof onSubmit === 'function') {
-                  onSubmit(name, val || '');
-                }
-              }}
-              format="text"
-              disabled={props.disabled}
-            />
-          ),
+          endAdornment: askAiSlot,
         },
       }}
     />

@@ -5,7 +5,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
-import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
@@ -25,6 +24,7 @@ import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -109,7 +109,6 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           }
         >
           <Checkbox
-            edge="start"
             disabled={isOnlyThroughInference}
             checked={
               (selectAll
@@ -117,7 +116,6 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 && !(node.id in (deSelectedElements || {})))
               || node.id in (selectedElements || {})
             }
-            disableRipple={true}
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -369,7 +367,9 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox
+          disabled={true}
+        />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
