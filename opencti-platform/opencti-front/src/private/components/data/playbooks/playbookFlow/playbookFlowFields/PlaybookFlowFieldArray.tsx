@@ -73,6 +73,7 @@ const PlaybookFlowFieldArray = ({
           return (
             <Tag
               {...getTagProps({ index })}
+              deleteTabIndex={-1}
               key={value}
               label={option?.title}
             />

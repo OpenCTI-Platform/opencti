@@ -13,6 +13,12 @@ export interface TagProps {
   color?: string | null;
   onClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;
+  /** Accessible name for the delete button. Defaults, in the library, to an
+   *  untranslated `Remove ${label}` — pass a translated string. */
+  deleteLabel?: string;
+  /** `-1` inside a composite widget (a chip row in a select field owns its own
+   *  focus order, so each chip must not add a Tab stop). */
+  deleteTabIndex?: number;
   maxWidth?: number | string;
   icon?: React.ReactElement;
   tooltipTitle?: string;
@@ -45,6 +51,8 @@ const Tag = ({
   color,
   onClick,
   onDelete,
+  deleteLabel,
+  deleteTabIndex,
   maxWidth = '100%',
   icon,
   tooltipTitle,
@@ -72,6 +80,8 @@ const Tag = ({
       onClick={onClick}
       // the library's handler takes no event; the wrapper's callers expect one
       onDelete={onDelete ? () => onDelete({} as React.MouseEvent) : undefined}
+      deleteLabel={deleteLabel}
+      deleteTabIndex={deleteTabIndex}
       className={className}
       disabled={disabled}
       style={{
