@@ -1,9 +1,10 @@
+import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import React, { FunctionComponent, ReactElement, useState } from 'react';
 import Box from '@mui/material/Box';
 import { Field } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
-import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import SelectField from '../../../../components/fields/SelectField';
 import { entitySettingPatch } from '../sub_types/entity_setting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -157,7 +158,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
     const items: ReactElement[] = [];
     entitySettingsHiddenGrouped.forEach((values, key) => {
       items.push(
-        <SelectItem
+        <MenuItem
           key={key}
           value={isSelectedGroup(key) ? `not-${key}` : key}
         >
@@ -165,13 +166,13 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
             checked={isSelectedGroup(key)}
           />
           {t_i18n(key)}
-        </SelectItem>,
+        </MenuItem>,
       );
       const valuesKeys = groups.get(key) ?? [];
       (values as EntitySettingHidden[])
         .sort((a, b) => valuesKeys.indexOf(a.target_type) - valuesKeys.indexOf(b.target_type))
         .forEach((platformHiddenType) => items.push(
-          <SelectItem
+          <MenuItem
             key={platformHiddenType.target_type}
             value={platformHiddenType.target_type}
           >
@@ -184,7 +185,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
             <Security needs={[SETTINGS_SETACCESSES]}>
               <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
             </Security>
-          </SelectItem>,
+          </MenuItem>,
         ));
     });
     return items;
@@ -192,7 +193,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
   return (
 
     <Field
-      component={SelectFieldFds}
+      component={SelectField}
       variant="standard"
       name="platform_hidden_types"
       label={t_i18n('Hidden entity types')}

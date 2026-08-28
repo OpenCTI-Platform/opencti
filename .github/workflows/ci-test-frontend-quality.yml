@@ -67,6 +67,21 @@ jobs:
             yarn lint
             '
 
+    - name: Accessible names of converted design-system fields
+      # A converted Select or Combobox with no accessible name is a WCAG 4.1.2
+      # failure that no other check here can see: eslint-plugin-jsx-a11y does not
+      # know the library's compound components, and axe only runs on markup a
+      # test author wrote.
+      run: |
+        docker run  \
+          --name frontend-accessible-names \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            cd /home/workspace
+            node fds-migration/scripts/check-accessible-names.mjs
+            '
+
     - name: Frontend tests
       if: '!cancelled()'
       run: |

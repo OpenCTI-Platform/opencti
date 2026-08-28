@@ -45,11 +45,21 @@ const blocks = (src, name) => {
 
 const hasAria = (s) => /aria-label(?:ledby)?=/.test(s);
 
+// The trigger's OWN opening tag. Scanning the whole <Select> block would let the
+// aria-label that rule 4 mandates on <SelectContent> satisfy rule 1, which made
+// rule 1 structurally dead: removing a SelectLabel alone still reported clean.
+const triggerTag = (block) => {
+  const i = block.search(/<SelectTrigger(?![A-Za-z])/);
+  if (i === -1) return '';
+  const j = block.indexOf('>', i);
+  return j === -1 ? block.slice(i) : block.slice(i, j + 1);
+};
+
 function scan(file, src) {
   if (src.includes('SelectTrigger')) {
     for (const b of blocks(src, 'Select')) {
       if (!b.body.includes('<SelectTrigger')) continue; // a MUI Select, not ours
-      if (!b.body.includes('<SelectLabel') && !hasAria(b.body)) {
+      if (!b.body.includes('<SelectLabel') && !hasAria(triggerTag(b.body))) {
         findings.push({ file, line: b.line, rule: 'select-unnamed', msg: 'library Select has no SelectLabel and no aria-label — announced as "combobox" and nothing else' });
       }
       // The PANEL needs a name too: a page model resolves it with

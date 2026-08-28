@@ -91,13 +91,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               onValueChange={updateFromSelect}
               disabled={finalDisabled}
             >
-              {/* Deliberately unnamed. This row shows ONE value twice: a number
-                  input labelled with `label`, and this select. Naming both made
-                  Playwright's getByLabel resolve to two elements and broke
-                  incidentResponse. The MUI original was unnamed too — its labelId
-                  pointed at a label that does not exist. Recorded as an a11y gap
-                  rather than papered over with a second invented string. */}
-              <SelectTrigger>
+              <SelectTrigger aria-label={label}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={label}>
@@ -151,8 +145,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             onValueChange={(newValue) => setFieldValue(name, newValue)}
             disabled={disabled}
           >
-            {/* Unnamed for the same reason as the edit variant above. */}
-            <SelectTrigger>
+            <SelectTrigger aria-label={label}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={label}>

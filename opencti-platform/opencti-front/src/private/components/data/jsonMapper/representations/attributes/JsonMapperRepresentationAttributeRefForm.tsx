@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import MuiTextField from '@mui/material/TextField';
 import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';

@@ -1,3 +1,4 @@
+import MenuItem from '@mui/material/MenuItem';
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
@@ -32,6 +33,7 @@ import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import SelectField from '../../../../components/fields/SelectField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
@@ -570,7 +572,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         <SelectItem key="updated_at" value="updated_at">{t_i18n('Update date')}</SelectItem>
                       </Field>
                       <Field
-                        component={SelectFieldFds}
+                        component={SelectField}
                         variant="standard"
                         name="feed_types"
                         onChange={(_: unknown, value: string[]) => handleSelectTypes(value)}
@@ -580,9 +582,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
                         {entitiesTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
+                          <MenuItem key={type.value} value={type.value}>
                             {type.label}
-                          </SelectItem>
+                          </MenuItem>
                         ))}
                       </Field>
                       <Field

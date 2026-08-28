@@ -27,17 +27,18 @@ every library Select has and no MUI Select does.
 
 | | mounts |
 |---|---|
-| Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 157 |
+| Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 153 |
 | Converted — direct library composition (`Select` / `Combobox`) | 122 |
-| **Converted total** | **279** |
+| **Converted total** | **275** |
 | **Remaining on MUI** | **12** |
-| **Total selection fields** | **291** |
+| **Total selection fields** | **287** |
 
-The denominator is DERIVED, not fixed. It was 292 while `CreatedByField` was
-converted: its own `ComboboxField` mount counted as a pivot. Reverted, that site
-consumes the `AutocompleteField` adapter, whose single mount the census counts
-once at the adapter file — so the site stops being counted on its own and the
-total drops to 291. Converting it again puts the mount, and the 292, back.
+The denominator is DERIVED, not fixed. A site converted onto a Formik
+pivot counts as its own mount; parked onto a legacy adapter it stops counting,
+because the census counts an adapter's mount once at the adapter file. So the
+denominator fell 292 -> 291 when `CreatedByField` was parked, and 291 -> 287 when
+the four multi-value Selects were. Converting them back puts the mounts, and the
+denominator, back.
 
 ## The 12 remaining, every one with a reason
 
@@ -55,6 +56,8 @@ appears here: it composes the library directly and its four consumers went with
 it.
 
 ### Parked with a recorded reason (10 mounts)
+
+Plus the four multi-value Selects below, which stop counting once parked.
 
 The last two rows are consumers of the `SelectField` adapter, not MUI mounts of
 their own: their mount is already counted once at the adapter file above. They
@@ -121,32 +124,23 @@ input/open/options wiring. Whoever picks this up should start from a running
 platform on Data > Entities and watch the panel's `data-state` across the fill,
 rather than re-testing the four above.
 
-#### Why the widget Attribute cluster is parked
+#### Four multi-value Selects: parked until Combobox multiple
 
-`dashboard` — Dashboard CRUD times out at
-`getByTestId('widget-params-selection-0').getByRole('combobox', { name: 'Attribute' })`:
-a name-based locator that never resolves. The failure snapshot shows a `generic`
-carrying the text "Attribute" — an orphan MUI `InputLabel` naming nothing —
-followed by a combobox with NO accessible name.
+`SelectFieldFds` is SINGLE-VALUE. Line 82 renders
+`value={... String(value)}`, so an array arrives as `"a,b"` and matches no
+`SelectItem`, and Radix commits one string per pick, replacing the array. The
+adapter reads neither `multiple` nor `renderValue`.
 
-Root cause NOT established. The obvious explanation does not survive: the target
-trigger already passes `aria-label={t_i18n('Attribute')}`, and `SelectTrigger`
-only sets `aria-labelledby` when a `SelectLabel` exists, so the `aria-label`
-should win. Reverted rather than guessed at.
+| file | also lost |
+|---|---|
+| `private/components/settings/hidden_types/HiddenTypesField.tsx` | `renderValue` chips |
+| `private/components/data/forms/view/FormFieldRenderer.tsx` | `renderValue` chips |
+| `private/components/data/feeds/FeedCreation.tsx` | — |
+| `private/components/data/feeds/FeedEdition.jsx` | — |
 
-#### The real finding underneath: 24 converted Selects have no `SelectLabel`
-
-Sweeping the branch for library `Select` mounts with no `SelectLabel` found 24 —
-13 with an orphan MUI `InputLabel` left above them, which renders as a `generic`
-and names nothing, and 11 with no name at all. Independent of the e2e red, that
-is a WCAG 4.1.2 defect introduced by this migration and it makes every one of
-those fields unreachable by a name-based test.
-
-The fix is the same everywhere and is NOT a workaround: the text in the orphan
-`InputLabel` belongs in a `SelectLabel` inside the `Select`, which sets
-`hasLabel` and wires the trigger's `aria-labelledby`. The MUI original expressed
-the same association through `<Select label={...}>`. This is the next round's
-work, and it should be done before any further conversion.
+All four were `multiple={true}` MUI Selects at the merge base and are back on
+`SelectField`. Same blocker as `ImportFilesList`: they need Combobox in multiple
+mode, not Select.
 
 ## Out of scope
 
@@ -164,14 +158,14 @@ in one sentence, my recommendation.
 |---|---|---|---|---|
 | 1 | `private/components/common/lists/ListFilters.tsx` | the add-filter field | `_backgroundTask` "data entity search" timed out on it and four candidate mechanisms are ruled out in jsdom; cause needs a running platform | re-try the conversion and read the failure again before parking: the widget cluster failed the same way and turned out to be a SELECTOR defect, not a component one (see the note below) |
 | 2 | `private/components/common/form/CreatedByField.jsx` | the Author picker | `report` "live entities creation" times out on the create row; the adapter is proven innocent by a jsdom probe (listbox named, row rendered inside it, text matches the page-model regex) | same: re-try and read the error, since the adapter is already exonerated in isolation |
-| 3 | `components/fields/EntitySelectWithTypes.tsx`, `components/filters/FilterChipPopover.tsx`, `private/components/common/stix_core_objects/StixCoreObjectContainer.tsx` | pickers with an icon or button inside the input | the input-ornament gap, FEEDBACK #47 → library #155, which is NOT in the current pin `fc24f4b` | convert when #155 ships; nothing to do product-side |
+| 3 | `components/fields/EntitySelectWithTypes.tsx`, `components/filters/FilterChipPopover.tsx`, `private/components/common/stix_core_objects/StixCoreObjectContainer.tsx` | pickers with an icon or button inside the input | the input-ornament gap, FEEDBACK #47 → library #155, which is NOT in the current pin `bd076e8f` | convert when #155 ships; nothing to do product-side |
 | 4 | `components/dashboard/DashboardRelativeDateSelect.tsx`, `private/components/settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx` | a field that tints itself while it constrains the view | FEEDBACK #43, no library equivalent, already deferred to V2 | V2, or a product convention (adornment or helper line) that needs no shell tint |
 | 5 | `private/components/settings/themes/ThemeForm.tsx` | a Select the user must be able to empty | FEEDBACK #45 — the library Select has no clear affordance | V2 |
 | 6 | `private/components/data/connectors/ConnectorsStatusFilters.tsx` | 2 EE-gated filters | cannot be reached on this instance, so no conversion can be verified | convert blind, or leave until an EE bench exists |
-| 7 | `private/components/common/files/import_files/ImportFilesList.tsx` | the connector picker | it is a MULTIPLE MUI Select whose `renderValue` joins the names with commas; the library Select is single-value, so this is a Combobox conversion that replaces the comma list with chips | convert to a multiple Combobox and accept chips — it is the library standard everywhere else |
+| 7 | `ImportFilesList.tsx`, `HiddenTypesField.tsx`, `FormFieldRenderer.tsx`, `FeedCreation.tsx`, `FeedEdition.jsx` | five MULTI-VALUE selects | the library Select is single-value and `SelectFieldFds` stringifies its value, so these need Combobox in multiple mode; two of them also render `renderValue` chips the adapter has no equivalent for | convert all five to a multiple Combobox and accept library chips — it is the standard everywhere else on this branch |
 | 8 | `private/components/data/forms/view/FormFieldRenderer.tsx:468` | the attached-file chip | the chip carries `onDelete`; the library Chip has no delete affordance | ask the library for a removable chip; keep MUI here meanwhile |
 | 9 | `private/components/data/DataTableToolBar.jsx:2896` | the "Search: <term>" chip | its `label` is JSX (`<strong>Search</strong>: term`); the library Chip's `label` is typed `string` | either split into two chips, or ask the library to accept a node |
-| 10 | the `:3030` pilot | — | no CTI backend is running on this bench and standing up the full platform was ruled out for tonight | visit on another session's pilot |
+| 10 | the pilot | — | `:3030` was already taken by another session, so the front dev server runs on `:3033` against the backend already up on `:4000` | visit `http://localhost:3033` |
 
 ### The lesson the widget cluster taught, worth applying to entries 1 and 2
 
@@ -233,3 +227,19 @@ and broke a locator that depended on the bug.
 So the fix belongs in the test, and that is where it went:
 `DashboardWidgets.pageModel.ts` now names the field "Date attribute", its own
 label, with `exact`.
+
+## Resolved: why one label form prefills and the other does not
+
+Recorded as unexplained in `report.spec.ts`. The review established it:
+`StixCoreObjectOrCoreRelationshipLabelsView.jsx:329` passes `inputValue` where
+`LabelCreation` expects `inputValueContextual`, so that mount opens the creation
+form empty while `ObjectLabelField` fills it. Pre-existing, not caused by the
+migration, and not fixed here.
+
+## Pre-existing, one line each
+
+- `CsvMapperDefaultMarking` / `JsonMapperDefaultMarking` mount with no accessible
+  name, through the adapter. The guard cannot see adapter mounts: it matches the
+  library elements, and these sites render none directly.
+- `StixCoreObjectFileExportForm.tsx:422` passes an `aria-label` that the adapter
+  drops on the floor.

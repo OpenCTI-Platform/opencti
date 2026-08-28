@@ -1,3 +1,4 @@
+import MenuItem from '@mui/material/MenuItem';
 import React, { FunctionComponent } from 'react';
 import { Field, FieldInputProps, FormikProps } from 'formik';
 import Chip from '@mui/material/Chip';
@@ -14,6 +15,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import TypesField from '@components/observations/TypesField';
 import TextField from '../../../../../components/TextField';
 import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
+import SelectField from '../../../../../components/fields/SelectField';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
@@ -284,7 +286,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'multiselect':
         return (
           <Field
-            component={SelectFieldFds}
+            component={SelectField}
             name={fieldName}
             label={displayLabel}
             fullWidth={true}
@@ -303,9 +305,9 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             )}
           >
             {field.options?.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
+              <MenuItem key={option.value} value={option.value}>
                 {option.label}
-              </SelectItem>
+              </MenuItem>
             ))}
           </Field>
         );
