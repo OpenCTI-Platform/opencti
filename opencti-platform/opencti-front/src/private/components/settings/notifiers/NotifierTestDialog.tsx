@@ -90,7 +90,7 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
             construction. */}
         <Select value={target} onValueChange={setTarget}>
           <SelectLabel>{t_i18n('Choose target')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Choose target')}>

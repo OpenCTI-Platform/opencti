@@ -81,7 +81,7 @@ const HomeDashboardSettings = () => {
           }
         >
           <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Date reference')}>
@@ -120,7 +120,7 @@ const HomeDashboardSettings = () => {
                     }
                   >
                     <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent aria-label={t_i18n('Date reference')}>
@@ -139,7 +139,7 @@ const HomeDashboardSettings = () => {
                     onValueChange={(value) => handleUpdate('default_dashboard', value)}
                   >
                     <SelectLabel>{t_i18n('Custom dashboard')}</SelectLabel>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent aria-label={t_i18n('Custom dashboard')}>

@@ -561,7 +561,7 @@ class ListLines extends Component {
                   }
                 >
                   <SelectLabel>{t('Redirection mode')}</SelectLabel>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent aria-label={t('Redirection mode')}>

@@ -598,7 +598,7 @@ const FeedEditionContainer = (props) => {
                                         onValueChange={(value) => handleChangeMultiMatchStrategy(i, value)}
                                       >
                                         <SelectLabel>{t_i18n('Multi-match')}</SelectLabel>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent aria-label={t_i18n('Multi-match')}>
@@ -635,7 +635,9 @@ const FeedEditionContainer = (props) => {
                                           type="button"
                                           aria-pressed={isNeighborMode}
                                           onClick={() => handleToggleNeighborMode(i, selectedType)}
-                                          style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+                                          // The wrapper had no focus treatment, so it fell back to the UA outline.
+                                          // rounded-sm matches Chip's own radius so the ring hugs the chip.
+                                          className="inline-flex cursor-pointer rounded-sm border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
                                         >
                                           <Chip
                                             label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
@@ -651,7 +653,7 @@ const FeedEditionContainer = (props) => {
                                               onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', value)}
                                             >
                                               <SelectLabel>{t_i18n('Relationship type')}</SelectLabel>
-                                              <SelectTrigger>
+                                              <SelectTrigger className="w-full">
                                                 <SelectValue />
                                               </SelectTrigger>
                                               <SelectContent aria-label={t_i18n('Relationship type')}>
@@ -670,7 +672,7 @@ const FeedEditionContainer = (props) => {
                                               disabled={!currentMapping?.relationship_type}
                                             >
                                               <SelectLabel>{t_i18n('Target type')}</SelectLabel>
-                                              <SelectTrigger>
+                                              <SelectTrigger className="w-full">
                                                 <SelectValue />
                                               </SelectTrigger>
                                               <SelectContent aria-label={t_i18n('Target type')}>
@@ -712,7 +714,7 @@ const FeedEditionContainer = (props) => {
                                                           onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                         >
                                                           <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                                                          <SelectTrigger>
+                                                          <SelectTrigger className="w-full">
                                                             <SelectValue />
                                                           </SelectTrigger>
                                                           <SelectContent aria-label={t_i18n('Attribute')}>
@@ -723,10 +725,10 @@ const FeedEditionContainer = (props) => {
                                                         </Select>
                                                       );
                                                     }
-                                                    return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
+                                                    return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
                                                   }}
                                                 />
-                                              ) : <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>}
+                                              ) : <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>}
                                             </FormControl>
                                           </Grid>
                                         </Grid>
@@ -756,7 +758,7 @@ const FeedEditionContainer = (props) => {
                                                     onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                   >
                                                     <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                                                    <SelectTrigger>
+                                                    <SelectTrigger className="w-full">
                                                       <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent aria-label={t_i18n('Attribute')}>
@@ -767,7 +769,7 @@ const FeedEditionContainer = (props) => {
                                                   </Select>
                                                 );
                                               }
-                                              return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
+                                              return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
                                             }}
                                           />
                                         </FormControl>

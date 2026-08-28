@@ -328,7 +328,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             }}
                           >
                             <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent aria-label={t_i18n('Attribute')}>

@@ -206,7 +206,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
         <div className={classes.container}>
           <Select value={currentScaleName} onValueChange={selectScale}>
             <SelectLabel>{t_i18n('Selected scale template')}</SelectLabel>
-            <SelectTrigger>
+            <SelectTrigger className="min-w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Selected scale template')}>

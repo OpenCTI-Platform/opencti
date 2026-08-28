@@ -453,7 +453,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                 onValueChange={handleChangeTimeField}
               >
                 <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent aria-label={t_i18n('Date reference')}>

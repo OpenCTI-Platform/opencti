@@ -1092,7 +1092,7 @@ class DataTableToolBar extends Component {
         onValueChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
         <SelectLabel>{t('Field')}</SelectLabel>
-        <SelectTrigger>
+        <SelectTrigger className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent aria-label={t('Field')}>
@@ -3016,7 +3016,7 @@ class DataTableToolBar extends Component {
                                 )}
                               >
                                 <SelectLabel>{t('Action type')}</SelectLabel>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent aria-label={t('Action type')}>

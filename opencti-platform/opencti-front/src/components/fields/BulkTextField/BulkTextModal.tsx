@@ -71,7 +71,7 @@ const BulkTextModal = ({
             onValueChange={(value) => onSelectKey?.(value)}
           >
             <SelectLabel>{t_i18n('Attribute used to create multiple')}</SelectLabel>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Attribute used to create multiple')}>

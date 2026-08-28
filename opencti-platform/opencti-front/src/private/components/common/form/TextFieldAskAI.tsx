@@ -362,7 +362,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
               onValueChange={(value) => setTone(value as 'tactical' | 'operational' | 'strategic')}
             >
               <SelectLabel>{t_i18n('Tone')}</SelectLabel>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Tone')}>

@@ -374,7 +374,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           <Box sx={{ mb: 2 }}>
             <Select value={tone} onValueChange={setTone}>
               <SelectLabel>{t_i18n('Tone')}</SelectLabel>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Tone')}>

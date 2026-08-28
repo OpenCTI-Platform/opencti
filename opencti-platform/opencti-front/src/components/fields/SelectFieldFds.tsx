@@ -27,6 +27,12 @@ export type SelectFieldFdsProps = FieldProps<string> & {
   disabled?: boolean;
   containerstyle?: React.CSSProperties;
   className?: string;
+  /**
+   * MUI parity. `SelectTrigger` ships `w-fit`, so a converted field shrinks to
+   * its content where the MUI original filled its container — 94 of this
+   * pivot's 102 call sites pass `fullWidth`, which is why the layouts moved.
+   */
+  fullWidth?: boolean;
   children?: ReactNode;
   onChange?: (name: string, value: string) => void;
   onSubmit?: (name: string, value: string) => void;
@@ -57,6 +63,7 @@ const SelectFieldFds = ({
   disabled,
   containerstyle,
   className,
+  fullWidth,
   children,
   onChange,
   onSubmit,
@@ -90,7 +97,7 @@ const SelectFieldFds = ({
         name={name}
       >
         {label ? <SelectLabel required={required}>{label}</SelectLabel> : null}
-        <SelectTrigger>
+        <SelectTrigger className={fullWidth ? 'w-full' : undefined}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         {/* Named after its field. Radix puts `role="listbox"` on the content,

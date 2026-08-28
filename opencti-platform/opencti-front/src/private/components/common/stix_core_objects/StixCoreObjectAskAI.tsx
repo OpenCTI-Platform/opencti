@@ -228,7 +228,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           onValueChange={(value) => setFormat(value as 'html' | 'markdown' | 'text' | 'json')}
         >
           <SelectLabel>{t_i18n('Format')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Format')}>
@@ -244,7 +244,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
             onValueChange={(value) => setTone(value as 'tactical' | 'operational' | 'strategic')}
           >
             <SelectLabel>{t_i18n('Tone')}</SelectLabel>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Tone')}>
@@ -281,7 +281,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
             onValueChange={setLanguage}
           >
             <SelectLabel>{t_i18n('Language')}</SelectLabel>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Language')}>

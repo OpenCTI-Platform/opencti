@@ -327,7 +327,7 @@ const WidgetCreationParameters = () => {
               }
             >
               <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Attribute')}>
@@ -411,7 +411,7 @@ const WidgetCreationParameters = () => {
           }
         >
           <SelectLabel>{t_i18n('Interval')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Interval')}>
@@ -530,7 +530,7 @@ const WidgetCreationParameters = () => {
                       }
                     >
                       <SelectLabel>{t_i18n('Sort by')}</SelectLabel>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent aria-label={t_i18n('Sort by')}>
@@ -564,7 +564,7 @@ const WidgetCreationParameters = () => {
                         onValueChange={(value) => handleChangeDataValidationParameter(i, 'sort_mode', value)}
                       >
                         <SelectLabel>{t_i18n('Sort mode')}</SelectLabel>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent aria-label={t_i18n('Sort mode')}>
@@ -599,7 +599,7 @@ const WidgetCreationParameters = () => {
                             ? dataSelection[i].label
                             : t_i18n('Date attribute')}
                           </SelectLabel>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent aria-label={isNotEmptyField(dataSelection[i].label)
@@ -728,7 +728,7 @@ const WidgetCreationParameters = () => {
                           }
                         >
                           <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent aria-label={t_i18n('Attribute')}>
@@ -758,7 +758,7 @@ const WidgetCreationParameters = () => {
                               onValueChange={(value) => handleChangeDataValidationParameter(i, 'attribute', value)}
                             >
                               <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                              <SelectTrigger>
+                              <SelectTrigger className="w-full">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent aria-label={t_i18n('Attribute')}>
@@ -816,7 +816,7 @@ const WidgetCreationParameters = () => {
                                       }
                                     >
                                       <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                                      <SelectTrigger>
+                                      <SelectTrigger className="w-full">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent aria-label={t_i18n('Attribute')}>
@@ -859,7 +859,7 @@ const WidgetCreationParameters = () => {
                           }
                         >
                           <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent aria-label={t_i18n('Attribute')}>

@@ -606,7 +606,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           }}
         >
           <SelectLabel>{t_i18n('Field Type')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Field Type')}>
@@ -623,7 +623,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           onValueChange={(value) => handleFieldChange(`${fieldPath}.attributeMapping.attributeName`, value)}
         >
           <SelectLabel>{t_i18n('Map to attribute')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Map to attribute')}>
@@ -874,7 +874,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           disabled={field.isMandatory && !isInParsedMode}
         >
           <SelectLabel>{t_i18n('Map to attribute')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Map to attribute')}>
@@ -894,7 +894,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           disabled={!field.attributeMapping.attributeName || !!getVocabularyMappingByAttribute(field.attributeMapping.attributeName)}
         >
           <SelectLabel>{t_i18n('Field Type')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Field Type')}>
@@ -1054,7 +1054,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             }}
           >
             <SelectLabel>{t_i18n('Default value')}</SelectLabel>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Default value')}>
@@ -1070,7 +1070,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           onValueChange={(value) => handleFieldChange(`fields.${fieldIndex}.width`, value)}
         >
           <SelectLabel>{t_i18n('Field Width')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Field Width')}>
@@ -1175,7 +1175,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           }}
         >
           <SelectLabel>{t_i18n('Entity Type')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Entity Type')}>
@@ -1275,7 +1275,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             onValueChange={(value) => handleFieldChange(`additionalEntities.${entityIndex}.fieldMode`, value)}
           >
             <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Multiple Mode')}>
@@ -1292,7 +1292,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               onValueChange={(value) => handleFieldChange(`additionalEntities.${entityIndex}.parseField`, value)}
             >
               <SelectLabel>{t_i18n('Parse Field Type')}</SelectLabel>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Parse Field Type')}>
@@ -1305,7 +1305,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               onValueChange={(value) => handleFieldChange(`additionalEntities.${entityIndex}.parseMode`, value)}
             >
               <SelectLabel>{t_i18n('Parse Mode')}</SelectLabel>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Parse Mode')}>
@@ -1350,7 +1350,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               }}
             >
               <SelectLabel>{t_i18n('Map parsed values to attribute')}</SelectLabel>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Map parsed values to attribute')}>
@@ -1492,7 +1492,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           }}
         >
           <SelectLabel>{t_i18n('Source Entity')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Source Entity')}>
@@ -1515,7 +1515,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           }}
         >
           <SelectLabel>{t_i18n('Target Entity')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Target Entity')}>
@@ -1533,7 +1533,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           disabled={!relationship.fromEntity || !relationship.toEntity}
         >
           <SelectLabel>{t_i18n('Relationship Type')}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Relationship Type')}>
@@ -1620,7 +1620,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             onValueChange={(value) => handleMainEntityTypeChange(value)}
           >
             <SelectLabel>{t_i18n('Main Entity Type')}</SelectLabel>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Main Entity Type')}>
@@ -1909,7 +1909,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                           }}
                         >
                           <SelectLabel>{t_i18n('Default author source')}</SelectLabel>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent aria-label={t_i18n('Default author source')}>
@@ -2038,7 +2038,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               onValueChange={(value) => handleFieldChange('mainEntityFieldMode', value)}
             >
               <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Multiple Mode')}>
@@ -2055,7 +2055,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 onValueChange={(value) => handleFieldChange('mainEntityParseField', value)}
               >
                 <SelectLabel>{t_i18n('Parse Field Type')}</SelectLabel>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent aria-label={t_i18n('Parse Field Type')}>
@@ -2068,7 +2068,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 onValueChange={(value) => handleFieldChange('mainEntityParseMode', value)}
               >
                 <SelectLabel>{t_i18n('Parse Mode')}</SelectLabel>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent aria-label={t_i18n('Parse Mode')}>
@@ -2105,7 +2105,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 }}
               >
                 <SelectLabel>{t_i18n('Map parsed values to attribute')}</SelectLabel>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent aria-label={t_i18n('Map parsed values to attribute')}>
