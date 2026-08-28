@@ -410,7 +410,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               helpertext={(
                 <SubscriptionFocus
                   context={editContext}
-                  fieldname="objectMarking"
+                  fieldName="objectMarking"
                 />
               )}
               setFieldValue={setFieldValue}

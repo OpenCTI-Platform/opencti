@@ -331,7 +331,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
               helpertext={(
                 <SubscriptionFocus
                   context={context}
-                  field="x_opencti_workflow_id"
+                  fieldName="x_opencti_workflow_id"
                 />
               )}
             />
@@ -351,7 +351,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
             required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
+              <SubscriptionFocus context={context} fieldName="objectMarking" />
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}

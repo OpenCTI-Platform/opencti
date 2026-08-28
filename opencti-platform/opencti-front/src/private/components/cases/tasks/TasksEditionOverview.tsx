@@ -282,7 +282,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             required={(mandatoryAttributes.includes('objectAssignee'))}
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectAssignee" />
+              <SubscriptionFocus context={context} fieldName="objectAssignee" />
             }
             onChange={editor.changeAssignee}
           />
@@ -313,7 +313,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
+              <SubscriptionFocus context={context} fieldName="objectMarking" />
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}

@@ -404,7 +404,7 @@ const StixDomainObjectEditionContainer = (props) => {
                 helpertext={(
                   <SubscriptionFocus
                     context={editContext}
-                    fieldname="objectMarking"
+                    fieldName="objectMarking"
                   />
                 )}
                 setFieldValue={setFieldValue}

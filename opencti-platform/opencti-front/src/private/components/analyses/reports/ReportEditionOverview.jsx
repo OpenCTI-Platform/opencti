@@ -298,7 +298,7 @@ const ReportEditionOverviewComponent = (props) => {
             name="objectAssignee"
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectAssignee" />
+              <SubscriptionFocus context={context} fieldName="objectAssignee" />
             }
             onChange={editor.changeAssignee}
             required={mandatoryAttributes.includes('objectAssignee')}
@@ -307,7 +307,7 @@ const ReportEditionOverviewComponent = (props) => {
             name="objectParticipant"
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectParticipant" />
+              <SubscriptionFocus context={context} fieldName="objectParticipant" />
             }
             onChange={editor.changeParticipant}
             required={mandatoryAttributes.includes('objectParticipant')}
@@ -343,7 +343,7 @@ const ReportEditionOverviewComponent = (props) => {
             name="objectMarking"
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
+              <SubscriptionFocus context={context} fieldName="objectMarking" />
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
