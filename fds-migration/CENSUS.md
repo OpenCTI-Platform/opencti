@@ -243,3 +243,23 @@ migration, and not fixed here.
   library elements, and these sites render none directly.
 - `StixCoreObjectFileExportForm.tsx:422` passes an `aria-label` that the adapter
   drops on the floor.
+
+
+## `Dashboard CRUD` is flaky, and this repo gives you a free A/B
+
+Its later assertions check absolute counts (46 / 22 / 29 / 17) after filling
+absolute dates into the dashboard's Start date filter. On `ca54cbf04d` the same
+tree failed one run and passed another, and the two attempts inside the failing
+run stopped on DIFFERENT assertions (29, then 17), with the Start date textbox
+left `[invalid]` and holding its placeholder.
+
+The A/B is free because `ci-main.yml` fires on both `pull_request` and `push`, so
+every SHA gets two `OpenCTI CI` runs. They are only comparable when the base has
+not moved: the `pull_request` run checks out `refs/pull/N/merge` and the `push`
+run the branch SHA. Verify with
+`git merge-base --is-ancestor origin/design-system/current HEAD` before drawing a
+conclusion — otherwise the two runs are different trees and a divergence proves
+nothing.
+
+Neither `DashboardTimeFilters.tsx`, which renders that field, nor
+`components/fields/` is touched by this branch.
