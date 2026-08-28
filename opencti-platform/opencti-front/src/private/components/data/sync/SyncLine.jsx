@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -9,12 +9,11 @@ import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
 import { MoreVert } from '@mui/icons-material';
 import { DatabaseImportOutline } from 'mdi-material-ui';
-import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import SyncPopover from './SyncPopover';
 import SyncConsumersDrawer from './SyncConsumersDrawer';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -78,138 +77,131 @@ const styles = (theme) => ({
   },
 });
 
-class SyncLineLineComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      displayConsumers: false,
-    };
-  }
+const SyncLineLineComponent = (props) => {
+  const { t_i18n, nsdt, n } = useFormatter();
+  const [displayConsumers, setDisplayConsumers] = useState(false);
+  const handleOpenConsumers = () => {
+    setDisplayConsumers(true);
+  };
 
-  handleOpenConsumers() {
-    this.setState({ displayConsumers: true });
-  }
+  const handleCloseConsumers = () => {
+    setDisplayConsumers(false);
+  };
 
-  handleCloseConsumers() {
-    this.setState({ displayConsumers: false });
-  }
-
-  computeConsumerHealth() {
-    const { node, t } = this.props;
+  const computeConsumerHealth = () => {
+    const { node } = props;
     const metrics = node.consumer_metrics;
     if (!metrics) {
-      return { label: t('No data'), hexColor: null };
+      return { label: t_i18n('No data'), hexColor: null };
     }
     const ONE_HOUR = 3600;
     const ONE_DAY = 86400;
     const { estimatedOutOfDepth } = metrics;
     if (estimatedOutOfDepth > 0 && estimatedOutOfDepth < ONE_HOUR) {
-      return { label: t('At risk'), hexColor: '#c62828' };
+      return { label: t_i18n('At risk'), hexColor: '#c62828' };
     }
     if (estimatedOutOfDepth >= ONE_HOUR && estimatedOutOfDepth < ONE_DAY) {
-      return { label: t('Degraded'), hexColor: '#d84315' };
+      return { label: t_i18n('Degraded'), hexColor: '#d84315' };
     }
-    return { label: t('Healthy'), hexColor: '#2e7d32' };
-  }
+    return { label: t_i18n('Healthy'), hexColor: '#2e7d32' };
+  };
 
-  render() {
-    const { classes, node, dataColumns, paginationOptions, t, nsdt, n } = this.props;
-    const health = this.computeConsumerHealth();
-    return (
-      <>
-        <ListItem
-          divider={true}
-          disablePadding
-          secondaryAction={(
-            <Security needs={[INGESTION_SETINGESTIONS]}>
-              <SyncPopover
-                syncId={node.id}
-                paginationOptions={paginationOptions}
-                running={node.running}
-              />
-            </Security>
-          )}
-        >
-          <ListItemButton
-            classes={{ root: classes.item }}
-            onClick={this.handleOpenConsumers.bind(this)}
-          >
-            <ListItemIcon classes={{ root: classes.itemIcon }}>
-              <DatabaseImportOutline />
-            </ListItemIcon>
-            <ListItemText
-              primary={(
-                <>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.name.width }}
-                  >
-                    {node.name}
-                  </div>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.uri.width }}
-                  >
-                    {node.uri}
-                  </div>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.messages.width }}
-                  >
-                    {n(node.queue_messages)}
-                  </div>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.running.width }}
-                  >
-                    <ItemBoolean
-                      variant="inList"
-                      label={node.running ? t('Active') : t('Inactive')}
-                      status={node.running}
-                    />
-                  </div>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.current_state_date.width }}
-                  >
-                    {nsdt(node.current_state_date)}
-                  </div>
-                  <div
-                    className={classes.producerItem}
-                    style={{ width: dataColumns.producer.width }}
-                  >
-                    {!health.hexColor
-                      ? <span style={{ color: '#9e9e9e' }}>-</span>
-                      : (
-                          <Chip
-                            label={health.label}
-                            style={{
-                              fontSize: 12,
-                              lineHeight: '12px',
-                              borderRadius: 4,
-                              height: 20,
-                              backgroundColor: `${health.hexColor}33`,
-                              color: health.hexColor,
-                              border: `2px solid ${health.hexColor}`,
-                            }}
-                          />
-                        )}
-                  </div>
-                </>
-              )}
+  const { classes, node, dataColumns, paginationOptions } = props;
+  const health = computeConsumerHealth();
+  return (
+    <>
+      <ListItem
+        divider={true}
+        disablePadding
+        secondaryAction={(
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <SyncPopover
+              syncId={node.id}
+              paginationOptions={paginationOptions}
+              running={node.running}
             />
-          </ListItemButton>
-        </ListItem>
-        <SyncConsumersDrawer
-          syncId={node.id}
-          syncName={node.name}
-          open={this.state.displayConsumers}
-          onClose={this.handleCloseConsumers.bind(this)}
-        />
-      </>
-    );
-  }
-}
+          </Security>
+        )}
+      >
+        <ListItemButton
+          classes={{ root: classes.item }}
+          onClick={handleOpenConsumers}
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <DatabaseImportOutline />
+          </ListItemIcon>
+          <ListItemText
+            primary={(
+              <>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.name.width }}
+                >
+                  {node.name}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.uri.width }}
+                >
+                  {node.uri}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.messages.width }}
+                >
+                  {n(node.queue_messages)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.running.width }}
+                >
+                  <ItemBoolean
+                    variant="inList"
+                    label={node.running ? t_i18n('Active') : t_i18n('Inactive')}
+                    status={node.running}
+                  />
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.current_state_date.width }}
+                >
+                  {nsdt(node.current_state_date)}
+                </div>
+                <div
+                  className={classes.producerItem}
+                  style={{ width: dataColumns.producer.width }}
+                >
+                  {!health.hexColor
+                    ? <span style={{ color: '#9e9e9e' }}>-</span>
+                    : (
+                        <Chip
+                          label={health.label}
+                          style={{
+                            fontSize: 12,
+                            lineHeight: '12px',
+                            borderRadius: 4,
+                            height: 20,
+                            backgroundColor: `${health.hexColor}33`,
+                            color: health.hexColor,
+                            border: `2px solid ${health.hexColor}`,
+                          }}
+                        />
+                      )}
+                </div>
+              </>
+            )}
+          />
+        </ListItemButton>
+      </ListItem>
+      <SyncConsumersDrawer
+        syncId={node.id}
+        syncName={node.name}
+        open={displayConsumers}
+        onClose={handleCloseConsumers}
+      />
+    </>
+  );
+};
 
 SyncLineLineComponent.propTypes = {
   dataColumns: PropTypes.object,
@@ -217,7 +209,6 @@ SyncLineLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
-  fd: PropTypes.func,
 };
 
 const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
@@ -239,113 +230,105 @@ const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
   `,
 });
 
-export const SyncLine = compose(
-  inject18n,
-  withStyles(styles),
-)(SyncLineFragment);
+export const SyncLine = withStyles(styles)(SyncLineFragment);
 
-class SyncDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        secondaryAction={
-          <MoreVert classes={classes.itemIconDisabled} />
-        }
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={(
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.uri.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.messages.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.running.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.current_state_date.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.producer.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-            </div>
-          )}
+const SyncDummyComponent = (props) => {
+  const { classes, dataColumns } = props;
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <MoreVert classes={classes.itemIconDisabled} />
+      }
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
         />
-      </ListItem>
-    );
-  }
-}
+      </ListItemIcon>
+      <ListItemText
+        primary={(
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.uri.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.messages.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.running.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.current_state_date.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.producer.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+          </div>
+        )}
+      />
+    </ListItem>
+  );
+};
 
 SyncDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const SyncLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(SyncDummyComponent);
+export const SyncLineDummy = withStyles(styles)(SyncDummyComponent);

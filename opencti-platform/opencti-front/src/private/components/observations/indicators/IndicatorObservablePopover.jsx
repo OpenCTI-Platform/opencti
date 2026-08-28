@@ -9,10 +9,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 
@@ -52,112 +51,106 @@ const indicatorObservablePopoverDeletionMutation = graphql`
   }
 `;
 
-class IndicatorObservablePopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
+const IndicatorObservablePopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
     event.stopPropagation();
     event.preventDefault();
-    this.setState({ anchorEl: event.currentTarget });
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleClose(event) {
+  const handleClose = (event) => {
     event.stopPropagation();
     event.preventDefault();
-    this.setState({ anchorEl: null });
-  }
+    setAnchorEl(null);
+  };
 
-  handleOpenDelete(event) {
+  const handleOpenDelete = (event) => {
     event.stopPropagation();
     event.preventDefault();
-    this.setState({ displayDelete: true });
-    this.handleClose(event);
-  }
+    setDisplayDelete(true);
+    handleClose(event);
+  };
 
-  handleCloseDelete(event) {
+  const handleCloseDelete = (event) => {
     event.stopPropagation();
     event.preventDefault();
-    this.setState({ deleting: false, displayDelete: false });
-  }
+    setDeleting(false);
+    setDisplayDelete(false);
+  };
 
-  submitDelete(event) {
+  const submitDelete = (event) => {
     event.stopPropagation();
     event.preventDefault();
-    this.setState({ deleting: true });
+    setDeleting(true);
     commitMutation({
       mutation: indicatorObservablePopoverDeletionMutation,
       variables: {
-        fromId: this.props.indicatorId,
-        toId: this.props.observableId,
+        fromId: props.indicatorId,
+        toId: props.observableId,
         relationship_type: 'based-on',
       },
-      updater: (store) => deleteNodeFromEdge(store, 'observables', this.props.indicatorId, this.props.observableId, { first: 100 }),
+      updater: (store) => deleteNodeFromEdge(store, 'observables', props.indicatorId, props.observableId, { first: 100 }),
       onCompleted: () => {
-        this.handleCloseDelete(event);
-        if (this.props.onDelete) {
-          this.props.onDelete();
+        handleCloseDelete(event);
+        if (props.onDelete) {
+          props.onDelete();
         }
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Remove')}
-          </MenuItem>
-        </Menu>
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-        >
-          <DialogContentText>
-            {t('Do you want to remove the observable from this indicator?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+  const { classes } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        color="primary"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Remove')}
+        </MenuItem>
+      </Menu>
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to remove the observable from this indicator?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 IndicatorObservablePopover.propTypes = {
   indicatorId: PropTypes.string,
@@ -166,11 +159,7 @@ IndicatorObservablePopover.propTypes = {
   isRelation: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   onDelete: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorObservablePopover);
+export default withStyles(styles)(IndicatorObservablePopover);

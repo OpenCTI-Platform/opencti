@@ -9,10 +9,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNodeFromId } from '../../../../utils/store';
 
@@ -52,108 +51,102 @@ const stixCyberObservableIndicatorPopoverDeletionMutation = graphql`
   }
 `;
 
-class StixCyberObservableIndicatorPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
+const StixCyberObservableIndicatorPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
     event.stopPropagation();
-  }
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleCloseDelete() {
-    this.setState({ deleting: false, displayDelete: false });
-  }
+  const handleCloseDelete = () => {
+    setDeleting(false);
+    setDisplayDelete(false);
+  };
 
-  submitDelete() {
-    this.setState({ deleting: true });
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: stixCyberObservableIndicatorPopoverDeletionMutation,
       variables: {
-        fromId: this.props.indicatorId,
-        toId: this.props.observableId,
+        fromId: props.indicatorId,
+        toId: props.observableId,
         relationship_type: 'based-on',
       },
       updater: (store) => {
         deleteNodeFromId(
           store,
-          this.props.observableId,
+          props.observableId,
           'Pagination_stixCyberObservables_indicators',
           {},
-          this.props.indicatorId,
+          props.indicatorId,
         );
       },
       onCompleted: () => {
-        this.handleCloseDelete();
+        handleCloseDelete();
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label="stix cyber observable indicator popover button"
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Remove')}
-          </MenuItem>
-        </Menu>
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-        >
-          <DialogContentText>
-            {t('Do you want to remove the indicator from this observable?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+  const { classes } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label="stix cyber observable indicator popover button"
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        color="primary"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Remove')}
+        </MenuItem>
+      </Menu>
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to remove the indicator from this observable?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 StixCyberObservableIndicatorPopover.propTypes = {
   observableId: PropTypes.string,
@@ -162,10 +155,6 @@ StixCyberObservableIndicatorPopover.propTypes = {
   isRelation: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableIndicatorPopover);
+export default withStyles(styles)(StixCyberObservableIndicatorPopover);

@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pipe, map, assoc } from 'ramda';
+import { pipe, map, assoc } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import Timeline from '@mui/lab/Timeline';
@@ -15,7 +15,7 @@ import { graphql, createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Slide from '@mui/material/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n, { isDateStringNone } from '../../../../components/i18n';
+import { useFormatter, isDateStringNone } from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -27,93 +27,63 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class StixDomainObjectTimelineComponent extends Component {
-  render() {
-    const {
-      fldt,
-      theme,
-      data,
-      stixDomainObjectId,
-      entityLink,
-      timeField,
-      t,
-    } = this.props;
-    const stixRelationships = pipe(
-      map((n) => n.node),
-      map((n) => (n.from && n.from.id === stixDomainObjectId
-        ? assoc('targetEntity', n.to, n)
-        : assoc('targetEntity', n.from, n))),
-    )(data.stixRelationships.edges);
+const StixDomainObjectTimelineComponent = (props) => {
+  const { fldt, t_i18n } = useFormatter();
+  const {
+    theme,
+    data,
+    stixDomainObjectId,
+    entityLink,
+    timeField,
+  } = props;
+  const stixRelationships = pipe(
+    map((n) => n.node),
+    map((n) => (n.from && n.from.id === stixDomainObjectId
+      ? assoc('targetEntity', n.to, n)
+      : assoc('targetEntity', n.from, n))),
+  )(data.stixRelationships.edges);
 
-    const getDate = (relationship) => {
-      const dateList = timeField === 'technical'
-        ? [relationship.created, relationship.created_at]
-        : [relationship.start_time, relationship.first_seen, relationship.created_at];
+  const getDate = (relationship) => {
+    const dateList = timeField === 'technical'
+      ? [relationship.created, relationship.created_at]
+      : [relationship.start_time, relationship.first_seen, relationship.created_at];
 
-      const usableDate = dateList.find((date) => date && !isDateStringNone(date));
-      return fldt(usableDate);
-    };
+    const usableDate = dateList.find((date) => date && !isDateStringNone(date));
+    return fldt(usableDate);
+  };
 
-    return (
-      <div style={{ marginBottom: 90 }}>
-        <div id="container">
-          <Timeline position="alternate">
-            {stixRelationships.map((stixRelationship) => {
-              let link = null;
-              if (
-                stixRelationship.parent_types.includes('stix-core-relationship')
-              ) {
-                link = `${entityLink}/relations/${stixRelationship.id}`;
-              } else if (
-                stixRelationship.entity_type === 'stix-sighting-relationship'
-              ) {
-                link = `${entityLink}/sightings/${stixRelationship.id}`;
-              }
-              const restricted = stixRelationship.targetEntity === null;
-              return (
-                <TimelineItem key={stixRelationship.id}>
-                  <TimelineOppositeContent
-                    sx={{ paddingTop: '18px' }}
-                    color="text.secondary"
-                  >
-                    {getDate(stixRelationship)}
-                  </TimelineOppositeContent>
-                  <TimelineSeparator>
-                    {link ? (
-                      <Link to={link}>
-                        <Tooltip
-                          title={
-                            !restricted
-                              ? getMainRepresentative(stixRelationship.targetEntity)
-                              : t('Restricted')
-                          }
-                        >
-                          <TimelineDot
-                            sx={{
-                              borderColor: !restricted
-                                ? itemColor(
-                                    stixRelationship.targetEntity.entity_type,
-                                  )
-                                : theme.palette.primary.main,
-                            }}
-                            variant="outlined"
-                          >
-                            <ItemIcon
-                              type={
-                                !restricted
-                                  ? stixRelationship.targetEntity.entity_type
-                                  : t('Restricted')
-                              }
-                            />
-                          </TimelineDot>
-                        </Tooltip>
-                      </Link>
-                    ) : (
+  return (
+    <div style={{ marginBottom: 90 }}>
+      <div id="container">
+        <Timeline position="alternate">
+          {stixRelationships.map((stixRelationship) => {
+            let link = null;
+            if (
+              stixRelationship.parent_types.includes('stix-core-relationship')
+            ) {
+              link = `${entityLink}/relations/${stixRelationship.id}`;
+            } else if (
+              stixRelationship.entity_type === 'stix-sighting-relationship'
+            ) {
+              link = `${entityLink}/sightings/${stixRelationship.id}`;
+            }
+            const restricted = stixRelationship.targetEntity === null;
+            return (
+              <TimelineItem key={stixRelationship.id}>
+                <TimelineOppositeContent
+                  sx={{ paddingTop: '18px' }}
+                  color="text.secondary"
+                >
+                  {getDate(stixRelationship)}
+                </TimelineOppositeContent>
+                <TimelineSeparator>
+                  {link ? (
+                    <Link to={link}>
                       <Tooltip
                         title={
                           !restricted
                             ? getMainRepresentative(stixRelationship.targetEntity)
-                            : t('Restricted')
+                            : t_i18n('Restricted')
                         }
                       >
                         <TimelineDot
@@ -130,49 +100,76 @@ class StixDomainObjectTimelineComponent extends Component {
                             type={
                               !restricted
                                 ? stixRelationship.targetEntity.entity_type
-                                : t('Restricted')
+                                : t_i18n('Restricted')
                             }
                           />
                         </TimelineDot>
                       </Tooltip>
-                    )}
-                    <TimelineConnector />
-                  </TimelineSeparator>
-                  <TimelineContent>
-                    <Card>
-                      <Typography variant="h2">
-                        {!restricted
-                          ? truncate(
-                              getMainRepresentative(stixRelationship.targetEntity),
-                              50,
-                            )
-                          : t('Restricted')}
-                      </Typography>
-                      <span style={{ color: '#a8a8a8' }}>
-                        {truncate(
+                    </Link>
+                  ) : (
+                    <Tooltip
+                      title={
+                        !restricted
+                          ? getMainRepresentative(stixRelationship.targetEntity)
+                          : t_i18n('Restricted')
+                      }
+                    >
+                      <TimelineDot
+                        sx={{
+                          borderColor: !restricted
+                            ? itemColor(
+                                stixRelationship.targetEntity.entity_type,
+                              )
+                            : theme.palette.primary.main,
+                        }}
+                        variant="outlined"
+                      >
+                        <ItemIcon
+                          type={
+                            !restricted
+                              ? stixRelationship.targetEntity.entity_type
+                              : t_i18n('Restricted')
+                          }
+                        />
+                      </TimelineDot>
+                    </Tooltip>
+                  )}
+                  <TimelineConnector />
+                </TimelineSeparator>
+                <TimelineContent>
+                  <Card>
+                    <Typography variant="h2">
+                      {!restricted
+                        ? truncate(
+                            getMainRepresentative(stixRelationship.targetEntity),
+                            50,
+                          )
+                        : t_i18n('Restricted')}
+                    </Typography>
+                    <span style={{ color: '#a8a8a8' }}>
+                      {truncate(
 
-                          stixRelationship.description
-                          && stixRelationship.description.length > 0
-                            ? stixRelationship.description
-                            : !restricted
-                                ? getSecondaryRepresentative(
-                                    stixRelationship.targetEntity,
-                                  )
-                                : t('Restricted'),
-                          100,
-                        )}
-                      </span>
-                    </Card>
-                  </TimelineContent>
-                </TimelineItem>
-              );
-            })}
-          </Timeline>
-        </div>
+                        stixRelationship.description
+                        && stixRelationship.description.length > 0
+                          ? stixRelationship.description
+                          : !restricted
+                              ? getSecondaryRepresentative(
+                                  stixRelationship.targetEntity,
+                                )
+                              : t_i18n('Restricted'),
+                        100,
+                      )}
+                    </span>
+                  </Card>
+                </TimelineContent>
+              </TimelineItem>
+            );
+          })}
+        </Timeline>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 StixDomainObjectTimelineComponent.propTypes = {
   stixDomainObjectId: PropTypes.string,
@@ -180,7 +177,6 @@ StixDomainObjectTimelineComponent.propTypes = {
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   timeField: PropTypes.string,
 };
 
@@ -581,7 +577,4 @@ const StixDomainObjectTimeline = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default compose(
-  inject18n,
-  withTheme,
-)(StixDomainObjectTimeline);
+export default withTheme(StixDomainObjectTimeline);

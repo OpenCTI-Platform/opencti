@@ -10,10 +10,10 @@ import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Drawer from '../../common/drawer/Drawer';
 import TaxiiCollectionEdition from './TaxiiCollectionEdition';
@@ -60,49 +60,44 @@ const taxiiCollectionEditionQuery = graphql`
   }
 `;
 
-class TaxiiCollectionPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
+const TaxiiCollectionPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    handleClose();
+  };
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
+  const handleCloseUpdate = () => {
+    setDisplayUpdate(false);
+  };
 
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: taxiiCollectionPopoverDeletionMutation,
       variables: {
-        id: this.props.taxiiCollectionId,
+        id: props.taxiiCollectionId,
       },
       updater: (store) => {
         const container = store.getRoot();
@@ -111,97 +106,94 @@ class TaxiiCollectionPopover extends Component {
         const conn = ConnectionHandler.getConnection(
           userProxy,
           'Pagination_taxiiCollections',
-          this.props.paginationOptions,
+          props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
+        setDeleting(false);
+        handleCloseDelete();
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t, taxiiCollectionId } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          onClose={this.handleCloseUpdate.bind(this)}
-          title={t('Update a TAXII collection')}
-        >
-          <QueryRenderer
-            query={taxiiCollectionEditionQuery}
-            variables={{ id: taxiiCollectionId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <TaxiiCollectionEdition
-                    taxiiCollection={props.taxiiCollection}
-                  />
-                );
-              }
-              return <div />;
-            }}
-          />
-        </Drawer>
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-          size="small"
-        >
-          <DialogContentText>
-            {t('Do you want to delete this collection?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+  const { classes, taxiiCollectionId } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        color="primary"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenUpdate}>
+          {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
+      <Drawer
+        open={displayUpdate}
+        onClose={handleCloseUpdate}
+        title={t_i18n('Update a TAXII collection')}
+      >
+        <QueryRenderer
+          query={taxiiCollectionEditionQuery}
+          variables={{ id: taxiiCollectionId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <TaxiiCollectionEdition
+                  taxiiCollection={props.taxiiCollection}
+                />
+              );
+            }
+            return <div />;
+          }}
+        />
+      </Drawer>
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+        size="small"
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this collection?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 TaxiiCollectionPopover.propTypes = {
   taxiiCollectionId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(TaxiiCollectionPopover);
+export default compose(withStyles(styles))(TaxiiCollectionPopover);

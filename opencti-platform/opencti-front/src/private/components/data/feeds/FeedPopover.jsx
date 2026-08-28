@@ -10,10 +10,10 @@ import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import FeedCreation from './FeedCreation';
 import FeedEdition from './FeedEdition';
@@ -55,59 +55,54 @@ const feedDuplicateQuery = graphql`
   }
 `;
 
-class FeedPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-      displayDuplicate: false,
-    };
-  }
+const FeedPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [displayDuplicate, setDisplayDuplicate] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    handleClose();
+  };
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
+  const handleCloseUpdate = () => {
+    setDisplayUpdate(false);
+  };
 
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
+  const handleOpenDuplicate = () => {
+    setDisplayDuplicate(true);
+    handleClose();
+  };
 
-  handleOpenDuplicate() {
-    this.setState({ displayDuplicate: true });
-    this.handleClose();
-  }
+  const handleCloseDuplicate = () => {
+    setDisplayDuplicate(false);
+  };
 
-  handleCloseDuplicate() {
-    this.setState({ displayDuplicate: false });
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: feedPopoverDeletionMutation,
       variables: {
-        id: this.props.feedId,
+        id: props.feedId,
       },
       updater: (store) => {
         const container = store.getRoot();
@@ -115,116 +110,113 @@ class FeedPopover extends Component {
         const conn = ConnectionHandler.getConnection(
           userProxy,
           'Pagination_feeds',
-          this.props.paginationOptions,
+          props.paginationOptions,
         );
-        ConnectionHandler.deleteNode(conn, this.props.feedId);
+        ConnectionHandler.deleteNode(conn, props.feedId);
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
+        setDeleting(false);
+        handleCloseDelete();
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t, feedId } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-label={t('Open menu')}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDuplicate.bind(this)}>
-            {t('Duplicate')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
-        <QueryRenderer
-          query={feedEditionQuery}
-          variables={{ id: feedId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <>
-                  <FeedEdition
-                    feed={props.feed}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                    open={this.state.displayUpdate}
-                  />
-                </>
-              );
-            }
-            return <div />;
-          }}
-        />
-        <QueryRenderer
-          query={feedDuplicateQuery}
-          variables={{ id: feedId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <FeedCreation
+  const { classes, feedId } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        onClick={handleOpen}
+        aria-label={t_i18n('Open menu')}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        color="primary"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenUpdate}>
+          {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleOpenDuplicate}>
+          {t_i18n('Duplicate')}
+        </MenuItem>
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
+      <QueryRenderer
+        query={feedEditionQuery}
+        variables={{ id: feedId }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <>
+                <FeedEdition
                   feed={props.feed}
-                  onDrawerClose={this.handleCloseDuplicate.bind(this)}
-                  open={this.state.displayDuplicate}
-                  paginationOptions={this.props.paginationOptions}
-                  isDuplicated={true}
+                  handleClose={handleCloseUpdate}
+                  open={displayUpdate}
                 />
-              );
-            }
-            return <div />;
-          }}
-        />
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          size="small"
-          title={t('Are you sure?')}
-        >
-          <DialogContentText>
-            {t('Do you want to delete this feed?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+              </>
+            );
+          }
+          return <div />;
+        }}
+      />
+      <QueryRenderer
+        query={feedDuplicateQuery}
+        variables={{ id: feedId }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <FeedCreation
+                feed={props.feed}
+                onDrawerClose={handleCloseDuplicate}
+                open={displayDuplicate}
+                paginationOptions={props.paginationOptions}
+                isDuplicated={true}
+              />
+            );
+          }
+          return <div />;
+        }}
+      />
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        size="small"
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this feed?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 FeedPopover.propTypes = {
   feedId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(FeedPopover);
+export default compose(withStyles(styles))(FeedPopover);

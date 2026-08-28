@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -8,11 +8,9 @@ import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
 import { DatabaseExportOutline } from 'mdi-material-ui';
-import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import TaxiiPopover from './TaxiiPopover';
-import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
@@ -79,75 +77,73 @@ const styles = (theme) => ({
   },
 });
 
-class TaxiiLineLineComponent extends Component {
-  render() {
-    const { classes, node, dataColumns, paginationOptions } = this.props;
-    const filters = deserializeFilterGroupForFrontend(node.filters);
-    return (
-      <ListItem
-        divider={true}
-        disablePadding
-        secondaryAction={(
-          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-            <TaxiiPopover
-              taxiiCollectionId={node.id}
-              paginationOptions={paginationOptions}
-            />
-          </Security>
-        )}
-      >
-        <ListItemButton
-          classes={{ root: classes.item }}
-          component="a"
-          href={`/taxii2/root/collections/${node.id}/objects/`}
-          target="_blank"
-        >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <DatabaseExportOutline />
-          </ListItemIcon>
-          <ListItemText
-            primary={(
-              <>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
-                >
-                  {node.name}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.description.width }}
-                >
-                  <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.id.width, paddingRight: 10 }}
-                >
-                  <ItemCopy content={node.id} variant="inLine" />
-                </div>
-                <div
-                  className={classes.filtersItem}
-                  style={{ width: dataColumns.filters.width }}
-                >
-                  {isFilterGroupNotEmpty(filters)
-                    ? (
-                        <FilterIconButton
-                          filters={filters}
-                          dataColumns={dataColumns}
-                          variant="small"
-                        />
-                      )
-                    : EMPTY_VALUE}
-                </div>
-              </>
-            )}
+const TaxiiLineLineComponent = (props) => {
+  const { classes, node, dataColumns, paginationOptions } = props;
+  const filters = deserializeFilterGroupForFrontend(node.filters);
+  return (
+    <ListItem
+      divider={true}
+      disablePadding
+      secondaryAction={(
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <TaxiiPopover
+            taxiiCollectionId={node.id}
+            paginationOptions={paginationOptions}
           />
-        </ListItemButton>
-      </ListItem>
-    );
-  }
-}
+        </Security>
+      )}
+    >
+      <ListItemButton
+        classes={{ root: classes.item }}
+        component="a"
+        href={`/taxii2/root/collections/${node.id}/objects/`}
+        target="_blank"
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <DatabaseExportOutline />
+        </ListItemIcon>
+        <ListItemText
+          primary={(
+            <>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.description.width }}
+              >
+                <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.id.width, paddingRight: 10 }}
+              >
+                <ItemCopy content={node.id} variant="inLine" />
+              </div>
+              <div
+                className={classes.filtersItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                {isFilterGroupNotEmpty(filters)
+                  ? (
+                      <FilterIconButton
+                        filters={filters}
+                        dataColumns={dataColumns}
+                        variant="small"
+                      />
+                    )
+                  : EMPTY_VALUE}
+              </div>
+            </>
+          )}
+        />
+      </ListItemButton>
+    </ListItem>
+  );
+};
 
 TaxiiLineLineComponent.propTypes = {
   dataColumns: PropTypes.object,
@@ -155,7 +151,6 @@ TaxiiLineLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
-  fd: PropTypes.func,
 };
 
 const TaxiiLineFragment = createFragmentContainer(TaxiiLineLineComponent, {
@@ -169,89 +164,81 @@ const TaxiiLineFragment = createFragmentContainer(TaxiiLineLineComponent, {
   `,
 });
 
-export const TaxiiLine = compose(
-  inject18n,
-  withStyles(styles),
-)(TaxiiLineFragment);
+export const TaxiiLine = withStyles(styles)(TaxiiLineFragment);
 
-class TaxiiDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={(
-            <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-            </>
-          )}
+const TaxiiDummyComponent = (props) => {
+  const { classes, dataColumns } = props;
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
         />
-      </ListItem>
-    );
-  }
-}
+      </ListItemIcon>
+      <ListItemText
+        primary={(
+          <>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.description.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.id.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.filters.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+          </>
+        )}
+      />
+    </ListItem>
+  );
+};
 
 TaxiiDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const TaxiiLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(TaxiiDummyComponent);
+export const TaxiiLineDummy = withStyles(styles)(TaxiiDummyComponent);

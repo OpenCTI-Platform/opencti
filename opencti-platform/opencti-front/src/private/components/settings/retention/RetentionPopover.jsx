@@ -10,9 +10,9 @@ import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import RetentionEdition from './RetentionEdition';
@@ -61,169 +61,161 @@ const retentionEditionQuery = graphql`
   }
 `;
 
-class RetentionPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
+const RetentionPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    handleClose();
+  };
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
+  const handleCloseUpdate = () => {
+    setDisplayUpdate(false);
+  };
 
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: retentionPopoverDeletionMutation,
       variables: {
-        id: this.props.retentionRuleId,
+        id: props.retentionRuleId,
       },
       updater: (store) => {
         deleteNode(
           store,
           'Pagination_retentionRules',
-          this.props.paginationOptions,
-          this.props.retentionRuleId,
+          props.paginationOptions,
+          props.retentionRuleId,
         );
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
+        setDeleting(false);
+        handleCloseDelete();
       },
     });
-  }
+  };
 
-  submitToggleActive(currentActive) {
+  const submitToggleActive = (currentActive) => {
     commitMutation({
       mutation: retentionPopoverFieldPatchMutation,
       variables: {
-        id: this.props.retentionRuleId,
+        id: props.retentionRuleId,
         input: [{ key: 'active', value: [String(!currentActive)] }],
       },
     });
-    this.handleClose();
-  }
+    handleClose();
+  };
 
-  render() {
-    const { classes, t, retentionRuleId } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-        <QueryRenderer
-          query={retentionEditionQuery}
-          variables={{ id: retentionRuleId }}
-          render={({ props }) => {
-            if (props) {
-              const { retentionRule } = props;
-              const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge';
-              return (
-                <>
-                  <Menu
-                    anchorEl={this.state.anchorEl}
-                    open={Boolean(this.state.anchorEl)}
-                    onClose={this.handleClose.bind(this)}
-                  >
-                    <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-                      {t('Update')}
-                    </MenuItem>
-                    <MenuItem onClick={() => this.submitToggleActive(retentionRule?.active)}>
-                      {retentionRule?.active ? t('Deactivate') : t('Activate')}
-                    </MenuItem>
-                    {!isTechnicalRule && (
-                      <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-                        {t('Delete')}
-                      </MenuItem>
-                    )}
-                  </Menu>
-                  <RetentionEdition
-                    retentionRule={retentionRule}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                    open={this.state.displayUpdate}
-                  />
-                </>
-              );
-            }
+  const { classes, retentionRuleId } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
+        <MoreVert />
+      </IconButton>
+      <QueryRenderer
+        query={retentionEditionQuery}
+        variables={{ id: retentionRuleId }}
+        render={({ props }) => {
+          if (props) {
+            const { retentionRule } = props;
+            const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge';
             return (
-              <Menu
-                anchorEl={this.state.anchorEl}
-                open={Boolean(this.state.anchorEl)}
-                onClose={this.handleClose.bind(this)}
-              >
-                <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-                  {t('Update')}
-                </MenuItem>
-              </Menu>
+              <>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                >
+                  <MenuItem onClick={handleOpenUpdate}>
+                    {t_i18n('Update')}
+                  </MenuItem>
+                  <MenuItem onClick={() => submitToggleActive(retentionRule?.active)}>
+                    {retentionRule?.active ? t_i18n('Deactivate') : t_i18n('Activate')}
+                  </MenuItem>
+                  {!isTechnicalRule && (
+                    <MenuItem onClick={handleOpenDelete}>
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  )}
+                </Menu>
+                <RetentionEdition
+                  retentionRule={retentionRule}
+                  handleClose={handleCloseUpdate}
+                  open={displayUpdate}
+                />
+              </>
             );
-          }}
-        />
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-        >
-          <DialogContentText>
-            {t('Do you want to delete this retention policy?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
+          }
+          return (
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
             >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+              <MenuItem onClick={handleOpenUpdate}>
+                {t_i18n('Update')}
+              </MenuItem>
+            </Menu>
+          );
+        }}
+      />
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this retention policy?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 RetentionPopover.propTypes = {
   retentionRuleId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(RetentionPopover);
+export default compose(withStyles(styles))(RetentionPopover);

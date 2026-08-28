@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -7,12 +7,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import { FileDelimitedOutline } from 'mdi-material-ui';
-import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import FeedPopover from './FeedPopover';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
@@ -60,79 +59,78 @@ const styles = (theme) => ({
   },
 });
 
-class FeedLineLineComponent extends Component {
-  render() {
-    const { classes, node, dataColumns, paginationOptions, t } = this.props;
-    const filters = deserializeFilterGroupForFrontend(node.filters);
-    return (
-      <ListItem
-        divider={true}
-        disablePadding
-        secondaryAction={(
-          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-            <FeedPopover feedId={node.id} paginationOptions={paginationOptions} />
-          </Security>
-        )}
-      >
-        <ListItemButton
-          classes={{ root: classes.item }}
-          component="a"
-          href={`/feeds/${node.id}`}
-          target="_blank" // open in new tab
+const FeedLineLineComponent = (props) => {
+  const { t_i18n } = useFormatter();
+  const { classes, node, dataColumns, paginationOptions } = props;
+  const filters = deserializeFilterGroupForFrontend(node.filters);
+  return (
+    <ListItem
+      divider={true}
+      disablePadding
+      secondaryAction={(
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <FeedPopover feedId={node.id} paginationOptions={paginationOptions} />
+        </Security>
+      )}
+    >
+      <ListItemButton
+        classes={{ root: classes.item }}
+        component="a"
+        href={`/feeds/${node.id}`}
+        target="_blank" // open in new tab
 
-        >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <FileDelimitedOutline />
-          </ListItemIcon>
-          <ListItemText
-            primary={(
-              <>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
-                >
-                  {node.name}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.feed_types.width }}
-                >
-                  {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.rolling_time.width }}
-                >
-                  <code>{node.rolling_time}</code>
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.columns.width }}
-                >
-                  {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
-                </div>
-                <div
-                  className={classes.filtersItem}
-                  style={{ width: dataColumns.filters.width }}
-                >
-                  {isFilterGroupNotEmpty(filters)
-                    ? (
-                        <FilterIconButton
-                          filters={filters}
-                          variant="small"
-                          dataColumns={dataColumns}
-                        />
-                      )
-                    : EMPTY_VALUE}
-                </div>
-              </>
-            )}
-          />
-        </ListItemButton>
-      </ListItem>
-    );
-  }
-}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <FileDelimitedOutline />
+        </ListItemIcon>
+        <ListItemText
+          primary={(
+            <>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.feed_types.width }}
+              >
+                {node.feed_types.map((type) => t_i18n(`entity_${type}`)).join(', ')}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.rolling_time.width }}
+              >
+                <code>{node.rolling_time}</code>
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.columns.width }}
+              >
+                {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
+              </div>
+              <div
+                className={classes.filtersItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                {isFilterGroupNotEmpty(filters)
+                  ? (
+                      <FilterIconButton
+                        filters={filters}
+                        variant="small"
+                        dataColumns={dataColumns}
+                      />
+                    )
+                  : EMPTY_VALUE}
+              </div>
+            </>
+          )}
+        />
+      </ListItemButton>
+    </ListItem>
+  );
+};
 
 FeedLineLineComponent.propTypes = {
   dataColumns: PropTypes.object,
@@ -140,8 +138,6 @@ FeedLineLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
-  fd: PropTypes.func,
-  t: PropTypes.func,
 };
 
 const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
@@ -169,100 +165,92 @@ const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
   `,
 });
 
-export const FeedLine = compose(
-  inject18n,
-  withStyles(styles),
-)(FeedLineFragment);
+export const FeedLine = withStyles(styles)(FeedLineFragment);
 
-class FeedDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={(
-            <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.feed_types.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.rolling_time.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.columns.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
-              </div>
-            </>
-          )}
+const FeedDummyComponent = (props) => {
+  const { classes, dataColumns } = props;
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
         />
-      </ListItem>
-    );
-  }
-}
+      </ListItemIcon>
+      <ListItemText
+        primary={(
+          <>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.feed_types.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.rolling_time.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.columns.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.filters.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="50%"
+              />
+            </div>
+          </>
+        )}
+      />
+    </ListItem>
+  );
+};
 
 FeedDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const FeedLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(FeedDummyComponent);
+export const FeedLineDummy = withStyles(styles)(FeedDummyComponent);

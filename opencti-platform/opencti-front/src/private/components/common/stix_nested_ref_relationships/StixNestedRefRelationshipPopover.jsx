@@ -9,11 +9,10 @@ import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
 import StixNestedRefRelationshipEdition from './StixNestedRefRelationshipEdition';
@@ -48,54 +47,49 @@ const stixNestedRefRelationshipPopoverDeletionMutation = graphql`
   }
 `;
 
-class StixNestedRefRelationshipPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
+const StixNestedRefRelationshipPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
     stopEvent(event);
-    this.setState({ anchorEl: event.currentTarget });
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleClose(event) {
-    this.setState({ anchorEl: null });
+  const handleClose = (event) => {
+    setAnchorEl(null);
     stopEvent(event);
-  }
+  };
 
-  handleOpenUpdate(event) {
-    this.setState({ displayUpdate: true });
-    this.handleClose(event);
-  }
+  const handleOpenUpdate = (event) => {
+    setDisplayUpdate(true);
+    handleClose(event);
+  };
 
-  handleCloseUpdate(event) {
-    this.setState({ displayUpdate: false });
+  const handleCloseUpdate = (event) => {
+    setDisplayUpdate(false);
     stopEvent(event);
-  }
+  };
 
-  handleOpenDelete(event) {
-    this.setState({ displayDelete: true });
-    this.handleClose(event);
-  }
+  const handleOpenDelete = (event) => {
+    setDisplayDelete(true);
+    handleClose(event);
+  };
 
-  handleCloseDelete(event) {
-    this.setState({ displayDelete: false });
+  const handleCloseDelete = (event) => {
+    setDisplayDelete(false);
     stopEvent(event);
-  }
+  };
 
-  submitDelete(event) {
-    this.setState({ deleting: true });
+  const submitDelete = (event) => {
+    setDeleting(true);
     stopEvent(event);
     commitMutation({
       mutation: stixNestedRefRelationshipPopoverDeletionMutation,
       variables: {
-        id: this.props.stixNestedRefRelationshipId,
+        id: props.stixNestedRefRelationshipId,
       },
       updater: (store) => {
         const container = store.getRoot();
@@ -106,87 +100,81 @@ class StixNestedRefRelationshipPopover extends Component {
         const conn = ConnectionHandler.getConnection(
           userProxy,
           'Pagination_stixNestedRefRelationships',
-          this.props.paginationOptions,
+          props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete(event);
+        setDeleting(false);
+        handleCloseDelete(event);
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t, stixNestedRefRelationshipId, disabled } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          disabled={disabled}
-          color="primary"
-        >
-          <MoreVertOutlined />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
-        <StixNestedRefRelationshipEdition
-          variant="noGraph"
-          stixNestedRefRelationshipId={stixNestedRefRelationshipId}
-          open={this.state.displayUpdate}
-          handleClose={this.handleCloseUpdate.bind(this)}
-        />
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-          size="small"
-        >
-          <DialogContentText>
-            {t('Do you want to delete this relation?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+  const { classes, stixNestedRefRelationshipId, disabled } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        disabled={disabled}
+        color="primary"
+      >
+        <MoreVertOutlined />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenUpdate}>
+          {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
+      <StixNestedRefRelationshipEdition
+        variant="noGraph"
+        stixNestedRefRelationshipId={stixNestedRefRelationshipId}
+        open={displayUpdate}
+        handleClose={handleCloseUpdate}
+      />
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+        size="small"
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this relation?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 StixNestedRefRelationshipPopover.propTypes = {
   stixNestedRefRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixNestedRefRelationshipPopover);
+export default withStyles(styles)(StixNestedRefRelationshipPopover);
