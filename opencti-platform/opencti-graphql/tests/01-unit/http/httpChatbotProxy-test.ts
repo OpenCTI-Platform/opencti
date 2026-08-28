@@ -331,6 +331,26 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(res.end).toHaveBeenCalled();
   });
 
+  it('should extract the message when the upstream detail is an object', async () => {
+    // XTM One refuses with `{detail: {code, message}}`; interpolating that
+    // object reached the chat bubble as "[object Object]".
+    const httpError = new Error('Request failed with status code 403') as any;
+    httpError.response = { status: 403, data: { detail: { code: 'ai_disabled', message: 'AI is disabled on this deployment.' } } };
+    mockPost.mockRejectedValue(httpError);
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+
+    await postAgentMessageStream(req, res);
+
+    expect(res.write).toHaveBeenCalledWith(
+      expect.stringContaining('AI is disabled on this deployment.'),
+    );
+    expect(res.write).not.toHaveBeenCalledWith(
+      expect.stringContaining('[object Object]'),
+    );
+    expect(res.end).toHaveBeenCalled();
+  });
+
   it('should fall back to error message when HTTP response has no detail', async () => {
     const httpError = new Error('Server error') as any;
     httpError.response = { status: 500, data: {} };
