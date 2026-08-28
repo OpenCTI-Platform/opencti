@@ -1042,6 +1042,11 @@ class Report:
                         "opencti_upsert_operations", stix_object
                     )
                 )
+            published = stix_object.get("published")
+            if published is None and update:
+                report = self.read(id=stix_object["id"], customAttributes="published")
+                if report is not None:
+                    published = report.get("published")
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
@@ -1094,9 +1099,7 @@ class Report:
                     if "report_types" in stix_object
                     else None
                 ),
-                published=(
-                    stix_object["published"] if "published" in stix_object else None
-                ),
+                published=published,
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object
