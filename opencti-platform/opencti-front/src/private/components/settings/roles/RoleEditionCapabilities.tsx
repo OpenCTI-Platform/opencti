@@ -14,7 +14,6 @@ import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCa
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import type { Theme } from '../../../../components/Theme';
 import { Stack } from '@mui/material';
 import { Checkbox } from '@filigran/design-system';
 

@@ -83,6 +83,10 @@ jobs:
             '
 
     - name: Frontend utility class check
+      # Reported independently of the lint step above: a dead utility class is
+      # its own class of defect, and knowing whether it passed is useful even on
+      # a run that failed earlier — the same reason the test step below does it.
+      if: '!cancelled()'
       # Every utility class in product code must exist in the CSS the app loads.
       # The front end ships no Tailwind of its own, so a class the design system
       # does not deliver renders nothing at all — silently, with no build error

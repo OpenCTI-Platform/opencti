@@ -3,7 +3,6 @@ import { IconButton } from '@filigran/design-system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Field, useField, useFormikContext } from 'formik';
 import { useFormatter } from './i18n';
-import { fieldSpacingContainerStyle } from '../utils/field';
 import TextField from './TextField';
 
 // TODO remove any when component TextField is typescript
