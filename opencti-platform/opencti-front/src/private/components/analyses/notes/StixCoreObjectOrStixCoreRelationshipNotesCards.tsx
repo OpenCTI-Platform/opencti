@@ -281,6 +281,7 @@ const NoteForm = ({
               onClick={handleToggleMore}
               disabled={isSubmitting}
               size="small"
+              aria-expanded={more}
               endIcon={
                 more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />
               }
