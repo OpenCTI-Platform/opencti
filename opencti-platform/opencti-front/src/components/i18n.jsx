@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { useIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
@@ -25,147 +25,6 @@ export const isNone = (date) => {
   if (date === (new Date(UNTIL_END).toISOString())) return true;
   const parsedDate = moment(date).format();
   return isDateStringNone(parsedDate);
-};
-
-const inject18n = (WrappedComponent) => {
-  class InjectIntl extends Component {
-    render() {
-      const { children } = this.props;
-      const translate = (message) => this.props.intl.formatMessage({ id: message });
-      const formatNumber = (number) => {
-        if (number === null || number === '') {
-          return EMPTY_VALUE;
-        }
-        return `${this.props.intl.formatNumber(numberFormat(number).number)}${
-          numberFormat(number).symbol
-        }`;
-      };
-      const formatBytes = (number) => `${this.props.intl.formatNumber(bytesFormat(number).number)}${
-        bytesFormat(number).symbol
-      }`;
-      const longDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        });
-      };
-      const longDateTime = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-          second: 'numeric',
-          minute: 'numeric',
-          hour: 'numeric',
-        });
-      };
-      const shortDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        });
-      };
-      const shortNumericDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          day: 'numeric',
-          month: 'numeric',
-          year: 'numeric',
-        });
-      };
-      const shortNumericDateTime = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          second: 'numeric',
-          minute: 'numeric',
-          hour: 'numeric',
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        });
-      };
-      const standardDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        });
-      };
-      const monthDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          month: 'short',
-          year: 'numeric',
-        });
-      };
-      const monthTextDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, { month: 'long' });
-      };
-      const monthTextYearDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, {
-          month: 'long',
-          year: 'numeric',
-        });
-      };
-      const yearDate = (date) => {
-        if (isNone(date)) {
-          return EMPTY_VALUE;
-        }
-        return this.props.intl.formatDate(date, { year: 'numeric' });
-      };
-      return (
-        <WrappedComponent
-          {...this.props}
-          {...{ t: translate }}
-          {...{ n: formatNumber }}
-          {...{ b: formatBytes }}
-          {...{ fld: longDate }}
-          {...{ fldt: longDateTime }}
-          {...{ fsd: shortDate }}
-          {...{ nsd: shortNumericDate }}
-          {...{ nsdt: shortNumericDateTime }}
-          {...{ fd: standardDate }}
-          {...{ md: monthDate }}
-          {...{ mtd: monthTextDate }}
-          {...{ mtdy: monthTextYearDate }}
-          {...{ yd: yearDate }}
-        >
-          {children}
-        </WrappedComponent>
-      );
-    }
-  }
-  const WithIntl = (props) => <InjectIntl {...props} intl={useIntl()} />;
-  WithIntl.displayName = `WithIntl(${
-    WrappedComponent.displayName || WrappedComponent.name || 'Component'
-  })`;
-  return WithIntl;
 };
 
 export const useFormatter = () => {
@@ -398,6 +257,27 @@ export const useFormatter = () => {
     smhd: shortMinuteHourDate,
     rd: relativeDate,
   };
+};
+
+/**
+ * Legacy HOC injecting the formatters of useFormatter as props.
+ *
+ * Only kept for the class components that cannot consume the hook directly.
+ * Prefer useFormatter in any new or converted component.
+ */
+const inject18n = (WrappedComponent) => {
+  const WithI18n = ({ children, ...props }) => {
+    const { t_i18n, ...formatters } = useFormatter();
+    return (
+      <WrappedComponent {...props} {...formatters} t={t_i18n}>
+        {children}
+      </WrappedComponent>
+    );
+  };
+  WithI18n.displayName = `WithI18n(${
+    WrappedComponent.displayName || WrappedComponent.name || 'Component'
+  })`;
+  return WithI18n;
 };
 
 export default inject18n;
