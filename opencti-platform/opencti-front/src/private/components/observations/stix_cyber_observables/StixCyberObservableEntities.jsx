@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -9,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import Card from '@common/card/Card';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import StixCyberObservableEntitiesLines, { stixCyberObservableEntitiesLinesQuery } from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
@@ -150,33 +149,27 @@ const inlineStylesHeaders = {
   },
 };
 
-class StixCyberObservableEntities extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      sortBy: null,
-      orderAsc: false,
-      searchTerm: '',
-      view: 'lines',
-      relationReversed: false,
-    };
-  }
+const StixCyberObservableEntities = (props) => {
+  const { t_i18n } = useFormatter();
+  const [sortBy, setSortBy] = useState(null);
+  const [orderAsc, setOrderAsc] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [relationReversed, setRelationReversed] = useState(false);
+  const handleReverseRelation = () => {
+    setRelationReversed(!relationReversed);
+  };
 
-  handleReverseRelation() {
-    this.setState({ relationReversed: !this.state.relationReversed });
-  }
+  const handleSort = (field, orderAsc) => {
+    setSortBy(field);
+    setOrderAsc(orderAsc);
+  };
 
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
-  }
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+  };
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
-  }
-
-  SortHeader(field, label, isSortable) {
-    const { t } = this.props;
-    const sortComponent = this.state.orderAsc ? (
+  const SortHeader = (field, label, isSortable) => {
+    const sortComponent = orderAsc ? (
       <ArrowDropDown style={inlineStylesHeaders.iconSort} />
     ) : (
       <ArrowDropUp style={inlineStylesHeaders.iconSort} />
@@ -185,119 +178,112 @@ class StixCyberObservableEntities extends Component {
       return (
         <div
           style={inlineStylesHeaders[field]}
-          onClick={this.handleSort.bind(this, field, !this.state.orderAsc)}
+          onClick={handleSort.bind(null, field, !orderAsc)}
         >
-          <span>{t(label)}</span>
-          {this.state.sortBy === field ? sortComponent : ''}
+          <span>{t_i18n(label)}</span>
+          {sortBy === field ? sortComponent : ''}
         </div>
       );
     }
     return (
       <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
+        <span>{t_i18n(label)}</span>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { sortBy, orderAsc, searchTerm, relationReversed } = this.state;
-    const { classes, t, entityId, defaultStartTime, defaultStopTime } = this.props;
-    const paginationOptions = {
-      fromOrToId: entityId,
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
-    return (
-      <div style={{ height: '100%' }}>
-        <Card
-          title={t('Relations')}
-          action={(
-            <Stack direction="row" gap={1}>
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <StixCoreRelationshipCreationFromEntity
-                  paginationOptions={paginationOptions}
-                  handleReverseRelation={this.handleReverseRelation.bind(this)}
-                  entityId={entityId}
-                  variant="inLine"
-                  isRelationReversed={relationReversed}
-                  targetStixDomainObjectTypes={['Stix-Domain-Object']}
-                  targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-                  defaultStartTime={defaultStartTime}
-                  defaultStopTime={defaultStopTime}
-                />
-              </Security>
-              <SearchInput
-                variant="thin"
-                onSubmit={this.handleSearch.bind(this)}
-                keyword={searchTerm}
+  const { classes, entityId, defaultStartTime, defaultStopTime } = props;
+  const paginationOptions = {
+    fromOrToId: entityId,
+    search: searchTerm,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+  };
+  return (
+    <div style={{ height: '100%' }}>
+      <Card
+        title={t_i18n('Relations')}
+        action={(
+          <Stack direction="row" gap={1}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreRelationshipCreationFromEntity
+                paginationOptions={paginationOptions}
+                handleReverseRelation={handleReverseRelation}
+                entityId={entityId}
+                variant="inLine"
+                isRelationReversed={relationReversed}
+                targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+                defaultStartTime={defaultStartTime}
+                defaultStopTime={defaultStopTime}
               />
-            </Stack>
-          )}
-        >
-          <List style={{ marginTop: -10 }}>
-            <ListItem
-              classes={{ root: classes.itemHead }}
-              divider={false}
-              style={{ paddingTop: 0 }}
-              secondaryAction={<> &nbsp; </>}
-            >
-              <ListItemIcon>
-                <span
-                  style={{
-                    padding: '0 8px 0 8px',
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
-                >
-                  &nbsp;
-                </span>
-              </ListItemIcon>
-              <ListItemText
-                primary={(
-                  <div>
-                    {this.SortHeader('relationship_type', 'Relationship', true)}
-                    {this.SortHeader('entity_tyoe', 'Entity type', false)}
-                    {this.SortHeader('name', 'Name', false)}
-                    {this.SortHeader('createdBy', 'Author', false)}
-                    {this.SortHeader('creator', 'Creator', false)}
-                    {this.SortHeader('start_time', 'Start time', true)}
-                    {this.SortHeader('stop_time', 'Stop time', true)}
-                    {this.SortHeader('confidence', 'Confidence level', true)}
-                  </div>
-                )}
-              />
-            </ListItem>
-            <QueryRenderer
-              query={stixCyberObservableEntitiesLinesQuery}
-              variables={{ count: 200, ...paginationOptions }}
-              render={({ props }) => (
-                <StixCyberObservableEntitiesLines
-                  data={props}
-                  paginationOptions={paginationOptions}
-                  displayRelation={true}
-                  stixCyberObservableId={entityId}
-                />
+            </Security>
+            <SearchInput
+              variant="thin"
+              onSubmit={handleSearch}
+              keyword={searchTerm}
+            />
+          </Stack>
+        )}
+      >
+        <List style={{ marginTop: -10 }}>
+          <ListItem
+            classes={{ root: classes.itemHead }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+            secondaryAction={<> &nbsp; </>}
+          >
+            <ListItemIcon>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                &nbsp;
+              </span>
+            </ListItemIcon>
+            <ListItemText
+              primary={(
+                <div>
+                  {SortHeader('relationship_type', 'Relationship', true)}
+                  {SortHeader('entity_tyoe', 'Entity type', false)}
+                  {SortHeader('name', 'Name', false)}
+                  {SortHeader('createdBy', 'Author', false)}
+                  {SortHeader('creator', 'Creator', false)}
+                  {SortHeader('start_time', 'Start time', true)}
+                  {SortHeader('stop_time', 'Stop time', true)}
+                  {SortHeader('confidence', 'Confidence level', true)}
+                </div>
               )}
             />
-          </List>
-        </Card>
-      </div>
-    );
-  }
-}
+          </ListItem>
+          <QueryRenderer
+            query={stixCyberObservableEntitiesLinesQuery}
+            variables={{ count: 200, ...paginationOptions }}
+            render={({ props }) => (
+              <StixCyberObservableEntitiesLines
+                data={props}
+                paginationOptions={paginationOptions}
+                displayRelation={true}
+                stixCyberObservableId={entityId}
+              />
+            )}
+          />
+        </List>
+      </Card>
+    </div>
+  );
+};
 
 StixCyberObservableEntities.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
   classes: PropTypes.object,
-  t: PropTypes.func,
   navigate: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableEntities);
+export default withStyles(styles)(StixCyberObservableEntities);

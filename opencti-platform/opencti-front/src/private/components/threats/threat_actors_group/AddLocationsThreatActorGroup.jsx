@@ -1,11 +1,10 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import LocationCreation from '../../common/location/LocationCreation';
@@ -19,99 +18,92 @@ const styles = () => ({
   },
 });
 
-class AddLocationsThreatActorGroup extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false, search: '' };
-  }
+const AddLocationsThreatActorGroup = (props) => {
+  const { t_i18n } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleClose = () => {
+    setOpen(false);
+    setSearch('');
+  };
 
-  handleClose() {
-    this.setState({ open: false, search: '' });
-  }
+  const handleSearch = (keyword) => {
+    setSearch(keyword);
+  };
 
-  handleSearch(keyword) {
-    this.setState({ search: keyword });
-  }
-
-  render() {
-    const { t, threatActorGroup, threatActorGroupLocations } = this.props;
-    const paginationOptions = {
-      search: this.state.search,
-    };
-    const updater = (store) => insertNode(
-      store,
-      'Pagination_threatActorGroup_locations',
-      paginationOptions,
-      'locationAdd',
-    );
-    return (
-      <>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
-          <Add fontSize="small" />
-        </IconButton>
-        <Drawer
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
-          title={t('Add locations')}
-          subHeader={{
-            right: [(
-              <LocationCreation
-                display={this.state.open}
-                contextual={true}
-                inputValue={this.state.search}
-                paginationOptions={paginationOptions}
-                updater={updater}
-                key="rightButton"
-              />
-            )],
-            left: [(
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-                key="leftInput"
-              />
-            )],
+  const { threatActorGroup, threatActorGroupLocations } = props;
+  const paginationOptions = {
+    search: search,
+  };
+  const updater = (store) => insertNode(
+    store,
+    'Pagination_threatActorGroup_locations',
+    paginationOptions,
+    'locationAdd',
+  );
+  return (
+    <>
+      <IconButton
+        color="primary"
+        aria-label="Add"
+        onClick={handleOpen}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Add locations')}
+        subHeader={{
+          right: [(
+            <LocationCreation
+              display={open}
+              contextual={true}
+              inputValue={search}
+              paginationOptions={paginationOptions}
+              updater={updater}
+              key="rightButton"
+            />
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        <QueryRenderer
+          query={addLocationsThreatActorGroupLinesQuery}
+          variables={{
+            search: search,
+            count: 100,
           }}
-        >
-          <QueryRenderer
-            query={addLocationsThreatActorGroupLinesQuery}
-            variables={{
-              search: this.state.search,
-              count: 100,
-            }}
-            render={({ props }) => {
-              return (
-                <AddLocationsThreatActorGroupLines
-                  threatActorGroup={threatActorGroup}
-                  threatActorGroupLocations={threatActorGroupLocations}
-                  data={props}
-                />
-              );
-            }}
-          />
-        </Drawer>
+          render={({ props }) => {
+            return (
+              <AddLocationsThreatActorGroupLines
+                threatActorGroup={threatActorGroup}
+                threatActorGroupLocations={threatActorGroupLocations}
+                data={props}
+              />
+            );
+          }}
+        />
+      </Drawer>
 
-      </>
-    );
-  }
-}
+    </>
+  );
+};
 
 AddLocationsThreatActorGroup.propTypes = {
   threatActorGroup: PropTypes.object,
   threatActorGroupLocations: PropTypes.array,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddLocationsThreatActorGroup);
+export default withStyles(styles)(AddLocationsThreatActorGroup);

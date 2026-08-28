@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
+import { filter } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -17,7 +17,7 @@ import { truncate } from '../../../../utils/String';
 import AddAttackPatterns from './AddAttackPatterns';
 import { addAttackPatternsLinesMutationRelationDelete } from './AddAttackPatternsLines';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import Label from '../../../../components/common/label/Label';
 
 const styles = (theme) => ({
@@ -40,28 +40,23 @@ const styles = (theme) => ({
   },
 });
 
-class CourseOfActionAttackPatternComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      expanded: false,
-    };
-  }
+const CourseOfActionAttackPatternComponent = (props) => {
+  const { t_i18n } = useFormatter();
+  const [expanded, setExpanded] = useState(false);
+  const handleToggleExpand = () => {
+    setExpanded(!expanded);
+  };
 
-  handleToggleExpand() {
-    this.setState({ expanded: !this.state.expanded });
-  }
-
-  removeAttackPattern(attackPatternEdge) {
+  const removeAttackPattern = (attackPatternEdge) => {
     commitMutation({
       mutation: addAttackPatternsLinesMutationRelationDelete,
       variables: {
-        fromId: this.props.courseOfAction.id,
+        fromId: props.courseOfAction.id,
         toId: attackPatternEdge.node.id,
         relationship_type: 'mitigates',
       },
       updater: (store) => {
-        const node = store.get(this.props.courseOfAction.id);
+        const node = store.get(props.courseOfAction.id);
         const attackPatterns = node.getLinkedRecord('attackPatterns');
         const edges = attackPatterns.getLinkedRecords('edges');
         const newEdges = filter(
@@ -72,86 +67,81 @@ class CourseOfActionAttackPatternComponent extends Component {
         attackPatterns.setLinkedRecords(newEdges, 'edges');
       },
     });
-  }
+  };
 
-  render() {
-    const { t, classes, courseOfAction } = this.props;
-    const { expanded } = this.state;
-    const attackPatternsEdges = courseOfAction.attackPatterns.edges;
-    const expandable = attackPatternsEdges.length > 7;
-    return (
-      <Box sx={{ marginTop: 2 }}>
-        <Label action={(
-          <>
-            <AddAttackPatterns
-              courseOfAction={courseOfAction}
-              courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
-            />
-            {expandable && (
-              <IconButton
-                aria-label={expanded ? t('Collapse') : t('Expand')}
-                color="primary"
-                onClick={this.handleToggleExpand.bind(this)}
-                aria-expanded={expanded}
-              >
-                {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
-              </IconButton>
-            )}
-          </>
-        )}
-        >
-          {t('Mitigated attack patterns')}
-        </Label>
-        <List classes={{ root: classes.list }}>
-          {R.take(expanded ? 200 : 7, attackPatternsEdges).map(
-            (attackPatternEdge) => {
-              const attackPattern = attackPatternEdge.node;
-              return (
-                <ListItem
-                  key={attackPattern.id}
-                  dense={true}
-                  divider={true}
-                  disablePadding={true}
-                  secondaryAction={(
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeAttackPattern.bind(
-                        this,
-                        attackPatternEdge,
-                      )}
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  )}
-                >
-                  <ListItemButton
-                    component={Link}
-                    to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
-                  >
-                    <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatar }}>
-                        {attackPattern.name.substring(0, 1)}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={attackPattern.name}
-                      secondary={truncate(attackPattern.description, 60)}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            },
+  const { classes, courseOfAction } = props;
+  const attackPatternsEdges = courseOfAction.attackPatterns.edges;
+  const expandable = attackPatternsEdges.length > 7;
+  return (
+    <Box sx={{ marginTop: 2 }}>
+      <Label action={(
+        <>
+          <AddAttackPatterns
+            courseOfAction={courseOfAction}
+            courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
+          />
+          {expandable && (
+            <IconButton
+              aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
+              color="primary"
+              onClick={handleToggleExpand}
+              aria-expanded={expanded}
+            >
+              {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+            </IconButton>
           )}
-        </List>
-      </Box>
-    );
-  }
-}
+        </>
+      )}
+      >
+        {t_i18n('Mitigated attack patterns')}
+      </Label>
+      <List classes={{ root: classes.list }}>
+        {R.take(expanded ? 200 : 7, attackPatternsEdges).map(
+          (attackPatternEdge) => {
+            const attackPattern = attackPatternEdge.node;
+            return (
+              <ListItem
+                key={attackPattern.id}
+                dense={true}
+                divider={true}
+                disablePadding={true}
+                secondaryAction={(
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={removeAttackPattern.bind(
+                      null,
+                      attackPatternEdge,
+                    )}
+                  >
+                    <LinkOff />
+                  </IconButton>
+                )}
+              >
+                <ListItemButton
+                  component={Link}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                >
+                  <ListItemIcon>
+                    <Avatar classes={{ root: classes.avatar }}>
+                      {attackPattern.name.substring(0, 1)}
+                    </Avatar>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={attackPattern.name}
+                    secondary={truncate(attackPattern.description, 60)}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          },
+        )}
+      </List>
+    </Box>
+  );
+};
 
 CourseOfActionAttackPatternComponent.propTypes = {
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   courseOfAction: PropTypes.object,
 };
 
@@ -179,7 +169,4 @@ const CourseOfActionAttackPattern = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CourseOfActionAttackPattern);
+export default withStyles(styles)(CourseOfActionAttackPattern);

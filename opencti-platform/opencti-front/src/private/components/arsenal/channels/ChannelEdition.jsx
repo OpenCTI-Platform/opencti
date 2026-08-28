@@ -1,9 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ChannelEditionContainer from './ChannelEditionContainer';
 import { channelEditionOverviewFocus } from './ChannelEditionOverview';
 import Loader from '../../../../components/Loader';
@@ -17,58 +15,43 @@ export const channelEditionQuery = graphql`
   }
 `;
 
-class ChannelEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
+const ChannelEdition = (props) => {
+  const handleClose = () => {
     commitMutation({
       mutation: channelEditionOverviewFocus,
       variables: {
-        id: this.props.channelId,
+        id: props.channelId,
         input: { focusOn: '' },
       },
     });
-    this.setState({ open: false });
-  }
+  };
 
-  render() {
-    const { channelId } = this.props;
-    return (
-      <QueryRenderer
-        query={channelEditionQuery}
-        variables={{ id: channelId }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <ChannelEditionContainer
-                channel={props.channel}
-                handleClose={this.handleClose.bind(this)}
-                controlledDial={EditEntityControlledDial}
-              />
-            );
-          }
-          return <Loader variant="inline" />;
-        }}
-      />
-    );
-  }
-}
+  const { channelId } = props;
+  return (
+    <QueryRenderer
+      query={channelEditionQuery}
+      variables={{ id: channelId }}
+      render={({ props }) => {
+        if (props) {
+          return (
+            <ChannelEditionContainer
+              channel={props.channel}
+              handleClose={handleClose}
+              controlledDial={EditEntityControlledDial}
+            />
+          );
+        }
+        return <Loader variant="inline" />;
+      }}
+    />
+  );
+};
 
 ChannelEdition.propTypes = {
   channelId: PropTypes.string,
   me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(ChannelEdition);
+export default ChannelEdition;

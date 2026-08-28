@@ -1,99 +1,94 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSubAttackPatternsLines, { addSubAttackPatternsLinesQuery } from './AddSubAttackPatternsLines';
 import AttackPatternCreation from './AttackPatternCreation';
 
-class AddSubAttackPattern extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false, search: '' };
-  }
+const AddSubAttackPattern = (props) => {
+  const { t_i18n } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleClose = () => {
+    setOpen(false);
+    setSearch('');
+  };
 
-  handleClose() {
-    this.setState({ open: false, search: '' });
-  }
+  const handleSearch = (keyword) => {
+    setSearch(keyword);
+  };
 
-  handleSearch(keyword) {
-    this.setState({ search: keyword });
-  }
-
-  render() {
-    const { t, attackPattern, attackPatternSubAttackPatterns } = this.props;
-    const paginationOptions = {
-      search: this.state.search,
-    };
-    return (
-      <>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
-          <Add fontSize="small" />
-        </IconButton>
-        <Drawer
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
-          title={t('Add sub attack patterns')}
-          subHeader={{
-            right: [(
-              <AttackPatternCreation
-                display={this.state.open}
-                contextual={true}
-                inputValue={this.state.search}
-                paginationOptions={paginationOptions}
-                key="rightButton"
-              />
-            )],
-            left: [(
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-                key="leftInput"
-              />
-            )],
+  const { attackPattern, attackPatternSubAttackPatterns } = props;
+  const paginationOptions = {
+    search: search,
+  };
+  return (
+    <>
+      <IconButton
+        color="primary"
+        aria-label="Add"
+        onClick={handleOpen}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Add sub attack patterns')}
+        subHeader={{
+          right: [(
+            <AttackPatternCreation
+              display={open}
+              contextual={true}
+              inputValue={search}
+              paginationOptions={paginationOptions}
+              key="rightButton"
+            />
+          )],
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        <QueryRenderer
+          query={addSubAttackPatternsLinesQuery}
+          variables={{
+            search: search,
+            count: 20,
           }}
-        >
-          <QueryRenderer
-            query={addSubAttackPatternsLinesQuery}
-            variables={{
-              search: this.state.search,
-              count: 20,
-            }}
-            render={({ props }) => {
-              return (
-                <AddSubAttackPatternsLines
-                  attackPattern={attackPattern}
-                  attackPatternSubAttackPatterns={
-                    attackPatternSubAttackPatterns
-                  }
-                  data={props}
-                />
-              );
-            }}
-          />
-        </Drawer>
-      </>
-    );
-  }
-}
+          render={({ props }) => {
+            return (
+              <AddSubAttackPatternsLines
+                attackPattern={attackPattern}
+                attackPatternSubAttackPatterns={
+                  attackPatternSubAttackPatterns
+                }
+                data={props}
+              />
+            );
+          }}
+        />
+      </Drawer>
+    </>
+  );
+};
 
 AddSubAttackPattern.propTypes = {
   attackPattern: PropTypes.object,
   attackPatternSubAttackPatterns: PropTypes.array,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(inject18n)(AddSubAttackPattern);
+export default AddSubAttackPattern;

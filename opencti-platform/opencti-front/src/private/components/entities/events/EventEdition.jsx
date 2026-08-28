@@ -1,9 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import EventEditionContainer from './EventEditionContainer';
 import { eventEditionOverviewFocus } from './EventEditionOverview';
 import Loader from '../../../../components/Loader';
@@ -17,56 +15,41 @@ export const eventEditionQuery = graphql`
   }
 `;
 
-class EventEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
+const EventEdition = (props) => {
+  const handleClose = () => {
     commitMutation({
       mutation: eventEditionOverviewFocus,
       variables: {
-        id: this.props.eventId,
+        id: props.eventId,
         input: { focusOn: '' },
       },
     });
-    this.setState({ open: false });
-  }
+  };
 
-  render() {
-    const { eventId } = this.props;
-    return (
-      <QueryRenderer
-        query={eventEditionQuery}
-        variables={{ id: eventId }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <EventEditionContainer
-                event={props.event}
-                handleClose={this.handleClose.bind(this)}
-                controlledDial={EditEntityControlledDial}
-              />
-            );
-          }
-          return <Loader variant="inline" />;
-        }}
-      />
-    );
-  }
-}
+  const { eventId } = props;
+  return (
+    <QueryRenderer
+      query={eventEditionQuery}
+      variables={{ id: eventId }}
+      render={({ props }) => {
+        if (props) {
+          return (
+            <EventEditionContainer
+              event={props.event}
+              handleClose={handleClose}
+              controlledDial={EditEntityControlledDial}
+            />
+          );
+        }
+        return <Loader variant="inline" />;
+      }}
+    />
+  );
+};
 
 EventEdition.propTypes = {
   eventId: PropTypes.string,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(EventEdition);
+export default EventEdition;
