@@ -713,7 +713,7 @@ const FeedEditionContainer = (props) => {
                                                           <SelectTrigger>
                                                             <SelectValue />
                                                           </SelectTrigger>
-                                                          <SelectContent>
+                                                          <SelectContent aria-label={t_i18n('Attribute')}>
                                                             {attributes.map((attr) => (
                                                               <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
                                                             ))}
@@ -721,10 +721,10 @@ const FeedEditionContainer = (props) => {
                                                         </Select>
                                                       );
                                                     }
-                                                    return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
+                                                    return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
                                                   }}
                                                 />
-                                              ) : <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>}
+                                              ) : <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>}
                                             </FormControl>
                                           </Grid>
                                         </Grid>
@@ -757,7 +757,7 @@ const FeedEditionContainer = (props) => {
                                                     <SelectTrigger>
                                                       <SelectValue />
                                                     </SelectTrigger>
-                                                    <SelectContent>
+                                                    <SelectContent aria-label={t_i18n('Attribute')}>
                                                       {attributes.map((attr) => (
                                                         <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
                                                       ))}
@@ -765,7 +765,7 @@ const FeedEditionContainer = (props) => {
                                                   </Select>
                                                 );
                                               }
-                                              return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><></></SelectContent></Select>;
+                                              return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
                                             }}
                                           />
                                         </FormControl>

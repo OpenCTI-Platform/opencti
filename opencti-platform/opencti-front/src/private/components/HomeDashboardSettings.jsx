@@ -84,7 +84,7 @@ const HomeDashboardSettings = () => {
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Date reference')}>
             <SelectItem value="technical">{t_i18n('Technical date')}</SelectItem>
             <SelectItem value="functional">{t_i18n('Functional date')}</SelectItem>
           </SelectContent>
@@ -123,7 +123,7 @@ const HomeDashboardSettings = () => {
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent aria-label={t_i18n('Date reference')}>
                       <SelectItem value="technical">
                         {t_i18n('Technical date')}
                       </SelectItem>

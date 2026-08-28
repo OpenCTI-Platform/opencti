@@ -564,7 +564,7 @@ class ListLines extends Component {
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent aria-label={t('Redirection mode')}>
                     <SelectItem value="overview">
                       {t('Redirecting to the Overview section')}
                     </SelectItem>

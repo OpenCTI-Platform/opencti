@@ -329,7 +329,7 @@ const WidgetCreationParameters = () => {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent aria-label={t_i18n('Attribute')}>
                 {AUDIT_WIDGET_ATTRIBUTES.map((value) => (
                   <SelectItem
                     key={value}
@@ -413,7 +413,7 @@ const WidgetCreationParameters = () => {
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={t_i18n('Content')}>
             <SelectItem value="day">{t_i18n('Day')}</SelectItem>
             <SelectItem value="week">{t_i18n('Week')}</SelectItem>
             <SelectItem value="month">{t_i18n('Month')}</SelectItem>
@@ -532,7 +532,7 @@ const WidgetCreationParameters = () => {
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent aria-label={t_i18n('Sort by')}>
                         {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
                           ? draftWorkspaceSortByValues
                           : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
@@ -566,7 +566,7 @@ const WidgetCreationParameters = () => {
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent aria-label={t_i18n('Sort mode')}>
                           <SelectItem value="asc">
                             {t_i18n('Asc')}
                           </SelectItem>
@@ -601,7 +601,10 @@ const WidgetCreationParameters = () => {
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent aria-label={isNotEmptyField(dataSelection[i].label)
+                            ? dataSelection[i].label
+                            : t_i18n('Date attribute')}
+                          >
                             <SelectItem value="created_at">
                               created_at ({t_i18n('Technical date')})
                             </SelectItem>
@@ -727,7 +730,7 @@ const WidgetCreationParameters = () => {
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent aria-label={t_i18n('Attribute')}>
                             {RELATIONSHIPS_WIDGET_ATTRIBUTES.map((n) => (
                               <SelectItem key={n.value} value={n.value}>
                                 {t_i18n(n.label)}
@@ -757,7 +760,7 @@ const WidgetCreationParameters = () => {
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent aria-label={t_i18n('Attribute')}>
                                 {[
                                   { value: 'draft_status', label: 'Processing status' },
                                   { value: 'object-assignee.internal_id', label: 'Assignee' },
@@ -815,7 +818,7 @@ const WidgetCreationParameters = () => {
                                       <SelectTrigger>
                                         <SelectValue />
                                       </SelectTrigger>
-                                      <SelectContent>
+                                      <SelectContent aria-label={t_i18n('Attribute')}>
                                         {[
                                           ...attributesValues,
                                           ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
@@ -858,7 +861,7 @@ const WidgetCreationParameters = () => {
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent aria-label={t_i18n('Attribute')}>
                             {[
                               'entity_type',
                               ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,

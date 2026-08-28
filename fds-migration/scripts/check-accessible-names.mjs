@@ -52,6 +52,12 @@ function scan(file, src) {
       if (!b.body.includes('<SelectLabel') && !hasAria(b.body)) {
         findings.push({ file, line: b.line, rule: 'select-unnamed', msg: 'library Select has no SelectLabel and no aria-label — announced as "combobox" and nothing else' });
       }
+      // The PANEL needs a name too: a page model resolves it with
+      // getByRole('listbox', { name: <field> }), and an unnamed listbox is as
+      // unreachable as an unnamed trigger. Caught by dashboard "Dashboard CRUD".
+      if (b.body.includes('<SelectContent') && !/<SelectContent[^>]*aria-label/.test(b.body)) {
+        findings.push({ file, line: b.line, rule: 'listbox-unnamed', msg: 'SelectContent has no aria-label — the panel is announced as an unnamed listbox' });
+      }
       const before = src.slice(Math.max(0, b.index - 400), b.index);
       if (/<InputLabel[^>]*>[\s\S]*$/.test(before) && !/<\/Select>/.test(before.slice(before.lastIndexOf('<InputLabel')))) {
         findings.push({ file, line: b.line, rule: 'orphan-input-label', msg: 'MUI InputLabel sits above a library Select — it names nothing; move its text into a SelectLabel' });

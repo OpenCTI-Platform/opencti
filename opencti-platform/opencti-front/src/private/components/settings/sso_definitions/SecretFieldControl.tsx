@@ -101,7 +101,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent aria-label={label}>
             {showKeepOption && (
               <SelectItem value="keep">{t_i18n('Keep existing secret')}</SelectItem>
             )}
@@ -136,7 +136,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent aria-label={t_i18n('External secret')}>
               {availableSecrets.length === 0 ? (
                 <SelectItem value="" disabled>{t_i18n('No external secrets configured')}</SelectItem>
               ) : (

@@ -331,7 +331,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             <SelectTrigger>
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent aria-label={t_i18n('Attribute')}>
                               {filteredAttributes.map((v) => (
                                 <SelectItem key={v.attribute} value={v.attribute ?? ''}>
                                   {t_i18n(v.label)}
