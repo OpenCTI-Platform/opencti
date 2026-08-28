@@ -112,7 +112,6 @@ const ObjectOrganizationField = (props) => {
       component={ComboboxField}
       // MUI hid its clear indicator here with display:none; the library defaults
       // clearable to true, so the affordance must be declined explicitly.
-      clearable={false}
       name={name}
       multiple={multiple}
       style={style}

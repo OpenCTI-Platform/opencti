@@ -65,7 +65,6 @@ const JsonMapperField: FunctionComponent<JsonMapperFieldComponentProps> = ({
         component={ComboboxField}
         // MUI hid its clear indicator here with display:none; the library defaults
         // clearable to true, so the affordance must be declined explicitly.
-        clearable={false}
         style={fieldSpacingContainerStyle}
         name={name}
         multiple={false}

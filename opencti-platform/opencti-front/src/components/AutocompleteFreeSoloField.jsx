@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Combobox,
   ComboboxChips,
+  ComboboxClear,
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
@@ -86,6 +87,7 @@ const AutocompleteFreeSoloField = (props) => {
           placeholder={textfieldprops.placeholder}
         />
         <ComboboxControls>
+          <ComboboxClear />
           <ComboboxTrigger />
         </ComboboxControls>
       </ComboboxField>

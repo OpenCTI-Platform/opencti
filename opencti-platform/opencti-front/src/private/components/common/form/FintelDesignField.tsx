@@ -105,7 +105,6 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
         options={fintelDesigns}
         // Was `classes={{ clearIndicator: { display: 'none' } }}` — the library
         // has a real prop for it rather than a hidden control.
-        clearable={false}
         renderOption={(option: { label: string }) => (
           <>
             <ItemIcon type="Fintel-Design" />

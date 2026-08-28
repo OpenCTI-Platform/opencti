@@ -28,6 +28,7 @@ import {
   Chip as FdsChip,
   Combobox,
   ComboboxChips,
+  ComboboxClear,
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
@@ -1604,6 +1605,7 @@ class DataTableToolBar extends Component {
                 <ComboboxChips aria-label={t('Values')} />
                 <ComboboxInput onFocus={() => (this.searchContainers.bind(this, i))('')} />
                 <ComboboxControls>
+                  <ComboboxClear />
                   <ComboboxTrigger />
                 </ComboboxControls>
               </ComboboxField>
@@ -1658,6 +1660,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchMarkingDefinitions.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -1703,6 +1706,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchLabels.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -1831,6 +1835,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchExternalReferences.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -1876,6 +1881,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchAssignees.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -1921,6 +1927,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchParticipants.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -2002,6 +2009,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Select Value')} />
               <ComboboxInput onFocus={() => (this.searchVocabulary.bind(this, i, selectedField))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -2096,6 +2104,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchKillChains.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -2154,6 +2163,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchActionInputOrganizations.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -2199,6 +2209,7 @@ class DataTableToolBar extends Component {
               <ComboboxChips aria-label={t('Values')} />
               <ComboboxInput onFocus={() => (this.searchGroups.bind(this, i))('')} />
               <ComboboxControls>
+                <ComboboxClear />
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
@@ -3367,6 +3378,7 @@ class DataTableToolBar extends Component {
                     <ComboboxChips aria-label={t('Values')} />
                     <ComboboxInput onFocus={() => (this.searchContainers.bind(this, 0))('')} />
                     <ComboboxControls>
+                      <ComboboxClear />
                       <ComboboxTrigger />
                     </ComboboxControls>
                   </ComboboxField>
@@ -3488,6 +3500,7 @@ class DataTableToolBar extends Component {
                     <ComboboxChips aria-label={t('Values')} />
                     <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
                     <ComboboxControls>
+                      <ComboboxClear />
                       <ComboboxTrigger />
                     </ComboboxControls>
                   </ComboboxField>
@@ -3567,6 +3580,7 @@ class DataTableToolBar extends Component {
                     <ComboboxChips aria-label={t('Values')} />
                     <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
                     <ComboboxControls>
+                      <ComboboxClear />
                       <ComboboxTrigger />
                     </ComboboxControls>
                   </ComboboxField>

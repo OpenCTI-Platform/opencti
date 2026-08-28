@@ -43,6 +43,7 @@ adapter file. Parking a site therefore lowers both numerator and denominator.
 | `settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx` | FEEDBACK #43, same gap | **blocked on the library**, V2 |
 | `settings/themes/ThemeForm.tsx` | FEEDBACK #45 — the Select must be emptiable. Verified at pin `bd076e8f`: `clearable` is declared on Combobox only, never on Select | **blocked on the library**, V2 |
 | `components/filters/FilterChipPopover.tsx` | converted, then parked on a deterministic E2E red — see below | **convertible, cause not established** |
+| `private/components/common/lists/ListFilters.tsx` | reconverted on Sandy's call, failed again with the same error as the first time — see below | **convertible, cause not established** |
 
 ### Why FilterChipPopover is parked
 
@@ -67,6 +68,27 @@ library-owned row, not at the change handler.
 Whoever resumes it: start there, and note that the handler also needed MUI's
 `reason` derived from the value delta, because the library reports removing one
 chip as `clear`, exactly as it reports emptying the field.
+
+### Why ListFilters is parked, again
+
+`group1` "background tasks pre-requisites on data entity search" fails with
+
+```
+expect(getByRole('option', { name: 'Label' })).toBeVisible()  -> element(s) not found
+```
+
+after filling the add-filter field — the identical error that parked it the
+first time, deterministic in both runs. Four mechanisms were ruled out in jsdom
+against the converted component and all four render the panel open with the
+option present: a lone `input` event (what Playwright's `fill` does), a parent
+re-render, late-arriving options, and blur. So the cause needs the running
+platform, not jsdom.
+
+## V2 feedback for the library
+
+Sandy, on the multi-value chips UX: not great, to be improved in V2. Candidate
+for the Combobox V2 backlog — the chip row is the part of the composition she
+finds weakest, not the field behaviour.
 
 ## Verified against the pin `bd076e8f`
 
