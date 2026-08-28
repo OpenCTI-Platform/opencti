@@ -1,5 +1,4 @@
-import Moment from 'moment';
-import { extendMoment } from 'moment-range';
+import moment from 'moment';
 import * as R from 'ramda';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -61,8 +60,6 @@ export const schedulingPeriodToMs = (scheduling_period) => {
 // ----------------------------------------------------------------------------------------------------------------------
 // Date formatting
 
-const moment = extendMoment(Moment);
-
 export const FROM_START = 0;
 export const FROM_START_STR = '1970-01-01T00:00:00.000Z';
 export const UNTIL_END = 100000000000000;
@@ -118,10 +115,50 @@ export const escape = (chars) => {
   return chars;
 };
 
-export const buildPeriodFromDates = (a, b) => moment.range(a, b);
+// An undefined bound means "unbounded": widen it to the min/max date a JS Date can hold,
+// so that a period without a start or a stop still contains every other period.
+const MIN_DATE = -8640000000000000;
+const MAX_DATE = 8640000000000000;
+
+export const buildPeriodFromDates = (a, b) => ({
+  start: a || a === 0 ? moment(a) : moment(MIN_DATE),
+  end: b || b === 0 ? moment(b) : moment(MAX_DATE),
+});
+
+// Intersection of two periods, null when they do not overlap.
+// Two periods that only touch on a single instant are not considered as overlapping,
+// except when one of them is a single instant strictly inside the other.
+const intersectPeriods = (a, b) => {
+  const aStart = a.start.valueOf();
+  const aEnd = a.end.valueOf();
+  const bStart = b.start.valueOf();
+  const bEnd = b.end.valueOf();
+  if (aStart === aEnd) {
+    if (aStart === bStart || aStart === bEnd) {
+      return null;
+    }
+    if (aStart > bStart && aStart < bEnd) {
+      return { start: a.start, end: a.end };
+    }
+  } else if (bStart === bEnd) {
+    if (bStart === aStart || bStart === aEnd) {
+      return null;
+    }
+    if (bStart > aStart && bStart < aEnd) {
+      return { start: b.start, end: b.end };
+    }
+  }
+  if (aStart < bEnd && bStart < aEnd) {
+    return {
+      start: aStart <= bStart ? b.start : a.start,
+      end: aEnd <= bEnd ? a.end : b.end,
+    };
+  }
+  return null;
+};
 
 export const computeRangeIntersection = (a, b) => {
-  const range = a.intersect(b);
+  const range = intersectPeriods(a, b);
   if (range) {
     return { start: range.start.toISOString(), end: range.end.toISOString() };
   }

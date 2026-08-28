@@ -141,7 +141,6 @@
     "migrate": "2.1.0",
     "mime-types": "3.0.2",
     "moment": "2.30.1",
-    "moment-range": "4.0.2",
     "nconf": "0.13.0",
     "node-calls-python": "1.13.0",
     "node-fetch": "3.3.2",

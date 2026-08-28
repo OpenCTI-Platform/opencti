@@ -54,3 +54,45 @@ describe('checkScoreValue tests', () => {
       .toThrowError('The score should be an integer between 0 and 100');
   });
 });
+
+// Complements the suite above: period semantics preserved when porting away from moment-range.
+describe('computeRangeIntersection period semantics', () => {
+  const day = (n: number) => new Date(Date.UTC(2020, 0, n)).toISOString();
+  const intersection = (a: number[], b: number[]) => computeRangeIntersection(
+    buildPeriodFromDates(day(a[0]), day(a[1])),
+    buildPeriodFromDates(day(b[0]), day(b[1])),
+  );
+
+  it('should return the overlapping period of two crossing periods', () => {
+    expect(intersection([1, 3], [2, 4])).toEqual({ start: day(2), end: day(3) });
+  });
+  it('should return the inner period when a period contains the other', () => {
+    expect(intersection([1, 4], [2, 3])).toEqual({ start: day(2), end: day(3) });
+  });
+  it('should return the single instant of an instant period inside another period', () => {
+    expect(intersection([1, 4], [2, 2])).toEqual({ start: day(2), end: day(2) });
+  });
+  it('should fallback on the enclosing period when periods do not overlap', () => {
+    expect(intersection([1, 2], [3, 4])).toEqual({ start: day(1), end: day(4) });
+  });
+  it('should fallback on the enclosing period when periods only touch each other', () => {
+    expect(intersection([1, 2], [2, 4])).toEqual({ start: day(1), end: day(4) });
+  });
+  it('should fallback on the enclosing period for two identical instant periods', () => {
+    expect(intersection([2, 2], [2, 2])).toEqual({ start: day(2), end: day(2) });
+  });
+  it('should treat a period without dates as unbounded', () => {
+    // A relation with no start_time / stop_time must not restrict the period it is combined with.
+    const unbounded = buildPeriodFromDates(undefined, undefined);
+    expect(computeRangeIntersection(buildPeriodFromDates(day(2), day(3)), unbounded))
+      .toEqual({ start: day(2), end: day(3) });
+    expect(computeRangeIntersection(unbounded, buildPeriodFromDates(day(2), day(3))))
+      .toEqual({ start: day(2), end: day(3) });
+  });
+  it('should keep an instant period combined with a period without dates', () => {
+    expect(computeRangeIntersection(
+      buildPeriodFromDates(day(2), day(2)),
+      buildPeriodFromDates(null, null),
+    )).toEqual({ start: day(2), end: day(2) });
+  });
+});
