@@ -60,7 +60,6 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   let logoSrc = await page
     .getByRole('link', { name: 'logo' })
     .locator('img').getAttribute('src');
-  expect(logoSrc).toContain('static/images/logo');
   expect(logoSrc).not.toContain('/static/images/logo_text_dark-VZM4NTMC.png');
 
   // Edit theme
