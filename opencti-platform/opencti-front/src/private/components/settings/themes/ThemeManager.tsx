@@ -218,7 +218,6 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
             initialValues={initialValues}
             lineFragment={themesLineFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
-
           />
         )}
       </Card>
