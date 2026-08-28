@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
@@ -26,7 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -329,7 +328,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <IngestionSchedulingField />
           <Field
@@ -338,18 +337,18 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             name="uri"
             label={t_i18n('HTTP JSON URL')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             variant="standard"
             name="verb"
             label={t_i18n('HTTP VERB')}
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem value="GET">GET</MenuItem>
-            <MenuItem value="POST">POST</MenuItem>
+            <SelectItem value="GET">GET</SelectItem>
+            <SelectItem value="POST">POST</SelectItem>
           </Field>
 
           {values.verb === 'POST' && (
@@ -400,7 +399,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             {!!values.pagination_with_sub_page && (
               <>
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="pagination_with_sub_page_query_verb"
                   label={t_i18n('Sub pagination verb')}
@@ -410,8 +409,8 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                     marginTop: 20,
                   }}
                 >
-                  <MenuItem value="GET">GET</MenuItem>
-                  <MenuItem value="POST">POST</MenuItem>
+                  <SelectItem value="GET">GET</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
                 </Field>
 
                 <Field
@@ -420,7 +419,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                   name="pagination_with_sub_page_attribute_path"
                   label={t_i18n('Attribute path to get next uri')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                 />
               </>
             )}
@@ -460,7 +459,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             )
           }
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             variant="standard"
             name="authentication_type"
             label={t_i18n('Authentication type')}
@@ -471,12 +470,12 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             }}
             onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
           >
-            <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
-            <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-            <MenuItem value="certificate">
+            <SelectItem value="none">{t_i18n('None')}</SelectItem>
+            <SelectItem value="basic">{t_i18n('Basic user / password')}</SelectItem>
+            <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+            <SelectItem value="certificate">
               {t_i18n('Client certificate')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           {values.authentication_type === BASIC_AUTH && (
             <>
@@ -486,7 +485,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 name="username"
                 label={t_i18n('Username')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="password"
@@ -510,7 +509,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="key"
@@ -523,7 +522,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}

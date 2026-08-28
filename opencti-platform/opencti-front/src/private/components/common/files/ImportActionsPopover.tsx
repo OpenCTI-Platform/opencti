@@ -1,5 +1,6 @@
 import React, { UIEvent, useState } from 'react';
-import { IconButton, Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { MoreVert } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
@@ -85,23 +86,25 @@ const ImportActionsPopover = ({
     <div style={{ marginLeft: -40 }}>
       <Tooltip title={t_i18n('Show the imports')}>
         <IconButton
+          variant="default"
+          priority="tertiary"
           onClick={(event) => {
             stopEvent(event);
             setOpenWorks(true);
           }}
           aria-haspopup="true"
+          aria-label={t_i18n('Show the imports')}
           // color={file.works?.length ? 'primary' : 'inherit'}
-        >
-          <ProgressUpload fontSize="small" />
-        </IconButton>
+          icon={<ProgressUpload fontSize="small" />}
+        />
       </Tooltip>
       <IconButton
+        variant="default"
+        priority="tertiary"
         aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
-        color="primary"
-      >
-        <MoreVert fontSize="small" />
-      </IconButton>
+        icon={<MoreVert fontSize="small" />}
+      />
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem
           onClick={(event: UIEvent) => {

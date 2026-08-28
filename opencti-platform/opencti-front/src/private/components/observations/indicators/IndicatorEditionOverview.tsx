@@ -378,7 +378,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={(

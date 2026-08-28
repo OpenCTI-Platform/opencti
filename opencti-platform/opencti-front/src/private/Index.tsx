@@ -81,19 +81,27 @@ const Index = ({ settings }: IndexProps) => {
     }
   }, [theme]);
 
+  /**
+   * The bar is fixed and glassy (94% over a 4px backdrop blur), so the content
+   * has to travel UNDER it. The header inset therefore belongs to the SCROLLING
+   * box, as padding that scrolls away -- not to the wrapper above it, which
+   * starts the scroller below the bar and leaves the glass nothing to blur.
+   */
+  const headerInset = isForcePasswordChangeRoute
+    ? 0
+    : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`;
+
   const mainSx: SxProps = {
     transition: 'margin-right 225ms cubic-bezier(0.4, 0, 0.2, 1)',
     flexGrow: 1,
     overflowY: 'hidden',
     height: '100vh',
-    paddingTop: isForcePasswordChangeRoute
-      ? 0
-      : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
 
   const boxSx: SxProps = {
     px: isForcePasswordChangeRoute ? 0 : 3,
+    paddingTop: headerInset,
     flex: 1,
     overflowY: isForcePasswordChangeRoute ? 'hidden' : 'auto',
     minHeight: 0,

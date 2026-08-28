@@ -5,7 +5,7 @@ import * as ipaddr from 'ipaddr.js';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { DialogActions } from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';

@@ -1,9 +1,10 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
+import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { IconButton, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -21,7 +22,6 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { Radio, RadioGroup } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -233,13 +233,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </div>
               <FieldArray
                 name="entity_representations"
@@ -270,13 +270,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </div>
               <FieldArray
                 name="relationship_representations"

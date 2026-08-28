@@ -4,7 +4,8 @@ import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
 import { useFormatter } from '../../../../../components/i18n';
 import { fetchQuery } from '../../../../../relay/environment';
-import AutocompleteField from '../../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../../components/ComboboxField';
 import { FieldOption } from '../../../../../utils/field';
 import { StatusTemplateFieldScopedSearchQuery$data } from './__generated__/StatusTemplateFieldScopedSearchQuery.graphql';
 
@@ -40,11 +41,9 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
   const { t_i18n } = useFormatter();
   const [statusTemplates, setStatusTemplates] = useState<FieldOption[]>([]);
 
-  const searchStatusTemplates = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const searchStatusTemplates = (search: string) => {
     fetchQuery(StatusTemplateFieldScopedSearchQuery, {
-      search: event && event.target.value ? event.target.value : '',
+      search,
       scope,
     })
       .toPromise()
@@ -60,29 +59,25 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
         style={style}
-        textfieldprops={{
-          variant: 'standard',
-          label,
-          helperText: helpertext,
-          onFocus: searchStatusTemplates,
-        }}
+        label={label}
+        helperText={helpertext}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={statusTemplates}
-        onInputChange={searchStatusTemplates}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { color: string; label: string },
-        ) => (
-          <li {...props}>
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchStatusTemplates(search);
+        }}
+        onFocusInput={() => searchStatusTemplates('')}
+        renderOption={(option: { color: string; label: string }) => (
+          <>
             <div style={{ color: option.color, paddingTop: 4, display: 'inline-block' }}>
               <Label />
             </div>
             <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
-          </li>
+          </>
         )}
       />
     </div>

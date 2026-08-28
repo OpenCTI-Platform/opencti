@@ -62,23 +62,15 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
             {connector.verified
               ? (
                   <Tag
-                    label={(
-                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                        <FiligranIcon icon={LogoFiligranIcon} size="small" />
-                        {t_i18n('Supported by Filigran')}
-                      </Stack>
-                    )}
+                    label={t_i18n('Supported by Filigran')}
+                    icon={<FiligranIcon icon={LogoFiligranIcon} size="small" />}
                     color={theme.palette.primary.main}
                   />
                 )
               : (
                   <Tag
-                    label={(
-                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                        <GroupsOutlined fontSize="small" />
-                        {t_i18n('Supported by Community')}
-                      </Stack>
-                    )}
+                    label={t_i18n('Supported by Community')}
+                    icon={<GroupsOutlined fontSize="small" />}
                     color={theme.palette.action?.disabled}
                   />
                 )

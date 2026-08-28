@@ -153,7 +153,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
             label={t_i18n('Lifetime (in days)')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
@@ -162,7 +162,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
             label={t_i18n('Decay factor')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <FieldArray
             name="decay_points"
@@ -221,7 +221,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
             label={t_i18n('Revoke score')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
@@ -230,7 +230,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
             label={t_i18n('Order')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={SwitchField}

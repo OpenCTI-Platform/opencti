@@ -73,6 +73,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
         component="label"
         onChange={handleImport}
         data-testid="import-theme-btn"
+        aria-label={t_i18n('Import a theme')}
       >
         <FileUploadOutlined fontSize="small" />
         <VisuallyHiddenInput type="file" accept="application/json" onClick={handleClick} />

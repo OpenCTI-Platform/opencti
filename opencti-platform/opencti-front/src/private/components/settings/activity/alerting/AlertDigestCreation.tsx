@@ -1,7 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
@@ -9,7 +8,7 @@ import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import TimePickerField from '../../../../../components/TimePickerField';
@@ -159,39 +158,39 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         paginationOptions={paginationOptions}
       />
       <Field
-        component={SelectField}
+        component={SelectFieldFds}
         variant="standard"
         name="period"
         label={t_i18n('Period')}
         fullWidth={true}
         containerstyle={fieldSpacingContainerStyle}
       >
-        <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
-        <MenuItem value="day">{t_i18n('day')}</MenuItem>
-        <MenuItem value="week">{t_i18n('week')}</MenuItem>
-        <MenuItem value="month">{t_i18n('month')}</MenuItem>
+        <SelectItem value="hour">{t_i18n('hour')}</SelectItem>
+        <SelectItem value="day">{t_i18n('day')}</SelectItem>
+        <SelectItem value="week">{t_i18n('week')}</SelectItem>
+        <SelectItem value="month">{t_i18n('month')}</SelectItem>
       </Field>
       {values.period === 'week' && (
         <Field
-          component={SelectField}
+          component={SelectFieldFds}
           variant="standard"
           name="day"
           label={t_i18n('Week day')}
           fullWidth={true}
           containerstyle={fieldSpacingContainerStyle}
         >
-          <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
-          <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
-          <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
-          <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
-          <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
-          <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
-          <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
+          <SelectItem value="1">{t_i18n('Monday')}</SelectItem>
+          <SelectItem value="2">{t_i18n('Tuesday')}</SelectItem>
+          <SelectItem value="3">{t_i18n('Wednesday')}</SelectItem>
+          <SelectItem value="4">{t_i18n('Thursday')}</SelectItem>
+          <SelectItem value="5">{t_i18n('Friday')}</SelectItem>
+          <SelectItem value="6">{t_i18n('Saturday')}</SelectItem>
+          <SelectItem value="7">{t_i18n('Sunday')}</SelectItem>
         </Field>
       )}
       {values.period === 'month' && (
         <Field
-          component={SelectField}
+          component={SelectFieldFds}
           variant="standard"
           name="day"
           label={t_i18n('Month day')}
@@ -199,9 +198,9 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           containerstyle={fieldSpacingContainerStyle}
         >
           {Array.from(Array(31).keys()).map((idx) => (
-            <MenuItem key={idx} value={(idx + 1).toString()}>
+            <SelectItem key={idx} value={(idx + 1).toString()}>
               {(idx + 1).toString()}
-            </MenuItem>
+            </SelectItem>
           ))}
         </Field>
       )}

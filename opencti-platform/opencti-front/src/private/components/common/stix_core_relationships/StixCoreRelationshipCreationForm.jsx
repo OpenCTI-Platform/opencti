@@ -1,12 +1,11 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import { ArrowRightAlt } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import ConfidenceField from '../form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -218,7 +217,7 @@ const StixCoreRelationshipCreationForm = ({
                 <br />
                 {typeof handleReverseRelation === 'function' && (
                   <Button
-                    variant="secaondary"
+                    variant="secondary"
                     onClick={handleReverseRelation}
                     size="small"
                   >
@@ -263,7 +262,7 @@ const StixCoreRelationshipCreationForm = ({
               </div>
             </div>
             <Field
-              component={SelectField}
+              component={SelectFieldFds}
               variant="standard"
               name="relationship_type"
               label={t_i18n('Relationship type')}
@@ -272,9 +271,9 @@ const StixCoreRelationshipCreationForm = ({
             >
               {relationshipTypes.map(
                 (type) => (
-                  <MenuItem key={type} value={type}>
+                  <SelectItem key={type} value={type}>
                     {t_i18n(`relationship_${type}`)}
-                  </MenuItem>
+                  </SelectItem>
                 ),
               )}
             </Field>

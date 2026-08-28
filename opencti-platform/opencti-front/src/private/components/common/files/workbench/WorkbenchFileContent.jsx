@@ -5,15 +5,13 @@ import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@m
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -32,7 +30,7 @@ import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../../components/fields/RichTextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -66,6 +64,7 @@ import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/Sti
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -767,9 +766,9 @@ const WorkbenchFileContentComponent = ({
     setSelectAll(false);
   };
 
-  const handleChangeObservableType = (id, event) => {
+  const handleChangeObservableType = (id, value) => {
     const observable = R.head(stixCyberObservables.filter((n) => n.id === id)) || {};
-    const stixType = convertToStixType(event.target.value);
+    const stixType = convertToStixType(value);
     let updatedObservable = {
       ...observable,
       id: `${stixType}--${uuid()}`,
@@ -1843,7 +1842,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -1913,7 +1912,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2314,7 +2313,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth={true}
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2365,7 +2364,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth={true}
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2536,7 +2535,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes.MD5"
                                 label={t_i18n('hash_md5')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
@@ -2544,7 +2543,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes_SHA-1"
                                 label={t_i18n('hash_sha-1')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
@@ -2552,7 +2551,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes_SHA-256"
                                 label={t_i18n('hash_sha-256')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
@@ -2560,7 +2559,7 @@ const WorkbenchFileContentComponent = ({
                                 name="hashes.SHA-512"
                                 label={t_i18n('hash_sha-512')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                             </div>
                           );
@@ -2575,7 +2574,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2645,7 +2644,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2776,7 +2775,7 @@ const WorkbenchFileContentComponent = ({
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2849,7 +2848,7 @@ const WorkbenchFileContentComponent = ({
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2958,9 +2957,7 @@ const WorkbenchFileContentComponent = ({
               onClick={handleToggleContainerSelectAll}
             >
               <Checkbox
-                edge="start"
                 checked={containerSelectAll}
-                disableRipple
               />
             </ListItemIcon>
             <ListItemText
@@ -3008,13 +3005,11 @@ const WorkbenchFileContentComponent = ({
                   style={{ minWidth: 40 }}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (containerSelectAll
                         && !(object.id in (containerDeselectedElements || {})))
                       || object.id in (containerSelectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -3187,7 +3182,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemText
               primary={(
@@ -3249,13 +3246,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -3320,6 +3315,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenEntity(null, null)}
           color="secondary"
           aria-label="Add"
@@ -3376,7 +3374,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3430,13 +3430,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3456,26 +3454,26 @@ const WorkbenchFileContentComponent = ({
                         style={inlineStyles.ttype}
                       >
                         <Select
-                          variant="standard"
-                          labelId="type"
                           value={convertFromStixType(object.type)}
-                          onChange={(event) => handleChangeObservableType(object.id, event)
-                          }
-                          style={{
-                            margin: 0,
-                            width: '80%',
-                            height: '100%',
-                          }}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            event.preventDefault();
-                          }}
+                          onValueChange={(value) => handleChangeObservableType(object.id, value)}
                         >
-                          {translatedOrderedList.map((n) => (
-                            <MenuItem key={n.label} value={n.label}>
-                              {n.tlabel}
-                            </MenuItem>
-                          ))}
+                          {/* The row is clickable; keep the select from activating it. */}
+                          <SelectTrigger
+                            aria-label={t_i18n('Type')}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              event.preventDefault();
+                            }}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent aria-label={t_i18n('Type')}>
+                            {translatedOrderedList.map((n) => (
+                              <SelectItem key={n.label} value={n.label}>
+                                {n.tlabel}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
                       </div>
                       <div
@@ -3562,6 +3560,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenObservable(null, null)}
           color="secondary"
           aria-label="Add"
@@ -3619,7 +3620,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3668,12 +3671,10 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3781,7 +3782,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3829,12 +3832,10 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3956,7 +3957,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemText
               primary={(
@@ -3996,13 +3999,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple={true}
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -4108,6 +4109,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenContainer(null, null)}
           color="secondary"
           aria-label="Add"
@@ -4218,7 +4222,7 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -4227,13 +4231,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>
@@ -4287,7 +4291,7 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -4296,13 +4300,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>

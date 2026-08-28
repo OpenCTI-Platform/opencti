@@ -342,7 +342,7 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
             helperText={(

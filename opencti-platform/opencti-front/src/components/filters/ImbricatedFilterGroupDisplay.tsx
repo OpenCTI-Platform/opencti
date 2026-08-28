@@ -8,7 +8,7 @@ import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/material';
 import CodeBlock from '@components/common/CodeBlock';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import type { FilterGroup } from '../../utils/filters/filtersHelpers-types';
@@ -38,30 +38,11 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
   return (
     <>
       <Chip
-        style={filterStyle}
-        sx={{
-          '& .MuiChip-label': {
-            lineHeight: '32px',
-            maxWidth: 400,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-          },
-        }}
-        color="warning"
+        severity="info"
+        startIcon={<InformationOutline fontSize="small" />}
+        label={t_i18n('Filters are not fully displayed')}
         onClick={handleClickOpen}
-        label={(
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, textTransform: 'none' }}>
-            {t_i18n('Filters are not fully displayed')}
-            <InformationOutline
-              fontSize="small"
-              color="secondary"
-            />
-          </span>
-        )}
+        style={filterStyle}
       />
 
       <Dialog

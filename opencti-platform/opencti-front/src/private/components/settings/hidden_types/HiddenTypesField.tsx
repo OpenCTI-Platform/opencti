@@ -1,11 +1,7 @@
-import MenuItem from '@mui/material/MenuItem';
+import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import Checkbox from '@mui/material/Checkbox';
-import React, { FunctionComponent, ReactElement, useState } from 'react';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import { Field } from 'formik';
+import React, { FunctionComponent, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/fields/SelectField';
 import { entitySettingPatch } from '../sub_types/entity_setting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -154,66 +150,67 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
       ?.every((el) => entitySettingsEntityType.includes(el));
   };
 
-  const computeItems = () => {
-    const items: ReactElement[] = [];
+  // The row list keeps MUI's exact value vocabulary: a group row carries the
+  // sentinel `key` or `not-<key>`, which `onChange` expands through
+  // `itemsFromGroup`. Passing the raw array straight through preserves the
+  // select-all / deselect-all behaviour the MUI multiple Select gave for free.
+  type HiddenTypeRow = { value: string; label: string; group: boolean; targetType?: string };
+  const computeRows = (): HiddenTypeRow[] => {
+    const rows: HiddenTypeRow[] = [];
     entitySettingsHiddenGrouped.forEach((values, key) => {
-      items.push(
-        <MenuItem
-          key={key}
-          value={isSelectedGroup(key) ? `not-${key}` : key}
-          dense={true}
-        >
-          <Checkbox
-            checked={isSelectedGroup(key)}
-          />
-          {t_i18n(key)}
-        </MenuItem>,
-      );
+      rows.push({ value: isSelectedGroup(key) ? `not-${key}` : key, label: t_i18n(key), group: true });
       const valuesKeys = groups.get(key) ?? [];
       (values as EntitySettingHidden[])
         .sort((a, b) => valuesKeys.indexOf(a.target_type) - valuesKeys.indexOf(b.target_type))
-        .forEach((platformHiddenType) => items.push(
-          <MenuItem
-            key={platformHiddenType.target_type}
-            value={platformHiddenType.target_type}
-            dense={true}
-          >
-            <Checkbox
-              checked={
-                entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
-              style={{ marginLeft: 10 }}
-            />
-            {t_i18n(`entity_${platformHiddenType.target_type}`)}
-            <Security needs={[SETTINGS_SETACCESSES]}>
-              <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
-            </Security>
-          </MenuItem>,
-        ));
+        .forEach((platformHiddenType) => rows.push({
+          value: platformHiddenType.target_type,
+          label: t_i18n(`entity_${platformHiddenType.target_type}`),
+          group: false,
+          targetType: platformHiddenType.target_type,
+        }));
     });
-    return items;
+    return rows;
   };
-  return (
 
-    <Field
-      component={SelectField}
-      variant="standard"
-      name="platform_hidden_types"
-      label={t_i18n('Hidden entity types')}
-      fullWidth={true}
-      multiple={true}
-      containerstyle={fieldSpacingContainerStyle}
-      value={entitySettingsEntityType}
-      onChange={(_: string, values: string[]) => onChange(values)}
-      renderValue={(selected: string[]) => (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {selected.map((value) => (
-            <Chip key={value} label={t_i18n(`entity_${value}`)} />
-          ))}
-        </Box>
-      )}
-    >
-      {computeItems()}
-    </Field>
+  return (
+    <div style={fieldSpacingContainerStyle}>
+      <Combobox<HiddenTypeRow>
+        multiple
+        options={computeRows()}
+        value={computeRows().filter((r) => !r.group && entitySettingsEntityType.includes(r.value))}
+        getOptionLabel={(option) => option.label}
+        isOptionEqualToValue={(a, b) => a.value === b.value}
+        onValueChange={(val) => onChange(((val ?? []) as HiddenTypeRow[]).map((r) => r.value))}
+        renderOption={(option) => (
+          <>
+            <Checkbox
+              checked={option.group
+                ? !!isSelectedGroup(option.value.replace(/^not-/, ''))
+                : entitySettingsEntityType.includes(option.value)}
+              style={option.group ? undefined : { marginLeft: 10 }}
+            />
+            {option.label}
+            {!option.group && option.targetType && (
+              <Security needs={[SETTINGS_SETACCESSES]}>
+                <HiddenTypesIndicator platformHiddenTargetType={option.targetType} />
+              </Security>
+            )}
+          </>
+        )}
+        className="w-full"
+      >
+        <ComboboxLabel>{t_i18n('Hidden entity types')}</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxChips aria-label={t_i18n('Hidden entity types')} />
+          <ComboboxInput />
+          <ComboboxControls>
+            <ComboboxClear />
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent listAriaLabel={t_i18n('Hidden entity types')} />
+      </Combobox>
+    </div>
   );
 };
 

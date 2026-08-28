@@ -244,7 +244,7 @@ const ArtifactCreation = ({
                 name="url"
                 label={t_i18n('URL')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={MarkdownField}

@@ -1,5 +1,5 @@
-import React, { CSSProperties, ReactNode } from 'react';
-import Chip from '@mui/material/Chip';
+import React, { ReactNode } from 'react';
+import { Chip } from '@filigran/design-system';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
@@ -37,15 +37,6 @@ import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
 import { Stack } from '@mui/material';
-
-const chipStyle: CSSProperties = {
-  fontSize: '12px',
-  lineHeight: '12px',
-  height: '20px',
-  marginRight: '7px',
-  borderRadius: '4px',
-  textTransform: 'uppercase',
-};
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -1189,14 +1180,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           title={(
             <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: '4px' }}>
               {tags.map((tag: string) => (
-                <Chip key={tag} label={tag} style={chipStyle} />
+                <Chip key={tag} label={tag} style={{ marginRight: 7 }} />
               ))}
             </div>
           )}
         >
           <div>
-            <Chip label={tags[0]} style={chipStyle} />
-            <Chip label="..." style={chipStyle} />
+            <Chip label={tags[0]} style={{ marginRight: 7 }} />
+            <Chip label="..." style={{ marginRight: 7 }} />
           </div>
         </Tooltip>
       );
@@ -1599,7 +1590,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           >
             {x_opencti_aliases.map((value: string) => (
-              <Chip key={value} label={value} size="small" />
+              <Chip key={value} label={value} />
             ))}
           </div>
         </Tooltip>

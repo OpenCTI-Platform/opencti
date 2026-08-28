@@ -5,7 +5,6 @@ import ConfidenceField from '@components/common/form/ConfidenceField';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import { AutoModeOutlined, EditOutlined } from '@mui/icons-material';
 import { Box, CardContent, Step, StepLabel, Stepper, Typography } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
@@ -19,7 +18,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -722,7 +721,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   setFieldValue={setFieldValue}
                 />
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="type_affinity"
                   onChange={(name: string, value: string) => setFieldValue(name, value)}
@@ -730,9 +729,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   fullWidth={true}
                   containerstyle={{ width: '100%', marginTop: 20 }}
                 >
-                  <MenuItem key="ENDPOINT" value="ENDPOINT">
+                  <SelectItem key="ENDPOINT" value="ENDPOINT">
                     {t_i18n('Endpoint')}
-                  </MenuItem>
+                  </SelectItem>
                 </Field>
                 <OpenVocabField
                   label={t_i18n('Platform(s) affinity')}
@@ -765,7 +764,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   name="external_uri"
                   label={t_i18n('Source external link')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                 />
               </>
             )}

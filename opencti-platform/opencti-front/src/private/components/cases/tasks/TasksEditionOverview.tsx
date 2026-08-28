@@ -243,7 +243,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
-            style={{ marginBottom: 10 }}
+            className="mb-2.5"
           />
           <Field
             component={DateTimePickerField}

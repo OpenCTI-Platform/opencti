@@ -329,7 +329,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   name="aliases"
                   label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
                   helperText={(
@@ -347,7 +347,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   name="x_opencti_aliases"
                   label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
                   helperText={(
