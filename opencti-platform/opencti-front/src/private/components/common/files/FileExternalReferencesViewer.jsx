@@ -8,18 +8,18 @@ import List from '@mui/material/List';
 import Card from '@common/card/Card';
 import FileLine from './FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 
 const interval$ = interval(TEN_SECONDS);
 
-const FileExternalReferencesViewerBase = ({
+const FileExternalReferencesViewerComponent = ({
   entity,
   disableImport,
   handleOpenImport,
   connectors,
   relay,
-  t,
 }) => {
+  const { t_i18n } = useFormatter();
   const { id, externalReferences } = entity;
   const sortByLastModified = R.sortBy(R.prop('lastModified'));
   const allFiles = R.pipe(
@@ -41,7 +41,7 @@ const FileExternalReferencesViewerBase = ({
   });
   return (
     <Grid item xs={12}>
-      <Card title={t('External references files')}>
+      <Card title={t_i18n('External references files')}>
         {allFiles.length ? (
           <List>
             {allFiles.map((file) => file && (
@@ -64,7 +64,7 @@ const FileExternalReferencesViewerBase = ({
                 textAlign: 'center',
               }}
             >
-              {t('No file for the moment')}
+              {t_i18n('No file for the moment')}
             </span>
           </div>
         )}
@@ -72,10 +72,6 @@ const FileExternalReferencesViewerBase = ({
     </Grid>
   );
 };
-
-const FileExternalReferencesViewerComponent = R.compose(
-  inject18n,
-)(FileExternalReferencesViewerBase);
 
 const FileExternalReferencesViewerRefetchQuery = graphql`
   query FileExternalReferencesViewerRefetchQuery($id: String!) {

@@ -5,7 +5,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -34,13 +34,13 @@ const ingestionTaxiiCollectionValidation = (t) => Yup.object().shape({
 });
 
 const IngestionTaxiiCollectionEditionContainer = ({
-  t,
   open,
   handleClose,
   ingestionTaxiiCollection,
 }) => {
+  const { t_i18n } = useFormatter();
   const handleSubmitField = (name, value) => {
-    ingestionTaxiiCollectionValidation(t)
+    ingestionTaxiiCollectionValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         let finalValue = value;
@@ -58,7 +58,7 @@ const IngestionTaxiiCollectionEditionContainer = ({
       .catch(() => false);
   };
 
-  const handleSubmitFieldOptions = (name, value) => ingestionTaxiiCollectionValidation(t)
+  const handleSubmitFieldOptions = (name, value) => ingestionTaxiiCollectionValidation(t_i18n)
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({
@@ -83,14 +83,14 @@ const IngestionTaxiiCollectionEditionContainer = ({
 
   return (
     <Drawer
-      title={t('Update a TAXII Push ingester')}
+      title={t_i18n('Update a TAXII Push ingester')}
       open={open}
       onClose={handleClose}
     >
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={ingestionTaxiiCollectionValidation(t)}
+        validationSchema={ingestionTaxiiCollectionValidation(t_i18n)}
       >
         {() => (
           <Form>
@@ -98,7 +98,7 @@ const IngestionTaxiiCollectionEditionContainer = ({
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
               onSubmit={handleSubmitField}
             />
@@ -106,14 +106,14 @@ const IngestionTaxiiCollectionEditionContainer = ({
               component={TextField}
               variant="standard"
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
             />
             <CreatorField
               name="user_id"
-              label={t('User responsible for data creation (empty = System)')}
+              label={t_i18n('User responsible for data creation (empty = System)')}
               onChange={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               showConfidence
@@ -130,7 +130,7 @@ const IngestionTaxiiCollectionEditionContainer = ({
               onChange={handleSubmitField}
               type="checkbox"
               name="confidence_to_score"
-              label={t('Copy confidence level to OpenCTI scores for indicators')}
+              label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
               containerstyle={fieldSpacingContainerStyle}
             />
           </Form>
@@ -145,7 +145,6 @@ IngestionTaxiiCollectionEditionContainer.propTypes = {
   classes: PropTypes.object,
   ingestionTaxiiCollection: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const IngestionTaxiiCollectionEditionFragment = createFragmentContainer(
@@ -172,6 +171,4 @@ const IngestionTaxiiCollectionEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-)(IngestionTaxiiCollectionEditionFragment);
+export default IngestionTaxiiCollectionEditionFragment;

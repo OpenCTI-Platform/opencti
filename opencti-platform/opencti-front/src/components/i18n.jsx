@@ -266,13 +266,9 @@ export const useFormatter = () => {
  * Prefer useFormatter in any new or converted component.
  */
 const inject18n = (WrappedComponent) => {
-  const WithI18n = ({ children, ...props }) => {
+  const WithI18n = (props) => {
     const { t_i18n, ...formatters } = useFormatter();
-    return (
-      <WrappedComponent {...props} {...formatters} t={t_i18n}>
-        {children}
-      </WrappedComponent>
-    );
+    return <WrappedComponent {...props} {...formatters} t={t_i18n} />;
   };
   WithI18n.displayName = `WithI18n(${
     WrappedComponent.displayName || WrappedComponent.name || 'Component'

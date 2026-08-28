@@ -31,7 +31,7 @@ import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import CreatorField from '../../common/form/CreatorField';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -881,4 +881,4 @@ const FeedCreationFragment = createFragmentContainer(FeedCreation, {
       }
     }`,
 });
-export default R.compose(inject18n)(FeedCreationFragment);
+export default FeedCreationFragment;

@@ -3,8 +3,8 @@ import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Tooltip from '@mui/material/Tooltip';
 import Avatar from '@mui/material/Avatar';
-import { compose, filter, insert, pipe } from 'ramda';
-import inject18n from './i18n';
+import { filter, insert, pipe } from 'ramda';
+import { useFormatter } from './i18n';
 import { stringToColour } from '../utils/Colors';
 import { UserContext } from '../utils/hooks/useAuth';
 
@@ -66,7 +66,8 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(
   SubscriptionAvatarsComponent,
 );
 
-const SubscriptionFocusComponent = ({ t, fieldName, context }) => {
+const SubscriptionFocusComponent = ({ fieldName, context }) => {
+  const { t_i18n } = useFormatter();
   const { me } = useContext(UserContext);
   const users = contextUsers(me, context);
   const focusedUsers = pipe(
@@ -82,7 +83,7 @@ const SubscriptionFocusComponent = ({ t, fieldName, context }) => {
           <span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span>
         </span>
       ))}
-      {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
+      {focusedUsers.length > 1 ? t_i18n('are updating...') : t_i18n('is updating...')}
     </span>
   );
 };
@@ -91,10 +92,8 @@ SubscriptionFocusComponent.propTypes = {
   classes: PropTypes.object.isRequired,
   context: PropTypes.array,
   fieldName: PropTypes.string,
-  t: PropTypes.func,
 };
 
-export const SubscriptionFocus = compose(
-  inject18n,
-  withStyles(SubscriptionAvatarsFocusStyles),
-)(SubscriptionFocusComponent);
+export const SubscriptionFocus = withStyles(SubscriptionAvatarsFocusStyles)(
+  SubscriptionFocusComponent,
+);

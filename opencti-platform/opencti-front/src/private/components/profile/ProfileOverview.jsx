@@ -10,7 +10,7 @@ import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import qrcode from 'qrcode';
-import { compose, pick } from 'ramda';
+import { pick } from 'ramda';
 import { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,7 @@ import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Label from '../../../components/common/label/Label';
 import SelectField from '../../../components/fields/SelectField';
-import inject18n, { useFormatter } from '../../../components/i18n';
+import { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import TextField from '../../../components/TextField';
 import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
@@ -204,7 +204,7 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
-  const { t, me, classes, about, settings, themes } = props;
+  const { me, classes, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
   const { isPlaygroundEnable } = useHelper();
@@ -244,7 +244,7 @@ const ProfileOverviewComponent = (props) => {
   };
 
   const handleSubmitField = (name, value) => {
-    userValidation(t)
+    userValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -290,16 +290,16 @@ const ProfileOverviewComponent = (props) => {
       <Dialog
         open={display2FA}
         onClose={() => setDisplay2FA(false)}
-        title={t('Enable two-factor authentication')}
+        title={t_i18n('Enable two-factor authentication')}
         size="small"
       >
         <OtpComponent closeFunction={() => setDisplay2FA(false)} />
       </Dialog>
-      <Card title={`${t('Profile')} ${external && `(${t('external')})`}`}>
+      <Card title={`${t_i18n('Profile')} ${external && `(${t_i18n('external')})`}`}>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={userValidation(t)}
+          validationSchema={userValidation(t_i18n)}
         >
           {() => (
             <Form>
@@ -308,7 +308,7 @@ const ProfileOverviewComponent = (props) => {
                 variant="standard"
                 name="name"
                 disabled={external}
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
@@ -317,7 +317,7 @@ const ProfileOverviewComponent = (props) => {
                 variant="standard"
                 name="user_email"
                 disabled={external}
-                label={t('Email address')}
+                label={t_i18n('Email address')}
                 fullWidth={true}
                 style={{ marginTop: 16 }}
                 onSubmit={handleSubmitField}
@@ -333,7 +333,7 @@ const ProfileOverviewComponent = (props) => {
                 component={TextField}
                 variant="standard"
                 name="firstname"
-                label={t('Firstname')}
+                label={t_i18n('Firstname')}
                 fullWidth={true}
                 style={{ marginTop: 16 }}
                 onSubmit={handleSubmitField}
@@ -342,7 +342,7 @@ const ProfileOverviewComponent = (props) => {
                 component={TextField}
                 variant="standard"
                 name="lastname"
-                label={t('Lastname')}
+                label={t_i18n('Lastname')}
                 fullWidth={true}
                 style={{ marginTop: 16 }}
                 onSubmit={handleSubmitField}
@@ -351,7 +351,7 @@ const ProfileOverviewComponent = (props) => {
                 component={TextField}
                 variant="standard"
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -362,11 +362,11 @@ const ProfileOverviewComponent = (props) => {
           )}
         </Formik>
       </Card>
-      <Card title={t('User experience')}>
+      <Card title={t_i18n('User experience')}>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={userValidation(t)}
+          validationSchema={userValidation(t_i18n)}
         >
           {() => (
             <Form>
@@ -374,7 +374,7 @@ const ProfileOverviewComponent = (props) => {
                 component={SelectField}
                 variant="standard"
                 name="theme"
-                label={t('Theme')}
+                label={t_i18n('Theme')}
                 fullWidth={true}
                 inputProps={{
                   name: 'theme',
@@ -383,7 +383,7 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={{ width: '100%' }}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="default">{t('Default')}</MenuItem>
+                <MenuItem value="default">{t_i18n('Default')}</MenuItem>
                 {themeList.map(({ id, name }) => (
                   <MenuItem key={id} value={id}>{name}</MenuItem>
                 ))}
@@ -392,7 +392,7 @@ const ProfileOverviewComponent = (props) => {
                 component={SelectField}
                 variant="standard"
                 name="language"
-                label={t('Language')}
+                label={t_i18n('Language')}
                 fullWidth={true}
                 inputProps={{
                   name: 'language',
@@ -401,7 +401,7 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
+                <MenuItem value="auto"><em>{t_i18n('Automatic')}</em></MenuItem>
                 {
                   availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
                 }
@@ -410,19 +410,19 @@ const ProfileOverviewComponent = (props) => {
                 component={SelectField}
                 variant="standard"
                 name="unit_system"
-                label={t('Unit system')}
+                label={t_i18n('Unit system')}
                 fullWidth={true}
                 inputProps={{ name: 'unit_system', id: 'unit_system' }}
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
-                <MenuItem value="Imperial">{t('Imperial')}</MenuItem>
-                <MenuItem value="Metric">{t('Metric')}</MenuItem>
+                <MenuItem value="auto"><em>{t_i18n('Automatic')}</em></MenuItem>
+                <MenuItem value="Imperial">{t_i18n('Imperial')}</MenuItem>
+                <MenuItem value="Metric">{t_i18n('Metric')}</MenuItem>
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
-                  primary={t('Show left navigation submenu icons')}
+                  primary={t_i18n('Show left navigation submenu icons')}
                 />
                 <Field
                   component={Switch}
@@ -434,7 +434,7 @@ const ProfileOverviewComponent = (props) => {
               </ListItem>
               <ListItem style={{ padding: '10px 0 0 0' }}>
                 <ListItemText
-                  primary={t('Auto collapse submenus in left navigation')}
+                  primary={t_i18n('Auto collapse submenus in left navigation')}
                 />
                 <Field
                   component={Switch}
@@ -446,7 +446,7 @@ const ProfileOverviewComponent = (props) => {
               </ListItem>
               {/* <ListItem style={{ padding: '10px 0 0 0' }}>
                 <ListItemText
-                  primary={t('Monochrome labels and entity types')}
+                  primary={t_i18n('Monochrome labels and entity types')}
                 />
                 <Field
                   component={Switch}
@@ -468,7 +468,7 @@ const ProfileOverviewComponent = (props) => {
               </Alert>
               {settings.platform_notifier_auto_trigger_assignee && (
                 <NotifierField
-                  label={t('Personal notifiers')}
+                  label={t_i18n('Personal notifiers')}
                   name="personal_notifiers"
                   onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
                 />
@@ -478,7 +478,7 @@ const ProfileOverviewComponent = (props) => {
         </Formik>
       </Card>
       {hasKnowledgeAccess ? (
-        <Card title={t('Dashboard settings')}>
+        <Card title={t_i18n('Dashboard settings')}>
           <HomeDashboardSettings />
         </Card>
       ) : null}
@@ -489,7 +489,7 @@ const ProfileOverviewComponent = (props) => {
           onSubmitField={handleSubmitField}
         />
       )}
-      <Card title={t('Authentication')}>
+      <Card title={t_i18n('Authentication')}>
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
             <Button
@@ -499,7 +499,7 @@ const ProfileOverviewComponent = (props) => {
               classes={{ root: classes.button }}
               disabled={settings.otp_mandatory}
             >
-              {t('Disable two-factor authentication')}
+              {t_i18n('Disable two-factor authentication')}
             </Button>
           )}
           {!useOtp && (
@@ -510,7 +510,7 @@ const ProfileOverviewComponent = (props) => {
               onClick={() => setDisplay2FA(true)}
               classes={{ root: classes.button }}
             >
-              {t('Enable two-factor authentication')}
+              {t_i18n('Enable two-factor authentication')}
             </Button>
           )}
         </div>
@@ -523,7 +523,7 @@ const ProfileOverviewComponent = (props) => {
               password: '',
               confirmation: '',
             }}
-            validationSchema={passwordValidation(t)}
+            validationSchema={passwordValidation(t_i18n)}
             onSubmit={handleSubmitPasswords}
           >
             {({ submitForm, isSubmitting, values }) => (
@@ -533,7 +533,7 @@ const ProfileOverviewComponent = (props) => {
                     component={TextField}
                     variant="standard"
                     name="current_password"
-                    label={t('Current password')}
+                    label={t_i18n('Current password')}
                     type="password"
                     fullWidth={true}
                     disabled={external}
@@ -543,7 +543,7 @@ const ProfileOverviewComponent = (props) => {
                     component={TextField}
                     variant="standard"
                     name="password"
-                    label={t('New password')}
+                    label={t_i18n('New password')}
                     type="password"
                     fullWidth={true}
                     disabled={external}
@@ -552,7 +552,7 @@ const ProfileOverviewComponent = (props) => {
                     component={TextField}
                     variant="standard"
                     name="confirmation"
-                    label={t('Confirmation')}
+                    label={t_i18n('Confirmation')}
                     type="password"
                     fullWidth={true}
                     disabled={external}
@@ -565,7 +565,7 @@ const ProfileOverviewComponent = (props) => {
                     disabled={external || isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Update')}
+                    {t_i18n('Update')}
                   </Button>
                 </div>
               </Form>
@@ -573,9 +573,9 @@ const ProfileOverviewComponent = (props) => {
           </Formik>
         )}
       </Card>
-      <Card title={t('API access')}>
+      <Card title={t_i18n('API access')}>
         <div>
-          <Label>{t('OpenCTI version')}</Label>
+          <Label>{t_i18n('OpenCTI version')}</Label>
           <pre>{about.version}</pre>
           <Stack gap={2}>
             <Stack direction="row" justifyContent="flex-end" gap={1}>
@@ -586,14 +586,14 @@ const ProfileOverviewComponent = (props) => {
                   to="/public/graphql"
                   target="_blank"
                 >
-                  {t('Playground')}
+                  {t_i18n('Playground')}
                 </Button>
               )}
               {hasAccessTokenCapability && (
                 <Button
                   onClick={() => setDisplayTokenCreation(true)}
                 >
-                  {t('Generate Token')}
+                  {t_i18n('Generate Token')}
                 </Button>
               )}
             </Stack>
@@ -610,7 +610,6 @@ const ProfileOverviewComponent = (props) => {
 ProfileOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
   me: PropTypes.object,
   about: PropTypes.object,
   settings: PropTypes.object,
@@ -664,4 +663,4 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ProfileOverview);
+export default withStyles(styles)(ProfileOverview);

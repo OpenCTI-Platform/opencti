@@ -15,7 +15,7 @@ import Paper from '@mui/material/Paper';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now, yearsAgo } from '../../../../utils/Time';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import Loader from '../../../../components/Loader';
 import { areaChartOptions } from '../../../../utils/Charts';
@@ -114,7 +114,8 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
   }
 `;
 
-const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectId, theme }) => {
+const StixDomainObjectAuthorKnowledge = ({ classes, stixDomainObjectId, theme }) => {
+  const { t_i18n, fsd, n } = useFormatter();
   const fallbackDates = useMemo(() => ({
     monthAgo: monthsAgo(1),
     yearAgo: yearsAgo(1),
@@ -165,7 +166,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                   return (
                     <CardContent>
                       <div className={classes.title}>
-                        {t('Total reports')}
+                        {t_i18n('Total reports')}
                       </div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference difference={difference} />
@@ -205,7 +206,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                   return (
                     <CardContent>
                       <div className={classes.title}>
-                        {t('Total observables')}
+                        {t_i18n('Total observables')}
                       </div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference difference={difference} />
@@ -245,7 +246,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                   return (
                     <CardContent>
                       <div className={classes.title}>
-                        {t('Total relations')}
+                        {t_i18n('Total relations')}
                       </div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference difference={difference} />
@@ -268,7 +269,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={12}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Created entities')}
+            {t_i18n('Created entities')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
@@ -299,7 +300,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                       )}
                       series={[
                         {
-                          name: t('Number of reports'),
+                          name: t_i18n('Number of reports'),
                           data: chartData,
                         },
                       ]}
@@ -324,11 +325,9 @@ StixDomainObjectAuthorKnowledge.propTypes = {
   stixDomainObjectType: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
 export default compose(
-  inject18n,
   withTheme,
   withStyles(styles),
 )(StixDomainObjectAuthorKnowledge);

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
@@ -10,7 +9,7 @@ import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Card from '@common/card/Card';
 import { TEN_SECONDS } from '../../../../../utils/Time';
-import inject18n from '../../../../../components/i18n';
+import { useFormatter } from '../../../../../components/i18n';
 import WorkbenchFileLine from './WorkbenchFileLine';
 import WorkbenchFileCreator from './WorkbenchFileCreator';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
@@ -32,9 +31,9 @@ const WorkbenchFileViewerBase = ({
   handleOpenImport,
   connectors,
   relay,
-  t,
   classes,
 }) => {
+  const { t_i18n } = useFormatter();
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
   const [openCreate, setOpenCreate] = useState(false);
@@ -59,7 +58,7 @@ const WorkbenchFileViewerBase = ({
       <div style={{ height: '100%' }}>
         <Card
           padding="horizontal"
-          title={t('Analyst workbenches')}
+          title={t_i18n('Analyst workbenches')}
           action={(
             <Security needs={[KNOWLEDGE_KNASKIMPORT]} hasAccess={!draftContext}>
               <IconButton
@@ -97,7 +96,7 @@ const WorkbenchFileViewerBase = ({
                   textAlign: 'center',
                 }}
               >
-                {t('No file for the moment')}
+                {t_i18n('No file for the moment')}
               </span>
             </div>
           )}
@@ -113,10 +112,7 @@ const WorkbenchFileViewerBase = ({
   );
 };
 
-const WorkbenchFileViewerComponent = compose(
-  inject18n,
-  withStyles(styles),
-)(WorkbenchFileViewerBase);
+const WorkbenchFileViewerComponent = withStyles(styles)(WorkbenchFileViewerBase);
 
 const WorkbenchFileViewerRefetchQuery = graphql`
   query WorkbenchFileViewerRefetchQuery($id: String!) {

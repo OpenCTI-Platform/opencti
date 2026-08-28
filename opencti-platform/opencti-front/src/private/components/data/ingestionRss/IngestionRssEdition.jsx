@@ -5,7 +5,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import IngestionSchedulingField from '../IngestionSchedulingField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -60,13 +60,13 @@ const ingestionRssValidation = (t) => Yup.object().shape({
 });
 
 const IngestionRssEditionContainer = ({
-  t,
   handleClose,
   ingestionRss,
   open,
 }) => {
+  const { t_i18n } = useFormatter();
   const handleSubmitField = (name, value) => {
-    ingestionRssValidation(t)
+    ingestionRssValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         let finalValue = value;
@@ -119,14 +119,14 @@ const IngestionRssEditionContainer = ({
   )(ingestionRss);
   return (
     <Drawer
-      title={t('Update a RSS ingester')}
+      title={t_i18n('Update a RSS ingester')}
       open={open}
       onClose={handleClose}
     >
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={ingestionRssValidation(t)}
+        validationSchema={ingestionRssValidation(t_i18n)}
       >
         {({ setFieldValue }) => (
           <Form>
@@ -134,7 +134,7 @@ const IngestionRssEditionContainer = ({
               component={TextField}
               variant="standard"
               name="name"
-              label={t('Name')}
+              label={t_i18n('Name')}
               fullWidth={true}
               onSubmit={handleSubmitField}
             />
@@ -142,7 +142,7 @@ const IngestionRssEditionContainer = ({
               component={TextField}
               variant="standard"
               name="description"
-              label={t('Description')}
+              label={t_i18n('Description')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
@@ -152,14 +152,14 @@ const IngestionRssEditionContainer = ({
               component={TextField}
               variant="standard"
               name="uri"
-              label={t('RSS feed URL')}
+              label={t_i18n('RSS feed URL')}
               fullWidth={true}
               onSubmit={handleSubmitField}
               style={fieldSpacingContainerStyle}
             />
             <CreatorField
               name="user_id"
-              label={t('User responsible for data creation')}
+              label={t_i18n('User responsible for data creation')}
               onChange={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               showConfidence
@@ -179,7 +179,7 @@ const IngestionRssEditionContainer = ({
               component={DateTimePickerField}
               name="current_state_date"
               textFieldProps={{
-                label: t(
+                label: t_i18n(
                   'Import from date (empty = all RSS feed possible items)',
                 ),
                 variant: 'standard',
@@ -189,7 +189,7 @@ const IngestionRssEditionContainer = ({
               onChange={handleSubmitField}
             />
             <OpenVocabField
-              label={t('Report types')}
+              label={t_i18n('Report types')}
               type="report_types_ov"
               name="report_types"
               onSubmit={handleSubmitField}
@@ -214,7 +214,7 @@ const IngestionRssEditionContainer = ({
               component={SwitchField}
               type="checkbox"
               name="ssl_verify"
-              label={t('Verify SSL certificate')}
+              label={t_i18n('Verify SSL certificate')}
               onChange={handleSubmitField}
               containerstyle={fieldSpacingContainerStyle}
             />
@@ -230,7 +230,6 @@ IngestionRssEditionContainer.propTypes = {
   classes: PropTypes.object,
   ingestionRss: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const IngestionRssEditionFragment = createFragmentContainer(
@@ -268,6 +267,4 @@ const IngestionRssEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-)(IngestionRssEditionFragment);
+export default IngestionRssEditionFragment;
