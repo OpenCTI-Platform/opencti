@@ -69,6 +69,9 @@ const stixSightingRelationshipCreationFromEntityQuery = graphql`
       ... on System {
         name
       }
+      ... on SecurityPlatform {
+        name
+      }
       ... on Indicator {
         name
       }
