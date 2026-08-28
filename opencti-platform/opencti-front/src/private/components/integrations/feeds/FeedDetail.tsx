@@ -4,6 +4,8 @@ import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
 import { Box, Grid2 as Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
 import { useTheme } from '@mui/material/styles';
 import SyncPopover from '@components/data/sync/SyncPopover';
 import IngestionRssPopover from '@components/data/ingestionRss/IngestionRssPopover';
@@ -31,6 +33,7 @@ import TitleMainEntity from '../../../../components/common/typography/TitleMainE
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
 import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../../utils/hooks/useGranted';
+import { connectorErrorSummary, toConnectorErrorState } from '../../../../utils/connectorErrors';
 
 const feedDetailSyncQuery = graphql`
   query FeedDetailSyncQuery($id: String!) {
@@ -92,6 +95,8 @@ const feedDetailTaxiiQuery = graphql`
       current_state_cursor
       ingestion_running
       last_execution_date
+      last_execution_status
+      last_execution_error_code
       confidence_to_score
       ssl_verify
       created_at
@@ -197,6 +202,8 @@ export interface FeedDetailNode {
   current_state_cursor?: string | null;
   current_state_hash?: string | null;
   last_execution_date?: string | null;
+  last_execution_status?: string | null;
+  last_execution_error_code?: number | null;
   created_at?: string | null;
   updated_at?: string | null;
   user?: { readonly id: string; readonly name: string } | null;
@@ -305,6 +312,20 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const running = kind === 'sync' ? !!node.running : !!node.ingestion_running;
   const Icon = definition.icon;
 
+  // Feed error state derived from the last execution outcome. TAXII feeds report
+  // 'error'/'success' plus an optional HTTP code (401/403/404), mirroring the
+  // connector detail page error banner.
+  const feedErrorState = toConnectorErrorState(
+    node.last_execution_status === 'error'
+      ? {
+          in_error: true,
+          code: node.last_execution_error_code ?? null,
+          message: null,
+          timestamp: node.last_execution_date ?? null,
+        }
+      : null,
+  );
+
   // Next scheduled run, computed like the backend scheduler: last execution
   // date plus the scheduling period ('auto' feeds run on every manager tick,
   // about 30 seconds). Stopped feeds have no next run.
@@ -393,6 +414,14 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                   label={running ? t_i18n('Active') : t_i18n('Inactive')}
                 />
               </div>
+              {feedErrorState.inError && (
+                <Tooltip title={connectorErrorSummary(feedErrorState) ?? t_i18n('In error')}>
+                  <ErrorOutlineOutlined
+                    style={{ color: theme.palette.error.main, flexShrink: 0 }}
+                    fontSize="small"
+                  />
+                </Tooltip>
+              )}
             </TitleMainEntity>
             {node.description && (
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary, marginTop: 0.5, maxWidth: 720 }}>
@@ -409,6 +438,20 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           </Security>
         </Stack>
       </Stack>
+
+      {feedErrorState.inError && (
+        <Alert severity="error" variant="outlined">
+          {t_i18n(
+            feedErrorState.code === 403
+              ? 'This feed is in error: access forbidden (HTTP 403). Check its configuration and credentials.'
+              : feedErrorState.code === 404
+                ? 'This feed is in error: resource not found (HTTP 404). Check its configuration and target URL.'
+                : feedErrorState.code === 401
+                  ? 'This feed is in error: authentication failed (HTTP 401). Check its configuration and credentials.'
+                  : 'This feed is in error: its last execution failed. Check its configuration and the Logs tab.',
+          )}
+        </Alert>
+      )}
 
       {kind === 'taxii' && (
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

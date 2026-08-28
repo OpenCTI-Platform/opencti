@@ -11,6 +11,22 @@ describe('parseConnectorLogsError', () => {
     expect(parseConnectorLogsError([null, '']).in_error).toBe(false);
   });
 
+  it('detects a 401 from exc_info / attributes when the message is generic (pycti format)', () => {
+    const line = JSON.stringify({
+      timestamp: '2026-01-01T00:00:00.000Z',
+      level: 'ERROR',
+      name: 'abuseipdb-ip-blacklist',
+      message: '[API] Error while fetching data: ',
+      exc_info: 'Traceback (most recent call last):\n  ...\nrequests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.abuseipdb.com/api/v2/blacklist',
+      attributes: { url_path: 'https://api.abuseipdb.com/api/v2/blacklist', error: '401 Client Error: Unauthorized' },
+    });
+    const state = parseConnectorLogsError([line]);
+    expect(state.in_error).toBe(true);
+    expect(state.code).toBe(401);
+    // The human-readable message is kept for display.
+    expect(state.message).toContain('Error while fetching data');
+  });
+
   it('detects a 401 error from a JSON error log line', () => {
     const state = parseConnectorLogsError([
       jsonLog('INFO', 'Starting connector'),

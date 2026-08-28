@@ -24,7 +24,11 @@ export interface ConnectorErrorStatus {
 
 interface ParsedLogLine {
   level: string | null;
+  // Human-readable message, kept for display in the error status.
   message: string;
+  // Broader text scanned for HTTP codes: pycti connectors put the actual
+  // status (e.g. "401 Unauthorized") in `exc_info`/`attributes`, not `message`.
+  detectText: string;
   timestamp: string | null;
 }
 
@@ -46,13 +50,25 @@ const parseLogLine = (raw: string): ParsedLogLine => {
         const level = typeof parsed.level === 'string' ? parsed.level.toLowerCase() : null;
         const message = typeof parsed.message === 'string' ? parsed.message : trimmed;
         const timestamp = typeof parsed.timestamp === 'string' ? parsed.timestamp : null;
-        return { level, message, timestamp };
+        // pycti connectors report HTTP failures in `exc_info` (the traceback)
+        // and/or `attributes` (structured context), while `message` stays
+        // generic. Scan all of them so codes like 401/403/404 are not missed.
+        const extraParts: string[] = [message];
+        if (typeof parsed.exc_info === 'string') extraParts.push(parsed.exc_info);
+        if (parsed.attributes && typeof parsed.attributes === 'object') {
+          try {
+            extraParts.push(JSON.stringify(parsed.attributes));
+          } catch {
+            // Ignore non-serializable attributes.
+          }
+        }
+        return { level, message, detectText: extraParts.join(' '), timestamp };
       }
     } catch {
       // Not valid JSON, fall through to plain-text handling.
     }
   }
-  return { level: null, message: trimmed, timestamp: null };
+  return { level: null, message: trimmed, detectText: trimmed, timestamp: null };
 };
 
 const detectAuthCode = (text: string): ConnectorErrorCode | null => {
@@ -94,7 +110,7 @@ export const parseConnectorLogsError = (
   try {
     for (const raw of logs) {
       if (!raw) continue;
-      const { level, message, timestamp } = parseLogLine(raw);
+      const { level, message, detectText, timestamp } = parseLogLine(raw);
 
       // Skip log lines emitted before the last reset watermark: they belong to
       // a previous configuration and must not resurrect a cleared error.
@@ -103,13 +119,13 @@ export const parseConnectorLogsError = (
         if (!Number.isNaN(lineMs) && lineMs < sinceMs) continue;
       }
 
-      const code = detectAuthCode(message);
+      const code = detectAuthCode(detectText);
       if (code !== null && isErrorLevel(level)) {
         current = { in_error: true, code, message, timestamp };
         continue;
       }
 
-      if (current.in_error && !ERROR_LEVELS.has(level ?? '') && SUCCESS_PATTERN.test(message)) {
+      if (current.in_error && !ERROR_LEVELS.has(level ?? '') && SUCCESS_PATTERN.test(detectText)) {
         current = NO_CONNECTOR_ERROR;
       }
     }
