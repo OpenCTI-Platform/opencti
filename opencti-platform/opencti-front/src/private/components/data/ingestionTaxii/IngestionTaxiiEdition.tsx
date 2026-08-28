@@ -303,7 +303,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onSubmit={handleSubmitField}
           />
           <IngestionSchedulingField handleSubmitField={handleSubmitField} />
@@ -314,7 +314,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             label={t_i18n('TAXII server URL')}
             fullWidth={true}
             onSubmit={handleSubmitField}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={SelectFieldFds}
@@ -337,7 +337,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             label={t_i18n('TAXII Collection')}
             onSubmit={handleSubmitField}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={SelectFieldFds}
@@ -368,7 +368,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
                 label={t_i18n('Username')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="password"
@@ -395,7 +395,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
                 label={t_i18n('Certificate (base64)')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="key"
@@ -410,7 +410,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
                 label={t_i18n('CA certificate (base64)')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}

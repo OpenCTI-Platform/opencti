@@ -50,7 +50,7 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
       {() => (
         <Form>
           <Field
-            style={{ marginBottom: 20 }}
+            className="mb-5"
             component={TextField}
             variant="standard"
             name="name"

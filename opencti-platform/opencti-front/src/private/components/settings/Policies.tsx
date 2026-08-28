@@ -269,7 +269,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       <Field
                         component={TextField}
                         variant="standard"
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                         name="platform_banner_text"
                         label={t_i18n('Platform banner text')}
                         fullWidth={true}

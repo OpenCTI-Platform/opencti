@@ -213,7 +213,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             name="sender_email_address"
             label={t_i18n('Sender email address')}
             fullWidth
-            style={{ marginTop: 10 }}
+            className="mt-2.5"
           />
           <Field
             component={TextField}
@@ -221,7 +221,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             name="hostname"
             label={t_i18n('Hostname')}
             fullWidth
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
@@ -230,7 +230,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             name="port"
             label={t_i18n('Port')}
             fullWidth
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={SwitchField}
@@ -263,7 +263,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 name="username"
                 label={t_i18n('Username')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -272,7 +272,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 name="password"
                 label={t_i18n('Password')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
             </>
           ) : (
@@ -283,7 +283,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 name="oauth_user"
                 label={t_i18n('OAuth user')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -291,7 +291,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 name="oauth_client_id"
                 label={t_i18n('OAuth client ID')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -300,7 +300,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 name="oauth_client_secret"
                 label={t_i18n('OAuth client secret')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -308,7 +308,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 name="oauth_issuer"
                 label={t_i18n('OAuth issuer')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -317,7 +317,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 name="oauth_refresh_token"
                 label={t_i18n('OAuth refresh token')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={DateTimePickerField}

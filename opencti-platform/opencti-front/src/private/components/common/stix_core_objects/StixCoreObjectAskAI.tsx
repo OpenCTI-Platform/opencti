@@ -261,7 +261,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
             type="number"
             value={paragraphs}
             onChange={(event) => setParagraphs(parseInt(event.target.value, 10))}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         )}
         {action && actionsOptions[action].includes('files') && (
@@ -364,7 +364,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
               fullWidth={true}
               value={newFileName ?? instanceName}
               onChange={(event) => setNewFileName(event.target.value as unknown as string)}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
           )}
         </DialogContent>

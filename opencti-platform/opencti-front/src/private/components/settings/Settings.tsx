@@ -483,7 +483,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     name="platform_favicon"
                     label={t_i18n('Platform favicon URL')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     helperText={(
@@ -500,7 +500,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     disabled={!settings.platform_email_configurable}
                     label={t_i18n('Sender email address')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     helperText={(

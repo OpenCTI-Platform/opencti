@@ -508,7 +508,7 @@ const WidgetCreationParameters = () => {
                       true,
                     )
                     }
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 )}
 
@@ -657,7 +657,7 @@ const WidgetCreationParameters = () => {
                       event.target.value,
                     )
                     }
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 )}
 
@@ -674,7 +674,7 @@ const WidgetCreationParameters = () => {
                       event.target.value,
                     )
                     }
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 )}
 
@@ -691,7 +691,7 @@ const WidgetCreationParameters = () => {
                       event.target.value,
                     )
                     }
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 )}
 

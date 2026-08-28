@@ -904,7 +904,7 @@ const StixCyberObservableCreation = ({
                                 label={attribute.value}
                                 fullWidth={true}
                                 type="number"
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                             );
                           }
@@ -948,7 +948,7 @@ const StixCyberObservableCreation = ({
                                 name={attribute.value}
                                 label={t_i18n(attribute.value)}
                                 fullWidth={true}
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                                 onSubmit={setDefaultAutonomousSystemId}
                               />
                             );
@@ -961,7 +961,7 @@ const StixCyberObservableCreation = ({
                               name={attribute.value}
                               label={t_i18n(attribute.value)}
                               fullWidth={true}
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         })}

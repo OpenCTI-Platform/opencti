@@ -37,7 +37,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
         variant="standard"
         type={isVisible ? 'text' : 'password'}
         fullWidth={true}
-        style={fieldSpacingContainerStyle}
+        className="mt-5"
         {...textFieldProps}
         {...(isSecret && ({
           onSubmit: (name: string, value: string) => {
