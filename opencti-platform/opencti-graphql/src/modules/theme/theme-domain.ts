@@ -46,7 +46,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
   const themeFound = await checkExistingTheme(context, user, input.name);
 
   if (themeFound) {
-    throw FunctionalError('Theme name already exists');
+    throw FunctionalError('Theme name already exists', { name: input.name });
   }
 
   const themeToCreate = {
@@ -148,7 +148,7 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
     // exclude the current theme so renaming with its own unchanged name is not flagged as a conflict
     const themeFound = await checkExistingTheme(context, user, newThemeName, themeId);
     if (themeFound) {
-      throw FunctionalError('Theme name already exists');
+      throw FunctionalError('Theme name already exists', { name: newThemeName });
     }
   }
   const { element } = await updateAttribute<StoreEntityTheme>(context, user, themeId, ENTITY_TYPE_THEME, input);
@@ -195,7 +195,7 @@ export const themeImport = async (context: AuthContext, user: AuthUser, file: Pr
   const themeFound = await checkExistingTheme(context, user, validationResult.data.name);
 
   if (themeFound) {
-    throw FunctionalError('Theme name already exists');
+    throw FunctionalError('Theme name already exists', { name: validationResult.data.name });
   }
 
   return addTheme(context, user, validationResult.data);

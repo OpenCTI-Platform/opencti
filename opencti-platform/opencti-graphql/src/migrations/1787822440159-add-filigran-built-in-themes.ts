@@ -80,27 +80,34 @@ const isThemeDefaultLike = (
 
 /**
  * Frees up the target Filigran name by renaming any existing theme that already uses it
- * to "<name> - custom". This prevents the backend uniqueness check from failing when the
- * legacy theme is renamed to, or a new built-in theme is created with, the Filigran name.
+ * to "<name> - custom" (with a numeric suffix if that name is also taken). This prevents the
+ * backend uniqueness check from failing when the legacy theme is renamed to, or a new built-in
+ * theme is created with, the Filigran name.
  *
  * @param context Migration execution context.
  * @param defaultThemeName Target Filigran theme name (Filigran Dark / Filigran Light).
  */
 const freeUpFiligranThemeName = async (context: AuthContext, defaultThemeName: string) => {
-  const existingThemes = await findThemePaginated(context, SYSTEM_USER, {
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['name'], values: [defaultThemeName], operator: FilterOperator.Eq }],
-      filterGroups: [],
-    },
+  const existingThemes = await findThemePaginated(context, SYSTEM_USER, { first: 5000 });
+  const existingThemesList = existingThemes.edges.map((e) => e.node);
+  const conflictingThemes = existingThemesList.filter((t) => t.name === defaultThemeName);
+  // Reserve every existing name so the generated "- custom" names collide neither with an existing
+  // theme nor with each other (the backend enforces theme name uniqueness).
+  const usedNames = new Set(existingThemesList.map((t) => t.name));
+  const renames = conflictingThemes.map((conflictingTheme) => {
+    let newName = `${defaultThemeName} - custom`;
+    let suffix = 0;
+    while (usedNames.has(newName)) {
+      suffix += 1;
+      newName = `${defaultThemeName} - custom ${suffix}`;
+    }
+    usedNames.add(newName);
+    return { id: conflictingTheme.id, newName };
   });
-  const conflictingTheme = existingThemes.edges.map((e) => e.node).find((t) => t.name === defaultThemeName);
-  if (conflictingTheme) {
-    const newName = `${defaultThemeName} - custom`;
-    const renameInput = [{ key: 'name', value: [newName] }];
-    await fieldPatchTheme(context, SYSTEM_USER, conflictingTheme.id, renameInput);
-    logMigration.info(`[MIGRATION] Existing ${defaultThemeName} theme renamed in ${newName}`);
-  }
+  await Promise.all(renames.map(async ({ id, newName }) => {
+    await fieldPatchTheme(context, SYSTEM_USER, id, [{ key: 'name', value: [newName] }]);
+    logMigration.info(`[MIGRATION] Existing ${defaultThemeName} theme renamed to ${newName}`);
+  }));
 };
 
 /**
@@ -123,12 +130,13 @@ const refactorTheme = async (
 ) => {
   // free up the Filigran built-in name before any rename/creation to avoid uniqueness conflicts
   await freeUpFiligranThemeName(context, defaultThemeName);
+  // 1. case theme has not been modified
   if (theme && isThemeDefaultLike(theme, defaultThemeValues)) {
     // rename theme
     const input = [{ key: 'name', value: [defaultThemeName] }];
     await fieldPatchTheme(context, SYSTEM_USER, theme.id, input);
-    logMigration.info(`[MIGRATION] ${theme.name} theme renamed in ${defaultThemeName}`);
-  } else {
+    logMigration.info(`[MIGRATION] ${theme.name} theme renamed to ${defaultThemeName}`);
+  } else { // 2. case theme has been modified
     // add Filigran theme
     await addTheme(context, SYSTEM_USER, { name: defaultThemeName, ...defaultThemeValues });
     logMigration.info(`[MIGRATION] ${defaultThemeName} theme added`);
