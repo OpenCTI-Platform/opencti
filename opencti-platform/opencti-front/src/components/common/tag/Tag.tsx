@@ -1,9 +1,14 @@
 import { Chip } from '@filigran/design-system';
 import { Tooltip } from '@mui/material';
-import React, { ReactElement } from 'react';
+import React from 'react';
 
 export interface TagProps {
-  label?: string | number | ReactElement | null;
+  /**
+   * Text only. The library Chip types its label as a string, so a rich label
+   * cannot survive here -- it used to be flattened to an empty chip. A site
+   * that needs an element stays on MUI.
+   */
+  label?: string | number | null;
   /** Free colour from the data (a label or marking hex). The library bounds it. */
   color?: string | null;
   onClick?: (e: React.MouseEvent) => void;
