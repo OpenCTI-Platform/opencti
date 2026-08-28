@@ -3,11 +3,9 @@ import { createFragmentContainer, graphql, usePreloadedQuery } from 'react-relay
 import type { PreloadedQuery } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import MuiCheckbox from '@mui/material/Checkbox';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
-import { useTheme } from '@mui/styles';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -93,7 +91,6 @@ interface RoleEditionCapabilitiesComponentProps {
 
 const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef, isCapabilitiesInDraft = false }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const { capabilities, capabilitiesInDraft } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -136,16 +133,14 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     }
   };
 
-  const handleSensitiveToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleSensitiveToggle = (checked: boolean) => {
     const roleId = role.id;
     commitPatchAllowSensitiveConf({
       variables: {
         id: roleId,
         input: {
           key: 'can_manage_sensitive_config',
-          value: event.target.checked,
+          value: checked,
         },
       },
     });
@@ -163,11 +158,11 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             divider={true}
             style={{ paddingLeft: 0 }}
             secondaryAction={(
-              <MuiCheckbox
-                onChange={(event) => handleSensitiveToggle(event)}
+              <Checkbox
+                aria-label={t_i18n('Manage sensitive configuration')}
+                error
+                onCheckedChange={(state) => handleSensitiveToggle(state === true)}
                 checked={!!role.can_manage_sensitive_config}
-                style={{ color: theme.palette.dangerZone.main }}
-                disabled={false}
               />
             )}
           >
