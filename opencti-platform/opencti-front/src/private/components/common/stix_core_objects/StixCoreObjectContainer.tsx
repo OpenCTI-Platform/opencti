@@ -1,3 +1,14 @@
+import {
+  Combobox,
+  ComboboxChips,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+  type ComboboxChangeMeta,
+} from '@filigran/design-system';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
@@ -7,16 +18,12 @@ import {
   type StixCoreObjectContainerTaskAddMutation,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContainerTaskAddMutation.graphql';
 import { AddOutlined, MoveToInboxOutlined } from '@mui/icons-material';
-import Autocomplete from '@mui/material/Autocomplete';
 import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
-import { ChangeEvent, SyntheticEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
@@ -112,8 +119,10 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
   const handleChangeActionInputValues = (values: OptionListType[]) => setSelectedContainers(values);
   const handleChangeIncludeNeighboursOption = (event: ChangeEvent<HTMLInputElement>) => setIncludeNeighbours(event.target.checked);
 
-  const handleSearch = (_: SyntheticEvent, newValue: string, reason: AutocompleteInputChangeReason) => {
-    if (reason === 'reset') return;
+  // 'reset' was MUI's word for the engine re-syncing the text to the selection;
+  // the library reports that as cause 'reset' too, so the guard is unchanged.
+  const handleSearch = (newValue: string, meta: ComboboxChangeMeta) => {
+    if (meta.cause === 'reset') return;
     setSearchInputValue(newValue);
   };
 
@@ -198,66 +207,47 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           paginationKey={undefined}
           paginationOptions={undefined}
         />
-        {/* FDS-ORNAMENT: stays on MUI for this round. The field carries a create
-            IconButton in its input endAdornment, which is the gap #155 closes
-            with `adornment` on ComboboxField. This is the FOURTH ornament site,
-            alongside LocationField, StixCoreObjectsField and
-            EntitySelectWithTypes. See fds-migration/LIBRARY-FEEDBACK.md */}
-        <Autocomplete
-          sx={{
-            '.MuiAutocomplete-inputRoot.MuiInput-root': {
-              pr: '50px',
-            },
-          }}
-          size="small"
-          fullWidth
+        <Combobox<OptionListType>
+          className="w-full"
           selectOnFocus
-          autoHighlight
-          filterOptions={(options) => options} // used to block internal filtering of the material-ui component
-          value={selectedContainers}
           multiple
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="standard"
-              label={t_i18n('Values')}
-              fullWidth={true}
-              slotProps={{
-                input: {
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={t_i18n('Create')}
-                          onClick={handleToggleContainerCreationDrawer(true)}
-                          size="small"
-                        >
-                          <AddOutlined />
-                        </IconButton>
-                      </InputAdornment>
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                },
-              }}
-            />
-          )}
-          noOptionsText={t_i18n('No available options')}
+          clearable={false}
+          filterOptions={(options) => options}
+          value={selectedContainers}
           options={optionList}
-          onInputChange={handleSearch}
           inputValue={searchInputValue}
-          onChange={(_, currentSelectedOptions: OptionListType[]) => handleChangeActionInputValues(currentSelectedOptions)}
-          renderOption={(props, option) => (
-            <li {...props} key={option.id}>
+          onInputChange={handleSearch}
+          onValueChange={(next) => handleChangeActionInputValues((next ?? []) as OptionListType[])}
+          renderOption={(option) => (
+            <>
               <div style={{ padding: '4px' }}>
                 <ItemIcon type={option.type} />
               </div>
               <div style={{ marginLeft: 10 }}>{option.label}</div>
-            </li>
+            </>
           )}
-          disableClearable
-        />
+        >
+          <ComboboxLabel>{t_i18n('Values')}</ComboboxLabel>
+          {/* #155: the create control is interactive, so it takes the
+              host-owned `adornment` slot. */}
+          <ComboboxField adornment={(
+            <IconButton
+              aria-label={t_i18n('Create')}
+              onClick={handleToggleContainerCreationDrawer(true)}
+              size="small"
+            >
+              <AddOutlined />
+            </IconButton>
+          )}
+          >
+            <ComboboxChips aria-label={t_i18n('Values')} />
+            <ComboboxInput />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Values')} />
+        </Combobox>
         <FormControlLabel
           style={{ marginTop: 20 }}
           control={(

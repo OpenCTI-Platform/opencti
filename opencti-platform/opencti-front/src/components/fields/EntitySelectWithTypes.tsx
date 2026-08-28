@@ -1,7 +1,6 @@
-import { Autocomplete } from '@mui/material';
-import TextField from '@mui/material/TextField';
+import { Combobox, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, SyntheticEvent } from 'react';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import ItemIcon from '../ItemIcon';
 import { useFormatter } from '../i18n';
@@ -38,72 +37,52 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
     .filter((option) => option.value === null || !entitiesToExclude.includes(option.value));
 
   return (
-    <Autocomplete
+    <Combobox<EntityValue>
       disabled={disabled}
+      className="w-full"
       getOptionLabel={(option) => option.label ?? ''}
-      noOptionsText={t_i18n('No available options')}
       options={options}
       value={value}
       groupBy={(option) => t_i18n(option?.group ? option?.group : label)}
-      onInputChange={(event) => searchEntities('id', cacheEntities, setCacheEntities, event)}
+      onInputChange={(_, meta) => searchEntities('id', cacheEntities, setCacheEntities, meta.event as SyntheticEvent)}
       isOptionEqualToValue={(option, val) => option.value === val.value}
-      renderInput={(paramsInput) => (
-        <TextField
-          {...paramsInput}
-          slotProps={{
-            input: {
-              ...paramsInput.InputProps,
-              sx: { gap: 1 },
-              startAdornment: value
-                ? <ItemIcon type={value.type} color={value.color} />
-                : null,
-              endAdornment: (
-                <SearchScopeElement
-                  name="id"
-                  disabled={disabled}
-                  searchScope={searchScope}
-                  setSearchScope={setSearchScope}
-                  availableRelationFilterTypes={undefined}
-                />
-              ),
-            },
-          }}
-          label={label}
-          size="small"
-          fullWidth
-          onFocus={(event) => searchEntities(
-            'id',
-            cacheEntities,
-            setCacheEntities,
-            event,
-          )}
-        />
-      )}
-      renderOption={(props, option) => (
-        <Tooltip title={option.label} key={option.label} followCursor>
-          <li
-            {...props}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.stopPropagation();
-              }
-            }}
-            onClick={() => handleChange(option)}
-            style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              margin: 0,
-            }}
-          >
+      onValueChange={(next) => handleChange(next as EntityValue)}
+      renderOption={(option) => (
+        <Tooltip title={option.label} followCursor>
+          <span style={{ display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             <ItemIcon type={option.type} color={option.color} />
-            <span style={{ margin: 6, padding: '0 4px 0 4px' }}>
-              {option.label}
-            </span>
-          </li>
+            <span style={{ margin: 6, padding: '0 4px 0 4px' }}>{option.label}</span>
+          </span>
         </Tooltip>
       )}
-    />
+    >
+      <ComboboxLabel>{label}</ComboboxLabel>
+      <ComboboxField
+        // #155: the two slots that replace MUI's input adornments. The icon of
+        // the selected value is presentational and goes to startIcon; the search
+        // scope control is interactive and goes to adornment, the one host-owned
+        // slot on this line that keeps its own pointer and focus behaviour.
+        startIcon={value ? <ItemIcon type={value.type} color={value.color} /> : undefined}
+        adornment={(
+          <SearchScopeElement
+            name="id"
+            disabled={disabled}
+            searchScope={searchScope}
+            setSearchScope={setSearchScope}
+            availableRelationFilterTypes={undefined}
+          />
+        )}
+      >
+        <ComboboxInput
+          onFocus={(event) => searchEntities('id', cacheEntities, setCacheEntities, event)}
+        />
+        <ComboboxControls>
+          <ComboboxClear />
+          <ComboboxTrigger />
+        </ComboboxControls>
+      </ComboboxField>
+      <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={label} />
+    </Combobox>
   );
 };
 
