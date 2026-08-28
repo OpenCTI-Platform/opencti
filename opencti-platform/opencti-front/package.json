@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "7.260824.0",
+  "version": "7.260828.0",
   "type": "module",
   "private": true,
   "workspaces": [
