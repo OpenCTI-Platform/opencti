@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { Box, Checkbox, FormControlLabel, IconButton, List, ListItem, ListItemIcon, ListItemText, Radio, RadioGroup, Typography } from '@mui/material';
+import { Box, Checkbox, IconButton, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
@@ -10,6 +10,7 @@ import { useFormatter } from 'src/components/i18n';
 import type { WidgetColumn } from 'src/utils/widget/widget';
 import { Accordion, AccordionSummary } from 'src/components/Accordion';
 import useWidgetColumnsCustomization from './useWidgetColumnsCustomization';
+import { Radio, RadioGroup } from '@filigran/design-system';
 
 export type WidgetColumnsLayout = '1' | '2';
 
@@ -207,12 +208,13 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
           <Box sx={{ marginBottom: theme.spacing(2) }}>
             <Typography variant="h4">{t_i18n('Layout')}</Typography>
             <RadioGroup
-              row
+              aria-label={t_i18n('Layout')}
+              orientation="horizontal"
               value={layout}
-              onChange={(e) => onLayoutChange(e.target.value as WidgetColumnsLayout)}
+              onValueChange={(value) => onLayoutChange(value as WidgetColumnsLayout)}
             >
-              <FormControlLabel value="1" control={<Radio size="small" />} label={t_i18n('1 column')} />
-              <FormControlLabel value="2" control={<Radio size="small" />} label={t_i18n('2 columns')} />
+              <Radio value="1" label={t_i18n('1 column')} />
+              <Radio value="2" label={t_i18n('2 columns')} />
             </RadioGroup>
           </Box>
         )}
