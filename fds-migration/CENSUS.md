@@ -27,13 +27,13 @@ every library Select has and no MUI Select does.
 
 | | mounts |
 |---|---|
-| Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 158 |
-| Converted — direct library composition (`Select` / `Combobox`) | 112 |
-| **Converted total** | **270** |
-| **Remaining on MUI** | **22** |
+| Converted — Formik pivots (`SelectFieldFds` / `ComboboxField`) | 157 |
+| Converted — direct library composition (`Select` / `Combobox`) | 122 |
+| **Converted total** | **279** |
+| **Remaining on MUI** | **12** |
 | **Total selection fields** | **292** |
 
-## The 22 remaining, every one with a reason
+## The 12 remaining, every one with a reason
 
 ### Not a site — the two legacy adapters themselves (2)
 
@@ -48,7 +48,7 @@ They must outlive their consumers, so they are not convertible work.
 appears here: it composes the library directly and its four consumers went with
 it.
 
-### Parked with a recorded reason (20 mounts)
+### Parked with a recorded reason (10 mounts)
 
 The last two rows are consumers of the `SelectField` adapter, not MUI mounts of
 their own: their mount is already counted once at the adapter file above. They
@@ -65,7 +65,7 @@ are listed here so the four adapter consumers each carry a visible reason.
 | `ImportFilesList` | 1 | multi-value connector picker → Combobox wave |
 | `ConnectorsStatusFilters` | 2 | EE-gated, unverifiable on this instance |
 | `ListFilters` (add-filter) | 1 | reverted to MUI — see below |
-| `WidgetCreationParameters` + `WidgetAttributesInput` | 10 | reverted to MUI — see below |
+| `CreatedByField` (via `AutocompleteField`) | 0 — via the adapter | reverted to MUI — see below |
 | `AuthorizedMembersField` + list item | 0 — via `SelectField` | FEEDBACK #44 — reverted, `dashboardRestriction` went intermittent |
 | `StixCoreObjectFilesAndHistory` | 0 — via `SelectField` | its test drove MUI's hidden native select; asserts a flow a user cannot perform |
 
@@ -73,7 +73,7 @@ are listed here so the four adapter consumers each carry a visible reason.
 
 Empty. Every mount that was pending a decision has been converted.
 
-2 adapters + 20 parked + 0 not done = the 22 remaining mounts.
+2 adapters + 10 parked + 0 not done = the 12 remaining mounts.
 
 #### The two e2e parkings, and what is actually known
 
@@ -147,3 +147,22 @@ work, and it should be done before any further conversion.
 `SearchField` — "Search these results" — belongs to the library and reaches the
 products at a future bump. Not counted, not to be converted here. It is a
 TextField in this tree today, so it does not appear in the numbers above.
+
+
+## Arbitration list — 2026-08-28
+
+Each entry is something I did not decide alone. File, what it renders, the block
+in one sentence, my recommendation.
+
+| # | file | renders | blocked by | my recommendation |
+|---|---|---|---|---|
+| 1 | `private/components/common/lists/ListFilters.tsx` | the add-filter field | `_backgroundTask` "data entity search" timed out on it and four candidate mechanisms are ruled out in jsdom; cause needs a running platform | keep parked until someone can watch the panel's `data-state` on Data > Entities |
+| 2 | `private/components/common/form/CreatedByField.jsx` | the Author picker | `report` "live entities creation" times out on the create row; the adapter is proven innocent by a jsdom probe (listbox named, row rendered inside it, text matches the page-model regex) | keep parked; the next attempt should start from the running app, not the adapter |
+| 3 | `components/fields/EntitySelectWithTypes.tsx`, `components/filters/FilterChipPopover.tsx`, `private/components/common/stix_core_objects/StixCoreObjectContainer.tsx` | pickers with an icon or button inside the input | the input-ornament gap, FEEDBACK #47 → library #155, which is NOT in the current pin `fc24f4b` | convert when #155 ships; nothing to do product-side |
+| 4 | `components/dashboard/DashboardRelativeDateSelect.tsx`, `private/components/settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx` | a field that tints itself while it constrains the view | FEEDBACK #43, no library equivalent, already deferred to V2 | V2, or a product convention (adornment or helper line) that needs no shell tint |
+| 5 | `private/components/settings/themes/ThemeForm.tsx` | a Select the user must be able to empty | FEEDBACK #45 — the library Select has no clear affordance | V2 |
+| 6 | `private/components/data/connectors/ConnectorsStatusFilters.tsx` | 2 EE-gated filters | cannot be reached on this instance, so no conversion can be verified | convert blind, or leave until an EE bench exists |
+| 7 | `private/components/common/files/import_files/ImportFilesList.tsx` | the connector picker | it is a MULTIPLE MUI Select whose `renderValue` joins the names with commas; the library Select is single-value, so this is a Combobox conversion that replaces the comma list with chips | convert to a multiple Combobox and accept chips — it is the library standard everywhere else |
+| 8 | `private/components/data/forms/view/FormFieldRenderer.tsx:468` | the attached-file chip | the chip carries `onDelete`; the library Chip has no delete affordance | ask the library for a removable chip; keep MUI here meanwhile |
+| 9 | `private/components/data/DataTableToolBar.jsx:2896` | the "Search: <term>" chip | its `label` is JSX (`<strong>Search</strong>: term`); the library Chip's `label` is typed `string` | either split into two chips, or ask the library to accept a node |
+| 10 | the `:3030` pilot | — | no CTI backend is running on this bench and standing up the full platform was ruled out for tonight | visit on another session's pilot |
