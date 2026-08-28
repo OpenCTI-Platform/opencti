@@ -2,9 +2,8 @@ import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
 import Popover from '@mui/material/Popover';
 import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
@@ -544,10 +543,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             >
               {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
               <Chip
-                style={{
-                  fontFamily: 'Consolas, monaco, monospace',
-                  margin: '10px 10px 15px 0',
-                }}
+                style={{ margin: '10px 10px 15px 0' }}
                 label={t_i18n('WITH')}
               />
               {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}

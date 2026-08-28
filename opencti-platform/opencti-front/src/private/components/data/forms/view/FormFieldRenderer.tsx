@@ -30,6 +30,7 @@ import { getVocabularyMappingByAttribute } from '../../../../../utils/vocabulary
 import { useTheme } from '@mui/styles';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../../utils/hooks/useGranted';
+import { Chip as FdsChip } from '@filigran/design-system';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -296,7 +297,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                 {selected.map((value) => {
                   const option = field.options?.find((o) => o.value === value);
-                  return <Chip key={value} label={option?.label || value} />;
+                  return <FdsChip key={value} label={option?.label || value} />;
                 })}
               </Box>
             )}
@@ -516,10 +517,8 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   if (field.isReadOnly && isBypass) {
     return renderFieldWithGrid(
       <div style={{ position: 'relative' }}>
-        <Chip
-          size="small"
-          variant="outlined"
-          color="warning"
+        <FdsChip
+          severity="high"
           label={t_i18n('Read-Only')}
           style={{ position: 'absolute', top: -10, right: 0, zIndex: 1, backgroundColor: theme.palette.background.paper }}
         />

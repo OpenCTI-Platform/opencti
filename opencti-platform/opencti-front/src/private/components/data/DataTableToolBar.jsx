@@ -25,6 +25,7 @@ import {
 import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import {
+  Chip as FdsChip,
   Combobox,
   ComboboxChips,
   ComboboxContent,
@@ -2884,7 +2885,7 @@ class DataTableToolBar extends Component {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Chip style={{ borderRadius: 4 }} label="SCOPE" />
+                          <FdsChip label="SCOPE" />
                         </TableCell>
                         <TableCell>{t('N/A')}</TableCell>
                         <TableCell>
@@ -2901,10 +2902,7 @@ class DataTableToolBar extends Component {
                                     )}
                                   />
                                   {filters.filters.length > 0 && (
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
+                                    <FdsChip label={t('AND')} />
                                   )}
                                 </span>
                               )}
@@ -2948,7 +2946,7 @@ class DataTableToolBar extends Component {
                               </span>
                             </TableCell>
                             <TableCell>
-                              <Chip label={o.type} />
+                              <FdsChip label={o.type} />
                             </TableCell>
                             <TableCell>
                               {R.pathOr(t('N/A'), ['context', 'field'], o)}
@@ -3166,11 +3164,7 @@ class DataTableToolBar extends Component {
                     {t('Aliases')}
                   </Typography>
                   {newAliases.map((label) => (label.length > 0 ? (
-                    <Chip
-                      key={label}
-                      classes={{ root: classes.aliases }}
-                      label={label}
-                    />
+                    <FdsChip key={label} label={label} />
                   ) : (
                     ''
                   )))}

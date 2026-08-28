@@ -268,6 +268,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     return (
       <IconButton
         size="small"
+        aria-label={t_i18n('Refresh')}
         onClick={handleRefresh}
         disabled={agentLoading || !selectedAgent}
         sx={{ position: 'absolute', top: 2, right: 2, zIndex: 1 }}

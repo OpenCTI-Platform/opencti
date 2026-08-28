@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
 import { BulkEntityTypeInfo, entityNameHeaderWidth, entityTypeHeaderWidth, matchHeaderWidth } from '@components/common/bulk/dialog/BulkRelationDialog';
 import { DeleteOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
+import { Chip, Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger, type ChipSeverity } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { truncate } from '../../../../utils/String';
@@ -46,12 +45,12 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
     return t_i18n('Incompatible');
   };
 
-  const getChipColor = () => {
-    if (!entity.isExisting && isMatchingRelationship) return 'error';
+  const getChipColor = (): ChipSeverity => {
+    if (!entity.isExisting && isMatchingRelationship) return 'critical';
     if (entity.isMatchingEntity && isMatchingRelationship) {
-      return 'success';
+      return 'low';
     }
-    return 'warning';
+    return 'high';
   };
 
   const handleChangeEntityType = (newEntityType: string) => {
@@ -140,9 +139,8 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
       </Box>
       <Box sx={{ minWidth: `${matchHeaderWidth}px` }}>
         <Chip
-          style={{ borderRadius: '4px' }}
           label={getRelationMatchStatus()}
-          color={getChipColor()}
+          severity={getChipColor()}
         />
       </Box>
       <Box>

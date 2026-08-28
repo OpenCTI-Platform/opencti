@@ -1,8 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { DialogActions } from '@mui/material';
-import Chip from '@mui/material/Chip';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Chip, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
@@ -47,13 +46,12 @@ const NotifierTestResult = ({
     queryRef,
   );
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   return (
     <>
       <Typography>
         Result{' '}
         <Chip
-          className={notifierTest ? classes.error : classes.success}
+          severity={notifierTest ? 'critical' : 'low'}
           label={t_i18n(notifierTest ? 'Error' : 'OK')}
         />
       </Typography>

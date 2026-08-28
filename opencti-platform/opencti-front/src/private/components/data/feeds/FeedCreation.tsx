@@ -9,7 +9,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
-import { Select, SelectContent, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Chip, Select, SelectContent, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import MuiTextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
@@ -20,7 +20,6 @@ import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
@@ -683,14 +682,17 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                                             {t_i18n(`entity_${selectedType}`)}
                                           </Typography>
-                                          <Chip
-                                            label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
-                                            size="small"
-                                            color={isNeighborMode ? 'secondary' : 'default'}
-                                            variant="outlined"
+                                          <button
+                                            type="button"
+                                            aria-pressed={isNeighborMode}
                                             onClick={() => handleToggleNeighborMode(i, selectedType)}
-                                            sx={{ cursor: 'pointer', fontSize: '0.75rem', height: 22 }}
-                                          />
+                                            style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
+                                          >
+                                            <Chip
+                                              label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
+                                              severity={isNeighborMode ? 'info' : 'neutral'}
+                                            />
+                                          </button>
                                         </Box>
                                         {isNeighborMode ? (
                                           <Grid container spacing={2}>
