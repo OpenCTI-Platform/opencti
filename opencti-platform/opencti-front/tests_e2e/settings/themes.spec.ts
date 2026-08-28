@@ -13,6 +13,24 @@ const openThemeEditMenu = async (themeName: string, page: Page) => {
 };
 
 /**
+ * Edits the logo URL of a theme through the edition drawer.
+ * The logo field is persisted on blur, so we explicitly blur the input and
+ * wait for the update to complete before closing the drawer. Otherwise a
+ * subsequent navigation/reload could abort the in-flight mutation and the
+ * change would never be persisted.
+ */
+const editThemeLogo = async (themeName: string, page: Page, logoUrl: string) => {
+  await openThemeEditMenu(themeName, page);
+  const logoInput = page.locator('input[name="theme_logo"]');
+  await logoInput.fill(logoUrl);
+  await logoInput.blur();
+  await expect(page.getByText('Successfully updated theme').first()).toBeVisible();
+  for (const closeBtn of await page.getByLabel('Close').all()) {
+    await closeBtn.click();
+  }
+};
+
+/**
  * MUST create custom theme.
  * MUST check visibility in list lines.
  * MUST select custom theme and validate its usage.
@@ -60,18 +78,11 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   let logoSrc = await page
     .getByRole('link', { name: 'logo' })
     .locator('img').getAttribute('src');
-  expect(logoSrc).not.toContain('/static/images/logo_text_dark-VZM4NTMC.png');
+  expect(logoSrc).toContain('googlelogo');
 
   // Edit theme
-  await openThemeEditMenu(THEME.name, page);
-
   // edit the logo url by removing the url
-  await page
-    .locator('input[name="theme_logo"]')
-    .fill('');
-  for (const closeBtn of await page.getByLabel('Close').all()) {
-    closeBtn.click();
-  }
+  await editThemeLogo(THEME.name, page, '');
   await page.waitForTimeout(1000);
 
   // expect to have the default dark logo
@@ -81,13 +92,7 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   expect(logoSrc).toContain('logo_text_dark');
 
   // Set theme logo to the Google logo
-  await openThemeEditMenu(THEME.name, page);
-  await page
-    .locator('input[name="theme_logo"]')
-    .fill('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
-  for (const closeBtn of await page.getByLabel('Close').all()) {
-    closeBtn.click();
-  }
+  await editThemeLogo(THEME.name, page, THEME.theme_logo);
   const isLogoChanged = async () => {
     await page.reload();
     const logoSrcChangedToGoogle = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
@@ -102,13 +107,7 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   expect(logoSrc).toContain('googlelogo');
 
   // Reset logo
-  await openThemeEditMenu(THEME.name, page);
-  await page
-    .locator('input[name="theme_logo"]')
-    .fill('');
-  for (const closeBtn of await page.getByLabel('Close').all()) {
-    closeBtn.click();
-  }
+  await editThemeLogo(THEME.name, page, '');
   await page.waitForTimeout(1000);
 
   const isLogoBackToDefault = async () => {
