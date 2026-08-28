@@ -170,7 +170,6 @@ const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_VULNERABILITY,
 ];
 export const registerStixDomainAliased = (type: string) => {
   STIX_DOMAIN_OBJECT_ALIASED.push(type);
