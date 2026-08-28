@@ -229,7 +229,7 @@
   "CVSS4 Privileges Required (PR)": "CVSS4 Требуемые привилегии (PR)",
   "CVSS4 Score": "CVSS4 Score",
   "CVSS4 Severity": "Степень серьезности CVSS4",
-  "CVSS4 SS Avalability Impact (SA)": "CVSS4 SS Avalability Impact (SA)",
+  "CVSS4 SS Availability Impact (SA)": "CVSS4 SS Availability Impact (SA)",
   "CVSS4 SS Confidentiality Impact (SC)": "CVSS4 SS Влияние на конфиденциальность (SC)",
   "CVSS4 SS Integrity Impact (SI)": "CVSS4 SS Integrity Impact (SI)",
   "CVSS4 User Interaction (UI)": "CVSS4 Взаимодействие с пользователем (UI)",
