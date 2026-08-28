@@ -156,8 +156,8 @@ in one sentence, my recommendation.
 
 | # | file | renders | blocked by | my recommendation |
 |---|---|---|---|---|
-| 1 | `private/components/common/lists/ListFilters.tsx` | the add-filter field | `_backgroundTask` "data entity search" timed out on it and four candidate mechanisms are ruled out in jsdom; cause needs a running platform | keep parked until someone can watch the panel's `data-state` on Data > Entities |
-| 2 | `private/components/common/form/CreatedByField.jsx` | the Author picker | `report` "live entities creation" times out on the create row; the adapter is proven innocent by a jsdom probe (listbox named, row rendered inside it, text matches the page-model regex) | keep parked; the next attempt should start from the running app, not the adapter |
+| 1 | `private/components/common/lists/ListFilters.tsx` | the add-filter field | `_backgroundTask` "data entity search" timed out on it and four candidate mechanisms are ruled out in jsdom; cause needs a running platform | re-try the conversion and read the failure again before parking: the widget cluster failed the same way and turned out to be a SELECTOR defect, not a component one (see the note below) |
+| 2 | `private/components/common/form/CreatedByField.jsx` | the Author picker | `report` "live entities creation" times out on the create row; the adapter is proven innocent by a jsdom probe (listbox named, row rendered inside it, text matches the page-model regex) | same: re-try and read the error, since the adapter is already exonerated in isolation |
 | 3 | `components/fields/EntitySelectWithTypes.tsx`, `components/filters/FilterChipPopover.tsx`, `private/components/common/stix_core_objects/StixCoreObjectContainer.tsx` | pickers with an icon or button inside the input | the input-ornament gap, FEEDBACK #47 → library #155, which is NOT in the current pin `fc24f4b` | convert when #155 ships; nothing to do product-side |
 | 4 | `components/dashboard/DashboardRelativeDateSelect.tsx`, `private/components/settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx` | a field that tints itself while it constrains the view | FEEDBACK #43, no library equivalent, already deferred to V2 | V2, or a product convention (adornment or helper line) that needs no shell tint |
 | 5 | `private/components/settings/themes/ThemeForm.tsx` | a Select the user must be able to empty | FEEDBACK #45 — the library Select has no clear affordance | V2 |
@@ -166,3 +166,20 @@ in one sentence, my recommendation.
 | 8 | `private/components/data/forms/view/FormFieldRenderer.tsx:468` | the attached-file chip | the chip carries `onDelete`; the library Chip has no delete affordance | ask the library for a removable chip; keep MUI here meanwhile |
 | 9 | `private/components/data/DataTableToolBar.jsx:2896` | the "Search: <term>" chip | its `label` is JSX (`<strong>Search</strong>: term`); the library Chip's `label` is typed `string` | either split into two chips, or ask the library to accept a node |
 | 10 | the `:3030` pilot | — | no CTI backend is running on this bench and standing up the full platform was ruled out for tonight | visit on another session's pilot |
+
+### The lesson the widget cluster taught, worth applying to entries 1 and 2
+
+`Dashboard CRUD` was blamed on the widget Select conversion for three rounds. The
+A/B/A was clean — converted red, reverted green, re-converted red — and it was
+still the wrong conclusion. The real error was a strict-mode violation:
+`getByRole('combobox', { name: 'Attribute' })` matched TWO fields, because
+`getByRole` matches the accessible name by SUBSTRING and the neighbouring field
+is named "Date attribute".
+
+That second name existed only because the accessible-name work gave that Select a
+real label. So a correct fix surfaced a latent defect in a test selector, and the
+conversion was never at fault. The fix went in the selector, never in the labels.
+
+A red E2E on a converted field is not evidence that the conversion is wrong. Read
+the error text before reverting: "resolved to 2 elements" and "element(s) not
+found" are opposite diagnoses.
