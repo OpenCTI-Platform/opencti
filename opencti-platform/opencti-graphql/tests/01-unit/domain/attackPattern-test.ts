@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
-import { getAttackPatternsMatrix } from '../../../src/domain/attackPattern';
-import { RELATION_SUBTECHNIQUE_OF } from '../../../src/schema/stixCoreRelationship';
+import { batchCoursesOfAction, batchSubAttackPatterns, childAttackPatternsPaginated, coursesOfActionPaginated, getAttackPatternsMatrix } from '../../../src/domain/attackPattern';
+import attackPatternResolvers from '../../../src/resolvers/attackPattern';
+import { RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../../../src/schema/stixCoreRelationship';
 import { RELATION_KILL_CHAIN_PHASE } from '../../../src/schema/stixRefRelationship';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../../../src/schema/stixDomainObject';
+import { emptyPaginationResult } from '../../../src/database/utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
 
@@ -271,5 +274,103 @@ describe('Function getAttackPatternsMatrix()', () => {
       expect(mitrePhasResult?.attackPatterns[0].attack_pattern_id).toBe('ap-mitre');
       expect(customPhaseResult?.attackPatterns[0].attack_pattern_id).toBe('ap-custom');
     });
+  });
+});
+
+describe('Attack pattern nested connections batching', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const mockRelations = (relations: Partial<BasicStoreRelation>[], entities: Partial<BasicStoreEntity>[]) => {
+    const relationsSpy = vi.spyOn(middlewareLoader, 'fullRelationsList').mockResolvedValue(relations as BasicStoreRelation[]);
+    vi.spyOn(middlewareLoader, 'internalFindByIdsMapped')
+      .mockResolvedValue(Object.fromEntries(entities.map((entity) => [entity.id, entity])) as any);
+    return relationsSpy;
+  };
+
+  it('should load, in a single query, the relations of the whole batch for the expected relation and target type', async () => {
+    const relationsSpy = mockRelations([], []);
+
+    await batchSubAttackPatterns(testContext, ADMIN_USER, ['ap-1', 'ap-2']);
+    await batchCoursesOfAction(testContext, ADMIN_USER, ['ap-1', 'ap-2']);
+
+    expect(relationsSpy).toHaveBeenCalledTimes(2);
+    expect(relationsSpy).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, RELATION_SUBTECHNIQUE_OF, { toId: ['ap-1', 'ap-2'], fromTypes: [ENTITY_TYPE_ATTACK_PATTERN] });
+    expect(relationsSpy).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, RELATION_MITIGATES, { toId: ['ap-1', 'ap-2'], fromTypes: [ENTITY_TYPE_COURSE_OF_ACTION] });
+  });
+
+  it('should return one connection per requested id, in order, skipping targets the user cannot read', async () => {
+    mockRelations(
+      [
+        { fromId: 'sub-a', toId: 'ap-1' },
+        { fromId: 'sub-restricted', toId: 'ap-1' },
+        { fromId: 'sub-c', toId: 'ap-3' },
+      ],
+      [{ id: 'sub-a', name: 'Sub A' }, { id: 'sub-c', name: 'Sub C' }],
+    );
+
+    const [ap1, ap2, ap3] = await batchSubAttackPatterns(testContext, ADMIN_USER, ['ap-1', 'ap-2', 'ap-3']);
+
+    expect(ap1.edges.map((edge: any) => edge.node.id)).toEqual(['sub-a']);
+    expect(ap1.pageInfo).toMatchObject({ globalCount: 1, hasNextPage: false });
+    expect(ap2.edges).toEqual([]);
+    expect(ap2.pageInfo.globalCount).toBe(0);
+    expect(ap3.edges.map((edge: any) => edge.node.id)).toEqual(['sub-c']);
+  });
+
+  it('should keep resolving per attack pattern when explicit connection arguments are given', async () => {
+    const connectionSpy = vi.spyOn(middlewareLoader, 'pageRegardingEntitiesConnection').mockResolvedValue(emptyPaginationResult());
+
+    await childAttackPatternsPaginated(testContext, ADMIN_USER, 'ap-1', { first: 5 });
+    await coursesOfActionPaginated(testContext, ADMIN_USER, 'ap-1', { first: 5 });
+
+    expect(connectionSpy).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'ap-1', RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, true, { first: 5 });
+    expect(connectionSpy).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'ap-1', RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION, true, { first: 5 });
+  });
+});
+
+describe('Attack pattern resolvers batching routing ', () => {
+  const { AttackPattern } = attackPatternResolvers as any;
+  const attackPattern = { id: 'ap-1' };
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const buildContext = () => ({
+    user: ADMIN_USER,
+    batch: {
+      subAttackPatternsBatchLoader: { load: vi.fn().mockResolvedValue('BATCHED_SUB') },
+      coursesOfActionBatchLoader: { load: vi.fn().mockResolvedValue('BATCHED_COA') },
+    },
+  });
+
+  it.each([undefined, {}])('should use the batch loaders when no connection argument is given (%o)', async (args) => {
+    const connectionSpy = vi.spyOn(middlewareLoader, 'pageRegardingEntitiesConnection');
+    const context = buildContext();
+
+    expect(await AttackPattern.subAttackPatterns(attackPattern, args, context)).toBe('BATCHED_SUB');
+    expect(await AttackPattern.coursesOfAction(attackPattern, args, context)).toBe('BATCHED_COA');
+    expect(context.batch.subAttackPatternsBatchLoader.load).toHaveBeenCalledWith('ap-1');
+    expect(context.batch.coursesOfActionBatchLoader.load).toHaveBeenCalledWith('ap-1');
+    expect(connectionSpy).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { first: 5 },
+    { after: 'cursor' },
+    { orderBy: 'name' },
+    { orderMode: 'asc' },
+    { filters: { mode: 'and', filters: [], filterGroups: [] } },
+    { search: 'foo' },
+  ])('should bypass the batch loaders as soon as a connection argument is given (%o)', async (args) => {
+    const connectionSpy = vi.spyOn(middlewareLoader, 'pageRegardingEntitiesConnection').mockResolvedValue(emptyPaginationResult());
+    const context = buildContext();
+
+    await AttackPattern.subAttackPatterns(attackPattern, args, context);
+
+    expect(context.batch.subAttackPatternsBatchLoader.load).not.toHaveBeenCalled();
+    expect(connectionSpy).toHaveBeenCalledWith(context, ADMIN_USER, 'ap-1', RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, true, args);
   });
 });
