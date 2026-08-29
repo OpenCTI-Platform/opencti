@@ -16,21 +16,14 @@ import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import DangerZoneChip from '../../common/danger_zone/DangerZoneChip';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,

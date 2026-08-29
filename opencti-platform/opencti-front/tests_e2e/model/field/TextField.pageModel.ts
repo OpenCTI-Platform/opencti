@@ -6,6 +6,24 @@ export default class TextFieldPageModel {
   private readonly inputLocator: Locator;
   private readonly parentLocator: Locator;
 
+  /**
+   * The field's own root, derived from the input rather than from the label.
+   *
+   * `getByText(label).locator('..')` used to reach it, because MUI puts the
+   * <label> as a direct child of the FormControl that also holds the helper
+   * text. The library Input wraps its label in a row of its own, so that
+   * parent is the label row and the helper text is a level above it — which is
+   * why an assertion on 'This field is required' stopped resolving.
+   *
+   * Two hops up from the input lands on the field root under BOTH engines
+   * (library: input → div.relative → root; MUI: input → InputBase → FormControl),
+   * and unlike widening the search it stays scoped to this one field, so a
+   * message belonging to a sibling field can never satisfy the assertion.
+   */
+  private static fieldRootOf(input: Locator) {
+    return input.locator('..').locator('..');
+  }
+
   constructor(
     readonly page: Page,
     label: string,
@@ -31,10 +49,17 @@ export default class TextFieldPageModel {
       this.parentLocator = root.getByText(label).locator('..');
     } else if (type === 'text-no-label') {
       this.inputLocator = root.getByRole('textbox', { name: label });
-      this.parentLocator = root.getByText(label).locator('..');
+      this.parentLocator = TextFieldPageModel.fieldRootOf(this.inputLocator);
     } else {
-      this.inputLocator = root.getByLabel(label);
-      this.parentLocator = root.getByText(label).locator('..');
+      // `.and(control)`: `getByLabel` matches accessible names by SUBSTRING, and
+      // the library's number stepper ships two buttons named "Increase value" /
+      // "Decrease value". On the observable creation form, whose own field is
+      // labelled `value`, the lookup went from one match to three. Constraining
+      // to the elements this model is actually about — the form control — drops
+      // the buttons without touching the label semantics, and without renaming
+      // anything on either side.
+      this.inputLocator = root.getByLabel(label).and(root.locator('input, textarea'));
+      this.parentLocator = TextFieldPageModel.fieldRootOf(this.inputLocator);
     }
   }
 

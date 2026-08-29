@@ -17,6 +17,7 @@ import FormPopover from './FormPopover';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ItemIcon from '../../../../components/ItemIcon';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Styles
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -27,15 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },

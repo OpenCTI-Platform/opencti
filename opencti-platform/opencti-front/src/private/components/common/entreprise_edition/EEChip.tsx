@@ -13,6 +13,12 @@ const EE_CHIP_GAP: CSSProperties = { marginInlineStart: 6 };
 interface EEChipProps {
   feature?: string;
   /**
+   * `sm` is the library's small EE chip (lib #192). The axis is EE-scoped in
+   * the design and in the library, which is exactly this component's scope --
+   * every chip here is `severity="ee"`, so `sm` is always legal.
+   */
+  size?: 'md' | 'sm';
+  /**
    * Default `true`: the chip renders as a real `<button>` that opens the EE
    * dialog. The legacy marker was a `<div>` carrying an `onClick` and no role,
    * so it was unreachable by keyboard -- the conversion fixes that on its own.
@@ -25,7 +31,7 @@ interface EEChipProps {
 }
 
 const EEChip = React.forwardRef<HTMLElement, EEChipProps>((
-  { feature, clickable = true, style },
+  { feature, clickable = true, size = 'md', style },
   ref,
 ) => {
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -46,6 +52,7 @@ const EEChip = React.forwardRef<HTMLElement, EEChipProps>((
         ref={ref}
         label="EE"
         severity="ee"
+        size={size}
         onClick={clickable ? onClick : undefined}
         style={{ ...EE_CHIP_GAP, ...style }}
       />

@@ -137,7 +137,7 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
               ))}
               <Button
                 size="small"
-                startIcon={<AddOutlined />}
+                startIcon={<AddOutlined fontSize="small" />}
                 aria-label="Add"
                 id="addHeader"
                 onClick={() => {

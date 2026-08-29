@@ -13,12 +13,23 @@ live in the entry, not in the source — one place to read, one place to update.
 
 Raised during: the navigation pilot (replacing `LeftBar.jsx` with `Navbar`),
 library pin `56f7e59823cae7d815a451206e3cb4cb1d31022d`, then re-checked at
-pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06) and at pin
-`5960966216533f620393a2174213c666f57af7dd` (2026-08-11, the token pass).
+pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06), at pin
+`5960966216533f620393a2174213c666f57af7dd` (2026-08-11, the token pass) and at
+pin `23e082608838ab3c312186df9aae7bd0b4e0e81f` (2026-08-30, the weekend status
+pass — lib PRs #188 to #194).
 
 Closed so far: entries 5 and 12, both at the 2026-08-11 pin. Every other entry
 was re-checked against that pin's source and its removal condition is still
 unmet — the compensations stay, with the reason stated in each entry.
+
+**A library fix does not close an entry — the removal test does.** Recorded here
+because the 2026-08-30 pass found the distinction doing real work: several
+entries are now UNBLOCKED library-side (the capability shipped and is in the
+pin) while their site still carries its `FDS-WORKAROUND #N` marker, so the
+compensation is still in the code and the entry is still open. Those entries
+carry an **UNBLOCKED** line naming the library PR and the marker that is still
+live. An entry moves to CLOSED only when its own removal test passes against a
+named pin.
 
 ---
 
@@ -1556,6 +1567,17 @@ This one is about `Select`.
 
 **Status.** `ThemeForm` stays on MUI with FDS-WORKAROUND #45.
 
+**UNBLOCKED library-side 2026-08-30 — still OPEN here.** The asymmetry this entry
+reports is gone: lib PR #190 (`1f7c64c`, merged 2026-08-29) gave `Select` its own
+clear control, and that commit is an ancestor of the pin this product currently
+resolves (`23e0826`), so the capability is installed, not merely merged. What is
+NOT done is this entry's own removal test: `ThemeForm.tsx` still carries the
+`FDS-WORKAROUND #45` marker and the field is still MUI, verified at
+`origin/design-system/current` on 2026-08-30. The entry therefore stays open and
+its compensation stays in the code. What it is waiting on changed, though — it
+is now ordinary conversion work with a library that supports it, not a library
+gap.
+
 **Removal test.** Convert the field, set a background type, clear it from the
 trigger without opening the panel, and confirm the submitted value is the empty
 string — the same three steps the MUI version passes today.
@@ -2016,3 +2038,83 @@ Read from `HeaderSearchProps` / `HeaderSearchMode` in the installed
 nesting it inside the toggle, plus a busy slot and a tooltip node. Then the
 three toggles, the loader and the agent menu all move, and #17, #20 and this
 entry close together.
+
+## 55. The number stepper's default labels collide with short field names
+
+**Not a defect — a default worth knowing about.** `isTypeNumber` ships two
+buttons named `"Increase value"` and `"Decrease value"`. Accessible-name
+lookups match by SUBSTRING in both Playwright (`getByLabel`, `getByRole`) and
+Testing Library, so on any screen holding a field whose own label is `value`,
+one lookup becomes three.
+
+Found on OpenCTI's observable creation form, where the ICCID field is labelled
+exactly `value`: `getByLabel('value')` went from one match to three — the field
+plus both stepper buttons.
+
+Fixed on the consumer side by constraining the lookup to the form control, which
+is the right fix: renaming either side to dodge a substring match would be
+coupling the two. The library already exposes `incrementLabel` /
+`decrementLabel`, so a host that needs distinct names has them.
+
+**Worth considering upstream:** defaulting to a name that carries the field's
+own label — `Increase {label}` — would make the two buttons unique per field
+and remove the class of collision entirely. Also note both defaults are English
+strings in a product that translates every other control.
+
+---
+
+## 56. `ButtonGroupItem` cannot be a link, so half the icon groups cannot convert — RESOLVED (lib #193)
+
+Raised during the night-2 visual pass, library pin `47baf69`.
+
+**Needed.** The pass asks for the product's icon groups ("les iconbuttongroup
+pourraient être convertie"). Two of them do not switch a value — they
+*navigate*. `StixCoreObjectContentHeader` renders content / editor / mapping as
+three router links, and `ContainerHeader` does the same for its four modes.
+Both are written today as `<ToggleButton component={Link} to="editor">`, so
+each item is an `<a href>`: middle-click opens a tab, the browser shows the
+target on hover, and a screen reader announces a link.
+
+**Today.** `ButtonGroupItemProps` extends `ComponentPropsWithoutRef<"button">`
+and adds `value`, `icon` and a required `aria-label`. There is no `asChild`,
+no `as`, and no Slot anywhere in the shipped `components/button-group/` build —
+checked against the installed `node_modules`, not the types alone. The item is
+always a `<button>`.
+
+**Consequence.** Converting those two files would replace an anchor with a
+button and push navigation into an `onValueChange` handler. That is not a
+visual change with a workaround: it silently drops href semantics — no
+middle-click, no open-in-new-tab, no hover target, and a different role in the
+accessibility tree. Per the migration contract (a conversion that loses
+function is listed with its reason rather than forced) both sites stay MUI, and
+the pass's "iconbuttongroup" item is therefore only partly delivered.
+
+**Ask.** Give `ButtonGroupItem` the polymorphism the rest of the family already
+has — `asChild`, as `IconButton` has it, is the smallest shape that fits, and
+lets the product keep `<ButtonGroupItem asChild><Link to="editor">…</Link></ButtonGroupItem>`
+while the group keeps owning selection and roving focus. `Paper`'s `as` prop
+would work too; `asChild` is preferred here only because the child is a router
+component, not a tag name.
+
+**Removal test.** `ContainerHeader` and `StixCoreObjectContentHeader` render
+their items as anchors with a real `href`, under the library group, with no
+local styling — and middle-click still opens a new tab.
+
+### #56 — RESOLVED at pin `bd57527`
+
+`asChild` shipped in lib #193, shaped exactly as the ask: the group keeps
+selection and roving focus, the child keeps its `href`. `ContainerHeader` and
+`StixCoreObjectContentHeader` are converted and their segments are real anchors
+again — middle-click, open-in-new-tab, the hover target and Ctrl/Cmd-click all
+verified present in the shipped implementation.
+
+**One thing the entry did not anticipate, and it is not closed by this.** The
+library clones `role="radio"` onto the anchor, so a screen reader now announces
+"radio button, checked" where MUI's `ToggleButton` left the anchor its native
+"link" role. The library documents this on the prop and leaves the question open
+as `ButtonGroup.rfc.md` §9 Q9: whether a run of segments that NAVIGATE should be
+a `role="group"` of links marked with `aria-current` instead of a radiogroup.
+
+That is a design arbitration, not a defect, so it is not re-raised as a new
+entry — but it is the reason this resolution is recorded with a caveat rather
+than a clean tick. If the arbitration lands on links, both sites change again.

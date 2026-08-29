@@ -12,6 +12,7 @@ import { DataColumns } from '../../../../../components/list_lines';
 import { resolveLink } from '../../../../../utils/Entity';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { Checkbox } from '@filigran/design-system';
+import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 import {
   EntityStixCoreRelationshipsContextualViewLine_node$data,
   EntityStixCoreRelationshipsContextualViewLine_node$key,
@@ -27,15 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary?.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,

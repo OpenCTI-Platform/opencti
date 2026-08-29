@@ -38,3 +38,61 @@ to quote when asking for it.
 
 Do not dispatch the workflow on an unmerged branch to preview something: it is
 a shared instance, and it would replace what everyone else is looking at.
+
+## 3. The stacked preview — built from an unmerged stack, for a visual pass
+
+Not a permanent instance: a static server for the built front, put up so the
+complete state can be SEEN before anything merges. Recreate it with
+
+```
+cd opencti-platform/opencti-front && yarn build
+node <scratch>/serve-stack.mjs <path>/opencti-front/dist 3000 <backend-port>
+```
+
+**<http://localhost:3000>**
+
+Two things it has to do that a plain static server does not:
+
+- **Substitute the index.html placeholders.** The built `index.html` ships
+  `%APP_TITLE%`, `%BASE_PATH%`, `%APP_FAVICON%`, `%APP_DESCRIPTION%` and
+  `%APP_SCRIPT_SNIPPET%`; the BACKEND normally replaces them when it serves the
+  front (`opencti-graphql/src/http/httpPlatform.js`). Serve the raw file and the
+  app never boots — the same substitution has to happen in the server.
+- **Proxy the API.** `/graphql`, `/auth`, `/stream`, `/storage`, `/logout`,
+  `/schema`, `/taxii2`, `/feeds`, `/chatbot` and `/*/embedded/*` go to the
+  backend. Port 3000 for the front is deliberate: the backend accepts one
+  origin.
+
+### Choosing the backend to proxy to — check the schema first
+
+A front built from a branch will fail against a backend whose schema predates
+it, and it fails on the screens rather than at build time. Compare before
+picking:
+
+```
+diff <backend-worktree>/opencti-graphql/config/schema/opencti.graphql \
+     ./opencti-platform/opencti-graphql/config/schema/opencti.graphql
+```
+
+Measured 2026-08-29 while putting this up: the backend on **:4000** differs by
+11 lines — `x_opencti_score` is missing from `Malware`, `IntrusionSet` and
+`ThreatActorGroup`, which the front queries in 33 generated artifacts and which
+is itself one of the stepper fields on `ThreatActorGroupCreation`. Those three
+entity families would have failed. The backends on **:4030** and **:4011**
+matched exactly (0 differing lines).
+
+**A matching schema is not enough — check the data too.** The first attempt
+proxied :4030 on the schema check alone. Its index prefix is `opencti-cbx`,
+which holds **0 documents**: the platform logs in and shows an empty instance,
+which is useless for a visual pass. Count before choosing:
+
+```
+curl -s "http://localhost:9200/_cat/indices/<prefix>*?h=index,docs.count"
+```
+
+Measured the same day: `opencti*` 3617 docs (the :4000 instance),
+`papercti*` 2484 docs (:4011), `opencti-cbx*` 0. The preview therefore proxies
+**:4011** — the only backend that is both schema-matching and populated.
+
+Credentials are per backend and are not recorded here — this repository is
+public. The local demo instance's login lives in `~/demo-opencti.sh`.

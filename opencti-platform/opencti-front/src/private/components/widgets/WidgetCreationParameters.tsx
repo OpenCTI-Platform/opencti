@@ -2,12 +2,11 @@ import TextField from '@mui/material/TextField';
 import ReactMde from 'react-mde';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { stixCyberObservablesLinesAttributesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
@@ -284,27 +283,24 @@ const WidgetCreationParameters = () => {
 
     const uniqueDataCheckbox = () => {
       const inline = dataSelection.length === 1;
+      // The library box carries its own label, so the inline case no longer
+      // needs a FormControlLabel around it -- only the label text differs.
       const checkbox = (
         <Checkbox
-          sx={inline ? { ml: 0 } : { ml: -3 }}
-          onChange={(event) => handleChangeDataValidationParameter(
+          style={{ marginLeft: inline ? 0 : -24 }}
+          label={inline ? distinctLabel : undefined}
+          aria-label={inline ? undefined : t_i18n('Distinct')}
+          onCheckedChange={(checked) => handleChangeDataValidationParameter(
             dataSelectionIndex,
             'unique',
-            event.target.checked,
+            checked === true,
           )}
           checked={dataSelection[dataSelectionIndex].unique ?? undefined}
         />
       );
       return (
         <Grid size={inline ? 2 : 1.5} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {inline
-            ? (
-                <FormControlLabel
-                  control={checkbox}
-                  label={distinctLabel}
-                />
-              )
-            : checkbox}
+          {checkbox}
         </Grid>
       );
     };

@@ -5,8 +5,7 @@ import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import TextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
@@ -195,35 +194,67 @@ const ListFilters = ({
         </Tooltip>
       ) : (
         <>
-          <MUIAutocomplete
-            disabled={disabled}
+          {/* The picker never HOLDS a value: choosing an option adds a filter and
+              the field goes straight back to empty, which is why `value` is a
+              literal null rather than state. `placeholder` carries the name
+              instead of a <ComboboxLabel>: the library renders a label ABOVE the
+              control, and this control sits in a flex row beside the unlabelled
+              search field — a label here would make this the only tall item in
+              the row and re-open the very alignment defect the same pass asks to
+              fix. The accessible name is kept on the input. */}
+          <Combobox<OptionType>
             options={options as OptionType[]}
-            groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
-            // The declared width was shrunk to 119px by the flex row, which cut the
-            // label off at 95px of the 101px it needs. flexShrink keeps it at 200.
-            sx={{ width: 200, flexShrink: 0 }}
+            labelPosition="none"
             value={null}
-            onChange={(_, selectOptionValue) => {
-              if (selectOptionValue?.value) handleChange(selectOptionValue.value);
+            onValueChange={(next) => {
+              const picked = Array.isArray(next) ? next[0] : next;
+              if (picked?.value) handleChange(picked.value);
+              setInputValue('');
             }}
+            disabled={disabled}
+            required={required}
+            groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
+            getOptionLabel={(option) => option.label}
             inputValue={inputValue}
-            onInputChange={(_, newValue, reason) => {
-              if (reason === 'reset') {
+            // ONLY a keystroke may write this field. The picker holds no value,
+            // so its text is the user's typing and nothing else. In single mode
+            // the library answers a pick with
+            // `setInputValue(getOptionLabel(option), "select")` -- it writes the
+            // chosen label back into the input -- and accepting that write undid
+            // the clear below: the field kept saying "Label" after the filter was
+            // added, so filling "Label" a SECOND time changed nothing, fired no
+            // input event, never reopened the panel, and the option the page
+            // model waits for never appeared (_backgroundTask.spec.ts, second
+            // addLabelFilter). `clear` and `reset` are programmatic for the same
+            // reason, so the guard is on `type` rather than a list of exclusions.
+            onInputChange={(newValue, meta) => {
+              if (meta.cause !== 'type') {
                 return;
               }
               setInputValue(newValue);
             }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                size="small"
-                label={placeholder}
+          >
+            {/* The declared width was shrunk to 119px by the flex row, which cut
+                the label off at 95px of the 101px it needs. flexShrink keeps it
+                at 200. */}
+            <ComboboxField style={{ width: 200, flexShrink: 0 }}>
+              <ComboboxInput
+                placeholder={placeholder}
+                aria-label={placeholder}
                 required={required}
               />
-            )}
-            renderOption={(props, option) => <li {...props}>{option.label}</li>}
-          />
+              <ComboboxControls>
+                {/* No aria-label here on purpose. Naming the trigger after the
+                    field too gave TWO elements the accessible name "Add filter"
+                    -- the input and the chevron -- and getByLabel('Add filter')
+                    in filters.pageModel then failed strict mode. The library
+                    already names it "Toggle options", which is what every other
+                    converted Combobox in this product relies on. */}
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent listAriaLabel={placeholder} />
+          </Combobox>
           {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilters
               currentSavedFilter={currentSavedFilter}

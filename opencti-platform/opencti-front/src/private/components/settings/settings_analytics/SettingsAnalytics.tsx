@@ -40,7 +40,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
       {t_i18n('Third-party analytics')}
 
       <Stack direction="row" gap={1}>
-        <EEChip />
+        <EEChip size="sm" />
         <Tooltip
           title={(
             <>

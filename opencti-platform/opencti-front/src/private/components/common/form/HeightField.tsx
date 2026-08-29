@@ -70,7 +70,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       component={TextField}
                       variant="standard"
                       type="number"
-                      slotProps={{ input: { min: 0 } }}
+                      min={0}
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
@@ -138,7 +138,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
             })}
             <Button
               size="small"
-              startIcon={<AddOutlined />}
+              startIcon={<AddOutlined fontSize="small" />}
               aria-label="Add"
               id="addHeight"
               onClick={() => {
@@ -208,7 +208,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       type="number"
-                      slotProps={{ input: { min: 0 } }}
+                      min={0}
                     />
                     <Field
                       component={DateTimePickerField}
@@ -236,7 +236,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
               ))}
               <Button
                 size="small"
-                startIcon={<AddOutlined />}
+                startIcon={<AddOutlined fontSize="small" />}
                 aria-label="Add"
                 id="addHeight"
                 onClick={() => {

@@ -1,5 +1,15 @@
-import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
-import Checkbox from '@mui/material/Checkbox';
+import {
+  Checkbox,
+  Combobox,
+  ComboboxChips,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import React, { FunctionComponent, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { entitySettingPatch } from '../sub_types/entity_setting/EntitySettingSettings';
@@ -184,6 +194,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
         renderOption={(option) => (
           <>
             <Checkbox
+              presentational
               checked={option.group
                 ? !!isSelectedGroup(option.value.replace(/^not-/, ''))
                 : entitySettingsEntityType.includes(option.value)}

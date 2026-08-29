@@ -168,7 +168,7 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEECh
             disabled={disabled}
           >
             {t_i18n('AI Insights')}
-            {showEEChip && <EEChip feature="AI Insights" />}
+            {showEEChip && <EEChip feature="AI Insights" size="sm" />}
           </Button>
         )}
       </span>

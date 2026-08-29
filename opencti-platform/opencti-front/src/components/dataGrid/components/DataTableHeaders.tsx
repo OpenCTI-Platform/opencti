@@ -68,6 +68,11 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
       ? theme.palette.background.accent
       : 'transparent',
     minWidth: startColumnWidth,
+    // The row is a 42px flex line whose default `align-items: stretch` made this
+    // slot full height while the 16px library checkbox stayed at its top edge,
+    // so the box sat above the column labels it belongs to. Centre it here.
+    display: 'flex',
+    alignItems: 'center',
   };
 
   const showToolbar = (numberOfSelectedElements > 0 && !disableToolBar)

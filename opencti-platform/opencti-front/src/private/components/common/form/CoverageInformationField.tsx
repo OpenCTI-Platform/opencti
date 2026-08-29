@@ -120,14 +120,8 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                       type="number"
                       fullWidth
                       required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
+                      min={0}
+                      max={100}
                     />
                   </div>
                   <IconButton
@@ -144,8 +138,9 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                   />
                 </div>
               ))}
+              {/* Default (md) rather than small: the pass asks for this one at
+                  md, and it is the row's only action. */}
               <Button
-                size="small"
                 aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {
@@ -250,14 +245,8 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                       type="number"
                       fullWidth
                       required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
+                      min={0}
+                      max={100}
                       onSubmit={(_: string, score: string) => {
                         if (isNotEmptyField(score)) {
                           commitMutation({
@@ -296,8 +285,9 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                   )}
                 </div>
               ))}
+              {/* Default (md) rather than small: the pass asks for this one at
+                  md, and it is the row's only action. */}
               <Button
-                size="small"
                 aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {

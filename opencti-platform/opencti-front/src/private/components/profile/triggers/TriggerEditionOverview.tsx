@@ -1,4 +1,4 @@
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@filigran/design-system';
 
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -376,6 +376,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               renderOption={(option: { value: TriggerEventType; label: string }) => (
                 <>
                   <Checkbox
+                    presentational
                     checked={values.event_types
                       .map((n) => n.value)
                       .includes(option.value)}

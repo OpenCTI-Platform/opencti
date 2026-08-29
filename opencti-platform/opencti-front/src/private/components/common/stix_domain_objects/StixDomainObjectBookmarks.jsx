@@ -39,7 +39,7 @@ class StixDomainObjectBookmarksComponent extends Component {
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ padding: '0 0 5px 18px', float: 'left' }}
+            style={{ padding: '0 0 8px 18px', float: 'left' }}
           >
             {t('Favorite entities')}
           </Typography>
@@ -62,6 +62,20 @@ class StixDomainObjectBookmarksComponent extends Component {
             DummyCardComponent={<StixDomainObjectBookmarkDummy />}
             rowHeight={112}
           />
+          {/* The sibling title the pass asks for, under the favourites block:
+              same shape as "Favorite entities", 16px below the favourite cards
+              and 8px above the entity cards it labels. It lives here rather
+              than in the five *Cards pages because this component already
+              renders nothing when there are no favourites, so the title appears
+              exactly when the block it belongs under does -- and the two
+              spacings stay in one place. */}
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ padding: '0 0 8px 18px', margin: '16px 0 0 0' }}
+          >
+            {t('All entities')}
+          </Typography>
         </div>
       );
     }

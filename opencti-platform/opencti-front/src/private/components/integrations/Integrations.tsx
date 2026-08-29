@@ -30,6 +30,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
+import { paperBg, paperBorder } from './paperSurface';
 
 export type IntegrationsTab = 'deployed' | 'available';
 
@@ -154,8 +155,8 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
         position: 'relative',
         overflow: 'hidden',
         borderRadius: 1,
-        border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${paperBorder(theme)}`,
+        backgroundColor: paperBg(theme),
         padding: 3,
       }}
     >

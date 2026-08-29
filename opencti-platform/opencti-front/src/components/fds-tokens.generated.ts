@@ -6,7 +6,7 @@
  * fields. Wiring: fds-migration/TOKEN-MAPPING.md.
  *
  * Source: @filigran/design-system packages/filigran-design-system/src/tokens/theme.css
- * Theme.css content hash: sha256:304c750b700156220e4718f647ef20d7fe7e5fa6a2985f3ec958d9a87ddd82da
+ * Theme.css content hash: sha256:4719a8a35ab7c376301f1b39942ad6a67ae93ec882a7bfa8c9e439ab0afdbd8e
  * Regenerate (from the filigran-design-system repo, not here):
  *   pnpm generate:mui-bridge --product opencti --write-to-product
  *
@@ -18,7 +18,7 @@
 
 export const FDS_META = {
   product: "opencti",
-  themeCssHash: "sha256:304c750b700156220e4718f647ef20d7fe7e5fa6a2985f3ec958d9a87ddd82da",
+  themeCssHash: "sha256:4719a8a35ab7c376301f1b39942ad6a67ae93ec882a7bfa8c9e439ab0afdbd8e",
   generator: "@filigran/design-system scripts/generate-mui-bridge.ts",
 } as const;
 
@@ -212,14 +212,14 @@ const colorsLight = {
   "--bg-elevation-highlight-layer-1": "#f2f2f3",
   "--bg-elevation-highlight-layer-2": "#e4e5e7",
   "--bg-elevation-highlight-layer-3": "#f4f4f6",
-  "--bg-elevation-hover": "#f4f4f6",
-  "--bg-elevation-hover-layer-0": "#f4f4f6",
+  "--bg-elevation-hover": "#cacbce",
+  "--bg-elevation-hover-layer-0": "#cacbce",
   "--bg-elevation-hover-layer-1": "#e4e5e7",
-  "--bg-elevation-hover-layer-2": "#f4f4f6",
-  "--bg-elevation-hover-layer-3": "#e4e5e7",
+  "--bg-elevation-hover-layer-2": "#cacbce",
+  "--bg-elevation-hover-layer-3": "#cacbce",
   "--bg-input-default": "#e4e5e7",
   "--bg-input-disabled": "#cacbce",
-  "--bg-input-hover": "#f4f4f6",
+  "--bg-input-hover": "#cacbce",
   "--border-alert-alert": "#f2be3a",
   "--border-alert-error": "#b8180a",
   "--border-alert-info": "#0079a8",
@@ -395,6 +395,10 @@ const scalars = {
   "--darkblue-700": "#0015a8",
   "--darkblue-800": "#000f75",
   "--darkblue-900": "#000842",
+  "--depth-lg": "16px",
+  "--depth-md": "8px",
+  "--depth-sm": "4px",
+  "--depth-xl": "20px",
   "--font-content-base": "\"IBM Plex Sans\"",
   "--font-content-base-bold": "\"IBM Plex Sans\"",
   "--font-content-base-link": "\"IBM Plex Sans\"",
@@ -529,10 +533,6 @@ const scalars = {
   "--red-800": "#570a05",
   "--red-900": "#3b0602",
   "--shadow-global-shadow": "0px 2px 4px 0px #00000066",
-  "--shadow-lg": "16px",
-  "--shadow-md": "8px",
-  "--shadow-sm": "4px",
-  "--shadow-xl": "20px",
   "--text-1": "10px",
   "--text-10": "42px",
   "--text-11": "52px",

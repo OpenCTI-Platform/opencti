@@ -4,6 +4,7 @@ import DrawerMUI from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import { createStyles, useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
+import { FDS } from '../../../../components/fds-tokens.generated';
 import classNames from 'classnames';
 import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
@@ -244,6 +245,9 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
               }),
               paddingTop: `${bannerHeightNumber}px`,
               paddingBottom: `${bannerHeightNumber}px`,
+              // The sheet itself, so the banner gutters above and below the
+              // body match it instead of showing MUI's own Paper colour.
+              backgroundColor: (theme.palette.mode === 'light' ? FDS.colors.light : FDS.colors.dark)['--bg-elevation-default-layer-2'],
             },
           },
         }}
@@ -263,7 +267,10 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           className={classes.container}
           style={{
             ...containerStyle,
-            backgroundColor: theme.palette.background.drawer,
+            // Figma node 5415-3010: the drawer body is elevation LAYER 2
+            // (#13213e dark), not the bare `--bg-elevation-default` alias,
+            // which resolves to layer 0 (#070d18) -- a full step too dark.
+            backgroundColor: (theme.palette.mode === 'light' ? FDS.colors.light : FDS.colors.dark)['--bg-elevation-default-layer-2'],
           }}
         >
           {renderSubHeader()}

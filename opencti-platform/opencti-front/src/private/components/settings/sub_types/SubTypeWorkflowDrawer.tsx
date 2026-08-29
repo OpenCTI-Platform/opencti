@@ -16,19 +16,12 @@ import { SubTypeWorkflowDrawer_subType$data } from './__generated__/SubTypeWorkf
 import ItemCopy from '../../../../components/ItemCopy';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
 }));
 
 export const subTypeWorkflowDrawerEditionQuery = graphql`

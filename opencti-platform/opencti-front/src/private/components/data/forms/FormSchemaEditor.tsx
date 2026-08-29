@@ -992,7 +992,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               <Button
                 variant="secondary"
                 size="small"
-                startIcon={<Add />}
+                startIcon={<Add fontSize="small" />}
                 onClick={() => {
                   const newOptions = [...(field.options || []), { label: '', value: '' }];
                   handleFieldChange(`fields.${fieldIndex}.options`, newOptions);

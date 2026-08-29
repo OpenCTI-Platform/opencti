@@ -4,7 +4,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@filigran/design-system';
 import Alert from '@mui/lab/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
@@ -123,9 +123,9 @@ const GroupEditionMarkingsComponent = ({
         id?: string;
       }
       | undefined,
-    event: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean | 'indeterminate',
   ) => {
-    if (event.target.checked) {
+    if (checked === true) {
       commitAdd({
         variables: {
           id: group.id,
@@ -255,10 +255,11 @@ const GroupEditionMarkingsComponent = ({
                         divider={true}
                         secondaryAction={(
                           <Checkbox
-                            onChange={(event) => handleToggleAllowedMarkings(
+                            aria-label={markingDefinition.definition ?? undefined}
+                            onCheckedChange={(checked) => handleToggleAllowedMarkings(
                               markingDefinition.id,
                               groupMarkingDefinition,
-                              event,
+                              checked,
                             )
                             }
                             checked={groupMarkingDefinition !== undefined}
