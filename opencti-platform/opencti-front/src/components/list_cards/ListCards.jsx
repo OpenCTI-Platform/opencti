@@ -108,7 +108,12 @@ class ListCards extends Component {
                   />
                 )}
                 <div className={classes.sortFieldContainer}>
-                  <FormControl>
+                  {/* Radix's Select.Root renders no DOM node of its own, so the
+                      label and the trigger are plain siblings in this
+                      FormControl's flow -- the axis is the product's to set.
+                      MUI's FormControl stacks them by default, which put "Trier
+                      par" above its field; the pass asks for it to the LEFT. */}
+                  <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                     <Select
                       name="sort-by"
                       value={sortBy}

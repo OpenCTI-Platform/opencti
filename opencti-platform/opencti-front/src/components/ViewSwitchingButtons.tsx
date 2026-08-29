@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { LibraryBooksOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
-import { ToggleButtonGroup } from '@mui/material';
+import { ButtonGroup, ButtonGroupItem } from '@filigran/design-system';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { useFormatter } from './i18n';
@@ -19,6 +18,11 @@ interface ViewSwitchingButtonsProps {
   enableContextualView?: boolean;
 }
 
+// The library item declares a 16x16 glyph. The MUI buttons this replaces drew
+// their icons at fontSize="small" (20px), which is the "icônes trop grosses"
+// reported on Techniques / Narratifs -- the one screen that mounts this.
+const GLYPH = { fontSize: 16 };
+
 const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
   handleChangeView,
   disableCards,
@@ -31,95 +35,85 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   return (
-    <ToggleButtonGroup
-      size="small"
-      color="primary"
-      exclusive={true}
+    <ButtonGroup
+      size="sm"
       value={currentView}
+      onValueChange={handleChangeView}
+      aria-label={t_i18n('Change view')}
     >
       {typeof handleChangeView === 'function' && !disableCards && (
         <Tooltip title={t_i18n('Cards view')}>
-          <ToggleButton value="cards" aria-label="cards">
-            <ViewModuleOutlined fontSize="small" color="primary" />
-          </ToggleButton>
+          <ButtonGroupItem
+            value="cards"
+            aria-label="cards"
+            icon={<ViewModuleOutlined sx={GLYPH} />}
+          />
         </Tooltip>
       )}
-      {typeof handleChangeView === 'function'
-        && enableEntitiesView && (
+      {typeof handleChangeView === 'function' && enableEntitiesView && (
         <Tooltip title={t_i18n('Entities view')}>
-          <ToggleButton value="entities" aria-label="entities">
-            <LibraryBooksOutlined
-              fontSize="small"
-            />
-          </ToggleButton>
+          <ButtonGroupItem
+            value="entities"
+            aria-label="entities"
+            icon={<LibraryBooksOutlined sx={GLYPH} />}
+          />
         </Tooltip>
       )}
       {enableEntitiesView && (
         <Tooltip title={t_i18n('Relationships view')}>
-          <ToggleButton
+          <ButtonGroupItem
             value="relationships"
             aria-label="relationships"
-          >
-            <RelationManyToMany
-              fontSize="small"
-            />
-          </ToggleButton>
+            icon={<RelationManyToMany sx={GLYPH} />}
+          />
         </Tooltip>
       )}
       {typeof handleChangeView === 'function' && !enableEntitiesView && (
         <Tooltip title={t_i18n('Lines view')}>
-          <ToggleButton
+          <ButtonGroupItem
             value="lines"
-            onClick={() => handleChangeView('lines')}
             aria-label="lines"
-          >
-            <FiligranIcon icon={ListViewIcon} size="small" />
-          </ToggleButton>
+            icon={<FiligranIcon icon={ListViewIcon} size={16} />}
+          />
         </Tooltip>
       )}
       {typeof handleChangeView === 'function' && enableSubEntityLines && (
         <Tooltip title={t_i18n('Sub entity lines view')}>
-          <ToggleButton
+          <ButtonGroupItem
             value="subEntityLines"
             aria-label="subEntityLines"
-          >
-            <FiligranIcon icon={SublistViewIcon} size="small" />
-          </ToggleButton>
+            icon={<FiligranIcon icon={SublistViewIcon} size={16} />}
+          />
         </Tooltip>
       )}
       {typeof handleChangeView === 'function' && enableGraph && (
         <Tooltip title={t_i18n('Graph view')}>
-          <ToggleButton value="graph" aria-label="graph">
-            <VectorPolygon fontSize="small" color="primary" />
-          </ToggleButton>
+          <ButtonGroupItem
+            value="graph"
+            aria-label="graph"
+            icon={<VectorPolygon sx={GLYPH} />}
+          />
         </Tooltip>
       )}
-      {typeof handleChangeView === 'function'
-        && enableNestedView && (
+      {typeof handleChangeView === 'function' && enableNestedView && (
         <Tooltip title={t_i18n('Nested view')}>
-          <ToggleButton value="nested" aria-label="nested">
-            <FormatListGroup fontSize="small" color="primary" />
-          </ToggleButton>
+          <ButtonGroupItem
+            value="nested"
+            aria-label="nested"
+            icon={<FormatListGroup sx={GLYPH} />}
+          />
         </Tooltip>
       )}
-      {typeof handleChangeView === 'function'
-        && enableContextualView && (
-        <Tooltip
-          title={t_i18n('Knowledge from related containers view')}
-        >
-          <ToggleButton value="contextual" aria-label="contextual">
-            <Group
-              fontSize="small"
-              color={
-                currentView === 'contextual' || !currentView
-                  ? 'secondary'
-                  : 'primary'
-              }
-            />
-          </ToggleButton>
+      {typeof handleChangeView === 'function' && enableContextualView && (
+        <Tooltip title={t_i18n('Knowledge from related containers view')}>
+          <ButtonGroupItem
+            value="contextual"
+            aria-label="contextual"
+            icon={<Group sx={GLYPH} />}
+          />
         </Tooltip>
       )}
-    </ToggleButtonGroup>
+    </ButtonGroup>
   );
 };
 

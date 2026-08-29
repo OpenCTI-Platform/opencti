@@ -1,4 +1,5 @@
 import {
+  Checkbox,
   Combobox,
   ComboboxChips,
   ComboboxContent,
@@ -18,12 +19,10 @@ import {
   type StixCoreObjectContainerTaskAddMutation,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContainerTaskAddMutation.graphql';
 import { AddOutlined, MoveToInboxOutlined } from '@mui/icons-material';
-import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
@@ -117,7 +116,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
   const handleToggleContainerCreationDrawer = (isOpen: boolean) => () => setIsContainerCreationDrawerOpen(isOpen);
 
   const handleChangeActionInputValues = (values: OptionListType[]) => setSelectedContainers(values);
-  const handleChangeIncludeNeighboursOption = (event: ChangeEvent<HTMLInputElement>) => setIncludeNeighbours(event.target.checked);
+  const handleChangeIncludeNeighboursOption = (checked: boolean | 'indeterminate') => setIncludeNeighbours(checked === true);
 
   // 'reset' was MUI's word for the engine re-syncing the text to the selection;
   // the library reports that as cause 'reset' too, so the guard is unchanged.
@@ -248,16 +247,13 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           </ComboboxField>
           <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Values')} />
         </Combobox>
-        <FormControlLabel
-          style={{ marginTop: 20 }}
-          control={(
-            <Checkbox
-              checked={includeNeighbours}
-              onChange={handleChangeIncludeNeighboursOption}
-            />
-          )}
-          label={t_i18n('Also include first neighbours')}
-        />
+        <div style={{ marginTop: 20 }}>
+          <Checkbox
+            checked={includeNeighbours}
+            onCheckedChange={handleChangeIncludeNeighboursOption}
+            label={t_i18n('Also include first neighbours')}
+          />
+        </div>
         <DialogActions>
           <Button variant="secondary" onClick={handleToggleAddInContainer(false)}>
             {t_i18n('Cancel')}

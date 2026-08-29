@@ -100,7 +100,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               size="small"
               onClick={handleClear}
               disabled={clearing}
-              startIcon={<Close />}
+              startIcon={<Close fontSize="small" />}
             >
               {t_i18n('Clear')}
             </Button>
@@ -129,7 +129,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
                 size="small"
                 onClick={handleClear}
                 disabled={clearing}
-                startIcon={<LockOpenOutlined />}
+                startIcon={<LockOpenOutlined fontSize="small" />}
               >
                 {t_i18n('Clear')}
               </Button>

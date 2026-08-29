@@ -22,9 +22,15 @@ const useStyles = makeStyles({
 });
 
 /**
- * Composition rule: the EE badge never sits INSIDE a button. It is a sibling at
- * a 4px gap to the button's right, so each keeps its own box. The button owns
- * the action, so the badge stays inert.
+ * Composition: the EE badge is a sibling at a 4px gap to the button's right, so
+ * each keeps its own box. The button owns the action, so the badge stays inert.
+ *
+ * NOTE: the "never INSIDE a button" rule this comment used to state as doctrine
+ * was REVERSED by the designer during the night-2 pass -- the Ariane IA button
+ * now carries its chip in the button's trailing slot, with `clickable={false}`
+ * making that legal. This site was not part of that instruction and is left as
+ * a sibling on purpose; it is the other consumer of the reversed rule and the
+ * one to revisit if the inside placement is meant to be general.
  */
 const eeRow: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 4 };
 
