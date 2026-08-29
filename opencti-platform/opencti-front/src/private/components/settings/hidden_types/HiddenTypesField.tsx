@@ -1,5 +1,4 @@
 import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import React, { FunctionComponent, ReactElement, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -13,6 +12,7 @@ import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import HiddenTypesIndicator from './HiddenTypesIndicator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { Checkbox } from '@filigran/design-system';
 
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference']],

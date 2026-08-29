@@ -1,4 +1,3 @@
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
@@ -36,6 +35,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useTheme } from '@mui/material/styles';
+import { Checkbox } from '@filigran/design-system';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(

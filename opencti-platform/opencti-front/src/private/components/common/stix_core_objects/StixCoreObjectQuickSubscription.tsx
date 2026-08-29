@@ -12,7 +12,6 @@ import {
 import { stixCoreObjectTriggersFragment } from '@components/common/stix_core_objects/stixCoreObjectTriggersUtils';
 import { Badge, ListItemButton, ListItemIcon, Stack, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -51,6 +50,7 @@ import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEdition
 import { triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import NotifierField from '../form/NotifierField';
+import { Checkbox } from '@filigran/design-system';
 
 interface InstanceTriggerEditionFormValues {
   id: string;

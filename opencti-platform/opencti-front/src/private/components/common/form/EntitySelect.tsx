@@ -1,4 +1,4 @@
-import { Autocomplete, Checkbox, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
+import { Autocomplete, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
 import React, { Suspense, useEffect, useTransition } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -10,6 +10,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
 import { truncate } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 const entitySelectSearchQuery = graphql`
   query EntitySelectSearchQuery($search: String, $filters: FilterGroup) {

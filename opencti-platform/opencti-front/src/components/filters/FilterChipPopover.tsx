@@ -2,7 +2,6 @@ import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason, MenuItem, Select } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import Popover from '@mui/material/Popover';
 import { SelectChangeEvent } from '@mui/material/Select';
@@ -39,6 +38,7 @@ import { FilterRepresentative } from './FiltersModel';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 
 import FilterFiltersInput from './FilterFiltersInput';
+import { Checkbox } from '@filigran/design-system';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -396,7 +396,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
               >
-                <Checkbox checked={checked} disabled={disabledOptions} />
+                <Checkbox
+                  checked={checked}
+                  disabled={disabledOptions}
+                />
                 <ItemIcon type={option.type} color={option.color} />
                 <span style={{ padding: '0 4px 0 4px' }}>
                   {option.label}
