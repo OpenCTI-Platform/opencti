@@ -250,6 +250,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       >
         <HeaderGroup
           // `grow` caps below this bar's ceiling — see fds-migration/LIBRARY-FEEDBACK.md #17
+          //
+          // NOT `HeaderSearch` (library #189), though that option was built for
+          // exactly this bar. Parked at pin 1f7c64c — LIBRARY-FEEDBACK.md #54:
+          // the NLQ toggle is a split button, and `HeaderSearchMode` renders one
+          // plain <button> per entry. Passing the caret through `icon` would nest
+          // an interactive element inside that button, which is the axe
+          // `nested-interactive` failure the library avoided on the Select clear.
           grow="unbounded"
           style={{
             minWidth: TOP_BAR_SEARCH_MIN_WIDTH,

@@ -5,7 +5,6 @@ import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@m
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
@@ -65,6 +64,7 @@ import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/Sti
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -2957,9 +2957,7 @@ const WorkbenchFileContentComponent = ({
               onClick={handleToggleContainerSelectAll}
             >
               <Checkbox
-                edge="start"
                 checked={containerSelectAll}
-                disableRipple
               />
             </ListItemIcon>
             <ListItemText
@@ -3007,13 +3005,11 @@ const WorkbenchFileContentComponent = ({
                   style={{ minWidth: 40 }}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (containerSelectAll
                         && !(object.id in (containerDeselectedElements || {})))
                       || object.id in (containerSelectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -3186,7 +3182,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemText
               primary={(
@@ -3248,13 +3246,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -3378,7 +3374,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3432,13 +3430,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3624,7 +3620,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3673,12 +3671,10 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3786,7 +3782,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3834,12 +3832,10 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3961,7 +3957,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemText
               primary={(
@@ -4001,13 +3999,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple={true}
                   />
                 </ListItemIcon>
                 <ListItemText
