@@ -136,9 +136,17 @@ const TextField = (props: TextFieldProps) => {
   const forwardable = (k: string) => nativeAttrs.has(k)
     || k.startsWith('data-') || k.startsWith('aria-');
   // Abandon on anything unrecognised rather than dropping it silently.
-  const unplaceable = Object.keys(otherProps).filter(
-    (k) => !placeable.has(k) && !forwardable(k),
-  );
+  //
+  // Only props that CARRY A VALUE count. Formik's `Field` renders this
+  // component as `createElement(component, {field, form, ...props, className},
+  // children)` — three arguments, so React defines `props.children` even when
+  // the value is `undefined`, and `className` is spread unconditionally beside
+  // it. `children` is in neither set above, so keying off `Object.keys` made
+  // `unplaceable` non-empty at EVERY Formik site and sent all of them to the
+  // MUI fallback. An absent prop is not an unplaceable prop.
+  const unplaceable = Object.entries(otherProps)
+    .filter(([k, v]) => v !== undefined && !placeable.has(k) && !forwardable(k))
+    .map(([k]) => k);
 
   const outOfContract = props.multiline ? 'multiline'
     : props.select ? 'select'
