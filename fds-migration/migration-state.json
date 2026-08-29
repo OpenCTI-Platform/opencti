@@ -275,6 +275,39 @@
         "opencti-platform/opencti-front/src/private/components/data/connectors/ConnectorWorkLine.tsx",
         "opencti-platform/opencti-front/src/private/components/data/tasks/TasksList.jsx"
       ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/themes/ThemeForm.tsx"
+      ],
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "FDS-WORKAROUND #45 retired: the clear control is the library`s own `clearable` (lib #190), no longer an endAdornment IconButton"
+    },
+    {
+      "component": "Checkbox",
+      "importFrom": "@filigran/design-system",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/form/EntitySelect.tsx"
+      ],
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "display-only checkbox inside the Combobox renderOption row — `checked` alone, the field value drives it"
+    },
+    {
+      "component": "Input",
+      "importFrom": "@filigran/design-system",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/sub_types/entity_setting/EntitySettingCustomFields.tsx"
+      ],
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "the integer default-value field carries the designed stepper via `isTypeNumber` (lib #190) instead of the browser`s own spinners"
     }
   ]
 }

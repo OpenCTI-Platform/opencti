@@ -1979,3 +1979,40 @@ rather than a transitional state.
 **Suggestion:** add `highlight` to `iconButtonVariants` so the two components
 share one vocabulary, and add `warn` and `success` to both. The feedback tokens
 already exist -- `Chip` carries the same severities.
+
+## 54. `HeaderSearch` cannot yet carry OpenCTI's top-bar search
+
+**Capability gap, one site — the site the component was built for.** Library
+#189 added `HeaderSearch` as the Header's integrated search, and the intent was
+that it retires this product's own composition
+(`HeaderGroup grow="unbounded"` + `<SearchInput variant="topBar">`,
+FDS-WORKAROUND #17 + #20). Attempted at pin `1f7c64c` and **parked**: three
+things the top bar does have no expression in the API.
+
+Read from `HeaderSearchProps` / `HeaderSearchMode` in the installed
+`index.d.ts`, not from the changelog.
+
+1. **The NLQ toggle is a split button.** `SearchInput.jsx:389-407` nests a
+   second click zone inside the toggle — a caret with its own `onClick` and
+   `stopPropagation` that opens the agent-selector menu, separated by a 1px
+   rule. `HeaderSearchMode` is `{ value, icon, label, disabled? }` and renders
+   one button per entry. The caret *could* be passed inside `icon` (it is a
+   `ReactNode`), and that is exactly why this is parked rather than hacked:
+   it would nest an interactive element inside a `<button>` — the
+   `nested-interactive` axe failure the library itself avoided when it made the
+   Select clear a flex SIBLING of the trigger rather than a child.
+2. **No busy slot.** `isNLQLoading` renders `<Loader variant="inline" />`
+   beside the field. Already recorded as #20 for `SearchField`; `HeaderSearch`
+   inherits it.
+3. **Modes carry rich tooltips, not names.** `label` is the accessible name.
+   These three toggles show multi-sentence, conditional tooltips ("Ask Ariane
+   isn't activated yet…", "No agent available for this action…", or the
+   selected agent's name and description). An accessible name is not a place to
+   put a sentence that changes with state.
+
+**Status.** The top bar keeps its composition. #17 and #20 stay open.
+
+**Removal test.** A `HeaderSearchMode` that can own a secondary action without
+nesting it inside the toggle, plus a busy slot and a tooltip node. Then the
+three toggles, the loader and the agent menu all move, and #17, #20 and this
+entry close together.

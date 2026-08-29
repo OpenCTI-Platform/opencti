@@ -1,5 +1,5 @@
-import { Checkbox } from '@mui/material';
 import {
+  Checkbox,
   Combobox,
   ComboboxChips,
   type ComboboxChangeMeta,

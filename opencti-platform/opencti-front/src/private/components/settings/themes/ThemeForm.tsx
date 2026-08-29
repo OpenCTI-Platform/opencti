@@ -1,11 +1,10 @@
 import Button from '@common/button/Button';
-import { InputAdornment, MenuItem, Select, SelectChangeEvent, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import { ClearIcon } from '@mui/x-date-pickers';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { Field, Form, useFormikContext } from 'formik';
 import { FunctionComponent, useRef, useState } from 'react';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import IconButton from '../../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import Label from '../../../../components/common/label/Label';
 import { useFormatter } from '../../../../components/i18n';
@@ -83,8 +82,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
     return null;
   };
 
-  const handleLoginAsideTypeChange = (event: SelectChangeEvent<string>) => {
-    const type = event.target.value as '' | 'color' | 'gradient' | 'image';
+  const handleLoginAsideTypeChange = (type: '' | 'color' | 'gradient' | 'image') => {
     setLoginAsideType(type);
 
     const clearedValues: ThemeType = {
@@ -250,40 +248,34 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         </Label>
 
         <Stack gap={2.5}>
-          {/* FDS-WORKAROUND #45: stays on MUI. The empty string is a real product
-              state here, and the library Select has no adornment slot nor a clear
-              part, while Combobox has ComboboxClear. See fds-migration/LIBRARY-FEEDBACK.md */}
+          {/* FDS-WORKAROUND #45 retired: `clearable` landed in library #190, so the
+              endAdornment that used to carry the clear IconButton is gone and the
+              library owns the control. The empty string is still a real product
+              state — clearing means "the login page keeps its default panel".
+              `SelectValue` receives the mapped label as children, which is what
+              keeps the trigger's wording identical to MUI's `renderValue`: the
+              option row reads "Image URL" while the trigger reads "Add background
+              image", and this conversion does not arbitrate that difference. */}
           <Select
             value={loginAsideType}
-            onChange={handleLoginAsideTypeChange}
-            fullWidth
-            variant="standard"
-            displayEmpty
-            renderValue={(value) =>
-              value
-                ? getAsideTypeLabel(value)
-                : <em style={{ color: theme.palette.text.disabled }}>{t_i18n('Select a background type')}</em>
-            }
-            slotProps={{
-              input: {
-                sx: {
-                  textTransform: 'capitalize',
-                },
-              },
-            }}
-            endAdornment={
-              loginAsideType && (
-                <InputAdornment position="end" style={{ marginRight: 16 }}>
-                  <IconButton aria-label={t_i18n('Clear')} size="small" onClick={() => handleLoginAsideTypeChange({ target: { value: '' } } as SelectChangeEvent<string>)}>
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
+            onValueChange={(value) => handleLoginAsideTypeChange(value as '' | 'color' | 'gradient' | 'image')}
+            clearable
+            clearLabel={t_i18n('Clear')}
           >
-            <MenuItem value="color" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background color')}</MenuItem>
-            <MenuItem value="gradient" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background gradient')}</MenuItem>
-            <MenuItem value="image" sx={{ textTransform: 'capitalize' }}>{t_i18n('Image URL')}</MenuItem>
+            <SelectTrigger
+              className="w-full"
+              aria-label={t_i18n('Right panel customisation')}
+              style={{ textTransform: 'capitalize' }}
+            >
+              <SelectValue placeholder={t_i18n('Select a background type')}>
+                {getAsideTypeLabel(loginAsideType)}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Right panel customisation')}>
+              <SelectItem value="color" style={{ textTransform: 'capitalize' }}>{t_i18n('Add background color')}</SelectItem>
+              <SelectItem value="gradient" style={{ textTransform: 'capitalize' }}>{t_i18n('Add background gradient')}</SelectItem>
+              <SelectItem value="image" style={{ textTransform: 'capitalize' }}>{t_i18n('Image URL')}</SelectItem>
+            </SelectContent>
           </Select>
 
           <div ref={fieldRef}>
