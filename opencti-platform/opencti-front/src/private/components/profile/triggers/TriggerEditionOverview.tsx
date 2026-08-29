@@ -281,7 +281,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const onChangeInstanceTrigger = (
     setFieldValue: (
       key: string,
-      value: { value: string; label: string }[],
+      value: { value: string; label: string }[] | boolean,
     ) => void,
   ) => {
     const newInstanceTriggerValue = !instanceTrigger;
@@ -292,6 +292,10 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
 
     helpers.handleClearAllFilters();
     instanceTriggerFiltersHelpers.handleClearAllFilters();
+    // instance_trigger has to live in Formik too: enableReinitialize rebuilds
+    // the form from initialValues after every commitFieldPatch, so a value kept
+    // only in local state is wiped on the next round-trip.
+    setFieldValue('instance_trigger', newInstanceTriggerValue);
     setInstanceTrigger(newInstanceTriggerValue);
 
     commitFieldPatch({
@@ -311,6 +315,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
 
   const initialValues = {
     name: trigger.name,
+    instance_trigger: trigger.instance_trigger ?? false,
     description: trigger.description,
     event_types: convertEventTypes(trigger),
     notifiers: convertNotifiers(trigger),

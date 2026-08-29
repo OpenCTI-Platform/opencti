@@ -8,9 +8,10 @@ import { useFormatter } from '../i18n';
 
 const SwitchField = (props) => {
   const {
-    form: { setFieldValue, setFieldTouched },
+    form: { setFieldValue, setFieldTouched, isSubmitting },
     field: { name, value },
     onChange,
+    onFocus,
     helpertext,
     tooltip,
     initialValue,
@@ -62,18 +63,27 @@ const SwitchField = (props) => {
   return (
     <div style={props.containerstyle}>
       {/* FormGroup and the fit-content wrapper are kept so the control keeps
-          the row position it had under MUI; the library Switch carries its own
-          label, so FormControlLabel is gone — it clone-injects checked/onChange
-          into its control, which a Radix button would silently ignore. */}
+          the row position it had under MUI. FormControlLabel is gone because
+          the library Switch carries its own label — NOT because this file was
+          exposed to the clone-injection trap: the old code put checked and
+          onChange on the MuiSwitch child, so FormControlLabel had nothing to
+          inject. The mechanism is real (it broke the consent checkbox in
+          #17946); it simply was not active here. */}
       <FormGroup>
         <div style={{ width: 'fit-content' }}>
           <Switch
             name={name}
-            checked={value === true}
-            disabled={disabled}
+            // A caller-supplied `checked` wins over the Formik value: three
+            // sites drive the control from their own state, and one of them
+            // (TriggerEditionOverview) keeps its value outside Formik.
+            checked={props.checked ?? value === true}
+            // formik-mui's fieldToSwitch supplied this; without it the 107
+            // switches stayed live during submit.
+            disabled={disabled ?? isSubmitting}
             required={required}
             label={labelNode}
             onCheckedChange={internalOnChange}
+            onFocus={onFocus}
             onBlur={internalOnBlur}
           />
         </div>
