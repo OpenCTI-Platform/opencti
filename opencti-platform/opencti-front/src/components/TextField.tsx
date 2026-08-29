@@ -159,6 +159,15 @@ const TextField = (props: TextFieldProps) => {
         id={props.id}
         name={name}
         type={props.type as 'text' | 'password' | 'number' | 'email' | undefined}
+        // Every number field routed through this pivot takes the designed
+        // stepper instead of the browser's own spinners (library #190,
+        // RULE-14). Set here rather than at ~100 call sites across 50 files:
+        // the pivot already owns `type`, and the two travel together.
+        // Geometry is unchanged — `isTypeNumber` adds right padding INSIDE the
+        // field (`pr-7`, `pr-11` beside a state icon) and no height; the box
+        // stays `h-9`. `step`/`min`/`max` already reach the inner <input>
+        // through `nativeAttrs`, and the stepper reads them from there.
+        isTypeNumber={props.type === 'number'}
         label={typeof props.label === 'string' ? props.label : undefined}
         required={props.required}
         placeholder={props.placeholder}

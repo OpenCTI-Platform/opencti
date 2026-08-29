@@ -219,3 +219,68 @@ through.
 Worth knowing for next time: `gh run rerun` is refused while the workflow is
 still running, so the re-run has to wait for the whole run to finish, not just
 the failing job.
+
+
+## Follow-up round — Sandy ruled YES on `isTypeNumber` at scale
+
+`isTypeNumber={props.type === 'number'}` is on the pivot as asked, with a
+contract test (`TextField.number.test.tsx`, 7 cases) pinning the stepper, the
+`step`/`min`/`max` forwarding, and the geometry: the input keeps `h-9` and
+gains `pr-7` **inside** the box.
+
+### And verifying it turned up a defect that changes what the line does
+
+**`<Field component={TextField}>` never reaches the library Input at all.** It
+has always taken the MUI fallback, since before this branch.
+
+Measured, not inferred. The pivot's own diagnostic reports:
+
+```
+outOfContract: "unplaceable props: children"
+keys: [error, helperText, disabled, onBlur, name, onChange, label, type, className, children]
+```
+
+Cause, read out of the installed Formik (`formik.cjs.development.js:1384`):
+
+```js
+return React.createElement(component, _extends({ field, form }, props, { className }), children);
+```
+
+Three arguments, so React defines `props.children` **even when the value is
+`undefined`** — and `className` is spread unconditionally beside it. `children`
+is in neither `placeable` nor `nativeAttrs`, so `unplaceable` is never empty and
+every one of the ~620 Formik sites falls back to MUI.
+
+**The fix is one line** — count only props that actually carry a value:
+
+```diff
+-  const unplaceable = Object.keys(otherProps).filter(
+-    (k) => !placeable.has(k) && !forwardable(k),
+-  );
++  const unplaceable = Object.entries(otherProps).filter(
++    ([k, v]) => v !== undefined && !placeable.has(k) && !forwardable(k),
++  ).map(([k]) => k);
+```
+
+Proven: with that line the same 7 tests pass through a real `<Field>`; without
+it they only pass when the pivot is driven with an explicit props object.
+
+**Not shipped here, and that is the conservative default.** It would flip
+**~620 fields** — roughly 100 number and ~520 text — from MUI to the library
+Input in one unreviewed push. Sandy authorised the number stepper, not the
+whole form surface. #17946 intended these sites to be on the library, so this
+is arguably realising merged intent rather than new scope — but nobody has ever
+seen the result, because it never rendered.
+
+**Consequence to state plainly: until that line lands, `isTypeNumber` on the
+pivot is inert.** The line she approved is correct and stays; it takes effect
+the moment the blocker is decided. The `DEFECT PIN` case in the test file
+asserts the current fallback, so the day the branch opens the suite fails and
+names the place instead of ~620 fields changing silently.
+
+### Pilot instance
+
+`fds-migration/PILOT.md` — the local pilot is `http://localhost:3000` (backend
+4000, started by a personal `~/demo-opencti.sh`); the shared staging instance is
+redeployed only on a push to `design-system/current`, and its URL is still not
+recorded anywhere, so the file quotes the AWX identifiers to ask for instead.
