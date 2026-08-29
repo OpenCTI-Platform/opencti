@@ -52,6 +52,7 @@ const EnrollPlaybookDrawer = ({ open, onClose, onLaunch, entityIds, isSelectAll,
                       <Tooltip title={t_i18n('Enroll in this playbook')}>
                         <IconButton
                           onClick={() => onLaunch(playbook.value, playbook.label)}
+                          aria-label={t_i18n('Enroll in a playbook')}
                         >
                           <PlayCircleOutlined />
                         </IconButton>

@@ -135,6 +135,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             onClick={importHelpers.handleImport}
             data-testid="ImportDashboard"
 
+            aria-label={t_i18n('Import')}
           >
             <FileUploadOutlined fontSize="small" color="primary" />
           </IconButton>

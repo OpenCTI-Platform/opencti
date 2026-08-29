@@ -103,6 +103,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
               size="default"
               disabled={mutating}
               onClick={handleToggleEnabled}
+              aria-label={t_i18n('Toggle visibility')}
             >
               {customView.enabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>

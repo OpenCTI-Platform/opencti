@@ -58,6 +58,7 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
               aria-haspopup="true"
               color="primary"
               size="small"
+              aria-label={t_i18n('Generate an export')}
             >
               <FileExportOutline fontSize="small" />
             </IconButton>

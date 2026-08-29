@@ -75,6 +75,7 @@ const SavedFiltersAutocomplete = ({
                   onClick={handleEdit(option.value)}
                   size="small"
                   sx={{ padding: '4px' }}
+                  aria-label={t_i18n('Edit the filter')}
                 >
                   <EditOutlined sx={{ fontSize: 18 }} />
                 </IconButton>
@@ -85,6 +86,7 @@ const SavedFiltersAutocomplete = ({
                   onClick={handleDelete(option.value)}
                   size="small"
                   sx={{ padding: '4px' }}
+                  aria-label={t_i18n('Delete the filter')}
                 >
                   <DeleteOutlined sx={{ fontSize: 18 }} />
                 </IconButton>

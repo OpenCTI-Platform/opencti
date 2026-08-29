@@ -188,6 +188,7 @@ const FileWorkComponent = (props) => {
                       color="primary"
                       onClick={() => navigateToDraft(work.draft_context)}
                       size="small"
+                      aria-label={t_i18n('Open the draft')}
                     >
                       <ArchitectureOutlined fontSize="small" />
                     </IconButton>
@@ -198,6 +199,7 @@ const FileWorkComponent = (props) => {
                     onClick={() => isCurrentContextWork && handleDelete(work.id)}
                     disabled={work.status === 'deleting'}
                     size="small"
+                    aria-label={t_i18n('Delete the work')}
                   >
                     <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'} />
                   </IconButton>

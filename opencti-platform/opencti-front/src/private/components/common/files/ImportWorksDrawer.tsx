@@ -282,6 +282,7 @@ const FileWorksComponent = ({
                   <IconButton
                     color="primary"
                     onClick={() => work.draft_context && navigateToDraft(work.draft_context)}
+                    aria-label={t_i18n('Open the draft')}
                   >
                     <ArchitectureOutlined fontSize="small" />
                   </IconButton>
@@ -293,6 +294,7 @@ const FileWorksComponent = ({
                   disabled={work?.status === 'deleting'}
                   color="primary"
                   onClick={() => setDisplayDelete(work?.id)}
+                  aria-label={t_i18n('Delete the work')}
                 >
                   <DeleteOutlined fontSize="small" />
                 </IconButton>

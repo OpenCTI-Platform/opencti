@@ -57,6 +57,7 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
               <IconButton
                 color="primary"
                 disabled={true}
+                aria-label={t_i18n('Show more')}
               >
                 <ReadMoreOutlined />
               </IconButton>

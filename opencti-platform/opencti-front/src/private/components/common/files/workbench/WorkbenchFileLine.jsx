@@ -163,6 +163,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                   color={nested ? 'inherit' : 'primary'}
                   size="small"
                   keepMui
+                  aria-label={t_i18n('Download the file')}
                 >
                   <GetAppOutlined fontSize="small" />
                 </IconButton>
@@ -175,6 +176,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                 onClick={handleOpenDelete}
                 size="small"
                 keepMui
+                aria-label={t_i18n('Delete the file')}
               >
                 <DeleteOutlined fontSize="small" />
               </IconButton>

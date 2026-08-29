@@ -156,12 +156,12 @@ const AISummaryContainersComponent = ({
           <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Typography variant="caption">Generated on {nsdt(result?.containersAskAiSummary?.updated_at)}.</Typography>
             <Tooltip title={t_i18n('Copy to clipboard')}>
-              <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+              <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)} aria-label={t_i18n('Copy to clipboard')}>
                 <ContentCopyOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Retry')}>
-              <IconButton size="small" color="primary" onClick={() => refetch(first, relative)}>
+              <IconButton size="small" color="primary" onClick={() => refetch(first, relative)} aria-label={t_i18n('Regenerate the summary')}>
                 <AutoModeOutlined fontSize="small" />
               </IconButton>
             </Tooltip>

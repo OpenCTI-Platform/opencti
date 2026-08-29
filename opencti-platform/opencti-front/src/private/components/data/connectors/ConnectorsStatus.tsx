@@ -374,6 +374,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 color="primary"
                                 disabled={!canDeleteConnector(connector as unknown as Connector_connector$data)}
                                 size="default"
+                                aria-label={t_i18n('Purge the queue')}
                               >
                                 <PlaylistRemoveOutlined />
                               </IconButton>
@@ -388,6 +389,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               color="primary"
                               disabled={!canDeleteConnector(connector as unknown as Connector_connector$data)}
                               size="default"
+                              aria-label={t_i18n('Delete the connector')}
                             >
                               <DeleteOutlined />
                             </IconButton>

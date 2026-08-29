@@ -48,6 +48,7 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         <IconButton
           onClick={handleOpenFilters}
           disabled={disabled}
+          aria-label={t_i18n('Open filters')}
         >
           <BiotechOutlined fontSize="medium" />
         </IconButton>

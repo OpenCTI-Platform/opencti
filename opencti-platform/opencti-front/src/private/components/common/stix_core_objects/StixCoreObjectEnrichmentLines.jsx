@@ -168,6 +168,7 @@ const StixCoreObjectEnrichment = ({
                             ? askJob(connector.id)
                             : askEnrich(connector.id))
                           }
+                          aria-label={t('Enrich')}
                         >
                           <RefreshOutlined />
                         </IconButton>

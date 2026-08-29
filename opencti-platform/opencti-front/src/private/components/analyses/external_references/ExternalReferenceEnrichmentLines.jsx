@@ -172,6 +172,7 @@ const ExternalReferenceEnrichment = (props) => {
                             : askEnrich(connector.id))
                           }
                           size="default"
+                          aria-label={t('Enrich')}
                         >
                           <Refresh />
                         </IconButton>

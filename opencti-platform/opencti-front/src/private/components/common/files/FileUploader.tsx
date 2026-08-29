@@ -151,7 +151,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           title={`Uploading ${upload}`}
           aria-label={`Uploading ${upload}`}
         >
-          <IconButton disabled={true} size="small">
+          <IconButton disabled={true} size="small" aria-label={t_i18n('Uploading')}>
             <CircularProgress
               size={24}
               thickness={2}
@@ -167,6 +167,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
             color="primary"
             size="small"
             variant="tertiary"
+            aria-label={t_i18n('Upload a file')}
           >
             <CloudUploadOutlined fontSize="small" />
           </IconButton>

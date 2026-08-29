@@ -229,6 +229,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                   )}
                                   size="small"
                                   variant="tertiary"
+                                  aria-label={t('Open the external link')}
                                 >
                                   <OpenInBrowserOutlined />
                                 </IconButton>

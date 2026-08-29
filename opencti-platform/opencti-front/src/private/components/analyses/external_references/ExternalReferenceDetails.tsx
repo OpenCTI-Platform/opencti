@@ -66,6 +66,7 @@ const ExternalReferenceDetailsComponent = ({
                 onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
                 color="primary"
                 disabled={!externalReference.url}
+                aria-label={t_i18n('Open the external link')}
               >
                 <OpenInBrowserOutlined />
               </IconButton>

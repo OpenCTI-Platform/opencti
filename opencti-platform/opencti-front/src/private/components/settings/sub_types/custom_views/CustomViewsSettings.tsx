@@ -44,6 +44,7 @@ const CustomViewsSettings = () => {
                 disabled={importHelpers.importing}
                 onClick={importHelpers.handleImport}
                 size="small"
+                aria-label={t_i18n('Import')}
               >
                 <CloudUploadOutlined fontSize="small" color="primary" />
               </IconButton>
