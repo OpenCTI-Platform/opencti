@@ -507,7 +507,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
                 onSubmit={handleSubmitField}
               />
               <IngestionSchedulingField handleSubmitField={handleSubmitField} />
@@ -518,7 +518,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 label={t_i18n('CSV URL')}
                 fullWidth={true}
                 onSubmit={handleSubmitField}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <CreatorField
                 name="user_id"
@@ -624,7 +624,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                     label={t_i18n('Username')}
                     onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="password"
@@ -651,7 +651,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                     label={t_i18n('Certificate (base64)')}
                     onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="key"
@@ -666,7 +666,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                     label={t_i18n('CA certificate (base64)')}
                     onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                 </>
               )}

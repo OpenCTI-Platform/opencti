@@ -3,9 +3,7 @@ import { TextField } from 'formik-mui';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
-import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { Stack } from '@mui/material';
@@ -35,7 +33,6 @@ interface RelayResponseError extends Error {
 }
 
 const LoginForm = () => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setValue, email } = useLoginContext();
 
@@ -105,7 +102,7 @@ const LoginForm = () => {
               label={t_i18n('Password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              className="mt-4"
             />
             <Stack
               mt={3}

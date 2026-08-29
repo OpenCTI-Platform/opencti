@@ -101,7 +101,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             label={t_i18n('Field type')}
             fullWidth={true}
             disabled
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
@@ -109,7 +109,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             name="label"
             label={t_i18n('Label')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onSubmit={handleSubmitField}
           />
           {data.field_type === 'integer' && (
@@ -121,7 +121,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
                 name="min_value"
                 label={t_i18n('Min value')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onSubmit={handleSubmitField}
               />
               <Field
@@ -131,7 +131,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
                 name="max_value"
                 label={t_i18n('Max value')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onSubmit={handleSubmitField}
               />
             </>

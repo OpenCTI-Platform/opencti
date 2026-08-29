@@ -957,22 +957,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@XTM-Foundation/filigran-design-system#commit=bd076e8f49dfb678469be0638562ea0c85b06a6c":
-  version: 0.1.0
-  resolution: "@filigran/design-system@https://github.com/XTM-Foundation/filigran-design-system.git#commit=bd076e8f49dfb678469be0638562ea0c85b06a6c"
+"@filigran/design-system@XTM-Foundation/filigran-design-system#commit=0ed2581bf1b8a8cec5f5de654d94e4108703920c":
+  version: 1.0.0
+  resolution: "@filigran/design-system@https://github.com/XTM-Foundation/filigran-design-system.git#commit=0ed2581bf1b8a8cec5f5de654d94e4108703920c"
   dependencies:
-    "@radix-ui/react-accordion": "npm:^1.2.18"
+    "@radix-ui/react-accordion": "npm:^1.2.20"
     "@radix-ui/react-checkbox": "npm:^1.3.11"
-    "@radix-ui/react-dialog": "npm:^1.1.22"
-    "@radix-ui/react-dropdown-menu": "npm:^2.1.22"
+    "@radix-ui/react-dialog": "npm:^1.1.23"
+    "@radix-ui/react-dropdown-menu": "npm:^2.1.24"
     "@radix-ui/react-popover": "npm:^1.1.23"
     "@radix-ui/react-radio-group": "npm:^1.4.7"
     "@radix-ui/react-select": "npm:^2.3.7"
     "@radix-ui/react-slider": "npm:^1.4.7"
-    "@radix-ui/react-slot": "npm:^1.1.0"
+    "@radix-ui/react-slot": "npm:^1.3.3"
     "@radix-ui/react-switch": "npm:^1.3.7"
-    "@radix-ui/react-tabs": "npm:^1.1.16"
-    "@radix-ui/react-tooltip": "npm:^1.2.13"
+    "@radix-ui/react-tabs": "npm:^1.1.21"
+    "@radix-ui/react-tooltip": "npm:^1.2.16"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
     lucide-react: "npm:1.23.0"
@@ -980,7 +980,7 @@ __metadata:
   peerDependencies:
     react: ^19.0.0
     react-dom: ^19.0.0
-  checksum: 10c0/d08e8c0982df213aa350702f8d7afa144a9a0c3030158e0fac99bc6935eb87d311d3f3a7e2901b739fe3e6e467ac092f25256dcaaef9fb779ebb1f7437965451
+  checksum: 10c0/27668ed45862a3fe4e601e06638a8478abd03c5f054d38f73a4224ef335d1aa0e91500e475f296c3bba8bc71376ed1a1e7ce95b1fb6674f3eb384b31f1099450
   languageName: node
   linkType: hard
 
@@ -2772,7 +2772,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-accordion@npm:^1.2.18":
+"@radix-ui/react-accordion@npm:^1.2.20":
   version: 1.2.20
   resolution: "@radix-ui/react-accordion@npm:1.2.20"
   dependencies:
@@ -2917,7 +2917,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:^1.1, @radix-ui/react-dialog@npm:^1.1.22":
+"@radix-ui/react-dialog@npm:^1.1, @radix-ui/react-dialog@npm:^1.1.23":
   version: 1.1.23
   resolution: "@radix-ui/react-dialog@npm:1.1.23"
   dependencies:
@@ -2986,7 +2986,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dropdown-menu@npm:^2.1, @radix-ui/react-dropdown-menu@npm:^2.1.22":
+"@radix-ui/react-dropdown-menu@npm:^2.1, @radix-ui/react-dropdown-menu@npm:^2.1.24":
   version: 2.1.24
   resolution: "@radix-ui/react-dropdown-menu@npm:2.1.24"
   dependencies:
@@ -3340,7 +3340,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-slot@npm:1.3.3, @radix-ui/react-slot@npm:^1.1.0":
+"@radix-ui/react-slot@npm:1.3.3, @radix-ui/react-slot@npm:^1.3.3":
   version: 1.3.3
   resolution: "@radix-ui/react-slot@npm:1.3.3"
   dependencies:
@@ -3379,7 +3379,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-tabs@npm:^1.1.16":
+"@radix-ui/react-tabs@npm:^1.1.21":
   version: 1.1.21
   resolution: "@radix-ui/react-tabs@npm:1.1.21"
   dependencies:
@@ -3405,7 +3405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-tooltip@npm:^1.2, @radix-ui/react-tooltip@npm:^1.2.13":
+"@radix-ui/react-tooltip@npm:^1.2, @radix-ui/react-tooltip@npm:^1.2.16":
   version: 1.2.16
   resolution: "@radix-ui/react-tooltip@npm:1.2.16"
   dependencies:
@@ -12078,7 +12078,7 @@ __metadata:
     "@faker-js/faker": "npm:10.5.0"
     "@filigran/chatbot": "npm:3.7.4"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=bd076e8f49dfb678469be0638562ea0c85b06a6c"
+    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=0ed2581bf1b8a8cec5f5de654d94e4108703920c"
     "@filigran/rich-text-editor": "npm:1.2.0"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"

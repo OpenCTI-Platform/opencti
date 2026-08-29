@@ -328,7 +328,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <IngestionSchedulingField />
           <Field
@@ -337,7 +337,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             name="uri"
             label={t_i18n('HTTP JSON URL')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={SelectFieldFds}
@@ -419,7 +419,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                   name="pagination_with_sub_page_attribute_path"
                   label={t_i18n('Attribute path to get next uri')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                 />
               </>
             )}
@@ -485,7 +485,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 name="username"
                 label={t_i18n('Username')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="password"
@@ -509,7 +509,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="key"
@@ -522,7 +522,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}

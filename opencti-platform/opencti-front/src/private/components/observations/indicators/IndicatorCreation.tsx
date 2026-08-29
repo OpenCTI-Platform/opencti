@@ -37,6 +37,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import TypesField from '../TypesField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
+import TextareaField from '../../../../components/TextareaField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -269,15 +270,12 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             multiple={false}
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="pattern"
             label={t_i18n('Pattern')}
             required={(mandatoryAttributes.includes('pattern'))}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             detectDuplicate={['Indicator']}
           />
           <TypesField
@@ -334,7 +332,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             type="number"
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={MarkdownField}

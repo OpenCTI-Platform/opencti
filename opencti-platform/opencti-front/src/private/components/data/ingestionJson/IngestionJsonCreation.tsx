@@ -372,7 +372,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <IngestionSchedulingField />
           <Field
@@ -381,7 +381,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             name="uri"
             label={t_i18n('HTTP JSON URL')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={SelectFieldFds}
@@ -459,7 +459,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                   name="pagination_with_sub_page_attribute_path"
                   label={t_i18n('Attribute path to get next uri')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                 />
               </>
             )}
@@ -534,7 +534,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 name="username"
                 label={t_i18n('Username')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="password"
@@ -556,7 +556,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="key"
@@ -568,7 +568,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}

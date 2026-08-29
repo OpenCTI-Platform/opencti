@@ -228,7 +228,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             label={t_i18n('Source')}
             required={(mandatoryAttributes.includes('source'))}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <ObjectAssigneeField
             name="objectAssignee"

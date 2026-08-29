@@ -7,13 +7,13 @@ import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import { Link } from 'react-router-dom';
-import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -134,12 +134,10 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
         style={{ minWidth: 40 }}
       >
         <Checkbox
-          edge="start"
           checked={
             (selectAll && !(nodeSubType.id in (deSelectedElements || {})))
             || nodeSubType.id in (selectedElements || {})
           }
-          disableRipple={true}
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -199,7 +197,9 @@ export const SubTypeLineDummy = ({
   return (
     <ListItem divider={true} classes={{ root: classes.item }}>
       <ListItemIcon style={{ minWidth: 40 }}>
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox
+          disabled={true}
+        />
       </ListItemIcon>
       <ListItemIcon>
         <Skeleton

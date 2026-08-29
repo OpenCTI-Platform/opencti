@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,6 +11,7 @@ import { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
 import { DataColumns } from '../../../../../components/list_lines';
 import { resolveLink } from '../../../../../utils/Entity';
 import ItemIcon from '../../../../../components/ItemIcon';
+import { Checkbox } from '@filigran/design-system';
 import {
   EntityStixCoreRelationshipsContextualViewLine_node$data,
   EntityStixCoreRelationshipsContextualViewLine_node$key,
@@ -131,12 +131,10 @@ const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
         }
       >
         <Checkbox
-          edge="start"
           checked={
             (selectAll && !(stixCoreObject.id in (deSelectedElements || {})))
             || stixCoreObject.id in (selectedElements || {})
           }
-          disableRipple={true}
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>

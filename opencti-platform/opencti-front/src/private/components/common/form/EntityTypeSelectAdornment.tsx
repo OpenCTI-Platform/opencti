@@ -4,12 +4,12 @@ import { PaletteOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
+import { Checkbox } from '@filigran/design-system';
 
 interface EntityTypeSelectAdornmentProps {
   disabled?: boolean;
@@ -77,7 +77,6 @@ const EntityTypeSelectAdornment = ({
               onClick={() => toggleEntityType(entityType.value)}
             >
               <Checkbox
-                size="small"
                 checked={value.includes(entityType.value)}
               />
               <ListItemText primary={entityType.label} />

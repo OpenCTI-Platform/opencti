@@ -137,7 +137,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 name="definition"
                 label={t('Definition')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={(
@@ -169,7 +169,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 label={t('Order')}
                 fullWidth={true}
                 type="number"
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={(

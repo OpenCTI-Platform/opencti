@@ -363,7 +363,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Configuration name')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -382,7 +382,7 @@ const LdapProviderForm = ({
                 label={t_i18n('LDAP URL')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -391,7 +391,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Bind DN')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <SecretFieldControl
                 secretInfo={(data?.configuration?.bind_credentials ?? null) as SecretInfo | null}
@@ -408,7 +408,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Search base')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -417,7 +417,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Search filter')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -426,7 +426,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Group base')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
@@ -435,7 +435,7 @@ const LdapProviderForm = ({
                 label={t_i18n('Group filter')}
                 fullWidth
                 required
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
 
               <AuthProviderUserInfoFields />
@@ -445,7 +445,7 @@ const LdapProviderForm = ({
                 name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
 
               {/* --- Search & Authentication --- */}
@@ -466,7 +466,7 @@ const LdapProviderForm = ({
                     name="search_attributes"
                     label={t_i18n('Search attributes (comma-separated)')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -474,7 +474,7 @@ const LdapProviderForm = ({
                     name="username_field"
                     label={t_i18n('Username field')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -482,7 +482,7 @@ const LdapProviderForm = ({
                     name="password_field"
                     label={t_i18n('Password field')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -490,7 +490,7 @@ const LdapProviderForm = ({
                     name="credentials_lookup"
                     label={t_i18n('Credentials lookup')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <Field
                     component={TextField}
@@ -498,7 +498,7 @@ const LdapProviderForm = ({
                     name="group_search_attributes"
                     label={t_i18n('Group search attributes (comma-separated)')}
                     fullWidth
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 </AccordionDetails>
               </Accordion>

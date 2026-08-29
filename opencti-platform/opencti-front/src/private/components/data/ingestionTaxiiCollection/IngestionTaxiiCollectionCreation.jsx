@@ -123,7 +123,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <CreatorField
                 name="user_id"

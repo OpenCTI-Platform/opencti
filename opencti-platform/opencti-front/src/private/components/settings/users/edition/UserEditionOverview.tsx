@@ -205,7 +205,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             disabled={external}
             label={t_i18n('Email address')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -218,7 +218,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             name="firstname"
             label={t_i18n('Firstname')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -231,7 +231,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             name="lastname"
             label={t_i18n('Lastname')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={

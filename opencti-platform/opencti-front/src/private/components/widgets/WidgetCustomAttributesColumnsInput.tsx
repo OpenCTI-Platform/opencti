@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { Box, Checkbox, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
+import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import { Checkbox, IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
@@ -238,7 +238,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
                 <ListItem disablePadding key={column.attribute} sx={{ height: 42 }}>
                   <Checkbox
                     checked={value.some((col) => col.attribute === column.attribute)}
-                    onChange={() => handleToggleColumn(column.attribute)}
+                    onCheckedChange={() => handleToggleColumn(column.attribute)}
                   />
                   <ListItemText primary={t_i18n(formatColumnName(column))} />
                 </ListItem>

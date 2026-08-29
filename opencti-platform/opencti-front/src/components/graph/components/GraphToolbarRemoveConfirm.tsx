@@ -3,7 +3,6 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -25,6 +24,7 @@ import useKnowledgeGraphDeleteObject from '../utils/useKnowledgeGraphDeleteObjec
 import { FieldOption } from '../../../utils/field';
 import type { Theme } from '../../Theme';
 import { isGraphNode } from '../graph.types';
+import { Checkbox } from '@filigran/design-system';
 
 interface ReferenceFormData {
   message: string;
@@ -237,7 +237,7 @@ const GraphToolbarRemoveConfirm = ({
                 control={(
                   <Checkbox
                     checked={andDelete}
-                    onChange={() => setAndDelete((d) => !d)}
+                    onCheckedChange={() => setAndDelete((d) => !d)}
                   />
                 )}
               />

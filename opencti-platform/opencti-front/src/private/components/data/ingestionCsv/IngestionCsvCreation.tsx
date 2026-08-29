@@ -352,7 +352,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <IngestionSchedulingField />
               <Field
@@ -361,7 +361,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 name="uri"
                 label={t_i18n('CSV URL')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <IngestionCreationUserHandling
                 default_confidence_level={50}
@@ -440,7 +440,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                     name="username"
                     label={t_i18n('Username')}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="password"
@@ -462,7 +462,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                     name="cert"
                     label={t_i18n('Certificate (base64)')}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="key"
@@ -474,7 +474,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                     name="ca"
                     label={t_i18n('CA certificate (base64)')}
                     fullWidth={true}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                 </>
               )}

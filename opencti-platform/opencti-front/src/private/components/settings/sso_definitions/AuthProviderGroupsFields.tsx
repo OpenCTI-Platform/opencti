@@ -140,7 +140,7 @@ const AuthProviderGroupsFields = () => {
         label={t_i18n('Groups splitter')}
         placeholder=","
         fullWidth
-        style={{ marginTop: 20 }}
+        className="mt-5"
       />
 
       {/* Groups mapping (provider -> platform) */}
