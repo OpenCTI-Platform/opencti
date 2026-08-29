@@ -23,7 +23,6 @@ import { Field, Form, Formik } from 'formik';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
-import Checkbox from '@mui/material/Checkbox';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -35,6 +34,7 @@ import TextField from '../../../../components/TextField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Card from '../../../../components/common/card/Card';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -126,10 +126,8 @@ const FileIndexingConfiguration: FunctionComponent<
                 >
                   <ListItemText primary={t_i18n(mimeType)} />
                   <Checkbox
-                    edge="start"
-                    disableRipple={true}
                     checked={values.accept_mime_types.includes(mimeType)}
-                    onChange={() => {
+                    onCheckedChange={() => {
                       if (values.accept_mime_types.includes(mimeType)) {
                         setFieldValue(
                           'accept_mime_types',
