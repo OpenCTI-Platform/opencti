@@ -308,6 +308,37 @@
         "imported-from-library"
       ],
       "reason": "the integer default-value field carries the designed stepper via `isTypeNumber` (lib #190) instead of the browser`s own spinners"
+    },
+    {
+      "component": "Checkbox",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "night-2 visual pass: the last MUI checkboxes. Two shapes. (a) The list select-all boxes (ListLines, DataTableHeaders) -- the library box is a bare 16px button where MUI's was a self-centring 42px control, so each slot now centres it explicitly; that offset was the reported header misalignment. (b) The form boxes, which drop FormControlLabel for the library's own `label` and move from onChange(event) to onCheckedChange(boolean); each of their three handlers had exactly one call site and was re-typed to a boolean rather than fed a synthetic event. The boxes rendered inside a role=option row take `presentational`: a real control nested in an option is an axe nested-interactive failure that aria-hidden does not clear.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/list_lines/ListLines.jsx",
+        "opencti-platform/opencti-front/src/components/dataGrid/components/DataTableHeaders.tsx",
+        "opencti-platform/opencti-front/src/components/filters/FilterChipPopover.tsx",
+        "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContainer.tsx",
+        "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
+        "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
+        "opencti-platform/opencti-front/src/private/components/profile/triggers/TriggerEditionOverview.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/hidden_types/HiddenTypesField.tsx",
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
+      ]
+    },
+    {
+      "component": "Combobox",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "night-2 visual pass: the `Add filter` picker, the one control the pass named as due before Monday. It never HOLDS a value -- picking an option adds a filter and the field empties -- so `value` is a literal null. The name rides on `placeholder` + aria-label rather than a ComboboxLabel: the library renders labels ABOVE the control, and this one sits in a flex row beside an unlabelled search field, where a label would make it the only tall item and re-open the row alignment defect the same pass asks to fix.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
+      ]
     }
   ]
 }
