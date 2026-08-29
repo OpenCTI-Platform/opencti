@@ -51,7 +51,14 @@ export default class TextFieldPageModel {
       this.inputLocator = root.getByRole('textbox', { name: label });
       this.parentLocator = TextFieldPageModel.fieldRootOf(this.inputLocator);
     } else {
-      this.inputLocator = root.getByLabel(label);
+      // `.and(control)`: `getByLabel` matches accessible names by SUBSTRING, and
+      // the library's number stepper ships two buttons named "Increase value" /
+      // "Decrease value". On the observable creation form, whose own field is
+      // labelled `value`, the lookup went from one match to three. Constraining
+      // to the elements this model is actually about — the form control — drops
+      // the buttons without touching the label semantics, and without renaming
+      // anything on either side.
+      this.inputLocator = root.getByLabel(label).and(root.locator('input, textarea'));
       this.parentLocator = TextFieldPageModel.fieldRootOf(this.inputLocator);
     }
   }

@@ -2016,3 +2016,25 @@ Read from `HeaderSearchProps` / `HeaderSearchMode` in the installed
 nesting it inside the toggle, plus a busy slot and a tooltip node. Then the
 three toggles, the loader and the agent menu all move, and #17, #20 and this
 entry close together.
+
+## 55. The number stepper's default labels collide with short field names
+
+**Not a defect — a default worth knowing about.** `isTypeNumber` ships two
+buttons named `"Increase value"` and `"Decrease value"`. Accessible-name
+lookups match by SUBSTRING in both Playwright (`getByLabel`, `getByRole`) and
+Testing Library, so on any screen holding a field whose own label is `value`,
+one lookup becomes three.
+
+Found on OpenCTI's observable creation form, where the ICCID field is labelled
+exactly `value`: `getByLabel('value')` went from one match to three — the field
+plus both stepper buttons.
+
+Fixed on the consumer side by constraining the lookup to the form control, which
+is the right fix: renaming either side to dodge a substring match would be
+coupling the two. The library already exposes `incrementLabel` /
+`decrementLabel`, so a host that needs distinct names has them.
+
+**Worth considering upstream:** defaulting to a name that carries the field's
+own label — `Increase {label}` — would make the two buttons unique per field
+and remove the class of collision entirely. Also note both defaults are English
+strings in a product that translates every other control.
