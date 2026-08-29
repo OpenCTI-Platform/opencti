@@ -109,7 +109,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
               {overrideLabel(index, value)}
             </Typography>
             <Tooltip title={t_i18n('Delete')}>
-              <IconButton color="error" onClick={handleDeleteOverride}>
+              <IconButton color="error" onClick={handleDeleteOverride} aria-label={t_i18n('Delete')}>
                 <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>

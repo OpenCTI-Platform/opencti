@@ -108,7 +108,7 @@ const AuthorizedMembersFieldListItem = ({
                   {' '}({t_i18n('Groups restriction')})
                 </span>
                 <Tooltip title={`Groups restriction: ${groupsLabel}`}>
-                  <IconButton size="small" color="primary">
+                  <IconButton size="small" color="primary" aria-label={t_i18n('Information')}>
                     <InfoOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>

@@ -185,6 +185,7 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           size="small"
           color={data.is_read ? 'primary' : 'success'}
           keepMui
+          aria-label={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}
         >
           {data.is_read
             ? <UnpublishedOutlined fontSize="small" />
@@ -202,6 +203,7 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           }}
           size="small"
           color="primary"
+          aria-label={t_i18n('Delete this notification')}
         >
           <DeleteOutlined fontSize="small" />
         </IconButton>

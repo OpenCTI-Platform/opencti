@@ -305,6 +305,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                                   remove(index);
                                 }
                               }}
+                              aria-label={t_i18n('Remove attribute')}
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>

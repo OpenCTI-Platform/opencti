@@ -108,6 +108,7 @@ const FintelTemplatesManager = () => {
               <IconButton
                 onClick={() => setDrawerOpen(true)}
                 size="small"
+                aria-label={t_i18n('Create a new template')}
               >
                 <AddIcon fontSize="small" color="primary" />
               </IconButton>
@@ -117,6 +118,7 @@ const FintelTemplatesManager = () => {
                 disabled={importMutating}
                 onClick={() => inputFileRef.current?.click()}
                 size="small"
+                aria-label={t_i18n('Import a template')}
               >
                 <CloudUploadOutlined fontSize="small" color="primary" />
               </IconButton>

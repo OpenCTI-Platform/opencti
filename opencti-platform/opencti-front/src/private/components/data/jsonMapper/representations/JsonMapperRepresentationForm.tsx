@@ -164,7 +164,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
               {representationLabel(index, value, t_i18n)}
             </Typography>
             <Tooltip title={t_i18n('Delete')}>
-              <IconButton color="error" onClick={handleOpenDelete}>
+              <IconButton color="error" onClick={handleOpenDelete} aria-label={t_i18n('Delete')}>
                 <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
