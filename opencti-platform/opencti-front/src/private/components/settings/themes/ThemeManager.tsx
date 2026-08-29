@@ -182,7 +182,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
                 onClick={handleOpenCreation}
                 size="small"
                 data-testid="create-theme-btn"
-                aria-label={t_i18n('Create a theme')}
+                aria-label={t_i18n('Create a custom theme')}
               >
                 <Add fontSize="small" />
               </IconButton>

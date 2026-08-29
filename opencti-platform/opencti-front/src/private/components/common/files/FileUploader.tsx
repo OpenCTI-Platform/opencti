@@ -167,7 +167,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
             color="primary"
             size="small"
             variant="tertiary"
-            aria-label={t_i18n('Upload a file')}
+            aria-label={t_i18n('Select your file')}
           >
             <CloudUploadOutlined fontSize="small" />
           </IconButton>

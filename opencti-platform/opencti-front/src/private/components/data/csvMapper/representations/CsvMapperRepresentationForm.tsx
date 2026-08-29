@@ -142,7 +142,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
                 variant="tertiary"
                 intent="destructive"
                 onClick={handleOpenDelete}
-                aria-label={t_i18n('Delete the representation')}
+                aria-label={t_i18n('Delete')}
               >
                 <DeleteOutlined fontSize="small" />
               </IconButton>

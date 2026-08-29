@@ -130,7 +130,7 @@ const AISummaryActivityComponent = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Retry')}>
-              <IconButton size="small" color="primary" onClick={() => refetch()} aria-label={t_i18n('Regenerate the summary')}>
+              <IconButton size="small" color="primary" onClick={() => refetch()} aria-label={t_i18n('Retry')}>
                 <AutoModeOutlined fontSize="small" />
               </IconButton>
             </Tooltip>

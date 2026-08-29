@@ -203,7 +203,7 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           }}
           size="small"
           color="primary"
-          aria-label={t_i18n('Delete the notification')}
+          aria-label={t_i18n('Delete this notification')}
         >
           <DeleteOutlined fontSize="small" />
         </IconButton>

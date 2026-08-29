@@ -188,7 +188,7 @@ const FileWorkComponent = (props) => {
                       color="primary"
                       onClick={() => navigateToDraft(work.draft_context)}
                       size="small"
-                      aria-label={t_i18n('Open the draft')}
+                      aria-label={t('Navigate to draft')}
                     >
                       <ArchitectureOutlined fontSize="small" />
                     </IconButton>

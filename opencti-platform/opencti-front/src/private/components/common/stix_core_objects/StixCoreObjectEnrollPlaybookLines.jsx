@@ -84,7 +84,7 @@ const StixCoreObjectEnrollPlaybook = ({
                           <IconButton
                             disabled={isSubmitting}
                             onClick={() => askEnroll(playbook.id)}
-                            aria-label={t_i18n('Enroll in a playbook')}
+                            aria-label={t_i18n('Trigger this playbook now')}
                           >
                             <PlayCircleOutlined />
                           </IconButton>

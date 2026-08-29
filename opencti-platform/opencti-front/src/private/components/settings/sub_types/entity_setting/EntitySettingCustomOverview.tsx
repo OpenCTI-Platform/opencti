@@ -66,7 +66,7 @@ const EntitySettingCustomOverview = () => {
                 aria-haspopup="true"
                 size="small"
                 color="primary"
-                aria-label={t_i18n('Reset the layout')}
+                aria-label={t_i18n('Reset to default layout')}
               >
                 <RestartAlt fontSize="small" color="primary" />
               </IconButton>

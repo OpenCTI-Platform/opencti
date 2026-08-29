@@ -386,7 +386,7 @@ const ContainerAddStixCoreObjects = (props) => {
             onClick={() => setOpen(true)}
             variant="tertiary"
             size="small"
-            aria-label={t_i18n('Add an entity')}
+            aria-label={t_i18n('Add an entity to this container')}
           >
             <Add />
           </IconButton>

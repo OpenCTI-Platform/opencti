@@ -108,7 +108,7 @@ const FintelTemplatesManager = () => {
               <IconButton
                 onClick={() => setDrawerOpen(true)}
                 size="small"
-                aria-label={t_i18n('Create a template')}
+                aria-label={t_i18n('Create a new template')}
               >
                 <AddIcon fontSize="small" color="primary" />
               </IconButton>

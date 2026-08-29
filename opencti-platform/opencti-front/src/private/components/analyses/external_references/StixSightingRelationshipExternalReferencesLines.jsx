@@ -223,7 +223,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                     externalReference.url,
                                   )}
                                   color="primary"
-                                  aria-label={t('Open the external link')}
+                                  aria-label={t('Browse the link')}
                                 >
                                   <OpenInBrowserOutlined />
                                 </IconButton>

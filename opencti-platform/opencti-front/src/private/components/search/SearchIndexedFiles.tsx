@@ -251,7 +251,7 @@ const SearchIndexedFilesComponent = () => {
                   <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
                     <IconButton
                       onClick={() => window.open(entityLink, '_blank')}
-                      aria-label={t_i18n('Open in a new tab')}
+                      aria-label={t_i18n('Open the entity overview in a separated tab')}
                     >
                       <OpenInNewOutlined fontSize="medium" />
                     </IconButton>

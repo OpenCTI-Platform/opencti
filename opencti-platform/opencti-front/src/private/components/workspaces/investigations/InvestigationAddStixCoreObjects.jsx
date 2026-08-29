@@ -149,7 +149,7 @@ const InvestigationAddStixCoreObjects = (props) => {
           <IconButton
             color="primary"
             onClick={() => setOpen(true)}
-            aria-label={t_i18n('Add an entity')}
+            aria-label={t_i18n('Add an entity to this investigation')}
           >
             <Add />
           </IconButton>

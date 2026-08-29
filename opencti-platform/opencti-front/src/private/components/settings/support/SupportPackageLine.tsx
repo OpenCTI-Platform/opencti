@@ -162,7 +162,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           <>
             {!isReady && (
               <Tooltip title={t_i18n('Force download on this support package')}>
-                <IconButton disabled={!isTooLong} onClick={handleForceZip} aria-label={t_i18n('Force the archive')}>
+                <IconButton disabled={!isTooLong} onClick={handleForceZip} aria-label={t_i18n('Force download on this support package')}>
                   <DownloadingOutlined fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -174,7 +174,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                   href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
                     data.package_url || '',
                   )}`}
-                  aria-label={t_i18n('Download the package')}
+                  aria-label={t_i18n('Download this support package')}
                 >
                   <GetAppOutlined fontSize="small" />
                 </IconButton>
@@ -186,7 +186,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 // color='inherit'
                 onClick={handleOpenDelete}
                 size="small"
-                aria-label={t_i18n('Delete the package')}
+                aria-label={t_i18n('Delete this support package')}
               >
                 <DeleteOutlined fontSize="small" />
               </IconButton>

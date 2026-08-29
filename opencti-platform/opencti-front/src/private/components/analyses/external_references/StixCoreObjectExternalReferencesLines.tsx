@@ -299,7 +299,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                       externalReference.url ?? '',
                                     )}
                                     color="primary"
-                                    aria-label={t_i18n('Open the external link')}
+                                    aria-label={t_i18n('Browse the link')}
                                   >
                                     <OpenInBrowserOutlined />
                                   </IconButton>

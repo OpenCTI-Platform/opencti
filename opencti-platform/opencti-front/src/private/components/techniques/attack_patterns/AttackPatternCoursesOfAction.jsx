@@ -67,7 +67,7 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                   <Tooltip title={t_i18n('Delete relationship')}>
                     <IconButton
                       onClick={() => removeCourseOfAction(courseOfActionEdge)}
-                      aria-label={t_i18n('Remove the course of action')}
+                      aria-label={t_i18n('Delete relationship')}
                     >
                       <Delete />
                     </IconButton>

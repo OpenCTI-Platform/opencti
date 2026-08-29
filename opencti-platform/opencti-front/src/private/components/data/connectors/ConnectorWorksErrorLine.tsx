@@ -77,7 +77,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
               onClick={handleToggleModalError}
               aria-haspopup="true"
               color="primary"
-              aria-label={t_i18n('Show the error')}
+              aria-label={t_i18n('Details')}
             >
               <InfoOutlined />
             </IconButton>
