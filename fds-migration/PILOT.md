@@ -79,7 +79,20 @@ Measured 2026-08-29 while putting this up: the backend on **:4000** differs by
 `ThreatActorGroup`, which the front queries in 33 generated artifacts and which
 is itself one of the stepper fields on `ThreatActorGroupCreation`. Those three
 entity families would have failed. The backends on **:4030** and **:4011**
-matched exactly (0 differing lines), so the preview proxies :4030.
+matched exactly (0 differing lines).
+
+**A matching schema is not enough — check the data too.** The first attempt
+proxied :4030 on the schema check alone. Its index prefix is `opencti-cbx`,
+which holds **0 documents**: the platform logs in and shows an empty instance,
+which is useless for a visual pass. Count before choosing:
+
+```
+curl -s "http://localhost:9200/_cat/indices/<prefix>*?h=index,docs.count"
+```
+
+Measured the same day: `opencti*` 3617 docs (the :4000 instance),
+`papercti*` 2484 docs (:4011), `opencti-cbx*` 0. The preview therefore proxies
+**:4011** — the only backend that is both schema-matching and populated.
 
 Credentials are per backend and are not recorded here — this repository is
 public. The local demo instance's login lives in `~/demo-opencti.sh`.
