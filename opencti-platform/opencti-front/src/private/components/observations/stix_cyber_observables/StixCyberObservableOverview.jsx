@@ -83,7 +83,7 @@ const StixCyberObservableOverview = (props) => {
   const { t_i18n, fldt } = useFormatter();
   const [openStixIds, setOpenStixIds] = useState(false);
   const handleToggleOpenStixIds = () => {
-    setOpenStixIds(!openStixIds);
+    setOpenStixIds((current) => !current);
   };
 
   const deleteStixId = (stixId) => {

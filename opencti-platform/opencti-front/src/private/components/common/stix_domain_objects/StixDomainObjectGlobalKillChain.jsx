@@ -36,12 +36,10 @@ const StixDomainObjectGlobalKillChainComponent = (props) => {
   const { t_i18n } = useFormatter();
   const [expandedLines, setExpandedLines] = useState({});
   const handleToggleLine = (lineKey) => {
-    setExpandedLines(R.assoc(
+    setExpandedLines((current) => R.assoc(
       lineKey,
-      expandedLines[lineKey] !== undefined
-        ? !expandedLines[lineKey]
-        : false,
-      expandedLines,
+      current[lineKey] !== undefined ? !current[lineKey] : false,
+      current,
     ));
   };
 
