@@ -1939,3 +1939,34 @@ order-agnostic. The prop's JSDoc now states the order and recommends omitting it
 **Suggestion to the library, low cost:** name the parameters in the exported type
 — `(selectedValue: T, option: T) => boolean` rather than `(a: T, b: T) => boolean`
 — so an IDE shows the order at the call site. Nothing else needed.
+
+## 53. `IconButton`'s tone axis is a subset of `Button`'s: no `highlight`
+
+`Button` and `IconButton` are documented as the same two axes — a `priority`
+and a tone — so a wrapper mapping one can be expected to map the other with the
+same table. It cannot:
+
+| | tones |
+|---|---|
+| `buttonVariants` | `default` `destructive` `ia` **`highlight`** |
+| `iconButtonVariants` | `default` `destructive` `ia` |
+
+`highlight` is the brand-tonic tone the products use for Enterprise Edition. On
+`Button` it expresses `intent="ee"`; on `IconButton` there is nothing to map it
+to, so a wrapper has to send the site back to MUI to keep its colour.
+
+**Measured exposure today: zero.** Every EE control in OpenCTI is a `Button`
+(`EnterpriseEditionButton`), so nothing is currently blocked — this is reported
+as an API asymmetry, not an outage. It becomes a defect the first time a product
+wants an icon-only EE control, and the wrapper will silently fall back rather
+than fail, which is the kind of gap that is only noticed visually.
+
+**What is blocked today, on both components:** `warn` and `success`. Four sites
+(`DataTableToolBar`) carry `color="warning"` / `color="success"` and neither
+component has a tone for them, so they keep MUI. If the feedback tokens already
+exist for chips, the same two tones on the button family would retire those.
+
+**Suggestion:** add `highlight` to `iconButtonVariants` so the two components
+share one tone vocabulary, and consider `warn`/`success` for both. A wrapper
+that maps the two axes cannot tell a consumer why one component accepts a tone
+and its sibling does not.
