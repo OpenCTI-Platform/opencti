@@ -601,6 +601,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               color={isCreateDisabled ? 'secondary' : 'primary'}
               onClick={() => setOpen(true)}
               disabled={!(values.uri && values.json_mapper_id)}
+              keepMui
             >
               {t_i18n('Verify')}
             </Button>

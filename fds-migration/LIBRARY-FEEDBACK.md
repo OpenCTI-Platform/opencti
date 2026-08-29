@@ -1939,3 +1939,43 @@ order-agnostic. The prop's JSDoc now states the order and recommends omitting it
 **Suggestion to the library, low cost:** name the parameters in the exported type
 — `(selectedValue: T, option: T) => boolean` rather than `(a: T, b: T) => boolean`
 — so an IDE shows the order at the call site. Nothing else needed.
+
+## 53. The button family's tone axis is missing `highlight`, `warn` and `success`
+
+`Button` and `IconButton` are documented as the same two axes -- a `priority`
+and a tone -- so a wrapper mapping one expects to map the other with one table.
+It cannot, and the gap is wider than the asymmetry:
+
+| | tones |
+|---|---|
+| `buttonVariants` | `default` `destructive` `ia` **`highlight`** |
+| `iconButtonVariants` | `default` `destructive` `ia` |
+| product needs | the above **plus `warn` and `success`** |
+
+**Blocked today: 7 sites in 7 files, 6 of them behind an expression.**
+
+| site | tone | |
+|---|---|---|
+| `StixCoreObjectContentFilesList:150` | `ee` | `color={isEnterpriseEdition ? 'primary' : 'ee'}` |
+| `ItemCopy:122` | `success` | dynamic |
+| `Alerts:178` | `success` | dynamic |
+| `StixCoreObjectsSuggestions:341` | `success` | dynamic |
+| `ConnectorWorkLine:154` | `success` | dynamic |
+| `IndicatorDetails:90` | `warn` | dynamic |
+| `DataTableToolBar:2519` | `success` | literal |
+
+`ee` is live on an **IconButton**, which is exactly where `highlight` does not
+exist -- so that site cannot be expressed even with a correct mapping table. My
+first count of this said zero: the value sits inside a ternary, and a static
+read of the attribute saw the identifier, not the branches. Anything counting
+props this way under-reports every dynamic site.
+
+That most of them are dynamic matters twice over. @sandy ruled that a control
+whose engine can change between renders keeps MUI: it is remounted at the moment
+of activation and loses keyboard focus. So these sites are pinned to MUI by
+that ruling as well, and the missing tones are what makes the pin permanent
+rather than a transitional state.
+
+**Suggestion:** add `highlight` to `iconButtonVariants` so the two components
+share one vocabulary, and add `warn` and `success` to both. The feedback tokens
+already exist -- `Chip` carries the same severities.

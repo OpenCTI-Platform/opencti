@@ -363,6 +363,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                                   applying.includes(suggestion.type)
                                   || !selectedEntity[suggestion.type]
                                 }
+                                keepMui
                               >
                                 {applying.includes(suggestion.type) ? (
                                   <CircularProgress size={20} color="inherit" />

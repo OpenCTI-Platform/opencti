@@ -120,6 +120,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <IconButton
                   color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
                   onClick={() => handleToggleTimeLineDisplayRelationships()}
+                  keepMui
                 >
                   <RelationManyToMany />
                 </IconButton>
@@ -134,6 +135,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <IconButton
                   color={timeLineFunctionalDate ? 'secondary' : 'primary'}
                   onClick={() => handleToggleTimeLineFunctionalDate()}
+                  keepMui
                 >
                   <CalendarMultiselectOutline />
                 </IconButton>

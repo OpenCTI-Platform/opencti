@@ -2787,6 +2787,7 @@ class DataTableToolBar extends Component {
                               onClick={this.handleLaunchDelete.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
+                              keepMui
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
@@ -2825,6 +2826,7 @@ class DataTableToolBar extends Component {
                               onClick={this.handleLaunchRestore.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
+                              keepMui
                             >
                               <RestoreOutlined fontSize="small" />
                             </IconButton>
@@ -2841,6 +2843,7 @@ class DataTableToolBar extends Component {
                               onClick={this.handleLaunchCompleteDelete.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
+                              keepMui
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>

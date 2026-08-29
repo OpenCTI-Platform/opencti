@@ -27,6 +27,7 @@ const ClearFiltersIcon = ({
         onClick={onClear}
         size="small"
         disabled={hasActiveFilters != undefined ? !hasActiveFilters : disabled}
+        keepMui
       >
         <FilterAltOff fontSize="small" />
       </IconButton>
