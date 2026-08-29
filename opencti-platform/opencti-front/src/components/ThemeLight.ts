@@ -488,6 +488,25 @@ const ThemeLight = (
         },
       },
     },
+    // Interim homogenisation (night-3 visual pass). Every MUI field that is
+    // OUTLINED now sits on the same background as a library Input --
+    // `--bg-input-default` -- so the fields still waiting for a conversion read
+    // as one family with the converted ones instead of as a second set.
+    //
+    // Deliberately scoped to the outlined variant, and deliberately NOT paired
+    // with a flip of `MuiTextField.defaultProps.variant` to `outlined`: that
+    // one line would change the height, the label behaviour and the hit area of
+    // every remaining MUI field at once, which is a change to look at on
+    // screenshots before it lands, and e2e resolves many of those fields by
+    // their label. The fields the pass named by hand are switched at their own
+    // call sites instead.
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: FDS.colors.light['--bg-input-default'],
+        },
+      },
+    },
     MuiTextField: {
       defaultProps: {
         variant: 'standard',

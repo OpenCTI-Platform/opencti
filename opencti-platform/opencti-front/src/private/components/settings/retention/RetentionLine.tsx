@@ -19,6 +19,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -28,15 +29,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },

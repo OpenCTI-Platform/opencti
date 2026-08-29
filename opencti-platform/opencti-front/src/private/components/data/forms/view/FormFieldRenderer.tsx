@@ -5,8 +5,6 @@ import IconButton from '@common/button/IconButton';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 // Custom field components
@@ -30,7 +28,7 @@ import { getVocabularyMappingByAttribute } from '../../../../../utils/vocabulary
 import { useTheme } from '@mui/styles';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../../utils/hooks/useGranted';
-import { Chip as FdsChip } from '@filigran/design-system';
+import { Checkbox, Chip as FdsChip } from '@filigran/design-system';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -224,19 +222,21 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         return (
           <Field name={fieldName}>
             {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
-              <FormControlLabel
-                control={(
-                  <Checkbox
-                    {...formikField}
-                    checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
-                    onChange={(e) => {
-                      form.setFieldValue(fieldName, e.target.checked);
-                    }}
-                  />
-                )}
-                label={displayLabel}
-                style={fieldSpacingContainerStyle}
-              />
+              // Only `name` and `onBlur` are taken off the Formik field here:
+              // spreading it whole would also hand the library box Formik's own
+              // `value` and `onChange`, which the Radix root reads as form props
+              // and which no longer describe how this control reports a change.
+              <div style={fieldSpacingContainerStyle}>
+                <Checkbox
+                  name={formikField.name}
+                  onBlur={formikField.onBlur}
+                  checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
+                  onCheckedChange={(checked) => {
+                    form.setFieldValue(fieldName, checked === true);
+                  }}
+                  label={displayLabel}
+                />
+              </div>
             )}
           </Field>
         );
