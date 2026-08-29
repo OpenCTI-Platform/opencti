@@ -27,12 +27,13 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
 
   // The delegate has always defaulted to the quiet, small control.
   /**
-   * `color="secondary"` with no `variant` is MUI's bordered control. Reading it
-   * as a tone alone would drop the border, so it becomes the secondary
-   * PRIORITY -- which is where the border lives in the library.
+   * `color` is a TONE only. Under MUI the delegate forces `variant="tertiary"`,
+   * whose styles are `border: 'none'`, so `color="secondary"` with no `variant`
+   * has always rendered borderless: reading it as a priority would ADD a border
+   * that never existed. The sites that do carry a border pass
+   * `variant="secondary"`, which maps through LIB_PRIORITY.
    */
-  const impliedPriority = color === 'secondary' && !variant ? 'secondary' : 'tertiary';
-  const libPriority = variant ? LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY] : impliedPriority;
+  const libPriority = variant ? LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY] : 'tertiary';
   const libTone = color
     ? LIB_TONE_FROM_COLOR[color as keyof typeof LIB_TONE_FROM_COLOR]
     : LIB_TONE_FROM_INTENT[(intent ?? 'default') as keyof typeof LIB_TONE_FROM_INTENT];

@@ -926,3 +926,25 @@ Corollary, recorded because I asserted the opposite for a while: a synthetic
 `element.click()` succeeding where a real pointer fails proves nothing about the
 product. It only proves the handler exists. Radix Select opens on `pointerdown`
 and a synthetic click takes the `onClick` path, so the two disagree by design.
+
+## 2026-08-29 — A wrapper cannot see what the call site wrote
+
+The button wrappers decide per render whether the library can reproduce a site.
+That works for everything the props say, and fails for one thing they cannot:
+whether `color` was a literal or an expression. A wrapper is a runtime
+component; `color={copied ? 'success' : 'primary'}` reaches it as `'success'`.
+
+It matters because a control that changes engine between renders is remounted,
+and a remount at the moment of activation takes the keyboard focus with it. The
+ruling was identity stability over partial conversion, so the 20 dynamic-colour
+sites carry `keepMui` and stay on MUI for their whole life.
+
+`keepMui` is therefore load-bearing and entirely conventional: nothing stops a
+new site from writing `color={cond ? 'a' : 'b'}` without it, and the failure is
+invisible — the control simply swaps engine on interaction.
+
+**Candidate check for a follow-up wave:** fail when a wrapper `Button` or
+`IconButton` has a non-literal `color` (or `variant`/`intent`) and no `keepMui`.
+It is a static rule, which is exactly the level the information exists at — the
+same reason `check-accessible-names.mjs` had to be static. The sweep that found
+the 20 sites is the rule already; it needs turning into a gate, not inventing.
