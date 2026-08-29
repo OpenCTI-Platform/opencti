@@ -6,7 +6,7 @@
  * fields. Wiring: fds-migration/TOKEN-MAPPING.md.
  *
  * Source: @filigran/design-system packages/filigran-design-system/src/tokens/theme.css
- * Theme.css content hash: sha256:164d8b4367c80f4e24956aa067ca8177e1d2ddae333e68c873b0c4173df32e52
+ * Theme.css content hash: sha256:304c750b700156220e4718f647ef20d7fe7e5fa6a2985f3ec958d9a87ddd82da
  * Regenerate (from the filigran-design-system repo, not here):
  *   pnpm generate:mui-bridge --product opencti --write-to-product
  *
@@ -18,7 +18,7 @@
 
 export const FDS_META = {
   product: "opencti",
-  themeCssHash: "sha256:164d8b4367c80f4e24956aa067ca8177e1d2ddae333e68c873b0c4173df32e52",
+  themeCssHash: "sha256:304c750b700156220e4718f647ef20d7fe7e5fa6a2985f3ec958d9a87ddd82da",
   generator: "@filigran/design-system scripts/generate-mui-bridge.ts",
 } as const;
 
