@@ -21,7 +21,8 @@ const DateTimePicker: React.FC<DateTimePickerProps<Date>> = ({
           ...slotProps?.textField,
           sx: {
             '& .MuiOutlinedInput-root': {
-              backgroundColor: theme.palette.background.secondary,
+              // background comes from the theme's MuiOutlinedInput override,
+              // which paints every outlined field with the library input token.
               '& fieldset': {
                 borderColor: value ? theme.palette.border.secondary : 'transparent',
               },

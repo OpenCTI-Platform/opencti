@@ -631,7 +631,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                           primary={(
                             <>
                               {t_i18n('AI Powered')}
-                              <EEChip />
+                              <EEChip size="sm" />
                             </>
                           )}
                         />
@@ -648,7 +648,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         primary={(
                           <>
                             {t_i18n('Remove Filigran logos')}
-                            <EEChip />
+                            <EEChip size="sm" />
                           </>
                         )}
                       />
