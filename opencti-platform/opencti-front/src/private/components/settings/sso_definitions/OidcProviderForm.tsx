@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Accordion from '@mui/material/Accordion';
@@ -18,7 +17,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Add, Delete, ErrorOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -639,15 +638,15 @@ const OidcProviderForm = ({
                               }}
                             >
                               <Field
-                                component={SelectField}
+                                component={SelectFieldFds}
                                 variant="standard"
                                 name={`extra_conf[${index}].type`}
                                 label={t_i18n('Type')}
                                 containerstyle={{ width: '20%' }}
                               >
-                                <MenuItem value="String">String</MenuItem>
-                                <MenuItem value="Number">Number</MenuItem>
-                                <MenuItem value="Boolean">Boolean</MenuItem>
+                                <SelectItem value="String">String</SelectItem>
+                                <SelectItem value="Number">Number</SelectItem>
+                                <SelectItem value="Boolean">Boolean</SelectItem>
                               </Field>
                               <Field
                                 component={TextField}

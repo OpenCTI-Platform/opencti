@@ -20,7 +20,6 @@ import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/Ingestio
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import { Field, Form, Formik, FormikErrors } from 'formik';
@@ -29,7 +28,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -414,7 +413,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 )
               }
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="authentication_type"
                 label={t_i18n('Authentication type')}
@@ -424,14 +423,14 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   marginTop: 20,
                 }}
               >
-                <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                <MenuItem value="basic">
+                <SelectItem value="none">{t_i18n('None')}</SelectItem>
+                <SelectItem value="basic">
                   {t_i18n('Basic user / password')}
-                </MenuItem>
-                <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-                <MenuItem value="certificate">
+                </SelectItem>
+                <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+                <SelectItem value="certificate">
                   {t_i18n('Client certificate')}
-                </MenuItem>
+                </SelectItem>
               </Field>
               {values.authentication_type === 'basic' && (
                 <>

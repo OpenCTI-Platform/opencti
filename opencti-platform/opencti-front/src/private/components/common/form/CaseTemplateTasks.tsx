@@ -5,9 +5,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
-import { FunctionComponent, SyntheticEvent, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField, { asMultiValue, ComboboxFieldProps } from '../../../../components/ComboboxField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -30,9 +31,7 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
+
 }));
 
 interface TaskTemplateFieldProps {
@@ -78,9 +77,8 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
     CaseTemplateTasksCreation,
   );
 
-  const searchTasks = (event?: SyntheticEvent<Element, Event>) => {
-    if (event?.target instanceof HTMLInputElement) {
-      const search = event.target.value ?? '';
+  const searchTasks = (search: string) => {
+    {
       fetchQuery(CaseTemplateTasksQuery, { search })
         .toPromise()
         .then((data) => {
@@ -128,29 +126,30 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
 
   return (
     <>
-      <Field<AutocompleteFieldProps>
-        component={AutocompleteField}
+      <Field<ComboboxFieldProps>
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         style={fieldSpacingContainerStyle}
         name="tasks"
         multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('Tasks'),
-          onFocus: searchTasks,
-        }}
+        label={t_i18n('Tasks')}
         noOptionsText={t_i18n('No available options')}
         options={tasks}
-        onInputChange={searchTasks}
-        onChange={onChange}
-        openCreate={() => setOpenCreation(true)}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        renderOption={(props, option) => (
-          <li {...props}>
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchTasks(search);
+        }}
+        onFocusInput={() => searchTasks('')}
+        onChange={asMultiValue(onChange)}
+        onCreateOption={() => setOpenCreation(true)}
+        renderOption={(option) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Task" />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
       />
       <Dialog

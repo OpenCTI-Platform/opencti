@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
@@ -30,7 +29,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -597,7 +596,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 )
               }
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="authentication_type"
                 label={t_i18n('Authentication type')}
@@ -609,12 +608,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                   marginTop: 20,
                 }}
               >
-                <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
-                <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-                <MenuItem value="certificate">
+                <SelectItem value="none">{t_i18n('None')}</SelectItem>
+                <SelectItem value="basic">{t_i18n('Basic user / password')}</SelectItem>
+                <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+                <SelectItem value="certificate">
                   {t_i18n('Client certificate')}
-                </MenuItem>
+                </SelectItem>
               </Field>
               {values.authentication_type === BASIC_AUTH && (
                 <>

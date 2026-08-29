@@ -10,7 +10,6 @@ import { Stack } from '@mui/material';
 import CardContent from '@mui/material/CardContent';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid2';
-import MenuItem from '@mui/material/MenuItem';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
@@ -23,9 +22,9 @@ import { FormikConfig } from 'formik/dist/types';
 import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
 import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import Card from '../../../../components/common/card/Card';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -380,53 +379,36 @@ const StixCoreObjectFileExportForm = ({
               {stepIndex === 1 && (
                 <>
                   <Field
-                    component={AutocompleteField}
+                    component={ComboboxField}
                     name="connector"
                     disabled={!values.format}
-                    fullWidth={true}
                     style={fieldSpacingContainerStyle}
                     options={connectors}
-                    getOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
-                    renderOption={(
-                      props: React.HTMLAttributes<HTMLLIElement>,
-                      option: FieldOption,
-                    ) => <li {...props}>{option.label}</li>}
-                    textfieldprops={{ label: t_i18n('Connector') }}
-                    optionLength={80}
+                    isOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
+                    renderOption={(option: FieldOption) => option.label}
+                    label={t_i18n('Connector')}
                   />
                   {values.connector && (
                     <>
                       {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && (
                         <Field
-                          component={AutocompleteField}
+                          component={ComboboxField}
                           name="template"
-                          fullWidth={true}
                           style={fieldSpacingContainerStyle}
                           options={templates}
-                          renderOption={(
-                            props: React.HTMLAttributes<HTMLLIElement>,
-                            option: FieldOption,
-                          ) => <li {...props}>{option.label}</li>}
-                          textfieldprops={{ label: t_i18n('Template') }}
-                          optionLength={80}
+                          renderOption={(option: FieldOption) => option.label}
+                          label={t_i18n('Template')}
                         />
                       )}
                       {values.connector.value === BUILT_IN_HTML_TO_PDF.value && (
                         <Field
-                          component={AutocompleteField}
+                          component={ComboboxField}
                           name="fileToExport"
-                          fullWidth={true}
                           style={fieldSpacingContainerStyle}
                           options={fileOptions}
-                          renderOption={(
-                            props: React.HTMLAttributes<HTMLLIElement>,
-                            option: FieldOption,
-                          ) => <li {...props}>{option.label}</li>}
-                          textfieldprops={{
-                            label: t_i18n('File to export'),
-                            helperText: t_i18n('A FINTEL export will contain extra information like markings and creation date'),
-                          }}
-                          optionLength={80}
+                          renderOption={(option: FieldOption) => option.label}
+                          label={t_i18n('File to export')}
+                          helperText={t_i18n('A FINTEL export will contain extra information like markings and creation date')}
                         />
                       )}
                       {shouldDisplayFintelDesign && (
@@ -438,7 +420,7 @@ const StixCoreObjectFileExportForm = ({
                       )}
                       {!isBuiltInConnector(values.connector.value) && (
                         <Field
-                          component={SelectField}
+                          component={SelectFieldFds}
                           variant="standard"
                           name="type"
                           aria-label="TYPE"
@@ -446,12 +428,12 @@ const StixCoreObjectFileExportForm = ({
                           fullWidth={true}
                           containerstyle={fieldSpacingContainerStyle}
                         >
-                          <MenuItem value="simple">
+                          <SelectItem value="simple">
                             {t_i18n('Simple export (just the entity)')}
-                          </MenuItem>
-                          <MenuItem value="full">
+                          </SelectItem>
+                          <SelectItem value="full">
                             {t_i18n('Full export (entity and first neighbours)')}
-                          </MenuItem>
+                          </SelectItem>
                         </Field>
                       )}
                       {isBuiltInConnector(values.connector.value) && (

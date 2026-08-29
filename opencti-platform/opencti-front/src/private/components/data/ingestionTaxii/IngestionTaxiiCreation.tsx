@@ -3,14 +3,13 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle, FieldOption } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
@@ -210,7 +209,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 style={fieldSpacingContainerStyle}
               />
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="version"
                 label={t_i18n('TAXII version')}
@@ -220,7 +219,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                   marginTop: 20,
                 }}
               >
-                <MenuItem value="v21">{t_i18n('TAXII 2.1')}</MenuItem>
+                <SelectItem value="v21">{t_i18n('TAXII 2.1')}</SelectItem>
               </Field>
               <Field
                 component={TextField}
@@ -231,7 +230,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 style={fieldSpacingContainerStyle}
               />
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="authentication_type"
                 label={t_i18n('Authentication type')}
@@ -241,14 +240,14 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                   marginTop: 20,
                 }}
               >
-                <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                <MenuItem value="basic">
+                <SelectItem value="none">{t_i18n('None')}</SelectItem>
+                <SelectItem value="basic">
                   {t_i18n('Basic user / password')}
-                </MenuItem>
-                <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-                <MenuItem value="certificate">
+                </SelectItem>
+                <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+                <SelectItem value="certificate">
                   {t_i18n('Client certificate')}
-                </MenuItem>
+                </SelectItem>
               </Field>
               {values.authentication_type === BASIC_AUTH && (
                 <>

@@ -12,8 +12,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -32,7 +31,7 @@ import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../../components/fields/RichTextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -767,9 +766,9 @@ const WorkbenchFileContentComponent = ({
     setSelectAll(false);
   };
 
-  const handleChangeObservableType = (id, event) => {
+  const handleChangeObservableType = (id, value) => {
     const observable = R.head(stixCyberObservables.filter((n) => n.id === id)) || {};
-    const stixType = convertToStixType(event.target.value);
+    const stixType = convertToStixType(value);
     let updatedObservable = {
       ...observable,
       id: `${stixType}--${uuid()}`,
@@ -3320,6 +3319,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenEntity(null, null)}
           color="secondary"
           aria-label="Add"
@@ -3456,26 +3458,26 @@ const WorkbenchFileContentComponent = ({
                         style={inlineStyles.ttype}
                       >
                         <Select
-                          variant="standard"
-                          labelId="type"
                           value={convertFromStixType(object.type)}
-                          onChange={(event) => handleChangeObservableType(object.id, event)
-                          }
-                          style={{
-                            margin: 0,
-                            width: '80%',
-                            height: '100%',
-                          }}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            event.preventDefault();
-                          }}
+                          onValueChange={(value) => handleChangeObservableType(object.id, value)}
                         >
-                          {translatedOrderedList.map((n) => (
-                            <MenuItem key={n.label} value={n.label}>
-                              {n.tlabel}
-                            </MenuItem>
-                          ))}
+                          {/* The row is clickable; keep the select from activating it. */}
+                          <SelectTrigger
+                            aria-label={t_i18n('Type')}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              event.preventDefault();
+                            }}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent aria-label={t_i18n('Type')}>
+                            {translatedOrderedList.map((n) => (
+                              <SelectItem key={n.label} value={n.label}>
+                                {n.tlabel}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
                       </div>
                       <div
@@ -3562,6 +3564,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenObservable(null, null)}
           color="secondary"
           aria-label="Add"
@@ -4108,6 +4113,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenContainer(null, null)}
           color="secondary"
           aria-label="Add"
@@ -4218,7 +4226,7 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -4227,13 +4235,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>
@@ -4287,7 +4295,7 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="connector_id"
                 label={t_i18n('Connector')}
@@ -4296,13 +4304,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>

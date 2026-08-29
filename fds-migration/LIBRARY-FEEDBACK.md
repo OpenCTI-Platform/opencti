@@ -1456,3 +1456,486 @@ sidecar now records `3c0ef256…`. The gate would have said OK either way, which
 is the whole point of this entry.
 
 ---
+
+## 43. View-constraining field: the product needs a PERCEPTIBLE state marker
+
+**OPEN DESIGN QUESTION — @sandy 2026-08-26, V2.** Reformulated after she visited
+the live site: **do NOT ship a library "shell tint" capability modelled on what
+exists today.**
+
+**Why the original ask was withdrawn.** The ask used to be "let a host tint the
+field's border and label". Sandy went to the running instance and looked for the
+current signal — a 1px grey border, measured going from `0px` to
+`rgb(66,71,81)` 1px when the filter activates — and **did not notice it while
+actively looking for it.** A state marker the user cannot perceive is not doing
+its job, so copying it into the library would standardise something that does
+not work.
+
+**What is actually needed.** A perceptible marker for "this field is currently
+constraining the view". The FORM is undecided and is Sandy's to design at V2 —
+tint, icon, helper line, badge, something else. The library should not receive a
+capability request until that pattern exists.
+
+**Until then.** Both sites keep MUI with their markers. This is not a blocked
+conversion waiting on a library prop; it is a conversion waiting on a design
+decision, and the distinction matters for planning.
+
+**Two sites, not one** (updated 2026-08-26 while converting the raw MUI
+Selects). The second is `components/dashboard/DashboardRelativeDateSelect.tsx`,
+whose caller `DashboardTimeFilters.tsx` passes `selectSx` to draw a border on
+the field while a relative date is active — the same state-on-the-shell signal,
+on a Select rather than an Autocomplete. So the gap is not specific to one
+component or one screen: it is how this product marks a field as "currently
+constraining the view".
+
+**The first site.** `private/components/settings/sub_types/custom_views/CustomViewPreviewEntitySelector.tsx:105`
+paints its `MuiOutlinedInput` fieldset AND its label
+`designSystem.tertiary.orange.400` for as long as a preview entity is selected.
+That is not decoration: it is how the screen says "you are previewing with a
+substituted entity".
+
+**Why no workaround was invented.** The library field owns its own border, so
+the tint cannot be reached from the outside; and a hardcoded colour is forbidden
+by the token rules. The conversion was written and then reverted rather than
+drop a product state signal or ship a local variant of a library component.
+
+**Status.** The site keeps MUI's Autocomplete, carrying FDS-WORKAROUND #43.
+It is the only CTI Autocomplete site held for this reason.
+
+**Removal test.** Not a contrast measurement — a perception one. Show the new
+marker to someone who does not know it is there and ask them what the screen is
+telling them. The old signal passed every automated check and still failed this,
+which is the whole point of the reformulation.
+
+## 44. Three Radix Selects in one dialog make an access-rights test intermittent
+
+**Not a library ask yet — a reproduction request.** Recorded because the symptom
+outlived the diagnosis.
+
+**What happened.** `AuthorizedMembersField` and its per-row list item were
+converted to the library Select. `tests_e2e/dashboardRestriction` then went
+intermittent: the same commit failed one run and passed the re-run, always on
+`getByRole('listbox', { name: 'Access right' }).getByText('can view')`, with
+Playwright's "visible, enabled and stable" never satisfied inside 300s.
+
+**What the pointer says.** Driven on the real dialog of a seeded dashboard: the
+listbox opens with the right accessible name, its options measure 97x32 with
+`pointer-events: auto`, `visibility: visible`, `opacity: 1`, well inside the
+viewport, and `document.elementFromPoint` at an option's centre returns that
+option's own span. Hittable by every measure available locally. Not reproduced.
+
+**What is peculiar about this dialog**, and where the next look belongs: it
+stacks THREE Radix Selects — the field plus one per member row — next to a MUI
+Autocomplete, and the test drives the Autocomplete first. Radix Select is modal:
+it sets `pointer-events: none` on `<body>` while open. Several of those
+interacting is the untested combination.
+
+**Status.** Both files reverted to MUI with FDS-WORKAROUND #44. An access-rights
+control is not carried forward on the strength of a green re-run.
+
+**Removal test.** Convert both, then run `dashboardRestriction` ten times in a
+row. Ten greens, not one.
+
+## 45. Select has no clear affordance, while Combobox has `ComboboxClear`
+
+**Capability gap, one site so far.** `ThemeForm`'s "Right panel customisation"
+picks a login-aside background type among three, and the empty string is a
+legitimate product state: choosing nothing means the login page keeps its
+default panel. MUI expressed that with an `endAdornment` holding a clear
+`IconButton`, shown only while a value is set.
+
+**Why the field cannot move as it stands.** The library Select exposes no
+adornment slot and no clear part. `Combobox` has `ComboboxClear` for exactly
+this need, so the asymmetry is the finding: the same product requirement is
+served on one component and not the other. Converting anyway would mean either
+losing the ability to empty the field, or inventing a "None" option — a product
+UX decision that does not belong to a migration.
+
+Distinct from #155's `startIcon`/`adornment`, which land on `ComboboxField`.
+This one is about `Select`.
+
+**Status.** `ThemeForm` stays on MUI with FDS-WORKAROUND #45.
+
+**Removal test.** Convert the field, set a background type, clear it from the
+trigger without opening the panel, and confirm the submitted value is the empty
+string — the same three steps the MUI version passes today.
+
+## 46. `clearable` defaults to true, and the product's "no clear" was CSS
+
+**Not a bug — a default that inverts a product intention silently.** Nine
+already-converted fields lost their intended behaviour without a single line of
+the diff showing it.
+
+**How the product said "no clear button" under MUI.** Not with a prop. With a
+stylesheet:
+
+```js
+autoCompleteIndicator: { display: 'none' },
+// ...
+classes={{ clearIndicator: classes.autoCompleteIndicator }}
+```
+
+Dropping `classes` is the correct move — it is a MUI-only escape hatch. But
+`clearable` defaults to `true` in the library, so dropping it *grants* the
+affordance the product had spent CSS to remove. Nothing in the diff reads as
+"add a clear button", which is exactly why it survived review of eight commits.
+
+**Found by audit, not by chance.** Every converted mount was compared against its
+pre-migration source for `autoCompleteIndicator` or `disableClearable`, then
+against its current source for any `clearable` prop. Nine files matched the first
+and not the second: CaseTemplateField, CsvMapperField, JsonMapperField,
+NotifierConnectorField, NotifierField, ObjectLabelField, StatusTemplateField,
+StixCoreObjectOrCoreRelationshipLabelsView, ObjectAssigneeField. All nine now
+pass `clearable={false}` with a comment saying why, and their dead style rules
+are gone.
+
+**The ask.** Nothing needs to change in the library — `clearable: true` is a
+defensible default for a new component. This is recorded so the next consumer
+knows that **a MUI prop absent from the target API is not always a prop to
+delete**: sometimes it is a default to re-declare. The general form: for every
+MUI-only prop dropped during a conversion, ask what the library's default is for
+that behaviour, not just whether the prop still exists.
+
+**Removal test.** None. This entry is a method note, not a defect.
+
+## 47. The field-ornament batch is FOUR sites, not three
+
+Correction to the count carried into this round. The ornament gap that #155
+closes with `startIcon` / `adornment` on `ComboboxField` was scoped to three
+sites: `LocationField`, `StixCoreObjectsField` and `EntitySelectWithTypes`.
+
+Converting the raw `<Autocomplete>` population turned up a fourth:
+`StixCoreObjectContainer` mounts a create `IconButton` inside its input's
+`endAdornment`, merged with MUI's own adornment. Same shape, same need, same
+blocker.
+
+Worth distinguishing from `onCreateOption`, which the library already has and
+which this migration used on five other fields: `onCreateOption` offers a create
+row in the panel WHEN the typed text matches nothing. This site shows a
+persistent create button regardless of input. They are not substitutes, and
+swapping one for the other would be a product UX decision rather than a
+migration.
+
+**Status.** MUI with an FDS-ORNAMENT marker, to move with the other three on
+#155's signatures.
+
+Addendum to #47 — the batch is **five**. `FilterChipPopover`'s value field
+carries the search-scope selector in its input `endAdornment` for STIX object
+types. Same gap, same round. Full list: `LocationField`,
+`StixCoreObjectsField`, `EntitySelectWithTypes`, `StixCoreObjectContainer`,
+`FilterChipPopover`.
+
+## 48. Naming a select next to a same-named input breaks `getByLabel`
+
+**A regression I caused, and the reason is worth keeping.**
+
+`InputSliderField` (confidence, score) renders ONE value twice: a number input
+labelled with the field's label, and a select of the scale's marks. Under MUI the
+select had no accessible name at all — its `labelId` pointed at an element that
+does not exist — so I gave the converted trigger `aria-label={label}`, reasoning
+that a screen reader hearing the name twice beats an unnamed combobox.
+
+CI disagreed, precisely:
+
+```
+strict mode violation: ...getByLabel('Confidence level') resolved to 2 elements:
+  1) <input  ... name="confidence" ...>   aka getByRole('spinbutton', ...)
+  2) <button ... role="combobox" aria-label="Confidence level" ...>
+```
+
+`tests_e2e/incidentResponse` failed on the run and on the retry. Reverted: both
+triggers are unnamed again, which is what MUI shipped.
+
+**The gap is real and stays open.** Two controls for one value is the product's
+design; the library cannot fix that, and inventing a second user-visible string
+to disambiguate is a product wording decision. The options are a distinct label
+for the select ("Confidence scale"?), an `aria-labelledby` pointing at the shared
+field label with the input marked as the primary control, or accepting one
+unnamed combobox. That is Sandy's call, not a migration's.
+
+**The lesson, generalised:** adding an accessible name is not a free improvement.
+It is a change to the accessibility tree, and the accessibility tree is what the
+E2E suite queries. `aria-label` on a converted trigger must be checked against
+every other control in the same container, not just against the field it names.
+
+## 49. Select orphans its panel on Tab — and it is NOT the CI blocker
+
+**Two E2E specs, one signature, not yet diagnosed. CI is 25/27 on
+`7e785aa8ec`; these are the two.**
+
+```
+group1  backgroundTask.spec.ts       ✘ run and ✘ retry
+        locator resolved to <button class="…DataTableToolBar-button-104…">Update</button>
+        Error: locator.click: Test timeout of 200000ms exceeded.
+
+group0  rfis.spec.ts                 ✘ run and ✘ retry
+        locator resolved to <button class="…MuiButton-textPrimary…">Add</button>
+        Error: locator.click: Test timeout of 200000ms exceeded.
+```
+
+**Why the signature matters.** The element is FOUND — Playwright prints the
+resolved node. It then waits for the element to be actionable and never gets
+there. That is not a stale locator (which fails with "element(s) not found", the
+shape of the two failures already fixed on this branch). It is something sitting
+between the cursor and a button that exists.
+
+**The hypothesis, and it is only that.** Radix Combobox is modal: it sets
+`pointer-events: none` on `<body>` while its panel is open. Measured directly
+during the pointer proofs in this wave — `bodyPE` goes to `none` on open and back
+to `auto` after a selection. If a panel closes by a path that does NOT restore it
+— blur, Escape, unmount while open, or a second overlay closing out of order —
+every later click in the application resolves and then times out, which is
+exactly what both specs show. Both failing screens mount converted comboboxes:
+`DataTableToolBar` (18 in this wave) and the RFI creation form (author and
+external references).
+
+**Same family as #44**, where three Radix Selects in a MUI Dialog made
+`dashboardRestriction` intermittent and the mechanism was never pinned down.
+This is the second sighting and the first with a reproducible CI signature.
+
+**The next diagnostic, in order.** On a converted screen: open a panel, close it
+by each path in turn — select, Escape, click-outside, blur via Tab, and unmount
+the field while open — and after each read
+`getComputedStyle(document.body).pointerEvents`. Any path that leaves `none` is
+the bug. Then check whether two overlapping modals (MUI Drawer + Radix panel)
+restore in LIFO order.
+
+**Status.** Not converted-and-broken, not reverted: the two specs fail and the
+cause is open. Nothing on this branch should be read as "E2E green" until this
+line is closed.
+
+
+### #49 — RESOLVED as a diagnosis, and my hypothesis was wrong twice
+
+**Measured, not argued.** Measured on a standalone bench — React plus the built
+design system, no OpenCTI code — driven by Playwright, five close paths, both
+themes. The bench itself is not kept here; see the note under STATUS below.
+
+| Component | select | Escape | click outside | Tab | unmount while open |
+|---|---|---|---|---|---|
+| library `Select`   | restored | restored | restored | **LEAKS `none`** | restored |
+| library `Combobox` | untouched | untouched | untouched | untouched | untouched |
+
+**Correction 1 — wrong component.** This entry blamed Combobox. Combobox mounts
+`PopoverPrimitive.Root` with `modal: false` and therefore never reaches the code
+that writes the property; it is provably immune on all five paths. Only `Select`
+is modal. Reading the bundle would have said so before any measurement.
+
+**Correction 2 — not a failed cleanup.** The named path is a real `Tab` on an
+**open** Select: focus leaves without the panel closing —
+`stillOpen=true, triggerExpanded=true, activeElement=DIV, popperLayers=1` — so
+`react-dismissable-layer` is *correct* to keep `pointer-events: none`. The defect
+is the orphaned open panel, not the restore.
+
+**Attribution: upstream.** The identical test against raw
+`@radix-ui/react-select` behaves the same (`stillOpen=true bodyPE=none
+laterClickBlocked=true`). `SelectContent` forwards only `position`, `sideOffset`
+and `className` and disables no dismissal. The behaviour is Radix's; the design
+system's part is shipping Select on a modal primitive without mitigation while
+its own Combobox opted out. Library decision, no product workaround.
+
+**Correction 3 — it does not explain the CI failures.** `backgroundTask` and
+`rfis` contain no `Tab` press, verified by grep across both specs and their page
+models. The leak is real and independent.
+
+### The CI blocker: where the evidence actually points
+
+`taskPopup.pageModel.launchAddLabel` ends with
+`getByRole('button', { name: 'Update' }).click()`, and CI reports the locator
+resolving to `<button class="…DataTableToolBar-button-104…">Update</button>` —
+the **toolbar's** Update, which sits behind the open mass-edit dialog and is
+therefore covered, hence a resolve-then-timeout. Previously the same locator must
+have resolved to the *dialog's* Update.
+
+That page model also drives the two selects **positionally** —
+`getByRole('combobox').first()` and `.nth(1)` — which is exactly the kind of
+locator that shifts when the number or order of comboboxes on a screen changes.
+`DataTableToolBar` still holds 2 unconverted MUI Selects next to 18 converted
+Comboboxes.
+
+**Next step, ordered:** count `[role="combobox"]` in that dialog before and after
+the conversion, and check whether `getByRole('button', {name:'Update'})` matches
+more than one node once the dialog is open. Do not start from the pointer-events
+theory — it is measured and it is not this.
+
+### #49 — STATUS: accepted as a known library defect, deferred to V2
+
+Sandy's decision: the Select fix (non-modal, or dismiss on focus-out) does **not**
+land before the 31st. Owner is the **library**, to be treated in V2.
+
+Carried here as the durable record. The bench that produced it has been deleted
+from this branch: it is test scaffolding for a library defect and has no business
+shipping inside the product. Its verdict was 10 pass / 2 fail, both failures
+`select — close by Tab blur`, one per theme, the two Combobox rows untouched.
+
+**The library has no test covering this.** Checked at pin `fc24f4b`: the only
+`pointer-events` assertion in `Select.test.tsx` is a disabled item's class, not
+`body.style.pointerEvents` after Tab. So V2 starts by re-creating the failing
+test — a React host plus the built library, Tab out of an open `Select`, assert
+`document.body.style.pointerEvents` is not `none` — rather than by reading a
+bench that no longer exists.
+
+**No product workaround and no improvised mitigation.** Nothing in OpenCTI is to
+be changed to dodge this — not a `modal` override at a call site, not a Tab
+handler, not a focus trap. A product that papers over it makes the library defect
+invisible and unfixable.
+
+## 50. `closeOnSelect` defaults to false in multiple mode, where MUI closed
+
+**The cause of the two failing E2E specs. Found, fixed, and measured — and it is
+NOT #49.** Companion to #46: same shape, a default that silently inverts a
+product behaviour.
+
+**What the specs saw.** `getByRole('button', { name: 'Update' })` resolved to a
+real, visible button and the click timed out. Reproduced on the bench, verbatim
+from `taskPopup.launchAddLabel`:
+
+```
+after picking a value:
+  openListboxes = 1                       <- the panel did not close
+  elementFromPoint(Update centre) = SPAN.flex min-w-0 flex-1 items-center pr-2
+                                          <- a library OPTION ROW covers it
+  click Update -> Timeout 6000ms exceeded
+```
+
+The panel is not modal and does not block anything globally — it simply **overlays
+the dialog's own action button**, because the mass-edit dialog is narrow and the
+option list is long.
+
+**Why.** The library documents `closeOnSelect` as **false** in multiple mode: a
+deliberate design choice, and the better one for picking several values in open
+space. But **none** of the ~30 MUI mounts this migration converted passed
+`disableCloseOnSelect` — verified against the pre-migration tree — so every one of
+them closed after each pick. The conversion flipped the behaviour everywhere and
+it only *fails a test* where the panel happens to cover something.
+
+**Fix, parity not workaround.** `ComboboxField` now defaults
+`closeOnSelect` to `!!multiple`, documented at the prop, with
+`closeOnSelect={false}` available to opt a site into the library behaviour. The
+direct `<Combobox>` compositions declare it individually. `EntitySelect` keeps
+`closeOnSelect={!multiple}` because its MUI original DID pass
+`disableCloseOnSelect={multiple}` — the one site where staying open is parity.
+
+**Measured before / after** on the mass-edit dialog:
+
+| | panel after pick | at Update centre | click |
+|---|---|---|---|
+| before | open | a library option row | Timeout |
+| after | closed | the Update button itself | **succeeded** |
+
+**Honest limit.** `backgroundTask` is proven fixed by measurement above.
+`rfis` has the identical mechanism by code reading — `ObjectParticipantField` is
+multiple, its MUI original closed on select, and `participantsForm.getAddButton()`
+is the dialog's own Add directly beneath the field — and it is covered by the same
+adapter default, but I could NOT reach that dialog on the bench with a generic
+locator, so it is fixed-by-the-same-cause and not independently exercised.
+
+**FOR SANDY:** this restores MUI behaviour, not the library's intent. If you
+prefer the library's multi-select UX (panel stays open), it is one prop —
+`closeOnSelect={false}` — and the specs that click a button under the panel would
+need the dismissal instead.
+
+## 51. TLP chips cannot be expressed: `ComboboxChips` has no per-option tone
+
+**Sandy's chip decision, and the part of it the current API cannot carry.**
+
+The decision: library chip geometry everywhere (24px, lowercase, text width);
+**exception — TLP chips stay UPPERCASE and their colour goes through the system
+tones, never a free hex.**
+
+Two converted fields put TLP markings through `getChipColor`:
+`ObjectMarkingField` and `GroupEditionMarkings`, both as
+`(option) => option.color`, where `color` is the marking's `x_opencti_color` — a
+free hex from the database.
+
+**Why the rule cannot be fully applied.** `ComboboxChips` builds every chip as:
+
+```js
+Chip, { label: ..., color: getChipColor?.(option) }
+```
+
+`Chip` does support system tones — `severity?: ChipSeverity` is
+`"neutral" | "info" | "low" | "medium" | "high" | "critical" | "ee"` — and
+`ComboboxChipsProps` is `ComponentPropsWithoutRef<"ul"> & { aria-label }`. So
+there is **no path from an option to a `severity`**, and no per-chip control of
+the label casing. `getChipColor` IS the free-hex DATA path by construction; the
+library's own JSDoc calls it "DATA colour: a free hex … that comes from the data
+rather than from the design system".
+
+**What was applied.** The half that is expressible: `markingChipColor` in
+`utils/edition` withholds the colour for `definition_type === 'TLP'`, so a TLP
+chip falls back to its system tone and no free hex is ever painted for it. Other
+markings and labels keep their data colour, which the decision does not touch.
+
+**What the library needs for the rest.** One hook: a per-option tone on the
+Combobox chip row — `getChipSeverity?: (option: T) => ChipSeverity` alongside the
+existing `getChipColor`.
+
+**Casing is NOT a library ask** (Sandy, corrected): the component renders the text
+it is given, so uppercase TLP is a source-data rule, not a component capability.
+Verified on the bench — the marking definitions already carry
+`"TLP:GREEN"`, `"TLP:AMBER+STRICT"`, `"TLP:CLEAR"` etc. in uppercase, and
+`convertMarking` maps `definition` straight to the chip label. Nothing to correct
+at the source, and nothing to ask upstream.
+
+A related dead prop was removed while checking this. `preserveCase` drove MUI's
+`labelTextTransform={preserveCase ? 'none' : 'capitalize'}` — MUI capitalized chip
+labels by default and this opted out. `ComboboxField` declared the prop and never
+read it, and two mounts passed it believing it worked. The library applies no
+transform at all, so the prop is gone rather than left lying. Consequence worth
+knowing: every converted site that did NOT pass it used to have its chip labels
+capitalized by MUI and now renders them as stored — which is the geometry
+decision, applied.
+
+**Status.** Per-option tone: owner **library**, **V2**, not before the 31st. TLP
+chips are toneless until then, assumed.
+
+**Removal test.** Put a TLP marking in an `ObjectMarkingField`: the chip carries
+the TLP system tone with no `#hex` anywhere in its computed background. The
+uppercase label is already true today.
+
+## 52. `isOptionEqualToValue` takes (selected, option) — MUI passes (option, value)
+
+**A migration trap, not a library defect.** Recorded because it is invisible in
+review and silent at runtime.
+
+From the bundle:
+
+```js
+isOptionEqualToValue(selected, option)   // library: SELECTED first
+```
+
+MUI's contract is `(option, value)`. Every identity function carried across from
+MUI therefore has its arguments **reversed**.
+
+**Why it hides.** The usual shape is symmetric — `a.value === b.value`,
+`option === value`, `a.id === b.id` — and reversing symmetric arguments changes
+nothing. Of ~20 identity functions in this migration, 17 were symmetric and
+behaved correctly by luck.
+
+**Where it bit.** Three were asymmetric, reading `.value` off the FIRST argument
+only and tolerating a raw string in the second:
+
+```js
+(o, v) => o.value === (typeof v === 'string' ? v : v?.value)
+```
+
+With the arguments reversed and a string-valued field, `o` IS the string, so
+`o.value` is `undefined` and the comparison never matches. Consequences, measured
+on the real report edit drawer:
+
+| | option row | chips after re-clicking it |
+|---|---|---|
+| before | `threat-report` — not marked selected | `["threat-report","threat-report"]` DUPLICATED |
+| after | `threat-report*` — marked selected | none — TOGGLED OFF |
+
+An option that is never "selected" cannot be deselected, so re-clicking appends.
+`report.spec` "Report types" depends on exactly that toggle.
+
+**Fixed** by deleting all three (`OpenVocabField`, `PlaybookFlowFieldActions` ×2):
+`ComboboxField`'s default already unwraps whichever side is an object and is
+order-agnostic. The prop's JSDoc now states the order and recommends omitting it.
+
+**Suggestion to the library, low cost:** name the parameters in the exported type
+— `(selectedValue: T, option: T) => boolean` rather than `(a: T, b: T) => boolean`
+— so an IDE shows the order at the call site. Nothing else needed.

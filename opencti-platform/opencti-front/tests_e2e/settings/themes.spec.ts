@@ -52,7 +52,11 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
   expect(await page.getByText(THEME.name).count() > 0);
 
   // Select system default
-  await page.locator('#mui-component-select-platform_theme').click();
+  // The default-theme field is on the library Select now, so the MUI-generated
+  // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
+  // and name instead, which is what a user and a screen reader both use, and
+  // which survives the next implementation change too.
+  await page.getByRole('combobox', { name: 'Default theme' }).click();
   await page.getByTestId(`${THEME.name}-li`).click();
   await page.waitForTimeout(1000);
   let logoSrc = await page
@@ -79,7 +83,11 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
   expect(logoSrc).toContain('logo_text_dark');
 
   // Select Dark theme again to delete custom theme
-  await page.locator('#mui-component-select-platform_theme').click();
+  // The default-theme field is on the library Select now, so the MUI-generated
+  // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
+  // and name instead, which is what a user and a screen reader both use, and
+  // which survives the next implementation change too.
+  await page.getByRole('combobox', { name: 'Default theme' }).click();
   await page.getByTestId('Dark-li').click();
   await page.waitForTimeout(1000);
 

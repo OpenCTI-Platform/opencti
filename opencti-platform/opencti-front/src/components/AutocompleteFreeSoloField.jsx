@@ -1,35 +1,38 @@
 import React from 'react';
-import TextField from '@mui/material/TextField';
-import IconButton from '@common/button/IconButton';
-import { Add } from '@mui/icons-material';
-import MUIAutocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
-import { fieldToTextField } from 'formik-mui';
+import {
+  Combobox,
+  ComboboxChips,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxHelperText,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
-import { useFormatter } from './i18n';
-
-const filter = createFilterOptions();
 
 const AutocompleteFreeSoloField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
-    field: { name },
+    field: { name, value },
     onChange,
     onFocus,
-    noOptionsText,
+    multiple,
+    options = [],
     renderOption,
-    textfieldprops,
-    openCreate,
+    textfieldprops = {},
     createLabel,
   } = props;
   const [, meta] = useField(name);
-  const { t_i18n } = useFormatter();
 
-  const internalOnChange = React.useCallback(
-    (_, value) => {
-      setFieldValue(name, value);
+  const emit = React.useCallback(
+    (next) => {
+      setFieldValue(name, next);
       if (typeof onChange === 'function') {
-        onChange(name, value || '');
+        onChange(name, next || '');
       }
     },
     [setFieldValue, name, onChange],
@@ -41,62 +44,56 @@ const AutocompleteFreeSoloField = (props) => {
   }, [onFocus, name]);
   const internalOnBlur = React.useCallback(() => {
     setFieldTouched(name, true);
-  }, [setFieldTouched]);
-  const fieldProps = fieldToTextField(props);
-  delete fieldProps.helperText;
-  delete fieldProps.openCreate;
+  }, [setFieldTouched, name]);
+
+  // Every consumer submits `values[name].map((v) => v.value)`, so a created
+  // value has to be an object, never the bare string MUI's freeSolo produced
+  // when the user pressed Enter instead of clicking the suggestion row.
+  const onCreateOption = React.useCallback(
+    (input) => {
+      const created = { value: input, label: input };
+      emit(multiple ? [...(value ?? []), created] : created);
+    },
+    [emit, multiple, value],
+  );
+
+  const error = !isNil(meta.error);
+  const helperText = meta.error || textfieldprops.helperText;
   return (
-    <div style={{ position: 'relative' }}>
-      <MUIAutocomplete
-        size="small"
-        selectOnFocus={true}
-        autoHighlight={true}
-        handleHomeEndKeys={true}
-        freeSolo={true}
-        filterOptions={(options, params) => {
-          const filtered = filter(options, params);
-          const { inputValue } = params;
-          // Suggest the creation of a new value
-          const isExisting = options.some((option) => inputValue === option);
-          if (inputValue !== '' && !isExisting) {
-            filtered.push({
-              value: inputValue,
-              label: createLabel
-                ? `${createLabel} "${inputValue}"`
-                : inputValue,
-            });
-          }
-          return filtered;
-        }}
-        getOptionLabel={(option) => (option.value ? option.value : option)}
-        noOptionsText={noOptionsText}
-        {...fieldProps}
-        renderOption={renderOption}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            {...textfieldprops}
-            name={name}
-            fullWidth={true}
-            error={!isNil(meta.error)}
-            helperText={meta.error || textfieldprops.helperText}
-          />
-        )}
-        onChange={internalOnChange}
-        onFocus={internalOnFocus}
-        onBlur={internalOnBlur}
-      />
-      {typeof openCreate === 'function' && (
-        <IconButton
-          onClick={() => openCreate()}
-          edge="end"
-          style={{ position: 'absolute', top: 5, right: 35 }}
-          title={t_i18n('Add')}
-        >
-          <Add />
-        </IconButton>
+    <Combobox
+      multiple={multiple}
+      options={options}
+      value={multiple ? (value ?? []) : (value ?? null)}
+      getOptionLabel={(option) => (option?.value ? option.value : option)}
+      onValueChange={(next) => emit(next)}
+      onCreateOption={onCreateOption}
+      // `createLabel` is the consumer's own wording for the suggestion row; with
+      // none given, the library's own `Create ‘x’` stands, which is the Figma
+      // node's copy. MUI showed the raw text there, indistinguishable from a
+      // real option.
+      createOptionLabel={createLabel ? (input) => `${createLabel} "${input}"` : undefined}
+      renderOption={renderOption}
+      error={error}
+    >
+      {textfieldprops.label && (
+        <ComboboxLabel>{textfieldprops.label}</ComboboxLabel>
       )}
-    </div>
+      <ComboboxField>
+        {multiple && <ComboboxChips aria-label={textfieldprops.label} />}
+        <ComboboxInput
+          name={name}
+          onFocus={internalOnFocus}
+          onBlur={internalOnBlur}
+          placeholder={textfieldprops.placeholder}
+        />
+        <ComboboxControls>
+          <ComboboxClear />
+          <ComboboxTrigger />
+        </ComboboxControls>
+      </ComboboxField>
+      <ComboboxContent listAriaLabel={textfieldprops.label} />
+      {helperText && <ComboboxHelperText>{helperText}</ComboboxHelperText>}
+    </Combobox>
   );
 };
 

@@ -2,7 +2,6 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
@@ -12,7 +11,7 @@ import * as R from 'ramda';
 import React, { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -185,7 +184,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                   return (
                                     <>
                                       <Field
-                                        component={SelectField}
+                                        component={SelectFieldFds}
                                         variant="standard"
                                         name="format"
                                         label={t('Export format')}
@@ -193,13 +192,13 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                         containerstyle={{ width: '100%' }}
                                       >
                                         {exportScopes.map((value, i) => (
-                                          <MenuItem
+                                          <SelectItem
                                             key={i}
                                             value={value}
                                             disabled={!isExportActive(value)}
                                           >
                                             {value}
-                                          </MenuItem>
+                                          </SelectItem>
                                         ))}
                                       </Field>
                                       <ObjectMarkingField
@@ -221,19 +220,19 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                       {visibleColumnExportEnabledFormats.includes(values.format)
                                         ? (
                                             <Field
-                                              component={SelectField}
+                                              component={SelectFieldFds}
                                               variant="standard"
                                               name="columns"
                                               label={t('Choose column to export')}
                                               fullWidth={true}
                                               containerstyle={fieldSpacingContainerStyle}
                                             >
-                                              <MenuItem value="all">
+                                              <SelectItem value="all">
                                                 {t('All attributes')}
-                                              </MenuItem>
-                                              <MenuItem value="view">
+                                              </SelectItem>
+                                              <SelectItem value="view">
                                                 {t('Current view')}
-                                              </MenuItem>
+                                              </SelectItem>
                                             </Field>
                                           )
                                         : undefined}

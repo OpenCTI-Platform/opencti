@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import MenuItem from '@mui/material/MenuItem';
 import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import { DialogTitle } from '@mui/material';
@@ -11,9 +10,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Radio from '@mui/material/Radio';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
 import { createSearchParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
@@ -226,34 +223,36 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
         <Alert severity="info">
           {action && t_i18n(actionsExplanation[action])}
         </Alert>
-        <FormControl style={fieldSpacingContainerStyle}>
-          <InputLabel id="format">{t_i18n('Format')}</InputLabel>
-          <Select
-            labelId="format"
-            value={format}
-            onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text' | 'json')}
-            fullWidth={true}
-          >
-            {action && actionsFormat[action].includes('html') && <MenuItem value="html">{t_i18n('HTML')}</MenuItem>}
-            {action && actionsFormat[action].includes('markdown') && <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>}
-            {action && actionsFormat[action].includes('text') && <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>}
-            {action && actionsFormat[action].includes('json') && <MenuItem value="json">{t_i18n('JSON')}</MenuItem>}
-          </Select>
-        </FormControl>
+        <Select
+          value={format}
+          onValueChange={(value) => setFormat(value as 'html' | 'markdown' | 'text' | 'json')}
+        >
+          <SelectLabel>{t_i18n('Format')}</SelectLabel>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Format')}>
+            {action && actionsFormat[action].includes('html') && <SelectItem value="html">{t_i18n('HTML')}</SelectItem>}
+            {action && actionsFormat[action].includes('markdown') && <SelectItem value="markdown">{t_i18n('Markdown')}</SelectItem>}
+            {action && actionsFormat[action].includes('text') && <SelectItem value="text">{t_i18n('Plain text')}</SelectItem>}
+            {action && actionsFormat[action].includes('json') && <SelectItem value="json">{t_i18n('JSON')}</SelectItem>}
+          </SelectContent>
+        </Select>
         {action && actionsOptions[action].includes('tone') && (
-          <FormControl style={fieldSpacingContainerStyle}>
-            <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-            <Select
-              labelId="tone"
-              value={tone}
-              onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
-              fullWidth={true}
-            >
-              <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-              <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-              <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-            </Select>
-          </FormControl>
+          <Select
+            value={tone}
+            onValueChange={(value) => setTone(value as 'tactical' | 'operational' | 'strategic')}
+          >
+            <SelectLabel>{t_i18n('Tone')}</SelectLabel>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Tone')}>
+              <SelectItem value="tactical">{t_i18n('Tactical')}</SelectItem>
+              <SelectItem value="operational">{t_i18n('Operational')}</SelectItem>
+              <SelectItem value="strategic">{t_i18n('Strategic')}</SelectItem>
+            </SelectContent>
+          </Select>
         )}
         {action && actionsOptions[action].includes('paragraphs') && (
           <TextField
@@ -277,19 +276,20 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           />
         )}
         {action && actionsOptions[action].includes('language') && (
-          <FormControl style={fieldSpacingContainerStyle}>
-            <InputLabel id="language">{t_i18n('Language')}</InputLabel>
-            <Select
-              labelId="language"
-              value={language}
-              onChange={(event) => setLanguage(event.target.value)}
-              fullWidth={true}
-            >
+          <Select
+            value={language}
+            onValueChange={setLanguage}
+          >
+            <SelectLabel>{t_i18n('Language')}</SelectLabel>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Language')}>
               {aiLanguage.map((lang) => (
-                <MenuItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</MenuItem>
+                <SelectItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</SelectItem>
               ))}
-            </Select>
-          </FormControl>
+            </SelectContent>
+          </Select>
         )}
         <DialogActions>
           <Button

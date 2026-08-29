@@ -144,15 +144,9 @@ const VocabularyEdition = ({
               value: n,
               label: n,
             }))}
-            renderOption={(
-              props: Record<string, unknown>,
-              option: FieldOption,
-            ) => (
-              <li {...props}>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+            renderOption={(option: FieldOption) => (
+              <div className={classes.text}>{option.label}</div>
             )}
-            classes={{ clearIndicator: classes.autoCompleteIndicator }}
           />
           <Field
             component={TextField}

@@ -4,7 +4,6 @@ import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Dialog from '@common/dialog/Dialog';
-import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
@@ -17,7 +16,7 @@ import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Label from '../../../components/common/label/Label';
-import SelectField from '../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import TextField from '../../../components/TextField';
@@ -371,7 +370,7 @@ const ProfileOverviewComponent = (props) => {
           {() => (
             <Form>
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="theme"
                 label={t('Theme')}
@@ -383,13 +382,13 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={{ width: '100%' }}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="default">{t('Default')}</MenuItem>
+                <SelectItem value="default">{t('Default')}</SelectItem>
                 {themeList.map(({ id, name }) => (
-                  <MenuItem key={id} value={id}>{name}</MenuItem>
+                  <SelectItem key={id} value={id}>{name}</SelectItem>
                 ))}
               </Field>
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="language"
                 label={t('Language')}
@@ -401,13 +400,13 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
+                <SelectItem value="auto"><em>{t('Automatic')}</em></SelectItem>
                 {
-                  availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
+                  availableLanguage.map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)
                 }
               </Field>
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="unit_system"
                 label={t('Unit system')}
@@ -416,9 +415,9 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
-                <MenuItem value="Imperial">{t('Imperial')}</MenuItem>
-                <MenuItem value="Metric">{t('Metric')}</MenuItem>
+                <SelectItem value="auto"><em>{t('Automatic')}</em></SelectItem>
+                <SelectItem value="Imperial">{t('Imperial')}</SelectItem>
+                <SelectItem value="Metric">{t('Metric')}</SelectItem>
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText

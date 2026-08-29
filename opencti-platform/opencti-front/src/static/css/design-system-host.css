@@ -80,9 +80,16 @@
   z-index: 1200;
 }
 
-/* Host stacking level for the library's overlays — retired FDS-WORKAROUND #5 — see fds-migration/LIBRARY-FEEDBACK.md #5 */
+/* Host stacking level for the library's overlays — retired FDS-WORKAROUND #5 — see fds-migration/LIBRARY-FEEDBACK.md #5
+
+   1400, not 1300. MUI's Dialog and Drawer sit at 1300, and a library overlay
+   sharing that level only wins by the order the two portals are inserted into
+   <body> — measured on OpenAEV, where the same 1300 lost as soon as a Dialog
+   mounted after the panel. 1400 is above every MUI modal level (Dialog/Drawer
+   1300, Snackbar 1400 is the only tie and it is not stacked against a field),
+   so a Combobox panel opened inside a Dialog resolves without a tie-break. */
 :root {
-  --fds-z-overlay: 1300;
+  --fds-z-overlay: 1400;
 }
 
 /* FDS-WORKAROUND #40: the product's global anchor reset removes the breadcrumb

@@ -29,7 +29,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import SwitchField from '../../../../components/fields/SwitchField';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
@@ -160,29 +160,22 @@ const FileIndexingConfiguration: FunctionComponent<
               onChange={submitForm}
             />
             <Field
-              component={AutocompleteField}
+              component={ComboboxField}
               name="entity_types"
               multiple={true}
-              fullWidth={true}
-              textfieldprops={{
-                variant: 'standard',
-                label: t_i18n('Restrict to specific entity types'),
-              }}
+              label={t_i18n('Restrict to specific entity types')}
               options={availableEntityTypes}
               isOptionEqualToValue={(option: string, value: string) => option === value
               }
               style={{ marginBottom: 12 }}
               onChange={submitForm}
-              renderOption={(
-                props: React.HTMLAttributes<HTMLLIElement>,
-                option: string,
-              ) => (
-                <li {...props}>
+              renderOption={(option: string) => (
+                <>
                   <div className={classes.icon}>
                     <ItemIcon type={option} />
                   </div>
-                  <ListItemText primary={t_i18n(`entity_${option}`)} />
-                </li>
+                  <span>{t_i18n(`entity_${option}`)}</span>
+                </>
               )}
             />
             <Field

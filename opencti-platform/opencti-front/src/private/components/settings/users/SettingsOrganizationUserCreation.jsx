@@ -2,7 +2,6 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import { Add } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
@@ -11,7 +10,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -245,7 +244,7 @@ const SettingsOrganizationUserCreation = ({
                 />
               )}
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 variant="standard"
                 name="account_status"
                 label={t_i18n('Account Status')}
@@ -254,9 +253,9 @@ const SettingsOrganizationUserCreation = ({
               >
                 {settings.platform_user_statuses.map((s) => {
                   return (
-                    <MenuItem key={s.status} value={s.status}>
+                    <SelectItem key={s.status} value={s.status}>
                       {t_i18n(s.status)}
-                    </MenuItem>
+                    </SelectItem>
                   );
                 })}
               </Field>

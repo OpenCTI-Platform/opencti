@@ -9,10 +9,7 @@ import IconButton from '@common/button/IconButton';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { AISummaryContainersContainersAskAiSummaryQuery$data } from '@components/common/ai/__generated__/AISummaryContainersContainersAskAiSummaryQuery.graphql';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import { AISummaryContainersSubscription, AISummaryContainersSubscription$data } from './__generated__/AISummaryContainersSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -111,51 +108,43 @@ const AISummaryContainersComponent = ({
         {!isContainer && (
           <Grid container={true} spacing={3} style={{ marginTop: -5 }}>
             <Grid item={true} xs={3}>
-              <FormControl
-                size="small"
-                variant="outlined"
-                style={{ width: '100%' }}
+              <Select
+                value={relative}
+                onValueChange={changeRelative}
                 disabled={loading}
               >
-                <InputLabel id="relative" variant="outlined">
-                  {t_i18n('Relative time')}
-                </InputLabel>
-                <Select
-                  labelId="relative"
-                  value={relative}
-                  onChange={(event) => changeRelative(event.target.value as string)}
-                  label={t_i18n('Relative time')}
-                  variant="outlined"
-                >
-                  <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                  <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
-                  <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
-                  <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
-                </Select>
-              </FormControl>
+                <SelectLabel>{t_i18n('Relative time')}</SelectLabel>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent aria-label={t_i18n('Relative time')}>
+                  <SelectItem value="none">{t_i18n('None')}</SelectItem>
+                  <SelectItem value="days-1">{t_i18n('Last 24 hours')}</SelectItem>
+                  <SelectItem value="days-7">{t_i18n('Last 7 days')}</SelectItem>
+                  <SelectItem value="months-1">{t_i18n('Last month')}</SelectItem>
+                </SelectContent>
+              </Select>
             </Grid>
             <Grid item={true} xs={3}>
-              <FormControl
-                size="small"
-                variant="outlined"
-                style={{ width: '100%' }}
+              {/* Numeric field: Radix keys on strings only, so the options
+                  carry stringified values and the handler converts back — the
+                  same round-trip `SelectFieldFds`'s `numeric` prop does, spelled
+                  out here because this site composes the parts directly. */}
+              <Select
+                value={String(first)}
+                onValueChange={(value) => changeFirst(Number(value))}
                 disabled={loading}
               >
-                <InputLabel id="first" variant="outlined">
-                  {t_i18n('Limit of elements')}
-                </InputLabel>
-                <Select
-                  labelId="first"
-                  value={first}
-                  onChange={(event) => changeFirst(event.target.value as number)}
-                  label={t_i18n('Limit of elements')}
-                  variant="outlined"
-                >
-                  <MenuItem value={10}>10</MenuItem>
-                  <MenuItem value={15}>15</MenuItem>
-                  <MenuItem value={20}>20</MenuItem>
-                </Select>
-              </FormControl>
+                <SelectLabel>{t_i18n('Limit of elements')}</SelectLabel>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent aria-label={t_i18n('Limit of elements')}>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="15">15</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                </SelectContent>
+              </Select>
             </Grid>
           </Grid>
         )}

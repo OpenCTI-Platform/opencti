@@ -185,11 +185,8 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
               label: t_i18n('Labels'),
             }}
             options={[]}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: FieldOption,
-            ) => (
-              <li {...props}>
+            renderOption={(option: FieldOption) => (
+              <>
                 <div style={{
                   paddingTop: 4,
                   display: 'inline-block',
@@ -206,13 +203,8 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
                 >
                   {option.label}
                 </div>
-              </li>
+              </>
             )}
-            classes={{
-              clearIndicator: {
-                display: 'none',
-              },
-            }}
           />
           <ObjectMarkingField
             name="fileMarkings"

@@ -13,12 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { AutocompleteRenderGetTagProps, MenuItem, Tooltip, TooltipProps } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import { Field } from 'formik';
-import AutocompleteField from '../../../../../../components/AutocompleteField';
+import ComboboxField from '../../../../../../components/ComboboxField';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import useEntityTranslation from '../../../../../../utils/hooks/useEntityTranslation';
-import Tag from '../../../../../../components/common/tag/Tag';
 
 interface Option {
   const: string;
@@ -55,45 +54,28 @@ const PlaybookFlowFieldArray = ({
 
   return (
     <Field
-      fullWidth
       required={required}
-      disableClearable={required}
+      clearable={!required}
       multiple={multiple}
-      component={AutocompleteField}
+      component={ComboboxField}
       style={fieldSpacingContainerStyle}
-      textfieldprops={{
-        variant: 'standard',
-        label,
-      }}
+      label={label}
       name={name}
       options={fieldOptions}
-      renderTags={(values: string[], getTagProps: AutocompleteRenderGetTagProps) => (
-        values.map((value, index) => {
-          const option = findOption(value);
-          return (
-            <Tag
-              {...getTagProps({ index })}
-              deleteTabIndex={-1}
-              key={value}
-              label={option?.title}
-            />
-          );
-        })
-      )}
-      renderOption={(props: TooltipProps, value: string) => {
+      // renderTags is gone: the library builds chips from getOptionLabel, which
+      // is the same function the input and the filter use. The MUI version was
+      // inconsistent — chips showed the RAW option.title while the input showed
+      // the translated one — so chips are now translated like everything else.
+      renderOption={(value: string) => {
         const option = findOption(value);
         if (!option) return null;
         return (
           <Tooltip
-            {...props}
-            key={option.const}
             title={translateEntityType(option.title)}
             placement="bottom-start"
           >
-            <MenuItem value={option.const}>
-              {/* value might be an entity type, we try to translate it */}
-              {translateEntityType(option.title)}
-            </MenuItem>
+            {/* value might be an entity type, we try to translate it */}
+            <span>{translateEntityType(option.title)}</span>
           </Tooltip>
         );
       }}

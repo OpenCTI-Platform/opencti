@@ -4,12 +4,11 @@ import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
 import SwitchField from 'src/components/fields/SwitchField';
-import SelectField from 'src/components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from 'src/components/TextField';
 import DateTimePickerField from 'src/components/DateTimePickerField';
 import { useFormatter } from 'src/components/i18n';
@@ -246,15 +245,15 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             label={t_i18n('Reject unauthorized certificates')}
           />
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             variant="standard"
             name="auth_type"
             label={t_i18n('Authentication type')}
             fullWidth
             containerstyle={{ marginTop: 20, width: '100%' }}
           >
-            <MenuItem value="basic">{t_i18n('Basic')}</MenuItem>
-            <MenuItem value="oauth2">{t_i18n('OAuth2')}</MenuItem>
+            <SelectItem value="basic">{t_i18n('Basic')}</SelectItem>
+            <SelectItem value="oauth2">{t_i18n('OAuth2')}</SelectItem>
           </Field>
           {values.auth_type === 'basic' ? (
             <>

@@ -5,7 +5,6 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid';
-import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
@@ -14,7 +13,7 @@ import * as Yup from 'yup';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Card from '../../../components/common/card/Card';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../components/fields/SwitchField';
 
 import { useFormatter } from '../../../components/i18n';
@@ -251,7 +250,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   <Grid item xs={6}>
                     <Card title={t_i18n('Platform Banner Configuration')}>
                       <Field
-                        component={SelectField}
+                        component={SelectFieldFds}
                         variant="standard"
                         name="platform_banner_level"
                         label={t_i18n('Platform banner level')}
@@ -262,10 +261,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         }}
                         displ
                       >
-                        <MenuItem value="">&nbsp;</MenuItem>
-                        <MenuItem value="GREEN">{t_i18n('GREEN')}</MenuItem>
-                        <MenuItem value="RED">{t_i18n('RED')}</MenuItem>
-                        <MenuItem value="YELLOW">{t_i18n('YELLOW')}</MenuItem>
+                        <SelectItem value="">&nbsp;</SelectItem>
+                        <SelectItem value="GREEN">{t_i18n('GREEN')}</SelectItem>
+                        <SelectItem value="RED">{t_i18n('RED')}</SelectItem>
+                        <SelectItem value="YELLOW">{t_i18n('YELLOW')}</SelectItem>
                       </Field>
                       <Field
                         component={TextField}

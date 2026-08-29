@@ -1,7 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
@@ -13,7 +12,7 @@ import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -181,17 +180,17 @@ class IdentityCreation extends Component {
                   style={{ marginTop: 20 }}
                 />
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="standard"
                   name="type"
                   label={t('Entity type')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
-                  {!onlyAuthors && (<MenuItem value="Sector">{t('Sector')}</MenuItem>)}
-                  <MenuItem value="Organization">{t('Organization')}</MenuItem>
-                  <MenuItem value="System">{t('System')}</MenuItem>
-                  <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                  {!onlyAuthors && (<SelectItem value="Sector">{t('Sector')}</SelectItem>)}
+                  <SelectItem value="Organization">{t('Organization')}</SelectItem>
+                  <SelectItem value="System">{t('System')}</SelectItem>
+                  <SelectItem value="Individual">{t('Individual')}</SelectItem>
                 </Field>
                 {!dryrun && (
                   <ObjectLabelField

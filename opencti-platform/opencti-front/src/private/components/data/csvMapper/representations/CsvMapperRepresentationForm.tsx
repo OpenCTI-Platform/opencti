@@ -1,9 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, FieldProps } from 'formik';
 import CsvMapperRepresentationAttributesForm from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
-import MUIAutocomplete from '@mui/material/Autocomplete';
-import { SelectChangeEvent } from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { Accordion, AccordionDetails } from '@mui/material';
@@ -118,9 +116,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
 
   // -- MUI Autocomplete --
 
-  const searchType = (event: React.SyntheticEvent) => {
-    const selectChangeEvent = event as SelectChangeEvent;
-    const val = selectChangeEvent?.target.value ?? '';
+  const searchType = (val: string) => {
     return availableTypes.filter(
       (type) => type.value.includes(val)
         || t_i18n(`${prefixLabel}${type.label}`).includes(val),
@@ -154,36 +150,42 @@ const CsvMapperRepresentationForm: FunctionComponent<
         </AccordionSummary>
         <AccordionDetails style={{ width: '100%' }}>
           <>
-            <MUIAutocomplete<RepresentationFormEntityOption>
+            <Combobox<RepresentationFormEntityOption>
               selectOnFocus
               openOnFocus
-              autoHighlight
               getOptionLabel={(option) => t_i18n(`${prefixLabel}${option.label}`)}
-              noOptionsText={t_i18n('No available options')}
               options={availableTypes}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={availableTypes.find((e) => e.id === value.target_type) || null}
-              onInputChange={(event) => searchType(event)}
-              onChange={(_, val) => handleChangeEntityType(val)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={t_i18n('Entity type')}
-                  variant="outlined"
-                  size="small"
-                />
-              )}
-              renderOption={(props, option) => (
-                <li {...props}>
+              renderOption={(option) => (
+                <>
                   <div className={classes.icon}>
                     <ItemIcon type={option.label} />
                   </div>
                   <div className={classes.text}>
                     {t_i18n(`${prefixLabel}${option.label}`)}
                   </div>
-                </li>
+                </>
               )}
-            />
+              onValueChange={(val) => handleChangeEntityType(val as RepresentationFormEntityOption | null)}
+              onInputChange={(event, meta) => {
+                if (meta.cause === 'type') {
+                  searchType(event);
+                }
+              }}
+            >
+              <ComboboxLabel>{t_i18n('Entity type')}</ComboboxLabel>
+              <ComboboxField>
+                <ComboboxInput />
+                <ComboboxControls>
+                  <ComboboxTrigger />
+                </ComboboxControls>
+              </ComboboxField>
+              <ComboboxContent
+                emptyMessage={t_i18n('No available options')}
+                listAriaLabel={t_i18n('Entity type')}
+              />
+            </Combobox>
             <div style={{ marginTop: 20 }}>
               {field.name.startsWith('entity_representation') && (
                 <Field
