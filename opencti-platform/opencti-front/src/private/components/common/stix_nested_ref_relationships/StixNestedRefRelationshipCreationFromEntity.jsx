@@ -858,6 +858,9 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         </IconButton>
       ) : (
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={handleOpen}
           color="primary"
           aria-label="Add"

@@ -157,6 +157,9 @@ class StixCyberObservablesExportCreationComponent extends Component {
                 aria-label="generate-export"
               >
                 <Fab
+                  // FDS-FAB: stays on MUI. The library ships no floating action
+                  // button, so this control has nothing to convert to. Owner: the
+                  // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
                   onClick={this.handleOpen.bind(this)}
                   color="primary"
                   aria-label="Add"

@@ -3319,6 +3319,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenEntity(null, null)}
           color="secondary"
           aria-label="Add"
@@ -3561,6 +3564,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenObservable(null, null)}
           color="secondary"
           aria-label="Add"
@@ -4107,6 +4113,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenContainer(null, null)}
           color="secondary"
           aria-label="Add"
