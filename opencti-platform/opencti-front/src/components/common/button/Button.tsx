@@ -33,6 +33,14 @@ interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'si
   fullWidth?: boolean;
   iconOnly?: boolean;
   selected?: boolean;
+  /**
+   * Force the MUI path. For a site whose `color` is an expression: the wrapper
+   * only ever sees the resolved value, so it cannot tell a literal from a
+   * ternary, and a control that changes engine between renders is remounted --
+   * losing keyboard focus at the moment of activation. @sandy ruled identity
+   * stability over partial library rendering.
+   */
+  keepMui?: boolean;
   component?: React.ElementType;
   to?: string;
   href?: string;
@@ -94,6 +102,7 @@ const Button: React.FC<CustomButtonProps> = ({
   gradientAngle = 90,
   iconOnly = false,
   selected = false,
+  keepMui = false,
   children,
   startIcon,
   endIcon,
@@ -120,6 +129,7 @@ const Button: React.FC<CustomButtonProps> = ({
     loading?: boolean | null; loadingIndicator?: unknown; loadingPosition?: unknown;
   };
 
+  const rendersAnchor = Boolean(to) || Boolean(href) || Component === 'a';
   const libPriority = LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY];
   const libTone = color ? LIB_TONE_FROM_COLOR[color] : LIB_TONE_FROM_INTENT[intent];
   const libSize = LIB_SIZE[size as keyof typeof LIB_SIZE];
@@ -138,10 +148,17 @@ const Button: React.FC<CustomButtonProps> = ({
     && !selected
     && !externalSx
     && !classes
+    && !keepMui
     // The icon-only delegate falls back here when the library cannot take the
     // site. The library Button pads for a text label, so it would draw a pill
     // around the glyph instead of MUI's square control: keep MUI's geometry.
     && !iconOnly
+    /**
+     * `asChild` REPLACES the child's content, and `component="label"` wraps a
+     * real file input that would not survive it. MUI also gives the label the
+     * role and tab stop the library path does not (WCAG 2.1.1).
+     */
+    && (!isPolymorphic || rendersAnchor)
     // `asChild` replaces the button with its child, and the library drops the
     // icon slots in that mode.
     && !(isPolymorphic && (startIcon || endIcon));

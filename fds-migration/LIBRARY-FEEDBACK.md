@@ -1940,33 +1940,42 @@ order-agnostic. The prop's JSDoc now states the order and recommends omitting it
 — `(selectedValue: T, option: T) => boolean` rather than `(a: T, b: T) => boolean`
 — so an IDE shows the order at the call site. Nothing else needed.
 
-## 53. `IconButton`'s tone axis is a subset of `Button`'s: no `highlight`
+## 53. The button family's tone axis is missing `highlight`, `warn` and `success`
 
-`Button` and `IconButton` are documented as the same two axes — a `priority`
-and a tone — so a wrapper mapping one can be expected to map the other with the
-same table. It cannot:
+`Button` and `IconButton` are documented as the same two axes -- a `priority`
+and a tone -- so a wrapper mapping one expects to map the other with one table.
+It cannot, and the gap is wider than the asymmetry:
 
 | | tones |
 |---|---|
 | `buttonVariants` | `default` `destructive` `ia` **`highlight`** |
 | `iconButtonVariants` | `default` `destructive` `ia` |
+| product needs | the above **plus `warn` and `success`** |
 
-`highlight` is the brand-tonic tone the products use for Enterprise Edition. On
-`Button` it expresses `intent="ee"`; on `IconButton` there is nothing to map it
-to, so a wrapper has to send the site back to MUI to keep its colour.
+**Blocked today: 7 sites in 7 files, 6 of them behind an expression.**
 
-**Measured exposure today: zero.** Every EE control in OpenCTI is a `Button`
-(`EnterpriseEditionButton`), so nothing is currently blocked — this is reported
-as an API asymmetry, not an outage. It becomes a defect the first time a product
-wants an icon-only EE control, and the wrapper will silently fall back rather
-than fail, which is the kind of gap that is only noticed visually.
+| site | tone | |
+|---|---|---|
+| `StixCoreObjectContentFilesList:150` | `ee` | `color={isEnterpriseEdition ? 'primary' : 'ee'}` |
+| `ItemCopy:122` | `success` | dynamic |
+| `Alerts:178` | `success` | dynamic |
+| `StixCoreObjectsSuggestions:341` | `success` | dynamic |
+| `ConnectorWorkLine:154` | `success` | dynamic |
+| `IndicatorDetails:90` | `warn` | dynamic |
+| `DataTableToolBar:2519` | `success` | literal |
 
-**What is blocked today, on both components:** `warn` and `success`. Four sites
-(`DataTableToolBar`) carry `color="warning"` / `color="success"` and neither
-component has a tone for them, so they keep MUI. If the feedback tokens already
-exist for chips, the same two tones on the button family would retire those.
+`ee` is live on an **IconButton**, which is exactly where `highlight` does not
+exist -- so that site cannot be expressed even with a correct mapping table. My
+first count of this said zero: the value sits inside a ternary, and a static
+read of the attribute saw the identifier, not the branches. Anything counting
+props this way under-reports every dynamic site.
+
+That most of them are dynamic matters twice over. @sandy ruled that a control
+whose engine can change between renders keeps MUI: it is remounted at the moment
+of activation and loses keyboard focus. So these sites are pinned to MUI by
+that ruling as well, and the missing tones are what makes the pin permanent
+rather than a transitional state.
 
 **Suggestion:** add `highlight` to `iconButtonVariants` so the two components
-share one tone vocabulary, and consider `warn`/`success` for both. A wrapper
-that maps the two axes cannot tell a consumer why one component accepts a tone
-and its sibling does not.
+share one vocabulary, and add `warn` and `success` to both. The feedback tokens
+already exist -- `Chip` carries the same severities.

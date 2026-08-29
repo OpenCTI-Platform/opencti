@@ -184,6 +184,7 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           }}
           size="small"
           color={data.is_read ? 'primary' : 'success'}
+          keepMui
         >
           {data.is_read
             ? <UnpublishedOutlined fontSize="small" />

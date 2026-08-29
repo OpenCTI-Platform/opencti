@@ -988,6 +988,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       },
                     },
                   })}
+                  keepMui
                 >
                   {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
                 </Button>

@@ -300,6 +300,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   aria-haspopup="true"
                   // color={nested ? 'inherit' : 'primary'}
                   size="small"
+                  keepMui
                 >
                   <ProgressUpload fontSize="small" />
                 </IconButton>
@@ -322,6 +323,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                     aria-haspopup="true"
                     // color={nested ? 'inherit' : 'primary'}
                     size="small"
+                    keepMui
                   >
                     <GetAppOutlined fontSize="small" />
                   </IconButton>

@@ -18,14 +18,21 @@ const LIB_TONE_FROM_COLOR = {
 const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
   const {
     children, title, sx, classes, gradient, selected, component, to, href,
-    variant, intent, color, size, disabled, ...rest
+    variant, intent, color, size, disabled, keepMui, ...rest
   } = props as typeof props & {
     title?: string; classes?: unknown; gradient?: boolean; selected?: boolean;
+    keepMui?: boolean;
   };
   const label = (props as { 'aria-label'?: string })['aria-label'] ?? title;
 
   // The delegate has always defaulted to the quiet, small control.
-  const libPriority = variant ? LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY] : 'tertiary';
+  /**
+   * `color="secondary"` with no `variant` is MUI's bordered control. Reading it
+   * as a tone alone would drop the border, so it becomes the secondary
+   * PRIORITY -- which is where the border lives in the library.
+   */
+  const impliedPriority = color === 'secondary' && !variant ? 'secondary' : 'tertiary';
+  const libPriority = variant ? LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY] : impliedPriority;
   const libTone = color
     ? LIB_TONE_FROM_COLOR[color as keyof typeof LIB_TONE_FROM_COLOR]
     : LIB_TONE_FROM_INTENT[(intent ?? 'default') as keyof typeof LIB_TONE_FROM_INTENT];
@@ -49,7 +56,7 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
   const canUseLibrary = Boolean(label)
     && Boolean(libPriority)
     && Boolean(libTone)
-    && !sx && !classes && !gradient && !selected
+    && !sx && !classes && !gradient && !selected && !keepMui
     && (!isPolymorphic || rendersAnchor);
 
   if (canUseLibrary) {
@@ -72,8 +79,11 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
      */
     if (rendersAnchor) {
       const Child = (component ?? 'a') as React.ElementType;
+      // `disabled` is not an anchor attribute; the library drops the control's
+      // own interactivity instead.
+      const { disabled: _drop, ...anchorProps } = common;
       return (
-        <LibIconButton asChild {...common}>
+        <LibIconButton asChild {...anchorProps}>
           <Child to={to} href={href} {...(rest as Record<string, unknown>)} />
         </LibIconButton>
       );
