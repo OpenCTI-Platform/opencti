@@ -173,7 +173,7 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
             name="name"
             label={t_i18n('Name')}
             fullWidth
-            askIa
+            askAi
           />
           <Field
             component={AutocompleteFreeSoloField}
