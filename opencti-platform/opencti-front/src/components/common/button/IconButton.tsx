@@ -3,31 +3,88 @@ import { IconButton as LibIconButton } from '@filigran/design-system';
 import Button, { CustomButtonProps } from './Button';
 
 /**
- * The library `IconButton` REQUIRES an accessible name -- an icon-only control
- * has no visible text to fall back on. 83 of the 358 sites carry neither
- * `aria-label` nor `title`, so the name is decided per site at runtime: a site
- * that has one converts, a site that has none keeps the MUI path rather than
- * ship an invented label. Those 83 are listed in the PR body; giving them real
- * names is product work, not a mechanical rename.
+ * Same two axes as `Button`: the wrapper's `variant` is a PRIORITY, its
+ * `intent`/`color` are the TONE. The library IconButton is NOT the library
+ * Button: its tone axis has no `highlight`, so `ee` has no expression here and
+ * a site using it keeps MUI. See fds-migration/LIBRARY-FEEDBACK.md.
  */
+const LIB_PRIORITY = { primary: 'primary', secondary: 'secondary', tertiary: 'tertiary' } as const;
+const LIB_TONE_FROM_INTENT = { default: 'default', destructive: 'destructive', ai: 'ia' } as const;
+const LIB_TONE_FROM_COLOR = {
+  default: 'default', primary: 'default', secondary: 'default',
+  error: 'destructive', destructive: 'destructive', ai: 'ia',
+} as const;
+
 const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
-  const { children, title, sx, classes, gradient, selected, component, to, href, ...rest } = props as
-    typeof props & { title?: string; classes?: unknown; gradient?: boolean; selected?: boolean };
+  const {
+    children, title, sx, classes, gradient, selected, component, to, href,
+    variant, intent, color, size, disabled, ...rest
+  } = props as typeof props & {
+    title?: string; classes?: unknown; gradient?: boolean; selected?: boolean;
+  };
   const label = (props as { 'aria-label'?: string })['aria-label'] ?? title;
-  const canUseLibrary = Boolean(label) && !sx && !classes && !gradient && !selected && !component && !to && !href;
+
+  // The delegate has always defaulted to the quiet, small control.
+  const libPriority = variant ? LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY] : 'tertiary';
+  const libTone = color
+    ? LIB_TONE_FROM_COLOR[color as keyof typeof LIB_TONE_FROM_COLOR]
+    : LIB_TONE_FROM_INTENT[(intent ?? 'default') as keyof typeof LIB_TONE_FROM_INTENT];
+
+  /**
+   * A site keeps MUI whenever the library cannot carry its meaning: no
+   * accessible name, MUI-only styling, or a tone/priority outside the tables
+   * above (`ee`, `warn`, `success`, `extra`, or anything dynamic). Dropping the
+   * tone silently would have cost these sites their signal.
+   */
+  /**
+   * `asChild` REPLACES the child's content with the glyph, so a control whose
+   * element must keep its own children cannot live there: `component="label"`
+   * wraps a real `<input type="file">`, which the library would destroy. Those
+   * keep MUI, where `ButtonBase` also gives the label the role and tab stop the
+   * library path would not (WCAG 2.1.1).
+   */
+  const rendersAnchor = Boolean(to) || Boolean(href) || component === 'a';
+  const isPolymorphic = Boolean(component || to || href);
+
+  const canUseLibrary = Boolean(label)
+    && Boolean(libPriority)
+    && Boolean(libTone)
+    && !sx && !classes && !gradient && !selected
+    && (!isPolymorphic || rendersAnchor);
 
   if (canUseLibrary) {
-    const { size, variant: _variant, intent: _intent, color: _color, ...domProps } = rest as Record<string, unknown>;
+    const libSize = size === 'default' ? 'md' : 'sm';
+    const common = {
+      priority: libPriority,
+      variant: libTone,
+      size: libSize as 'md' | 'sm',
+      disabled: disabled as boolean | undefined,
+      'aria-label': label as string,
+      icon: children,
+    };
+
+    /**
+     * An icon-only control that is really a LINK. It goes through the library
+     * IconButton, not the library Button: the Button carries the horizontal
+     * padding of a text label, which drew a 36x24 pill around a 20x20 glyph
+     * instead of a square control. `rest` carries the site's own props --
+     * `onClick`, `target`, `rel`, `data-testid` -- which the control needs.
+     */
+    if (rendersAnchor) {
+      const Child = (component ?? 'a') as React.ElementType;
+      return (
+        <LibIconButton asChild {...common}>
+          <Child to={to} href={href} {...(rest as Record<string, unknown>)} />
+        </LibIconButton>
+      );
+    }
+
     return (
       <LibIconButton
         // Same submit trap as Button: MUI defaulted to `type="button"`.
         type="button"
-        // The delegate has always defaulted to the quiet, small control.
-        priority="tertiary"
-        size={size === 'default' ? 'md' : 'sm'}
-        {...(domProps as React.ComponentPropsWithoutRef<'button'>)}
-        aria-label={label as string}
-        icon={children}
+        {...common}
+        {...(rest as React.ComponentPropsWithoutRef<'button'>)}
       />
     );
   }

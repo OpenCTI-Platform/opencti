@@ -138,6 +138,10 @@ const Button: React.FC<CustomButtonProps> = ({
     && !selected
     && !externalSx
     && !classes
+    // The icon-only delegate falls back here when the library cannot take the
+    // site. The library Button pads for a text label, so it would draw a pill
+    // around the glyph instead of MUI's square control: keep MUI's geometry.
+    && !iconOnly
     // `asChild` replaces the button with its child, and the library drops the
     // icon slots in that mode.
     && !(isPolymorphic && (startIcon || endIcon));
@@ -161,13 +165,6 @@ const Button: React.FC<CustomButtonProps> = ({
     ) : undefined);
 
     const libProps = {
-      /**
-       * MUI's ButtonBase defaults to `type="button"`; a bare <button> inside a
-       * <form> defaults to SUBMIT. Without this, every converted button in a
-       * form fired its handler AND submitted the form -- caught as a double
-       * `onSubmit` in FintelTemplateForm. `rest` still overrides it.
-       */
-      type: 'button' as const,
       priority: libPriority,
       variant: libTone,
       size: libSize,
@@ -178,14 +175,22 @@ const Button: React.FC<CustomButtonProps> = ({
 
     if (isPolymorphic) {
       const Child = (Component ?? (href ? 'a' : 'span')) as React.ElementType;
+      // No `type` here: the rendered element is an anchor or a label, where the
+      // attribute is invalid.
       return (
         <LibButton asChild {...libProps}>
           <Child to={to} href={href}>{children}</Child>
         </LibButton>
       );
     }
+    /**
+     * MUI's ButtonBase defaults to `type="button"`; a bare <button> inside a
+     * <form> defaults to SUBMIT. Without this, every converted button in a form
+     * fired its handler AND submitted the form -- caught as a double `onSubmit`
+     * in FintelTemplateForm. `libProps` still overrides it.
+     */
     return (
-      <LibButton {...libProps} startIcon={sizedIcon(startIcon)} endIcon={sizedIcon(endIcon)}>
+      <LibButton type="button" {...libProps} startIcon={sizedIcon(startIcon)} endIcon={sizedIcon(endIcon)}>
         {children}
       </LibButton>
     );
