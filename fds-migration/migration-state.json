@@ -339,6 +339,17 @@
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
       ]
+    },
+    {
+      "component": "ButtonGroup",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "night-2 visual pass: the Techniques/Narratifs view switcher, the one icon group the pass named by screen. Its glyphs were MUI's fontSize=\"small\" (20px) where the library item declares a 16x16 glyph -- that gap IS the \"icones trop grosses\" reported there. Converting also gives the group a real onValueChange; see NIGHT-LOG-2 for the dead subEntityLines button this incidentally revives. The remaining icon groups are NOT converted here: ContainerHeader and StixCoreObjectContentHeader render their items as router Links (component={Link}), and ButtonGroupItem is a plain button with no asChild/as escape hatch, so converting them would drop href semantics -- logged as a library gap instead of forced.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/ViewSwitchingButtons.tsx"
+      ]
     }
   ]
 }
