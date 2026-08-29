@@ -84,6 +84,33 @@ option present: a lone `input` event (what Playwright's `fill` does), a parent
 re-render, late-arriving options, and blur. So the cause needs the running
 platform, not jsdom.
 
+## The two parked sites — timeboxed attempt, 2026-08-30
+
+One attempt was spent, per Sandy's hard limit. **No cause established for either,
+so both stay parked.** The blocker was not the diagnosis but the proof: her rule
+was to run the failing spec locally before pushing, and the E2E harness
+authenticates with a fixture password (`loginForm.pageModel.ts`) that does not
+match this bench. `auth.setup` fails, so no spec can be run here, and no fix
+could be proven.
+
+Two test-side leads, recorded but NOT verified:
+
+**FilterChipPopover** — `options = [...selectedOptions, ...entitiesOptions]`
+(line 276), so selecting an option MOVES it to the head of the list. The library
+keys rows by position, `engine.optionId(index)`, so the clicked row is replaced
+by a different node on the very re-render the click causes. That matches the
+error exactly — `Clicking the checkbox did not change its state` — and matches
+the artefact, where the post-failure tree shows the option already `[selected]`
+with its checkbox `[checked]`. Next step: stop reordering the options, or have
+the test click the row rather than the checkbox.
+
+**ListFilters** — no lead beyond the four mechanisms already ruled out in jsdom
+(a lone `input` event, a parent re-render, late options, blur). The failure is
+`getByRole('option', { name: 'Label' })` finding nothing after the field is
+filled. Needs a running platform.
+
+Neither is a library defect as far as anything measured shows.
+
 ## V2 feedback for the library
 
 Sandy, on the multi-value chips UX: not great, to be improved in V2. Candidate
