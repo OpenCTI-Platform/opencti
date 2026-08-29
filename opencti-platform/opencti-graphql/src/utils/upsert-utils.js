@@ -8,7 +8,7 @@ import { computeDateFromEventId, truncate, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { creators as creatorsAttribute, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
-import { generateStandardId } from '../schema/identifier';
+import { generateStandardId, X_WORKFLOW_ID } from '../schema/identifier';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -21,6 +21,8 @@ import { FunctionalError } from '../config/errors';
 import { getDraftContext } from './draftContext';
 import { getDraftFilePrefix } from '../database/draft-utils';
 import { pushAll } from './arrayUtil';
+import { getEntitiesListFromCache } from '../database/cache';
+import { ENTITY_TYPE_STATUS } from '../schema/internalObject';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -565,6 +567,20 @@ export const generateRefsInputsForUpsert = (context, user, resolvedElement, _typ
   return inputs;
 };
 
+export const sanitizeSynchronizedWorkflowInputs = (inputs, workflowId, validStatusIdsByType) => {
+  if (!isNotEmptyField(workflowId) || validStatusIdsByType.has(workflowId)) {
+    return inputs;
+  }
+  return inputs.filter((input) => input.key !== X_WORKFLOW_ID);
+};
+
+export const sanitizeSynchronizedWorkflowUpsertOperations = (upsertOperations, workflowId, validStatusIdsByType) => {
+  if (!isNotEmptyField(workflowId) || validStatusIdsByType.has(workflowId)) {
+    return upsertOperations;
+  }
+  return (upsertOperations ?? []).filter((operation) => operation.key !== X_WORKFLOW_ID);
+};
+
 export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
   const inputs = []; // All inputs impacted by modifications (+inner)
   // if file(s) in updatePatch, we need to upload them and update x_opencti_files
@@ -572,14 +588,31 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch, confidenceForUpsert);
   pushAll(inputs, fileInputs);
   // -- Upsert attributes
-  const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
+  let attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
+  let upsertOperations = updatePatch.upsertOperations;
+  if (context.synchronizedUpsert === true && Object.hasOwn(updatePatch, X_WORKFLOW_ID)) {
+    const inputWorkflowId = Array.isArray(updatePatch[X_WORKFLOW_ID]) ? updatePatch[X_WORKFLOW_ID][0] : updatePatch[X_WORKFLOW_ID];
+    if (isNotEmptyField(inputWorkflowId)) {
+      const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
+      const validStatusIdsByType = new Set(platformStatuses.filter((status) => status.type === type).map((status) => status.id));
+      attributesInputs = sanitizeSynchronizedWorkflowInputs(attributesInputs, inputWorkflowId, validStatusIdsByType);
+      upsertOperations = sanitizeSynchronizedWorkflowUpsertOperations(upsertOperations, inputWorkflowId, validStatusIdsByType);
+      if (!validStatusIdsByType.has(inputWorkflowId)) {
+        logApp.info('Discarding synchronized workflow status update with unknown local status id', {
+          workflow_id: inputWorkflowId,
+          entity_id: resolvedElement.id,
+          entity_type: type,
+        });
+      }
+    }
+  }
   pushAll(inputs, attributesInputs);
   // -- Upsert refs
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
   pushAll(inputs, refsInputs);
   // -- merge inputs with upsertOperations
-  if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
+  if (upsertOperations?.length > 0 && !isBypassUser(user)) {
     throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
   }
-  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
+  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, upsertOperations);
 };
