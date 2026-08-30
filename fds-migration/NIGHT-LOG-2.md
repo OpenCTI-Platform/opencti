@@ -113,3 +113,31 @@ every other converted Combobox in this product relies on that default.
 The test was correct and was not touched — worth stating, because the
 brief allows test-side fixes when the component matches the library, and
 this was the opposite case: the component was wrong.
+
+### Third red: `presentational` removed the role a test picks filters by
+
+Both e2e groups, one line of `filters.pageModel`:
+
+    getByLabel('Artifact', { exact: true }).getByRole('checkbox')
+    Error: element(s) not found
+
+`presentational` renders the library box as an unfocusable `<span>` —
+that is what it is for — and it therefore removes the checkbox role. I
+had applied it to `FilterChipPopover`'s option row alongside the two
+library Combobox rows.
+
+Reverted at that one site. The row IS a `role="option"` in MUI's
+Autocomplete listbox, so the nested-interactive finding is real there
+too — but it **predates this conversion**: the box in that position was
+already a real MUI Checkbox. Dropping `presentational` therefore ships
+nothing worse than what is on the branch today, while forcing it breaks
+how a filter value is picked.
+
+**Parked, and it needs daylight:** clearing that nesting means changing
+the markup and `tests_e2e/model/filters.pageModel.ts` in one change —
+the row would own the toggle and the test would click the option instead
+of checking a box. That is a deliberate a11y change to a shared page
+model used by many specs, not a side effect of a colour conversion.
+
+The two rows inside a library `Combobox` keep `presentational`: they are
+its documented first consumer and no test asserts a control there.
