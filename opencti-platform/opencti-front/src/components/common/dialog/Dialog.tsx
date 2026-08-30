@@ -77,7 +77,15 @@ const Dialog = ({
         </DialogTitle>
       )}
 
-      <DialogContent {...contentProps} sx={{ pY: 0, pX: 3 }}>
+      {/* `py`/`px`, not `pY`/`pX`. MUI's system keys are lower-case, so the
+          previous spelling was dropped silently and every dialog fell back to
+          DialogContent's own `padding: 20px 24px`. Net effect of the fix,
+          measured against the installed MUI source: horizontal is unchanged
+          (24px either way) and the top was already 0 for a titled dialog
+          (`.MuiDialogTitle-root + & { paddingTop: 0 }`), so what actually
+          changes is the BOTTOM -- 20px to 0. A dialog with no title loses its
+          20px top as well. */}
+      <DialogContent {...contentProps} sx={{ py: 0, px: 3 }}>
         {children}
       </DialogContent>
     </MUIDialog>
