@@ -2,7 +2,6 @@ import Button from '@common/button/Button';
 import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
@@ -10,7 +9,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
@@ -463,15 +462,22 @@ class ListLines extends Component {
                   <ListItemIcon
                     style={{
                       minWidth: handleToggleSelectAll ? 40 : 56,
+                      // The MUI checkbox was a 42px control that carried its own
+                      // centring; the library box is a bare 16px button, so the
+                      // slot has to do the centring itself or the box rides to
+                      // the top of the header row while the column labels stay
+                      // centred -- the misalignment reported on every list page.
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   >
                     <Checkbox
-                      edge="start"
+                      aria-label={t('Select all')}
                       checked={selectAll}
-                      disableRipple={true}
-                      onChange={
+                      onCheckedChange={
                         typeof handleToggleSelectAll === 'function'
-                        && handleToggleSelectAll.bind(this)
+                          ? handleToggleSelectAll.bind(this)
+                          : undefined
                       }
                       disabled={typeof handleToggleSelectAll !== 'function'}
                     />

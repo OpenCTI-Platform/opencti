@@ -2038,3 +2038,42 @@ coupling the two. The library already exposes `incrementLabel` /
 own label — `Increase {label}` — would make the two buttons unique per field
 and remove the class of collision entirely. Also note both defaults are English
 strings in a product that translates every other control.
+
+---
+
+## 56. `ButtonGroupItem` cannot be a link, so half the icon groups cannot convert
+
+Raised during the night-2 visual pass, library pin `47baf69`.
+
+**Needed.** The pass asks for the product's icon groups ("les iconbuttongroup
+pourraient être convertie"). Two of them do not switch a value — they
+*navigate*. `StixCoreObjectContentHeader` renders content / editor / mapping as
+three router links, and `ContainerHeader` does the same for its four modes.
+Both are written today as `<ToggleButton component={Link} to="editor">`, so
+each item is an `<a href>`: middle-click opens a tab, the browser shows the
+target on hover, and a screen reader announces a link.
+
+**Today.** `ButtonGroupItemProps` extends `ComponentPropsWithoutRef<"button">`
+and adds `value`, `icon` and a required `aria-label`. There is no `asChild`,
+no `as`, and no Slot anywhere in the shipped `components/button-group/` build —
+checked against the installed `node_modules`, not the types alone. The item is
+always a `<button>`.
+
+**Consequence.** Converting those two files would replace an anchor with a
+button and push navigation into an `onValueChange` handler. That is not a
+visual change with a workaround: it silently drops href semantics — no
+middle-click, no open-in-new-tab, no hover target, and a different role in the
+accessibility tree. Per the migration contract (a conversion that loses
+function is listed with its reason rather than forced) both sites stay MUI, and
+the pass's "iconbuttongroup" item is therefore only partly delivered.
+
+**Ask.** Give `ButtonGroupItem` the polymorphism the rest of the family already
+has — `asChild`, as `IconButton` has it, is the smallest shape that fits, and
+lets the product keep `<ButtonGroupItem asChild><Link to="editor">…</Link></ButtonGroupItem>`
+while the group keeps owning selection and roving focus. `Paper`'s `as` prop
+would work too; `asChild` is preferred here only because the child is a router
+component, not a tag name.
+
+**Removal test.** `ContainerHeader` and `StixCoreObjectContentHeader` render
+their items as anchors with a real `href`, under the library group, with no
+local styling — and middle-click still opens a new tab.

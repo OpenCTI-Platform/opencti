@@ -25,6 +25,7 @@ import {
 import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import {
+  Checkbox,
   Chip as FdsChip,
   Combobox,
   ComboboxChips,
@@ -43,7 +44,6 @@ import {
   SelectValue,
 } from '@filigran/design-system';
 import Avatar from '@mui/material/Avatar';
-import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
@@ -686,11 +686,11 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  handleChangeActionInputOptions(i, key, event) {
+  handleChangeActionInputOptions(i, key, checked) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'options',
-      R.assoc(key, event.target.checked, actionsInputs[i]?.options || {}),
+      R.assoc(key, checked === true, actionsInputs[i]?.options || {}),
       actionsInputs[i] || {},
     );
     this.setState({ actionsInputs });
@@ -3390,22 +3390,19 @@ class DataTableToolBar extends Component {
                     listAriaLabel={t('Values')}
                   />
                 </Combobox>
-                <FormControlLabel
-                  style={{ marginTop: 20 }}
-                  control={(
-                    <Checkbox
-                      checked={
-                        actionsInputs[0]?.options?.includeNeighbours || false
-                      }
-                      onChange={this.handleChangeActionInputOptions.bind(
-                        this,
-                        0,
-                        'includeNeighbours',
-                      )}
-                    />
-                  )}
-                  label={t('Also include first neighbours')}
-                />
+                <div style={{ marginTop: 20 }}>
+                  <Checkbox
+                    checked={
+                      actionsInputs[0]?.options?.includeNeighbours || false
+                    }
+                    onCheckedChange={this.handleChangeActionInputOptions.bind(
+                      this,
+                      0,
+                      'includeNeighbours',
+                    )}
+                    label={t('Also include first neighbours')}
+                  />
+                </div>
                 <IconButton
                   aria-label={t('Create container')}
                   onClick={() => this.setState({ containerCreation: true })}
