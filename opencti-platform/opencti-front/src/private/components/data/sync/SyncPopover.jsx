@@ -12,9 +12,9 @@ import withStyles from '@mui/styles/withStyles';
 import fileDownload from 'js-file-download';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { fetchQuery, graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, environment, QueryRenderer } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import Drawer from '../../common/drawer/Drawer';
@@ -95,120 +95,115 @@ const syncPopoverExportQuery = graphql`
   }
 `;
 
-class SyncPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-      displayStart: false,
-      starting: false,
-      displayStop: false,
-      stopping: false,
-    };
-  }
+const SyncPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [displayStart, setDisplayStart] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [displayStop, setDisplayStop] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    handleClose();
+  };
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
+  const handleCloseUpdate = () => {
+    setDisplayUpdate(false);
+  };
 
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
+  const handleOpenStart = () => {
+    setDisplayStart(true);
+    handleClose();
+  };
 
-  handleOpenStart() {
-    this.setState({ displayStart: true });
-    this.handleClose();
-  }
+  const handleCloseStart = () => {
+    setDisplayStart(false);
+  };
 
-  handleCloseStart() {
-    this.setState({ displayStart: false });
-  }
+  const handleOpenStop = () => {
+    setDisplayStop(true);
+    handleClose();
+  };
 
-  handleOpenStop() {
-    this.setState({ displayStop: true });
-    this.handleClose();
-  }
+  const handleCloseStop = () => {
+    setDisplayStop(false);
+  };
 
-  handleCloseStop() {
-    this.setState({ displayStop: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: syncPopoverDeletionMutation,
       variables: {
-        id: this.props.syncId,
+        id: props.syncId,
       },
       updater: (store) => {
         deleteNode(
           store,
           'Pagination_synchronizers',
-          this.props.paginationOptions,
-          this.props.syncId,
+          props.paginationOptions,
+          props.syncId,
         );
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
-        if (this.props.onDeleteComplete) {
-          this.props.onDeleteComplete();
+        setDeleting(false);
+        handleCloseDelete();
+        if (props.onDeleteComplete) {
+          props.onDeleteComplete();
         }
       },
     });
-  }
+  };
 
-  submitStart() {
-    this.setState({ starting: true });
+  const submitStart = () => {
+    setStarting(true);
     commitMutation({
       mutation: syncPopoverStartMutation,
       variables: {
-        id: this.props.syncId,
+        id: props.syncId,
       },
       onCompleted: () => {
-        this.setState({ starting: false });
-        this.handleCloseStart();
+        setStarting(false);
+        handleCloseStart();
       },
     });
-  }
+  };
 
-  submitStop() {
-    this.setState({ stopping: true });
+  const submitStop = () => {
+    setStopping(true);
     commitMutation({
       mutation: syncPopoverStopMutation,
       variables: {
-        id: this.props.syncId,
+        id: props.syncId,
       },
       onCompleted: () => {
-        this.setState({ stopping: false });
-        this.handleCloseStop();
+        setStopping(false);
+        handleCloseStop();
       },
     });
-  }
+  };
 
-  async exportSync() {
-    const { syncId } = this.props;
+  const exportSync = async () => {
+    const { syncId } = props;
 
     const data = await fetchQuery(environment,
       syncPopoverExportQuery,
@@ -231,169 +226,166 @@ class SyncPopover extends Component {
 
       fileDownload(blob, fileName);
     }
-  }
+  };
 
-  async handleExport(event) {
+  const handleExport = async (event) => {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
 
-    this.setState({ anchorEl: null });
-    await this.exportSync();
-  }
+    setAnchorEl(null);
+    await exportSync();
+  };
 
-  render() {
-    const { classes, t, syncId, running } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          {!running && (
-            <MenuItem onClick={this.handleOpenStart.bind(this)}>
-              {t('Start')}
-            </MenuItem>
-          )}
-          {running && (
-            <MenuItem onClick={this.handleOpenStop.bind(this)}>
-              {t('Stop')}
-            </MenuItem>
-          )}
-          <MenuItem disabled={running} onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
+  const { classes, syncId, running } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        color="primary"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        {!running && (
+          <MenuItem onClick={handleOpenStart}>
+            {t_i18n('Start')}
           </MenuItem>
-          <MenuItem onClick={this.handleExport.bind(this)}>
-            {t('Export')}
+        )}
+        {running && (
+          <MenuItem onClick={handleOpenStop}>
+            {t_i18n('Stop')}
           </MenuItem>
-          <MenuItem disabled={running} onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          onClose={this.handleCloseUpdate.bind(this)}
-          title={t('Update an OpenCTI stream')}
-        >
-          <QueryRenderer
-            query={syncEditionQuery}
-            variables={{ id: syncId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <SyncEdition
-                    synchronizer={props.synchronizer}
-                  />
-                );
-              }
-              return <div />;
-            }}
-          />
-        </Drawer>
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-          size="small"
-        >
+        )}
+        <MenuItem disabled={running} onClick={handleOpenUpdate}>
+          {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleExport}>
+          {t_i18n('Export')}
+        </MenuItem>
+        <MenuItem disabled={running} onClick={handleOpenDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
+      <Drawer
+        open={displayUpdate}
+        onClose={handleCloseUpdate}
+        title={t_i18n('Update an OpenCTI stream')}
+      >
+        <QueryRenderer
+          query={syncEditionQuery}
+          variables={{ id: syncId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <SyncEdition
+                  synchronizer={props.synchronizer}
+                />
+              );
+            }
+            return <div />;
+          }}
+        />
+      </Drawer>
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+        size="small"
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this OpenCTI stream?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        slotProps={{ paper: { elevation: 1 } }}
+        open={displayStart}
+        keepMounted={true}
+        slots={{ transition: Transition }}
+        onClose={handleCloseStart}
+      >
+        <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this OpenCTI stream?')}
+            {t_i18n('Do you want to start this OpenCTI stream?')}
           </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={this.state.displayStart}
-          keepMounted={true}
-          slots={{ transition: Transition }}
-          onClose={this.handleCloseStart.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to start this OpenCTI stream?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseStart.bind(this)}
-              disabled={this.state.starting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitStart.bind(this)}
-              disabled={this.state.starting}
-            >
-              {t('Start')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={this.state.displayStop}
-          keepMounted={true}
-          slots={{ transition: Transition }}
-          onClose={this.handleCloseStop.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to stop this OpenCTI stream?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseStop.bind(this)}
-              disabled={this.state.stopping}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitStop.bind(this)}
-              disabled={this.state.stopping}
-            >
-              {t('Stop')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseStart}
+            disabled={starting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitStart}
+            disabled={starting}
+          >
+            {t_i18n('Start')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        slotProps={{ paper: { elevation: 1 } }}
+        open={displayStop}
+        keepMounted={true}
+        slots={{ transition: Transition }}
+        onClose={handleCloseStop}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to stop this OpenCTI stream?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseStop}
+            disabled={stopping}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitStop}
+            disabled={stopping}
+          >
+            {t_i18n('Stop')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 SyncPopover.propTypes = {
   syncId: PropTypes.string,
   running: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   onDeleteComplete: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(SyncPopover);
+export default compose(withStyles(styles))(SyncPopover);

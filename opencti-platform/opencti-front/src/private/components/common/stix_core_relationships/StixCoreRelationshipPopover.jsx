@@ -9,10 +9,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNodeFromContainer } from '../../../../utils/store';
 import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
@@ -47,54 +46,49 @@ const stixCoreRelationshipPopoverDeletionMutation = graphql`
   }
 `;
 
-class StixCoreRelationshipPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
+const StixCoreRelationshipPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
     event.stopPropagation();
-  }
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    handleClose();
+  };
 
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
+  const handleCloseUpdate = () => {
+    setDisplayUpdate(false);
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
-  submitDelete() {
-    this.setState({ deleting: true });
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: stixCoreRelationshipPopoverDeletionMutation,
       variables: {
-        id: this.props.stixCoreRelationshipId,
+        id: props.stixCoreRelationshipId,
       },
       updater: (store) => {
-        if (typeof this.props.onDelete !== 'function') {
-          const { stixCoreRelationshipId, paginationOptions, connectionKey, objectId } = this.props;
+        if (typeof props.onDelete !== 'function') {
+          const { stixCoreRelationshipId, paginationOptions, connectionKey, objectId } = props;
           const currentConnectionKey = connectionKey || 'Pagination_stixCoreRelationships';
           if (stixCoreRelationshipId) {
             deleteNodeFromContainer(
@@ -108,91 +102,85 @@ class StixCoreRelationshipPopover extends Component {
         }
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
-        if (typeof this.props.onDelete === 'function') {
-          this.props.onDelete();
+        setDeleting(false);
+        handleCloseDelete();
+        if (typeof props.onDelete === 'function') {
+          props.onDelete();
         }
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t, stixCoreRelationshipId, disabled, isCoverage } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          disabled={disabled}
-          color="primary"
-        >
-          <MoreVertOutlined />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
-        {stixCoreRelationshipId && (
-          <StixCoreRelationshipEdition
-            variant="noGraph"
-            stixCoreRelationshipId={stixCoreRelationshipId}
-            open={this.state.displayUpdate}
-            handleClose={this.handleCloseUpdate.bind(this)}
-            noStoreUpdate={true}
-            isCoverage={isCoverage}
-          />
-        )}
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-        >
-          <DialogContentText>
-            {t('Do you want to delete this relation?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+  const { classes, stixCoreRelationshipId, disabled, isCoverage } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        disabled={disabled}
+        color="primary"
+      >
+        <MoreVertOutlined />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenUpdate}>
+          {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
+      {stixCoreRelationshipId && (
+        <StixCoreRelationshipEdition
+          variant="noGraph"
+          stixCoreRelationshipId={stixCoreRelationshipId}
+          open={displayUpdate}
+          handleClose={handleCloseUpdate}
+          noStoreUpdate={true}
+          isCoverage={isCoverage}
+        />
+      )}
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this relation?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 StixCoreRelationshipPopover.propTypes = {
   stixCoreRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   onDelete: PropTypes.func,
   connectionKey: PropTypes.string,
   objectId: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipPopover);
+export default withStyles(styles)(StixCoreRelationshipPopover);

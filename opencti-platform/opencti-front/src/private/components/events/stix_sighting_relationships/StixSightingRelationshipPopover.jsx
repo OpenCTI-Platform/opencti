@@ -9,10 +9,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import StixSightingRelationshipEdition from './StixSightingRelationshipEdition';
@@ -47,145 +46,134 @@ const stixSightingRelationshipPopoverDeletionMutation = graphql`
   }
 `;
 
-class StixSightingRelationshipPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
+const StixSightingRelationshipPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
     event.stopPropagation();
-  }
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    handleClose();
+  };
 
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
+  const handleCloseUpdate = () => {
+    setDisplayUpdate(false);
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
-  submitDelete() {
-    this.setState({ deleting: true });
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: stixSightingRelationshipPopoverDeletionMutation,
       variables: {
-        id: this.props.stixSightingRelationshipId,
+        id: props.stixSightingRelationshipId,
       },
       updater: (store) => {
-        const isUndefinedCallback = this.props.onDelete === undefined
-          || typeof this.props.onDelete !== 'function';
+        const isUndefinedCallback = props.onDelete === undefined
+          || typeof props.onDelete !== 'function';
         if (isUndefinedCallback) {
           deleteNode(
             store,
             'Pagination_stixSightingRelationships',
-            this.props.paginationOptions,
-            this.props.stixSightingRelationshipId,
+            props.paginationOptions,
+            props.stixSightingRelationshipId,
           );
         }
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
-        this.handleCloseUpdate();
-        if (typeof this.props.onDelete === 'function') {
-          this.props.onDelete();
+        setDeleting(false);
+        handleCloseDelete();
+        handleCloseUpdate();
+        if (typeof props.onDelete === 'function') {
+          props.onDelete();
         }
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t, stixSightingRelationshipId, disabled } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          disabled={disabled}
-          color="primary"
-        >
-          <MoreVertOutlined />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
-        <StixSightingRelationshipEdition
-          variant="noGraph"
-          stixSightingRelationshipId={stixSightingRelationshipId}
-          open={this.state.displayUpdate}
-          handleClose={this.handleCloseUpdate.bind(this)}
-          handleDelete={this.submitDelete.bind(this)}
-        />
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-        >
-          <DialogContentText>
-            {t('Do you want to delete this sighting?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+  const { classes, stixSightingRelationshipId, disabled } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        disabled={disabled}
+        color="primary"
+      >
+        <MoreVertOutlined />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenUpdate}>
+          {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
+      <StixSightingRelationshipEdition
+        variant="noGraph"
+        stixSightingRelationshipId={stixSightingRelationshipId}
+        open={displayUpdate}
+        handleClose={handleCloseUpdate}
+        handleDelete={submitDelete}
+      />
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this sighting?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 StixSightingRelationshipPopover.propTypes = {
   stixSightingRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   onDelete: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipPopover);
+export default withStyles(styles)(StixSightingRelationshipPopover);

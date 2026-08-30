@@ -10,9 +10,9 @@ import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../../components/i18n';
+import { useFormatter } from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
 import withRouter from '../../../../../utils/compat_router/withRouter';
@@ -45,118 +45,109 @@ const workbenchFilePopoverDeleteMutation = graphql`
   }
 `;
 
-class WorkbenchFilePopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayDelete: false,
-      deleting: false,
-    };
-  }
+const WorkbenchFilePopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
-    const { file } = this.props;
+  const submitDelete = () => {
+    setDeleting(true);
+    const { file } = props;
     commitMutation({
       mutation: workbenchFilePopoverDeleteMutation,
       variables: { fileName: file.id },
       onCompleted: () => {
-        if (this.props.file.metaData.entity) {
+        if (props.file.metaData.entity) {
           const entityLink = `${resolveLink(
-            this.props.file.metaData.entity.entity_type,
-          )}/${this.props.file.metaData.entity.id}`;
-          this.props.navigate(`${entityLink}/files`);
+            props.file.metaData.entity.entity_type,
+          )}/${props.file.metaData.entity.id}`;
+          props.navigate(`${entityLink}/files`);
         } else {
-          this.props.navigate('/dashboard/data/import');
+          props.navigate('/dashboard/data/import');
         }
       },
     });
-  }
+  };
 
-  render() {
-    const { classes, t, file } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-label={t('Open menu')}
-          aria-haspopup="true"
-          size="default"
-          variant="secondary"
+  const { classes, file } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        onClick={handleOpen}
+        aria-label={t_i18n('Open menu')}
+        aria-haspopup="true"
+        size="default"
+        variant="secondary"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem
+          component="a"
+          href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
         >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem
-            component="a"
-            href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`}
+          {t_i18n('Download')}
+        </MenuItem>
+        <MenuItem onClick={handleOpenDelete}>
+          {t_i18n('Delete')}
+        </MenuItem>
+      </Menu>
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this workbench?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
           >
-            {t('Download')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
-        </Menu>
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-        >
-          <DialogContentText>
-            {t('Do you want to delete this workbench?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 WorkbenchFilePopover.propTypes = {
   file: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   navigate: PropTypes.func,
 };
 
 export default compose(
-  inject18n,
   withRouter,
   withStyles(styles),
 )(WorkbenchFilePopover);
