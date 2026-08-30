@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildLocalMustFilter, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
+import { buildLocalMustFilter, buildReplaceScriptParams, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
 import * as engineConfig from '../../../src/database/engine-config';
 
 describe('prepareElementForIndexing testing', () => {
@@ -376,5 +376,31 @@ describe('isTransitoryError testing', () => {
 
   it('should return false when text fields are empty strings (not matched)', () => {
     expect(isTransitoryError({ message: '', reason: '', type: '', name: '', stack: '' })).toBe(false);
+  });
+});
+
+describe('buildReplaceScriptParams testing', () => {
+  it('should split set and unset attributes', () => {
+    const params = buildReplaceScriptParams({ name: 'test', description: null, score: 0, revoked: false });
+    expect(params.replacements).toEqual({ name: 'test', score: 0, revoked: false });
+    expect(params.removals).toEqual(['description']);
+  });
+
+  it('should remove undefined attributes', () => {
+    const params = buildReplaceScriptParams({ name: 'test', current_state_cursor: undefined });
+    expect(params.replacements).toEqual({ name: 'test' });
+    expect(params.removals).toEqual(['current_state_cursor']);
+  });
+
+  it('should keep empty strings and empty arrays as replacements', () => {
+    const params = buildReplaceScriptParams({ name: '', objectLabel: [] });
+    expect(params.replacements).toEqual({ name: '', objectLabel: [] });
+    expect(params.removals).toEqual([]);
+  });
+
+  it('should support an empty document', () => {
+    const params = buildReplaceScriptParams({});
+    expect(params.replacements).toEqual({});
+    expect(params.removals).toEqual([]);
   });
 });

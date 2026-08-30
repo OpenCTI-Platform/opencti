@@ -4156,6 +4156,26 @@ export const elUpdate = async (
   };
   return retryElOperations(updateOperation);
 };
+// Field names are passed as script parameters and never interpolated in the source.
+// Interpolating them would create one script per field combination, and every distinct
+// source has to be compiled by the engine, quickly exhausting script.max_compilations_rate.
+export const EL_REPLACE_SCRIPT_SOURCE = 'for (entry in params.replacements.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }'
+  + ' for (key in params.removals) { ctx._source.remove(key); }';
+export const buildReplaceScriptParams = (doc: Record<string, any>) => {
+  const replacements: Record<string, any> = {};
+  const removals: string[] = [];
+  const entries = Object.entries(doc);
+  for (let index = 0; index < entries.length; index += 1) {
+    const [key, val] = entries[index];
+    // We clean the attribute only if data is null or undefined
+    if (val === undefined || val === null) {
+      removals.push(key);
+    } else {
+      replacements[key] = val;
+    }
+  }
+  return { replacements, removals };
+};
 export const elReplace = async (
   context: AuthContext,
   indexName: string,
@@ -4163,20 +4183,8 @@ export const elReplace = async (
   documentBody: any,
 ) => {
   const doc = R.dissoc('_index', documentBody.doc);
-  const entries = Object.entries(doc);
-  const rawSources = [];
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key, val] = entries[index];
-    // We clean the attribute only if data is null or undefined
-    if (val === undefined || val === null) {
-      rawSources.push(`ctx._source.remove('${key}')`);
-    } else {
-      rawSources.push(`ctx._source['${key}'] = params['${key}']`);
-    }
-  }
-  const source = R.join(';', rawSources);
   return elUpdate(context, indexName, documentId, {
-    script: { source, params: doc },
+    script: { source: EL_REPLACE_SCRIPT_SOURCE, params: buildReplaceScriptParams(doc) },
   });
 };
 export const elDelete = (indexName: string, documentId: string) => {
