@@ -14,7 +14,7 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 
 | # | Screen | What's wrong | Class | Status |
 |---|---|---|---|---|
-| F1 | Entity tabs, Knowledge + Content | Right bars: return to ORIGINAL position (right edge, full height), content back in place — "everything goes underneath". Keep the redesign. **FIXED — verified on screen.** The structural move never merged, so the tip already had the original placement; only the INSIDE of the bars changed. Knowledge bar rows are now the library `NavbarItem` (36px, 14px label, 16px inset), group headers `NavbarTitle` (10px caption, `--text-default-disabled`, rendered `<p>` so no out-of-order heading), paper on `layer-1` + 1px `--border-elevation-subtle-soft` + 4px top inset. Content bar takes the same surface and edge. Measured at 1600x900: paper #0d172b at x=1400 h=900, highlight resolves #182a4e inside the bar, rows 36/14/16, headers 28/10/#95969d. Code: **PR #18001** (branch force-pushed, its old below-the-tabs move is gone). | a | FIXED |
+| F1 | Entity tabs, Knowledge + Content | Right bars: ORIGINAL position AND keep the redesign — "everything goes underneath". **Both halves now on screen, awaiting Sandy's validation.** *Position:* the structural move never merged, so the tip already had it; `getPaddingRight` untouched. *Redesign:* rows are the library `NavbarItem` (36px, 14px label, 16px inset), group headers `NavbarTitle` (10px caption, `--text-default-disabled`, rendered `<p>` so no out-of-order heading), paper on `layer-1` + 1px `--border-elevation-subtle-soft` + 4px top inset. Content bar takes the same surface. Measured on the rebuilt stack: #0d172b, token edge, rows 36/14/16, titles 10px/#95969d. **Content view switcher:** was `ButtonGroup size="sm"` (24px) — now `md` (36px), and its pull onto the tabs strip was re-derived by measurement (-70 → -67px), giving centre-on-centre, delta 0. Glyphs stay 16px: the library fixes the item's icon slot at `size-4` for both sizes. Code: **PR #18001**. | a | AWAITING SANDY (both halves on screen) |
 | F2 | Date field (forms, e.g. *Date de publication*) | **FIXED — verified and exercised on screen.** The F21 lead was WRONG: there are no hand-rolled negative margins here. Real cause: `DateTimePickerField`, the formik picker behind all 91 edition forms, never got the outlined treatment its sibling `common/input/DateTimePicker` received, and 58 of its call sites pass `variant: 'standard'` explicitly — so it rendered as a 30px transparent underline between two 36px filled fields, calendar glyph hanging off the end. Fixed by the F3 sweep. Exercised: opened the picker, picked 15 August, value landed in the field AND persisted (`published` = 2026-08-14T22:00:00Z); test data restored. Code: **PR #18020**. | a | FIXED |
 | F3 | All remaining MUI fields | variant=outlined + layer-aware bg + graphically approach the lib. **FIXED.** 726 `variant="standard"` props across 220 files swept to `outlined` (the two on `<Alert>` left alone — real Alert variant, not a field); `MuiTextField`/`MuiSelect` default to outlined too. `MuiOutlinedInput` painted the STATIC hex for `--bg-input-default` and `MuiAutocomplete` a hardcoded near-miss (#0C1524) — neither could follow a layer; both read the alias now. Geometry: 36px floor, 4px radius, 12/8 insets, transparent resting border with the three border-input state tokens; MUI's 16.5px vertical padding (a 54px row) cut to 8px. **Scope stated plainly:** the sweep is mechanical; every field FAMILY was exercised (text, email, password, date picker, select, autocomplete, multiline markdown), not each of the 726 sites. Code: **PR #18020**. | a | FIXED |
 | F4 | Dialogs (Create dashboard, EE license, Manage access, Public dashboard) | Must be treated EXACTLY like drawers: same paper bg, fields at layer 2 (#0C1527). **FIXED — verified on screen.** Root cause of the *paper* half was not the layer at all: the theme painted `MuiDialog`'s paper with a hardcoded `#0F1D34`, while a drawer reads `--bg-elevation-default` at layer 2 (#13213e), so the two could never match whatever the layer said. The dialog paper reads the alias now. The *fields* half is the layer, and the ten direct `<Dialog>` mounts that bypass the shared component now declare it. Measured: dialog paper and drawer paper both rgb(19,33,62); EE-licence textarea #0c1527. Code: **PR #18019** (stacked on #18003). | a | FIXED |
@@ -100,18 +100,25 @@ in anywhere.
 
 ### CI state at handover
 
-| PR | Result | Note |
-|---|---|---|
-| #18015 | green | — |
-| #18021 | green | — |
-| #18020 | green | the 726-prop sweep passes lint, typecheck and build |
-| #18001 | **one real failure, fixed and re-pushed** | `getByRole('menuitem', {name:'Victimology'})` timed out: the knowledge bar's rows are real links with `aria-current` now, not MUI `MenuItem`s with `role=menuitem`. Two page objects select by the old role; both moved to `role: 'link'`. Every other `getByRole('menuitem')` in the suite targets a real popup menu and is untouched. Awaiting the re-run. |
-| #18014 | backend red, **not caused by this PR** | `middleware-test.js > should multiple createdBy identity merged to empty target` — an entity-merge UUID assertion. This PR touches three frontend files and the log. Known flaky family; re-run triggered. |
-| #18019 | backend red, **not caused by this PR** | `Backend / Integration tests` on a frontend-only change. Same family; re-run triggered. |
+**All six PRs: no failing checks.** #18001's e2e groups are still running after
+the last push; everything else has settled green.
 
-> **PR titles.** All were opened with `(#17989)`; an automation rewrote several
-> to `(#17729)`. The linked-issue gate is satisfied either way, but the log and
-> the commits still say #17989 — worth a look if the numbering matters.
+| PR | Note |
+|---|---|
+| #18015, #18020, #18021 | green throughout |
+| #18001 | had ONE real failure, caused by this work and fixed: `getByRole('menuitem', {name:'Victimology'})` timed out, because the knowledge bar's rows are real links with `aria-current` now rather than MUI `MenuItem`s with `role=menuitem` — a menu role implies an application menu with roving focus, which a permanent navigation bar never was. Two page objects moved to `role: 'link'`; every other `getByRole('menuitem')` in the suite targets a real popup menu and is untouched. |
+| #18014, #18019 | were red on BACKEND suites (`middleware-test.js > should multiple createdBy identity merged to empty target`; `Backend / Integration tests`) while both PRs touch only frontend files. Re-run on the same SHA: **both green.** The known flaky family — recorded here so the next round does not re-investigate them. |
+
+### What Sandy's screen check caught, and why
+
+Her first pass on :3000 found the Knowledge bar showing the OLD design. The
+redesign was fine; **the preview branch simply did not contain it.**
+`fds/night6-preview` had been assembled from the details branch plus the log
+branches, and `fds/night6-rightbar` was never merged in — so :3000 carried a log
+entry saying F1 was fixed and none of its code. Merged and rebuilt. The lesson
+for the next session: after assembling the preview, assert each fix branch is an
+ancestor (`git merge-base --is-ancestor <branch> fds/night6-preview`) rather than
+trusting the merge list.
 
 ### Preview
 
