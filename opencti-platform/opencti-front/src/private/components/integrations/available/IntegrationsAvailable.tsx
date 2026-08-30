@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import { ViewListOutlined, ViewModuleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import IngestionCatalogCard from '@components/integrations/catalog/IngestionCatalogCard';
 import IngestionCatalogConnectorCreation from '@components/integrations/catalog/IngestionCatalogConnectorCreation';
@@ -28,6 +28,7 @@ import { IntegrationsData } from '@components/integrations/Integrations';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import SearchInput from '../../../../components/SearchInput';
+import { paperBg, paperBorder } from '../paperSurface';
 
 type AvailableViewMode = 'cards' | 'lines';
 
@@ -220,7 +221,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
               label={t_i18n('Sort by')}
               value={sort}
               onChange={(event) => setSort(event.target.value as CatalogSortMode)}
-              sx={{ width: 200, backgroundColor: theme.palette.background.paper }}
+              sx={{ width: 200, backgroundColor: paperBg(theme) }}
             >
               <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
               <MenuItem value="deployed">{t_i18n('Most deployed')}</MenuItem>
@@ -232,7 +233,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
               exclusive
               value={view}
               onChange={handleViewChange}
-              sx={{ backgroundColor: theme.palette.background.paper }}
+              sx={{ backgroundColor: paperBg(theme) }}
             >
               <ToggleButton value="cards" aria-label="cards" data-testid="available-view-cards">
                 <Tooltip title={t_i18n('Cards view')}>
@@ -263,8 +264,8 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
                       <Box
                         sx={{
                           borderRadius: 1,
-                          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-                          backgroundColor: theme.palette.background.paper,
+                          border: `1px solid ${paperBorder(theme)}`,
+                          backgroundColor: paperBg(theme),
                           overflow: 'hidden',
                         }}
                       >

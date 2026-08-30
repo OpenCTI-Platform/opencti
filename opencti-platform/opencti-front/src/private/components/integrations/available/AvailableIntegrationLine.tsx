@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, mirroring the
 // deployed tab lines view: the name column absorbs the remaining space and
@@ -55,7 +56,7 @@ export const AvailableIntegrationLinesHeader = () => {
         paddingInline: 1.5,
         paddingBlock: 1,
         backgroundColor: alpha(theme.palette.text.primary, 0.02),
-        borderBottom: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+        borderBottom: `1px solid ${paperBorder(theme)}`,
       }}
     >
       <Typography component="div" sx={{ ...headerCellSx, flex: 1, minWidth: 0 }}>
