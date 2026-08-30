@@ -241,7 +241,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -299,7 +299,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             textFieldProps={{
               label: t_i18n('Valid from'),
               required: (mandatoryAttributes.includes('valid_from')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -310,7 +310,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             textFieldProps={{
               label: t_i18n('Valid until'),
               required: (mandatoryAttributes.includes('valid_until')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -326,7 +326,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="x_opencti_score"
             label={t_i18n('Score')}
             required={(mandatoryAttributes.includes('x_opencti_score'))}

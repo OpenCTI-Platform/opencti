@@ -310,7 +310,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                 <Form>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="x_opencti_score"
                     label={t_i18n('Score')}
                     fullWidth={true}
@@ -348,7 +348,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                         <div key={attribute.value}>
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             name="/hashes/MD5"
                             label={t_i18n('hash_md5')}
                             fullWidth={true}
@@ -364,7 +364,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           />
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             name="/hashes/SHA-1"
                             label={t_i18n('hash_sha-1')}
                             fullWidth={true}
@@ -380,7 +380,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           />
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             name="/hashes/SHA-256"
                             label={t_i18n('hash_sha-256')}
                             fullWidth={true}
@@ -396,7 +396,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           />
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             name="/hashes/SHA-512"
                             label={t_i18n('hash_sha-512')}
                             fullWidth={true}
@@ -424,7 +424,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           onSubmit={handleSubmitField}
                           textFieldProps={{
                             label: attribute.value,
-                            variant: 'standard',
+                            variant: 'outlined',
                             fullWidth: true,
                             style: { marginTop: 20 },
                             helperText: (
@@ -441,7 +441,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                       return (
                         <Field
                           component={TextField}
-                          variant="standard"
+                          variant="outlined"
                           key={attribute.value}
                           name={attribute.value}
                           label={attribute.value}
@@ -517,7 +517,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                     return (
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         key={attribute.value}
                         name={attribute.value}
                         label={attribute.value}

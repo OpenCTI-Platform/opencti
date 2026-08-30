@@ -304,7 +304,7 @@ const ProfileOverviewComponent = (props) => {
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 disabled={external}
                 label={t('Name')}
@@ -313,7 +313,7 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="user_email"
                 disabled={external}
                 label={t('Email address')}
@@ -330,7 +330,7 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
@@ -339,7 +339,7 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
@@ -348,7 +348,7 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
@@ -371,7 +371,7 @@ const ProfileOverviewComponent = (props) => {
             <Form>
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="theme"
                 label={t('Theme')}
                 fullWidth={true}
@@ -389,7 +389,7 @@ const ProfileOverviewComponent = (props) => {
               </Field>
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="language"
                 label={t('Language')}
                 fullWidth={true}
@@ -407,7 +407,7 @@ const ProfileOverviewComponent = (props) => {
               </Field>
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="unit_system"
                 label={t('Unit system')}
                 fullWidth={true}
@@ -425,7 +425,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="submenu_show_icons"
                   checked={initialValues.submenu_show_icons}
                   onChange={(_, value) => handleSubmitField('submenu_show_icons', value)}
@@ -437,7 +437,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="submenu_auto_collapse"
                   checked={initialValues.submenu_auto_collapse}
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
@@ -449,7 +449,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="monochrome_labels"
                   checked={initialValues.monochrome_labels}
                   onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
@@ -530,7 +530,7 @@ const ProfileOverviewComponent = (props) => {
                 <Stack gap={2}>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="current_password"
                     label={t('Current password')}
                     type="password"
@@ -540,7 +540,7 @@ const ProfileOverviewComponent = (props) => {
                   <PasswordPolicies value={values.password} />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="password"
                     label={t('New password')}
                     type="password"
@@ -549,7 +549,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="confirmation"
                     label={t('Confirmation')}
                     type="password"

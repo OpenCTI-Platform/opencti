@@ -186,7 +186,7 @@ const EventEditionOverviewComponent = (props) => {
           <AlertConfidenceForEntity entity={event} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -234,7 +234,7 @@ const EventEditionOverviewComponent = (props) => {
             textFieldProps={{
               label: t_i18n('Start date'),
               required: (mandatoryAttributes.includes('start_time')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -250,7 +250,7 @@ const EventEditionOverviewComponent = (props) => {
             textFieldProps={{
               label: t_i18n('End date'),
               required: (mandatoryAttributes.includes('stop_time')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (

@@ -144,7 +144,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_lifetime"
             label={t_i18n('Lifetime (in days)')}
             fullWidth={true}
@@ -154,7 +154,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_pound"
             label={t_i18n('Decay factor')}
             fullWidth={true}
@@ -189,7 +189,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
                       <div style={{ flex: 1 }}>
                         <Field
                           component={TextField}
-                          variant="standard"
+                          variant="outlined"
                           name={`decay_points.${index}`}
                           type="number"
                           fullWidth={true}
@@ -226,7 +226,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_revoke_score"
             label={t_i18n('Revoke score')}
             fullWidth={true}
@@ -236,7 +236,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="order"
             label={t_i18n('Order')}
             fullWidth={true}

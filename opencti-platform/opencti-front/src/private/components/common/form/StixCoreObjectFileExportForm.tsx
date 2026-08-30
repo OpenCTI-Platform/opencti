@@ -421,7 +421,7 @@ const StixCoreObjectFileExportForm = ({
                       {!isBuiltInConnector(values.connector.value) && (
                         <Field
                           component={SelectFieldFds}
-                          variant="standard"
+                          variant="outlined"
                           name="type"
                           aria-label="TYPE"
                           label={t_i18n('Export type')}
@@ -439,7 +439,7 @@ const StixCoreObjectFileExportForm = ({
                       {isBuiltInConnector(values.connector.value) && (
                         <Field
                           component={TextField}
-                          variant="standard"
+                          variant="outlined"
                           name="exportFileName"
                           label={t_i18n('Export file name')}
                           className="mt-5"

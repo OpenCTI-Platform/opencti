@@ -139,7 +139,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -147,7 +147,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}

@@ -238,7 +238,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="x_opencti_score"
               required={(mandatoryAttributes.includes('x_opencti_score'))}
               label={t_i18n('Score')}

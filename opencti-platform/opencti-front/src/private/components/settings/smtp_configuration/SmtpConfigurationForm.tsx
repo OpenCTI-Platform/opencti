@@ -209,7 +209,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
           )}
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="sender_email_address"
             label={t_i18n('Sender email address')}
             fullWidth
@@ -217,7 +217,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="hostname"
             label={t_i18n('Hostname')}
             fullWidth
@@ -225,7 +225,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             type="number"
             name="port"
             label={t_i18n('Port')}
@@ -246,7 +246,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="auth_type"
             label={t_i18n('Authentication type')}
             fullWidth
@@ -259,7 +259,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="username"
                 label={t_i18n('Username')}
                 fullWidth
@@ -267,7 +267,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 type="password"
                 name="password"
                 label={t_i18n('Password')}
@@ -279,7 +279,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="oauth_user"
                 label={t_i18n('OAuth user')}
                 fullWidth
@@ -287,7 +287,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="oauth_client_id"
                 label={t_i18n('OAuth client ID')}
                 fullWidth
@@ -295,7 +295,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 type="password"
                 name="oauth_client_secret"
                 label={t_i18n('OAuth client secret')}
@@ -304,7 +304,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="oauth_issuer"
                 label={t_i18n('OAuth issuer')}
                 fullWidth
@@ -312,7 +312,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 type="password"
                 name="oauth_refresh_token"
                 label={t_i18n('OAuth refresh token')}
@@ -331,7 +331,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                       </Tooltip>
                     </span>
                   ),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}

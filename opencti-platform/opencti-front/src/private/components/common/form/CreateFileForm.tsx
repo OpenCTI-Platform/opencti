@@ -53,14 +53,14 @@ const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormPr
           >
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
             />
             <Field
               component={SelectFieldFds}
-              variant="standard"
+              variant="outlined"
               name="type"
               label={t_i18n('Type')}
               fullWidth={true}

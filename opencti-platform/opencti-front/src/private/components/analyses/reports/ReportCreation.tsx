@@ -243,7 +243,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             textFieldProps={{
               label: t_i18n('Publication date'),
               required: mandatoryAttributes.includes('published'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}

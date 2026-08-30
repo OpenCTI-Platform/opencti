@@ -33,7 +33,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
       <Field
         component={TextField}
-        variant="standard"
+        variant="outlined"
         type={isVisible ? 'text' : 'password'}
         fullWidth={true}
         className="mt-5"

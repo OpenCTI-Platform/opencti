@@ -227,7 +227,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -262,7 +262,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               textFieldProps={{
                 label: t_i18n('Start date'),
                 required: (mandatoryAttributes.includes('start_time')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
               }}
@@ -273,7 +273,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               textFieldProps={{
                 label: t_i18n('End date'),
                 required: (mandatoryAttributes.includes('stop_time')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
               }}
