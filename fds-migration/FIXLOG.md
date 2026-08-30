@@ -8,11 +8,9 @@ Statuses: `OPEN` · `FIXED` · `BLOCKED` · `NOT-REPRO`
 Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 **(c)** environment/backend → document · **(d)** accepted backlog → name it
 
-> **SOURCE GAP:** the annotated PDF "Retours finale2" was referenced as attached
-> but is not on this machine (only `retour-env-3000.pdf`, the FIRST pass, is in
-> ~/Downloads). Entries below are numbered from the brief's text. Items whose
-> meaning depends on a screenshot caption are marked `NEEDS-SCREENSHOT` — they
-> are actionable only once the PDF is available, and are NOT silently dropped.
+> **SOURCE:** `retour-opencti-fds-2.pdf` (18 pages), supplied mid-round and read.
+> Its captions are reconciled with the brief, so the `NEEDS-SCREENSHOT` marks are
+> lifted.
 
 | # | Screen | What's wrong | Class | Status |
 |---|---|---|---|---|
@@ -23,15 +21,15 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 | F5 | Drawers (sweep all) | Some drawers still have unfixed field backgrounds. | a | OPEN |
 | F6 | Textareas in drawers/dialogs | Same layer-2 background as every other field. | a | OPEN |
 | F7 | Filter popovers (ALL) | Popover surface = `bg-elevation-highlight` at layer 1; fields inside = layer 2. | a | OPEN |
-| F8 | Coverage validity period, others | `type=number` still MUI — the lib `isTypeNumber` exists. TWICE REPORTED. | a | OPEN |
+| F8 | Validity period, max concurrent sessions | `type=number` still MUI. TWICE REPORTED. Full census of all 90 number inputs this round; only 2 were reachable. `PeriodicityField` bypassed the pivot entirely → now lib `Input` + `isTypeNumber`. `AuthenticationGlobalSettings` was blocked by `inputProps` → `min={0}`. | a | FIXED-UNVERIFIED (not yet exercised on screen) |
 | F9 | Custom dashboards | Relative-time field still MUI. | a | OPEN |
 | F10 | EE license dialog | Textarea still MUI. | a | OPEN |
 | F11 | Manage access dialog | User picker still MUI. | a | OPEN |
 | F12 | Create dashboard dialog | Nom / Description still MUI. | a | OPEN |
 | F13 | Triggers page | Search field / Add filter / chips misaligned; filter chips wrap one line below. Same in Create security coverage dialog — everything must sit on ONE line. TWICE REPORTED (filter alignment). | a | OPEN |
 | F14 | Navbar, inside a custom dashboard | "Tableaux de bord personnalisés" sub-item must show active; it doesn't. | a | OPEN |
-| F15 | Custom dashboard | Refresh button icon+label misalignment — REPORTED IN A PREVIOUS ROUND AND STILL THERE. Plus 8px gap between Refresh and the 5min select. TWICE REPORTED. | a | OPEN |
-| F16 | Notifications table | Rendering bug on the trigger-name chip (overflow / covered). | a | OPEN · NEEDS-SCREENSHOT |
+| F15 | Custom dashboard | Refresh icon+label misalignment + 8px gap. TWICE REPORTED. ONE root cause for both halves: a MUI `ButtonGroup` wrapper, which JOINS children edge-to-edge (zero gap) and styles them as MUI buttons, which the lib Button/Select are not (misalignment). Now a flex row with `gap: 1`, glyph sized to the spinner. | a | FIXED-UNVERIFIED (not yet on screen) |
+| F16 | Notifications table | Rendering bug on the trigger-name chip (PDF p3, "Problem bug sur le tableau"). | a | OPEN |
 | F17 | Public dashboard dialog | "+" button → md; 16px gap between fields. | a | OPEN |
 | F18 | "Aperçu par IA EE" | Icon too big vs the button + misalignment (two screenshots). | a | OPEN |
 | F19 | List toolbars (Créer Rapport bar) | ONE icon button converted, siblings not — homogeneity: all or none per toolbar. | a | OPEN |
@@ -40,7 +38,7 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 | F22 | MUI Select dropdown lists | Row height / icon size / spacing should approach the lib's menus, without breaking behaviour. | a | OPEN |
 | F23 | Integration blocks | Very dark background nobody asked for — revert to previous. | a | OPEN |
 | F24 | Settings right nav | EE chips must be the small variant. | a | OPEN |
-| F25 | Entity content/analyses tabs (Cobalt Strike) | Alignment broken. | a | OPEN · NEEDS-SCREENSHOT |
+| F25 | Entity content/analyses tabs (Cobalt Strike) | Alignment broken (PDF p14, two captures). | a | OPEN |
 | F26 | Whole app | Full field exercise + global alignment sweep. Her list is a SEED, not the boundary. | a | OPEN |
 
 ## Why the twice-reported items survived the last round
@@ -55,5 +53,7 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
   ones, so the fix could not reach them. Same defect class, different DOM.
 - **F8 (number fields)** — the previous round converted the six fields blocked
   only by `slotProps`, and reported exactly that. The coverage validity period
-  was not among them, so it was never in scope. The census was of one blocking
-  pattern, not of every remaining number field.
+  was not among them, so it was never in scope. The census covered ONE blocking
+  pattern, not every number field. Redone properly this round: all 90
+  `type="number"` inputs enumerated and each classified as pivoting /
+  MUI-fallback / raw. That is the census that should have been run first.
