@@ -78,3 +78,15 @@ export const filterPopoverPaperSx = {
   ...layerInputVars,
   background: 'var(--bg-elevation-highlight-layer-1)',
 } as const;
+
+/**
+ * The tab-scoped right bars (Knowledge, Content).
+ *
+ * Layer 1, not 2: they are page chrome sitting beside the content, not a panel
+ * over it. Pinned by two independent hexes read off the Figma node
+ * (0PmhuZzF9XcaIEfMMW2a51, 7472:48226) — `--bg-elevation-default` #0d172b and
+ * `--bg-elevation-highlight` #182a4e, which are the layer-1 values. A bare
+ * alias would have resolved layer 0 (#070d18), which is what the bars painted
+ * before.
+ */
+export const RIGHT_BAR_LAYER: FdsLayer = 1;

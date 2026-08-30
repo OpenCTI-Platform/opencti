@@ -32,6 +32,7 @@ import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hoo
 import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { Stack, useTheme } from '@mui/material';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 interface ContentBlocProps {
   title: ReactNode;
@@ -171,7 +172,15 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       // Same surface contract as the Knowledge bar next door: the two
       // tab-scoped right bars are one family, so they sit on the same
       // elevation step and carry the same edge. Positioning is untouched.
-      PaperProps={{ className: 'layer-1' }}
+      slotProps={{
+        paper: {
+          // Same layer and the same mechanism as the Knowledge bar next door.
+          // This bar DOES hold fields (the file list's inline controls), so
+          // `layerInputVars` is load-bearing here rather than defensive.
+          className: fdsLayerClass(RIGHT_BAR_LAYER),
+          sx: { ...layerInputVars },
+        },
+      }}
       sx={{
         width: 350,
         '& .MuiDrawer-paper': {
