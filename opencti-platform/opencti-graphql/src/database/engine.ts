@@ -4529,6 +4529,8 @@ export const copyLiveElementToDraft = async (
   const allDraftIds = allDrafts.map((d) => d.internal_id);
   const addDraftIdScript = {
     script: {
+      // draftId is a script parameter, never interpolated: interpolating it would compile
+      // a new script for every draft ever created (see script.max_compilations_rate).
       source: `
         if (ctx._source.containsKey('draft_ids')) {
           for (int i=ctx._source['draft_ids'].length-1; i>=0; i--) {
@@ -4536,12 +4538,12 @@ export const copyLiveElementToDraft = async (
               ctx._source['draft_ids'].remove(i);
             }
           }
-          ctx._source['draft_ids'].add('${draftContext}');
+          ctx._source['draft_ids'].add(params.draftId);
         }
         else
-          {ctx._source.draft_ids = ['${draftContext}']}
+          {ctx._source.draft_ids = [params.draftId]}
       `,
-      params: { allDraftIds },
+      params: { allDraftIds, draftId: draftContext },
     },
   };
   await elUpdate(context, element._index, element.internal_id, addDraftIdScript);
