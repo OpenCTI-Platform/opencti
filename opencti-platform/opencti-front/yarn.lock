@@ -15879,9 +15879,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.110.0":
-  version: 5.110.0
-  resolution: "webpack@npm:5.110.0"
+"webpack@npm:5.110.1":
+  version: 5.110.1
+  resolution: "webpack@npm:5.110.1"
   dependencies:
     "@types/estree": "npm:^1.0.8"
     "@types/json-schema": "npm:^7.0.15"
@@ -15907,7 +15907,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/43d1184b830efff173f31e6b4551e2317bcafc3510a8df19dab5d3817cde3beed8848a9c8c253e0a4d01e049791e876e893d16068255336dfad3a43db02137af
+  checksum: 10c0/ba2e05ebbfb7e1feeb37febafa862a4f5ed6fd16c77d8825734a74adc402af83beca27f7abe38cf7b57035d0ad34d6b7369a19e56852a00a634309d40b988f67
   languageName: node
   linkType: hard
 
