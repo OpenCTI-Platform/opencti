@@ -1,6 +1,6 @@
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Box, CircularProgress } from '@mui/material';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Box } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../i18n';
@@ -100,8 +100,12 @@ const DashboardRefreshControl = ({
       sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
     >
       <Button
+        // The library's Spinner, not MUI's CircularProgress: `md` is the same
+        // 20px box, and `inherit` keeps the button's own colour exactly as
+        // `color="inherit"` did. Decorative on purpose — the button says
+        // "Refresh" beside it, so a `label` would announce it twice.
         startIcon={spinning
-          ? <CircularProgress size={20} color="inherit" />
+          ? <Spinner size="md" tone="inherit" />
           : <RefreshIcon fontSize="small" />}
         onClick={handleRefreshClick}
         variant="secondary"
