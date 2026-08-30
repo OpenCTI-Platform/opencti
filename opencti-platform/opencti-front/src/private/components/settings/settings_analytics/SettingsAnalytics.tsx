@@ -40,6 +40,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
       {t_i18n('Third-party analytics')}
 
       <Stack direction="row" gap={1}>
+        {/* TODO(ee-small): take the Chip EE small variant here once the library ships it — night-2 pass, wires up after the next pin bump. */}
         <EEChip />
         <Tooltip
           title={(

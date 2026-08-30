@@ -88,22 +88,28 @@ const AskArianeButton = () => {
 
   return (
     <>
-      {/* The EE badge is a sibling at a 4px gap, never nested in the button. */}
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-        <EETooltip
-          title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
+      {/* The EE badge sits INSIDE the button, in its trailing slot. This
+          reverses the earlier "sibling at a 4px gap" ruling, at the designer's
+          explicit request during the night-2 pass. `clickable={false}` is what
+          makes that legal: the chip renders a plain element rather than the
+          <button> it defaults to, so the surrounding control keeps owning the
+          click and no button is nested inside another. The slot brings its own
+          gap, so the chip's default inline-start margin is zeroed. */}
+      <EETooltip
+        title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
+      >
+        <Button
+          variant="ia"
+          priority="tertiary"
+          onClick={toggleChatbot}
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+          endIcon={isEnterpriseEdition
+            ? undefined
+            : <EEChip clickable={false} style={{ marginInlineStart: 0 }} />}
         >
-          <Button
-            variant="ia"
-            priority="tertiary"
-            onClick={toggleChatbot}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
-          >
-            {t_i18n('Ask Ariane')}
-          </Button>
-        </EETooltip>
-        <EEChip clickable={false} style={{ marginInlineStart: 0 }} />
-      </span>
+          {t_i18n('Ask Ariane')}
+        </Button>
+      </EETooltip>
 
       {/* V3 XTM One panel (xtm_one_token configured) */}
       {isChatbotEnabled && isOpen && !useLegacy && xtmOneConfigured === true && (
