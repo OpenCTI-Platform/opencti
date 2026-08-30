@@ -216,6 +216,35 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   originalCreationDate = reportDetailsPage.getTextForHeading('Original creation date', 'December 5, 2023');
   await expect(originalCreationDate).toBeVisible();
 
+  // region The date picker itself: pick, persist, clear
+  // --------------------------------------------------
+  // This exercises DateTimePickerField through its CALENDAR and its CLEAR
+  // control, not just by typing. Both are reached through the field's own
+  // adornment, and both broke the last time the field was restyled: library
+  // IconButtons inside a MUI adornment spilled out of the padding box, and the
+  // field rendered as a bare underline once it missed the outlined variant.
+  // A restyle that breaks either one turns this red instead of reaching Sandy.
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.publicationDateField.pickDay('14');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 14, 2023');
+  await expect(publicationDate).toBeVisible();
+
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.publicationDateField.getClearButton().click();
+  // The mask coming back is the proof the field is empty AND still a working
+  // date field; matched as a pattern because the mask follows the locale.
+  await expect(reportForm.publicationDateField.getInput()).toHaveValue(/Y{4}.*M{2}.*D{2}/);
+  await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 25, 2023');
+  await expect(publicationDate).toBeVisible();
+
+  // ---------
+  // endregion
+
   await reportDetailsPage.getEditButton().click();
   await reportForm.reportTypesAutocomplete.selectOption('threat-report');
   await reportForm.getUpdateTitle().click();
