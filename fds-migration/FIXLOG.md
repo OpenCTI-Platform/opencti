@@ -98,6 +98,21 @@ in anywhere.
 > says which PR carries the code. Once #18015 merges, the file exists on
 > `design-system/current` and later branches can edit it normally.
 
+### CI state at handover
+
+| PR | Result | Note |
+|---|---|---|
+| #18015 | green | — |
+| #18021 | green | — |
+| #18020 | green | the 726-prop sweep passes lint, typecheck and build |
+| #18001 | **one real failure, fixed and re-pushed** | `getByRole('menuitem', {name:'Victimology'})` timed out: the knowledge bar's rows are real links with `aria-current` now, not MUI `MenuItem`s with `role=menuitem`. Two page objects select by the old role; both moved to `role: 'link'`. Every other `getByRole('menuitem')` in the suite targets a real popup menu and is untouched. Awaiting the re-run. |
+| #18014 | backend red, **not caused by this PR** | `middleware-test.js > should multiple createdBy identity merged to empty target` — an entity-merge UUID assertion. This PR touches three frontend files and the log. Known flaky family; re-run triggered. |
+| #18019 | backend red, **not caused by this PR** | `Backend / Integration tests` on a frontend-only change. Same family; re-run triggered. |
+
+> **PR titles.** All were opened with `(#17989)`; an automation rewrote several
+> to `(#17729)`. The linked-issue gate is satisfied either way, but the log and
+> the commits still say #17989 — worth a look if the numbering matters.
+
 ### Preview
 
 `fds/night6-preview` merges all of the above and is BUILT and served on :3000
