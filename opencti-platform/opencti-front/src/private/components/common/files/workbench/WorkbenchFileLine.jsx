@@ -25,6 +25,7 @@ import ItemMarkings from '../../../../../components/ItemMarkings';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
+import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
 const styles = (theme) => ({
   itemNested: {
@@ -55,15 +56,7 @@ const styles = (theme) => ({
     paddingLeft: 10,
     height: 50,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIcon: {
     color: theme.palette.primary.main,
   },

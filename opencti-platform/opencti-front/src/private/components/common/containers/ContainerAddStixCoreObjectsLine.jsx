@@ -13,6 +13,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,15 +25,7 @@ const useStyles = makeStyles((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
