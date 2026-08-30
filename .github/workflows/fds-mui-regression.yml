@@ -1,0 +1,42 @@
+# Blocks a MUI component from re-entering the codebase where the design system
+# already replaces it in THIS product. Reads only lines ADDED against the base
+# branch, so existing code is untouched by construction.
+#
+# The watched list is generated, never typed here:
+# fds-migration/mui-regression-policy.generated.json, emitted by
+# `pnpm generate:mui-regression-policy --product opencti` in the
+# filigran-design-system repo.
+#
+# No `paths:` filter, on purpose: a required check that never runs leaves
+# unrelated PRs pending forever. On a PR that touches no front-end file the
+# gate reads zero added lines, reports PASS and says so.
+name: FDS MUI regression
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  mui-regression:
+    name: MUI regression gate
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: the gate diffs against the merge base with the target
+      # branch, which a shallow clone cannot resolve.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check for MUI regressions
+        run: node fds-migration/scripts/check-mui-regression.mjs --base origin/${{ github.base_ref }}
+
+      # Runs whatever the verdict was: on a red gate this is the context the
+      # author needs, and printing it only on success would hide it exactly
+      # when it matters.
+      - name: Policy in force
+        if: always()
+        run: node fds-migration/scripts/check-mui-regression.mjs --explain
