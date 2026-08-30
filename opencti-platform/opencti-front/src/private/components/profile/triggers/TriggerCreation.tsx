@@ -1,7 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggerDigestCreation from './TriggerDigestCreation';
@@ -27,7 +25,6 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   open,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   // Live
   const [openLive, setOpenLive] = useState(false);
   const handleOpenCreateLive = () => {
@@ -40,8 +37,11 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   };
   return (
     <>
+      {/* No marginRight: the row that holds these two buttons is a flex
+          container with `gap: 8`, so an 8px margin on top of it made the pair
+          16px apart -- the "trop éloignés" in the pass. The gap is the row's
+          to own. */}
       <Button
-        sx={{ marginRight: theme.spacing(1) }}
         onClick={handleOpenCreateDigest}
       >
         {t_i18n('', {
