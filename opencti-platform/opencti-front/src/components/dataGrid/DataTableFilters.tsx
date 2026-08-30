@@ -69,6 +69,7 @@ const DataTableFilters = ({
   additionalHeaderButtons,
   additionalHeaderToggleButtons: additionalToggleButtons,
   hideSavedFilters = false,
+  entityTypes,
 }: DataTableFiltersProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -136,6 +137,19 @@ const DataTableFilters = ({
               availableRelationshipTypes={availableRelationshipTypes}
               availableRelationFilterTypes={availableRelationFilterTypes}
               hideSavedFilters={hideSavedFilters}
+            />
+          )}
+          {/* The chips belong ON this row, not on one of their own beneath it:
+              "everything must sit on ONE line". They used to render as a
+              sibling of the whole toolbar, which is what put them a line
+              below. */}
+          {hasFilters && (
+            <DataTableDisplayFilters
+              availableFilterKeys={availableFilterKeys}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              availableEntityTypes={availableEntityTypes}
+              entityTypes={entityTypes}
+              searchContext={searchContextFinal}
             />
           )}
         </div>

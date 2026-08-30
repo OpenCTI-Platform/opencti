@@ -252,6 +252,25 @@ class ListLines extends Component {
                 availableRelationFilterTypes={availableRelationFilterTypes}
               />
             )}
+            {/* The filter chips belong ON the filter row, not on a row of
+                their own beneath it: "everything must sit on ONE line". The
+                row wraps, so a long chip run still degrades gracefully instead
+                of overflowing. */}
+            <FilterIconButton
+              helpers={helpers}
+              availableFilterKeys={availableFilterKeys}
+              filters={filters}
+              handleRemoveFilter={handleRemoveFilter}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              redirection
+              entityTypes={entityTypes}
+              filtersRestrictions={additionalFilterKeys?.filtersRestrictions ?? undefined}
+              searchContext={searchContextFinal}
+              availableEntityTypes={availableEntityTypes}
+              availableRelationshipTypes={availableRelationshipTypes}
+            />
             <div className={classes.filler} />
 
             {/* alignItems: the row's own container centres its children, but
@@ -421,21 +440,6 @@ class ListLines extends Component {
             </div>
           </div>
         )}
-        <FilterIconButton
-          helpers={helpers}
-          availableFilterKeys={availableFilterKeys}
-          filters={filters}
-          handleRemoveFilter={handleRemoveFilter}
-          handleSwitchGlobalMode={handleSwitchGlobalMode}
-          handleSwitchLocalMode={handleSwitchLocalMode}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-          redirection
-          entityTypes={entityTypes}
-          filtersRestrictions={additionalFilterKeys?.filtersRestrictions ?? undefined}
-          searchContext={searchContextFinal}
-          availableEntityTypes={availableEntityTypes}
-          availableRelationshipTypes={availableRelationshipTypes}
-        />
         <ErrorBoundary key={keyword}>
           {message && (
             <div style={{ width: '100%', marginTop: 10 }}>

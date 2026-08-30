@@ -198,6 +198,8 @@ export interface DataTableFiltersProps {
   additionalHeaderButtons?: ReactNode[];
   additionalHeaderToggleButtons?: ReactNode[];
   hideSavedFilters?: boolean;
+  /** Forwarded to the chips, which now render inside this row. */
+  entityTypes?: string[];
 }
 
 export interface DataTableHeadersProps {
