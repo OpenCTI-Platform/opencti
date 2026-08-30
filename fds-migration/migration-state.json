@@ -339,6 +339,17 @@
       "files": [
         "opencti-platform/opencti-front/src/components/ViewSwitchingButtons.tsx"
       ]
+    },
+    {
+      "component": "Combobox",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "night-2 visual pass: the `Add filter` picker. It never HOLDS a value -- picking an option adds a filter and the field empties -- so `value` is a literal null and ONLY a keystroke may write the input: in single mode the library answers a pick with setInputValue(getOptionLabel(option), \"select\"), and accepting that programmatic write left the field reading \"Label\" after the filter was added, so filling the same text a second time fired no input event and never reopened the panel. The name rides on `placeholder` + aria-label under `labelPosition=\"none\"`: the library renders labels ABOVE the control, and this one shares a flex row with an unlabelled search field. Covered by ListFilters.picker.test.tsx, which mirrors filters.pageModel's two-pass sequence.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
+      ]
     }
   ]
 }
