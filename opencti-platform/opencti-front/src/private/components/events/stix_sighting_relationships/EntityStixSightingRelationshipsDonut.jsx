@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
@@ -8,7 +8,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import * as R from 'ramda';
 import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
@@ -134,65 +134,11 @@ const entityStixSightingRelationshipsDonutStixSightingRelationshipsDistributionQ
   }
 `;
 
-class EntityStixSightingRelationshipsDonut extends Component {
-  constructor(props) {
-    super(props);
-    this.renderLabel = this.renderLabel.bind(this);
-    this.renderSimpleLabel = this.renderSimpleLabel.bind(this);
-  }
+const EntityStixSightingRelationshipsDonut = (props) => {
+  const { t_i18n } = useFormatter();
 
-  renderSimpleLabel(props) {
-    return props.value;
-  }
-
-  renderLabel(props) {
-    const { theme } = this.props;
-    const RADIAN = Math.PI / 180;
-    const { cx, cy, midAngle, outerRadius, fill, payload, percent, value } = props;
-    const sin = Math.sin(-RADIAN * midAngle);
-    const cos = Math.cos(-RADIAN * midAngle);
-    const sx = cx + (outerRadius + 10) * cos;
-    const sy = cy + (outerRadius + 10) * sin;
-    const mx = cx + (outerRadius + 30) * cos;
-    const my = cy + (outerRadius + 30) * sin;
-    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-    const ey = my;
-    const textAnchor = cos >= 0 ? 'start' : 'end';
-
-    return (
-      <g>
-        <path
-          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-          stroke={fill}
-          fill="none"
-        />
-        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-        <text
-          x={ex + (cos >= 0 ? 1 : -1) * 12}
-          y={ey}
-          textAnchor={textAnchor}
-          fill={theme.palette.text.primary}
-          style={{ fontSize: 12 }}
-        >
-          {' '}
-          {payload.label} ({value})
-        </text>
-        <text
-          x={ex + (cos >= 0 ? 1 : -1) * 12}
-          y={ey}
-          dy={18}
-          textAnchor={textAnchor}
-          fill="#999999"
-          style={{ fontSize: 12 }}
-        >
-          {` ${(percent * 100).toFixed(2)}%`}
-        </text>
-      </g>
-    );
-  }
-
-  renderContent() {
-    const { t, entityId, variant, field, startDate, endDate, theme, toTypes } = this.props;
+  const renderContent = () => {
+    const { entityId, variant, field, startDate, endDate, theme, toTypes } = props;
     const stixSightingRelationshipsDistributionVariables = {
       fromId: entityId,
       startDate: startDate || null,
@@ -220,7 +166,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
                   'label',
                   `${
                     toTypes.length > 1 && n.entity
-                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`
+                      ? `[${t_i18n(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`
                       : `${getMainRepresentative(n.entity) || n.label}`
                   }`,
                   n,
@@ -229,7 +175,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
               );
             }
             const chartData = data.map((n) => n.value);
-            const labels = data.map((n) => (field === 'entity_type' ? t(`entity_${n.label}`) : n.label));
+            const labels = data.map((n) => (field === 'entity_type' ? t_i18n(`entity_${n.label}`) : n.label));
             return (
               <Chart
                 options={donutChartOptions(
@@ -254,7 +200,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t(NO_DATA_WIDGET_MESSAGE)}
+                  {t_i18n(NO_DATA_WIDGET_MESSAGE)}
                 </span>
               </div>
             );
@@ -275,17 +221,15 @@ class EntityStixSightingRelationshipsDonut extends Component {
         }}
       />
     );
-  }
+  };
 
-  render() {
-    const { t, title } = this.props;
-    return (
-      <Card title={title || t('Distribution of entities')}>
-        {this.renderContent()}
-      </Card>
-    );
-  }
-}
+  const { title } = props;
+  return (
+    <Card title={title || t_i18n('Distribution of entities')}>
+      {renderContent()}
+    </Card>
+  );
+};
 
 EntityStixSightingRelationshipsDonut.propTypes = {
   title: PropTypes.string,
@@ -296,13 +240,10 @@ EntityStixSightingRelationshipsDonut.propTypes = {
   field: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   toTypes: PropTypes.array,
 };
 
 export default compose(
-  inject18n,
   withTheme,
   withStyles(styles),
 )(EntityStixSightingRelationshipsDonut);

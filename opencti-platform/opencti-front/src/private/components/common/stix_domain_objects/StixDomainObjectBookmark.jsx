@@ -1,6 +1,4 @@
-import { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import CardHeader from '@mui/material/CardHeader';
@@ -8,7 +6,7 @@ import { useTheme } from '@mui/styles';
 import CardContent from '@mui/material/CardContent';
 import Skeleton from '@mui/material/Skeleton';
 import Card from '@common/card/Card';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import { renderCardTitle } from '../../../../utils/Card';
 import BookmarkToggle from '../../../../components/common/bookmark/BookmarkToggle';
@@ -244,79 +242,74 @@ export const StixDomainObjectBookmark = createFragmentContainer(
   },
 );
 
-class StixDomainObjectBookmarkDummyComponent extends Component {
-  render() {
-    const { classes } = this.props;
-    return (
-      <Card>
-        <CardHeader
-          classes={{ root: classes.header }}
-          avatar={(
-            <Skeleton
-              animation="wave"
-              variant="circular"
-              width={30}
-              height={30}
-            />
-          )}
-          title={(
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
-          )}
-          subheader={(
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
-          )}
-          action={(
-            <Skeleton
-              animation="wave"
-              variant="circular"
-              width={30}
-              height={30}
-            />
-          )}
-          slotProps={{
-            title: { color: 'inherit' },
-          }}
+const StixDomainObjectBookmarkDummyComponent = (props) => {
+  const { classes } = props;
+  return (
+    <Card>
+      <CardHeader
+        classes={{ root: classes.header }}
+        avatar={(
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
+        )}
+        title={(
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="90%"
+            style={{ marginBottom: 10 }}
+          />
+        )}
+        subheader={(
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="90%"
+            style={{ marginBottom: 10 }}
+          />
+        )}
+        action={(
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
+        )}
+        slotProps={{
+          title: { color: 'inherit' },
+        }}
+      />
+      <CardContent classes={{ root: classes.contentDummy }}>
+        <Skeleton
+          animation="wave"
+          variant="rectangular"
+          width="90%"
+          style={{ marginBottom: 10 }}
         />
-        <CardContent classes={{ root: classes.contentDummy }}>
-          <Skeleton
-            animation="wave"
-            variant="rectangular"
-            width="90%"
-            style={{ marginBottom: 10 }}
-          />
-          <Skeleton
-            animation="wave"
-            variant="rectangular"
-            width="95%"
-            style={{ marginBottom: 10 }}
-          />
-          <Skeleton
-            animation="wave"
-            variant="rectangular"
-            width="90%"
-            style={{ marginBottom: 10 }}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-}
+        <Skeleton
+          animation="wave"
+          variant="rectangular"
+          width="95%"
+          style={{ marginBottom: 10 }}
+        />
+        <Skeleton
+          animation="wave"
+          variant="rectangular"
+          width="90%"
+          style={{ marginBottom: 10 }}
+        />
+      </CardContent>
+    </Card>
+  );
+};
 
 StixDomainObjectBookmarkDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const StixDomainObjectBookmarkDummy = R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectBookmarkDummyComponent);
+export const StixDomainObjectBookmarkDummy = withStyles(styles)(StixDomainObjectBookmarkDummyComponent);

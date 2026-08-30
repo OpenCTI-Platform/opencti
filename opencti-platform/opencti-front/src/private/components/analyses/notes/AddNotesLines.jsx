@@ -9,9 +9,7 @@ import Typography from '@mui/material/Typography';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Component } from 'react';
 import { createPaginationContainer, graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
@@ -54,13 +52,13 @@ export const noteMutationRelationDelete = graphql`
   }
 `;
 
-class AddNotesLinesContainer extends Component {
-  toggleNote(note) {
+const AddNotesLinesContainer = (props) => {
+  const toggleNote = (note) => {
     const {
       stixCoreObjectOrStixCoreRelationshipId,
       stixCoreObjectOrStixCoreRelationshipNotes,
       paginationOptions,
-    } = this.props;
+    } = props;
     const entityNotesIds = R.map(
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipNotes,
@@ -114,72 +112,70 @@ class AddNotesLinesContainer extends Component {
         },
       });
     }
-  }
+  };
 
-  render() {
-    const { classes, data, stixCoreObjectOrStixCoreRelationshipNotes } = this.props;
-    const entityNotesIds = R.map(
-      (n) => n.node.id,
-      stixCoreObjectOrStixCoreRelationshipNotes,
-    );
+  const { classes, data, stixCoreObjectOrStixCoreRelationshipNotes } = props;
+  const entityNotesIds = R.map(
+    (n) => n.node.id,
+    stixCoreObjectOrStixCoreRelationshipNotes,
+  );
 
-    return (
-      <TableContainer>
-        <Table
-          sx={{
-            '& .MuiTableRow-root:first-of-type td': {
-              borderTop: 'none',
-            },
-          }}
-        >
-          <TableBody>
-            {data.notes.edges.map((noteNode) => {
-              const note = noteNode.node;
-              const alreadyAdded = entityNotesIds.includes(note.id);
-              const noteId = note.external_id ? `(${note.external_id})` : '';
-              return (
-                <TableRow
-                  key={note.id}
-                  component={ListItemButton}
-                  classes={{ root: classes.menuItem }}
-                  onClick={this.toggleNote.bind(this, note)}
-                >
-                  <TableCell sx={{ width: 48, paddingY: 1, paddingX: 2 }}>
-                    {alreadyAdded ? (
-                      <CheckCircle
-                        color="primary"
-                        sx={{ marginTop: 0.5 }}
-                      />
-                    ) : (
-                      <WorkOutline sx={{ marginTop: 0.5 }} />
-                    )}
-                  </TableCell>
-                  <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
-                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                      {`${note.attribute_abstract} ${noteId}`}
-                    </Typography>
-                    <Typography variant="body1">
-                      {truncate(note.content, 120)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell sx={{ paddingY: 1, paddingX: 2, whiteSpace: 'nowrap' }}>
-                    {note.createdBy?.name ?? EMPTY_VALUE}
-                  </TableCell>
-                  <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitions={note.objectMarking ?? []}
+  return (
+    <TableContainer>
+      <Table
+        sx={{
+          '& .MuiTableRow-root:first-of-type td': {
+            borderTop: 'none',
+          },
+        }}
+      >
+        <TableBody>
+          {data.notes.edges.map((noteNode) => {
+            const note = noteNode.node;
+            const alreadyAdded = entityNotesIds.includes(note.id);
+            const noteId = note.external_id ? `(${note.external_id})` : '';
+            return (
+              <TableRow
+                key={note.id}
+                component={ListItemButton}
+                classes={{ root: classes.menuItem }}
+                onClick={toggleNote.bind(this, note)}
+              >
+                <TableCell sx={{ width: 48, paddingY: 1, paddingX: 2 }}>
+                  {alreadyAdded ? (
+                    <CheckCircle
+                      color="primary"
+                      sx={{ marginTop: 0.5 }}
                     />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
-  }
-}
+                  ) : (
+                    <WorkOutline sx={{ marginTop: 0.5 }} />
+                  )}
+                </TableCell>
+                <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {`${note.attribute_abstract} ${noteId}`}
+                  </Typography>
+                  <Typography variant="body1">
+                    {truncate(note.content, 120)}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ paddingY: 1, paddingX: 2, whiteSpace: 'nowrap' }}>
+                  {note.createdBy?.name ?? EMPTY_VALUE}
+                </TableCell>
+                <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
+                  <ItemMarkings
+                    variant="inList"
+                    markingDefinitions={note.objectMarking ?? []}
+                  />
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
 
 AddNotesLinesContainer.propTypes = {
   stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
@@ -188,8 +184,6 @@ AddNotesLinesContainer.propTypes = {
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 export const addNotesLinesQuery = graphql`
@@ -254,4 +248,4 @@ const AddNotesLines = createPaginationContainer(
   },
 );
 
-export default R.compose(inject18n, withStyles(styles))(AddNotesLines);
+export default R.compose(withStyles(styles))(AddNotesLines);

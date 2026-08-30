@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';
 import { reportEditionOverviewFocus } from './ReportEditionOverview';
 import Loader from '../../../../components/Loader';
@@ -17,48 +15,43 @@ export const reportEditionQuery = graphql`
   }
 `;
 
-class ReportEdition extends Component {
-  handleClose() {
+const ReportEdition = (props) => {
+  const handleClose = () => {
     commitMutation({
       mutation: reportEditionOverviewFocus,
       variables: {
-        id: this.props.reportId,
+        id: props.reportId,
         input: { focusOn: '' },
       },
     });
-  }
+  };
 
-  render() {
-    const { reportId } = this.props;
-    return (
-      <QueryRenderer
-        query={reportEditionQuery}
-        variables={{ id: reportId }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <ReportEditionContainer
-                report={props.report}
-                handleClose={this.handleClose.bind(this)}
-                controlledDial={EditEntityControlledDial}
-              />
-            );
-          }
-          return <Loader variant="inline" />;
-        }}
-      />
-    );
-  }
-}
+  const { reportId } = props;
+  return (
+    <QueryRenderer
+      query={reportEditionQuery}
+      variables={{ id: reportId }}
+      render={({ props }) => {
+        if (props) {
+          return (
+            <ReportEditionContainer
+              report={props.report}
+              handleClose={handleClose.bind(this)}
+              controlledDial={EditEntityControlledDial}
+            />
+          );
+        }
+        return <Loader variant="inline" />;
+      }}
+    />
+  );
+};
 
 ReportEdition.propTypes = {
   reportId: PropTypes.string,
   me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(ReportEdition);
+export default ReportEdition;

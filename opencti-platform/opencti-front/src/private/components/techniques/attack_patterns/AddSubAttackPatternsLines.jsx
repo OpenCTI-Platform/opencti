@@ -1,8 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addSubAttackPatternsMutationRelationDelete = graphql`
@@ -19,21 +17,19 @@ export const addSubAttackPatternsMutationRelationDelete = graphql`
   }
 `;
 
-class AddSubAttackPatternsLinesContainer extends Component {
-  render() {
-    const { data, attackPatternSubAttackPatterns, attackPattern } = this.props;
-    return (
-      <StixCoreRelationshipCreationFromEntityList
-        entity={attackPattern}
-        relationshipType="subtechnique-of"
-        availableDatas={data?.attackPatterns}
-        existingDatas={attackPatternSubAttackPatterns}
-        updaterOptions={{ path: 'subAttackPatterns' }}
-        isRelationReversed={true}
-      />
-    );
-  }
-}
+const AddSubAttackPatternsLinesContainer = (props) => {
+  const { data, attackPatternSubAttackPatterns, attackPattern } = props;
+  return (
+    <StixCoreRelationshipCreationFromEntityList
+      entity={attackPattern}
+      relationshipType="subtechnique-of"
+      availableDatas={data?.attackPatterns}
+      existingDatas={attackPatternSubAttackPatterns}
+      updaterOptions={{ path: 'subAttackPatterns' }}
+      isRelationReversed={true}
+    />
+  );
+};
 
 AddSubAttackPatternsLinesContainer.propTypes = {
   attackPattern: PropTypes.object,
@@ -101,4 +97,4 @@ const AddSubAttackPatternsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n)(AddSubAttackPatternsLines);
+export default AddSubAttackPatternsLines;

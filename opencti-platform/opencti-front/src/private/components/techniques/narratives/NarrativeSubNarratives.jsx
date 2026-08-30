@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
+import { filter } from 'ramda';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -13,22 +13,23 @@ import ListItem from '@mui/material/ListItem';
 import AddSubNarrative from './AddSubNarrative';
 import { addSubNarrativesMutationRelationDelete } from './AddSubNarrativesLines';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Label from '../../../../components/common/label/Label';
 
-class NarrativeSubNarrativesComponent extends Component {
-  removeSubNarrative(subNarrativeEdge) {
+const NarrativeSubNarrativesComponent = (props) => {
+  const { t_i18n } = useFormatter();
+  const removeSubNarrative = (subNarrativeEdge) => {
     commitMutation({
       mutation: addSubNarrativesMutationRelationDelete,
       variables: {
         fromId: subNarrativeEdge.node.id,
-        toId: this.props.narrative.id,
+        toId: props.narrative.id,
         relationship_type: 'subnarrative-of',
       },
       updater: (store) => {
-        const node = store.get(this.props.narrative.id);
+        const node = store.get(props.narrative.id);
         const subNarratives = node.getLinkedRecord('subNarratives');
         const edges = subNarratives.getLinkedRecords('edges');
         const newEdges = filter(
@@ -39,65 +40,61 @@ class NarrativeSubNarrativesComponent extends Component {
         subNarratives.setLinkedRecords(newEdges, 'edges');
       },
     });
-  }
+  };
 
-  render() {
-    const { t, narrative } = this.props;
-    return (
-      <div style={{ height: '100%' }}>
-        <Label action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <AddSubNarrative
-              narrative={narrative}
-              narrativeSubNarratives={narrative.subNarratives.edges}
-            />
-          </Security>
-        )}
-        >
-          {t('Subnarratives')}
-        </Label>
-        <List sx={{ py: 0 }}>
-          {narrative.subNarratives.edges.map((subNarrativeEdge) => {
-            const subNarrative = subNarrativeEdge.node;
-            return (
-              <ListItem
-                key={subNarrative.id}
-                dense={true}
-                divider={true}
-                secondaryAction={(
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={this.removeSubNarrative.bind(
-                      this,
-                      subNarrativeEdge,
-                    )}
-                  >
-                    <LinkOff />
-                  </IconButton>
-                )}
-              >
-                <ListItemButton
-                  component={Link}
-                  to={`/dashboard/techniques/narratives/${subNarrative.id}`}
+  const { narrative } = props;
+  return (
+    <div style={{ height: '100%' }}>
+      <Label action={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AddSubNarrative
+            narrative={narrative}
+            narrativeSubNarratives={narrative.subNarratives.edges}
+          />
+        </Security>
+      )}
+      >
+        {t_i18n('Subnarratives')}
+      </Label>
+      <List sx={{ py: 0 }}>
+        {narrative.subNarratives.edges.map((subNarrativeEdge) => {
+          const subNarrative = subNarrativeEdge.node;
+          return (
+            <ListItem
+              key={subNarrative.id}
+              dense={true}
+              divider={true}
+              secondaryAction={(
+                <IconButton
+                  aria-label="Remove"
+                  onClick={removeSubNarrative.bind(
+                    this,
+                    subNarrativeEdge,
+                  )}
                 >
-                  <ListItemIcon>
-                    <SpeakerNotesOutlined color="primary" />
-                  </ListItemIcon>
-                  <ListItemText primary={subNarrative.name} />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      </div>
-    );
-  }
-}
+                  <LinkOff />
+                </IconButton>
+              )}
+            >
+              <ListItemButton
+                component={Link}
+                to={`/dashboard/techniques/narratives/${subNarrative.id}`}
+              >
+                <ListItemIcon>
+                  <SpeakerNotesOutlined color="primary" />
+                </ListItemIcon>
+                <ListItemText primary={subNarrative.name} />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
+    </div>
+  );
+};
 
 NarrativeSubNarrativesComponent.propTypes = {
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   narrative: PropTypes.object,
 };
 
@@ -125,4 +122,4 @@ const NarrativeSubNarratives = createFragmentContainer(
   },
 );
 
-export default compose(inject18n)(NarrativeSubNarratives);
+export default NarrativeSubNarratives;

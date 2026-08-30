@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -13,7 +12,7 @@ import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { commitMutation } from '../../../../relay/environment';
 import { findFlagUrl } from '../../../../utils/flags';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import Security from '../../../../utils/Security';
@@ -23,17 +22,18 @@ import { addLocationsThreatActorGroupMutationRelationDelete } from './AddLocatio
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
 
-class ThreatActorGroupLocationsComponent extends Component {
-  removeLocation(locationEdge) {
+const ThreatActorGroupLocationsComponent = (props) => {
+  const { t_i18n } = useFormatter();
+  const removeLocation = (locationEdge) => {
     commitMutation({
       mutation: addLocationsThreatActorGroupMutationRelationDelete,
       variables: {
-        fromId: this.props.threatActorGroup.id,
+        fromId: props.threatActorGroup.id,
         toId: locationEdge.node.id,
         relationship_type: 'located-at',
       },
       updater: (store) => {
-        const node = store.get(this.props.threatActorGroup.id);
+        const node = store.get(props.threatActorGroup.id);
         const locations = node.getLinkedRecord('locations');
         const edges = locations.getLinkedRecords('edges');
         const newEdges = edges.filter(
@@ -42,81 +42,77 @@ class ThreatActorGroupLocationsComponent extends Component {
         locations.setLinkedRecords(newEdges, 'edges');
       },
     });
-  }
+  };
 
-  render() {
-    const { t, threatActorGroup } = this.props;
-    return (
-      <>
-        <Label action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <AddLocationsThreatActorGroup
-              threatActorGroup={threatActorGroup}
-              threatActorGroupLocations={threatActorGroup.locations.edges}
-            />
-          </Security>
-        )}
-        >
-          {t('Located at')}
-        </Label>
+  const { threatActorGroup } = props;
+  return (
+    <>
+      <Label action={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AddLocationsThreatActorGroup
+            threatActorGroup={threatActorGroup}
+            threatActorGroupLocations={threatActorGroup.locations.edges}
+          />
+        </Security>
+      )}
+      >
+        {t_i18n('Located at')}
+      </Label>
 
-        <FieldOrEmpty source={threatActorGroup.locations.edges}>
-          <List>
-            {threatActorGroup.locations.edges.map((locationEdge) => {
-              const { types } = locationEdge;
-              const location = locationEdge.node;
-              const link = resolveLink(location.entity_type);
-              const flagUrl = location.entity_type === 'Country'
-                && findFlagUrl(location.x_opencti_aliases);
-              return (
-                <ListItem
-                  key={location.id}
-                  dense={true}
-                  divider={true}
-                  disablePadding
-                  secondaryAction={types.includes('manual') && (
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <IconButton
-                        aria-label="Remove"
-                        onClick={() => this.removeLocation(locationEdge)}
-                      >
-                        <LinkOff />
-                      </IconButton>
-                    </Security>
-                  )}
+      <FieldOrEmpty source={threatActorGroup.locations.edges}>
+        <List>
+          {threatActorGroup.locations.edges.map((locationEdge) => {
+            const { types } = locationEdge;
+            const location = locationEdge.node;
+            const link = resolveLink(location.entity_type);
+            const flagUrl = location.entity_type === 'Country'
+              && findFlagUrl(location.x_opencti_aliases);
+            return (
+              <ListItem
+                key={location.id}
+                dense={true}
+                divider={true}
+                disablePadding
+                secondaryAction={types.includes('manual') && (
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={() => removeLocation(locationEdge)}
+                    >
+                      <LinkOff />
+                    </IconButton>
+                  </Security>
+                )}
+              >
+                <ListItemButton
+                  component={Link}
+                  to={`${link}/${location.id}`}
                 >
-                  <ListItemButton
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
-                    <ListItemIcon sx={{ minWidth: 32 }}>
-                      {flagUrl ? (
-                        <img
-                          style={{ width: 20 }}
-                          src={flagUrl}
-                          alt={location.name}
-                        />
-                      ) : (
-                        <ItemIcon type={location.entity_type} />
-                      )}
-                    </ListItemIcon>
-                    <ListItemText primary={location.name} />
-                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        </FieldOrEmpty>
-      </>
-    );
-  }
-}
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    {flagUrl ? (
+                      <img
+                        style={{ width: 20 }}
+                        src={flagUrl}
+                        alt={location.name}
+                      />
+                    ) : (
+                      <ItemIcon type={location.entity_type} />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText primary={location.name} />
+                  {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      </FieldOrEmpty>
+    </>
+  );
+};
 
 ThreatActorGroupLocationsComponent.propTypes = {
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   threatActorGroup: PropTypes.object,
 };
 
@@ -147,4 +143,4 @@ const ThreatActorGroupLocations = createFragmentContainer(
   },
 );
 
-export default compose(inject18n)(ThreatActorGroupLocations);
+export default ThreatActorGroupLocations;

@@ -1,54 +1,48 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import inject18n from '../../../../components/i18n';
-import withRouter from '../../../../utils/compat_router/withRouter';
+import { useFormatter } from '../../../../components/i18n';
 
-class RootConnector extends Component {
-  render() {
-    const {
-      t,
-      params: { connectorId },
-    } = this.props;
-    return (
-      <QueryRenderer
-        query={connectorQuery}
-        variables={{ id: connectorId }}
-        render={({ props }) => {
-          if (props) {
-            if (props.connector) {
-              return (
-                <>
-                  <Breadcrumbs elements={[{ label: t('Integrations') }, { label: t('Deployed'), link: '/dashboard/integrations/deployed' }, { label: props.connector.title, current: true }]} />
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Connector connector={props.connector} />
-                      }
-                    />
-                  </Routes>
-                </>
-              );
-            }
-            return <ErrorNotFound />;
+const RootConnector = () => {
+  const { t_i18n } = useFormatter();
+  const { connectorId } = useParams();
+  return (
+    <QueryRenderer
+      query={connectorQuery}
+      variables={{ id: connectorId }}
+      render={({ props }) => {
+        if (props) {
+          if (props.connector) {
+            return (
+              <>
+                <Breadcrumbs elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed' }, { label: props.connector.title, current: true }]} />
+                <Routes>
+                  <Route
+                    path="/"
+                    element={
+                      <Connector connector={props.connector} />
+                    }
+                  />
+                </Routes>
+              </>
+            );
           }
-          return <Loader />;
-        }}
-      />
-    );
-  }
-}
+          return <ErrorNotFound />;
+        }
+        return <Loader />;
+      }}
+    />
+  );
+};
 
 RootConnector.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(RootConnector);
+export default RootConnector;

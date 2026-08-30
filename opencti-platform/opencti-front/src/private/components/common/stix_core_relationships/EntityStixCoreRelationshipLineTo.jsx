@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
@@ -15,7 +15,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
 import { ListItemButton } from '@mui/material';
 import withTheme from '@mui/styles/withTheme';
-import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
@@ -25,6 +24,7 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { useFormatter } from '../../../../components/i18n';
 
 const styles = (theme) => ({
   item: {
@@ -63,196 +63,193 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixCoreRelationshipLineToComponent extends Component {
-  render() {
-    const {
-      fsd,
-      t,
-      theme,
-      classes,
-      dataColumns,
-      node,
-      paginationOptions,
-      entityLink,
-      onToggleEntity,
-      selectAll,
-      deSelectedElements,
-      selectedElements,
-      onToggleShiftEntity,
-      index,
-      isCoverage,
-    } = this.props;
-    const restricted = node.from === null;
-    const link = `${entityLink}/relations/${node.id}`;
-    return (
-      <ListItem
-        divider={true}
-        disablePadding
-        secondaryAction={node.is_inferred ? (
-          <Tooltip
-            title={
-              t('Inferred knowledge based on the rule ')
-              + R.head(node.x_opencti_inferences).rule.name
-            }
-          >
-            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-          </Tooltip>
-        ) : (
-          <StixCoreRelationshipPopover
-            stixCoreRelationshipId={node.id}
-            paginationOptions={paginationOptions}
-            isCoverage={isCoverage}
-          />
-        )}
-      >
-        <ListItemButton
-          classes={{ root: classes.item }}
-          component={Link}
-          to={link}
+const EntityStixCoreRelationshipLineToComponent = (props) => {
+  const { fsd, t_i18n } = useFormatter();
+  const {
+    theme,
+    classes,
+    dataColumns,
+    node,
+    paginationOptions,
+    entityLink,
+    onToggleEntity,
+    selectAll,
+    deSelectedElements,
+    selectedElements,
+    onToggleShiftEntity,
+    index,
+    isCoverage,
+  } = props;
+  const restricted = node.from === null;
+  const link = `${entityLink}/relations/${node.id}`;
+  return (
+    <ListItem
+      divider={true}
+      disablePadding
+      secondaryAction={node.is_inferred ? (
+        <Tooltip
+          title={
+            t_i18n('Inferred knowledge based on the rule ')
+            + R.head(node.x_opencti_inferences).rule.name
+          }
         >
-          <ListItemIcon
-            classes={{ root: classes.itemIcon }}
-            style={{ minWidth: 40 }}
-            onClick={(event) => (event.shiftKey
-              ? onToggleShiftEntity(index, node)
-              : onToggleEntity(node, event))
+          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+        </Tooltip>
+      ) : (
+        <StixCoreRelationshipPopover
+          stixCoreRelationshipId={node.id}
+          paginationOptions={paginationOptions}
+          isCoverage={isCoverage}
+        />
+      )}
+    >
+      <ListItemButton
+        classes={{ root: classes.item }}
+        component={Link}
+        to={link}
+      >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={(event) => (event.shiftKey
+            ? onToggleShiftEntity(index, node)
+            : onToggleEntity(node, event))
+          }
+        >
+          <Checkbox
+            edge="start"
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
             }
-          >
-            <Checkbox
-              edge="start"
-              checked={
-                (selectAll && !(node.id in (deSelectedElements || {})))
-                || node.id in (selectedElements || {})
-              }
-              disableRipple={true}
-            />
-          </ListItemIcon>
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null} />
-          </ListItemIcon>
-          <ListItemText
-            classes={{ root: classes.listItemText }}
-            primary={(
-              <div className={classes.row}>
-                {dataColumns.relationship_type && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.relationship_type.width }}
-                  >
-                    <ItemEntityType
-                      entityType={node.relationship_type}
-                    />
-                  </div>
-                )}
-                {dataColumns.entity_type && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.entity_type.width }}
-                  >
-                    <ItemEntityType
-                      entityType={node.from?.entity_type}
-                      isRestricted={!node.from}
-                      size="large"
-                      showIcon
-                    />
-                  </div>
-                )}
+            disableRipple={true}
+          />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null} />
+        </ListItemIcon>
+        <ListItemText
+          classes={{ root: classes.listItemText }}
+          primary={(
+            <div className={classes.row}>
+              {dataColumns.relationship_type && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.relationship_type.width }}
+                >
+                  <ItemEntityType
+                    entityType={node.relationship_type}
+                  />
+                </div>
+              )}
+              {dataColumns.entity_type && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.entity_type.width }}
+                >
+                  <ItemEntityType
+                    entityType={node.from?.entity_type}
+                    isRestricted={!node.from}
+                    size="large"
+                    showIcon
+                  />
+                </div>
+              )}
+              <div
+                className={classes.bodyItem}
+                style={{
+                  width: dataColumns.name
+                    ? dataColumns.name.width
+                    : dataColumns.observable_value.width,
+                }}
+              >
+                {!restricted ? getMainRepresentative(node.from) : t_i18n('Restricted')}
+                {node.from?.draftVersion && (<DraftChip />)}
+              </div>
+              {dataColumns.x_mitre_id && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.x_mitre_id.width }}
+                >
+                  {node.from?.x_mitre_id ?? EMPTY_VALUE}
+                </div>
+              )}
+              {dataColumns.coverage_information && (
                 <div
                   className={classes.bodyItem}
                   style={{
-                    width: dataColumns.name
-                      ? dataColumns.name.width
-                      : dataColumns.observable_value.width,
+                    width: dataColumns.coverage_information.width,
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: 'auto',
+                    overflow: 'visible',
                   }}
                 >
-                  {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
-                  {node.from?.draftVersion && (<DraftChip />)}
+                  <SecurityCoverageScores
+                    coverage_information={node.coverage_information || null}
+                    variant="header"
+                  />
                 </div>
-                {dataColumns.x_mitre_id && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.x_mitre_id.width }}
-                  >
-                    {node.from?.x_mitre_id ?? EMPTY_VALUE}
-                  </div>
-                )}
-                {dataColumns.coverage_information && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{
-                      width: dataColumns.coverage_information.width,
-                      display: 'flex',
-                      alignItems: 'center',
-                      height: 'auto',
-                      overflow: 'visible',
-                    }}
-                  >
-                    <SecurityCoverageScores
-                      coverage_information={node.coverage_information || null}
-                      variant="header"
-                    />
-                  </div>
-                )}
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.createdBy.width }}
-                >
-                  {node.createdBy?.name ?? EMPTY_VALUE}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.creator.width }}
-                >
-                  {(node.creators ?? []).map((c) => c?.name).join(', ')}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.start_time.width }}
-                >
-                  {fsd(node.start_time)}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.stop_time.width }}
-                >
-                  {fsd(node.stop_time)}
-                </div>
-                {dataColumns.created_at && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.created_at.width }}
-                  >
-                    {fsd(node.created_at)}
-                  </div>
-                )}
-                {dataColumns.confidence && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.confidence.width }}
-                  >
-                    <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
-                  </div>
-                )}
-                {dataColumns.objectMarking && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.objectMarking.width }}
-                  >
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitions={node.objectMarking ?? []}
-                      limit={1}
-                    />
-                  </div>
-                )}
+              )}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {node.createdBy?.name ?? EMPTY_VALUE}
               </div>
-            )}
-          />
-        </ListItemButton>
-      </ListItem>
-    );
-  }
-}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {(node.creators ?? []).map((c) => c?.name).join(', ')}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.start_time.width }}
+              >
+                {fsd(node.start_time)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.stop_time.width }}
+              >
+                {fsd(node.stop_time)}
+              </div>
+              {dataColumns.created_at && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.created_at.width }}
+                >
+                  {fsd(node.created_at)}
+                </div>
+              )}
+              {dataColumns.confidence && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.confidence.width }}
+                >
+                  <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
+                </div>
+              )}
+              {dataColumns.objectMarking && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.objectMarking.width }}
+                >
+                  <ItemMarkings
+                    variant="inList"
+                    markingDefinitions={node.objectMarking ?? []}
+                    limit={1}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        />
+      </ListItemButton>
+    </ListItem>
+  );
+};
 
 EntityStixCoreRelationshipLineToComponent.propTypes = {
   dataColumns: PropTypes.object,
@@ -260,8 +257,6 @@ EntityStixCoreRelationshipLineToComponent.propTypes = {
   paginationOptions: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
 };
 
 const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
@@ -629,206 +624,200 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
 );
 
 export const EntityStixCoreRelationshipLineTo = R.compose(
-  inject18n,
   withStyles(styles),
   withTheme,
 )(EntityStixCoreRelationshipLineToFragment);
 
-class EntityStixCoreRelationshipLineToDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        secondaryAction={(
-          <Box sx={{ root: classes.itemIconDisabled }}>
-            <MoreVertOutlined />
-          </Box>
-        )}
+const EntityStixCoreRelationshipLineToDummyComponent = (props) => {
+  const { classes, dataColumns } = props;
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={(
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <MoreVertOutlined />
+        </Box>
+      )}
+    >
+      <ListItemIcon
+        classes={{ root: classes.itemIconDisabled }}
+        style={{ minWidth: 40 }}
       >
-        <ListItemIcon
-          classes={{ root: classes.itemIconDisabled }}
-          style={{ minWidth: 40 }}
-        >
-          <Checkbox edge="start" disabled={true} disableRipple={true} />
-        </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          classes={{ root: classes.listItemText }}
-          primary={(
-            <div className={classes.row}>
-              {dataColumns.relationship_type && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height="100%"
-                  />
-                </div>
-              )}
-              {dataColumns.entity_type && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.entity_type.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height="100%"
-                  />
-                </div>
-              )}
-              <div
-                className={classes.bodyItem}
-                style={{
-                  width: dataColumns.name
-                    ? dataColumns.name.width
-                    : dataColumns.observable_value?.width,
-                }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              {dataColumns.x_mitre_id && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.x_mitre_id.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height="100%"
-                  />
-                </div>
-              )}
-              {dataColumns.coverage_information && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.coverage_information.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height="100%"
-                  />
-                </div>
-              )}
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.creator.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.start_time.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stop_time.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              {dataColumns.created_at && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.created_at.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width={140}
-                    height="100%"
-                  />
-                </div>
-              )}
-              {dataColumns.confidence && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.confidence.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width={100}
-                    height="100%"
-                  />
-                </div>
-              )}
-              {dataColumns.objectMarking && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.objectMarking.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width={100}
-                    height="100%"
-                  />
-                </div>
-              )}
-            </div>
-          )}
+        <Checkbox edge="start" disabled={true} disableRipple={true} />
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
         />
-      </ListItem>
-    );
-  }
-}
+      </ListItemIcon>
+      <ListItemText
+        classes={{ root: classes.listItemText }}
+        primary={(
+          <div className={classes.row}>
+            {dataColumns.relationship_type && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.relationship_type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+            )}
+            {dataColumns.entity_type && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity_type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+            )}
+            <div
+              className={classes.bodyItem}
+              style={{
+                width: dataColumns.name
+                  ? dataColumns.name.width
+                  : dataColumns.observable_value?.width,
+              }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            {dataColumns.x_mitre_id && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.x_mitre_id.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+            )}
+            {dataColumns.coverage_information && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.coverage_information.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+            )}
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.start_time.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.stop_time.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={140}
+                height="100%"
+              />
+            </div>
+            {dataColumns.created_at && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+            )}
+            {dataColumns.confidence && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.confidence.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={100}
+                  height="100%"
+                />
+              </div>
+            )}
+            {dataColumns.objectMarking && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={100}
+                  height="100%"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      />
+    </ListItem>
+  );
+};
 
 EntityStixCoreRelationshipLineToDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const EntityStixCoreRelationshipLineToDummy = R.compose(
-  inject18n,
-  withStyles(styles),
-)(EntityStixCoreRelationshipLineToDummyComponent);
+export const EntityStixCoreRelationshipLineToDummy = withStyles(styles)(EntityStixCoreRelationshipLineToDummyComponent);

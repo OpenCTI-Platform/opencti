@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -11,7 +10,6 @@ import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import Box from '@mui/material/Box';
-import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -20,6 +18,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { isEmptyField } from '../../../../utils/utils';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { useFormatter } from '../../../../components/i18n';
 
 const styles = (theme) => ({
   item: {
@@ -48,136 +47,131 @@ const styles = (theme) => ({
   },
 });
 
-class IndicatorEntityLineComponent extends Component {
-  render() {
-    const {
-      fsd,
-      t,
-      classes,
-      dataColumns,
-      node,
-      paginationOptions,
-      displayRelation,
-      entityId,
-      entityLink,
-    } = this.props;
-    const element = node.to?.id === entityId ? node.from : node.to;
-    const restricted = isEmptyField(element);
-    const link = `${entityLink}/relations/${node.id}`;
+const IndicatorEntityLineComponent = (props) => {
+  const { fsd, t_i18n } = useFormatter();
+  const {
+    classes,
+    dataColumns,
+    node,
+    paginationOptions,
+    displayRelation,
+    entityId,
+    entityLink,
+  } = props;
+  const element = node.to?.id === entityId ? node.from : node.to;
+  const restricted = isEmptyField(element);
+  const link = `${entityLink}/relations/${node.id}`;
 
-    const isRelationship = t(`relationship_${element.entity_type}`) !== `relationship_${element.entity_type}`;
+  const isRelationship = t_i18n(`relationship_${element.entity_type}`) !== `relationship_${element.entity_type}`;
 
-    const displayName = !restricted
-      ? isRelationship
-        ? element.representative?.main
-        ?? `${element.from?.name ?? element.from?.observable_value ?? EMPTY_VALUE}
-         ${String.fromCharCode(8594)}
-         ${element.to?.name ?? element.to?.observable_value ?? EMPTY_VALUE}`
-        : element.name || element.observable_value
-      : t('Restricted');
+  const displayName = !restricted
+    ? isRelationship
+      ? element.representative?.main
+      ?? `${element.from?.name ?? element.from?.observable_value ?? EMPTY_VALUE}
+       ${String.fromCharCode(8594)}
+       ${element.to?.name ?? element.to?.observable_value ?? EMPTY_VALUE}`
+      : element.name || element.observable_value
+    : t_i18n('Restricted');
 
-    return (
-      <ListItem
-        divider={true}
-        disablePadding
-        secondaryAction={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCoreRelationshipPopover
-              stixCoreRelationshipId={node.id}
-              paginationOptions={paginationOptions}
-              disabled={restricted}
-            />
-          </Security>
-        )}
+  return (
+    <ListItem
+      divider={true}
+      disablePadding
+      secondaryAction={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
+            paginationOptions={paginationOptions}
+            disabled={restricted}
+          />
+        </Security>
+      )}
+    >
+      <ListItemButton
+        classes={{ root: classes.item }}
+        component={Link}
+        to={link}
+        disabled={restricted}
       >
-        <ListItemButton
-          classes={{ root: classes.item }}
-          component={Link}
-          to={link}
-          disabled={restricted}
-        >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon type={node.entity_type} />
-          </ListItemIcon>
-          <ListItemText
-            primary={(
-              <div>
-                {displayRelation && (
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.relationship_type.width }}
-                  >
-                    <ItemEntityType
-                      entityType={node.relationship_type}
-                    />
-                  </div>
-                )}
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={node.entity_type} />
+        </ListItemIcon>
+        <ListItemText
+          primary={(
+            <div>
+              {displayRelation && (
                 <div
                   className={classes.bodyItem}
-                  style={{ width: dataColumns.entity_type.width }}
+                  style={{ width: dataColumns.relationship_type.width }}
                 >
                   <ItemEntityType
-                    entityType={element.entity_type === 'stix_relation'
-                      || element.entity_type === 'stix-relation'
-                      ? element.parent_types[0]
-                      : element.entity_type}
-                    isRestricted={restricted}
-                    size="large"
-                    showIcon
+                    entityType={node.relationship_type}
                   />
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
-                >
-                  {displayName}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.createdBy.width }}
-                >
-                  {node.createdBy?.name ?? EMPTY_VALUE}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.creator.width }}
-                >
-                  {(node.creators ?? []).map((c) => c?.name).join(', ')}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.start_time.width }}
-                >
-                  {fsd(node.start_time)}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.stop_time.width }}
-                >
-                  {fsd(node.stop_time)}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.confidence.width }}
-                >
-                  <ItemConfidence confidence={node.confidence} entityType="stix-core-relationship" variant="inList" />
-                </div>
+              )}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity_type.width }}
+              >
+                <ItemEntityType
+                  entityType={element.entity_type === 'stix_relation'
+                    || element.entity_type === 'stix-relation'
+                    ? element.parent_types[0]
+                    : element.entity_type}
+                  isRestricted={restricted}
+                  size="large"
+                  showIcon
+                />
               </div>
-            )}
-          />
-        </ListItemButton>
-      </ListItem>
-    );
-  }
-}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {displayName}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {node.createdBy?.name ?? EMPTY_VALUE}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {(node.creators ?? []).map((c) => c?.name).join(', ')}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.start_time.width }}
+              >
+                {fsd(node.start_time)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.stop_time.width }}
+              >
+                {fsd(node.stop_time)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.confidence.width }}
+              >
+                <ItemConfidence confidence={node.confidence} entityType="stix-core-relationship" variant="inList" />
+              </div>
+            </div>
+          )}
+        />
+      </ListItemButton>
+    </ListItem>
+  );
+};
 
 IndicatorEntityLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
 };
@@ -698,110 +692,105 @@ const IndicatorEntityLineFragment = createFragmentContainer(
   },
 );
 
-export const IndicatorEntityLine = compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorEntityLineFragment);
+export const IndicatorEntityLine = withStyles(styles)(IndicatorEntityLineFragment);
 
-class IndicatorEntityLineDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns, displayRelation } = this.props;
-    return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        secondaryAction={(
-          <Box sx={{ root: classes.itemIconDisabled }}>
-            <MoreVert />
-          </Box>
-        )}
-      >
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={(
-            <div>
-              {displayRelation && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height="100%"
-                  />
-                </div>
-              )}
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.start_time.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stop_time.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
-            </div>
-          )}
+const IndicatorEntityLineDummyComponent = (props) => {
+  const { classes, dataColumns, displayRelation } = props;
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={(
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <MoreVert />
+        </Box>
+      )}
+    >
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
         />
-      </ListItem>
-    );
-  }
-}
+      </ListItemIcon>
+      <ListItemText
+        primary={(
+          <div>
+            {displayRelation && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.relationship_type.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+            )}
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.start_time.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.stop_time.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.confidence.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
+                height="100%"
+              />
+            </div>
+          </div>
+        )}
+      />
+    </ListItem>
+  );
+};
 
 IndicatorEntityLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
@@ -809,7 +798,4 @@ IndicatorEntityLineDummyComponent.propTypes = {
   displayRelation: PropTypes.bool,
 };
 
-export const IndicatorEntityLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorEntityLineDummyComponent);
+export const IndicatorEntityLineDummy = withStyles(styles)(IndicatorEntityLineDummyComponent);

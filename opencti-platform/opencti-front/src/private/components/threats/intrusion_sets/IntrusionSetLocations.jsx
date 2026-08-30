@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
@@ -15,7 +15,7 @@ import AddLocations from './AddLocations';
 import { addLocationsMutationRelationDelete } from './AddLocationsLines';
 import { commitMutation } from '../../../../relay/environment';
 import { findFlagUrl } from '../../../../utils/flags';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import Security from '../../../../utils/Security';
@@ -40,17 +40,18 @@ const styles = (theme) => ({
   },
 });
 
-class IntrusionSetLocationsComponent extends Component {
-  removeLocation(locationEdge) {
+const IntrusionSetLocationsComponent = (props) => {
+  const { t_i18n } = useFormatter();
+  const removeLocation = (locationEdge) => {
     commitMutation({
       mutation: addLocationsMutationRelationDelete,
       variables: {
-        fromId: this.props.intrusionSet.id,
+        fromId: props.intrusionSet.id,
         toId: locationEdge.node.id,
         relationship_type: 'originates-from',
       },
       updater: (store) => {
-        const node = store.get(this.props.intrusionSet.id);
+        const node = store.get(props.intrusionSet.id);
         const locations = node.getLinkedRecord('locations');
         const edges = locations.getLinkedRecords('edges');
         const newEdges = edges.filter(
@@ -59,80 +60,76 @@ class IntrusionSetLocationsComponent extends Component {
         locations.setLinkedRecords(newEdges, 'edges');
       },
     });
-  }
+  };
 
-  render() {
-    const { t, intrusionSet } = this.props;
-    return (
-      <>
-        <Label action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <AddLocations
-              intrusionSet={intrusionSet}
-              intrusionSetLocations={intrusionSet.locations.edges}
-            />
-          </Security>
-        )}
-        >
-          {t('Originates from')}
-        </Label>
-        <FieldOrEmpty source={intrusionSet.locations.edges}>
-          <List style={{ marginTop: -10 }}>
-            {intrusionSet.locations.edges.map((locationEdge) => {
-              const location = locationEdge.node;
-              const link = resolveLink(location.entity_type);
-              const flagUrl = location.entity_type === 'Country'
-                && findFlagUrl(location.x_opencti_aliases);
-              return (
-                <ListItem
-                  key={location.id}
-                  dense={true}
-                  divider={true}
-                  disablePadding
-                  secondaryAction={(
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <Tooltip title={t('Delete relationship')}>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={this.removeLocation.bind(this, locationEdge)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </Security>
-                  )}
+  const { intrusionSet } = props;
+  return (
+    <>
+      <Label action={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AddLocations
+            intrusionSet={intrusionSet}
+            intrusionSetLocations={intrusionSet.locations.edges}
+          />
+        </Security>
+      )}
+      >
+        {t_i18n('Originates from')}
+      </Label>
+      <FieldOrEmpty source={intrusionSet.locations.edges}>
+        <List style={{ marginTop: -10 }}>
+          {intrusionSet.locations.edges.map((locationEdge) => {
+            const location = locationEdge.node;
+            const link = resolveLink(location.entity_type);
+            const flagUrl = location.entity_type === 'Country'
+              && findFlagUrl(location.x_opencti_aliases);
+            return (
+              <ListItem
+                key={location.id}
+                dense={true}
+                divider={true}
+                disablePadding
+                secondaryAction={(
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <Tooltip title={t_i18n('Delete relationship')}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={removeLocation.bind(this, locationEdge)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  </Security>
+                )}
+              >
+                <ListItemButton
+                  component={Link}
+                  to={`${link}/${location.id}`}
                 >
-                  <ListItemButton
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
-                    <ListItemIcon sx={{ minWidth: 32 }}>
-                      {flagUrl ? (
-                        <img
-                          style={{ width: 20 }}
-                          src={flagUrl}
-                          alt={location.name}
-                        />
-                      ) : (
-                        <ItemIcon type={location.entity_type} />
-                      )}
-                    </ListItemIcon>
-                    <ListItemText primary={location.name} />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        </FieldOrEmpty>
-      </>
-    );
-  }
-}
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    {flagUrl ? (
+                      <img
+                        style={{ width: 20 }}
+                        src={flagUrl}
+                        alt={location.name}
+                      />
+                    ) : (
+                      <ItemIcon type={location.entity_type} />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText primary={location.name} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
+      </FieldOrEmpty>
+    </>
+  );
+};
 
 IntrusionSetLocationsComponent.propTypes = {
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   intrusionSet: PropTypes.object,
 };
 
@@ -162,4 +159,4 @@ const IntrusionSetLocations = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(IntrusionSetLocations);
+export default compose(withStyles(styles))(IntrusionSetLocations);

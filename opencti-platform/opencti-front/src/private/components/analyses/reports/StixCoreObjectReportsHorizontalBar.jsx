@@ -1,13 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@common/card/Card';
 import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -39,9 +38,10 @@ const stixCoreObjectReportsHorizontalBarDistributionQuery = graphql`
   }
 `;
 
-class StixCoreObjectReportsHorizontalBar extends Component {
-  renderContent() {
-    const { t, stixCoreObjectId, field, theme } = this.props;
+const StixCoreObjectReportsHorizontalBar = (props) => {
+  const { t_i18n } = useFormatter();
+  const renderContent = () => {
+    const { stixCoreObjectId, field, theme } = props;
     const reportsDistributionVariables = {
       objectId: stixCoreObjectId,
       field: field || 'report_types',
@@ -95,7 +95,7 @@ class StixCoreObjectReportsHorizontalBar extends Component {
                     textAlign: 'center',
                   }}
                 >
-                  {t(NO_DATA_WIDGET_MESSAGE)}
+                  {t_i18n(NO_DATA_WIDGET_MESSAGE)}
                 </span>
               </div>
             );
@@ -116,32 +116,26 @@ class StixCoreObjectReportsHorizontalBar extends Component {
         }}
       />
     );
-  }
+  };
 
-  render() {
-    const { t, title, height } = this.props;
-    return (
-      <div style={{ height: height || '100%', marginBottom: 24 }}>
-        <Card
-          padding="small"
-          title={title || t('Reports distribution')}
-        >
-          {this.renderContent()}
-        </Card>
-      </div>
-    );
-  }
-}
+  const { title, height } = props;
+  return (
+    <div style={{ height: height || '100%', marginBottom: 24 }}>
+      <Card
+        padding="small"
+        title={title || t_i18n('Reports distribution')}
+      >
+        {renderContent()}
+      </Card>
+    </div>
+  );
+};
 
 StixCoreObjectReportsHorizontalBar.propTypes = {
   stixCoreObjectId: PropTypes.string,
   title: PropTypes.string,
   field: PropTypes.string,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-)(StixCoreObjectReportsHorizontalBar);
+export default withTheme(StixCoreObjectReportsHorizontalBar);
