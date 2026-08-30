@@ -40,6 +40,13 @@ const Dialog = ({
         paper: {
           sx: {
             paddingTop: 3,
+            // Symmetric with paddingTop. The `py: 0` below is deliberate -- the
+            // PAPER owns the outer gutter, not DialogContent -- but the paper
+            // had no bottom counterpart, so once the padding typo was fixed the
+            // content sat flush against the edge. 145 of the 171 consumers end
+            // their children with a DialogActions row, so that landed under a
+            // button nearly everywhere.
+            paddingBottom: 3,
           },
         },
       }}
