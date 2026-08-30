@@ -146,7 +146,7 @@
     "node-calls-python": "1.13.0",
     "node-fetch": "3.3.2",
     "node-forge": "1.4.0",
-    "nodemailer": "9.0.5",
+    "nodemailer": "9.0.6",
     "openai": "7.5.0",
     "openid-client": "6.8.7",
     "openid-clientv5": "npm:openid-client@5.7.1",
