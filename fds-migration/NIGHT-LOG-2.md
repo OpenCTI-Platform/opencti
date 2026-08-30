@@ -79,3 +79,37 @@ flagged here and in the PR body rather than buried in a diff.
 `src/utils/Time.test.ts` fails on this machine and passes under `TZ=UTC`.
 It asserts `09:30` against a UTC input while the machine runs at UTC+2. No
 relation to this work — the file was never touched — and CI runs UTC.
+
+## CI went red after the first push — read back, both mine
+
+Recorded because both reds were invisible to a green local run.
+
+### `check-accessible-names` is not part of `yarn lint`
+
+It runs as its **own docker step** in `ci-test-frontend-quality.yml`
+("Accessible names of converted design-system fields"), so `yarn lint` and
+`yarn check-ts` passing locally says nothing about it.
+
+It requires a `Combobox` with no `ComboboxLabel` to **declare**
+`labelPosition="none"` (`top` | `left` | `none`). "No label" has to be
+said, not merely done — the declaration is what moves the duty of naming
+the field onto the host. The placeholder-only choice was right; the
+declaration was missing.
+
+Add to the pre-push routine for anything touching a converted
+Select/Combobox:
+
+    node fds-migration/scripts/check-accessible-names.mjs
+
+### Four e2e jobs, one line
+
+    strict mode violation: getByLabel('Add filter') resolved to 2 elements
+
+The chevron had been given the same `aria-label` as the input, so the
+field's own name matched twice and `filters.pageModel`'s `.fill()` could
+not choose. The library already names the trigger "Toggle options", and
+every other converted Combobox in this product relies on that default.
+
+The test was correct and was not touched — worth stating, because the
+brief allows test-side fixes when the component matches the library, and
+this was the opposite case: the component was wrong.
