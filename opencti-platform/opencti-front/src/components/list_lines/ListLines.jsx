@@ -253,7 +253,10 @@ class ListLines extends Component {
             )}
             <div className={classes.filler} />
 
-            <div className={classes.views} style={{ display: 'flex', gap: 8 }}>
+            {/* alignItems: the row's own container centres its children, but
+                this inner one did not, so the buttons stretched to the row
+                height instead of sitting on the filters' centre line. */}
+            <div className={classes.views} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
 
               {numberOfElements && (
                 <div
