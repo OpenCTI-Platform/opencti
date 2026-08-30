@@ -8,7 +8,8 @@ Statuses: `OPEN` · `FIXED` · `BLOCKED` · `NOT-REPRO`
 Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 **(c)** environment/backend → document · **(d)** accepted backlog → name it
 
-> **SOURCE:** `retour-opencti-fds-2.pdf` (18 pages), supplied mid-round and read.
+> **SOURCES:** `retour-opencti-fds-2.pdf` (18 pages) for F1–F29; `retour-opencti-3.pdf`
+> (6 pages, Sandy's pass on the full stack) for F30–F40.
 > Its captions are reconciled with the brief, so the `NEEDS-SCREENSHOT` marks are
 > lifted.
 
@@ -45,6 +46,17 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 | F29 | `alignItems: flex-end` rows holding a field | **VERIFIED site by site, no change needed.** All 12 enumerated and classified by what each row actually contains. **2 hold no field at all** — `IngestionCatalogCard`, `DeployedIntegrationCard` (card footers): outside the concern. **2 pair a LABELLED MUI field with unlabelled controls** — `FeedCreation`, `FeedEdition` (`MuiTextField` + library `Select` + `IconButton`): flex-end is the CORRECT choice there, it aligns the control boxes rather than the labels. **1 is `PeriodicityField`** — library `Input` beside an outlined `TextField`, both 36–37px, with the label above the whole row. **7 are `<Field>` / library `Input` rows** — `SamlProviderForm`, `OidcProviderForm`, `CsvMapperDefaultMarking`, `CsvMapperRepresentationAttributeOption`, `PlaybookFlowFieldActions`, `JsonMapperRepresentationAttributeOption`, `JsonMapperDefaultMarking`: uniform heights, nothing to misalign. The defect this could have caused needed MISMATCHED heights, and the flip removed the mismatch — MUI fields were ~30px beside 36px controls and are now 37px. | d | VERIFIED (no change) |
 | F26 | Whole app | Full field exercise + global alignment sweep. Her list is a SEED, not the boundary. **CLOSED as done-to-here, with the sweeps named.** What was actually swept, each recorded in its own row: 726 `variant="standard"` props over 220 files (F3); all 15 direct MUI `Drawer` mounts classified (F5); all 11 direct MUI `Dialog` mounts (F4); the 3 filter popovers (F7); every field FAMILY exercised on the authenticated stack — text, email, password, date picker (pick + clear + persistence), select, autocomplete, multiline markdown (F2, F28); the 3 list engines' filter rows (F13/F20/F25); all 12 `flex-end` rows (F29); every `getByRole('menuitem')` in the e2e suite. What is NOT claimed: each of the 726 variant sites individually. That gap now has a CI guard for the riskiest family — the date picker's calendar and clear are exercised in `report.spec.ts`, so a future restyle that breaks it turns red instead of reaching Sandy. | d | CLOSED (sweeps named) |
 
+| F30 | **Every list page** — filter bar + list heading | Expected 3 rows: breadcrumb; filter system far LEFT with `0 entité(s)` + action buttons far RIGHT on the SAME row; chips on their own row only when filters are active. **FIXED — verified on 5 pages.** **Root cause, mine:** the one-line commit moved `FilterIconButton` INSIDE the filter row in BOTH list engines. That read of F13 was wrong — with the chips in the row they consumed it and pushed the count and buttons off. Reverted in both engines; the Add-filter `Combobox` width cap is KEPT, because that half fixed the defect actually reported and is not what broke. Same-kind check: those two engines are the only places that render the chips. Code: **PR #18023**. | a | FIXED |
+| F31 | Field SIZES across forms | Converted/restyled fields must match what they replace and take the AVAILABLE width, not a shrunken intrinsic size. **OPEN — root-caused, fix NOT attempted.** From the outlined sweep (#18020): a `standard` field drew only an underline and stretched to its container; an `outlined` field draws a box that resolves against the FormControl, so every site that relied on the underline stretching now shows a narrower control. Seen on `Niveau de confiance` and the comment modal. **A blanket `fullWidth` is exactly the wide change the round forbids** — it would touch every MUI field in the product. Proposing instead: scope it to the sites in Sandy's captures, or set `fullWidth` as a `MuiTextField` defaultProp, which is one line but global. Needs her ruling before either. | a | OPEN — needs a ruling |
+| F32 | Fields still CUT (clipped) | Same family as F31, verified separately. **OPEN — root-caused, fix NOT attempted.** The outlined box and its focus ring occupy real height and width where the underline occupied almost none, so containers sized for the old control clip it — visible on `Nouvel alias`, `Nouvelle balise`, the `STIX ID Standard` value and `Niveau de confiance` on an entity Overview. Distinct from F31: F31 is width the field does not take, F32 is a container that cuts it. | a | OPEN |
+| F33 | EE chips, remaining sites | Advanced-search tabs and `Ariane IA` still md. **OPEN.** F24 fixed the Settings right nav only; these are separate call sites. | a | OPEN |
+| F34 | Import stepper | Stepper background must equal the modal paper background. | a | OPEN |
+| F35 | List header | 8px gap between Title + icon button + select. | a | OPEN |
+| F36 | Custom dashboard | `Temps relatif` filter background must match `Date de début` / `Date de fin` beside it. | a | OPEN |
+| F37 | Icon button left of `Créer Rapport` | Sandy's ruling: back to MUI so the toolbar is homogeneous — it was the only library icon button there, which is the opposite of what F19 asks. **FIXED.** `keepMui` restored on `ClearFiltersIcon`; reverses this session's F19 change. Code: **PR #18023**. | a | FIXED |
+| F38 | `Trier par` | Must sit on ONE line; it currently wraps. | a | OPEN |
+| F39 | Icon + text alignment | `Créer` split button, `Ajouter une couverture de sécurité`. | a | OPEN |
+| F40 | General alignment | Remaining items flagged in the PDF. | a | OPEN |
 ## Why the twice-reported items survived the last round
 
 - **F15 (Refresh alignment)** — never opened. Previous rounds fixed alignment in
@@ -69,6 +81,24 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 **This file is the handover. Read it before starting; do not re-investigate
 what is already root-caused above.**
 
+### Round 3 — where it stands
+
+Sandy's pass on the full stack found three regressions from this session's
+batch. **F30 is fixed and verified** — it was the urgent one and it was mine.
+**F37 is fixed** (a ruling that reverses this session's F19).
+
+**F31, F32 and F33–F40 are OPEN and deliberately not attempted.** The round's
+first rule is zero new regressions, and its second is that a fix needing a wide
+change stops for Sandy's ruling rather than being guessed. F31/F32 are the
+outlined sweep's sizing: the honest fix is either a global `fullWidth` default —
+one line, every MUI field in the product — or a site-by-site pass over her
+captures. Both are her call, and both are rows above with the root cause spelt
+out so the next session starts from the diagnosis rather than the symptom.
+F33–F40 are small and independent; they are listed with their surfaces named.
+
+Nothing here was swept, restyled or "improved" in passing. The only two files
+this round touched are the two list engines and `ClearFiltersIcon`.
+
 ### The stack — merge top-down, no conflicts
 
 Rebased into one linear chain on 2026-08-31. Merge in this order and every one
@@ -80,9 +110,9 @@ of them applies cleanly:
 | 2 | **#18019** | `fds/night6-layers` | `ed42610353` | surfaces bypassing the shared components, filter popovers, markdown textarea, dialog paper colour |
 | 3 | **#18020** | `fds/night6-mui-fields` | `d805e7a8b2` | every MUI field outlined + layer-aware, library geometry, MUI menus, the label transform |
 | 4 | **#18021** | `fds/night6-details` | `51245888a1` | navbar active state, EE chip, AI glyph, integration surface, public-dashboard spacing |
-| 5 | **#18023** | `fds/night6-alignment` | `502e3fe63d` | filter bar on one line, clear-filters control, chip clipping, the "+", toolbar centring, dialog titles |
+| 5 | **#18023** | `fds/night6-alignment` | `bc37ac0f40` | filter bar on one line, clear-filters control, chip clipping, the "+", toolbar centring, dialog titles |
 | 6 | **#18001** | `fds/night4-rightnav` | `17dd33c7fd` | right bars redesigned in place, content switcher, the field-bearing bars' layer |
-| 7 | **#18014** | `fds/night6-fixlog` | `be2ef811b8` | dashboard Refresh control, number-input conversions |
+| 7 | **#18014** | `fds/night6-fixlog` | `7828341fd6` | dashboard Refresh control, number-input conversions |
 | 8 | **#18015** | `fds/night6-dates` | `3850127c74` | date-filter popover, the e2e picker guard, **this log** |
 
 **#18001 sits on #18019**, so it can go in at position 6 as listed or any time
