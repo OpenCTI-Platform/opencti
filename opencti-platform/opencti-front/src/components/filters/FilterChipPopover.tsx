@@ -397,7 +397,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
               >
-                <Checkbox presentational checked={checked} disabled={disabledOptions} />
+                {/* NOT `presentational`, deliberately. This row IS a role="option" in
+                    MUI's Autocomplete listbox, so a real control nested in it is
+                    an axe nested-interactive finding -- but that finding predates
+                    this conversion (the box here was a real MUI Checkbox), and
+                    `presentational` renders an unfocusable <span>, which removes
+                    the checkbox role that filters.pageModel checks to pick a
+                    filter value. Fixing the nesting means changing this markup
+                    and that page model together; see NIGHT-LOG-2. */}
+                <Checkbox checked={checked} disabled={disabledOptions} />
                 <ItemIcon type={option.type} color={option.color} />
                 <span style={{ padding: '0 4px 0 4px' }}>
                   {option.label}
