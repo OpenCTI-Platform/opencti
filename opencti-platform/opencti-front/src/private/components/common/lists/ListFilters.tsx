@@ -204,6 +204,7 @@ const ListFilters = ({
               fix. The accessible name is kept on the input. */}
           <Combobox<OptionType>
             options={options as OptionType[]}
+            labelPosition="none"
             value={null}
             onValueChange={(next) => {
               const picked = Array.isArray(next) ? next[0] : next;
@@ -232,7 +233,13 @@ const ListFilters = ({
                 required={required}
               />
               <ComboboxControls>
-                <ComboboxTrigger aria-label={placeholder} />
+                {/* No aria-label here on purpose. Naming the trigger after the
+                    field too gave TWO elements the accessible name "Add filter"
+                    -- the input and the chevron -- and getByLabel('Add filter')
+                    in filters.pageModel then failed strict mode. The library
+                    already names it "Toggle options", which is what every other
+                    converted Combobox in this product relies on. */}
+                <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
             <ComboboxContent listAriaLabel={placeholder} />
