@@ -15,6 +15,7 @@ import { useSettingsMessagesBannerHeight } from '../../settings/settings_message
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
@@ -405,7 +406,18 @@ const StixCoreObjectKnowledgeBar = ({
       // height, content laid out beside it — the arrangement the product has
       // always had. Only the inside of the bar is redesigned (Figma node
       // 7472:48226).
-      PaperProps={{ className: 'layer-1' }}
+      slotProps={{
+        paper: {
+          // The layer comes from the shared helper, not a literal: the class
+          // and `layerInputVars` must sit on the SAME node for the three input
+          // aliases to resolve at this layer (LIBRARY-FEEDBACK #57), and
+          // hardcoding the string here would have been a second copy of a
+          // mechanism that already exists. `slotProps.paper`, not the
+          // deprecated `PaperProps`.
+          className: fdsLayerClass(RIGHT_BAR_LAYER),
+          sx: { ...layerInputVars },
+        },
+      }}
       sx={{
         '& .MuiPaper-root': {
           minHeight: '100vh',
