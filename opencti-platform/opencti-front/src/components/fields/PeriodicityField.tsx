@@ -3,6 +3,7 @@ import { Box, TextField, MenuItem, InputLabel } from '@mui/material';
 import { Field, FieldProps } from 'formik';
 import { useFormatter } from '../i18n';
 import { isEmptyField } from '../../utils/utils';
+import { Input } from '@filigran/design-system';
 
 interface PeriodicityFieldProps {
   name: string;
@@ -98,15 +99,20 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                 {label || t_i18n('Periodicity')}
               </InputLabel>
               <Box display="flex" gap={1} alignItems="flex-end">
-                <TextField
-                  type="number"
-                  variant="outlined"
-                  value={value}
-                  onChange={handleValueChange}
-                  inputProps={{ min: 0 }}
-                  style={{ flex: 1 }}
-                  fullWidth
-                />
+                {/* The library Input, not a raw MUI one: this is the validity
+                    period the pass names. `isTypeNumber` brings the designed
+                    stepper. The Input puts `className` on its root and spreads
+                    everything else onto the inner <input>, so the flex sizing
+                    goes on a wrapper rather than on the component. */}
+                <Box style={{ flex: 1 }}>
+                  <Input
+                    type="number"
+                    isTypeNumber
+                    min={0}
+                    value={String(value ?? '')}
+                    onChange={handleValueChange}
+                  />
+                </Box>
                 <TextField
                   select
                   variant="outlined"
