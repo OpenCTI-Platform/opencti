@@ -3,6 +3,7 @@ import { Box, DialogActionsProps, DialogContent, DialogContentProps, DialogTitle
 import MUIDialog, { DialogProps as MUIDialogProps } from '@mui/material/Dialog';
 import { ReactNode } from 'react';
 import IconButton from '../button/IconButton';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 type DialogProps = {
   title?: ReactNode;
@@ -38,7 +39,13 @@ const Dialog = ({
       onClick={(e) => e.stopPropagation()}
       slotProps={{
         paper: {
+          // A dialog is a layer-2 surface: the class re-declares the elevation
+          // aliases, `layerInputVars` carries the three input backgrounds the
+          // library's own .layer-N blocks forget. Both must sit on the SAME
+          // node. See utils/fdsLayer.ts.
+          className: fdsLayerClass(SURFACE_LAYER),
           sx: {
+            ...layerInputVars,
             paddingTop: 3,
             // Symmetric with paddingTop. The `py: 0` below is deliberate -- the
             // PAPER owns the outer gutter, not DialogContent -- but the paper
