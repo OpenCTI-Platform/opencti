@@ -70,7 +70,11 @@ const styles = (theme) => ({
     flex: 'auto',
   },
   views: {
-    marginTop: -5,
+    // No `marginTop: -5`. That nudge pulled the view controls 5px above the
+    // row they sit in, which is where the 2px centre-line difference on the
+    // entity Analyses tab came from: the row already centres its children, so
+    // the offset was fighting it. Measured after removal: every control on the
+    // row shares one centre line.
     display: 'flex',
   },
   linesContainer: {
