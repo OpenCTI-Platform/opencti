@@ -257,25 +257,6 @@ class ListLines extends Component {
                 availableRelationFilterTypes={availableRelationFilterTypes}
               />
             )}
-            {/* The filter chips belong ON the filter row, not on a row of
-                their own beneath it: "everything must sit on ONE line". The
-                row wraps, so a long chip run still degrades gracefully instead
-                of overflowing. */}
-            <FilterIconButton
-              helpers={helpers}
-              availableFilterKeys={availableFilterKeys}
-              filters={filters}
-              handleRemoveFilter={handleRemoveFilter}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              availableRelationFilterTypes={availableRelationFilterTypes}
-              redirection
-              entityTypes={entityTypes}
-              filtersRestrictions={additionalFilterKeys?.filtersRestrictions ?? undefined}
-              searchContext={searchContextFinal}
-              availableEntityTypes={availableEntityTypes}
-              availableRelationshipTypes={availableRelationshipTypes}
-            />
             <div className={classes.filler} />
 
             {/* alignItems: the row's own container centres its children, but
@@ -445,6 +426,26 @@ class ListLines extends Component {
             </div>
           </div>
         )}
+        {/* The chips are a ROW OF THEIR OWN, below the filter row and only
+            when filters are active. Moving them into the filter row pushed the
+            count and the action buttons off it -- reported on every list page.
+            The three-row shape is: breadcrumb, then filters left with count and
+            buttons right, then this. */}
+        <FilterIconButton
+          helpers={helpers}
+          availableFilterKeys={availableFilterKeys}
+          filters={filters}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          availableRelationFilterTypes={availableRelationFilterTypes}
+          redirection
+          entityTypes={entityTypes}
+          filtersRestrictions={additionalFilterKeys?.filtersRestrictions ?? undefined}
+          searchContext={searchContextFinal}
+          availableEntityTypes={availableEntityTypes}
+          availableRelationshipTypes={availableRelationshipTypes}
+        />
         <ErrorBoundary key={keyword}>
           {message && (
             <div style={{ width: '100%', marginTop: 10 }}>
