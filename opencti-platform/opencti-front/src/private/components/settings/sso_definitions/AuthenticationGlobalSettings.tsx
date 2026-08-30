@@ -97,7 +97,7 @@ const AuthenticationGlobalSettingsContent = () => {
                 component={TextField}
                 type="number"
                 variant="outlined"
-                inputProps={{ min: 0 }}
+                min={0}
                 name="platform_session_max_concurrent"
                 label={t_i18n('Max concurrent sessions (0 equals no maximum)')}
                 fullWidth

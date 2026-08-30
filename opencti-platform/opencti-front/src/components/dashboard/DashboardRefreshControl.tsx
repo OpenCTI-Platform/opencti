@@ -1,5 +1,5 @@
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { ButtonGroup, CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -88,9 +88,21 @@ const DashboardRefreshControl = ({
   const isRefreshDisabled = isManualRefreshing || isQueryPending;
 
   return (
-    <ButtonGroup id="dashboard-refresh-control" size="small" variant="outlined">
+    // NOT a MUI ButtonGroup any more, and that single swap is both halves of
+    // the report. A ButtonGroup exists to JOIN its children edge to edge, so it
+    // removed the gap the designer asks for -- and it styles its children as MUI
+    // buttons, which these are not: the refresh Button and the interval Select
+    // both come from the library, so the group's own rules laid them out instead
+    // of letting each keep its geometry. That is the icon/label misalignment.
+    // A plain flex row with an 8px gap lets both components size themselves.
+    <Box
+      id="dashboard-refresh-control"
+      sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+    >
       <Button
-        startIcon={spinning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
+        startIcon={spinning
+          ? <CircularProgress size={20} color="inherit" />
+          : <RefreshIcon fontSize="small" />}
         onClick={handleRefreshClick}
         variant="secondary"
         disabled={isRefreshDisabled}
@@ -109,7 +121,7 @@ const DashboardRefreshControl = ({
           ))}
         </SelectContent>
       </Select>
-    </ButtonGroup>
+    </Box>
   );
 };
 
