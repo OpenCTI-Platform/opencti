@@ -27,6 +27,7 @@ import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser
 import { FieldOption } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -699,6 +700,11 @@ const StixCoreRelationshipCreation = ({
         open={open}
         anchor="right"
         elevation={1}
+        // This creation drawer mounts MUI's Drawer directly instead of the
+        // shared one, so it has to declare its own layer: a drawer is a
+        // layer-2 surface and its fields read the layer from the paper.
+        // See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
