@@ -4,7 +4,7 @@ import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import DataTableFilters from './DataTableFilters';
+import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
 import { useLineData } from './dataTableHooks';
@@ -107,10 +107,21 @@ const DataTableInternalFilters = ({
               additionalHeaderToggleButtons={additionalToggleButtons}
               currentView={currentView}
               hideSavedFilters={hideSavedFilters}
-              entityTypes={computedEntityTypes}
             />
           )}
         </div>
+      )}
+      {/* A row of its own, below the toolbar and only when filters are active.
+          Inside the toolbar it pushed the count and the action buttons off the
+          row -- reported on every list page. */}
+      {!hideFilters && (
+        <DataTableDisplayFilters
+          availableFilterKeys={availableFilterKeys}
+          availableRelationFilterTypes={availableRelationFilterTypes}
+          availableEntityTypes={availableEntityTypes}
+          entityTypes={computedEntityTypes}
+          searchContext={searchContextFinal}
+        />
       )}
     </>
   );
