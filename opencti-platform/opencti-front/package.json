@@ -186,7 +186,7 @@
     "d3-color": "3.1.0",
     "json5": "2.2.3",
     "react": "19.2.8",
-    "webpack": "5.109.2",
+    "webpack": "5.110.0",
     "unrs-resolver": "1.11.1",
     "react-relay": "patch:react-relay@21.0.1#./patch/react-relay.patch"
   },
