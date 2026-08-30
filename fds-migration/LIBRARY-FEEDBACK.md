@@ -2063,7 +2063,7 @@ strings in a product that translates every other control.
 
 ---
 
-## 56. `ButtonGroupItem` cannot be a link, so half the icon groups cannot convert
+## 56. `ButtonGroupItem` cannot be a link, so half the icon groups cannot convert — RESOLVED (lib #193)
 
 Raised during the night-2 visual pass, library pin `47baf69`.
 
@@ -2099,3 +2099,22 @@ component, not a tag name.
 **Removal test.** `ContainerHeader` and `StixCoreObjectContentHeader` render
 their items as anchors with a real `href`, under the library group, with no
 local styling — and middle-click still opens a new tab.
+
+### #56 — RESOLVED at pin `bd57527`
+
+`asChild` shipped in lib #193, shaped exactly as the ask: the group keeps
+selection and roving focus, the child keeps its `href`. `ContainerHeader` and
+`StixCoreObjectContentHeader` are converted and their segments are real anchors
+again — middle-click, open-in-new-tab, the hover target and Ctrl/Cmd-click all
+verified present in the shipped implementation.
+
+**One thing the entry did not anticipate, and it is not closed by this.** The
+library clones `role="radio"` onto the anchor, so a screen reader now announces
+"radio button, checked" where MUI's `ToggleButton` left the anchor its native
+"link" role. The library documents this on the prop and leaves the question open
+as `ButtonGroup.rfc.md` §9 Q9: whether a run of segments that NAVIGATE should be
+a `role="group"` of links marked with `aria-current` instead of a radiogroup.
+
+That is a design arbitration, not a defect, so it is not re-raised as a new
+entry — but it is the reason this resolution is recorded with a caveat rather
+than a clean tick. If the arbitration lands on links, both sites change again.
