@@ -80,9 +80,9 @@ of them applies cleanly:
 | 2 | **#18019** | `fds/night6-layers` | — | surfaces bypassing the shared components, filter popovers, markdown textarea, dialog paper colour |
 | 3 | **#18020** | `fds/night6-mui-fields` | `d805e7a` | every MUI field outlined + layer-aware, library geometry, MUI menus, the label transform |
 | 4 | **#18021** | `fds/night6-details` | `5124588` | navbar active state, EE chip, AI glyph, integration surface, public-dashboard spacing |
-| 5 | **#18023** | `fds/night6-alignment` | `66429bb` | filter bar on one line, clear-filters control, chip clipping, the "+", toolbar centring, dialog titles |
+| 5 | **#18023** | `fds/night6-alignment` | `502e3fe` | filter bar on one line, clear-filters control, chip clipping, the "+", toolbar centring, dialog titles |
 | 6 | **#18001** | `fds/night4-rightnav` | — | right bars redesigned in place, content switcher, the field-bearing bars' layer |
-| 7 | **#18014** | `fds/night6-fixlog` | `598ab18` | dashboard Refresh control, number-input conversions |
+| 7 | **#18014** | `fds/night6-fixlog` | `8d08fa7` | dashboard Refresh control, number-input conversions |
 | 8 | **#18015** | `fds/night6-dates` | — | date-filter popover, the e2e picker guard, **this log** |
 
 **#18001 sits on #18019**, so it can go in at position 6 as listed or any time
