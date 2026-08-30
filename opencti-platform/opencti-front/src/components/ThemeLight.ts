@@ -507,6 +507,24 @@ const ThemeLight = (
     // screenshots before it lands, and e2e resolves many of those fields by
     // their label. The fields the pass named by hand are switched at their own
     // call sites instead.
+    MuiInputLabel: {
+      styleOverrides: {
+        outlined: {
+          // MUI centres the un-shrunk outlined label for ITS box height (56px)
+          // with `translate(14px, 16px)`. Our outlined box is 36px, so that
+          // same 16px put the label flush against the bottom edge of every
+          // empty, unfocused, labelled field — measured on the user-creation
+          // drawer: a 21px label at y=16 in a 37px box, i.e. 16..37. 8px
+          // centres it, and 12px matches the input's own left inset.
+          transform: 'translate(12px, 8px) scale(1)',
+          // The shrunk state is left exactly as MUI has it: measured at -9px
+          // above the box with a correctly cut legend notch.
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+        },
+      },
+    },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
