@@ -138,8 +138,9 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                   />
                 </div>
               ))}
+              {/* Default (md) rather than small: the pass asks for this one at
+                  md, and it is the row's only action. */}
               <Button
-                size="small"
                 aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {
@@ -284,8 +285,9 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                   )}
                 </div>
               ))}
+              {/* Default (md) rather than small: the pass asks for this one at
+                  md, and it is the row's only action. */}
               <Button
-                size="small"
                 aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {

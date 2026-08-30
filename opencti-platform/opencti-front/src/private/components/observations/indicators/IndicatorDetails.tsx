@@ -91,7 +91,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                     size="small"
                     variant="secondary"
                     onClick={openLifecycleDialog}
-                    startIcon={<TroubleshootOutlined />}
+                    startIcon={<TroubleshootOutlined fontSize="small" />}
                     color={indicator.decay_exclusion_applied_rule ? 'warn' : 'primary'}
                     keepMui
                   >

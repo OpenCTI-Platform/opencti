@@ -264,7 +264,7 @@ const IngestionCatalogConnectorCreation = ({
                 component={Link}
                 size="small"
                 to={buildConnectorsUrl()}
-                startIcon={<HubOutlined />}
+                startIcon={<HubOutlined fontSize="small" />}
                 disabled={deploymentCount === 0}
               >
                 {`${deploymentCount} ${t_i18n('instances deployed')}`}
