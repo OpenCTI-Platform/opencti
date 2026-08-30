@@ -14,6 +14,7 @@ import {
   CatalogStatusFacet,
 } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import { useFormatter } from '../../../../components/i18n';
+import { paperBg, paperBorder } from '../paperSurface';
 
 export const useCatalogStatusLabel = () => {
   const { t_i18n } = useFormatter();
@@ -235,8 +236,8 @@ const IngestionCatalogFacetSidebar = ({
           gap: 2,
           padding: 2,
           borderRadius: 1,
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${paperBorder(theme)}`,
+          backgroundColor: paperBg(theme),
           maxHeight: { xs: 'none', md: `calc(100vh - ${theme.spacing(20)})` },
           overflowY: { xs: 'visible', md: 'auto' },
         }}
