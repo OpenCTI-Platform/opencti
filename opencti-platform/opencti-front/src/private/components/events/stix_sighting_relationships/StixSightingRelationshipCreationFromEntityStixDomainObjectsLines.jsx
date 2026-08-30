@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
+import { map, keys, groupBy, assoc } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -14,7 +14,7 @@ import { ExpandMore } from '@mui/icons-material';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 
 const styles = (theme) => ({
   container: {
@@ -46,119 +46,110 @@ const styles = (theme) => ({
   },
 });
 
-class StixSightingRelationshipCreationFromEntityLinesContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { expandedPanels: {} };
-  }
+const StixSightingRelationshipCreationFromEntityLinesContainer = (props) => {
+  const { t_i18n } = useFormatter();
+  const [expandedPanels, setExpandedPanels] = useState({});
+  const handleChangePanel = (panelKey, event, expanded) => {
+    setExpandedPanels((current) => assoc(panelKey, expanded, current));
+  };
 
-  handleChangePanel(panelKey, event, expanded) {
-    this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
-    });
-  }
-
-  isExpanded(type, numberOfEntities, numberOfTypes) {
-    if (this.state.expandedPanels[type] !== undefined) {
-      return this.state.expandedPanels[type];
+  const isExpanded = (type, numberOfEntities, numberOfTypes) => {
+    if (expandedPanels[type] !== undefined) {
+      return expandedPanels[type];
     }
     if (numberOfEntities === 1) {
       return true;
     }
     return numberOfTypes === 1;
-  }
+  };
 
-  render() {
-    const { t, classes, data, handleSelect } = this.props;
-    const stixDomainObjectsNodes = map(
-      (n) => n.node,
-      data.stixDomainObjects.edges,
-    );
-    const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
-    const stixDomainObjects = byType(stixDomainObjectsNodes);
-    const stixDomainObjectsTypes = keys(stixDomainObjects);
-    let increment = 0;
+  const { classes, data, handleSelect } = props;
+  const stixDomainObjectsNodes = map(
+    (n) => n.node,
+    data.stixDomainObjects.edges,
+  );
+  const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
+  const stixDomainObjects = byType(stixDomainObjectsNodes);
+  const stixDomainObjectsTypes = keys(stixDomainObjects);
+  let increment = 0;
 
-    return (
-      <div className={classes.container}>
-        {stixDomainObjectsTypes.length > 0 ? (
-          stixDomainObjectsTypes.map((type) => {
-            increment += 1;
-            return (
-              <Accordion
-                key={type}
-                expanded={this.isExpanded(
-                  type,
-                  stixDomainObjects[type].length,
-                  stixDomainObjectsTypes.length,
-                )}
-                onChange={this.handleChangePanel.bind(this, type)}
-                elevation={3}
-                style={{
-                  marginBottom:
-                    increment === stixDomainObjectsTypes.length
-                    && this.isExpanded(
-                      type,
-                      stixDomainObjects[type].length,
-                      stixDomainObjectsTypes.length,
-                    )
-                      ? 16
-                      : 0,
-                }}
+  return (
+    <div className={classes.container}>
+      {stixDomainObjectsTypes.length > 0 ? (
+        stixDomainObjectsTypes.map((type) => {
+          increment += 1;
+          return (
+            <Accordion
+              key={type}
+              expanded={isExpanded(
+                type,
+                stixDomainObjects[type].length,
+                stixDomainObjectsTypes.length,
+              )}
+              onChange={handleChangePanel.bind(null, type)}
+              elevation={3}
+              style={{
+                marginBottom:
+                  increment === stixDomainObjectsTypes.length
+                  && isExpanded(
+                    type,
+                    stixDomainObjects[type].length,
+                    stixDomainObjectsTypes.length,
+                  )
+                    ? 16
+                    : 0,
+              }}
+            >
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Typography className={classes.heading}>
+                  {t_i18n(`entity_${type}`)}
+                </Typography>
+                <Typography className={classes.secondaryHeading}>
+                  {stixDomainObjects[type].length} {t_i18n('entitie(s)')}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails
+                classes={{ root: classes.expansionPanelContent }}
               >
-                <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Typography className={classes.heading}>
-                    {t(`entity_${type}`)}
-                  </Typography>
-                  <Typography className={classes.secondaryHeading}>
-                    {stixDomainObjects[type].length} {t('entitie(s)')}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails
-                  classes={{ root: classes.expansionPanelContent }}
-                >
-                  <List classes={{ root: classes.list }}>
-                    {stixDomainObjects[type].map((stixDomainObject) => (
-                      <ListItemButton
-                        key={stixDomainObject.id}
-                        classes={{ root: classes.menuItem }}
-                        divider={true}
-                        onClick={handleSelect.bind(this, stixDomainObject)}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type={type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={stixDomainObject.name}
-                          secondary={truncate(
-                            stixDomainObject.description,
-                            100,
-                          )}
-                        />
-                      </ListItemButton>
-                    ))}
-                  </List>
-                </AccordionDetails>
-              </Accordion>
-            );
-          })
-        ) : (
-          <div className={classes.noResult}>
-            {t('No entities were found for this search.')}
-          </div>
-        )}
-      </div>
-    );
-  }
-}
+                <List classes={{ root: classes.list }}>
+                  {stixDomainObjects[type].map((stixDomainObject) => (
+                    <ListItemButton
+                      key={stixDomainObject.id}
+                      classes={{ root: classes.menuItem }}
+                      divider={true}
+                      onClick={handleSelect.bind(null, stixDomainObject)}
+                    >
+                      <ListItemIcon>
+                        <ItemIcon type={type} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={stixDomainObject.name}
+                        secondary={truncate(
+                          stixDomainObject.description,
+                          100,
+                        )}
+                      />
+                    </ListItemButton>
+                  ))}
+                </List>
+              </AccordionDetails>
+            </Accordion>
+          );
+        })
+      ) : (
+        <div className={classes.noResult}>
+          {t_i18n('No entities were found for this search.')}
+        </div>
+      )}
+    </div>
+  );
+};
 
 StixSightingRelationshipCreationFromEntityLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery = graphql`
@@ -320,7 +311,4 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = createP
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipCreationFromEntityStixDomainObjectsLines);
+export default withStyles(styles)(StixSightingRelationshipCreationFromEntityStixDomainObjectsLines);

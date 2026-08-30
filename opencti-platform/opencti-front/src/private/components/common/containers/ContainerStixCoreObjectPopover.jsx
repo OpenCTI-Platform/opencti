@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
@@ -13,10 +14,9 @@ import { Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose } from 'ramda';
-import { Component } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { serializeObjectB64 } from '../../../../utils/object';
@@ -89,78 +89,76 @@ export const containerStixCoreObjectPopoverDeleteMutation = graphql`
   }
 `;
 
-class ContainerStixCoreObjectPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayDeleteMapping: false,
-      displayRemove: false,
-      displayDelete: false,
-      removing: false,
-      deleting: false,
-      deletingMapping: false,
-      referenceDialogOpened: false,
-    };
-  }
-
-  handleOpen(event) {
+const ContainerStixCoreObjectPopover = (props) => {
+  const { t_i18n } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDeleteMapping, setDisplayDeleteMapping] = useState(false);
+  const [displayRemove, setDisplayRemove] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deletingMapping, setDeletingMapping] = useState(false);
+  const [referenceDialogOpened, setReferenceDialogOpened] = useState(false);
+  const handleOpen = (event) => {
     stopEvent(event);
-    this.setState({ anchorEl: event.currentTarget });
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
-  handleOpenRemove() {
-    this.setState({ displayRemove: true });
-    this.handleClose();
-  }
+  const handleOpenRemove = () => {
+    setDisplayRemove(true);
+    handleClose();
+  };
 
-  handleCloseRemove() {
-    this.setState({ removing: false, displayRemove: false });
-  }
+  const handleCloseRemove = () => {
+    setRemoving(false);
+    setDisplayRemove(false);
+  };
 
-  handleSubmitRemove() {
-    const { enableReferences } = this.props;
+  const handleSubmitRemove = () => {
+    const { enableReferences } = props;
     if (enableReferences) {
-      this.setState({ referenceDialogOpened: true });
+      setReferenceDialogOpened(true);
     } else {
-      this.submitRemove();
+      submitRemove();
     }
-  }
+  };
 
-  handleOpenDeleteMapping() {
-    this.setState({ displayDeleteMapping: true });
-    this.handleClose();
-  }
+  const handleOpenDeleteMapping = () => {
+    setDisplayDeleteMapping(true);
+    handleClose();
+  };
 
-  handleCloseDeleteMapping() {
-    this.setState({ deletingMapping: false, displayDeleteMapping: false });
-  }
+  const handleCloseDeleteMapping = () => {
+    setDeletingMapping(false);
+    setDisplayDeleteMapping(false);
+  };
 
-  handleSubmitDeleteMapping() {
-    const { enableReferences } = this.props;
+  const handleSubmitDeleteMapping = () => {
+    const { enableReferences } = props;
     if (enableReferences) {
-      this.setState({ referenceDialogOpened: true });
+      setReferenceDialogOpened(true);
     } else {
-      this.submitDeleteMapping();
+      submitDeleteMapping();
     }
-  }
+  };
 
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
 
-  handleCloseDelete() {
-    this.setState({ deleting: false, displayDelete: false });
-  }
+  const handleCloseDelete = () => {
+    setDeleting(false);
+    setDisplayDelete(false);
+  };
 
-  submitDeleteMapping(commitMessage = '', references = [], setSubmitting = null, resetForm = null) {
-    const { containerId, toStandardId, contentMappingData } = this.props;
-    this.setState({ deletingMapping: true });
+  const submitDeleteMapping = (commitMessage = '', references = [], setSubmitting = null, resetForm = null) => {
+    const { containerId, toStandardId, contentMappingData } = props;
+    setDeletingMapping(true);
     const newMappingData = deleteElementByValue(contentMappingData, toStandardId);
     commitMutation({
       mutation: containerStixCoreObjectPopoverFieldPatchMutation,
@@ -174,14 +172,14 @@ class ContainerStixCoreObjectPopover extends Component {
         references,
       },
       onCompleted: () => {
-        this.handleCloseDeleteMapping();
+        handleCloseDeleteMapping();
         if (setSubmitting) setSubmitting(false);
         if (resetForm) resetForm(true);
       },
     });
-  }
+  };
 
-  submitRemove(commitMessage = '', references = [], setSubmitting = null, resetForm = null) {
+  const submitRemove = (commitMessage = '', references = [], setSubmitting = null, resetForm = null) => {
     const {
       containerId,
       toId,
@@ -190,8 +188,8 @@ class ContainerStixCoreObjectPopover extends Component {
       paginationOptions,
       selectedElements,
       setSelectedElements,
-    } = this.props;
-    this.setState({ removing: true });
+    } = props;
+    setRemoving(true);
     commitMutation({
       mutation: containerStixCoreObjectPopoverRemoveMutation,
       variables: {
@@ -216,16 +214,16 @@ class ContainerStixCoreObjectPopover extends Component {
         }
       },
       onCompleted: () => {
-        this.submitDeleteMapping(commitMessage, references, setSubmitting, resetForm);
-        this.handleCloseRemove();
+        submitDeleteMapping(commitMessage, references, setSubmitting, resetForm);
+        handleCloseRemove();
         const newSelectedElements = R.omit([toId], selectedElements);
         setSelectedElements?.(newSelectedElements);
       },
       setSubmitting,
     });
-  }
+  };
 
-  submitDelete() {
+  const submitDelete = () => {
     const {
       containerId,
       toId,
@@ -233,8 +231,8 @@ class ContainerStixCoreObjectPopover extends Component {
       paginationOptions,
       selectedElements,
       setSelectedElements,
-    } = this.props;
-    this.setState({ deleting: true });
+    } = props;
+    setDeleting(true);
     commitMutation({
       mutation: containerStixCoreObjectPopoverDeleteMutation,
       variables: {
@@ -255,170 +253,166 @@ class ContainerStixCoreObjectPopover extends Component {
         }
       },
       onCompleted: () => {
-        this.handleCloseDelete();
+        handleCloseDelete();
         const newSelectedElements = R.omit([toId], selectedElements);
         setSelectedElements?.(newSelectedElements);
       },
     });
-  }
+  };
 
-  closeReferencesPopup() {
-    this.setState({ referenceDialogOpened: false });
-  }
+  const closeReferencesPopup = () => {
+    setReferenceDialogOpened(false);
+  };
 
-  submitReference(values, { setSubmitting, resetForm }) {
-    const { displayRemove, displayDeleteMapping } = this.state;
+  const submitReference = (values, { setSubmitting, resetForm }) => {
     const references = (values.references || []).map((ref) => ref.value);
-    if (displayRemove) this.submitRemove(values.message, references, setSubmitting, resetForm);
-    else if (displayDeleteMapping) this.submitDeleteMapping(values.message, references, setSubmitting, resetForm);
-  }
+    if (displayRemove) submitRemove(values.message, references, setSubmitting, resetForm);
+    else if (displayDeleteMapping) submitDeleteMapping(values.message, references, setSubmitting, resetForm);
+  };
 
-  render() {
-    const { classes, t, theme, contentMappingData, mapping, containerId, enableReferences } = this.props;
-    const { referenceDialogOpened } = this.state;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          aria-label={t('Open menu')}
-          color="primary"
-          onClick={this.handleOpen.bind(this)}
-          disabled={this.props.menuDisable ?? false}
-          aria-haspopup="true"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          {contentMappingData && mapping && mapping > 0 && (
-            <MenuItem onClick={this.handleOpenDeleteMapping.bind(this)}>
-              {t('Delete mapping')}
-            </MenuItem>
-          )}
-          <MenuItem onClick={this.handleOpenRemove.bind(this)}>
-            {t('Remove')}
+  const { classes, theme, contentMappingData, mapping, containerId, enableReferences } = props;
+  return (
+    <div className={classes.container}>
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        color="primary"
+        onClick={handleOpen}
+        disabled={props.menuDisable ?? false}
+        aria-haspopup="true"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        {contentMappingData && mapping && mapping > 0 && (
+          <MenuItem onClick={handleOpenDeleteMapping}>
+            {t_i18n('Delete mapping')}
           </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem
-              onClick={this.handleOpenDelete.bind(this)}
-              style={{ color: theme.palette.warning.main }}
-            >
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
-        <Dialog
-          open={this.state.displayDeleteMapping}
-          onClose={this.handleCloseDeleteMapping.bind(this)}
-          title={t('Are you sure?')}
-          size="small"
-        >
-          <DialogContentText>
-            {t('Do you want to delete the mapping for this entity?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDeleteMapping.bind(this)}
-              disabled={this.state.deletingMapping}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.handleSubmitDeleteMapping.bind(this)}
-              disabled={this.state.deletingMapping}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={this.state.displayRemove}
-          onClose={this.handleCloseRemove.bind(this)}
-          title={t('Are you sure?')}
-          size="small"
-        >
-          <DialogContentText>
-            {t('Do you want to remove the entity from this container?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseRemove.bind(this)}
-              disabled={this.state.removing}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.handleSubmitRemove.bind(this)}
-              disabled={this.state.removing}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        {enableReferences && (
-          <Formik
-            initialValues={{ message: '', references: [] }}
-            onSubmit={this.submitReference.bind(this)}
-          >
-            {({
-              submitForm,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                <CommitMessage
-                  handleClose={this.closeReferencesPopup.bind(this)}
-                  open={referenceDialogOpened}
-                  submitForm={submitForm}
-                  disabled={isSubmitting}
-                  setFieldValue={setFieldValue}
-                  values={values.references}
-                  id={containerId}
-                  noStoreUpdate={true}
-                />
-              </Form>
-            )}
-          </Formik>
         )}
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-          size="small"
+        <MenuItem onClick={handleOpenRemove}>
+          {t_i18n('Remove')}
+        </MenuItem>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem
+            onClick={handleOpenDelete}
+            style={{ color: theme.palette.warning.main }}
+          >
+            {t_i18n('Delete')}
+          </MenuItem>
+        </Security>
+      </Menu>
+      <Dialog
+        open={displayDeleteMapping}
+        onClose={handleCloseDeleteMapping}
+        title={t_i18n('Are you sure?')}
+        size="small"
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete the mapping for this entity?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDeleteMapping}
+            disabled={deletingMapping}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={handleSubmitDeleteMapping}
+            disabled={deletingMapping}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={displayRemove}
+        onClose={handleCloseRemove}
+        title={t_i18n('Are you sure?')}
+        size="small"
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to remove the entity from this container?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseRemove}
+            disabled={removing}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={handleSubmitRemove}
+            disabled={removing}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {enableReferences && (
+        <Formik
+          initialValues={{ message: '', references: [] }}
+          onSubmit={submitReference}
         >
-          <DialogContentText>
-            {t('Do you want to delete this entity?')}
-            <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
-              {t(
-                'You are about to completely delete the entity from the platform (not only from the container), be sure of what you are doing.',
-              )}
-            </Alert>
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
+          {({
+            submitForm,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
+            <Form>
+              <CommitMessage
+                handleClose={closeReferencesPopup}
+                open={referenceDialogOpened}
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                setFieldValue={setFieldValue}
+                values={values.references}
+                id={containerId}
+                noStoreUpdate={true}
+              />
+            </Form>
+          )}
+        </Formik>
+      )}
+      <Dialog
+        open={displayDelete}
+        onClose={handleCloseDelete}
+        title={t_i18n('Are you sure?')}
+        size="small"
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this entity?')}
+          <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+            {t_i18n(
+              'You are about to completely delete the entity from the platform (not only from the container), be sure of what you are doing.',
+            )}
+          </Alert>
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 ContainerStixCoreObjectPopover.propTypes = {
   containerId: PropTypes.string,
@@ -428,7 +422,6 @@ ContainerStixCoreObjectPopover.propTypes = {
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
   selectedElements: PropTypes.object,
   setSelectedElements: PropTypes.func,
   contentMappingData: PropTypes.object,
@@ -437,7 +430,6 @@ ContainerStixCoreObjectPopover.propTypes = {
 };
 
 export default compose(
-  inject18n,
   withTheme,
   withStyles(styles),
 )(ContainerStixCoreObjectPopover);

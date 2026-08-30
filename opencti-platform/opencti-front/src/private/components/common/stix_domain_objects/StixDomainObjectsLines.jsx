@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import { map, keys, groupBy, assoc, compose } from 'ramda';
@@ -17,7 +17,7 @@ import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
@@ -57,117 +57,71 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectsContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { expandedPanels: {} };
-  }
+const StixDomainObjectsContainer = (props) => {
+  const { t_i18n, fd } = useFormatter();
+  const [expandedPanels, setExpandedPanels] = useState({});
+  const handleChangePanel = (panelKey, event, expanded) => {
+    setExpandedPanels((current) => assoc(panelKey, expanded, current));
+  };
 
-  handleChangePanel(panelKey, event, expanded) {
-    this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
-    });
-  }
-
-  isExpanded(type, numberOfEntities, numberOfTypes) {
-    if (this.state.expandedPanels[type] !== undefined) {
-      return this.state.expandedPanels[type];
+  const isExpanded = (type, numberOfEntities, numberOfTypes) => {
+    if (expandedPanels[type] !== undefined) {
+      return expandedPanels[type];
     }
     if (numberOfEntities === 1) {
       return true;
     }
     return numberOfTypes === 1;
-  }
+  };
 
-  render() {
-    const { t, classes, data, fd } = this.props;
-    const stixDomainObjectsNodes = map(
-      (n) => n.node,
-      data.stixDomainObjects.edges,
-    );
-    const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
-    const stixDomainObjects = byType(stixDomainObjectsNodes);
-    const stixDomainObjectsTypes = keys(stixDomainObjects);
-    if (stixDomainObjectsTypes.length !== 0) {
-      return (
-        <div className={classes.container}>
-          {stixDomainObjectsTypes.map((type) => (
-            <Accordion
-              key={type}
-              expanded={this.isExpanded(
-                type,
-                stixDomainObjects[type].length,
-                stixDomainObjectsTypes.length,
-              )}
-              onChange={this.handleChangePanel.bind(this, type)}
-              elevation={3}
+  const { classes, data } = props;
+  const stixDomainObjectsNodes = map(
+    (n) => n.node,
+    data.stixDomainObjects.edges,
+  );
+  const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
+  const stixDomainObjects = byType(stixDomainObjectsNodes);
+  const stixDomainObjectsTypes = keys(stixDomainObjects);
+  if (stixDomainObjectsTypes.length !== 0) {
+    return (
+      <div className={classes.container}>
+        {stixDomainObjectsTypes.map((type) => (
+          <Accordion
+            key={type}
+            expanded={isExpanded(
+              type,
+              stixDomainObjects[type].length,
+              stixDomainObjectsTypes.length,
+            )}
+            onChange={handleChangePanel.bind(null, type)}
+            elevation={3}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              className={classes.summary}
             >
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                className={classes.summary}
-              >
-                <Typography className={classes.heading}>
-                  {t(`entity_${type}`)}
-                </Typography>
-                <Typography classes={{ root: classes.secondaryHeading }}>
-                  {stixDomainObjects[type].length}{' '}
-                  {stixDomainObjects[type].length < 2
-                    ? t('entity')
-                    : t('entities')}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                classes={{ root: classes.expansionPanelContent }}
-              >
-                <List classes={{ root: classes.list }}>
-                  {stixDomainObjects[type].map((stixDomainObject) => {
-                    const link = resolveLink(stixDomainObject.entity_type);
-                    if (link) {
-                      return (
-                        <ListItem
-                          key={stixDomainObject.id}
-                          divider={true}
-                          disablePadding
-                          secondaryAction={(
-                            <StixCoreObjectLabels
-                              labels={stixDomainObject.objectLabel}
-                              variant="inSearch"
-                            />
-                          )}
-                        >
-                          <ListItemButton
-                            component={Link}
-                            to={`${link}/${stixDomainObject.id}`}
-                          >
-                            <ListItemIcon classes={{ root: classes.itemIcon }}>
-                              <ItemIcon type={type} />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={truncate(
-                                stixDomainObject.x_mitre_id
-                                  ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
-                                  : stixDomainObject.name
-                                    || stixDomainObject.attribute_abstract
-                                    || stixDomainObject.content
-                                    || stixDomainObject.opinion
-                                    || `${fd(
-                                      stixDomainObject.first_observed,
-                                    )} - ${fd(stixDomainObject.last_observed)}`,
-                                100,
-                              )}
-                              secondary={truncate(
-                                stixDomainObject.description,
-                                150,
-                              )}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                      );
-                    }
+              <Typography className={classes.heading}>
+                {t_i18n(`entity_${type}`)}
+              </Typography>
+              <Typography classes={{ root: classes.secondaryHeading }}>
+                {stixDomainObjects[type].length}{' '}
+                {stixDomainObjects[type].length < 2
+                  ? t_i18n('entity')
+                  : t_i18n('entities')}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails
+              classes={{ root: classes.expansionPanelContent }}
+            >
+              <List classes={{ root: classes.list }}>
+                {stixDomainObjects[type].map((stixDomainObject) => {
+                  const link = resolveLink(stixDomainObject.entity_type);
+                  if (link) {
                     return (
                       <ListItem
                         key={stixDomainObject.id}
                         divider={true}
+                        disablePadding
                         secondaryAction={(
                           <StixCoreObjectLabels
                             labels={stixDomainObject.objectLabel}
@@ -175,33 +129,72 @@ class StixDomainObjectsContainer extends Component {
                           />
                         )}
                       >
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <ItemIcon type={type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={truncate(stixDomainObject.name, 100)}
-                          secondary={truncate(
-                            stixDomainObject.description,
-                            150,
-                          )}
-                        />
+                        <ListItemButton
+                          component={Link}
+                          to={`${link}/${stixDomainObject.id}`}
+                        >
+                          <ListItemIcon classes={{ root: classes.itemIcon }}>
+                            <ItemIcon type={type} />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={truncate(
+                              stixDomainObject.x_mitre_id
+                                ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
+                                : stixDomainObject.name
+                                  || stixDomainObject.attribute_abstract
+                                  || stixDomainObject.content
+                                  || stixDomainObject.opinion
+                                  || `${fd(
+                                    stixDomainObject.first_observed,
+                                  )} - ${fd(stixDomainObject.last_observed)}`,
+                              100,
+                            )}
+                            secondary={truncate(
+                              stixDomainObject.description,
+                              150,
+                            )}
+                          />
+                        </ListItemButton>
                       </ListItem>
                     );
-                  })}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          ))}
-        </div>
-      );
-    }
-    return (
-      <div className={classes.noResult}>
-        {t('No entities were found for this search.')}
+                  }
+                  return (
+                    <ListItem
+                      key={stixDomainObject.id}
+                      divider={true}
+                      secondaryAction={(
+                        <StixCoreObjectLabels
+                          labels={stixDomainObject.objectLabel}
+                          variant="inSearch"
+                        />
+                      )}
+                    >
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <ItemIcon type={type} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={truncate(stixDomainObject.name, 100)}
+                        secondary={truncate(
+                          stixDomainObject.description,
+                          150,
+                        )}
+                      />
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        ))}
       </div>
     );
   }
-}
+  return (
+    <div className={classes.noResult}>
+      {t_i18n('No entities were found for this search.')}
+    </div>
+  );
+};
 
 StixDomainObjectsContainer.propTypes = {
   reportId: PropTypes.string,
@@ -209,9 +202,6 @@ StixDomainObjectsContainer.propTypes = {
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
-  fd: PropTypes.func,
 };
 
 export const stixDomainObjectsLinesSubTypesQuery = graphql`
@@ -600,4 +590,4 @@ const StixDomainObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectsLines);
+export default compose(withStyles(styles))(StixDomainObjectsLines);

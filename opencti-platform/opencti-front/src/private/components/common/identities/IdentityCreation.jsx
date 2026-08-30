@@ -6,15 +6,13 @@ import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose } from 'ramda';
-import { Component } from 'react';
 import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
@@ -80,29 +78,17 @@ const identityValidation = (t) => Yup.object().shape({
   type: Yup.string().trim().required(t('This field is required')),
 });
 
-class IdentityCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
-    if (this.props.dryrun && this.props.contextual) {
-      this.props.creationCallback({
+const IdentityCreation = (props) => {
+  const { t_i18n } = useFormatter();
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
+    if (props.dryrun && props.contextual) {
+      props.creationCallback({
         identityAdd: {
           ...values,
           id: `identity--${uuid()}`,
         },
       });
-      return this.props.handleClose();
+      return props.handleClose();
     }
     const finalValues = R.pipe(
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -118,129 +104,124 @@ class IdentityCreation extends Component {
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        if (this.props.contextual) {
-          this.props.creationCallback(response);
-          this.props.handleClose();
-        } else {
-          this.handleClose();
+        if (props.contextual) {
+          props.creationCallback(response);
+          props.handleClose();
         }
       },
     });
-  }
+  };
 
-  onResetContextual() {
-    this.props.handleClose();
-  }
+  const onResetContextual = () => {
+    props.handleClose();
+  };
 
-  render() {
-    const { t, inputValue, open, onlyAuthors, handleClose, dryrun } = this.props;
-    return (
-      <>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{
-            name: inputValue,
-            description: '',
-            type: '',
-            objectMarking: [],
-            objectLabel: [],
-            externalReferences: [],
-          }}
-          validationSchema={identityValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.onResetContextual.bind(this)}
-        >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <Form>
-              <Dialog
-                open={open}
-                onClose={handleClose.bind(this)}
-                title={t('Create an entity')}
+  const { inputValue, open, onlyAuthors, handleClose, dryrun } = props;
+  return (
+    <>
+      <Formik
+        enableReinitialize={true}
+        initialValues={{
+          name: inputValue,
+          description: '',
+          type: '',
+          objectMarking: [],
+          objectLabel: [],
+          externalReferences: [],
+        }}
+        validationSchema={identityValidation(t_i18n)}
+        onSubmit={onSubmit}
+        onReset={onResetContextual}
+      >
+        {({
+          submitForm,
+          handleReset,
+          isSubmitting,
+          setFieldValue,
+          values,
+        }) => (
+          <Form>
+            <Dialog
+              open={open}
+              onClose={handleClose}
+              title={t_i18n('Create an entity')}
+            >
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t_i18n('Name')}
+                fullWidth={true}
+                detectDuplicate={['Organization', 'Individual']}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t_i18n('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+              />
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="type"
+                label={t_i18n('Entity type')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
               >
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  detectDuplicate={['Organization', 'Individual']}
+                {!onlyAuthors && (<MenuItem value="Sector">{t_i18n('Sector')}</MenuItem>)}
+                <MenuItem value="Organization">{t_i18n('Organization')}</MenuItem>
+                <MenuItem value="System">{t_i18n('System')}</MenuItem>
+                <MenuItem value="Individual">{t_i18n('Individual')}</MenuItem>
+              </Field>
+              {!dryrun && (
+                <ObjectLabelField
+                  name="objectLabel"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
                 />
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
+              )}
+              {!dryrun && (
+                <ObjectMarkingField
+                  name="objectMarking"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
                 />
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="type"
-                  label={t('Entity type')}
-                  fullWidth={true}
-                  containerstyle={fieldSpacingContainerStyle}
+              )}
+              {!dryrun && (
+                <ExternalReferencesField
+                  name="externalReferences"
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
+                />
+              )}
+              <DialogActions>
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
                 >
-                  {!onlyAuthors && (<MenuItem value="Sector">{t('Sector')}</MenuItem>)}
-                  <MenuItem value="Organization">{t('Organization')}</MenuItem>
-                  <MenuItem value="System">{t('System')}</MenuItem>
-                  <MenuItem value="Individual">{t('Individual')}</MenuItem>
-                </Field>
-                {!dryrun && (
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                )}
-                {!dryrun && (
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                  />
-                )}
-                {!dryrun && (
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
-                )}
-                <DialogActions>
-                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
-      </>
-    );
-  }
-}
+                  {t_i18n('Create')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Form>
+        )}
+      </Formik>
+    </>
+  );
+};
 
 IdentityCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
   contextual: PropTypes.bool,
   onlyAuthors: PropTypes.bool,
   open: PropTypes.bool,
@@ -249,7 +230,4 @@ IdentityCreation.propTypes = {
   creationCallback: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IdentityCreation);
+export default withStyles(styles, { withTheme: true })(IdentityCreation);

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
@@ -15,7 +15,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import Skeleton from '@mui/material/Skeleton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationFromRelationStixDomainObjectsLines, {
@@ -278,28 +278,24 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixCoreRelationshipCreationFromRelation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      step: 0,
-      targetEntity: null,
-      search: '',
-    };
-  }
+const StixCoreRelationshipCreationFromRelation = (props) => {
+  const { t_i18n } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(0);
+  const [targetEntity, setTargetEntity] = useState(null);
+  const [search, setSearch] = useState('');
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleClose = () => {
+    setStep(0);
+    setTargetEntity(null);
+    setOpen(false);
+  };
 
-  handleClose() {
-    this.setState({ step: 0, targetEntity: null, open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const { isRelationReversed, entityId } = this.props;
-    const { targetEntity } = this.state;
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
+    const { isRelationReversed, entityId } = props;
     const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
     const toEntityId = isRelationReversed ? entityId : targetEntity.id;
     const finalValues = R.pipe(
@@ -323,14 +319,14 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         : stixCoreRelationshipCreationFromRelationFromMutation,
       variables: { input: finalValues },
       updater: (store) => {
-        if (typeof this.props.onCreate !== 'function') {
+        if (typeof props.onCreate !== 'function') {
           const payload = store.getRootField('stixCoreRelationshipAdd');
           const newEdge = payload.setLinkedRecord(payload, 'node');
           const container = store.getRoot();
           sharedUpdater(
             store,
             container.getDataID(),
-            this.props.paginationOptions,
+            props.paginationOptions,
             newEdge,
           );
         }
@@ -339,24 +335,26 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  handleResetSelection() {
-    this.setState({ step: 0, targetEntity: null });
-  }
+  const handleResetSelection = () => {
+    setStep(0);
+    setTargetEntity(null);
+  };
 
-  handleSearch(keyword) {
-    this.setState({ search: keyword });
-  }
+  const handleSearch = (keyword) => {
+    setSearch(keyword);
+  };
 
-  handleSelectEntity(stixDomainObject) {
-    this.setState({ step: 1, targetEntity: stixDomainObject });
-  }
+  const handleSelectEntity = (stixDomainObject) => {
+    setStep(1);
+    setTargetEntity(stixDomainObject);
+  };
 
-  renderFakeList() {
+  const renderFakeList = () => {
     return (
       <List>
         {Array.from(Array(20), (e, i) => (
@@ -392,11 +390,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         ))}
       </List>
     );
-  }
+  };
 
-  renderSelectEntity() {
-    const { search } = this.state;
-    const { stixCoreObjectTypes, onlyObservables } = this.props;
+  const renderSelectEntity = () => {
+    const { stixCoreObjectTypes, onlyObservables } = props;
     const stixDomainObjectsPaginationOptions = {
       search,
       types: stixCoreObjectTypes
@@ -417,12 +414,12 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               if (props) {
                 return (
                   <StixCoreRelationshipCreationFromRelationStixDomainObjectsLines
-                    handleSelect={this.handleSelectEntity.bind(this)}
+                    handleSelect={handleSelectEntity}
                     data={props}
                   />
                 );
               }
-              return this.renderFakeList();
+              return renderFakeList();
             }}
           />
         ) : (
@@ -433,7 +430,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery
           }
           variables={{
-            search: this.state.search,
+            search: search,
             types: stixCoreObjectTypes,
             count: 50,
             orderBy: 'created_at',
@@ -443,14 +440,14 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             if (props) {
               return (
                 <StixCoreRelationshipCreationFromRelationStixCyberObservablesLines
-                  handleSelect={this.handleSelectEntity.bind(this)}
+                  handleSelect={handleSelectEntity}
                   data={props}
                 />
               );
             }
             return !stixCoreObjectTypes
               || stixCoreObjectTypes.length === 0 ? (
-                  this.renderFakeList()
+                  renderFakeList()
                 ) : (
                   <div> &nbsp; </div>
                 );
@@ -458,19 +455,18 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         />
         <Stack direction="row" alignSelf="flex-end">
           <StixDomainObjectCreation
-            display={this.state.open}
-            inputValue={this.state.search}
+            display={open}
+            inputValue={search}
             paginationOptions={stixDomainObjectsPaginationOptions}
             stixDomainObjectTypes={stixCoreObjectTypes}
           />
         </Stack>
       </Stack>
     );
-  }
+  };
 
-  renderForm(sourceEntity) {
-    const { t, classes, isRelationReversed, allowedRelationshipTypes } = this.props;
-    const { targetEntity } = this.state;
+  const renderForm = (sourceEntity) => {
+    const { classes, isRelationReversed, allowedRelationshipTypes } = props;
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
     if (isRelationReversed) {
@@ -498,28 +494,28 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 <IconButton
                   aria-label="Close"
                   className={classes.closeButton}
-                  onClick={this.handleClose.bind(this)}
+                  onClick={handleClose}
                 >
                   <Close fontSize="small" color="primary" />
                 </IconButton>
-                <Typography variant="h6">{t('Create a relationship')}</Typography>
+                <Typography variant="h6">{t_i18n('Create a relationship')}</Typography>
               </div>
               <StixCoreRelationshipCreationForm
                 fromEntities={[fromEntity]}
                 toEntities={[toEntity]}
                 relationshipTypes={relationshipTypes}
-                handleResetSelection={this.handleResetSelection.bind(this)}
-                onSubmit={this.onSubmit.bind(this)}
-                handleClose={this.handleClose.bind(this)}
+                handleResetSelection={handleResetSelection}
+                onSubmit={onSubmit}
+                handleClose={handleClose}
               />
             </>
           );
         }}
       </UserContext.Consumer>
     );
-  }
+  };
 
-  renderLoader() {
+  const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
         <span
@@ -533,72 +529,69 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         </span>
       </div>
     );
-  }
+  };
 
-  render() {
-    const { classes, entityId, variant, paddingRight, t } = this.props;
-    const { open, step } = this.state;
-    return (
-      <div>
-        {variant === 'inLine' ? (
-          <IconButton
-            aria-label="Label"
-            onClick={this.handleOpen.bind(this)}
-            size="small"
-            variant="tertiary"
-          >
-            <Add />
-          </IconButton>
-        ) : (
-          <Fab
-            onClick={this.handleOpen.bind(this)}
-            color="primary"
-            aria-label="Add"
-            className={
-              paddingRight
-                ? classes.createButtonWithPadding
-                : classes.createButton
-            }
-          >
-            <Add />
-          </Fab>
-        )}
-        <Drawer
-          open={open}
-          onClose={this.handleClose.bind(this)}
-          title={t('Create a relationship')}
-          subHeader={{
-            left: [(
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-                key="leftInput"
-              />
-            )],
-          }}
+  const { classes, entityId, variant, paddingRight } = props;
+  return (
+    <div>
+      {variant === 'inLine' ? (
+        <IconButton
+          aria-label="Label"
+          onClick={handleOpen}
+          size="small"
+          variant="tertiary"
         >
-          <QueryRenderer
-            query={stixCoreRelationshipCreationFromRelationQuery}
-            variables={{ id: entityId }}
-            render={({ props }) => {
-              if (props && props.stixCoreRelationship) {
-                return (
-                  <div>
-                    {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1
-                      ? this.renderForm(props.stixCoreRelationship)
-                      : ''}
-                  </div>
-                );
-              }
-              return this.renderLoader();
-            }}
-          />
-        </Drawer>
-      </div>
-    );
-  }
-}
+          <Add />
+        </IconButton>
+      ) : (
+        <Fab
+          onClick={handleOpen}
+          color="primary"
+          aria-label="Add"
+          className={
+            paddingRight
+              ? classes.createButtonWithPadding
+              : classes.createButton
+          }
+        >
+          <Add />
+        </Fab>
+      )}
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Create a relationship')}
+        subHeader={{
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="leftInput"
+            />
+          )],
+        }}
+      >
+        <QueryRenderer
+          query={stixCoreRelationshipCreationFromRelationQuery}
+          variables={{ id: entityId }}
+          render={({ props }) => {
+            if (props && props.stixCoreRelationship) {
+              return (
+                <div>
+                  {step === 0 ? renderSelectEntity() : ''}
+                  {step === 1
+                    ? renderForm(props.stixCoreRelationship)
+                    : ''}
+                </div>
+              );
+            }
+            return renderLoader();
+          }}
+        />
+      </Drawer>
+    </div>
+  );
+};
 
 StixCoreRelationshipCreationFromRelation.propTypes = {
   entityId: PropTypes.string,
@@ -608,14 +601,9 @@ StixCoreRelationshipCreationFromRelation.propTypes = {
   allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
   variant: PropTypes.string,
   onCreate: PropTypes.func,
   paddingRight: PropTypes.bool,
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipCreationFromRelation);
+export default withStyles(styles)(StixCoreRelationshipCreationFromRelation);

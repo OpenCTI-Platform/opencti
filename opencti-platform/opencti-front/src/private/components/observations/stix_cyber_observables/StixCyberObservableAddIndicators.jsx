@@ -1,8 +1,7 @@
+import { useState } from 'react';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { Component } from 'react';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import Drawer from '../../common/drawer/Drawer';
@@ -16,92 +15,87 @@ const styles = () => ({
   },
 });
 
-class StixCyberObservableAddIndicators extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { search: '' };
-  }
+const StixCyberObservableAddIndicators = (props) => {
+  const { t_i18n } = useFormatter();
+  const [search, setSearch] = useState('');
+  const handleSearch = (keyword) => {
+    setSearch(keyword);
+  };
 
-  handleSearch(keyword) {
-    this.setState({ search: keyword });
-  }
+  const {
 
-  render() {
-    const {
-      t,
-      classes,
-      stixCyberObservable,
-      stixCyberObservableIndicators,
-      open,
-      handleClose,
-    } = this.props;
-    const paginationOptions = {
-      search: this.state.search,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-    };
-    return (
-      <>
-        <Drawer
-          open={open}
-          onClose={handleClose.bind(this)}
-          title={t('Add indicators')}
-          subHeader={{
-            left: [(
-              <SearchInput
-                variant="inDrawer"
-                onSubmit={this.handleSearch.bind(this)}
-                key="searchInput"
-              />
-            )],
+    classes,
+
+    stixCyberObservable,
+
+    stixCyberObservableIndicators,
+
+    open,
+
+    handleClose,
+
+  } = props;
+  const paginationOptions = {
+    search: search,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+  };
+  return (
+    <>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Add indicators')}
+        subHeader={{
+          left: [(
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={handleSearch}
+              key="searchInput"
+            />
+          )],
+        }}
+      >
+        <QueryRenderer
+          query={stixCyberObservableAddIndicatorsLinesQuery}
+          variables={{
+            search: search,
+            orderBy: 'created_at',
+            orderMode: 'desc',
+            count: 50,
           }}
-        >
-          <QueryRenderer
-            query={stixCyberObservableAddIndicatorsLinesQuery}
-            variables={{
-              search: this.state.search,
-              orderBy: 'created_at',
-              orderMode: 'desc',
-              count: 50,
-            }}
-            render={({ props }) => {
-              return (
-                <div>
-                  <StixCyberObservableAddIndicatorsLines
-                    stixCyberObservable={stixCyberObservable}
-                    stixCyberObservableIndicators={
-                      stixCyberObservableIndicators
-                    }
-                    data={props}
+          render={({ props }) => {
+            return (
+              <div>
+                <StixCyberObservableAddIndicatorsLines
+                  stixCyberObservable={stixCyberObservable}
+                  stixCyberObservableIndicators={
+                    stixCyberObservableIndicators
+                  }
+                  data={props}
+                />
+                <div className={classes.createButton}>
+                  <IndicatorCreation
+                    display={open}
+                    contextual
+                    paginationOptions={paginationOptions}
                   />
-                  <div className={classes.createButton}>
-                    <IndicatorCreation
-                      display={open}
-                      contextual
-                      paginationOptions={paginationOptions}
-                    />
-                  </div>
                 </div>
-              );
-            }}
-          />
-        </Drawer>
-      </>
-    );
-  }
-}
+              </div>
+            );
+          }}
+        />
+      </Drawer>
+    </>
+  );
+};
 
 StixCyberObservableAddIndicators.propTypes = {
   stixCyberObservable: PropTypes.object,
   stixCyberObservableIndicators: PropTypes.array,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableAddIndicators);
+export default withStyles(styles)(StixCyberObservableAddIndicators);
