@@ -2,18 +2,33 @@ import { Stack, Typography } from '@mui/material';
 import IconButton from '../button/IconButton';
 import { Close } from '@mui/icons-material';
 import React from 'react';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 interface DrawerHeaderProps {
   title: string;
+  /**
+   * The elevation layer this header sits on. Defaults to the drawer layer.
+   *
+   * The header carries the layer class ITSELF rather than trusting its mount:
+   * `StixDomainObjectEdition` puts this header inside a RAW MUI Drawer, which
+   * declares no layer, so reading the bare `--bg-elevation-heading` fell back
+   * to layer 0 and the header came out a step too dark. Inside the shared
+   * Drawer the paper already declares the same layer, so re-declaring it here
+   * is a no-op. Exposed as a prop so a drawer at another depth can say so
+   * rather than inherit a wrong constant.
+   */
+  layer?: Parameters<typeof fdsLayerClass>[0];
   onClose?: () => void;
   endContent?: React.ReactNode;
 }
 
-const DrawerHeader = ({ title, onClose, endContent }: DrawerHeaderProps) => {
+const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: DrawerHeaderProps) => {
   return (
     <Stack
       direction="row"
+      className={fdsLayerClass(layer)}
       sx={{
+        ...layerInputVars,
         // Resolves to the layer-2 value: the drawer paper declares layer 2.
         backgroundColor: 'var(--bg-elevation-heading)',
         paddingX: 3,
