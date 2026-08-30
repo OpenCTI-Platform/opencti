@@ -14,7 +14,7 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 
 | # | Screen | What's wrong | Class | Status |
 |---|---|---|---|---|
-| F1 | Entity tabs, Content tab | Right bars: return to ORIGINAL position (right edge, full height), content back in place — "everything goes underneath". Keep the redesign. | a | OPEN |
+| F1 | Entity tabs, Knowledge + Content | Right bars: return to ORIGINAL position (right edge, full height), content back in place — "everything goes underneath". Keep the redesign. **FIXED — verified on screen.** The structural move never merged, so the tip already had the original placement; only the INSIDE of the bars changed. Knowledge bar rows are now the library `NavbarItem` (36px, 14px label, 16px inset), group headers `NavbarTitle` (10px caption, `--text-default-disabled`, rendered `<p>` so no out-of-order heading), paper on `layer-1` + 1px `--border-elevation-subtle-soft` + 4px top inset. Content bar takes the same surface and edge. Measured at 1600x900: paper #0d172b at x=1400 h=900, highlight resolves #182a4e inside the bar, rows 36/14/16, headers 28/10/#95969d. Code: **PR #18001** (branch force-pushed, its old below-the-tabs move is gone). | a | FIXED |
 | F2 | Date field (forms, e.g. *Date de publication*) | Not yet isolated as a separate defect. **Strong lead from F21:** the same regression family — library IconButtons placed inside MUI field adornments with hand-rolled negative margins. Next session: grep for `IconButton` inside `slotProps.input.endAdornment` / `InputProps` across the date components (`DatePicker.tsx`, `DateTimePicker.tsx`, `PeriodicityField`) and exercise type/pick/clear/submit. | a | OPEN |
 | F3 | All remaining MUI fields | variant=outlined + layer-aware bg + graphically approach the lib (heights, paddings, label style) without breaking behaviour. | a | OPEN |
 | F4 | Dialogs (Create dashboard, EE license, Manage access, Public dashboard) | Must be treated EXACTLY like drawers: same paper bg, fields at layer 2 (#0C1527). Still wrong. | a | OPEN |
@@ -65,19 +65,21 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 **This file is the handover. Read it before starting; do not re-investigate
 what is already root-caused below.**
 
-### Where the code lives (nothing is merged)
+### Where the code lives — open PRs, none merged
 
-| Branch | Carries | FIXLOG items |
-|---|---|---|
-| `fds/night6-dates` | date-filter popover repair **+ the authoritative copy of this log** | F21 |
-| `fds/night6-fixlog` | dashboard Refresh control, number-input conversions | F15, F8 |
-| `fds/night6-rightbar` | **empty** — branched off the tip, work not started | F1 |
-| `fds/night4-rightnav` (#18001) | previous right-bar rounds — superseded by the F1 plan below | — |
-| `fds/night5-layers` (#18003) | layer declaration on shared Drawer/Dialog | partial F4/F5 |
+| PR | Branch | Carries | FIXLOG items |
+|---|---|---|---|
+| **#18015** | `fds/night6-dates` | date-filter popover repair **+ this log, the authoritative copy** | F21 |
+| **#18014** | `fds/night6-fixlog` | dashboard Refresh control, number-input conversions | F15, F8 |
+| **#18001** | `fds/night4-rightnav` | right-bar redesign, original placement kept (branch force-pushed — its old below-the-tabs move is gone) | F1 |
+| **#18003** | `fds/night5-layers` | layer declaration on the shared Drawer/Dialog | partial F4/F5 |
 
-> **Mismatch to be aware of:** the log copy on `fds/night6-dates` records F8 and
-> F15 as fixed, but their CODE is on `fds/night6-fixlog`. Merge both, or
-> consolidate, before trusting a single branch.
+> **Where the log lives.** This file is carried by **#18015** only. The code
+> branches deliberately do NOT each add their own copy: two branches adding the
+> same new file with different content conflict on merge, and Sandy would have
+> to resolve it three times. So every status change lands here, and the table
+> above says which PR carries the code. Once #18015 merges, the file exists on
+> `design-system/current` and later branches can edit it normally.
 
 ### Resume here
 
