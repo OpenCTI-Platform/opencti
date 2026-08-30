@@ -108,7 +108,7 @@ the last push; everything else has settled green.
 | PR | Note |
 |---|---|
 | #18015, #18020, #18021 | green throughout |
-| #18001 | had ONE real failure, caused by this work and fixed: `getByRole('menuitem', {name:'Victimology'})` timed out, because the knowledge bar's rows are real links with `aria-current` now rather than MUI `MenuItem`s with `role=menuitem` — a menu role implies an application menu with roving focus, which a permanent navigation bar never was. Two page objects moved to `role: 'link'`; every other `getByRole('menuitem')` in the suite targets a real popup menu and is untouched. |
+| #18001 | had a real failure, caused by this work: the knowledge bar's rows are real links with `aria-current` now rather than MUI `MenuItem`s with `role=menuitem` — a menu role implies an application menu with roving focus, which a permanent navigation bar never was — so page objects selecting the old role timed out. **Fixed twice:** the first pass moved the two `Victimology` selectors and missed `Campaigns` in `infrastructureDetails.pageModel`, which failed group0 again on the same cause with a different label. Swept properly the second time by checking every `getByRole('menuitem')` in the suite against the knowledge bar's own section labels — that was the last one; all the others name real popup-menu commands (Delete, Update, Logout, …). |
 | #18014, #18019 | were red on BACKEND suites (`middleware-test.js > should multiple createdBy identity merged to empty target`; `Backend / Integration tests`) while both PRs touch only frontend files. Re-run on the same SHA: **both green.** The known flaky family — recorded here so the next round does not re-investigate them. |
 
 ### What Sandy's screen check caught, and why
