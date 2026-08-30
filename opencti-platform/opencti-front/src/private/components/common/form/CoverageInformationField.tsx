@@ -120,14 +120,8 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                       type="number"
                       fullWidth
                       required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
+                      min={0}
+                      max={100}
                     />
                   </div>
                   <IconButton
@@ -250,14 +244,8 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                       type="number"
                       fullWidth
                       required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
+                      min={0}
+                      max={100}
                       onSubmit={(_: string, score: string) => {
                         if (isNotEmptyField(score)) {
                           commitMutation({
