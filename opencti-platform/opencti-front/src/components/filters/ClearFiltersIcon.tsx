@@ -27,7 +27,12 @@ const ClearFiltersIcon = ({
         onClick={onClear}
         size="small"
         disabled={hasActiveFilters != undefined ? !hasActiveFilters : disabled}
-        keepMui
+        // `keepMui` came from the blanket hold in the wrapper flip, before this
+        // control had an `aria-label` — which is the one thing the wrapper needs
+        // to route a site to the library. It has one now, so the hold has no
+        // reason left, and it was the ONLY MUI control on the filter row: 26px
+        // among 24px siblings, which is the homogeneity break reported on the
+        // Créer Rapport bar.
         aria-label={t_i18n('Clear filters')}
       >
         <FilterAltOff fontSize="small" />
