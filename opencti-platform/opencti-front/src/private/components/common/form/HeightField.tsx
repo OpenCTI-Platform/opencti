@@ -138,7 +138,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
             })}
             <Button
               size="small"
-              startIcon={<AddOutlined />}
+              startIcon={<AddOutlined fontSize="small" />}
               aria-label="Add"
               id="addHeight"
               onClick={() => {
@@ -236,7 +236,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
               ))}
               <Button
                 size="small"
-                startIcon={<AddOutlined />}
+                startIcon={<AddOutlined fontSize="small" />}
                 aria-label="Add"
                 id="addHeight"
                 onClick={() => {

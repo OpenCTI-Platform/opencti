@@ -93,7 +93,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
             ))}
             <Button
               size="small"
-              startIcon={<AddOutlined />}
+              startIcon={<AddOutlined fontSize="small" />}
               aria-label="Add"
               id="addHeight"
               onClick={() => {
@@ -236,7 +236,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
             })}
             <Button
               size="small"
-              startIcon={<AddOutlined />}
+              startIcon={<AddOutlined fontSize="small" />}
               aria-label="Add"
               id="addHeight"
               onClick={() => {
