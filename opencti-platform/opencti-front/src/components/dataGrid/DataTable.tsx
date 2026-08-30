@@ -4,7 +4,7 @@ import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
+import DataTableFilters from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
 import { useLineData } from './dataTableHooks';
@@ -107,18 +107,10 @@ const DataTableInternalFilters = ({
               additionalHeaderToggleButtons={additionalToggleButtons}
               currentView={currentView}
               hideSavedFilters={hideSavedFilters}
+              entityTypes={computedEntityTypes}
             />
           )}
         </div>
-      )}
-      {!hideFilters && (
-        <DataTableDisplayFilters
-          availableFilterKeys={availableFilterKeys}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-          availableEntityTypes={availableEntityTypes}
-          entityTypes={computedEntityTypes}
-          searchContext={searchContextFinal}
-        />
       )}
     </>
   );
