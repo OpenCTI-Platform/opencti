@@ -4811,6 +4811,79 @@ const validateElementsToIndex = (context: AuthContext, user: AuthUser, elements:
     throw UnsupportedError('Cannot index unsupported element in draft context');
   }
 };
+type DenormalizedRefTarget = { relation: string; field: string; elements: any[] };
+// Field names are script parameters and never interpolated in the source. Interpolating them
+// would compile one script per combination of ref relationship types carried by an entity,
+// which grows with the powerset of the ref types and quickly exhausts script.max_compilations_rate.
+export const EL_DENORMALIZED_REFS_SCRIPT_SOURCE = `
+  for (ref in params.appended_refs) {
+    if (ctx._source[ref.field] == null) { ctx._source[ref.field] = []; }
+    ctx._source[ref.field].addAll(ref.ids);
+  }
+  for (ref in params.distinct_refs) {
+    if (ctx._source[ref.field] == null) { ctx._source[ref.field] = []; }
+    for (id in ref.ids) {
+      if (!ctx._source[ref.field].contains(id)) { ctx._source[ref.field].add(id); }
+    }
+  }
+  for (field in params.timestamp_fields) { ctx._source[field] = params.updated_at; }
+  if (params.pir_ids != null) {
+    if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+      ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
+      ctx._source['pir_information'].addAll(params.new_pir_information);
+    } else { ctx._source['pir_information'] = params.new_pir_information; }
+  }
+`;
+export const buildDenormalizedRefsScriptParams = (targetsElements: DenormalizedRefTarget[], updatedAt: string) => {
+  const appendedRefs: { field: string; ids: string[] }[] = [];
+  const distinctRefs: { field: string; ids: string[] }[] = [];
+  const timestampFields: string[] = [];
+  const addTimestampField = (field: string) => {
+    if (!timestampFields.includes(field)) timestampFields.push(field);
+  };
+  let pirIds: string[] | null = null;
+  let newPirInformation: any[] | null = null;
+  for (let index = 0; index < targetsElements.length; index += 1) {
+    const target = targetsElements[index];
+    const field = buildRefRelationKey(target.relation, target.field);
+    const ids = target.elements.map((e: any) => e.id);
+    if (isStixRefUnidirectionalRelationship(target.relation)) {
+      // don't try to add unidirectional ref rel if already present (issue#7535)
+      distinctRefs.push({ field, ids });
+    } else {
+      appendedRefs.push({ field, ids });
+    }
+    const fromSide = target.elements.find((e: any) => e.side === 'from');
+    const toSide = target.elements.find((e: any) => e.side === 'to');
+    if (fromSide && isStixRefRelationship(target.relation)) {
+      // updated_at and modified only updated for ref relationships
+      if (isUpdatedAtObject(fromSide.type)) addTimestampField('updated_at');
+      if (isModifiedObject(fromSide.type)) addTimestampField('modified');
+    }
+    // freshness of an entity updated for any relationship
+    if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
+      addTimestampField('refreshed_at');
+    }
+    // Add Pir information for in-pir relationships
+    if (target.relation === RELATION_IN_PIR) {
+      // remove pir_information concerning the pir and add the new pir_information
+      newPirInformation = target.elements.map((e: any) => ({
+        pir_id: e.id,
+        pir_score: e.pir_score,
+        last_pir_score_date: updatedAt,
+      }));
+      pirIds = ids;
+    }
+  }
+  return {
+    updated_at: updatedAt,
+    appended_refs: appendedRefs,
+    distinct_refs: distinctRefs,
+    timestamp_fields: timestampFields,
+    pir_ids: pirIds,
+    new_pir_information: newPirInformation,
+  };
+};
 export const elIndexElements = async (
   context: AuthContext,
   user: AuthUser,
@@ -4881,64 +4954,8 @@ export const elIndexElements = async (
         return { relation: relType, field: refField, elements: resolvedData };
       });
       // Create params and scripted update
-      const params: any = { updated_at: now() };
-      const sources = targetsElements.map((t) => {
-        const field = buildRefRelationKey(t.relation, t.field);
-        let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        if (isStixRefUnidirectionalRelationship(t.relation)) {
-          // don't try to add unidirectional ref rel if already present (issue#7535)
-          script += `for(refId in params['${field}']) {
-          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
-        } else {
-          script += `ctx._source['${field}'].addAll(params['${field}']);`;
-        }
-        const fromSide = t.elements.find((e: any) => e.side === 'from');
-        const toSide = t.elements.find((e: any) => e.side === 'to');
-        if (fromSide && isStixRefRelationship(t.relation)) {
-          // updated_at and modified only updated for ref relationships
-          if (isUpdatedAtObject(fromSide.type)) {
-            script += 'ctx._source[\'updated_at\'] = params.updated_at;';
-          }
-          if (isModifiedObject(fromSide.type)) {
-            script += 'ctx._source[\'modified\'] = params.updated_at;';
-          }
-        }
-        // freshness of an entity updated for any relationship
-        if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
-          script += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
-        }
-        // Add Pir information for in-pir relationships
-        if (t.relation === RELATION_IN_PIR) {
-          // remove pir_information concerning the pir and add the new pir_information
-          script += `
-            if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
-              ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
-              ctx._source['pir_information'].addAll(params.new_pir_information);
-            } else { ctx._source['pir_information'] = params.new_pir_information; }
-          `;
-        }
-        return script;
-      });
-      // Concat sources scripts by adding a ';' between each script to close each final script line
-      const source = sources.length > 1 ? R.join(' ', sources) : `${R.head(sources)}`;
-      // Construct params
-      for (let index = 0; index < targetsElements.length; index += 1) {
-        const targetElement = targetsElements[index];
-        params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e: any) => e.id);
-      }
-      // Add new_pir_information params
-      const pirElements = targetsElements.filter((e) => e.relation === RELATION_IN_PIR);
-      for (let index = 0; index < pirElements.length; index += 1) {
-        const pirElement = pirElements[index];
-        params.new_pir_information = pirElement.elements
-          .map((e: any) => ({
-            pir_id: e.id,
-            pir_score: e.pir_score,
-            last_pir_score_date: params.updated_at,
-          }));
-        params.pir_ids = pirElement.elements.map((e: any) => e.id);
-      }
-      return { ...entity, id: entityId, data: { script: { source, params } } };
+      const params = buildDenormalizedRefsScriptParams(targetsElements, now());
+      return { ...entity, id: entityId, data: { script: { source: EL_DENORMALIZED_REFS_SCRIPT_SOURCE, params } } };
     });
     // bulk update elements (denormalized relations)
     if (elementsToUpdate.length > 0) {
