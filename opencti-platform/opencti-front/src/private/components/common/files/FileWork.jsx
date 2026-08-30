@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose, propOr } from 'ramda';
+import { propOr } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -16,7 +16,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Slide from '@mui/material/Slide';
 import { useNavigate } from 'react-router-dom';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -56,13 +56,11 @@ const fileWorkDeleteMutation = graphql`
 const FileWorkComponent = (props) => {
   const theme = useTheme();
   const {
-    t,
-    nsdt,
     classes,
     file: { works },
     nested,
   } = props;
-  const { t_i18n } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const [workId, setWorkId] = useState(null);
   const navigate = useNavigate();
   const draftContext = useDraftContext();
@@ -114,7 +112,7 @@ const FileWorkComponent = (props) => {
                     ),
                     messages,
                   )
-                : t(work.status)}
+                : t_i18n(work.status)}
             </>
           );
           const numberOfError = work.errors.length;
@@ -133,7 +131,7 @@ const FileWorkComponent = (props) => {
               } ]`;
             }
             return `${propOr(
-              t('Deleted'),
+              t_i18n('Deleted'),
               'name',
               work.connector,
             )}${statusText}`;
@@ -183,7 +181,7 @@ const FileWorkComponent = (props) => {
                   }
                 />
                 {!!work.draft_context && !draftContext && (
-                  <Tooltip title={t('Navigate to draft')}>
+                  <Tooltip title={t_i18n('Navigate to draft')}>
                     <IconButton
                       color="primary"
                       onClick={() => navigateToDraft(work.draft_context)}
@@ -193,7 +191,7 @@ const FileWorkComponent = (props) => {
                     </IconButton>
                   </Tooltip>
                 )}
-                <Tooltip title={!isCurrentContextWork ? t('Not available in draft') : t('Delete')}>
+                <Tooltip title={!isCurrentContextWork ? t_i18n('Not available in draft') : t_i18n('Delete')}>
                   <IconButton
                     onClick={() => isCurrentContextWork && handleDelete(work.id)}
                     disabled={work.status === 'deleting'}
@@ -218,7 +216,6 @@ const FileWorkComponent = (props) => {
 FileWorkComponent.propTypes = {
   classes: PropTypes.object,
   file: PropTypes.object.isRequired,
-  nsdt: PropTypes.func,
   nested: PropTypes.bool,
 };
 
@@ -255,4 +252,4 @@ const FileWork = createFragmentContainer(FileWorkComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(FileWork);
+export default withStyles(styles)(FileWork);

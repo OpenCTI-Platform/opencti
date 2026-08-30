@@ -24,7 +24,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Drawer from '../../common/drawer/Drawer';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -805,7 +805,6 @@ FeedEditionContainer.propTypes = {
   classes: PropTypes.object,
   feed: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
@@ -846,4 +845,4 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
   `,
 });
 
-export default R.compose(inject18n, withStyles(styles))(FeedEditionFragment);
+export default withStyles(styles)(FeedEditionFragment);

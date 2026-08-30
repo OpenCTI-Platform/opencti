@@ -9,7 +9,7 @@ import List from '@mui/material/List';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { compose, includes } from 'ramda';
+import { includes } from 'ramda';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { FragmentRefs } from 'relay-runtime';
@@ -17,7 +17,7 @@ import { interval } from 'rxjs';
 import * as Yup from 'yup';
 import Card from '../../../../components/common/card/Card';
 import SelectField from '../../../../components/fields/SelectField';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import UploadImport from '../../../../components/UploadImport';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
@@ -62,10 +62,10 @@ const importValidation = (t: (value: string) => string, configurations: boolean)
   return Yup.object().shape(shape);
 };
 
-interface ExternalReferenceFileImportViewerBaseProps {
+interface ExternalReferenceFileImportViewerComponentProps {
   externalReference: ExternalReferenceFileImportViewer_entity$data;
-  disableImport: boolean;
-  connectors: Record<
+  disableImport?: boolean;
+  connectors?: Record<
     string,
     {
       id: string;
@@ -78,8 +78,8 @@ interface ExternalReferenceFileImportViewerBaseProps {
   relay: RelayRefetchProp;
   connectorsImport: Connector[];
 }
-const ExternalReferenceFileImportViewerBase: FunctionComponent<
-  ExternalReferenceFileImportViewerBaseProps
+const ExternalReferenceFileImportViewerComponent: FunctionComponent<
+  ExternalReferenceFileImportViewerComponentProps
 > = ({ externalReference, disableImport, relay, connectorsImport }) => {
   const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState<
@@ -317,10 +317,6 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
     </React.Fragment>
   );
 };
-
-const ExternalReferenceFileImportViewerComponent = compose(inject18n)(
-  ExternalReferenceFileImportViewerBase,
-);
 
 const ExternalReferenceFileImportViewerRefetchQuery = graphql`
   query ExternalReferenceFileImportViewerRefetchQuery($id: String!) {

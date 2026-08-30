@@ -1,10 +1,9 @@
 import React from 'react';
-import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import { ArrowUpward, ArrowDownward, ArrowForward } from '@mui/icons-material';
 
-import inject18n from './i18n';
+import { useFormatter } from './i18n';
 import { alpha } from '@mui/material';
 import { useTheme } from '@mui/styles';
 
@@ -32,7 +31,8 @@ const styles = (theme) => ({
 });
 
 const ItemNumberDifference = (props) => {
-  const { t, difference, classes, description } = props;
+  const { difference, classes, description } = props;
+  const { t_i18n } = useFormatter();
   const theme = useTheme();
 
   const inlineStyles = {
@@ -56,7 +56,7 @@ const ItemNumberDifference = (props) => {
         <ArrowDownward color="inherit" classes={{ root: classes.diffIcon }} />
         <div className={classes.diffNumber}>{difference}</div>
         {description ? (
-          <div className={classes.diffDescription}>({t(description)})</div>
+          <div className={classes.diffDescription}>({t_i18n(description)})</div>
         ) : (
           ''
         )}
@@ -69,7 +69,7 @@ const ItemNumberDifference = (props) => {
         <ArrowForward color="inherit" classes={{ root: classes.diffIcon }} />
         <div className={classes.diffNumber}>{difference}</div>
         {description ? (
-          <div className={classes.diffDescription}>({t(description)})</div>
+          <div className={classes.diffDescription}>({t_i18n(description)})</div>
         ) : (
           ''
         )}
@@ -81,7 +81,7 @@ const ItemNumberDifference = (props) => {
       <ArrowUpward color="inherit" classes={{ root: classes.diffIcon }} />
       <div className={classes.diffNumber}>{difference}</div>
       {description ? (
-        <div className={classes.diffDescription}>({t(description)})</div>
+        <div className={classes.diffDescription}>({t_i18n(description)})</div>
       ) : (
         ''
       )}
@@ -91,9 +91,8 @@ const ItemNumberDifference = (props) => {
 
 ItemNumberDifference.propTypes = {
   classes: PropTypes.object.isRequired,
-  t: PropTypes.func,
   difference: PropTypes.number,
   description: PropTypes.string.isRequired,
 };
 
-export default compose(inject18n, withStyles(styles))(ItemNumberDifference);
+export default withStyles(styles)(ItemNumberDifference);

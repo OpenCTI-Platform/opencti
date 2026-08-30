@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
@@ -21,7 +21,7 @@ import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/fields/SelectField';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
@@ -142,8 +142,8 @@ const StixCoreObjectFilesAndHistory = ({
   classes,
   connectorsExport,
   connectorsImport,
-  withoutRelations,
-  bypassEntityId,
+  withoutRelations = false,
+  bypassEntityId = false,
 }) => {
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
@@ -593,7 +593,6 @@ const StixCoreObjectFilesAndHistory = ({
 };
 
 StixCoreObjectFilesAndHistory.propTypes = {
-  nsdt: PropTypes.func,
   id: PropTypes.string.isRequired,
   entity: PropTypes.object.isRequired,
   connectorsExport: PropTypes.array.isRequired,
@@ -634,7 +633,4 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectFilesAndHistoryFragment);
+export default withStyles(styles)(StixCoreObjectFilesAndHistoryFragment);

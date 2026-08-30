@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
@@ -10,7 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Alert from '@mui/material/Alert';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { AUTOMATION } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -125,7 +124,4 @@ const StixCoreObjectEnrollPlaybookLinesFragment = createRefetchContainer(
   stixCoreObjectEnrollPlaybookLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectEnrollPlaybookLinesFragment);
+export default withStyles(styles)(StixCoreObjectEnrollPlaybookLinesFragment);

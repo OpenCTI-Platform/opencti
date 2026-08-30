@@ -207,7 +207,7 @@ const OpinionEditionOverviewComponent = (props) => {
               helpertext={(
                 <SubscriptionFocus
                   context={context}
-                  fieldname="objectMarking"
+                  fieldName="objectMarking"
                 />
               )}
               setFieldValue={setFieldValue}

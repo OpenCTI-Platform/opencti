@@ -5,9 +5,8 @@ import withStyles from '@mui/styles/withStyles';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import * as R from 'ramda';
 import Drawer from '../../common/drawer/Drawer';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
@@ -54,7 +53,8 @@ const CreateIngestionTaxiiCollectionControlledDial = (props) => (
 const IngestionTaxiiCollectionCreation = (props) => {
   // importedInput carries prefilled values coming from a configuration import
   // (JSON file upload); user and authorized members stay platform-specific.
-  const { t, open, handleClose, importedInput, drawerSettings } = props;
+  const { open, handleClose, importedInput, drawerSettings } = props;
+  const { t_i18n } = useFormatter();
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -91,7 +91,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
 
   return (
     <Drawer
-      title={drawerSettings?.title ?? t('Create a TAXII Push ingester')}
+      title={drawerSettings?.title ?? t_i18n('Create a TAXII Push ingester')}
       open={open}
       onClose={handleClose}
       controlledDial={open === undefined ? CreateIngestionTaxiiCollectionControlledDial : undefined}
@@ -104,7 +104,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
             user_id: '',
             confidence_to_score: importedInput?.confidence_to_score ?? false,
           }}
-          validationSchema={ingestionTaxiiCollectionCreationValidation(t)}
+          validationSchema={ingestionTaxiiCollectionCreationValidation(t_i18n)}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -114,20 +114,20 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
               <CreatorField
                 name="user_id"
-                label={t('User responsible for data creation (empty = System)')}
+                label={t_i18n('User responsible for data creation (empty = System)')}
                 containerStyle={fieldSpacingContainerStyle}
                 showConfidence
               />
@@ -142,7 +142,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 component={SwitchField}
                 type="checkbox"
                 name="confidence_to_score"
-                label={t('Copy confidence level to OpenCTI scores for indicators')}
+                label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
                 containerstyle={fieldSpacingContainerStyle}
               />
               <FormButtonContainer>
@@ -151,13 +151,13 @@ const IngestionTaxiiCollectionCreation = (props) => {
                   onClick={handleReset}
                   disabled={isSubmitting}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >
-                  {drawerSettings?.button ?? t('Create')}
+                  {drawerSettings?.button ?? t_i18n('Create')}
                 </Button>
               </FormButtonContainer>
             </Form>
@@ -172,14 +172,10 @@ IngestionTaxiiCollectionCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
   importedInput: PropTypes.object,
   drawerSettings: PropTypes.object,
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IngestionTaxiiCollectionCreation);
+export default withStyles(styles, { withTheme: true })(IngestionTaxiiCollectionCreation);

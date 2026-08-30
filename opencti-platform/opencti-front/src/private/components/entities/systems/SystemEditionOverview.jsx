@@ -286,7 +286,7 @@ const SystemEditionOverviewComponent = (props) => {
             required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
+              <SubscriptionFocus context={context} fieldName="objectMarking" />
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}

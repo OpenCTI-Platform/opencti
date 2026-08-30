@@ -7,13 +7,13 @@ import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as Yup from 'yup';
 import SelectField from '../../../../components/fields/SelectField';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
@@ -183,11 +183,10 @@ const importValidation = (t_i18n, configurations) => {
 const FileManager = ({
   id,
   entity,
-  t,
   classes,
   connectorsExport,
   connectorsImport,
-  isArtifact,
+  isArtifact = false,
   directDownload = false,
 }) => {
   useInitCreateRelationshipContext();
@@ -361,7 +360,7 @@ const FileManager = ({
           enableReinitialize={true}
           initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
           validationSchema={importValidation(
-            t,
+            t_i18n,
             selectedConnector?.configurations?.length > 0,
           )}
           onSubmit={onSubmitImport}
@@ -372,13 +371,13 @@ const FileManager = ({
               <Dialog
                 open={!!fileToImport}
                 onClose={handleCloseImport}
-                title={t('Launch an import')}
+                title={t_i18n('Launch an import')}
               >
                 <Field
                   component={SelectField}
                   variant="standard"
                   name="connector_id"
-                  label={t('Connector')}
+                  label={t_i18n('Connector')}
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                   onChange={handleSelectConnector}
@@ -406,7 +405,7 @@ const FileManager = ({
                     component={SelectField}
                     variant="standard"
                     name="configuration"
-                    label={t('Configuration')}
+                    label={t_i18n('Configuration')}
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                     onChange={(_, value) => onCsvMapperSelection(value)}
@@ -437,13 +436,13 @@ const FileManager = ({
                 }
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </DialogActions>
               </Dialog>
@@ -499,7 +498,7 @@ const FileManager = ({
                             component={SelectField}
                             variant="standard"
                             name="format"
-                            label={t('Export format')}
+                            label={t_i18n('Export format')}
                             fullWidth={true}
                             containerstyle={{ width: '100%' }}
                           >
@@ -517,15 +516,15 @@ const FileManager = ({
                             component={SelectField}
                             variant="standard"
                             name="type"
-                            label={t('Export type')}
+                            label={t_i18n('Export type')}
                             fullWidth={true}
                             containerstyle={fieldSpacingContainerStyle}
                           >
                             <MenuItem value="simple">
-                              {t('Simple export (just the entity)')}
+                              {t_i18n('Simple export (just the entity)')}
                             </MenuItem>
                             <MenuItem value="full">
-                              {t('Full export (entity and first neighbours)')}
+                              {t_i18n('Full export (entity and first neighbours)')}
                             </MenuItem>
                           </Field>
                           <ObjectMarkingField
@@ -556,14 +555,14 @@ const FileManager = ({
                 />
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting} variant="secondary">
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </DialogActions>
               </Dialog>
@@ -609,4 +608,4 @@ const FileManagerFragment = createFragmentContainer(FileManager, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(FileManagerFragment);
+export default withStyles(styles)(FileManagerFragment);

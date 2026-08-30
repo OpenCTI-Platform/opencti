@@ -16,7 +16,7 @@ import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
 
@@ -83,9 +83,8 @@ const StixCoreObjectEnrichment = ({
   connectorsForImport,
   relay,
   classes,
-  t,
-  nsdt,
 }) => {
+  const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme();
   const { id } = stixCoreObject;
   const file = stixCoreObject.importFiles && stixCoreObject.importFiles.edges.length > 0
@@ -160,7 +159,7 @@ const StixCoreObjectEnrichment = ({
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>
                       <Tooltip
-                        title={t('Refresh the knowledge using this connector')}
+                        title={t_i18n('Refresh the knowledge using this connector')}
                       >
                         <IconButton
                           disabled={!connector.active || isRefreshing}
@@ -180,8 +179,8 @@ const StixCoreObjectEnrichment = ({
                   <Tooltip
                     title={
                       connector.active
-                        ? t('This connector is active')
-                        : t('This connector is disconnected')
+                        ? t_i18n('This connector is active')
+                        : t_i18n('This connector is disconnected')
                     }
                   >
                     <ListItemIcon
@@ -213,7 +212,7 @@ const StixCoreObjectEnrichment = ({
                             ),
                             messages,
                           )
-                        : t(work.status)}
+                        : t_i18n(work.status)}
                     </div>
                   );
                   return (
@@ -230,7 +229,7 @@ const StixCoreObjectEnrichment = ({
                           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                             <div style={{ right: 0 }}>
                               <IconButton
-                                aria-label={t('Delete')}
+                                aria-label={t_i18n('Delete')}
                                 onClick={() => deleteWork(work.id)}
                               >
                                 <DeleteOutlined />
@@ -278,7 +277,7 @@ const StixCoreObjectEnrichment = ({
         })
       ) : (
         <div className={classes.noResult}>
-          {t('No connectors for this type of entity')}
+          {t_i18n('No connectors for this type of entity')}
         </div>
       )}
     </List>
@@ -372,7 +371,4 @@ const StixCoreObjectEnrichmentLinesFragment = createRefetchContainer(
   stixCoreObjectEnrichmentLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectEnrichmentLinesFragment);
+export default withStyles(styles)(StixCoreObjectEnrichmentLinesFragment);

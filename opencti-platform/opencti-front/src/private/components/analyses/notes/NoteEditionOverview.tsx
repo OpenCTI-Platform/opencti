@@ -278,7 +278,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               width: '100%',
             }}
             helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
+              <SubscriptionFocus context={context} fieldName="objectMarking" />
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}

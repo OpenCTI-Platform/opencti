@@ -3,9 +3,9 @@ import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import { compose, pick } from 'ramda';
+import { pick } from 'ramda';
 import * as Yup from 'yup';
-import inject18n, { useFormatter } from '../../../components/i18n';
+import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
@@ -142,7 +142,6 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
 WorkspaceEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
-  t: PropTypes.func,
   workspace: PropTypes.object,
   context: PropTypes.array,
 };
@@ -162,7 +161,4 @@ const WorkspaceEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(WorkspaceEditionOverview);
+export default withStyles(styles, { withTheme: true })(WorkspaceEditionOverview);

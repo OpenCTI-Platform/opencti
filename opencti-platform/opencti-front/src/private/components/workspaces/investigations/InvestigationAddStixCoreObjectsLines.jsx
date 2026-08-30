@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import { useInvestigationState } from './utils/useInvestigationState';
 import { InvestigationAddStixCoreObjecstLineDummy, InvestigationAddStixCoreObjectsLine } from './InvestigationAddStixCoreObjectsLine';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { numberFormat } from '../../../../utils/Number';
 
@@ -174,7 +172,6 @@ InvestigationAddStixCoreObjectsLinesInvestigation.propTypes = {
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
-  t: PropTypes.func,
   fld: PropTypes.func,
   workspaceStixCoreObjects: PropTypes.array,
   onAdd: PropTypes.func,
@@ -290,7 +287,4 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(InvestigationAddStixCoreObjectsLines);
+export default withStyles(styles)(InvestigationAddStixCoreObjectsLines);

@@ -359,7 +359,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
-              <SubscriptionFocus context={editContext} fieldname="objectMarking" />
+              <SubscriptionFocus context={editContext} fieldName="objectMarking" />
             }
             disabled={inferred}
             setFieldValue={setFieldValue}
