@@ -1,9 +1,5 @@
 # OpenCTI Project Instructions
 
-> **Design system** — before writing or changing any UI, read [`AGENTS.md`](../AGENTS.md)
-> at the repository root. It carries the rule on when the Filigran Design System
-> is mandatory and MUI is not, and names the CI gates that enforce it.
-
 > **Deep-dive references** — read the relevant doc before touching the related code:
 > - [Backend Architecture (opencti-graphql)](instructions/backend.instructions.md)
 > - [Frontend Architecture (opencti-front)](instructions/frontend.instructions.md)

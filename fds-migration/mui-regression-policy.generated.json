@@ -11,6 +11,7 @@
     "TooltipTrigger": "Tooltip",
     "TooltipProvider": "Tooltip",
     "IconButton": "IconButton",
+    "Badge": "Badge",
     "TextField": "Input",
     "Input": "Input",
     "InputAdornment": "Input",
@@ -28,6 +29,7 @@
     "Combobox": "Combobox",
     "MultiSelectFormField": "Combobox",
     "Chip": "Chip",
+    "Paper": "Paper",
     "Menu": "Menu",
     "MenuItem": "Menu",
     "MenuList": "Menu",
@@ -41,25 +43,10 @@
     "ToggleButton": "ButtonGroup",
     "ToggleButtonGroup": "ButtonGroup",
     "AppBar": "Header",
-    "Toolbar": "Header"
+    "Toolbar": "Header",
+    "CircularProgress": "Spinner"
   },
-  "held": [
-    {
-      "component": "Badge",
-      "libStatus": "in-review",
-      "reason": "library API not settled yet — enforcing would gate against a moving target"
-    },
-    {
-      "component": "Paper",
-      "libStatus": "in-review",
-      "reason": "library API not settled yet — enforcing would gate against a moving target"
-    },
-    {
-      "component": "Spinner",
-      "libStatus": "in-review",
-      "reason": "library API not settled yet — enforcing would gate against a moving target"
-    }
-  ],
+  "held": [],
   "notGatable": [
     {
       "component": "SearchField",
@@ -84,8 +71,8 @@
   ],
   "summary": {
     "inService": 22,
-    "enforced": 14,
-    "held": 3,
+    "enforced": 17,
+    "held": 0,
     "notGatable": 5
   }
 }

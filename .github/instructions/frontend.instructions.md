@@ -15,10 +15,7 @@ It uses **Relay** for data fetching and **Material UI** for styling.
 - **Framework**: React 19
 - **Bundler**: Vite
 - **Data Fetching**: Relay (GraphQL)
-- **UI Library**: the Filigran Design System first, Material UI (MUI) v6 as the
-  fallback. The rule and the per-component status live in `AGENTS.md` at the
-  repository root — read it before writing UI code. Do not infer from the
-  surrounding file: most of this codebase predates the migration.
+- **UI Library**: Material UI (MUI) v6
 - **Routing**: Internal routing
 - **Testing**: Vitest, Playwright (E2E)
 
