@@ -27,17 +27,17 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 | F11 | Manage access dialog | User picker still MUI. | a | OPEN |
 | F12 | Create dashboard dialog | Nom / Description still MUI. **FIXED — verified on screen.** `Nom` was already the library `Input` at the tip; what was wrong was the surface under it. `Description` is the markdown editor, now on the field surface (F6). Measured in the Create-dashboard drawer: both #0c1527. Code: **PR #18019** (surface) + **#18020** (fields). | a | FIXED |
 | F13 | Triggers page | Search field / Add filter / chips misaligned; filter chips wrap one line below. Same in Create security coverage dialog — everything must sit on ONE line. TWICE REPORTED (filter alignment). | a | OPEN |
-| F14 | Navbar, inside a custom dashboard | "Tableaux de bord personnalisés" sub-item must show active; it doesn't. | a | OPEN |
+| F14 | Navbar, inside a custom dashboard | "Tableaux de bord personnalisés" sub-item must show active; it doesn't. **FIXED — verified on screen.** The entry carried `exact: true`, so opening a dashboard (`/…/dashboards/<id>`) dropped the match. Prefix matching is safe between the two dashboard links — `/…/dashboards_public` does not start with `/…/dashboards/` — so the flag should never have been there; removed on Public dashboards too, same defect. Verified inside a dashboard: the custom entry is `aria-current="page"`, the public one is not. Code: **PR #18021**. | a | FIXED |
 | F15 | Custom dashboard | Refresh icon+label misalignment + 8px gap. TWICE REPORTED. ONE root cause for both halves: a MUI `ButtonGroup` wrapper, which JOINS children edge-to-edge (zero gap) and styles them as MUI buttons, which the lib Button/Select are not (misalignment). Now a flex row with `gap: 1`, glyph sized to the spinner. | a | FIXED-UNVERIFIED (not yet on screen) |
 | F16 | Notifications table | Rendering bug on the trigger-name chip (PDF p3, "Problem bug sur le tableau"). | a | OPEN |
-| F17 | Public dashboard dialog | "+" button → md; 16px gap between fields. | a | OPEN |
-| F18 | "Aperçu par IA EE" | Icon too big vs the button + misalignment (two screenshots). | a | OPEN |
+| F17 | Public dashboard dialog | "+" button → md; 16px gap between fields. **PARTIAL.** *Spacing:* FIXED and verified — 16px measured between fields in the drawer; scoped to this surface, the app-wide `fieldSpacingContainerStyle` is still 20px, so generalising the rhythm is Sandy's call. *"+" button:* **BLOCKED** — there is no `+` control in that drawer or on the public-dashboards list; every button there was enumerated (Close, the two field toggles, Annuler, Créer). Sandy needs to point at the control in the capture. Code: **PR #18021**. | a | PARTIAL / BLOCKED on the "+" |
+| F18 | "Aperçu par IA EE" | Icon too big vs the button + misalignment. **FIXED — verified on screen.** `FiligranIcon`'s `size="small"` is MUI's 20px, and this glyph's viewBox is not square, so it rendered **14×20 inside a 24px button** — a pixel taller than the button and off its centre line. Both halves of the report are that one number. It asks for 16 now, the library's own small-button glyph. Code: **PR #18021**. | a | FIXED |
 | F19 | List toolbars (Créer Rapport bar) | ONE icon button converted, siblings not — homogeneity: all or none per toolbar. | a | OPEN |
 | F20 | Threat-actors card page | Filter bar alignment broken again. TWICE REPORTED (filter alignment). | a | OPEN |
 | F21 | Date filter (within / interval popover) | **FIXED — verified on screen.** Two real defects, both regressions from an earlier pass. (1) The `endAdornment` held **library IconButtons inside a MUI outlined field**, compensated with `marginRight: -8` and `marginLeft: 4, marginRight: -16`, which pushed both glyphs OUT of the field's padding box — the spill in the capture. Now a flex row with a real 4px gap. (2) `autoFocus` was hardcoded `true` in `RelativeDateInput`, which `DateRangeFilter` renders TWICE, so both fields fought for focus; it is a prop now and only *From* takes it. Verified live on Observables → filter *Date de création*: adornment right edge is now **10px INSIDE** the field (was outside), and exactly one element holds focus. | a | FIXED |
 | F22 | MUI Select dropdown lists | Row height / icon size / spacing should approach the lib's menus. **FIXED — verified on screen.** Rows moved toward the library `SelectItem`: 32px floor, 16/8 insets, 8px gap, 12px compact type, 16px glyphs; menu paper on `--bg-elevation-highlight` with a 4px radius and no list padding. Selected and hover tones deliberately untouched — spacing and size only. Measured on a live column menu: 12px rows, 16/8 insets, #13213e paper, 4px radius. Code: **PR #18020**. | a | FIXED |
-| F23 | Integration blocks | Very dark background nobody asked for — revert to previous. | a | OPEN |
-| F24 | Settings right nav | EE chips must be the small variant. | a | OPEN |
+| F23 | Integration blocks | Very dark background nobody asked for — revert to previous. **FIXED — verified on screen.** Traced to the homogenisation commit 969f74b: it pointed the shared `paperBg` helper at `--bg-elevation-default`, which in dark mode is #070d18 — the **layer-0** surface, darker than the page the boxes sit on. Measured on the Integrations page before the fix: rgb(7,13,24). Reverted to `background.paper`; the token border stays, it was not part of the report. Code: **PR #18021**. | a | FIXED |
+| F24 | Settings right nav | EE chips must be the small variant. **FIXED — verified on screen.** `NavToolbarMenu` passes `size="sm"`; measured 18px tall. Code: **PR #18021**. | a | FIXED |
 | F25 | Entity content/analyses tabs (Cobalt Strike) | Alignment broken (PDF p14, two captures). | a | OPEN |
 | F27 | Confirmation dialogs (kill session, TAXII start/stop, external-reference links, list settings, advanced search) | **Found in passing, not on Sandy's list.** Eight mounts import MUI's `Dialog` but pass `title={…}` — a prop of the SHARED Dialog, not MUI's. MUI drops it silently, so these dialogs render with NO title. Fixing it means routing them through the shared Dialog, which also wraps their `DialogActions` inside `DialogContent` — a visual change on eight dialogs that is wider than a background fix. Left for Sandy to rule on rather than bundled into a layer PR. | a | OPEN — needs a ruling |
 | F26 | Whole app | Full field exercise + global alignment sweep. Her list is a SEED, not the boundary. | a | OPEN |
@@ -64,7 +64,7 @@ Classes: **(a)** regression → fix · **(b)** fixed-at-tip → name the PR ·
 ## HANDOVER — state at end of session
 
 **This file is the handover. Read it before starting; do not re-investigate
-what is already root-caused below.**
+what is already root-caused above.**
 
 ### Where the code lives — open PRs, none merged
 
@@ -74,34 +74,34 @@ what is already root-caused below.**
 | **#18014** | `fds/night6-fixlog` | dashboard Refresh control, number-input conversions | F15, F8 |
 | **#18001** | `fds/night4-rightnav` | right-bar redesign, original placement kept (branch force-pushed — its old below-the-tabs move is gone) | F1 |
 | **#18003** | `fds/night5-layers` | layer declaration on the shared Drawer/Dialog | partial F4/F5 |
-| **#18019** | `fds/night6-layers` | the surfaces that bypass the shared components, filter popovers, markdown textarea, dialog paper colour — **stacked on #18003** | F4, F5, F6, F7, F10 |
+| **#18019** | `fds/night6-layers` | surfaces that bypass the shared components, filter popovers, markdown textarea, dialog paper colour — **stacked on #18003** | F4, F5, F6, F7, F10 |
 | **#18020** | `fds/night6-mui-fields` | every remaining MUI field outlined + layer-aware, library geometry, MUI menus — **stacked on #18019** | F2, F3, F9, F12, F22 |
+| **#18021** | `fds/night6-details` | navbar active state, EE chip size, AI glyph, integration surface, public-dashboard spacing — **stacked on #18020** | F14, F17 (part), F18, F23, F24 |
+
+### Merge order
+
+`#18015` and `#18014` are independent of everything and of each other (they add
+an identical `FIXLOG.md`, so the add/add resolves clean). Then the stack, in
+order: **#18003 → #18019 → #18020 → #18021**. `#18001` is independent and can go
+in anywhere.
+
+> **One conflict to expect, and its resolution.** `#18014` and `#18020` both
+> touch `AuthenticationGlobalSettings.tsx` and `PeriodicityField.tsx`. Take
+> `variant="outlined"` from #18020 **and** `min={0}` / the library `Input` from
+> #18014 — both sides are wanted. Resolved exactly that way on
+> `fds/night6-preview`, which is the built branch serving :3000.
 
 > **Where the log lives.** This file is carried by **#18015** only. The code
 > branches deliberately do NOT each add their own copy: two branches adding the
 > same new file with different content conflict on merge, and Sandy would have
-> to resolve it three times. So every status change lands here, and the table
-> above says which PR carries the code. Once #18015 merges, the file exists on
+> to resolve it three times. Every status change lands here, and the table above
+> says which PR carries the code. Once #18015 merges, the file exists on
 > `design-system/current` and later branches can edit it normally.
 
-### Resume here
+### Preview
 
-**F1 (right bars) is the cheapest large win and the approach is settled:** the
-tip still contains the ORIGINAL bars and Roots, because #18001 never merged. So
-branch from the tip and apply ONLY the internal redesign — 36px rows, 14px type,
-caption group headers, layer-1 surface (`--bg-elevation-default-layer-1`,
-`#0d172b`), left border (`--border-elevation-subtle-soft`), 4px slot inset. Do
-NOT re-do any structural move: the bars stay fixed, right-attached, full height,
-and `getPaddingRight` stays exactly as the tip has it. `fds/night6-rightbar` is
-already branched off the tip for this and is otherwise untouched.
-
-**Then F2**, using the lead recorded in its row (same regression family as F21).
-
-**Then BATCH 2 (F4–F7)**, for which the mechanism is fully established in
-`utils/fdsLayer.ts` and LIBRARY-FEEDBACK #57: put `fdsLayerClass(2)` **and**
-`layerInputVars` on the SAME node as the surface. For filter popovers the rule
-differs: the popover surface is `--bg-elevation-highlight` at **layer 1**, the
-fields inside at **layer 2**.
+`fds/night6-preview` merges all of the above and is BUILT and served on :3000
+against the auth proxy on :4031. Spot-check anything at any time.
 
 ### Verification facts already established (do not redo)
 
@@ -112,4 +112,44 @@ fields inside at **layer 2**.
 - Layer arithmetic, measured in the browser: `.layer-2` alone moves
   `--bg-elevation-highlight` to `#0c1527` but leaves `--bg-input-default` at
   `#13213e`; re-declaring the three input aliases on the same element is what
-  makes a field read `#0c1527`.
+  makes a field read `#0c1527` (LIBRARY-FEEDBACK #57).
+- Layer values, pinned by two independent hexes each: layer 1 default `#0d172b`
+  / highlight `#182a4e`; layer 2 default `#13213e` / highlight `#0c1527`.
+- A dialog's paper colour did **not** come from the layer — it was a hardcoded
+  `#0F1D34` in `MuiDialog`'s `styleOverrides`. Fixed in #18019.
+- Disabled fields follow the library `Input`: **transparent** with a disabled
+  border, NOT `--bg-input-disabled` (a light grey slab in dark mode).
+
+### Resume here — what is still OPEN
+
+Six of Sandy's items plus two raised in passing. None were touched; none of them
+is blocked on a decision except where noted.
+
+1. **F13 / F20 — filter-bar alignment (TWICE REPORTED).** Already diagnosed in
+   this file: earlier rounds added `alignItems: center` to `ListLines`' `.views`
+   container and to the tabs row, and the Triggers page, the security-coverage
+   dialog and the threat-actor CARD page use different containers. Find those
+   three containers; do not re-fix `ListLines`.
+2. **F19 — toolbar homogeneity (Créer Rapport bar).** One icon button converted,
+   its siblings not. Rule is all-or-none per toolbar.
+3. **F25 — entity content/analyses tabs alignment** (Cobalt Strike screens, PDF
+   p14).
+4. **F16 — notifications trigger-name chip** rendering bug (PDF p3).
+5. **F11 — Manage-access user picker** still MUI. After #18020 it is at least
+   outlined and layer-aware; converting it to the library `Combobox` is what is
+   left, and it was never verified on screen.
+6. **F17's "+" button** — BLOCKED, see the row. Needs Sandy to point at it.
+7. **F27 — eight confirmation dialogs pass `title` to MUI's `Dialog`**, which
+   drops it silently, so they render with no title. Found in passing; the fix
+   routes them through the shared Dialog and moves their `DialogActions` inside
+   `DialogContent`, which is a visual change on eight dialogs. Needs a ruling.
+8. **F26 — the global sweep.** Her list is a seed, not the boundary.
+
+### Honest scope note on #18020
+
+The `variant="standard"` → `outlined` sweep is mechanical across 220 files and
+726 props. Every field FAMILY was exercised on the authenticated stack — text,
+email, password, date picker (picked a date, confirmed it persisted), select,
+autocomplete, multiline markdown — but not each of the 726 sites individually.
+One regression was caught that way (the disabled-field slab) and fixed in
+#18021; a second pass over less-travelled forms is the sensible next check.
