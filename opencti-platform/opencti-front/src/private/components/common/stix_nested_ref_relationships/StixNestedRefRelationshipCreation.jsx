@@ -526,7 +526,7 @@ class StixNestedRefRelationshipCreation extends Component {
               </div>
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
@@ -549,7 +549,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 name="start_time"
                 textFieldProps={{
                   label: t('Start time'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
@@ -559,7 +559,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 name="stop_time"
                 textFieldProps={{
                   label: t('Stop time'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}

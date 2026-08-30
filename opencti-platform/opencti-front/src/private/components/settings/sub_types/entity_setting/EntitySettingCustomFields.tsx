@@ -167,7 +167,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         return (
           <MuiTextField
             select
-            variant="standard"
+            variant="outlined"
             fullWidth
             label={t_i18n('Default value')}
             value={defaultValue}
@@ -213,7 +213,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
                 value={defaultValue ? new Date(defaultValue) : null}
                 onChange={(date) => setDefaultValue(date ? date.toISOString() : '')}
                 label={t_i18n('Default value')}
-                slotProps={{ textField: { variant: 'standard', fullWidth: true, style: { marginTop: 20 } } }}
+                slotProps={{ textField: { variant: 'outlined', fullWidth: true, style: { marginTop: 20 } } }}
               />
             )}
           </>

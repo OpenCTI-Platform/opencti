@@ -50,7 +50,7 @@ const AuthProviderUserInfoFields = ({
       >
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}email_expr`}
           label={t_i18n('Email expression')}
           placeholder={emailPlaceholder}
@@ -60,7 +60,7 @@ const AuthProviderUserInfoFields = ({
         />
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}name_expr`}
           label={t_i18n('Name expression')}
           placeholder={namePlaceholder}
@@ -70,7 +70,7 @@ const AuthProviderUserInfoFields = ({
         />
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}firstname_expr`}
           label={t_i18n('First name expression')}
           placeholder={firstnamePlaceholder}
@@ -79,7 +79,7 @@ const AuthProviderUserInfoFields = ({
         />
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}lastname_expr`}
           label={t_i18n('Last name expression')}
           placeholder={lastnamePlaceholder}

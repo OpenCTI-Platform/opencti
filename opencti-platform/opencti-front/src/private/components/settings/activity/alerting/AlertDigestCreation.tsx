@@ -136,7 +136,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     <React.Fragment>
       <Field
         component={TextField}
-        variant="standard"
+        variant="outlined"
         name="name"
         label={t_i18n('Name')}
         fullWidth={true}
@@ -159,7 +159,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       />
       <Field
         component={SelectFieldFds}
-        variant="standard"
+        variant="outlined"
         name="period"
         label={t_i18n('Period')}
         fullWidth={true}
@@ -173,7 +173,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       {values.period === 'week' && (
         <Field
           component={SelectFieldFds}
-          variant="standard"
+          variant="outlined"
           name="day"
           label={t_i18n('Week day')}
           fullWidth={true}
@@ -191,7 +191,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       {values.period === 'month' && (
         <Field
           component={SelectFieldFds}
-          variant="standard"
+          variant="outlined"
           name="day"
           label={t_i18n('Month day')}
           fullWidth={true}
@@ -211,7 +211,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           withMinutes={true}
           textFieldProps={{
             label: t_i18n('Time'),
-            variant: 'standard',
+            variant: 'outlined',
             fullWidth: true,
             style: { marginTop: 20 },
           }}

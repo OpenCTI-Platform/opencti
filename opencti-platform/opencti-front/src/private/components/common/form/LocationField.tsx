@@ -68,7 +68,7 @@ const LocationField = ({
       name={name}
       required={required}
       textfieldprops={{
-        variant: 'standard',
+        variant: 'outlined',
         label,
         helperText,
         onFocus: searchLocations,

@@ -473,14 +473,14 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                     <Form>
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="name"
                         label={t_i18n('Name')}
                         fullWidth={true}
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="description"
                         label={t_i18n('Description')}
                         fullWidth={true}
@@ -524,7 +524,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                       </Alert>
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="separator"
                         label={t_i18n('Separator')}
                         fullWidth={true}
@@ -532,7 +532,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         type="number"
                         name="rolling_time"
                         label={t_i18n('Rolling time (in minutes)')}
@@ -560,7 +560,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                       />
                       <Field
                         component={SelectFieldFds}
-                        variant="standard"
+                        variant="outlined"
                         name="feed_date_attribute"
                         label={t_i18n('Base attribute')}
                         fullWidth={true}
@@ -629,7 +629,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                 <Box sx={{ width: '100%' }}>
                                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', mb: 2 }}>
                                     <MuiTextField
-                                      variant="standard"
+                                      variant="outlined"
                                       name="attribute"
                                       label={t_i18n('Column name')}
                                       fullWidth={true}
@@ -654,7 +654,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                         </Select>
                                         {(feedAttributes[i]?.multi_match_strategy || 'list') === 'list' && (
                                           <MuiTextField
-                                            variant="standard"
+                                            variant="outlined"
                                             label={t_i18n('List separator')}
                                             value={feedAttributes[i]?.multi_match_separator ?? ','}
                                             onChange={(event) => handleChangeMultiMatchSeparator(i, event.target.value)}
@@ -734,7 +734,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                               </Select>
                                             </Grid>
                                             <Grid item xs={4}>
-                                              <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
+                                              <FormControl variant="outlined" fullWidth disabled={!currentMapping?.target_entity_type}>
                                                 {currentMapping?.target_entity_type ? (
                                                   <QueryRenderer
                                                     query={stixCyberObservablesLinesAttributesQuery}
@@ -778,7 +778,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                             </Grid>
                                           </Grid>
                                         ) : (
-                                          <FormControl variant="standard" fullWidth>
+                                          <FormControl variant="outlined" fullWidth>
                                             <QueryRenderer
                                               query={stixCyberObservablesLinesAttributesQuery}
                                               variables={{ elementType: [selectedType] }}

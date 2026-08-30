@@ -88,7 +88,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Technical name')}
             fullWidth={true}
@@ -96,7 +96,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="field_type"
             label={t_i18n('Field type')}
             fullWidth={true}
@@ -105,7 +105,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="label"
             label={t_i18n('Label')}
             fullWidth={true}
@@ -116,7 +116,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 type="number"
                 name="min_value"
                 label={t_i18n('Min value')}
@@ -126,7 +126,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 type="number"
                 name="max_value"
                 label={t_i18n('Max value')}

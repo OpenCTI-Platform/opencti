@@ -166,7 +166,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
           <Form>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
@@ -174,7 +174,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
             <Field
               component={TextField}
               name="description"
-              variant="standard"
+              variant="outlined"
               label={t_i18n('Description')}
               fullWidth={true}
               className="mt-5"

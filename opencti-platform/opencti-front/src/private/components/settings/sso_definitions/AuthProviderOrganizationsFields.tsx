@@ -58,7 +58,7 @@ const AuthProviderOrganizationsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.default_organizations[${index}]`}
                       label={t_i18n('Organization name')}
                       fullWidth
@@ -101,7 +101,7 @@ const AuthProviderOrganizationsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.organizations_expr[${index}]`}
                       label={t_i18n('Expression')}
                       fullWidth
@@ -124,7 +124,7 @@ const AuthProviderOrganizationsFields = () => {
 
       <Field
         component={TextField}
-        variant="standard"
+        variant="outlined"
         name="organizations_mapping.organizations_splitter"
         label={t_i18n('Organizations splitter')}
         placeholder=","
@@ -154,14 +154,14 @@ const AuthProviderOrganizationsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.organizations_mapping[${index}].provider`}
                       label={t_i18n('Provider organization')}
                       fullWidth
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.organizations_mapping[${index}].platform`}
                       label={t_i18n('Platform organization')}
                       fullWidth
