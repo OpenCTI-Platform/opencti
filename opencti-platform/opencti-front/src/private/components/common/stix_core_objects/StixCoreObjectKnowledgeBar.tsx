@@ -1,11 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
-import MenuList from '@mui/material/MenuList';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
+import { NavbarItem, NavbarTitle } from '@filigran/design-system';
 import { graphql, useFragment } from 'react-relay';
 import {
   StixCoreObjectKnowledgeBar_stixCoreObject$data,
@@ -100,23 +96,34 @@ interface KnowledgeBarProps {
   count: number;
 }
 
+/**
+ * One row of the tab-scoped right bar.
+ *
+ * `NavbarItem` is the library's single navigation row — the same component the
+ * left rail uses, and the one Figma places in this bar (node 7472:48226,
+ * instances named `navbar menu item`). It carries the 36px height, the 14px
+ * label and the hover/selected tones; the bar only has to declare its layer
+ * for those tones to resolve (see the Drawer paper below).
+ *
+ * `asChild` slots the router `Link` in as the row itself, which means the icon
+ * and the label are composed here rather than passed as props — Slot cannot
+ * inject markup inside an arbitrary child. Selection is the native
+ * `aria-current="page"`, which is what the row styles off.
+ */
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
+  const text = `${t_i18n(label)}${count > 0 ? ` (${n(count)})` : ''}`;
 
   return (
-    <MenuItem
-      component={Link}
-      to={to}
-      selected={location.pathname === to}
-      dense={true}
-      sx={{ height: 38, fontSize: 9 }}
-    >
-      <ListItemIcon style={{ minWidth: 28 }}>
-        <ItemIcon size="small" type={iconType} />
-      </ListItemIcon>
-      <ListItemText primary={`${t_i18n(label)}${count > 0 ? ` (${n(count)})` : ''}`} />
-    </MenuItem>
+    <NavbarItem asChild tooltipLabel={text}>
+      <Link to={to} aria-current={location.pathname === to ? 'page' : undefined}>
+        <span aria-hidden="true" className="flex shrink-0 items-center justify-center">
+          <ItemIcon size="small" type={iconType} />
+        </span>
+        <span className="flex-1 truncate text-left">{text}</span>
+      </Link>
+    </NavbarItem>
   );
 };
 
@@ -394,6 +401,11 @@ const StixCoreObjectKnowledgeBar = ({
     <Drawer
       variant="permanent"
       anchor="right"
+      // Position is deliberately untouched: fixed to the right edge, full
+      // height, content laid out beside it — the arrangement the product has
+      // always had. Only the inside of the bar is redesigned (Figma node
+      // 7472:48226).
+      PaperProps={{ className: 'layer-1' }}
       sx={{
         '& .MuiPaper-root': {
           minHeight: '100vh',
@@ -403,17 +415,24 @@ const StixCoreObjectKnowledgeBar = ({
           padding: 0,
           zIndex: theme.zIndex.appBar - 1,
           paddingBottom: draftContext ? '69px' : 0, // Add 69px in case DraftToolbar is opened
-          background: theme.palette.background.nav,
+          // The bar is an elevation layer of its own: `layer-1` on the paper
+          // repoints --bg-elevation-default to #0d172b and
+          // --bg-elevation-highlight to #182a4e, so the rows' own hover and
+          // selected tones land on the right step without being restated here.
+          // Both hexes are pinned by the Figma node, which is how the layer is
+          // known to be 1 rather than 0 (#070d18) — a bare alias would resolve
+          // layer 0.
+          background: 'var(--bg-elevation-default)',
+          borderLeft: '1px solid var(--border-elevation-subtle-soft)',
         },
       }}
     >
       <Box sx={{ ...theme.mixins.toolbar }} />
-      <MenuList
-        component="nav"
+      <nav
         style={{
           marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
           marginBottom: bannerSettings.bannerHeightNumber,
-          paddingBottom: 0,
+          paddingTop: 4, // the 4px slot inset of the Figma node
         }}
       >
         <KnowledgeBarItem
@@ -424,11 +443,13 @@ const StixCoreObjectKnowledgeBar = ({
         />
         {sectionsConfig.map((section, index) => (
           section.items.length > 0 && (
-            <MenuList component="nav" key={index} style={{ paddingBlock: 0 }}>
+            <React.Fragment key={index}>
               {section.title && (
-                <ListSubheader style={{ height: 35 }}>
-                  {section.title}
-                </ListSubheader>
+                // `as="p"`: this bar is page chrome rendered next to the
+                // entity's own heading outline, so a real <h2> here would
+                // inject an out-of-order heading (WCAG 1.3.1). The caption
+                // typography and the disabled tone are unchanged either way.
+                <NavbarTitle as="p">{section.title}</NavbarTitle>
               )}
               {section.items.map(({ path, label, iconType, count }) => (
                 <KnowledgeBarItem
@@ -439,10 +460,10 @@ const StixCoreObjectKnowledgeBar = ({
                   count={count ?? 0}
                 />
               ))}
-            </MenuList>
+            </React.Fragment>
           )
         ))}
-      </MenuList>
+      </nav>
     </Drawer>
   );
 };
