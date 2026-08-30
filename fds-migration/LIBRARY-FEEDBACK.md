@@ -13,12 +13,23 @@ live in the entry, not in the source — one place to read, one place to update.
 
 Raised during: the navigation pilot (replacing `LeftBar.jsx` with `Navbar`),
 library pin `56f7e59823cae7d815a451206e3cb4cb1d31022d`, then re-checked at
-pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06) and at pin
-`5960966216533f620393a2174213c666f57af7dd` (2026-08-11, the token pass).
+pin `486cec92c3abf006997ac269d34ff0fcc23f178f` (2026-08-06), at pin
+`5960966216533f620393a2174213c666f57af7dd` (2026-08-11, the token pass) and at
+pin `23e082608838ab3c312186df9aae7bd0b4e0e81f` (2026-08-30, the weekend status
+pass — lib PRs #188 to #194).
 
 Closed so far: entries 5 and 12, both at the 2026-08-11 pin. Every other entry
 was re-checked against that pin's source and its removal condition is still
 unmet — the compensations stay, with the reason stated in each entry.
+
+**A library fix does not close an entry — the removal test does.** Recorded here
+because the 2026-08-30 pass found the distinction doing real work: several
+entries are now UNBLOCKED library-side (the capability shipped and is in the
+pin) while their site still carries its `FDS-WORKAROUND #N` marker, so the
+compensation is still in the code and the entry is still open. Those entries
+carry an **UNBLOCKED** line naming the library PR and the marker that is still
+live. An entry moves to CLOSED only when its own removal test passes against a
+named pin.
 
 ---
 
@@ -1555,6 +1566,17 @@ Distinct from #155's `startIcon`/`adornment`, which land on `ComboboxField`.
 This one is about `Select`.
 
 **Status.** `ThemeForm` stays on MUI with FDS-WORKAROUND #45.
+
+**UNBLOCKED library-side 2026-08-30 — still OPEN here.** The asymmetry this entry
+reports is gone: lib PR #190 (`1f7c64c`, merged 2026-08-29) gave `Select` its own
+clear control, and that commit is an ancestor of the pin this product currently
+resolves (`23e0826`), so the capability is installed, not merely merged. What is
+NOT done is this entry's own removal test: `ThemeForm.tsx` still carries the
+`FDS-WORKAROUND #45` marker and the field is still MUI, verified at
+`origin/design-system/current` on 2026-08-30. The entry therefore stays open and
+its compensation stays in the code. What it is waiting on changed, though — it
+is now ordinary conversion work with a library that supports it, not a library
+gap.
 
 **Removal test.** Convert the field, set a background type, clear it from the
 trigger without opening the panel, and confirm the submitted value is the empty
