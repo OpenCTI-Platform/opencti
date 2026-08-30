@@ -60,7 +60,10 @@ export default class DateFieldPageModel {
     // Scoped to the popper: a bare day number would otherwise match anything
     // else on the page that happens to be labelled with the same digits.
     const popper = this.page.locator('.MuiPickersPopper-root');
-    await popper.getByRole('button', { name: day, exact: true }).click();
+    // Day cells are NOT `role=button` — MUI gives them `gridcell`, and their
+    // accessible name is the full date ("14 December 2023"), not the number.
+    // Matching the day class on its exact text is what actually selects one.
+    await popper.locator('button.MuiPickersDay-root').filter({ hasText: new RegExp(`^${day}$`) }).click();
     await popper.getByRole('button', { name: 'OK' }).click();
   }
 }
