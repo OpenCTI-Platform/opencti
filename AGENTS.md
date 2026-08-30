@@ -40,8 +40,10 @@ What will stop you:
 | `check-mui-regression.mjs` | New code imports a MUI component the design system already replaces here |
 | `check-fds-conformity.mjs` | A generated bridge file was hand-edited, went stale, or a hardcoded value returned to a migrated zone |
 
-Both run in CI on every pull request and both are blocking. Run them locally
-first — they name file and line, and never need re-deriving by hand.
+Both run in CI on every pull request and go red on a violation. Run them
+locally first — they name file and line, and never need re-deriving by hand.
+Whether a red one also *prevents* the merge depends on the repository's
+required-check settings, which are an administrator's to set.
 
 Never hand-edit a file carrying a `GENERATED` header: fix the source in the
 design system repo and regenerate.
