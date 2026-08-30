@@ -280,8 +280,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         <ContentBloc
           title={(
             <>
-              {/* TODO(ee-small): take the Chip EE small variant here once the library ships it — night-2 pass, wires up after the next pin bump. */}
-              {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip />}
+              {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip size="sm" />}
               {isEnterpriseEdition
                 && (
                   <Tooltip
