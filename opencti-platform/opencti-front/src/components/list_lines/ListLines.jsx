@@ -2,6 +2,7 @@ import Button from '@common/button/Button';
 import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
@@ -567,9 +568,11 @@ class ListLines extends Component {
               slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
-              size="small"
-              title={t('List settings')}
             >
+              {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
+                  not MUI's — MUI dropped it silently and this dialog rendered
+                  with no heading at all. */}
+              <DialogTitle>{t('List settings')}</DialogTitle>
               <FormControl style={{ width: '100%' }}>
                 <Select
                   value={redirectionMode}
