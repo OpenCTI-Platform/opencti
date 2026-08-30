@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import Card from '@common/card/Card';
 import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import { ListItemButton } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -384,8 +385,11 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayDialog}
           onClose={this.handleCloseDialog.bind(this)}
-          title={t('Are you sure?')}
         >
+          {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
+              not MUI's — MUI dropped it silently and this dialog rendered
+              with no heading at all. */}
+          <DialogTitle>{t('Are you sure?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to remove this external reference?')}
           </DialogContentText>
@@ -410,8 +414,11 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayExternalLink}
           onClose={this.handleCloseExternalLink.bind(this)}
-          title={t('Do you want to browse this external link?')}
         >
+          {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
+              not MUI's — MUI dropped it silently and this dialog rendered
+              with no heading at all. */}
+          <DialogTitle>{t('Do you want to browse this external link?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to browse this external link?')}
           </DialogContentText>
