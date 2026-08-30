@@ -168,8 +168,7 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEECh
             disabled={disabled}
           >
             {t_i18n('AI Insights')}
-            {/* TODO(ee-small): take the Chip EE small variant here once the library ships it — night-2 pass, wires up after the next pin bump. */}
-            {showEEChip && <EEChip feature="AI Insights" />}
+            {showEEChip && <EEChip feature="AI Insights" size="sm" />}
           </Button>
         )}
       </span>

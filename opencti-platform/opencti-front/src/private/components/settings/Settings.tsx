@@ -632,8 +632,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                           primary={(
                             <>
                               {t_i18n('AI Powered')}
-                              {/* TODO(ee-small): take the Chip EE small variant here once the library ships it — night-2 pass, wires up after the next pin bump. */}
-                              <EEChip />
+                              <EEChip size="sm" />
                             </>
                           )}
                         />
@@ -650,8 +649,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         primary={(
                           <>
                             {t_i18n('Remove Filigran logos')}
-                            {/* TODO(ee-small): take the Chip EE small variant here once the library ships it — night-2 pass, wires up after the next pin bump. */}
-                            <EEChip />
+                            <EEChip size="sm" />
                           </>
                         )}
                       />
