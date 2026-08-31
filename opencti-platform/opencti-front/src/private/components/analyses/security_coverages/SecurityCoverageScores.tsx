@@ -60,10 +60,18 @@ interface SecurityCoverageScoresProps {
   variant?: 'header' | 'details' | 'matrix';
 }
 
-const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = ({ coverage_information, variant = 'header' }) => {
+const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = ({
+  coverage_information,
+  variant = 'header',
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
+
+  const sortedCoverage = [...(coverage_information) ?? []].sort((a, b) => {
+    return a.coverage_name.localeCompare(b.coverage_name);
+  });
+
   const genOpts = (score: number | null) => {
     let chartColors = [theme.palette.action?.disabled ?? '#ffffff'];
     let labels = [t_i18n('Unknown')];
@@ -109,32 +117,56 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
     const chartSize = variant === 'matrix' ? 38 : 50;
     const iconSize = variant === 'matrix' ? 12 : 18;
     const iconPosition = variant === 'matrix' ? 13 : 17;
+
     if (isEmptyField(coverage_information)) {
       const { options, series } = genOpts(null);
       return (
-        <div className={classes.chartContainer} style={{ width: size, height: size }}>
+        <div
+          className={classes.chartContainer}
+          style={{ width: size, height: size }}
+        >
           <div className={classes.chart}>
             <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
             <Tooltip title="Pending" placement="bottom">
-              <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
-                <span style={{ color: theme.palette.text?.primary }}><HourglassEmpty style={{ fontSize: iconSize }} /></span>
+              <Avatar
+                className={classes.iconOverlay}
+                sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }}
+                style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}
+              >
+                <span style={{ color: theme.palette.text?.primary }}>
+                  <HourglassEmpty style={{ fontSize: iconSize }} />
+                </span>
               </Avatar>
             </Tooltip>
           </div>
         </div>
       );
     }
+
     return (
       <div style={{ display: 'flex' }}>
-        {(coverage_information ?? []).map((coverageResult) => {
+        {sortedCoverage.map((coverageResult) => {
           const { options, series } = genOpts(coverageResult.coverage_score);
           return (
-            <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
+            <div
+              key={coverageResult.coverage_name}
+              className={classes.chartContainer}
+              style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}
+            >
               <div className={classes.chart}>
                 <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
-                <Tooltip title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`} placement="bottom">
-                  <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition - 1, fontSize: iconSize - 2 }}>
-                    <span style={{ color: theme.palette.text?.primary }}>{getIconFromName(coverageResult.coverage_name, iconSize)}</span>
+                <Tooltip
+                  title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`}
+                  placement="bottom"
+                >
+                  <Avatar
+                    className={classes.iconOverlay}
+                    sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }}
+                    style={{ top: iconPosition, left: iconPosition - 1, fontSize: iconSize - 2 }}
+                  >
+                    <span style={{ color: theme.palette.text?.primary }}>
+                      {getIconFromName(coverageResult.coverage_name, iconSize)}
+                    </span>
                   </Avatar>
                 </Tooltip>
               </div>
@@ -155,8 +187,14 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
             <div className={classes.chart}>
               <Chart options={options} series={series} type="donut" width={70} height={70} />
               <Tooltip title="Pending" placement="top">
-                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }} style={{ top: 24, left: 23 }}>
-                  <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}><HourglassEmpty style={{ fontSize: 23 }} /></span>
+                <Avatar
+                  className={classes.iconOverlay}
+                  sx={{ bgcolor: 'transparent', width: 24, height: 24 }}
+                  style={{ top: 24, left: 23 }}
+                >
+                  <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>
+                    <HourglassEmpty style={{ fontSize: 23 }} />
+                  </span>
                 </Avatar>
               </Tooltip>
             </div>
@@ -167,9 +205,10 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
       </div>
     );
   }
+
   return (
     <div className={classes.charts}>
-      {(coverage_information ?? []).map((coverageResult) => {
+      {sortedCoverage.map((coverageResult) => {
         const { options, series } = genOpts(coverageResult.coverage_score);
         const warningColor = (theme.palette as { warning?: { main: string } }).warning?.main;
         let scoreColor;
@@ -180,14 +219,20 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
         } else {
           scoreColor = theme.palette.error.main;
         }
+
         return (
           <div key={coverageResult.coverage_name} className={classes.chartItem}>
             <div className={classes.chartContainer}>
               <div className={classes.chart}>
                 <Chart options={options} series={series} type="donut" width={70} height={70} />
                 <Tooltip title={coverageResult.coverage_name} placement="top">
-                  <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 25, height: 30 }}>
-                    <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>{getIconFromName(coverageResult.coverage_name, 26)}</span>
+                  <Avatar
+                    className={classes.iconOverlay}
+                    sx={{ bgcolor: 'transparent', width: 25, height: 30 }}
+                  >
+                    <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>
+                      {getIconFromName(coverageResult.coverage_name, 26)}
+                    </span>
                   </Avatar>
                 </Tooltip>
               </div>
