@@ -88,22 +88,14 @@ const DashboardRefreshControl = ({
   const isRefreshDisabled = isManualRefreshing || isQueryPending;
 
   return (
-    // NOT a MUI ButtonGroup any more, and that single swap is both halves of
-    // the report. A ButtonGroup exists to JOIN its children edge to edge, so it
-    // removed the gap the designer asks for -- and it styles its children as MUI
-    // buttons, which these are not: the refresh Button and the interval Select
-    // both come from the library, so the group's own rules laid them out instead
-    // of letting each keep its geometry. That is the icon/label misalignment.
-    // A plain flex row with an 8px gap lets both components size themselves.
+    // NOT a MUI ButtonGroup any more, and that single swap is both halves of the report.
     <Box
       id="dashboard-refresh-control"
       sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
     >
       <Button
-        // The library's Spinner, not MUI's CircularProgress: `md` is the same
-        // 20px box, and `inherit` keeps the button's own colour exactly as
-        // `color="inherit"` did. Decorative on purpose — the button says
-        // "Refresh" beside it, so a `label` would announce it twice.
+        // The library's Spinner, not MUI's CircularProgress: `md` is the same 20px box, and
+        // `inherit` keeps the button's own colour exactly as `color="inherit"` did.
         startIcon={spinning
           ? <Spinner size="md" tone="inherit" />
           : <RefreshIcon fontSize="small" />}

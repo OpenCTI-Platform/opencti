@@ -1,25 +1,5 @@
 /**
  * Sweeps every Breadcrumbs call site and requires EXACTLY ONE current entry.
- *
- * The wrapper marks the page the user is on by flagging one element `current`.
- * Nothing in the repository noticed when a site simply omitted it: the trail
- * still rendered, the last label just stopped being announced as the current
- * page, and no render test covers a site it does not import. Two pages shipped
- * that way and were found by hand during review.
- *
- * So this sweep is a source guard over the CALL SITES, not over the wrapper —
- * the wrapper's own behaviour is covered in Breadcrumbs.test.tsx. It reads the
- * `elements` prop through the TypeScript AST rather than by pattern, because
- * the array reaches the prop in three shapes across the product: written
- * inline, held in a local const, or chosen by a ternary. A regex would have to
- * guess at all three, and a site it failed to parse would read as compliant.
- *
- * Two entries in the same array flagged `current` is a defect too, not just
- * zero: the wrapper would mark two crumbs as the current page.
- *
- * An `elements` expression this file cannot resolve to at least one array
- * literal FAILS rather than passing silently. A guard that quietly skips what
- * it cannot read reports green about the sites it never looked at.
  */
 import fs from 'node:fs';
 import path from 'node:path';

@@ -121,11 +121,9 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
     });
   };
 
-  // The `if (!event) return` guard this function used to open with is gone: the
-  // engine states the CAUSE of every change, so the call site gates on
-  // `meta.cause === 'type'` and this only ever runs for a keystroke. The event
-  // is still threaded through because the shared `searchEntities` helper reads
-  // `event.target.value` off it.
+  // The `if (!event) return` guard this function used to open with is gone: the engine states
+  // the CAUSE of every change, so the call site gates on `meta.cause === 'type'` and this only
+  // ever runs for a keystroke.
   const searchContainers = (
     event: React.SyntheticEvent<Element, Event>,
     incomingValue?: string,
@@ -193,24 +191,19 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       />
       <Combobox<EntityValue>
         multiple
-        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel
-        // closed after each pick. The library keeps it open in multiple mode, which
-        // overlays the form's own action button in a dialog this narrow.
+        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel closed
+        // after each pick.
         closeOnSelect
         options={containersFromElements}
-        // `actionsInputs.value` is declared as the loose FilterOption while the
-        // options are the narrower FilterOptionValue. The value only ever comes
-        // from the options, and the MUI original cast in the same direction on
-        // its own onChange (`value as EntityValue[]`).
+        // `actionsInputs.value` is declared as the loose FilterOption while the options are the
+        // narrower FilterOptionValue.
         value={actionsInputs?.value ? [actionsInputs.value as EntityValue] : []}
         onValueChange={(next, meta) => handleChangeActionInputValues(
           meta.event,
           (next ?? []) as EntityValue[],
         )}
         inputValue={actionsInputs?.inputValue || ''}
-        // Keystroke only. The server query used to be wired to every reason MUI
-        // reported, which is why searchContainers opened with `if (!event)
-        // return` — one of the 28 sites the completion wave counted.
+        // Keystroke only.
         onInputChange={(userInput: string, meta: ComboboxChangeMeta) => {
           if (meta.cause === 'type' && meta.event) searchContainers(meta.event, userInput);
         }}

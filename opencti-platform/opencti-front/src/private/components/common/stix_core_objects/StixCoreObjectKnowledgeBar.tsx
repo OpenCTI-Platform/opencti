@@ -99,17 +99,6 @@ interface KnowledgeBarProps {
 
 /**
  * One row of the tab-scoped right bar.
- *
- * `NavbarItem` is the library's single navigation row — the same component the
- * left rail uses, and the one Figma places in this bar (node 7472:48226,
- * instances named `navbar menu item`). It carries the 36px height, the 14px
- * label and the hover/selected tones; the bar only has to declare its layer
- * for those tones to resolve (see the Drawer paper below).
- *
- * `asChild` slots the router `Link` in as the row itself, which means the icon
- * and the label are composed here rather than passed as props — Slot cannot
- * inject markup inside an arbitrary child. Selection is the native
- * `aria-current="page"`, which is what the row styles off.
  */
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
@@ -402,10 +391,8 @@ const StixCoreObjectKnowledgeBar = ({
     <Drawer
       variant="permanent"
       anchor="right"
-      // Position is deliberately untouched: fixed to the right edge, full
-      // height, content laid out beside it — the arrangement the product has
-      // always had. Only the inside of the bar is redesigned (Figma node
-      // 7472:48226).
+      // Position is deliberately untouched: fixed to the right edge, full height, content laid
+      // out beside it — the arrangement the product has always had.
       slotProps={{
         paper: {
           // The layer comes from the shared helper, not a literal: the class
@@ -427,13 +414,9 @@ const StixCoreObjectKnowledgeBar = ({
           padding: 0,
           zIndex: theme.zIndex.appBar - 1,
           paddingBottom: draftContext ? '69px' : 0, // Add 69px in case DraftToolbar is opened
-          // The bar is an elevation layer of its own: `layer-1` on the paper
-          // repoints --bg-elevation-default to #0d172b and
-          // --bg-elevation-highlight to #182a4e, so the rows' own hover and
-          // selected tones land on the right step without being restated here.
-          // Both hexes are pinned by the Figma node, which is how the layer is
-          // known to be 1 rather than 0 (#070d18) — a bare alias would resolve
-          // layer 0.
+          // The bar is an elevation layer of its own: `layer-1` on the paper repoints --bg-
+          // elevation-default to #0d172b and --bg-elevation-highlight to #182a4e, so the rows'
+          // own hover and selected tones land on the right step without being restated here.
           background: 'var(--bg-elevation-default)',
           borderLeft: '1px solid var(--border-elevation-subtle-soft)',
         },
@@ -457,10 +440,9 @@ const StixCoreObjectKnowledgeBar = ({
           section.items.length > 0 && (
             <React.Fragment key={index}>
               {section.title && (
-                // `as="p"`: this bar is page chrome rendered next to the
-                // entity's own heading outline, so a real <h2> here would
-                // inject an out-of-order heading (WCAG 1.3.1). The caption
-                // typography and the disabled tone are unchanged either way.
+                // `as="p"`: this bar is page chrome rendered next to the entity's own heading
+                // outline, so a real <h2> here would inject an out-of-order heading (WCAG
+                // 1.3.1).
                 <NavbarTitle as="p">{section.title}</NavbarTitle>
               )}
               {section.items.map(({ path, label, iconType, count }) => (

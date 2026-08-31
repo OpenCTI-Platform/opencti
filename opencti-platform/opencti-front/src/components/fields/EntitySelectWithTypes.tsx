@@ -58,10 +58,7 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
     >
       <ComboboxLabel>{label}</ComboboxLabel>
       <ComboboxField
-        // #155: the two slots that replace MUI's input adornments. The icon of
-        // the selected value is presentational and goes to startIcon; the search
-        // scope control is interactive and goes to adornment, the one host-owned
-        // slot on this line that keeps its own pointer and focus behaviour.
+        // #155: the two slots that replace MUI's input adornments.
         startIcon={value ? <ItemIcon type={value.type} color={value.color} /> : undefined}
         adornment={(
           <SearchScopeElement

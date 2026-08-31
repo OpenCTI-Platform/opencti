@@ -7,15 +7,7 @@ import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fds
 interface DrawerHeaderProps {
   title: string;
   /**
-   * The elevation layer this header sits on. Defaults to the drawer layer.
-   *
-   * The header carries the layer class ITSELF rather than trusting its mount:
-   * `StixDomainObjectEdition` puts this header inside a RAW MUI Drawer, which
-   * declares no layer, so reading the bare `--bg-elevation-heading` fell back
-   * to layer 0 and the header came out a step too dark. Inside the shared
-   * Drawer the paper already declares the same layer, so re-declaring it here
-   * is a no-op. Exposed as a prop so a drawer at another depth can say so
-   * rather than inherit a wrong constant.
+   * The elevation layer this header sits on.
    */
   layer?: Parameters<typeof fdsLayerClass>[0];
   onClose?: () => void;

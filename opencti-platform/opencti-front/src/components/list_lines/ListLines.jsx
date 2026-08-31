@@ -70,11 +70,7 @@ const styles = (theme) => ({
     flex: 'auto',
   },
   views: {
-    // No `marginTop: -5`. That nudge pulled the view controls 5px above the
-    // row they sit in, which is where the 2px centre-line difference on the
-    // entity Analyses tab came from: the row already centres its children, so
-    // the offset was fighting it. Measured after removal: every control on the
-    // row shares one centre line.
+    // No `marginTop: -5`.
     display: 'flex',
   },
   linesContainer: {
@@ -476,11 +472,10 @@ class ListLines extends Component {
                   <ListItemIcon
                     style={{
                       minWidth: handleToggleSelectAll ? 40 : 56,
-                      // The MUI checkbox was a 42px control that carried its own
-                      // centring; the library box is a bare 16px button, so the
-                      // slot has to do the centring itself or the box rides to
-                      // the top of the header row while the column labels stay
-                      // centred -- the misalignment reported on every list page.
+                      // The MUI checkbox was a 42px control that carried its own centring; the
+                      // library box is a bare 16px button, so the slot has to do the centring
+                      // itself or the box rides to the top of the header row while the column
+                      // labels stay centred -- the misalignment reported on every list page.
                       display: 'flex',
                       alignItems: 'center',
                     }}

@@ -99,10 +99,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
             <Tooltip title={isTagInputOpen ? t_i18n('Cancel') : t_i18n('Add tag')}>
               <IconButton
                 color="primary"
-                // md. The wrapper's default is `small`, which is the library's
-                // 24px `sm`, and the glyph beside it is MUI's `small` = 20px —
-                // a 20px mark inside a 24px control, overflowing it the same way
-                // F18's did.
+                // md.
                 size="default"
                 aria-label="Add tag"
                 onClick={toggleTagInput}

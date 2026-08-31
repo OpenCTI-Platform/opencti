@@ -32,10 +32,8 @@ describe('Component: FintelTemplateForm', () => {
       />,
     );
 
-    // 'Name', not 'Name *': the library Input puts the required marker in its
-    // own `aria-hidden` span, so the asterisk is deliberately outside the
-    // accessible name. MUI concatenated it. `required` is still announced —
-    // through `aria-required` on the input.
+    // 'Name', not 'Name *': the library Input puts the required marker in its own `aria-hidden`
+    // span, so the asterisk is deliberately outside the accessible name.
     await user.type(screen.getByLabelText('Name'), 'MyFintelTemplate');
     await user.click(screen.getByRole('button', { name: 'Create' }));
     expect(onSubmit).toHaveBeenCalledTimes(1);

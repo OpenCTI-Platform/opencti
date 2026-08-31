@@ -148,25 +148,34 @@ export const createGradientSx = (
   };
 };
 
+/**
+ * `color` and the nested `background` stay optional and unset: the glyphs are
+ * hidden through the fill alone, and `background` does not inherit, so putting
+ * it back on the children would erase a nested component's own fill.
+ */
+export interface TextGradientSx {
+  background: string;
+  backgroundClip: string;
+  WebkitBackgroundClip: string;
+  WebkitTextFillColor: string;
+  color?: string;
+  '& > *': { WebkitTextFillColor: string; background?: string };
+  '& svg': { fill: string; color: string };
+}
+
 export const createTextGradientSx = (
   gradientColors: GradientColor,
   gradientAngle: number,
-) => {
+): TextGradientSx => {
   const gradientStr = `linear-gradient(${gradientAngle}deg, ${gradientColors.start} 0%, ${gradientColors.end} 100%)`;
 
   return {
     background: gradientStr,
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
-    // Hiding the glyphs through the fill alone, as the library does. `color`
-    // stays, because the reset below resolves against it: were it transparent,
-    // a child inheriting `currentColor` would resolve back to transparent and
-    // stay invisible — an icon, a spinner, anything that takes its colour from
-    // the text.
+    // Hiding the glyphs through the fill alone, as the library does.
     WebkitTextFillColor: 'transparent',
-    // The gradient is for the button's own text nodes. `-webkit-text-fill-color`
-    // inherits and beats `color`, so a nested component paints invisible glyphs
-    // unless element children get their own fill back.
+    // The gradient is for the button's own text nodes.
     '& > *': {
       WebkitTextFillColor: 'currentColor',
     },
