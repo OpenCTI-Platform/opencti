@@ -292,7 +292,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
           <AlertConfidenceForEntity entity={securityCoverageData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -342,7 +342,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="type_affinity"
             onSubmit={handleSubmitField}
             onChange={(name: string, value: string) => setFieldValue(name, value)}
@@ -382,7 +382,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="external_uri"
                 onSubmit={handleSubmitField}
                 label={t_i18n('Source external link')}

@@ -170,14 +170,14 @@ const PlaybookCreation = () => {
               <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Name')}
                   fullWidth
                 />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="description"
                   label={t_i18n('Description')}
                   className="mt-5"

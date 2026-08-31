@@ -293,7 +293,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
           <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -311,7 +311,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Request for takedown date'),
-              variant: 'standard',
+              variant: 'outlined',
               required: (mandatoryAttributes.includes('created')),
               fullWidth: true,
               style: { marginTop: 20 },

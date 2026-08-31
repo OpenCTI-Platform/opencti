@@ -55,7 +55,7 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                   >
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.type`}
                       label={t_i18n('Resolve from')}
                       fullWidth={true}
@@ -67,7 +67,7 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
 
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.exposed`}
                       label={t_i18n('Exposed attribute to')}
                       fullWidth={true}
@@ -80,7 +80,7 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
 
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.data_operation`}
                       label={t_i18n('Resolve operation')}
                       fullWidth={true}
@@ -92,7 +92,7 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
 
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.state_operation`}
                       label={t_i18n('State operation')}
                       fullWidth={true}
@@ -104,20 +104,20 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
 
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.from`}
                       label={t_i18n('Get from path')}
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.to`}
                       label={t_i18n('To attribute name')}
                     />
 
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.default`}
                       label={t_i18n('Default value')}
                     />

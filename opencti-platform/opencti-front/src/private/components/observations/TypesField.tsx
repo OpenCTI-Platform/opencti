@@ -50,7 +50,7 @@ const TypesFieldComponent = ({
     return (
       <Field
         component={SelectFieldFds}
-        variant="standard"
+        variant="outlined"
         name={name}
         label={label}
         fullWidth={true}
@@ -79,7 +79,7 @@ const TypesField = (props: TypesFieldProps) => {
   const FallbackSelect = (
     <Field
       component={SelectFieldFds}
-      variant="standard"
+      variant="outlined"
       fullWidth
       name={name}
       label={label}

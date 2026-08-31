@@ -314,7 +314,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth

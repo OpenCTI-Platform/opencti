@@ -172,7 +172,7 @@ const SettingsOrganizationUserCreation = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="user_email"
                 label={t_i18n('Email address')}
                 fullWidth={true}
@@ -180,7 +180,7 @@ const SettingsOrganizationUserCreation = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="firstname"
                 label={t_i18n('Firstname')}
                 fullWidth={true}
@@ -188,7 +188,7 @@ const SettingsOrganizationUserCreation = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="lastname"
                 label={t_i18n('Lastname')}
                 fullWidth={true}
@@ -206,7 +206,7 @@ const SettingsOrganizationUserCreation = ({
               <PasswordPolicies />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="password"
                 label={t_i18n('Password')}
                 type="password"
@@ -215,7 +215,7 @@ const SettingsOrganizationUserCreation = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="confirmation"
                 label={t_i18n('Confirmation')}
                 type="password"
@@ -245,7 +245,7 @@ const SettingsOrganizationUserCreation = ({
               )}
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="account_status"
                 label={t_i18n('Account Status')}
                 fullWidth={true}
@@ -265,7 +265,7 @@ const SettingsOrganizationUserCreation = ({
                 textFieldProps={{
                   label: t_i18n('Account Expire Date'),
                   style: fieldSpacingContainerStyle,
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                 }}
               />

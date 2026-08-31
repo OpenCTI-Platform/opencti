@@ -684,7 +684,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
           <Box>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
@@ -722,7 +722,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 />
                 <Field
                   component={SelectFieldFds}
-                  variant="standard"
+                  variant="outlined"
                   name="type_affinity"
                   onChange={(name: string, value: string) => setFieldValue(name, value)}
                   label={t_i18n('Type affinity')}
@@ -760,7 +760,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="external_uri"
                   label={t_i18n('Source external link')}
                   fullWidth={true}

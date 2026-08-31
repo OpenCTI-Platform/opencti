@@ -187,7 +187,7 @@ const UserEditionOverviewComponent: FunctionComponent<
         <Form style={{ marginTop: theme.spacing(2) }}>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             disabled={external}
@@ -200,7 +200,7 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="user_email"
             disabled={external}
             label={t_i18n('Email address')}
@@ -214,7 +214,7 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="firstname"
             label={t_i18n('Firstname')}
             fullWidth={true}
@@ -227,7 +227,7 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="lastname"
             label={t_i18n('Lastname')}
             fullWidth={true}
@@ -254,7 +254,7 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="language"
             label={t_i18n('Language')}
             fullWidth={true}
@@ -285,7 +285,7 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="account_status"
             label={t_i18n('Account Status')}
             fullWidth={true}
@@ -305,7 +305,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             name="account_lock_after_date"
             textFieldProps={{
               label: t_i18n('Account Expire Date'),
-              variant: 'standard',
+              variant: 'outlined',
               style: fieldSpacingContainerStyle,
               fullWidth: true,
             }}

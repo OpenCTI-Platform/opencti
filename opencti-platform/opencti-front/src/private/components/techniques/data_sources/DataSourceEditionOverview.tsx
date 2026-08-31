@@ -272,7 +272,7 @@ const DataSourceEditionOverview: FunctionComponent<
           <AlertConfidenceForEntity entity={dataSource} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
