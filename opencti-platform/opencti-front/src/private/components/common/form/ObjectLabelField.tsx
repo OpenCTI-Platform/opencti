@@ -98,9 +98,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
           if (meta.cause === 'type') searchLabels(search);
         }}
         onFocusInput={() => searchLabels('')}
-        // The label's own colour, straight from the database. The library caps
-        // it in a bounded wash, which is what the product's Tag renderer did by
-        // hand with alpha(color, 0.2).
+        // The label's own colour, straight from the database.
         getChipColor={(option: FieldOption) => option.color}
         onCreateOption={() => setLabelCreation(true)}
         onChange={onChange}

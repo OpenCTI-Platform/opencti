@@ -160,10 +160,8 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
       ?.every((el) => entitySettingsEntityType.includes(el));
   };
 
-  // The row list keeps MUI's exact value vocabulary: a group row carries the
-  // sentinel `key` or `not-<key>`, which `onChange` expands through
-  // `itemsFromGroup`. Passing the raw array straight through preserves the
-  // select-all / deselect-all behaviour the MUI multiple Select gave for free.
+  // The row list keeps MUI's exact value vocabulary: a group row carries the sentinel `key` or
+  // `not-<key>`, which `onChange` expands through `itemsFromGroup`.
   type HiddenTypeRow = { value: string; label: string; group: boolean; targetType?: string };
   const computeRows = (): HiddenTypeRow[] => {
     const rows: HiddenTypeRow[] = [];

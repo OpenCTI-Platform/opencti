@@ -4,31 +4,12 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * The page path is drawn by the library, and by one file.
- *
- * Breadcrumbs.test.tsx covers what the rendered path owes the product. This
- * file covers what the SOURCE owes it: the shapes that would silently come
- * back. Each is a real regression, not a style rule —
- *
- *  - a character count, which cuts a label with no way to read the rest;
- *  - `href` on an entry, which a react-router Link REPLACES with the current
- *    location, producing a focusable link to the page you are already on;
- *  - MUI drawing the path again next to the library one.
- *
- * The wrapper is the only conversion point, so the guard is the only file it
- * has to read.
  */
 
 const WRAPPER = 'src/components/Breadcrumbs.tsx';
 
 /**
  * Comments are blanked before anything is asserted.
- *
- * Not a precaution: the first version of this file read the raw source, and the
- * wrapper's own doc comment names `id="page-breadcrumb"`, `data-testid` and
- * `mb-2` in prose. Deleting the real `id` attribute left every one of those
- * assertions green, because they were reading the comment that explains the
- * attribute rather than the attribute. Proved by deleting the line and watching
- * the suite stay green, which is how the hole was found.
  */
 const stripComments = (text: string) => text
   .replace(/\/\*[\s\S]*?\*\//g, ' ')

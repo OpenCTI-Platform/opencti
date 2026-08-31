@@ -272,13 +272,9 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 preserveCase
                 noOptionsText={t_i18n('No available options')}
                 options={stateLabels}
-                // This dialog is one field with its action bar directly under
-                // it, and the panel is portalled at --fds-z-overlay: 1400 — the
-                // level that lets it win over MUI Dialogs also lets it cover
-                // THIS dialog's own Add button. Keeping the panel open after a
-                // pick, which is the default and was MUI's behaviour, therefore
-                // leaves the submit unreachable without an Escape or a click
-                // away. Closing on each pick is what #150 added the prop for.
+                // This dialog is one field with its action bar directly under it, and the panel
+                // is portalled at --fds-z-overlay: 1400 — the level that lets it win over MUI
+                // Dialogs also lets it cover THIS dialog's own Add button.
                 closeOnSelect
                 onInputChange={(search, meta) => {
                   if (meta.cause === 'type') searchLabels(search);

@@ -58,9 +58,8 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
   const [inputValue, setInputValue] = useState<string>('');
   const [value, setValue] = useState<AssociatedEntityOption | null>(null);
 
-  // The `if (!event) return` guard is gone with the event: MUI reported an input
-  // change for every reason, and only a real one carried an event. The cause
-  // vocabulary says the same thing without the sentinel.
+  // The `if (!event) return` guard is gone with the event: MUI reported an input change for
+  // every reason, and only a real one carried an event.
   const searchAssociatedEntities = (newValue?: string) => {
     setInputValue(newValue || '');
     fetchQuery(associatedEntityFieldQuery, {

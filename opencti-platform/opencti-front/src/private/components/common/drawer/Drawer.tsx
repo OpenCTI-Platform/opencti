@@ -234,12 +234,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         slotProps={{
           paper: {
             ref,
-            // A drawer is a layer-2 surface. The class re-declares the
-            // elevation aliases; `layerInputVars` carries the three input
-            // backgrounds the library's own .layer-N blocks forget, and both
-            // must sit on the SAME node. With the layer declared, the colours
-            // below are plain aliases instead of the hardcoded layer-2 values
-            // this file used to carry -- the layer now decides them.
+            // A drawer is a layer-2 surface.
             className: fdsLayerClass(SURFACE_LAYER),
             sx: {
               ...layerInputVars,

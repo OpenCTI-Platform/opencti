@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no `mt-*` — remove when it ships consumer utilities — see fds-migration/LIBRARY-FEEDBACK.md #36
 import { Paper } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -311,6 +310,8 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               <FieldArray name="headers_audit">
                 {({ push, remove, form }) => {
                   const entries = (form.values as HeaderStrategyFormValues).headers_audit;
+                  // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no
+                  // `mt-*` — remove when it ships consumer utilities — see LIBRARY-FEEDBACK.md #36
                   return (
                     <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
                       <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

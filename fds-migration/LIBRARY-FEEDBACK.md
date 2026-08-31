@@ -2169,3 +2169,43 @@ text tokens, which are layer-independent and correctly left alone.
 
 **Removal test.** Delete `layerInputVars` from the product; a field inside a
 drawer still reads `#0c1527`.
+
+## 58. `NavbarItem` shows its focus-visible border when a submenu closes under the pointer
+
+**Reported** on #17656 by Archidoit, with a screenshot: hovering *Analyses*,
+then moving the pointer slightly up, leaves the row "squared in blue". Same on
+*Locations*. Those two are the first and the last item of the `knowledge`
+group — the two rows whose upward neighbour is a `NavbarSeparator` rather than
+another item.
+
+**Today**, in the shipped build at pin `bd57527`:
+
+- `NavbarItem` renders `focus-visible:outline-none
+  focus-visible:border-filigran-brand-primary`, and the rule is present in the
+  served `dist/index.css`.
+- `--color-filigran-brand-primary` resolves to `var(--blue-400)` in dark mode,
+  so that border is the blue square in the screenshot.
+- `NavbarSubmenu` passes no `onCloseAutoFocus`, so the Radix primitive restores
+  focus to the trigger when the flyout closes. Focus moved by script matches
+  `:focus-visible`, so the row draws a keyboard-focus border after a purely
+  pointer-driven interaction.
+
+**Evidence level.** The chain above is read off the shipped build and matches
+the reported symptom exactly; the trigger path itself has **not** been measured
+in a browser. Worth doing before the fix is designed, because it decides
+whether the ring should be suppressed on close or the close should not restore
+focus at all.
+
+**Consequence for the product.** None available. The class, the token and the
+focus restore all belong to the library; the product neither styles the row nor
+owns the flyout's focus behaviour. Per the migration contract this is reported
+rather than patched locally — overriding a library focus ring in the product
+would also be an accessibility regression for real keyboard users, who need it.
+
+**Ask.** Keep the border for keyboard focus and drop it when the flyout closes
+under the pointer — `onCloseAutoFocus={(e) => e.preventDefault()}` on the
+submenu content, or the equivalent guard inside `NavbarSubmenu`.
+
+**Removal test.** Hover a submenu parent, move the pointer up onto the group
+separator: the row returns to its resting state with no border. Tab to the same
+row: the border is still there.

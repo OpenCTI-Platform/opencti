@@ -11,11 +11,9 @@ const SELECTED_BACKGROUND = 'var(--color-filigran-brand-primary-transparency-10)
 const GLYPH_COLOR = 'var(--color-filigran-brand-primary)';
 
 /**
- * The library `Badge`, wrapping the CONTROL. It marks the link, not the glyph:
- * the glyph lives in an `aria-hidden` span, so a badge nested in there is
- * outside the accessibility tree and its `aria-describedby` lands on a node no
- * screen reader ever reaches. No `tone`: the library default is red and this
- * bar takes it (arbitrated 2026-08-13).
+ * The library `Badge`, wrapping the CONTROL. It marks the link, not the glyph: the glyph lives
+ * in an `aria-hidden` span, so a badge nested in there is outside the accessibility tree and
+ * its `aria-describedby` lands on a node no screen reader ever reaches.
  */
 interface TopBarIconLinkBadge {
   /** The total, announced in full even when the visual reduces to a dot. */
@@ -43,14 +41,8 @@ interface TopBarIconLinkProps extends Omit<ComponentPropsWithoutRef<typeof Link>
 }
 
 /**
- * Same technique as the OpenAEV Header pilot
- * (openaev-front/src/admin/components/nav/TopBarIconLink.tsx).
- *
- * Forwards its ref and every remaining prop to the anchor. That is not tidiness:
- * `TooltipTrigger asChild` clones its handlers, its `data-state` and its ref
- * onto this component, and a version that named only the props it knew about
- * dropped all of them — measured, the Triggers and Notifications tooltips never
- * opened while the ones on library controls did.
+ * Same technique as the OpenAEV Header pilot (openaev-
+ * front/src/admin/components/nav/TopBarIconLink.tsx).
  */
 const TopBarIconLink = React.forwardRef<HTMLAnchorElement, TopBarIconLinkProps>(({
   'aria-label': ariaLabel,
@@ -59,10 +51,9 @@ const TopBarIconLink = React.forwardRef<HTMLAnchorElement, TopBarIconLinkProps>(
   active,
   id,
   badge,
-  // Merged, never spread: an incoming `className` — including the `undefined`
-  // one a cloning parent passes — would otherwise replace the library variant
-  // wholesale and the control would collapse to its glyph. Measured: 24×28
-  // instead of 36×36, with no size class left on the anchor.
+  // Merged, never spread: an incoming `className` — including the `undefined` one a cloning
+  // parent passes — would otherwise replace the library variant wholesale and the control would
+  // collapse to its glyph.
   className,
   style: incomingStyle,
   ...rest

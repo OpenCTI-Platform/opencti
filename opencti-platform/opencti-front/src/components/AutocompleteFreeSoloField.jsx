@@ -67,10 +67,8 @@ const AutocompleteFreeSoloField = (props) => {
       getOptionLabel={(option) => (option?.value ? option.value : option)}
       onValueChange={(next) => emit(next)}
       onCreateOption={onCreateOption}
-      // `createLabel` is the consumer's own wording for the suggestion row; with
-      // none given, the library's own `Create ‘x’` stands, which is the Figma
-      // node's copy. MUI showed the raw text there, indistinguishable from a
-      // real option.
+      // `createLabel` is the consumer's own wording for the suggestion row; with none given,
+      // the library's own `Create ‘x’` stands, which is the Figma node's copy.
       createOptionLabel={createLabel ? (input) => `${createLabel} "${input}"` : undefined}
       renderOption={renderOption}
       error={error}

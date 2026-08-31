@@ -92,9 +92,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
     return suggestions;
   };
 
-  // Takes the value directly. The old `event && event.target && event.target.value`
-  // guard existed because MUI fired this for reasons other than a pick; the
-  // library only calls onValueChange on an actual selection.
+  // Takes the value directly.
   const handleSelectEntity = (type, value) => {
     if (value) {
       setSelectedEntity({ ...selectedEntity, [type]: value });

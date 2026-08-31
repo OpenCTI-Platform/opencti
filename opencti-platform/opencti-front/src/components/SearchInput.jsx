@@ -32,12 +32,7 @@ const isNlqMode = (mode) => typeof mode === 'string' && mode.startsWith('nlq:');
 const nlqSlugFromMode = (mode) => (isNlqMode(mode) ? mode.slice(4) : null);
 
 /**
- * Product variant -> library size. The library exposes two sizes and no width
- * animation; Sandy ruled the focus expansion out deliberately (bad UX), so the
- * mapping is decided by the variant's MEASURED HEIGHT, not by its name:
- * `small` was only small in width (36px tall, like `default`), while `thin` was
- * the genuinely shorter one at 30px. `thin` therefore maps to sm (28px, a 2px
- * loss, ruled acceptable) and everything else to md (36px, unchanged).
+ * Product variant -> library size.
  */
 const SIZE_BY_VARIANT = {
   thin: 'sm',
@@ -226,10 +221,9 @@ const SearchInput = (props) => {
             onSubmit(value);
           }
         }}
-        // The library renders a clear cross only when it can act on one, and
-        // clearing has to re-run the search: dropping the keyword locally while
-        // leaving the list filtered would be a worse state than before, when
-        // there was no cross at all.
+        // The library renders a clear cross only when it can act on one, and clearing has to
+        // re-run the search: dropping the keyword locally while leaving the list filtered would
+        // be a worse state than before, when there was no cross at all.
         onClear={() => {
           setSearchValue('');
           if (typeof onSubmit === 'function') {

@@ -44,11 +44,7 @@ export const isRouteSelected = (pathname: string, link: string, exact?: boolean)
 };
 
 /**
- * Props of the pure rail view. Everything is already resolved by the data
- * component below, so this view renders without Relay, without the user
- * context and without entity settings — which is what makes the rendering
- * contract (real anchors, `aria-current`, collapsed-only parent navigation,
- * the accent override) unit-testable at all.
+ * Props of the pure rail view.
  */
 export interface NavBarViewProps {
   groups: NavGroup[];
@@ -144,10 +140,9 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
         // FDS-WORKAROUND #10: accordion state bound only when expanded — remove when the flyout gets its own prop — see fds-migration/LIBRARY-FEEDBACK.md #10
         open={collapsed ? undefined : openSubmenus.includes(item.id)}
         onOpenChange={collapsed ? undefined : (open) => onSubmenuOpenChange(item.id, open)}
-        // `to` makes the parent row navigable ONLY while the rail is
-        // collapsed, which is exactly what the previous `handleParentClick`
-        // did: expanded, a click toggled the accordion; collapsed, it
-        // navigated to the parent route.
+        // `to` makes the parent row navigable ONLY while the rail is collapsed, which is
+        // exactly what the previous `handleParentClick` did: expanded, a click toggled the
+        // accordion; collapsed, it navigated to the parent route.
         to={item.link}
       >
         {item.subItems.map(renderSubItem)}
@@ -194,12 +189,9 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
   const { height: topBannerHeight } = useTopBanner();
-  // Mirrors the app shell's own offsets (private/Index.tsx): the classification
-  // banners take the banner height at the top and at the bottom, the
-  // notification banner `topBannerHeight` at the top only. The numeric form of
-  // the banner height is the one used here: its string form is `'0'` — no unit —
-  // when no banner is displayed, which makes any `calc()` containing it invalid,
-  // and an invalid declaration is dropped in silence.
+  // Mirrors the app shell's own offsets (private/Index.tsx): the classification banners take
+  // the banner height at the top and at the bottom, the notification banner `topBannerHeight`
+  // at the top only.
   const topOffset = `${topBannerHeight + bannerHeightNumber}px`;
   const bottomOffset = `${bannerHeightNumber}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
@@ -238,15 +230,6 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
 
   /**
    * The rail background, reproduced from the component this replaces.
-   *
-   * Applied ONLY when a custom theme is in use. OpenCTI's built-in dark theme
-   * already derives its gradient from the very design-system tokens the
-   * library paints with, so on a standard install we let the library paint
-   * itself and the product gets the real design-system rendering — the point
-   * of this migration. An administrator who configured `theme_background`,
-   * however, expects the rail to follow it, and losing that would be a
-   * functional regression rather than a visual change; the legacy gradient is
-   * then restored inline, which wins over the library's class.
    */
   const customBackground = (() => {
     // The light rail never honoured `theme_background`: it hardcoded two
@@ -289,12 +272,11 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
           logo={<img src={productLogo} alt="" width={126} height={28} style={{ objectFit: 'contain', objectPosition: 'left' }} />}
           logoCollapsed={<img src={productLogoCollapsed} alt="" height={28} width={28} style={{ objectFit: 'contain' }} />}
           logoTo="/dashboard"
-          // The logo link and the "Home" row both point at /dashboard, so the
-          // logo cannot be named "Home": two links with the same accessible
-          // name inside one navigation are ambiguous for screen readers and
-          // break the e2e page object's `exact` name lookup. "logo" is the
-          // accessible name the replaced rail exposed (its <img alt="logo">),
-          // and two settings specs anchor on it, so keep it identical.
+          // The logo link and the "Home" row both point at /dashboard, so the logo cannot be
+          // named "Home": two links with the same accessible name inside one navigation are
+          // ambiguous for screen readers and break the e2e page object's `exact` name lookup.
+          // "logo" is the accessible name the replaced rail exposed (its <img alt="logo">), and
+          // two settings specs anchor on it, so keep it identical.
           logoLabel="logo"
           options={[
             {

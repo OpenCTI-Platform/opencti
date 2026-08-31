@@ -4,20 +4,6 @@ import logoFiligran from '../../../static/images/logo_filigran_full.svg';
 
 /**
  * "Made by Filigran" signature, pinned to the bottom of the rail.
- *
- * Same technique as the OpenAEV pilot
- * (openaev-front/src/components/common/menu/navbar/MadeByFiligran.tsx):
- * geometry is expressed inline because the product has no Tailwind build — the
- * only utilities that exist at runtime are those the design system emits into
- * its own stylesheet, so a sizing class here would be silently inert. The
- * caption typography, on the other hand, uses design-system utilities: those
- * are published on purpose and keep the label aligned with the library.
- *
- * Collapsed, only the Filigran emblem remains, as in OpenAEV. The emblem is not
- * a separate asset: the wordmark SVG starts with it, so a 12px square box with
- * `object-fit: cover` and a left origin crops the lettering away.
- *
- * The row is not interactive, exactly like the component it replaces.
  */
 const WORDMARK_HEIGHT = 12;
 
@@ -28,11 +14,8 @@ const MadeByFiligran: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
       style={{
         display: 'flex',
         alignItems: 'center',
-        // The row is our own container, spanning the rail's full width, so
-        // centring lands exactly on the axis of the icons above (measured in
-        // the running product). OpenAEV needs an extra 2px offset because it
-        // hangs the signature on the library's own `NavbarItem`, whose content
-        // box is inset by the 2px selected-row border.
+        // The row is our own container, spanning the rail's full width, so centring lands
+        // exactly on the axis of the icons above (measured in the running product).
         justifyContent: collapsed ? 'center' : 'flex-start',
         gap: 4,
         height: 36,

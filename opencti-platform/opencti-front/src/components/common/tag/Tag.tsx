@@ -5,9 +5,7 @@ import { getLuminance } from '@mui/material/styles';
 
 export interface TagProps {
   /**
-   * Text only. The library Chip types its label as a string, so a rich label
-   * cannot survive here -- it used to be flattened to an empty chip. A site
-   * that needs an element stays on MUI.
+   * Text only.
    */
   label?: string | number | null;
   /** Free colour from the data (a label or marking hex). The library bounds it. */
@@ -30,10 +28,7 @@ export interface TagProps {
   disabled?: boolean;
   style?: React.CSSProperties;
   /**
-   * Legacy MUI escape hatch. Flat CSS keys are forwarded as `style`; nested
-   * selectors (`&:hover`, `& .MuiChip-label`) are dropped, because they
-   * addressed MUI's internals which no longer exist. Colour overrides that
-   * used to live here are now the library's own `color` bounding.
+   * Legacy MUI escape hatch.
    */
   sx?: Record<string, unknown>;
   /** MUI-only axes with no library equivalent; accepted so call sites still type-check. */
@@ -41,11 +36,7 @@ export interface TagProps {
   variant?: 'filled' | 'outlined';
 }
 
-// The library has no case axis, so the wrapper keeps its own. Written as an
-// inline style rather than a utility class: the product consumes the library's
-// PREBUILT css and does not run Tailwind over its own source, so a utility
-// named here would simply not exist. 22 call sites rely on this, and the
-// default stays `capitalize`.
+// The library has no case axis, so the wrapper keeps its own.
 
 const Tag = ({
   label,
@@ -94,22 +85,16 @@ const Tag = ({
     />
   );
 
-  // The library Chip carries its own tooltip for a clipped label. Wrapping
-  // every chip in a second one stacked them: a hover on a clipped chip mounted
-  // FOUR tooltip elements, all repeating the same text. So the outer tooltip is
-  // kept only when it says something the chip cannot -- a tooltipTitle that
-  // differs from the label. Otherwise the library's truncation tooltip does the
-  // job alone.
+  // The library Chip carries its own tooltip for a clipped label.
   const addsSomething = tooltipTitle !== undefined && tooltipTitle !== text;
   if (disableTooltip || !addsSomething) {
     return chip;
   }
 
   return (
-    // The Chip is the Tooltip's direct child on purpose: an intermediate
-    // <span> makes MUI label the wrapper AND leaves the chip's own text
-    // matchable, so `getByLabel` resolves to two elements. The library Chip
-    // forwards its ref, so Tooltip can anchor on it directly.
+    // The Chip is the Tooltip's direct child on purpose: an intermediate <span> makes MUI label
+    // the wrapper AND leaves the chip's own text matchable, so `getByLabel` resolves to two
+    // elements.
     <Tooltip title={tooltipTitle} placement="bottom-start">
       {chip}
     </Tooltip>

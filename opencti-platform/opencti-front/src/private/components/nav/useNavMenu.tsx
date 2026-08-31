@@ -107,9 +107,7 @@ export interface NavSubItem {
   /** Match the route exactly instead of by prefix. */
   exact?: boolean;
   /**
-   * Entity type this row exposes. Used to drop the row when the platform
-   * administrator has hidden that type in entity settings — the second of the
-   * three permission mechanisms this menu superposes.
+   * Entity type this row exposes.
    */
   type?: string;
   /** Capability-based visibility, already resolved by the caller. */
@@ -119,9 +117,7 @@ export interface NavSubItem {
 /** A top-level navigation entry, with or without a submenu. */
 export interface NavItem {
   /**
-   * Stable identifier. Doubles as the persisted expanded-submenu key, so it
-   * must keep matching the values already stored under `selectedMenu` for a
-   * returning user's rail to open the same way it did before this migration.
+   * Stable identifier.
    */
   id: string;
   label: string;
@@ -138,9 +134,7 @@ export interface NavGroup {
 }
 
 /**
- * The shape the tree is *declared* in, before filtering. Entries guarded by a
- * permission are written `permission && {...}`, which yields `false` when the
- * permission is missing; `filterNavGroups` compacts them away.
+ * The shape the tree is *declared* in, before filtering.
  */
 export interface RawNavGroup {
   id: string;
@@ -149,18 +143,6 @@ export interface RawNavGroup {
 
 /**
  * Builds the navigation tree, fully filtered.
- *
- * The tree used to be an untyped inline JSX structure inside the rail
- * component, with three permission mechanisms superposed on it: `<Security>`
- * wrappers around groups, `granted` booleans on individual rows, and
- * `useIsHiddenEntities` on entity-bearing rows — plus feature flags and a
- * draft context that replaces the menu wholesale. Expressing it as data lets
- * every one of those be applied here, once, and unit-tested without
- * rendering; the component below is then only concerned with presentation.
- *
- * `<Security needs={[A, B]}>` is OR-semantics (`matchAll` defaults to false),
- * so each wrapper becomes a single `useGranted([...])` call with the same
- * list, which is why the capability arrays are reproduced verbatim.
  */
 const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
@@ -245,10 +227,8 @@ const useNavMenu = (): NavGroup[] => {
           icon: <InsertChartOutlinedOutlined />,
           link: '/dashboard/workspaces/dashboards',
           subItems: [
-            // No `exact`: a dashboard's own page is `/…/dashboards/<id>`, and an
-            // exact match left the sub-item inactive the moment you opened one.
-            // Prefix matching is safe between these two links because
-            // `/…/dashboards_public` does not start with `/…/dashboards/`.
+            // No `exact`: a dashboard's own page is `/…/dashboards/<id>`, and an exact match
+            // left the sub-item inactive the moment you opened one.
             { granted: canSeeExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: t_i18n('Custom dashboards') },
             { granted: canSeeExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: t_i18n('Public dashboards') },
           ],
@@ -441,12 +421,9 @@ const useNavMenu = (): NavGroup[] => {
 };
 
 /**
- * Drops every falsy entry produced by the conditional expressions above, then
- * applies the row-level `granted` flag and the hidden-entity filter, and
- * finally removes groups that ended up empty so no separator is rendered
- * against nothing. A parent whose submenu is emptied by those filters is kept
- * and degrades to a plain link, matching the component this replaced.
- * Exported for unit testing without a React tree.
+ * Drops every falsy entry produced by the conditional expressions above, then applies the row-
+ * level `granted` flag and the hidden-entity filter, and finally removes groups that ended up
+ * empty so no separator is rendered against nothing.
  */
 export const filterNavGroups = (
   groups: (RawNavGroup | false)[],
@@ -462,16 +439,10 @@ export const filterNavGroups = (
         const subItems = item.subItems.filter(
           (sub) => sub.granted !== false && (!sub.type || !hiddenEntities.includes(sub.type)),
         );
-        // A parent whose submenu rows were ALL filtered out keeps its own row
-        // and degrades to a plain link: the legacy `LeftBarItem` did exactly
-        // that in its "No Subitems" branch (`hasSubItems === false` rendered a
-        // navigable `MenuItem`, it did not remove the entry). Removing it here
-        // would delete a navigable entry for real permission sets — a user
-        // granted only `INGESTION` satisfies `canSeeData` but none of the eight
-        // `Data` sub-item grants, and an administrator hiding the `Dashboard`
-        // entity type empties the `Dashboards` submenu. `NavBar.renderItem`
-        // already renders an empty `subItems` as a leaf, so no chevron ever
-        // opens on nothing.
+        // A parent whose submenu rows were ALL filtered out keeps its own row and degrades to a
+        // plain link: the legacy `LeftBarItem` did exactly that in its "No Subitems" branch
+        // (`hasSubItems === false` rendered a navigable `MenuItem`, it did not remove the
+        // entry).
         return { ...item, subItems };
       }),
   }))

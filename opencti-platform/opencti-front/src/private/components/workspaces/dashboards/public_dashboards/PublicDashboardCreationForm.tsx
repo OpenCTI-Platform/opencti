@@ -63,9 +63,7 @@ interface PublicDashboardCreationFormComponentProps {
 }
 
 /**
- * 16px between fields, per the visual pass on this dialog. The app-wide
- * `fieldSpacingContainerStyle` is still 20px; this is scoped to the surface
- * that was reviewed rather than changing the rhythm everywhere at once.
+ * 16px between fields, per the visual pass on this dialog.
  */
 const publicDashboardFieldSpacing = { marginTop: 16, width: '100%' };
 

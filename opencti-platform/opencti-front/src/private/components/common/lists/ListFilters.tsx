@@ -207,13 +207,10 @@ const ListFilters = ({
               the row and re-open the very alignment defect the same pass asks to
               fix. The accessible name is kept on the input. */}
           <Combobox<OptionType>
-            // The Combobox ROOT carries `flex w-full flex-col`, so in a flex
-            // row it claims the whole line and pushes the search field, the
-            // funnel and the chips onto lines of their own — the stacked
-            // filter bar reported on the Triggers page and the threat-actor
-            // card page. The inner `ComboboxField` was already 200px; the root
-            // is what had to be told. `w-50` is 200px, and tailwind-merge drops
-            // the `w-full` it replaces.
+            // The Combobox ROOT carries `flex w-full flex-col`, so in a flex row it claims the
+            // whole line and pushes the search field, the funnel and the chips onto lines of
+            // their own — the stacked filter bar reported on the Triggers page and the threat-
+            // actor card page.
             className="w-50 shrink-0"
             options={options as OptionType[]}
             labelPosition="none"
@@ -228,17 +225,7 @@ const ListFilters = ({
             groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
             getOptionLabel={(option) => option.label}
             inputValue={inputValue}
-            // ONLY a keystroke may write this field. The picker holds no value,
-            // so its text is the user's typing and nothing else. In single mode
-            // the library answers a pick with
-            // `setInputValue(getOptionLabel(option), "select")` -- it writes the
-            // chosen label back into the input -- and accepting that write undid
-            // the clear below: the field kept saying "Label" after the filter was
-            // added, so filling "Label" a SECOND time changed nothing, fired no
-            // input event, never reopened the panel, and the option the page
-            // model waits for never appeared (_backgroundTask.spec.ts, second
-            // addLabelFilter). `clear` and `reset` are programmatic for the same
-            // reason, so the guard is on `type` rather than a list of exclusions.
+            // ONLY a keystroke may write this field.
             onInputChange={(newValue, meta) => {
               if (meta.cause !== 'type') {
                 return;

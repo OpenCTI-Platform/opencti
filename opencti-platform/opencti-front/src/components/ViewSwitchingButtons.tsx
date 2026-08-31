@@ -18,9 +18,7 @@ interface ViewSwitchingButtonsProps {
   enableContextualView?: boolean;
 }
 
-// The library item declares a 16x16 glyph. The MUI buttons this replaces drew
-// their icons at fontSize="small" (20px), which is the "icônes trop grosses"
-// reported on Techniques / Narratifs -- the one screen that mounts this.
+// The library item declares a 16x16 glyph.
 const GLYPH = { fontSize: 16 };
 
 const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({

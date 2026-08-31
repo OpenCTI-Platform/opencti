@@ -7,20 +7,7 @@ import TopBarIconLink from './TopBarIconLink';
 import testRender from '../../../utils/tests/test-render';
 
 /**
- * A counter-check, deliberately from a different angle than
- * `TopBarIconLink.test.tsx`.
- *
- * That file proves the COMPONENT honours its contract. This one proves the
- * BAR'S CALL SITE passes the right thing: the control is composed here exactly
- * as `TopBar` composes it — inside a tooltip trigger, with the badge props the
- * bar supplies — because the defect being guarded against was never in the
- * component's contract. It was in what the bar handed it: the badge went to the
- * glyph, the glyph renders inside `aria-hidden`, and the count was announced to
- * nobody while the markup looked correct.
- *
- * It also computes the tree through `dom-accessibility-api` directly rather
- * than through jest-dom's matchers, so the two files do not fail together for a
- * reason that belongs to one shared helper.
+ * A counter-check, deliberately from a different angle than `TopBarIconLink.test.tsx`.
  */
 
 const renderAsTheBarDoes = (unread: number) => testRender(
@@ -78,9 +65,8 @@ describe('the notifications control, composed as the bar composes it', () => {
 
   it('still lets the tooltip trigger reach the control it wraps', () => {
     const { baseElement } = renderAsTheBarDoes(4);
-    // `data-state` only lands here if what TooltipTrigger cloned survived the
-    // journey to the anchor. Without it the tooltip never opens, and nothing
-    // else in this file would notice.
+    // `data-state` only lands here if what TooltipTrigger cloned survived the journey to the
+    // anchor.
     expect(controlIn(baseElement).getAttribute('data-state')).toBe('closed');
   });
 });

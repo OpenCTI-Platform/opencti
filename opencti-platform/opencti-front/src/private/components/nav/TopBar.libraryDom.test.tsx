@@ -4,20 +4,7 @@ import UploadImport from '../../../components/UploadImport';
 import testRender from '../../../utils/tests/test-render';
 
 /**
- * The source guard next door says what the bar *imports*. This one says what it
- * *renders*: a component can import nothing from MUI and still put a `Mui-`
- * class in the document through a wrapper, a theme override, or a dependency.
- *
- * Only the controls that stand up truthfully under the test providers are here.
- * The rest of the bar needs the chatbot context and Relay data; mocking half the
- * application to reach a green would prove the mock, not the bar — those stay on
- * the source guard and on the measured browser checkpoint.
- *
- * `UploadImport` is the one worth rendering anyway: it is the bar control that
- * also serves three screens the bar does not own, so this is where a
- * bar-shaped change escapes into the rest of the product. It already caught one
- * — a library `Tooltip` throws without a `TooltipProvider`, which only the bar
- * had.
+ * The source guard next door says what the bar *imports*.
  */
 
 /** MUI classes the rendered tree may still carry, and what retires each. */

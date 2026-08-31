@@ -3,18 +3,8 @@ import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 
 /**
- * `@filigran/design-system` is a private git dependency, so the frontend
- * install inside the platform image runs behind
- * `RUN --mount=type=secret,id=fds_git_token`. A BuildKit secret that is not
- * provided is not an empty file, it is no file at all: the build dies on
- * `can't open /run/secrets/fds_git_token: No such file or directory`, which
- * reads exactly like an absent repository secret even when the secret exists
- * and is correctly named.
- *
- * Enumerating the install sites by hand missed a caller once already during
- * this migration. This test does the enumeration instead: every
- * `docker/build-push-action` step that builds a Dockerfile requiring the
- * secret, and that does not stop at an earlier `target:`, must declare it.
+ * `@filigran/design-system` is a private git dependency, so the frontend install inside the
+ * platform image runs behind `RUN --mount=type=secret,id=fds_git_token`.
  */
 
 const CI_ROOT = path.resolve('../../.github');
@@ -77,11 +67,7 @@ const collectBuildSteps = async (): Promise<BuildStep[]> => {
 const buildSteps = await collectBuildSteps();
 
 /**
- * Second enumeration, for the other half of the call graph. A reusable workflow
- * only sees the secrets its caller hands it: `secrets: inherit`, or an explicit
- * mapping. Replacing `inherit` with a mapping that lists every secret but this
- * one leaves `secrets.FDS_GIT_TOKEN` empty, and the install fails far from the
- * workflow that caused it. See FDS-CI-SECRET in fds-migration/.
+ * Second enumeration, for the other half of the call graph.
  */
 
 const SECRET_NAME = 'FDS_GIT_TOKEN';

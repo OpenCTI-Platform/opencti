@@ -20,9 +20,8 @@ const SwitchField = (props) => {
     label,
   } = props;
   const { t_i18n } = useFormatter();
-  // Radix reports the new value directly; MUI reported an event whose
-  // target.checked had to be read. The string form is kept because consumers
-  // of `onChange` receive 'true'/'false', not a boolean.
+  // Radix reports the new value directly; MUI reported an event whose target.checked had to be
+  // read.
   const internalOnChange = useCallback(
     (checked) => {
       setFieldValue(name, checked);

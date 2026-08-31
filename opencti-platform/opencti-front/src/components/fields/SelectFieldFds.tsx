@@ -5,18 +5,6 @@ import { isNilField } from '../../utils/utils';
 
 /**
  * Formik adapter for the library `Select` — what `SelectField` is for MUI's.
- *
- * Same division of labour as `ComboboxField`: Formik glue here, everything
- * below it the library's. Two differences from its MUI predecessor, both
- * forced by the library's contract rather than chosen:
- *
- * - the value is a STRING. MUI's Select carried whatever the call site put in
- *   `MenuItem value`, objects included; the library's Radix-based Select keys
- *   on strings, which is also what every OpenCTI call site actually passes.
- * - children are `<SelectItem>`, not `<MenuItem>`. The two are shape-identical
- *   from a call site's point of view — `value` plus content — but they are not
- *   interchangeable, and nothing type-checks the swap, so it is done per call
- *   site under this adapter rather than by re-exporting the old pivot.
  */
 
 export type SelectFieldFdsProps = FieldProps<string> & {
@@ -28,27 +16,19 @@ export type SelectFieldFdsProps = FieldProps<string> & {
   containerstyle?: React.CSSProperties;
   className?: string;
   /**
-   * MUI parity. `SelectTrigger` ships `w-fit`, so a converted field shrinks to
-   * its content where the MUI original filled its container — 94 of this
-   * pivot's 102 call sites pass `fullWidth`, which is why the layouts moved.
+   * MUI parity.
    */
   fullWidth?: boolean;
   children?: ReactNode;
   onChange?: (name: string, value: string) => void;
   onSubmit?: (name: string, value: string) => void;
   /**
-   * The pivot's `onFocus`, which OpenCTI uses to publish the collaborative
-   * editing context rather than for anything visual. A Radix Select trigger
-   * reports opening, not focus, so it is mapped onto the panel opening — the
-   * moment the user takes the field, which is what the context means.
+   * The pivot's `onFocus`, which OpenCTI uses to publish the collaborative editing context
+   * rather than for anything visual.
    */
   onFocus?: (name: string) => void;
   /**
    * The field's value is a NUMBER in the form and in the API, not a string.
-   * Radix keys a Select on strings only, so the options carry stringified
-   * values and this converts back on the way out. Without it a numeric field
-   * silently starts submitting "30" where the schema wants 30 — which is what
-   * `pir_rescan_days` did the moment it was converted.
    */
   numeric?: boolean;
 };

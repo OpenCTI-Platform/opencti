@@ -47,9 +47,8 @@ interface EmailTemplateFieldComponentProps {
   name: string;
   style?: React.CSSProperties;
   helperText?: string;
-  // Declared as an array, but this field is mounted multiple={false} and its one
-  // caller passes Formik's setFieldValue, which accepts anything — so the array
-  // never arrived. Typed as the field actually behaves.
+  // Declared as an array, but this field is mounted multiple={false} and its one caller passes
+  // Formik's setFieldValue, which accepts anything — so the array never arrived.
   onChange?: (name: string, value: EmailTemplateFieldOption | null) => void;
   required?: boolean;
   queryRef: PreloadedQuery<EmailTemplateFieldQuery>;

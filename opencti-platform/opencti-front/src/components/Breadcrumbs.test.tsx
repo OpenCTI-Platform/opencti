@@ -6,9 +6,6 @@ import Breadcrumbs from './Breadcrumbs';
 
 /**
  * What the page path owes this product, now that the design system draws it.
- *
- * Each block below fails on the wrapper this replaced — verified by running
- * this file against it before it was converted, not assumed.
  */
 
 const PATH = [
@@ -21,7 +18,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the page path is the design-system landmark', () => {
+describe('Breadcrumbs', () => {
   it('is a named navigation landmark holding an ordered list', () => {
     testRender(<Breadcrumbs elements={PATH} />);
     // The wrapper this replaced rendered a bare <div>: no landmark, no list.

@@ -130,9 +130,8 @@ interface AlertsLineActionsProps {
   setNotificationToDelete: (notification: AlertsLine_node$data) => void;
 }
 
-// Event type is categorical, so the tone carries the distinction without
-// asserting a level: create -> low, update -> info, delete -> critical,
-// several at once -> medium.
+// Event type is categorical, so the tone carries the distinction without asserting a level:
+// create -> low, update -> info, delete -> critical, several at once -> medium.
 const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
   switch (operation) {
     case 'update':
@@ -344,16 +343,9 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
       isSortable: isRuntimeSort,
       render: ({ notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         return (
-          // `textOverflow` on this box never did anything: it applies to TEXT
-          // in the box, not to a child element, so the Chip simply overflowed
-          // and the box hard-clipped it mid-glyph — the rendering bug reported
-          // on this column. Measured: a 266px Chip inside a 192px cell, its
-          // label capped at the library's own `max-w-[250px]`, which is wider
-          // than the cell and so never engaged.
-          //
-          // Capping the CHIP at the cell's width is what makes the library's
-          // own truncation do the work: the label then ellipsises at the real
-          // width instead of being cut by the parent.
+          // `textOverflow` on this box never did anything: it applies to TEXT in the box, not
+          // to a child element, so the Chip simply overflowed and the box hard-clipped it mid-
+          // glyph — the rendering bug reported on this column.
           <div style={{
             height: 20,
             fontSize: 13,

@@ -17,9 +17,7 @@ interface RelativeDateInputProps {
   dateInput: string[];
   setDateInput: (value: string[]) => void;
   /**
-   * Only ONE field in the popover may claim focus. This used to be hardcoded
-   * true, and `DateRangeFilter` renders two of these -- so both asked for focus
-   * and the second took it from the first on every render.
+   * Only ONE field in the popover may claim focus.
    */
   autoFocus?: boolean;
 }
@@ -124,13 +122,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         slotProps={{
           input: {
             endAdornment: (
-              // A flex row with a real gap, NOT negative margins. These are
-              // library IconButtons sitting in a MUI outlined field's adornment
-              // slot: the previous pass compensated their geometry with
-              // `marginRight: -8` and `marginLeft: 4, marginRight: -16`, which
-              // pushed both buttons OUT of the field's padding box -- the clear
-              // and calendar glyphs spilling past the right edge in the report.
-              // Letting the row lay itself out keeps them inside the field.
+              // A flex row with a real gap, NOT negative margins.
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                 {dateInput[valueOrder] && (
                   <IconButton

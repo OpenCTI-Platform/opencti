@@ -11,10 +11,8 @@ import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 /**
- * The task detail was the last screen mixing shapes: a MUI pill here next to the
- * library Chip everywhere else on the same block. The library Chip types its
- * label as a string, so the key, the operator and the values are joined into one
- * instead of being composed as elements.
+ * The task detail was the last screen mixing shapes: a MUI pill here next to the library Chip
+ * everywhere else on the same block.
  */
 const CHIP_STYLE = { margin: '5px 10px 5px 0' };
 

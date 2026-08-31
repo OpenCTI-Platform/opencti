@@ -1,16 +1,5 @@
 /**
  * The breadcrumb adornment on the trash page must be reachable by keyboard.
- *
- * The library's `adornment` slot promises only a POSITION: "anything focusable
- * placed here comes after the last link in the tab order, so a tooltip attached
- * to it is reachable by keyboard, not only by pointer". Placing something
- * focusable there is the host's side of that contract, and this site placed a
- * bare `<svg>` — not focusable, no accessible name. Three sentences explaining
- * what the trash keeps and for how long were pointer-only.
- *
- * Focus is measured by really pressing Tab, never by calling focus(): a
- * programmatic focus reaches elements the keyboard cannot, which is exactly the
- * difference under test here.
  */
 import React from 'react';
 import { screen } from '@testing-library/react';
