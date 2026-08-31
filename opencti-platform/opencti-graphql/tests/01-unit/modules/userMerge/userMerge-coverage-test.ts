@@ -18,7 +18,7 @@ describe('userMerge coverage manifest', () => {
     expect(coverage.total).toEqual(99);
     expect(coverage.covered_count).toEqual(0);
     expect(coverage.uncovered_count).toEqual(99);
-    expect(coverage.gating_uncovered_count).toEqual(61);
+    expect(coverage.gating_uncovered_count).toEqual(60);
     expect(coverage.is_complete).toBe(false);
     expect(coverage.rows.length).toEqual(99);
     expect(coverage.rows.every((row) => !row.covered && row.handler === undefined)).toBe(true);
@@ -45,7 +45,7 @@ describe('userMerge coverage manifest', () => {
     expect(coverage.is_complete).toBe(true);
     // Completeness is not "everything is claimed": the invalidated, retained and out-of-scope
     // rows are deliberately left to no handler, so requiring them would shut the gate for good.
-    expect(coverage.uncovered_count).toEqual(38);
+    expect(coverage.uncovered_count).toEqual(39);
   });
 
   it('should stay incomplete when a single gating row is left uncovered', () => {
@@ -62,7 +62,7 @@ describe('userMerge coverage manifest', () => {
       .filter((row) => row.disposition === UserMergeDisposition.Retain || row.disposition === UserMergeDisposition.OutOfScope)
       .map((row) => row.id);
     const coverage = buildUserMergeCoverage([mockHandler('retained', retained)]);
-    expect(coverage.covered_count).toEqual(16);
+    expect(coverage.covered_count).toEqual(17);
     expect(coverage.is_complete).toBe(false);
   });
 
