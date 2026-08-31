@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import useFdsThemeScope from './useFdsThemeScope';
+import { isLightThemeName } from '../themeName';
 
 describe('Hook: useFdsThemeScope', () => {
   const root = () => document.documentElement;
@@ -42,6 +43,36 @@ describe('Hook: useFdsThemeScope', () => {
 
       expect(root().classList.contains('dark')).toBe(true);
       expect(root().classList.contains('light')).toBe(false);
+    },
+  );
+
+  // The built-in themes were renamed to `Filigran Dark` / `Filigran Light`. When this hook
+  // still tested the legacy name only, a light install wrote `.dark` on the root while MUI
+  // built the light palette: light surfaces painted with dark tokens.
+  it('writes the light class for the built-in light theme', () => {
+    renderHook(() => useFdsThemeScope('Filigran Light'));
+
+    expect(root().classList.contains('light')).toBe(true);
+    expect(root().classList.contains('dark')).toBe(false);
+  });
+
+  it('writes the dark class for the built-in dark theme', () => {
+    renderHook(() => useFdsThemeScope('Filigran Dark'));
+
+    expect(root().classList.contains('dark')).toBe(true);
+    expect(root().classList.contains('light')).toBe(false);
+  });
+
+  // The three consumers of the theme name -- the MUI palette, this class, and the body
+  // `data-theme` attribute -- must never disagree. They agree because they all ask
+  // `isLightThemeName`; this pins that they still do.
+  it.each(['Filigran Light', 'Light', 'Filigran Dark', 'Dark', 'Corporate', undefined])(
+    'agrees with isLightThemeName for %p',
+    (name) => {
+      const mode = renderHook(() => useFdsThemeScope(name)).result.current;
+
+      expect(mode).toBe(isLightThemeName(name) ? 'light' : 'dark');
+      expect(root().classList.contains(mode)).toBe(true);
     },
   );
 

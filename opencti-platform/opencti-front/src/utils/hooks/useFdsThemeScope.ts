@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isLightThemeName } from '../themeName';
 
 export type FdsThemeMode = 'light' | 'dark';
 
@@ -10,8 +11,9 @@ export type FdsThemeMode = 'light' | 'dark';
  * layers (flyouts, tooltips, dropdowns) into `<body>`: a container-scoped class
  * themes the component and leaves every portalled layer unthemed.
  *
- * Anything that is not the built-in `Light` theme resolves to `dark` — custom
- * themes carry arbitrary names, and `themeBuilder` branches the same way.
+ * Anything that is not a light theme resolves to `dark` — custom themes carry
+ * arbitrary names. The name test is shared with `themeBuilder` through
+ * `isLightThemeName` so the two can no longer drift apart.
  */
 /**
  * Customer surface colour. Overriding the semantic alias does nothing — it is
@@ -29,7 +31,7 @@ const useFdsThemeScope = (
   themeName: string | undefined,
   customPaperColor?: string | null,
 ): FdsThemeMode => {
-  const mode: FdsThemeMode = themeName === 'Light' ? 'light' : 'dark';
+  const mode: FdsThemeMode = isLightThemeName(themeName) ? 'light' : 'dark';
 
   useEffect(() => {
     const root = document.documentElement;
