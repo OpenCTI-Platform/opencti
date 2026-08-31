@@ -34,6 +34,7 @@ import { export_max_size } from '../../utils/utils';
 import FilterIconButton from '../FilterIconButton';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 
 const styles = (theme) => ({
   container: {
@@ -558,6 +559,8 @@ class ListLines extends Component {
           )}
           {handleSwitchRedirectionMode && (
             <Dialog
+              // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+              slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
               size="small"
