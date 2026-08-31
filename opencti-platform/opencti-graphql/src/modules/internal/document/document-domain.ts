@@ -228,7 +228,7 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
  * @param opts - Optional file listing options (e.g. `first`) merged into the query.
  * @returns A paginated connection of export files for the resolved path.
  */
-export const paginatedForExportContext = async (
+export const paginatedExportFilesForExportContext = async (
   context: AuthContext,
   user: AuthUser,
   exportContext: { entity_type: string; entity_id?: string },
