@@ -1,4 +1,5 @@
 import { assertUserMergeHandlersAreValid, registerUserMergeHandler } from './userMerge-registry';
+import { userMergeBlobsHandler } from './userMerge-blobsHandler';
 import { userMergeFiltersHandler } from './userMerge-filtersHandler';
 import { userMergeHistoryHandler } from './userMerge-historyHandler';
 import { userMergeIndividualHandler } from './userMerge-individualHandler';
@@ -21,6 +22,7 @@ export const registerUserMergeHandlers = (): void => {
   registerUserMergeHandler(userMergeSourceDisableHandler);
   registerUserMergeHandler(userMergeScalarHandler);
   registerUserMergeHandler(userMergeFiltersHandler);
+  registerUserMergeHandler(userMergeBlobsHandler);
   registerUserMergeHandler(userMergeHistoryHandler);
   registerUserMergeHandler(userMergePublicSharingHandler);
   registerUserMergeHandler(userMergeRightsHandler);
