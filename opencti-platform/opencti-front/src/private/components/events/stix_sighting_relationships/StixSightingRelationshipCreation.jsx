@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
 
 const styles = (theme) => ({
@@ -633,6 +634,11 @@ class StixSightingRelationshipCreation extends Component {
         open={open}
         anchor="right"
         elevation={1}
+        // This creation drawer mounts MUI's Drawer directly instead of the
+        // shared one, so it has to declare its own layer: a drawer is a
+        // layer-2 surface and its fields read the layer from the paper.
+        // See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}

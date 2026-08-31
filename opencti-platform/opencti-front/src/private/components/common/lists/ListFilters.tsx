@@ -13,6 +13,7 @@ import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterD
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
+import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../../utils/fdsLayer';
 
 const WORKFLOW_FILTER_KEYS = ['workflow_user', 'workflow_group', 'workflow_organization'];
 
@@ -22,6 +23,9 @@ const useStyles = makeStyles(() => ({
   container: {
     width: 600,
     padding: 20,
+    // Filter popovers: surface on `--bg-elevation-highlight` at layer 1, the
+    // fields inside at layer 2. See utils/fdsLayer.ts.
+    ...filterPopoverPaperSx,
   },
 }));
 
@@ -275,7 +279,7 @@ const ListFilters = ({
         </>
       )}
       <Popover
-        classes={{ paper: classes.container }}
+        classes={{ paper: `${fdsLayerClass(FILTER_POPOVER_LAYER)} ${classes.container}` }}
         open={isOpen}
         anchorEl={anchorEl}
         onClose={handleCloseFilters}
