@@ -77,6 +77,10 @@ const entityStixSightingRelationshipsDonutStixSightingRelationshipsDistributionQ
           name
           description
         }
+        ... on SecurityPlatform {
+          name
+          description
+        }
         ... on Indicator {
           name
           description

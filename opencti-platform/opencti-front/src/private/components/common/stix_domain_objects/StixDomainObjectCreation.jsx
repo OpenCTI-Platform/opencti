@@ -30,6 +30,7 @@ import { IndividualCreationForm } from '../../entities/individuals/IndividualCre
 import { OrganizationCreationForm } from '../../entities/organizations/OrganizationCreation';
 import { SectorCreationForm } from '../../entities/sectors/SectorCreation';
 import { SystemCreationForm } from '../../entities/systems/SystemCreation';
+import SecurityPlatformCreationForm from '../../entities/securityPlatforms/SecurityPlatformCreationForm';
 import { IncidentCreationForm } from '../../events/incidents/IncidentCreation';
 import { ObservedDataCreationForm } from '../../events/observed_data/ObservedDataCreation';
 import { AdministrativeAreaCreationForm } from '../../locations/administrative_areas/AdministrativeAreaCreation';
@@ -647,6 +648,21 @@ const StixDomainPanel = ({
       // System
       return (
         <SystemCreationForm
+          inputValue={inputValue}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
+          onCompleted={onCompleted ?? onClose}
+        />
+      );
+    }
+    if (type === 'SecurityPlatform') {
+      // Security Platform
+      return (
+        <SecurityPlatformCreationForm
           inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
