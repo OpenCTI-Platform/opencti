@@ -20,11 +20,13 @@ import { LogoXtmOneIcon } from 'filigran-icon';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import ComboboxField from '../../../../components/ComboboxField';
+import Alert from '../../../../components/Alert';
 import Card from '../../../../components/common/card/Card';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -40,10 +42,17 @@ export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
     id: string;
     name: string;
   }[];
+  fintelTemplateId?: string | null;
 };
 
 export type ConnectorOption = FieldOption & {
   connectorScope: readonly string[];
+};
+
+export type TemplateOption = FieldOption & {
+  isDefault?: boolean;
+  include_cover_page_by_default?: boolean;
+  include_back_page_by_default?: boolean;
 };
 
 export interface StixCoreObjectFileExportFormInputs {
@@ -51,11 +60,13 @@ export interface StixCoreObjectFileExportFormInputs {
   format: string;
   type: string | null;
   fileToExport: FileOption | null;
-  template: FieldOption | null;
+  template: TemplateOption | null;
   exportFileName: string | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
   fintelDesign: FintelDesignFieldOption | null;
+  includeCoverPage: boolean;
+  includeBackPage: boolean;
 }
 
 export interface StixCoreObjectFileExportFormProps {
@@ -63,10 +74,10 @@ export interface StixCoreObjectFileExportFormProps {
   onClose: () => void;
   onSubmit: FormikConfig<StixCoreObjectFileExportFormInputs>['onSubmit'];
   connectors: ConnectorOption[];
-  templates?: FieldOption[];
+  templates?: TemplateOption[];
   fileOptions?: FileOption[];
   defaultFileMarkings?: FieldOption[];
-  defaultTemplate?: FieldOption;
+  defaultTemplate?: TemplateOption;
   defaultValues?: {
     connector: string;
     format: string;
@@ -118,9 +129,16 @@ const StixCoreObjectFileExportForm = ({
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
+  const lastAppliedPageDefaultsSource = useRef<string | null>(null);
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
+
+  useEffect(() => {
+    if (!isOpen) {
+      lastAppliedPageDefaultsSource.current = null;
+    }
+  }, [isOpen]);
 
   const handleSelectedContentMaxMarkingsChange = (
     values: FieldOption[] | undefined,
@@ -175,6 +193,8 @@ const StixCoreObjectFileExportForm = ({
     exportFileName: null,
     contentMaxMarkings: [],
     fintelDesign: null,
+    includeCoverPage: true,
+    includeBackPage: true,
     fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id }))
       ?? defaultFileMarkings
       ?? [],
@@ -252,9 +272,37 @@ const StixCoreObjectFileExportForm = ({
           setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
         }, [values.contentMaxMarkings]);
 
+        useEffect(() => {
+          const defaults = values.template;
+          if (!defaults) return;
+          const sourceKey = `template:${defaults.value}`;
+          if (lastAppliedPageDefaultsSource.current === sourceKey) return;
+          lastAppliedPageDefaultsSource.current = sourceKey;
+          setFieldValue('includeCoverPage', defaults.include_cover_page_by_default ?? true);
+          setFieldValue('includeBackPage', defaults.include_back_page_by_default ?? true);
+        }, [setFieldValue, values.template?.value]);
+
+        useEffect(() => {
+          if (values.connector?.value !== BUILT_IN_HTML_TO_PDF.value) return;
+          if (!values.fileToExport?.value.startsWith('fromTemplate/')) return;
+          const originTemplateId = values.fileToExport.fintelTemplateId;
+          if (!originTemplateId) return;
+          const sourceKey = `file:${values.fileToExport.value}:${originTemplateId}`;
+          if (lastAppliedPageDefaultsSource.current === sourceKey) return;
+          const originTemplate = (templates ?? []).find((template) => template.value === originTemplateId);
+          if (!originTemplate) return;
+          lastAppliedPageDefaultsSource.current = sourceKey;
+          setFieldValue('includeCoverPage', originTemplate.include_cover_page_by_default ?? true);
+          setFieldValue('includeBackPage', originTemplate.include_back_page_by_default ?? true);
+        }, [setFieldValue, templates, values.connector?.value, values.fileToExport?.value, values.fileToExport?.fintelTemplateId]);
+
         const shouldDisplayFintelDesign = (
           (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
           || (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/'))
+        );
+        const shouldDisplayPageOptions = (
+          values.connector?.value === BUILT_IN_HTML_TO_PDF.value
+          || (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
         );
 
         return (
@@ -387,6 +435,7 @@ const StixCoreObjectFileExportForm = ({
                     isOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
                     renderOption={(option: FieldOption) => option.label}
                     label={t_i18n('Connector')}
+                    autoFocus
                   />
                   {values.connector && (
                     <>
@@ -467,6 +516,39 @@ const StixCoreObjectFileExportForm = ({
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />
+                      {shouldDisplayPageOptions && (
+                        <>
+                          <Typography variant="h3" sx={{ marginTop: 3 }}>
+                            {t_i18n('Page options')}
+                          </Typography>
+                          <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name="includeCoverPage"
+                            label={t_i18n('Include cover page')}
+                            containerstyle={{ marginTop: 10 }}
+                          />
+                          <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name="includeBackPage"
+                            label={t_i18n('Include back page')}
+                            containerstyle={{ marginTop: 10 }}
+                          />
+                          {(!values.includeCoverPage || !values.includeBackPage) && (
+                            <Alert
+                              style={{ marginTop: 10 }}
+                              content={t_i18n(
+                                !values.includeCoverPage && !values.includeBackPage
+                                  ? 'The PDF will start and end on content pages only.'
+                                  : !values.includeCoverPage
+                                      ? 'The PDF will start on the first content page.'
+                                      : 'The PDF will end on the last content page.',
+                              )}
+                            />
+                          )}
+                        </>
+                      )}
                     </>
                   )}
                 </>

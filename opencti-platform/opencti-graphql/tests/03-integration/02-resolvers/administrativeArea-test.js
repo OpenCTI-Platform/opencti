@@ -1,10 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_PARTICIPATE, queryInitPlatformAsAdmin, queryInitPlatformAsUser, USER_EDITOR } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { utcDate } from '../../../src/utils/format';
+import * as redisStream from '../../../src/database/redis-stream';
+import * as rawFileStorage from '../../../src/database/raw-file-storage';
 
 const LIST_QUERY = gql`
   query administrativeAreas(
@@ -103,39 +105,55 @@ describe('AdministrativeArea resolver standard behavior', () => {
     expect(queryResult.errors.at(0).extensions.code).toEqual('MISSING_REFERENCE_ERROR');
   });
   it('should administrativeArea created', async () => {
-    const CREATE_QUERY = gql`
-      mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
-        administrativeAreaAdd(input: $input) {
-          id
-          name
-          description
-          standard_id
-          objectLabel {
+    // Force the creation stream event to be considered "too large" so that it is offloaded to S3.
+    // We let rawUpload run for real (real minio) so the offloaded event stays readable by the
+    // downstream stream tests (its S3 file must exist to be rebuilt).
+    const isEventTooLargeSpy = vi.spyOn(redisStream, 'isEventTooLarge').mockReturnValue(true);
+    const rawUploadSpy = vi.spyOn(rawFileStorage, 'rawUpload');
+    try {
+      const CREATE_QUERY = gql`
+        mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
+          administrativeAreaAdd(input: $input) {
             id
-            value
+            name
+            description
+            standard_id
+            objectLabel {
+              id
+              value
+            }
           }
         }
-      }
-    `;
-    // Create the administrativeArea
-    const ADMINISTRATIVEAREA_TO_CREATE = {
-      input: {
-        name: 'Administrative-Area',
-        stix_id: administrativeAreaStixId,
-        description: 'Administrative-Area description',
-        objectLabel: ['report', 'note', 'malware'],
-      },
-    };
-    const queryResult = await queryAsUser(USER_EDITOR, {
-      query: CREATE_QUERY,
-      variables: ADMINISTRATIVEAREA_TO_CREATE,
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.administrativeAreaAdd).not.toBeNull();
-    expect(queryResult.data.administrativeAreaAdd.name).toEqual('Administrative-Area');
-    expect(queryResult.data.administrativeAreaAdd.standard_id).toEqual('location--9904c841-f308-58bf-a39a-6ecd6024d3e0');
-    expect(queryResult.data.administrativeAreaAdd.objectLabel.length).toEqual(3);
-    administrativeAreaInternalId = queryResult.data.administrativeAreaAdd.id; // bc1f31d7-4d9d-4754-89b1-9a7813c7c521
+      `;
+      // Create the administrativeArea
+      const ADMINISTRATIVEAREA_TO_CREATE = {
+        input: {
+          name: 'Administrative-Area',
+          stix_id: administrativeAreaStixId,
+          description: 'Administrative-Area description',
+          objectLabel: ['report', 'note', 'malware'],
+        },
+      };
+      const queryResult = await queryAsUser(USER_EDITOR, {
+        query: CREATE_QUERY,
+        variables: ADMINISTRATIVEAREA_TO_CREATE,
+      });
+      expect(queryResult).not.toBeNull();
+      expect(queryResult.data.administrativeAreaAdd).not.toBeNull();
+      expect(queryResult.data.administrativeAreaAdd.name).toEqual('Administrative-Area');
+      expect(queryResult.data.administrativeAreaAdd.standard_id).toEqual('location--9904c841-f308-58bf-a39a-6ecd6024d3e0');
+      expect(queryResult.data.administrativeAreaAdd.objectLabel.length).toEqual(3);
+      administrativeAreaInternalId = queryResult.data.administrativeAreaAdd.id; // bc1f31d7-4d9d-4754-89b1-9a7813c7c521
+
+      // The creation stream event must have been offloaded to S3.
+      expect(isEventTooLargeSpy).toHaveBeenCalled();
+      expect(rawUploadSpy).toHaveBeenCalled();
+      const offloadedToStream = rawUploadSpy.mock.calls.some(([key]) => typeof key === 'string' && key.startsWith(redisStream.STREAM_FILE_DIRECTORY));
+      expect(offloadedToStream).toBe(true);
+    } finally {
+      isEventTooLargeSpy.mockRestore();
+      rawUploadSpy.mockRestore();
+    }
   });
   it('should administrativeArea upsert with synchronized-upsert', async () => {
     const CREATE_QUERY = gql`

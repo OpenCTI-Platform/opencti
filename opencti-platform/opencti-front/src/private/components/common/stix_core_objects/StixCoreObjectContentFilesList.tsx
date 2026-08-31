@@ -18,7 +18,6 @@ import Drawer from '@components/common/drawer/Drawer';
 import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
@@ -240,7 +239,7 @@ const StixCoreObjectContentFilesList = ({
         {menuFile && (
           <MenuItem
             component={Link}
-            to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
+            to={`/storage/get/${encodeURIComponent(menuFile.id)}`}
             onClick={closePopover}
             target="_blank"
             rel="noopener noreferrer"

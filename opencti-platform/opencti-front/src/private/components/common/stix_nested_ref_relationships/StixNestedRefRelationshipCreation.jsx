@@ -25,6 +25,7 @@ import ConfidenceField from '../form/ConfidenceField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import { List, ListItemButton } from '@mui/material';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -608,9 +609,10 @@ class StixNestedRefRelationshipCreation extends Component {
           </IconButton>
           <Typography variant="h6">{t('Select a relationship')}</Typography>
         </div>
-        <div className={classes.container}>
+        <List component="div" className={classes.container}>
           {existingRelations.map((relation) => (
-            <div
+            <ListItemButton
+              focusVisibleClassName="focus-visible"
               key={relation.node.id}
               className={classes.relation}
               onClick={this.handleSelectRelation.bind(this, relation.node)}
@@ -715,9 +717,10 @@ class StixNestedRefRelationshipCreation extends Component {
                 </div>
               </div>
               <div className="clearfix" />
-            </div>
+            </ListItemButton>
           ))}
-          <div
+          <ListItemButton
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
           >
@@ -807,8 +810,8 @@ class StixNestedRefRelationshipCreation extends Component {
               </div>
             </div>
             <div className="clearfix" />
-          </div>
-        </div>
+          </ListItemButton>
+        </List>
       </div>
     );
   }

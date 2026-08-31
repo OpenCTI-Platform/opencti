@@ -1,17 +1,19 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, logApp, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { patchSync } from '../domain/connector';
+import { resolveSyncedWorkflowId } from '../domain/status';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
 import { storeLoadById, topEntitiesList } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
-import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { pushBundleToWorker } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
@@ -61,7 +63,31 @@ const extractStorageRelativePath = (candidateUri) => {
   return normalizedUri.substring(pathIndex).replace(/^\/+/, '');
 };
 
-const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
+// Percent-encode each segment of a relative storage path so that reserved characters
+// present in filenames (e.g. '#', '?', ...) are not interpreted as URL fragment/query
+// delimiters by the HTTP client. Idempotent: already-encoded segments are not double-encoded.
+export const encodeStorageRelativePath = (relativePath) => {
+  return relativePath
+    .split('/')
+    .map((segment) => {
+      if (segment === '') {
+        return segment;
+      }
+      // Decode first so that already-encoded input is not double-encoded,
+      // then re-encode reserved characters consistently.
+      let decodedSegment;
+      try {
+        decodedSegment = decodeURIComponent(segment);
+      } catch {
+        // Malformed percent-sequence (e.g. a literal '%'): keep the raw segment as-is.
+        decodedSegment = segment;
+      }
+      return encodeURIComponent(decodedSegment);
+    })
+    .join('/');
+};
+
+export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   if (typeof storageUri !== 'string') {
     return null;
   }
@@ -78,7 +104,7 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
       const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
       if (normalizedPath.startsWith('embedded/')) {
         const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-        return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+        return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
       }
       return null;
     } catch {
@@ -88,16 +114,137 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
 
   const extractedPath = extractStorageRelativePath(trimmedStorageUri);
   if (extractedPath) {
-    return `${httpBase(syncUri)}${extractedPath}`;
+    return `${httpBase(syncUri)}${encodeStorageRelativePath(extractedPath)}`;
   }
 
   const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
   if (normalizedPath.startsWith('embedded/')) {
     const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-    return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+    return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
   }
 
   return null;
+};
+
+export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
+  const { uri } = sync;
+  const processingData = { ...data };
+  const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
+  const markdownEntityContext = {
+    entityType: octiExtension.type,
+    entityId: octiExtension.id,
+  };
+  const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
+  const remoteWorkflowId = processingData.extensions[STIX_EXT_OCTI].workflow_id;
+  const remoteWorkflowStatusName = processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
+  const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
+  if (remoteWorkflowId) {
+    const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
+    const syncWorkflowStatusByName = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false);
+    // Not opted in: keep the raw remote workflow_id untouched, same as pre-existing behavior.
+    if (syncWorkflowStatusByName) {
+      const localWorkflowId = await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName);
+      if (localWorkflowId) {
+        processingData.extensions[STIX_EXT_OCTI].workflow_id = localWorkflowId;
+      } else {
+        delete processingData.extensions[STIX_EXT_OCTI].workflow_id;
+      }
+    }
+    delete processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
+    delete processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
+  }
+  const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
+  for (let index = 0; index < entityFiles.length; index += 1) {
+    const entityFile = entityFiles[index];
+    const { uri: fileUri } = entityFile;
+    try {
+      const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
+      if (!fetchUri) {
+        logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
+        continue;
+      }
+      const response = await httpClient.get(fetchUri);
+      entityFile.data = Buffer.from(response.data).toString('base64');
+    } catch (e) {
+      logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
+    }
+  }
+
+  const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
+    const embeddedReferences = extractMarkdownImageReferences(markdown)
+      .filter((reference) => reference.isEmbeddedStorage);
+    if (embeddedReferences.length === 0) {
+      return markdown;
+    }
+
+    const uriByReferenceUrl = new Map();
+    const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
+
+    for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
+      const embeddedStorageUri = uniqueReferenceUrls[i];
+      try {
+        const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
+        if (!fetchUri) {
+          logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
+            embeddedStorageUri,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+          continue;
+        }
+        const response = await httpClient.get(fetchUri);
+        const headerMimeType = extractMimeTypeFromHeader(response);
+        const pathMimeType = mime.lookup(embeddedStorageUri);
+        const detectedMime = headerMimeType || (pathMimeType || null);
+
+        if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
+          logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
+            embeddedStorageUri,
+            mimeType: detectedMime,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+          continue;
+        }
+
+        const base64Data = Buffer.from(response.data).toString('base64');
+        uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
+      } catch (e) {
+        logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
+          embeddedStorageUri,
+          message: e.message,
+        });
+        uriByReferenceUrl.set(embeddedStorageUri, null);
+      }
+    }
+
+    const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+      return uriByReferenceUrl.get(reference.url) ?? undefined;
+    });
+
+    return rewrittenMarkdown;
+  };
+
+  const resolveEmbeddedImagesMarkdownFields = async (payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return;
+    }
+
+    for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
+      const key = MARKDOWN_FIELD_KEYS[i];
+      const value = payload[key];
+      if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
+        payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
+      } else if (Array.isArray(value)) {
+        for (let j = 0; j < value.length; j += 1) {
+          if (typeof value[j] === 'string' && hasEmbeddedStorageRef(value[j])) {
+            value[j] = await resolveEmbeddedImagesInMarkdownDescription(value[j]);
+          }
+        }
+      }
+    }
+  };
+
+  await resolveEmbeddedImagesMarkdownFields(processingData);
+  return { data: processingData, previous_standard: idOperation?.value };
 };
 
 const syncManagerInstance = (syncId) => {
@@ -132,110 +279,6 @@ const syncManagerInstance = (syncId) => {
         yield queue.shift();
       }
     }
-  };
-  const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
-    const { uri } = sync;
-    const processingData = { ...data };
-    const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
-    const markdownEntityContext = {
-      entityType: octiExtension.type,
-      entityId: octiExtension.id,
-    };
-    // Reverse patch the id if modified
-    const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
-    // Handle file enrichment
-    const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
-    for (let index = 0; index < entityFiles.length; index += 1) {
-      const entityFile = entityFiles[index];
-      const { uri: fileUri } = entityFile;
-      try {
-        const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
-        if (!fetchUri) {
-          logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
-          continue;
-        }
-        const response = await httpClient.get(fetchUri);
-        entityFile.data = Buffer.from(response.data).toString('base64');
-      } catch (e) {
-        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
-      }
-    }
-
-    const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
-      const embeddedReferences = extractMarkdownImageReferences(markdown)
-        .filter((reference) => reference.isEmbeddedStorage);
-      if (embeddedReferences.length === 0) {
-        return markdown;
-      }
-
-      const uriByReferenceUrl = new Map();
-      const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
-
-      for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
-        const embeddedStorageUri = uniqueReferenceUrls[i];
-        try {
-          const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
-          if (!fetchUri) {
-            logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
-              embeddedStorageUri,
-            });
-            uriByReferenceUrl.set(embeddedStorageUri, null);
-            continue;
-          }
-          const response = await httpClient.get(fetchUri);
-          const headerMimeType = extractMimeTypeFromHeader(response);
-          const pathMimeType = mime.lookup(embeddedStorageUri);
-          const detectedMime = headerMimeType || (pathMimeType || null);
-
-          if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
-            logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
-              embeddedStorageUri,
-              mimeType: detectedMime,
-            });
-            uriByReferenceUrl.set(embeddedStorageUri, null);
-            continue;
-          }
-
-          const base64Data = Buffer.from(response.data).toString('base64');
-          uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
-        } catch (e) {
-          logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
-            embeddedStorageUri,
-            message: e.message,
-          });
-          uriByReferenceUrl.set(embeddedStorageUri, null);
-        }
-      }
-
-      const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
-        return uriByReferenceUrl.get(reference.url) ?? undefined;
-      });
-
-      return rewrittenMarkdown;
-    };
-
-    const resolveEmbeddedImagesMarkdownFields = async (payload) => {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        return;
-      }
-
-      for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
-        const key = MARKDOWN_FIELD_KEYS[i];
-        const value = payload[key];
-        if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
-          payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
-        } else if (Array.isArray(value)) {
-          for (let j = 0; j < value.length; j += 1) {
-            if (typeof value[j] === 'string' && hasEmbeddedStorageRef(value[j])) {
-              value[j] = await resolveEmbeddedImagesInMarkdownDescription(value[j]);
-            }
-          }
-        }
-      }
-    };
-
-    await resolveEmbeddedImagesMarkdownFields(processingData);
-    return { data: processingData, previous_standard: idOperation?.value };
   };
   const saveCurrentState = async (context, type, eventId) => {
     const currentTime = new Date().getTime();
@@ -312,7 +355,7 @@ const syncManagerInstance = (syncId) => {
             // Handle data events (create, update, delete, merge)
             const { data: stixData, context: eventContext, version, event_id } = JSON.parse(eventData);
             if (version !== EVENT_CURRENT_VERSION) continue;
-            // Process the event with retry: if pushToWorkerForConnector or saveCurrentState fails,
+            // Process the event with retry: if pushBundleToWorker or saveCurrentState fails,
             // retry indefinitely until it succeeds or the manager is stopped.
             let processed = false;
             while (!processed && running) {
@@ -320,7 +363,7 @@ const syncManagerInstance = (syncId) => {
                 const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
                 const enrichedEvent = JSON.stringify({ id: lastEventId, type: eventType, data: syncData, context: eventContext });
                 const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
-                await pushToWorkerForConnector(sync.internal_id, {
+                await pushBundleToWorker(context, SYSTEM_USER, sync.internal_id, {
                   type: 'event',
                   event_id,
                   synchronized,

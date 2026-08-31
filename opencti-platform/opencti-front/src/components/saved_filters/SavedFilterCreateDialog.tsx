@@ -130,6 +130,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
               placeholder={t_i18n('My saved filter')}
               value={filterName}
               onChange={handleChange}
+              autoFocus
             />
             <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
               <SavedFilterSharingSection

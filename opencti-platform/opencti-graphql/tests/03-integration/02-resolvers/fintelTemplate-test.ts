@@ -75,6 +75,8 @@ const READ_QUERY = gql`
       settings_types
       start_date
       default
+      includeCoverPageByDefault
+      includeBackPageByDefault
       fintel_template_widgets {
         variable_name
         widget {
@@ -103,6 +105,8 @@ const CREATE_QUERY = gql`
       id
       name
       description
+      includeCoverPageByDefault
+      includeBackPageByDefault
     }
   }
 `;
@@ -158,6 +162,8 @@ describe('Fintel template resolver standard behavior', () => {
     expect(fintelTemplate).not.toBeNull();
     expect(fintelTemplate.data?.fintelTemplateAdd).not.toBeNull();
     expect(fintelTemplate.data?.fintelTemplateAdd.name).toEqual('Fintel template 1');
+    expect(fintelTemplate.data?.fintelTemplateAdd.includeCoverPageByDefault).toEqual(true);
+    expect(fintelTemplate.data?.fintelTemplateAdd.includeBackPageByDefault).toEqual(true);
     fintelTemplateInternalId = fintelTemplate.data?.fintelTemplateAdd.id;
   });
   it('should fintel template loaded by internal id', async () => {
@@ -166,6 +172,8 @@ describe('Fintel template resolver standard behavior', () => {
     expect(queryResult.data?.fintelTemplate).not.toBeNull();
     expect(queryResult.data?.fintelTemplate.id).toEqual(fintelTemplateInternalId);
     expect(queryResult.data?.fintelTemplate.name).toEqual('Fintel template 1');
+    expect(queryResult.data?.fintelTemplate.includeCoverPageByDefault).toEqual(true);
+    expect(queryResult.data?.fintelTemplate.includeBackPageByDefault).toEqual(true);
   });
   it('should fintel template created with built-in widgets', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
@@ -200,6 +208,35 @@ describe('Fintel template resolver standard behavior', () => {
     expect(fintelTemplateDescription).toEqual('new description');
     const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult2.data?.fintelTemplate.description).toEqual('new description');
+  });
+  it('should fintel template export defaults edited and persisted', async () => {
+    await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [
+          { key: 'include_cover_page_by_default', value: [false] },
+          { key: 'include_back_page_by_default', value: [false] },
+        ],
+      },
+    });
+    const readAfterFalse = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(readAfterFalse.data?.fintelTemplate.includeCoverPageByDefault).toEqual(false);
+    expect(readAfterFalse.data?.fintelTemplate.includeBackPageByDefault).toEqual(false);
+
+    await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelTemplateInternalId,
+        input: [
+          { key: 'include_cover_page_by_default', value: [true] },
+          { key: 'include_back_page_by_default', value: [true] },
+        ],
+      },
+    });
+    const readAfterTrue = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(readAfterTrue.data?.fintelTemplate.includeCoverPageByDefault).toEqual(true);
+    expect(readAfterTrue.data?.fintelTemplate.includeBackPageByDefault).toEqual(true);
   });
   it('should retrieve fintel templates and files from template on a STIX object', async () => {
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);

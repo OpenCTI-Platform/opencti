@@ -57,6 +57,16 @@ export const organizationEditionOverviewFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     workflowEnabled
   }
 `;

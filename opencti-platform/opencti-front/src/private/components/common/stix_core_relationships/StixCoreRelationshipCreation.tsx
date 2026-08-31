@@ -28,6 +28,7 @@ import { FieldOption } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import { List, ListItemButton } from '@mui/material';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -474,9 +475,10 @@ const StixCoreRelationshipCreation = ({
           </IconButton>
           <Typography variant="h6">{t_i18n('Select a relationship')}</Typography>
         </div>
-        <div style={{ padding: '10px 20px 20px 20px' }}>
+        <List component="div" style={{ padding: '10px 20px 20px 20px' }}>
           {existingRelations.map((relation) => (
-            <div
+            <ListItemButton
+              focusVisibleClassName="focus-visible"
               key={relation.node.id}
               className={classes.relation}
               onClick={() => handleSelectRelation(relation.node as unknown as ObjectToParse)}
@@ -581,9 +583,10 @@ const StixCoreRelationshipCreation = ({
                 </div>
               </div>
               <div className="clearfix" />
-            </div>
+            </ListItemButton>
           ))}
-          <div
+          <ListItemButton
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={handleChangeStep}
           >
@@ -672,8 +675,8 @@ const StixCoreRelationshipCreation = ({
               </div>
             </div>
             <div className="clearfix" />
-          </div>
-        </div>
+          </ListItemButton>
+        </List>
       </div>
     );
   };

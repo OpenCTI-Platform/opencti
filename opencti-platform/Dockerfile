@@ -14,7 +14,7 @@ RUN <<EOT
 
   # git is required to install @filigran/design-system, which is consumed as a
   # pinned git dependency: node:alpine ships no git at all.
-  apk --no-cache add make g++ python3 python3-dev libmagic git
+  apk --no-cache add make g++ python3 python3-dev git
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   python3 -m ensurepip
   npm install -g corepack
@@ -82,7 +82,7 @@ FROM base AS app
 RUN <<EOT
   set -euxo pipefail
 
-  apk --no-cache add tini python3 python3-dev libmagic
+  apk --no-cache add tini python3 python3-dev
   rm /var/log/apk.log
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   python3 -m ensurepip
@@ -102,6 +102,7 @@ WORKDIR /opt/opencti
 COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
 COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
 COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
+COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
 COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 
 ENV PYTHONUNBUFFERED="1"

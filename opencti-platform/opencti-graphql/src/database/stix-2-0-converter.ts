@@ -297,6 +297,7 @@ export const convertIncidentToStix = (instance: StoreEntity): SDO.StixIncident =
     incident_type: instance.incident_type,
     severity: instance.severity,
     source: instance.source,
+    x_opencti_score: instance.x_opencti_score,
   };
 };
 
@@ -354,6 +355,7 @@ export const convertIntrusionSetToStix = (instance: StoreEntity): SDO.StixIntrus
     resource_level: instance.resource_level,
     primary_motivation: instance.primary_motivation,
     secondary_motivations: instance.secondary_motivations,
+    x_opencti_score: instance.x_opencti_score,
   };
 };
 
@@ -375,6 +377,7 @@ export const convertThreatActorGroupToStix = (instance: StoreEntity): SDO.StixTh
     secondary_motivations: instance.secondary_motivations,
     personal_motivations: instance.personal_motivations,
     threat_actor_group: instance.name,
+    x_opencti_score: instance.x_opencti_score,
   };
 };
 
@@ -395,6 +398,7 @@ export const convertMalwareToStix = (instance: StoreEntity): SDO.StixMalware => 
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+    x_opencti_score: instance.x_opencti_score,
   };
 };
 

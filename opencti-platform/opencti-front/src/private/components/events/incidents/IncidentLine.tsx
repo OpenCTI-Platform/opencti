@@ -4,6 +4,7 @@ export const incidentLineFragment = graphql`
   fragment IncidentLine_node on Incident {
     id
     name
+    x_opencti_score
     incident_type
     severity
     created
@@ -44,5 +45,15 @@ export const incidentLineFragment = graphql`
       }
     }
     workflowEnabled
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
   }
 `;

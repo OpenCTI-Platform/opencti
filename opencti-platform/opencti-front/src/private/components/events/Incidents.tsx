@@ -25,7 +25,7 @@ const Incidents: FunctionComponent = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incidents | Events'));
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable },
   } = useAuth();
 
   const initialValues = {
@@ -54,15 +54,17 @@ const Incidents: FunctionComponent = () => {
   );
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
   const dataColumns: DataTableProps['dataColumns'] = {
     name: { percentWidth: 20 },
+    x_opencti_score: { percentWidth: 7 },
     incident_type: { percentWidth: 8 },
     severity: { percentWidth: 8 },
     objectAssignee: { percentWidth: 12, isSortable: isRuntimeSort },
     creator: { percentWidth: 11, isSortable: isRuntimeSort },
     objectLabel: { percentWidth: 15 },
     created: { percentWidth: 10 },
-    x_opencti_workflow_id: { percentWidth: 8 },
+    ...(isWorkflowInstanceEnabled ? { workflowInstance: { percentWidth: 8 } } : { x_opencti_workflow_id: { percentWidth: 8 } }),
     objectMarking: { percentWidth: 8, isSortable: isRuntimeSort },
   };
 

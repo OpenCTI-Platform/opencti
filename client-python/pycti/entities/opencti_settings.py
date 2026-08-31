@@ -65,8 +65,6 @@ class Settings:
                 theme_text_color
                 built_in
             }
-            platform_map_tile_server_dark
-            platform_map_tile_server_light
             platform_ai_enabled
             platform_openaev_url
             platform_opengrc_url

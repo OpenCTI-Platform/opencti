@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import type { AuthContext } from '../types/user';
 import crypto from 'node:crypto';
 import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
@@ -51,6 +52,24 @@ export const extractRefererPathFromReq = (req: Request) => {
     // prevent any invalid referer
     logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
   }
+};
+
+// Whether this request is driven by a signed-in person in a browser, as opposed
+// to an API token.
+//
+// `context.user_with_session` alone does not answer that: it only records that
+// a session cookie was present, while `authenticateUserFromRequest` returns on
+// the bearer-token branch before it ever looks at the session (`domain/user.js`).
+// A request carrying a token *and* any user's cookie therefore authenticates as
+// the token identity while still looking session-backed. Require that the
+// identity actually resolved from the session, by matching it against the
+// session user and refusing any request that presents an Authorization header
+// at all.
+export const isBrowserSessionRequest = (req: Request, context: AuthContext): boolean => {
+  if (req.headers.authorization) return false;
+  if (!context.user_with_session) return false;
+  const sessionUserId = req.session?.user?.id;
+  return !!sessionUserId && sessionUserId === context.user?.id;
 };
 
 /**

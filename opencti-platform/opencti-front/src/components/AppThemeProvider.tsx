@@ -13,6 +13,7 @@ import themeDark, {
 import themeLight, { THEME_LIGHT_DEFAULT_PAPER } from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import useFdsThemeScope from '../utils/hooks/useFdsThemeScope';
+import { isLightThemeName } from '../utils/themeName';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { useExportTheme } from '../utils/ExportThemeContext';
 
@@ -48,7 +49,7 @@ const themeBuilder = (
   const platformThemeSecondary = theme?.theme_secondary ?? null;
   const platformThemeAccent = theme?.theme_accent ?? null;
   const platformThemeTextColor = theme?.theme_text_color ?? 'rgba(255, 255, 255, 0.7)';
-  if (theme?.name === 'Light') {
+  if (isLightThemeName(theme?.name)) {
     // needed until everything is customizable, like text colors
     return themeLight(
       platformThemeLogo,
@@ -76,7 +77,7 @@ const themeBuilder = (
 };
 
 const defaultTheme: AppThemeType = {
-  name: 'Dark',
+  name: 'Filigran Dark',
   theme_accent: THEME_DARK_DEFAULT_ACCENT,
   theme_background: THEME_DARK_DEFAULT_BACKGROUND,
   theme_logo: '',
@@ -122,7 +123,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   // product's own stylesheets target (`body[data-theme="dark"]`).
   const resolvedName = themeToUse?.name ?? defaultTheme.name;
   const resolvedPaper = themeToUse?.theme_paper ?? defaultTheme.theme_paper;
-  const defaultPaper = resolvedName === 'Light' ? THEME_LIGHT_DEFAULT_PAPER : THEME_DARK_DEFAULT_PAPER;
+  const defaultPaper = isLightThemeName(resolvedName) ? THEME_LIGHT_DEFAULT_PAPER : THEME_DARK_DEFAULT_PAPER;
   const customPaper = resolvedPaper && resolvedPaper !== defaultPaper ? resolvedPaper : null;
   const themeMode = useFdsThemeScope(resolvedName, customPaper);
   useDocumentThemeModifier(themeMode);

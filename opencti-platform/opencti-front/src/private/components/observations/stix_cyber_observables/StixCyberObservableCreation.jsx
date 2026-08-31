@@ -517,7 +517,6 @@ const StixCyberObservableCreation = ({
                   && !n.value.startsWith('i_'),
               ),
             )(props.schemaAttributeNames.edges);
-
             let extraFieldsToValidate = null;
             let requiredOneOfFields = [];
             for (const attribute of attributes) {
@@ -725,7 +724,6 @@ const StixCyberObservableCreation = ({
             }
 
             const isFieldInBulk = (name) => name === bulkSelectedKey;
-
             return (
               <Formik
                 initialValues={initialValues}
@@ -805,14 +803,19 @@ const StixCyberObservableCreation = ({
                           uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
                         />
                         {attributes.map((attribute) => {
+                          const isValueAttribute = attribute.value === 'value';
+                          const attributeLabel = isValueAttribute
+                            ? t_i18n('Value')
+                            : t_i18n(attribute.value);
                           if (bulkConf && attribute.value === bulkSelectedKey) {
                             return (
                               <Field
                                 component={BulkTextField}
                                 variant="outlined"
                                 name={attribute.value}
-                                label={t_i18n(attribute.value)}
+                                label={attributeLabel}
                                 key={attribute.value}
+                                required={isValueAttribute}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                                 bulkType="observables"
@@ -959,7 +962,8 @@ const StixCyberObservableCreation = ({
                               variant="outlined"
                               key={attribute.value}
                               name={attribute.value}
-                              label={t_i18n(attribute.value)}
+                              label={attributeLabel}
+                              required={isValueAttribute}
                               fullWidth={true}
                               className="mt-5"
                             />

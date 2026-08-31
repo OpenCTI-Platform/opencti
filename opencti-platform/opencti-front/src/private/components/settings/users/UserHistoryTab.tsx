@@ -135,6 +135,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
           <ItemIcon type={eventScope} size="small" />
@@ -153,6 +156,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           <Merge fontSize="small" />
         </Avatar>
@@ -173,6 +179,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
           <ItemIcon type={eventScope} size="small" />
@@ -191,6 +200,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
           <ItemIcon type={eventScope} size="small" />
@@ -209,6 +221,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           <LinkVariantPlus fontSize="small" />
         </Avatar>
@@ -226,6 +241,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           <LinkVariantRemove fontSize="small" />
         </Avatar>
@@ -290,6 +308,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           color: theme.palette.text?.primary,
         }}
         onClick={() => commit && handleOpen()}
+        role={commit ? 'button' : undefined}
+        tabIndex={commit ? 0 : undefined}
+        aria-label={commit ? t_i18n('View commit message') : undefined}
       >
         {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
         <ItemIcon type={eventScope} size="small" />

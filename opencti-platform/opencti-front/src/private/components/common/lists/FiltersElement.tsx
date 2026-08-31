@@ -83,6 +83,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         {variant === FiltersVariant.dialog && (
           <Grid item xs={12}>
             <Input
+              type="search"
               label={t_i18n('Global keyword')}
               value={keyword}
               onChange={handleChangeKeyword}

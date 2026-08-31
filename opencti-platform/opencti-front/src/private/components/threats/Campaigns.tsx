@@ -21,11 +21,14 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
 
 const Campaigns = () => {
   const { t_i18n } = useFormatter();
+  const { platformModuleHelpers: { isFeatureEnable } } = useAuth();
+  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -144,10 +147,9 @@ const Campaigns = () => {
       modified: {}, // 15
       createdBy: {}, // 12
       objectLabel: {}, // 15
-      x_opencti_workflow_id: {
-        label: 'Processing status',
-        percentWidth: 10,
-      },
+      ...(isWorkflowInstanceEnabled
+        ? { workflowInstance: { label: 'Processing status', percentWidth: 10 } }
+        : { x_opencti_workflow_id: { label: 'Processing status', percentWidth: 10 } }),
       objectMarking: { percentWidth: 10 },
     };
 

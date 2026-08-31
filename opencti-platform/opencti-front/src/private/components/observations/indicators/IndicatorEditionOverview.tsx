@@ -536,6 +536,16 @@ const IndicatorEditionOverview = createFragmentContainer(
             color
           }
         }
+        workflowInstance {
+          id
+          currentStatus {
+            template {
+              id
+              name
+              color
+            }
+          }
+        }
         workflowEnabled
       }
     `,

@@ -2,7 +2,7 @@ import path, { join } from 'node:path';
 import crypto from 'node:crypto';
 import mime from 'mime-types';
 import nconf from 'nconf';
-import type { _Object } from '@aws-sdk/client-s3';
+import type { _Object, ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
 import fs from 'node:fs';
 import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -18,17 +18,11 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import {
-  allFilesForPaths,
-  deleteDocumentIndex,
-  EMBEDDED_STORAGE_PATH,
-  EXPORT_STORAGE_PATH,
-  findById as documentFindById,
-  FROM_TEMPLATE_STORAGE_PATH,
-  IMPORT_STORAGE_PATH,
-  indexFileToDocument,
-  SUPPORT_STORAGE_PATH,
-} from '../modules/internal/document/document-domain';
+import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+// Storage path constants are imported directly from this dependency-free module (not document-domain.ts)
+// to avoid a circular import evaluation-order issue where these constants could be undefined
+// at the time ALL_MERGEABLE_FOLDERS/ALL_ROOT_FOLDERS are computed below.
+import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
@@ -402,9 +396,9 @@ export const loadedFilesListing = async (
   context: AuthContext,
   user: AuthUser,
   directory: string,
-  opts: { recursive?: boolean; callback?: ((files: LoadedFile[]) => void) | null; dontThrow?: boolean } = {},
-): Promise<LoadedFile[]> => {
-  const { recursive = false, callback = null, dontThrow = false } = opts;
+  opts: { recursive?: boolean; callback?: ((files: LoadedFile[]) => void) | null; dontThrow?: boolean; rawFormat?: boolean } = {},
+): Promise<LoadedFile[] | ListObjectsV2CommandOutput> => {
+  const { recursive = false, callback = null, dontThrow = false, rawFormat = false } = opts;
   const files: LoadedFile[] = [];
   if (isNotEmptyField(directory) && (directory as string).startsWith('/')) {
     throw FunctionalError('File listing directory must not start with a /');
@@ -417,6 +411,9 @@ export const loadedFilesListing = async (
   while (truncated) {
     try {
       const response = await rawListObjects(directory, recursive ?? false, continuationToken);
+      if (rawFormat) {
+        return response;
+      }
       const resultFiles = filesAdaptation(response.Contents ?? []);
       const resultLoaded = await promiseMap(
         resultFiles,
@@ -833,7 +830,7 @@ export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, 
 export const deleteAllBucketContent = async (context: AuthContext, user: AuthUser) => {
   for (let i = 0; i < ALL_ROOT_FOLDERS.length; i += 1) {
     const folder = ALL_ROOT_FOLDERS[i];
-    const allFiles = await loadedFilesListing(context, user, `${folder}/`, { recursive: true, dontThrow: true });
+    const allFiles = await loadedFilesListing(context, user, `${folder}/`, { recursive: true, dontThrow: true }) as LoadedFile[];
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];

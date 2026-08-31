@@ -336,6 +336,16 @@ export default createFragmentContainer(SecurityPlatformEditionOverview, {
           color
         }
       }
+      workflowInstance {
+        id
+        currentStatus {
+          template {
+            id
+            name
+            color
+          }
+        }
+      }
       workflowEnabled
     }
   `,
