@@ -132,7 +132,7 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
           label={t_i18n('Value')}
           name={`${representationName}.column_based.value`}
           value={columnBased?.enabled ? columnBased.value : ''}
-          variant="standard"
+          variant="outlined"
           style={{ width: '100%' }}
           disabled={!representation.column_based?.enabled}
           error={!columnBased?.value && columnBased?.enabled}

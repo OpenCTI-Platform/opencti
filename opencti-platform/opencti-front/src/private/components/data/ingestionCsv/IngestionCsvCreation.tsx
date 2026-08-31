@@ -341,14 +341,14 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
@@ -357,7 +357,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               <IngestionSchedulingField />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="uri"
                 label={t_i18n('CSV URL')}
                 fullWidth={true}
@@ -414,7 +414,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               }
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="authentication_type"
                 label={t_i18n('Authentication type')}
                 fullWidth={true}
@@ -436,7 +436,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 <>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="username"
                     label={t_i18n('Username')}
                     fullWidth={true}
@@ -458,7 +458,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 <>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="cert"
                     label={t_i18n('Certificate (base64)')}
                     fullWidth={true}
@@ -470,7 +470,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="ca"
                     label={t_i18n('CA certificate (base64)')}
                     fullWidth={true}

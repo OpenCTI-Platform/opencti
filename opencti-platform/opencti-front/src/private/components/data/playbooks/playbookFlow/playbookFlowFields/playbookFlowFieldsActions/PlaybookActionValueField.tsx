@@ -272,7 +272,7 @@ const PlaybookActionValueField = ({
           component={TextField}
           disabled={disabled}
           type={numberAttributes.includes(action.attribute ?? '') ? 'number' : 'text'}
-          variant="standard"
+          variant="outlined"
           name={formValueName}
           label={t_i18n('Value')}
           fullWidth

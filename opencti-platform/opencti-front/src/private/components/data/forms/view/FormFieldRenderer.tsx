@@ -267,7 +267,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             fullWidth={true}
             required={field.isMandatory}
             containerstyle={fieldSpacingContainerStyle}
-            variant="standard"
+            variant="outlined"
             helpertext={field.description}
           >
             <SelectItem value="">
@@ -305,7 +305,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             textFieldProps={{
               label: displayLabel,
               required: field.isMandatory,
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: fieldSpacingContainerStyle,
               helperText: field.description,
@@ -322,7 +322,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             textFieldProps={{
               label: displayLabel,
               required: field.isMandatory,
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: fieldSpacingContainerStyle,
               helperText: field.description,

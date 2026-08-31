@@ -25,7 +25,7 @@ const PlaybookFlowFieldPeriod = () => {
     <Field
       fullWidth
       component={SelectFieldFds}
-      variant="standard"
+      variant="outlined"
       name="period"
       label={t_i18n('Period')}
       containerstyle={fieldSpacingContainerStyle}

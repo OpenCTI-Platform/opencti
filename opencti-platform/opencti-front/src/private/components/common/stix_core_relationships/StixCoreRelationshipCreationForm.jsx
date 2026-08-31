@@ -263,7 +263,7 @@ const StixCoreRelationshipCreationForm = ({
             </div>
             <Field
               component={SelectFieldFds}
-              variant="standard"
+              variant="outlined"
               name="relationship_type"
               label={t_i18n('Relationship type')}
               fullWidth={true}
@@ -286,7 +286,7 @@ const StixCoreRelationshipCreationForm = ({
               name="start_time"
               textFieldProps={{
                 label: t_i18n('Start time'),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -296,7 +296,7 @@ const StixCoreRelationshipCreationForm = ({
               name="stop_time"
               textFieldProps={{
                 label: t_i18n('Stop time'),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}

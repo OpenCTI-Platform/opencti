@@ -148,7 +148,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
 
   return (
     <div className={classes.div} style={noMargin ? { margin: 0 } : {}}>
-      <InputLabel shrink={true} variant="standard" className={classNames({ [classes.error]: !!errorText })}>
+      <InputLabel shrink={true} variant="outlined" className={classNames({ [classes.error]: !!errorText })}>
         {label ? t_i18n(label) : t_i18n('Associated file')} {required && '*'}
       </InputLabel>
       <Box

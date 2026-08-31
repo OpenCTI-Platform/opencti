@@ -113,7 +113,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name={`${namePrefix}_new_value`}
               label={isEditing ? t_i18n('New value (leave empty to remove)') : t_i18n('Value')}
               fullWidth

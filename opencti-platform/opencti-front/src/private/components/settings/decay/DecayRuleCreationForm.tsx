@@ -148,7 +148,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_lifetime"
             label={t_i18n('Lifetime (in days)')}
             fullWidth
@@ -157,7 +157,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_pound"
             label={t_i18n('Decay factor')}
             fullWidth
@@ -191,7 +191,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
                       <div style={{ flex: 1 }}>
                         <Field
                           component={TextField}
-                          variant="standard"
+                          variant="outlined"
                           name={`decay_points.${index}`}
                           type="number"
                           fullWidth
@@ -216,7 +216,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_revoke_score"
             label={t_i18n('Revoke score')}
             fullWidth
@@ -225,7 +225,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="order"
             label={t_i18n('Order')}
             fullWidth

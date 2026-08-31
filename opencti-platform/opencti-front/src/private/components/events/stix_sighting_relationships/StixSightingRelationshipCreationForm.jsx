@@ -255,7 +255,7 @@ const StixSightingRelationshipCreationForm = ({
             </div>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="attribute_count"
               required={(mandatoryAttributes.includes('attribute_count'))}
               label={t_i18n('Count')}
@@ -273,7 +273,7 @@ const StixSightingRelationshipCreationForm = ({
               textFieldProps={{
                 label: t_i18n('First seen'),
                 required: (mandatoryAttributes.includes('first_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -284,7 +284,7 @@ const StixSightingRelationshipCreationForm = ({
               textFieldProps={{
                 label: t_i18n('Last seen'),
                 required: (mandatoryAttributes.includes('last_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}

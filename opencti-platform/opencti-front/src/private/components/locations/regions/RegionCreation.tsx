@@ -206,7 +206,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}

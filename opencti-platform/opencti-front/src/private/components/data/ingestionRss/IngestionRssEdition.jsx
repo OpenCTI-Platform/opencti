@@ -132,7 +132,7 @@ const IngestionRssEditionContainer = ({
           <Form>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -140,7 +140,7 @@ const IngestionRssEditionContainer = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="description"
               label={t('Description')}
               fullWidth={true}
@@ -150,7 +150,7 @@ const IngestionRssEditionContainer = ({
             <IngestionSchedulingField handleSubmitField={handleSubmitField} />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="uri"
               label={t('RSS feed URL')}
               fullWidth={true}
@@ -182,7 +182,7 @@ const IngestionRssEditionContainer = ({
                 label: t(
                   'Import from date (empty = all RSS feed possible items)',
                 ),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}

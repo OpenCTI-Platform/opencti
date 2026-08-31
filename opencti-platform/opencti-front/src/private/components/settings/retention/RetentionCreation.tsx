@@ -146,7 +146,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
@@ -154,7 +154,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               />
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="retention_unit"
                 label={t_i18n('Unit')}
                 fullWidth={true}
@@ -166,7 +166,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               </Field>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="max_retention"
                 label={t_i18n('Maximum retention')}
                 fullWidth={true}
@@ -194,7 +194,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               />
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="scope"
                 label={t_i18n('Scope')}
                 fullWidth={true}

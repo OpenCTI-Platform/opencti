@@ -358,7 +358,7 @@ const LdapProviderForm = ({
               {/* Mandatory fields */}
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Configuration name')}
                 fullWidth
@@ -367,7 +367,7 @@ const LdapProviderForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth
@@ -377,7 +377,7 @@ const LdapProviderForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="url"
                 label={t_i18n('LDAP URL')}
                 fullWidth
@@ -386,7 +386,7 @@ const LdapProviderForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="bind_dn"
                 label={t_i18n('Bind DN')}
                 fullWidth
@@ -403,7 +403,7 @@ const LdapProviderForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="search_base"
                 label={t_i18n('Search base')}
                 fullWidth
@@ -412,7 +412,7 @@ const LdapProviderForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="search_filter"
                 label={t_i18n('Search filter')}
                 fullWidth
@@ -421,7 +421,7 @@ const LdapProviderForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="group_base"
                 label={t_i18n('Group base')}
                 fullWidth
@@ -430,7 +430,7 @@ const LdapProviderForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="group_filter"
                 label={t_i18n('Group filter')}
                 fullWidth
@@ -441,7 +441,7 @@ const LdapProviderForm = ({
               <AuthProviderUserInfoFields />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth
@@ -462,7 +462,7 @@ const LdapProviderForm = ({
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="search_attributes"
                     label={t_i18n('Search attributes (comma-separated)')}
                     fullWidth
@@ -470,7 +470,7 @@ const LdapProviderForm = ({
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="username_field"
                     label={t_i18n('Username field')}
                     fullWidth
@@ -478,7 +478,7 @@ const LdapProviderForm = ({
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="password_field"
                     label={t_i18n('Password field')}
                     fullWidth
@@ -486,7 +486,7 @@ const LdapProviderForm = ({
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="credentials_lookup"
                     label={t_i18n('Credentials lookup')}
                     fullWidth
@@ -494,7 +494,7 @@ const LdapProviderForm = ({
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="group_search_attributes"
                     label={t_i18n('Group search attributes (comma-separated)')}
                     fullWidth
@@ -542,7 +542,7 @@ const LdapProviderForm = ({
                           >
                             <Field
                               component={SelectFieldFds}
-                              variant="standard"
+                              variant="outlined"
                               name={`extra_conf[${index}].type`}
                               label={t_i18n('Type')}
                               containerstyle={{ width: '20%' }}
@@ -553,14 +553,14 @@ const LdapProviderForm = ({
                             </Field>
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               name={`extra_conf[${index}].key`}
                               label={t_i18n('Key')}
                               fullWidth
                             />
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               name={`extra_conf[${index}].value`}
                               label={t_i18n('Value')}
                               fullWidth

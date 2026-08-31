@@ -280,7 +280,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
           <AlertConfidenceForEntity entity={infrastructure} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -319,7 +319,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             textFieldProps={{
               label: t_i18n('First seen'),
               required: (mandatoryAttributes.includes('first_seen')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -335,7 +335,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             textFieldProps={{
               label: t_i18n('Last seen'),
               required: (mandatoryAttributes.includes('last_seen')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
