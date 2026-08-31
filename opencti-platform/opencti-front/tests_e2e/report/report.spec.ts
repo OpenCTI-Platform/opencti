@@ -207,23 +207,13 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
 
-  await reportDetailsPage.getEditButton().click();
-  await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.getCloseButton().click();
-  publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 25, 2023');
-  await expect(publicationDate).toBeVisible();
-  originalCreationDate = reportDetailsPage.getTextForHeading('Original creation date', 'December 5, 2023');
-  await expect(originalCreationDate).toBeVisible();
-
-  // region The date picker itself: pick, persist, clear
-  // --------------------------------------------------
-  // This exercises DateTimePickerField through its CALENDAR and its CLEAR
-  // control, not just by typing. Both are reached through the field's own
-  // adornment, and both broke the last time the field was restyled: library
-  // IconButtons inside a MUI adornment spilled out of the padding box, and the
-  // field rendered as a bare underline once it missed the outlined variant.
-  // A restyle that breaks either one turns this red instead of reaching Sandy.
+  // region The date picker itself: calendar, persistence, clear
+  // -----------------------------------------------------------
+  // Exercises DateTimePickerField through its ADORNMENT — the calendar and the
+  // clear control — not just by typing. Both broke the last time this field was
+  // restyled, and the variant sweep reaches it with no diff naming the file, so
+  // a restyle that breaks either turns this red instead of reaching Sandy.
+  // Placed before the update below, which then doubles as the restore.
   await reportDetailsPage.getEditButton().click();
   await reportForm.publicationDateField.pickDay('14');
   await reportForm.getUpdateTitle().click();
@@ -236,14 +226,25 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   // The mask coming back is the proof the field is empty AND still a working
   // date field; matched as a pattern because the mask follows the locale.
   await expect(reportForm.publicationDateField.getInput()).toHaveValue(/Y{4}.*M{2}.*D{2}/);
+  // Re-picking on a cleared field: the calendar opens on the frozen clock's
+  // month (April 2024), so this is deterministic and leaves a valid value.
+  await reportForm.publicationDateField.pickDay('25');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'April 25, 2024');
+  await expect(publicationDate).toBeVisible();
+
+  // ---------
+  // endregion
+
+  await reportDetailsPage.getEditButton().click();
   await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
   publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 25, 2023');
   await expect(publicationDate).toBeVisible();
-
-  // ---------
-  // endregion
+  originalCreationDate = reportDetailsPage.getTextForHeading('Original creation date', 'December 5, 2023');
+  await expect(originalCreationDate).toBeVisible();
 
   await reportDetailsPage.getEditButton().click();
   await reportForm.reportTypesAutocomplete.selectOption('threat-report');
