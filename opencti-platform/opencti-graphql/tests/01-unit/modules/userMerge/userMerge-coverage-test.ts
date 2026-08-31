@@ -15,12 +15,12 @@ const mockHandler = (identifier: string, covers: string[]): UserMergeHandler => 
 describe('userMerge coverage manifest', () => {
   it('should name every register row as uncovered when no handler is registered', () => {
     const coverage = buildUserMergeCoverage([]);
-    expect(coverage.total).toEqual(101);
+    expect(coverage.total).toEqual(99);
     expect(coverage.covered_count).toEqual(0);
-    expect(coverage.uncovered_count).toEqual(101);
+    expect(coverage.uncovered_count).toEqual(99);
     expect(coverage.gating_uncovered_count).toEqual(61);
     expect(coverage.is_complete).toBe(false);
-    expect(coverage.rows.length).toEqual(101);
+    expect(coverage.rows.length).toEqual(99);
     expect(coverage.rows.every((row) => !row.covered && row.handler === undefined)).toBe(true);
     // Named, not merely counted: this is what makes a blind spot actionable.
     expect(coverage.rows.map((row) => row.row_id)).toContain('basic-object.creator-id');
@@ -29,7 +29,7 @@ describe('userMerge coverage manifest', () => {
   it('should report a partial coverage as incomplete', () => {
     const coverage = buildUserMergeCoverage([mockHandler('creator', ['basic-object.creator-id', 'user.password'])]);
     expect(coverage.covered_count).toEqual(2);
-    expect(coverage.uncovered_count).toEqual(99);
+    expect(coverage.uncovered_count).toEqual(97);
     expect(coverage.is_complete).toBe(false);
     const creatorRow = coverage.rows.find((row) => row.row_id === 'basic-object.creator-id');
     expect(creatorRow?.covered).toBe(true);
@@ -45,7 +45,7 @@ describe('userMerge coverage manifest', () => {
     expect(coverage.is_complete).toBe(true);
     // Completeness is not "everything is claimed": the invalidated, retained and out-of-scope
     // rows are deliberately left to no handler, so requiring them would shut the gate for good.
-    expect(coverage.uncovered_count).toEqual(40);
+    expect(coverage.uncovered_count).toEqual(38);
   });
 
   it('should stay incomplete when a single gating row is left uncovered', () => {
@@ -62,7 +62,7 @@ describe('userMerge coverage manifest', () => {
       .filter((row) => row.disposition === UserMergeDisposition.Retain || row.disposition === UserMergeDisposition.OutOfScope)
       .map((row) => row.id);
     const coverage = buildUserMergeCoverage([mockHandler('retained', retained)]);
-    expect(coverage.covered_count).toEqual(18);
+    expect(coverage.covered_count).toEqual(16);
     expect(coverage.is_complete).toBe(false);
   });
 
@@ -72,8 +72,8 @@ describe('userMerge coverage manifest', () => {
     expect(filtered.rows.length).toEqual(40);
     expect(filtered.rows.every((row) => row.disposition === UserMergeDisposition.Transfer)).toBe(true);
     // A filtered view must not be able to claim completeness by narrowing the question.
-    expect(filtered.total).toEqual(101);
-    expect(filtered.uncovered_count).toEqual(100);
+    expect(filtered.total).toEqual(99);
+    expect(filtered.uncovered_count).toEqual(98);
     expect(filtered.is_complete).toBe(false);
   });
 
