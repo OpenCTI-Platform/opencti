@@ -8,6 +8,7 @@ import { userMergePublicSharingHandler } from './userMerge-publicSharingHandler'
 import { userMergeRightsHandler } from './userMerge-rightsHandler';
 import { userMergeRuntimeHandler } from './userMerge-runtimeHandler';
 import { userMergeScalarHandler } from './userMerge-scalarHandler';
+import { userMergeSettingsHandler } from './userMerge-settingsHandler';
 import { userMergeSourceDisableHandler } from './userMerge-sourceDisableHandler';
 
 /**
@@ -28,6 +29,7 @@ export const registerUserMergeHandlers = (): void => {
   registerUserMergeHandler(userMergeRightsHandler);
   registerUserMergeHandler(userMergeOperationalRelationsHandler);
   registerUserMergeHandler(userMergeIndividualHandler);
+  registerUserMergeHandler(userMergeSettingsHandler);
   // Last: the source keeps its live accesses for the whole merge, so that a handler failing
   // halfway leaves an account an administrator can still inspect rather than one already stripped.
   registerUserMergeHandler(userMergeRuntimeHandler);
