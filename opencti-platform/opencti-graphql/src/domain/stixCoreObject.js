@@ -525,6 +525,13 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 // endregion
 
 // region export
+export const stixCoreObjectsExportFiles = async (context, user, exportContext, args) => {
+  const { first } = args;
+  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+  const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
+  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, opts);
+};
+
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot ask for export in draft');
