@@ -6,6 +6,7 @@ import { userMergeHistoryPayloadHandler } from './userMerge-historyPayloadHandle
 import { userMergeIndividualHandler } from './userMerge-individualHandler';
 import { userMergeOperationalRelationsHandler } from './userMerge-operationalRelationsHandler';
 import { userMergePublicSharingHandler } from './userMerge-publicSharingHandler';
+import { userMergeResidualHandler } from './userMerge-residualHandler';
 import { userMergeRightsHandler } from './userMerge-rightsHandler';
 import { userMergeRuntimeHandler } from './userMerge-runtimeHandler';
 import { userMergeScalarHandler } from './userMerge-scalarHandler';
@@ -35,5 +36,7 @@ export const registerUserMergeHandlers = (): void => {
   // Last: the source keeps its live accesses for the whole merge, so that a handler failing
   // halfway leaves an account an administrator can still inspect rather than one already stripped.
   registerUserMergeHandler(userMergeRuntimeHandler);
+  // Reads only, so it sees what every other handler left behind and reports it without acting.
+  registerUserMergeHandler(userMergeResidualHandler);
   assertUserMergeHandlersAreValid();
 };
