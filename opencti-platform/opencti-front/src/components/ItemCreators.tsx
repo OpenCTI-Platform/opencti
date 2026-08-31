@@ -18,9 +18,10 @@ interface ItemCreatorsProps {
     readonly id: string;
     readonly name: string;
   }[];
+  maxWidth?: number | string;
 }
 
-const ItemCreators = ({ creators }: ItemCreatorsProps) => {
+const ItemCreators = ({ creators, maxWidth }: ItemCreatorsProps) => {
   const navigate = useNavigate();
 
   return (
@@ -31,15 +32,16 @@ const ItemCreators = ({ creators }: ItemCreatorsProps) => {
             key={creator.id}
             needs={[SETTINGS_SETACCESSES]}
             placeholder={(
-              <Tag label={creator.name} />
+              <Tag label={creator.name} maxWidth={maxWidth} />
             )}
           >
             {systemUsers.includes(creator.id) ? (
-              <Tag label={creator.name} />
+              <Tag label={creator.name} maxWidth={maxWidth} />
             ) : (
               <Tag
                 key={creator.id}
                 label={creator.name}
+                maxWidth={maxWidth}
                 onClick={() => navigate(`/dashboard/settings/accesses/users/${creator.id}`)}
               />
             )}

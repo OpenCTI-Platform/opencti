@@ -290,8 +290,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             {!isProgress && !isFail && !isOutdated && isBypassUser(me) && (
               <ItemCreators
                 creators={file?.metaData?.creator ? [file?.metaData?.creator] : []}
-              >
-              </ItemCreators>
+                maxWidth={60}
+              />
             )}
             {!disableImport && (
               <Tooltip title={t_i18n('Launch an import of this file')}>
