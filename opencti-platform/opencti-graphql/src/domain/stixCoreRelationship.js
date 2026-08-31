@@ -17,7 +17,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filtering-utils';
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain.ts';
+import { paginatedForExportContext } from '../modules/internal/document/document-domain';
 import { shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverage-utils';
 
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
@@ -82,9 +82,7 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
 
 // region export
 export const stixCoreRelationshipsExportFiles = async (context, user, exportContext, { first }) => {
-  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-  const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
-  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, opts);
+  return paginatedForExportContext(context, user, exportContext, { first });
 };
 
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
