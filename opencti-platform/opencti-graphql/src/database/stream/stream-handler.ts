@@ -22,7 +22,7 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
-import { logApp } from '../../config/conf';
+import { isFeatureEnabled, logApp, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../../config/conf';
 import { getEntitiesMapFromCache } from '../cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 
