@@ -13,6 +13,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } 
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { s3ConnectionConfig } from './raw-file-storage';
 import { Stix2Splitter } from '../utils/stix2-splitter';
+import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { updateExpectationsNumber } from '../domain/work';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
@@ -717,7 +718,7 @@ export const rabbitMQIsAlive = async () => {
  *   message isn't a STIX bundle at all (e.g. sync 'event' messages), since those don't carry
  *   expectation semantics here.
  */
-export const buildSplitMessages = (message) => {
+export const buildSplitMessages = (message, { inlineBundles = false } = {}) => {
   const unsplit = (expectations) => ({ messages: [message], expectations });
   if (message.type !== 'bundle') {
     return unsplit(null);
@@ -736,6 +737,14 @@ export const buildSplitMessages = (message) => {
   // behavior exactly, since single-object bundles were never split by the worker either).
   if (message.no_split || objectCount <= 1) {
     return unsplit(objectCount);
+  }
+  // P3 (plan 0009 part 9): ship the bundle whole; the worker splits it in place and imports
+  // it level by level (bundle_inline marker). Expectations are NOT counted here: the worker
+  // counts them from its own splitter output (its existing multi-object bookkeeping), which
+  // avoids any platform/worker splitter divergence in the count. A worker without the marker
+  // support falls back to its historic split-and-requeue path (which also counts).
+  if (inlineBundles) {
+    return { messages: [{ ...message, bundle_inline: true }], expectations: null };
   }
   // Once the splitter has run, its output (deduped/filtered) is authoritative for both the
   // messages to publish and the expectation count - including the 0- and 1-bundle cases, which
@@ -758,7 +767,8 @@ export const buildSplitMessages = (message) => {
  */
 export const pushBundleToWorker = async (context, user, connectorId, message) => {
   const routingKey = pushRouting(connectorId);
-  const { messages, expectations } = buildSplitMessages(message);
+  const inlineBundles = SEQUENCER_CONFIG.enabled && SEQUENCER_CONFIG.bundleIntake;
+  const { messages, expectations } = buildSplitMessages(message, { inlineBundles });
   if (message.type === 'bundle') {
     logApp.debug('[WORKER] Bundle split into queue messages', { connectorId, work_id: message.work_id, messageCount: messages.length, expectations });
   }
