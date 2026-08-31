@@ -131,6 +131,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'x_mitre_permissions_required', label: 'Permissions required', type: 'string', format: 'vocabulary', vocabularyCategory: 'permissions_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { name: 'x_mitre_detection', label: 'Detection', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_mitre_id', label: 'External ID', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: false },
+    { ...revoked, isFilterable: true },
   ],
   [ENTITY_TYPE_CAMPAIGN]: [
     aliases,
@@ -183,6 +184,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'x_mitre_id', label: 'External ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_threat_hunting', label: 'Threat hunting', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_log_sources', label: 'Log sources', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    { ...revoked, isFilterable: true },
   ],
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [
     xOpenctiAliases,
