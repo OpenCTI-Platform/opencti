@@ -7,11 +7,6 @@ import Tag from './Tag';
 
 /**
  * What 200+ call sites owe this wrapper now that the design system draws it.
- *
- * The hole these close: Tag flattened any non-string label to '' while its
- * props still advertised ReactElement, so twelve sites rendered EMPTY chips
- * and nothing failed. `label` is now typed to what it can actually render, and
- * the cases below pin the rest of the contract.
  */
 
 const chipOf = (text: string) => screen.getByText(text).closest('[class*="box-border"]') as HTMLElement;

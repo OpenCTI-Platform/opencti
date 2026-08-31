@@ -7,11 +7,8 @@ const item = (id: string, extra: Partial<NavItem> = {}): NavItem => ({
 });
 
 /**
- * The permission filtering used to be spread across the rail's JSX, mixing
- * three mechanisms (capability checks, `<Security>` wrappers and feature
- * flags) with rendering. Now it is one pure function, so it can be pinned
- * down without a React tree — this is the safety net for "an entry appears
- * for a user who should not see it".
+ * The permission filtering used to be spread across the rail's JSX, mixing three mechanisms
+ * (capability checks, `<Security>` wrappers and feature flags) with rendering.
  */
 describe('filterNavGroups', () => {
   it('drops entries whose permission expression evaluated to false', () => {
@@ -65,10 +62,8 @@ describe('filterNavGroups', () => {
   });
 
   it('keeps a parent whose submenu ended up empty, as a leaf entry', () => {
-    // The component this replaced rendered such a parent as a plain navigable
-    // link (`LeftBarItem`'s "No Subitems" branch). Removing the entry instead
-    // would lose a destination: `canSeeData` is granted by `INGESTION` alone,
-    // which grants none of the eight `Data` sub-items.
+    // The component this replaced rendered such a parent as a plain navigable link
+    // (`LeftBarItem`'s "No Subitems" branch).
     const groups: RawNavGroup[] = [{
       id: 'g',
       items: [

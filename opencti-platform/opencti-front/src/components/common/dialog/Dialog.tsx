@@ -39,20 +39,14 @@ const Dialog = ({
       onClick={(e) => e.stopPropagation()}
       slotProps={{
         paper: {
-          // A dialog is a layer-2 surface: the class re-declares the elevation
-          // aliases, `layerInputVars` carries the three input backgrounds the
-          // library's own .layer-N blocks forget. Both must sit on the SAME
-          // node. See utils/fdsLayer.ts.
+          // A dialog is a layer-2 surface: the class re-declares the elevation aliases,
+          // `layerInputVars` carries the three input backgrounds the library's own .layer-N
+          // blocks forget.
           className: fdsLayerClass(SURFACE_LAYER),
           sx: {
             ...layerInputVars,
             paddingTop: 3,
-            // Symmetric with paddingTop. The `py: 0` below is deliberate -- the
-            // PAPER owns the outer gutter, not DialogContent -- but the paper
-            // had no bottom counterpart, so once the padding typo was fixed the
-            // content sat flush against the edge. 145 of the 171 consumers end
-            // their children with a DialogActions row, so that landed under a
-            // button nearly everywhere.
+            // Symmetric with paddingTop.
             paddingBottom: 3,
           },
         },

@@ -62,10 +62,8 @@ const PlaybookFlowFieldArray = ({
       label={label}
       name={name}
       options={fieldOptions}
-      // renderTags is gone: the library builds chips from getOptionLabel, which
-      // is the same function the input and the filter use. The MUI version was
-      // inconsistent — chips showed the RAW option.title while the input showed
-      // the translated one — so chips are now translated like everything else.
+      // renderTags is gone: the library builds chips from getOptionLabel, which is the same
+      // function the input and the filter use.
       renderOption={(value: string) => {
         const option = findOption(value);
         if (!option) return null;

@@ -34,11 +34,7 @@ interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'si
   iconOnly?: boolean;
   selected?: boolean;
   /**
-   * Force the MUI path. For a site whose `color` is an expression: the wrapper
-   * only ever sees the resolved value, so it cannot tell a literal from a
-   * ternary, and a control that changes engine between renders is remounted --
-   * losing keyboard focus at the moment of activation. @sandy ruled identity
-   * stability over partial library rendering.
+   * Force the MUI path.
    */
   keepMui?: boolean;
   component?: React.ElementType;
@@ -62,20 +58,14 @@ type DefaultIntentButtonProps = BaseButtonProps & {
 export type CustomButtonProps = RestrictedIntentButtonProps | DefaultIntentButtonProps;
 
 /**
- * The wrapper's `variant` is a PRIORITY and its `intent`/`color` are the TONE;
- * the library splits the same two axes as `priority` and `variant`. Mapping the
- * words across without this table is the whole trap: `variant="secondary"` (367
- * sites) is a priority, not a colour.
+ * The wrapper's `variant` is a PRIORITY and its `intent`/`color` are the TONE; the library
+ * splits the same two axes as `priority` and `variant`.
  */
 const LIB_PRIORITY = { primary: 'primary', secondary: 'secondary', tertiary: 'tertiary' } as const;
 const LIB_TONE_FROM_INTENT = { default: 'default', destructive: 'destructive', ai: 'ia', ee: 'highlight' } as const;
 
 /**
- * `color` outranks `intent`, as it always did. `primary`, `secondary` and
- * `default` all resolve to `theme.palette.primary.main` in `getColorDefinitions`
- * -- they differ only by border -- so all three are the library's default tone.
- * `warn` and `success` have NO library tone and are deliberately absent: a site
- * using them keeps MUI rather than lose its colour.
+ * `color` outranks `intent`, as it always did.
  */
 const LIB_TONE_FROM_COLOR: Partial<Record<ButtonColorKey, 'default' | 'destructive' | 'ia' | 'highlight'>> = {
   default: 'default',
@@ -136,10 +126,7 @@ const Button: React.FC<CustomButtonProps> = ({
   const isPolymorphic = Boolean(Component || to || href);
 
   /**
-   * The library is used only where it can reproduce the site exactly. Anything
-   * it cannot express keeps MUI, and a site passing a value outside the union
-   * -- there are a few, and `TasksList` passes MUI's own `variant="outlined"`
-   * -- lands here too instead of silently rendering the wrong thing.
+   * The library is used only where it can reproduce the site exactly.
    */
   const canUseLibrary = Boolean(libPriority)
     && Boolean(libTone)
@@ -149,14 +136,11 @@ const Button: React.FC<CustomButtonProps> = ({
     && !externalSx
     && !classes
     && !keepMui
-    // The icon-only delegate falls back here when the library cannot take the
-    // site. The library Button pads for a text label, so it would draw a pill
-    // around the glyph instead of MUI's square control: keep MUI's geometry.
+    // The icon-only delegate falls back here when the library cannot take the site.
     && !iconOnly
     /**
-     * `asChild` REPLACES the child's content, and `component="label"` wraps a
-     * real file input that would not survive it. MUI also gives the label the
-     * role and tab stop the library path does not (WCAG 2.1.1).
+     * `asChild` REPLACES the child's content, and `component="label"` wraps a real file input
+     * that would not survive it.
      */
     && (!isPolymorphic || rendersAnchor)
     // `asChild` replaces the button with its child, and the library drops the
@@ -165,11 +149,9 @@ const Button: React.FC<CustomButtonProps> = ({
 
   if (canUseLibrary) {
     /**
-     * MUI sized the glyph through `.MuiButton-startIcon`; the library's slot
-     * does not, so an icon with no intrinsic size paints 0x0 there -- the
-     * TableTuneIcon defect, which a class assertion cannot see. Sizing the slot
-     * here fixes every icon site at once and keeps the 16px/14px the MUI
-     * original drew.
+     * MUI sized the glyph through `.MuiButton-startIcon`; the library's slot does not, so an
+     * icon with no intrinsic size paints 0x0 there -- the TableTuneIcon defect, which a class
+     * assertion cannot see.
      */
     const iconSize = theme.button.sizes[size].iconSize;
     const sizedIcon = (node: React.ReactNode) => (node ? (
@@ -201,10 +183,9 @@ const Button: React.FC<CustomButtonProps> = ({
       );
     }
     /**
-     * MUI's ButtonBase defaults to `type="button"`; a bare <button> inside a
-     * <form> defaults to SUBMIT. Without this, every converted button in a form
-     * fired its handler AND submitted the form -- caught as a double `onSubmit`
-     * in FintelTemplateForm. `libProps` still overrides it.
+     * MUI's ButtonBase defaults to `type="button"`; a bare <button> inside a <form> defaults
+     * to SUBMIT. Without this, every converted button in a form fired its handler AND
+     * submitted the form -- caught as a double `onSubmit` in FintelTemplateForm.
      */
     return (
       <LibButton type="button" {...libProps} startIcon={sizedIcon(startIcon)} endIcon={sizedIcon(endIcon)}>

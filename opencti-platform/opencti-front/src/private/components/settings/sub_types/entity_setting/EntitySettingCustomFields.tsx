@@ -183,10 +183,8 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
       case 'integer':
         return (
           <Input
-            // `isTypeNumber` (library #190) forces type="number" and suppresses the
-            // browser's own spinners, so the field carries the designed stepper
-            // instead of the UA's. The box does not change size: the stepper adds
-            // right padding inside the field (`pr-7`), never height.
+            // `isTypeNumber` (library #190) forces type="number" and suppresses the browser's
+            // own spinners, so the field carries the designed stepper instead of the UA's.
             isTypeNumber
             label={t_i18n('Default value')}
             value={defaultValue}

@@ -33,10 +33,8 @@ describe('Hook: useFdsThemeScope', () => {
     expect(root().classList.contains('light')).toBe(false);
   });
 
-  // The acquired behaviour this migration must not lose: custom themes are
-  // stored in database under arbitrary names, and `themeBuilder` treats
-  // everything that is not `Light` as dark. If this hook resolved such a name
-  // to light, MUI and FDS would disagree and the rail would be unreadable.
+  // The acquired behaviour this migration must not lose: custom themes are stored in database
+  // under arbitrary names, and `themeBuilder` treats everything that is not `Light` as dark.
   it.each(['Dark', 'Corporate', 'filigran-2026', '', undefined])(
     'resolves the non-Light theme name %p to dark',
     (name) => {

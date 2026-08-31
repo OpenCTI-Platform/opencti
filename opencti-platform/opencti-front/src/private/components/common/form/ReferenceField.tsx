@@ -58,10 +58,8 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
       onFocusInput={onFocus}
       noOptionsText={t_i18n(noOptionsText)}
       options={options}
-      // This used to forward `InputEvent.data` — the ONE character just typed,
-      // not the accumulated text — so ArtifactField's setSearch always held a
-      // single letter. The library hands over the full input value, which is
-      // what the consumer's name says it wants.
+      // This used to forward `InputEvent.data` — the ONE character just typed, not the
+      // accumulated text — so ArtifactField's setSearch always held a single letter.
       onInputChange={(search: string, meta: ComboboxChangeMeta) => {
         if (meta.cause === 'type') onInputChange(search || null);
       }}

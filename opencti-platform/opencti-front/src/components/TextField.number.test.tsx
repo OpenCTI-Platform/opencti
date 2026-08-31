@@ -1,13 +1,6 @@
 /**
- * Contract tests for the number path of the TextField pivot, driven through a
- * real `<Field component={TextField}>` — the shape all 526 product sites use.
- *
- * They went through an explicit props object until the placement diagnostic
- * learned to ignore props that carry no value. Formik renders this component as
- * `createElement(component, {field, form, ...props, className}, children)` —
- * three arguments, so React defines `props.children` even when the value is
- * `undefined` — and `children` is in neither `placeable` nor `nativeAttrs`, so
- * `unplaceable` was never empty and every Formik site took the MUI fallback.
+ * Contract tests for the number path of the TextField pivot, driven through a real `<Field
+ * component={TextField}>` — the shape all 526 product sites use.
  */
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
