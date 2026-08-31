@@ -175,6 +175,12 @@ export const getFintelTemplates = async (context, user, stixDomainObject) => {
 };
 
 // region export
+export const stixDomainObjectsExportFiles = async (context, user, exportContext, { first }) => {
+  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+  const opts = { first, entity_type: exportContext.entity_type };
+  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, opts);
+};
+
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters } = args;
