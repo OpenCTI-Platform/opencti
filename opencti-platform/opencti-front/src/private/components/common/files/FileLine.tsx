@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import type { OverridableStringUnion } from '@mui/types';
@@ -35,10 +36,13 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Box from '@mui/material/Box';
-import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import { isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileWork from './FileWork';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
+import FieldOrEmpty from 'src/components/FieldOrEmpty';
+import { Truncate } from 'src/components/dataGrid/dataTableUtils';
+import ItemCreators from 'src/components/ItemCreators';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
@@ -285,6 +289,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   limit={1}
                 />
               </Box>
+            )}
+            {!isProgress && !isFail && !isOutdated && isBypassUser(me) && (
+              <ItemCreators
+                creators={[file?.metaData?.creator]}
+              >
+              </ItemCreators>
             )}
             {!disableImport && (
               <Tooltip title={t_i18n('Launch an import of this file')}>

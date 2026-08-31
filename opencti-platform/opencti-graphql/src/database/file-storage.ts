@@ -661,7 +661,7 @@ export const upload = async (
   // - Otherwise, honor an explicitly provided creator_id (e.g. an export pushed back on behalf of the user who requested it)
   // - And finally fall back to the uploading user.
   const existingCreatorId = (currentFile?.metaData as FileMetadata)?.creator_id;
-  const creatorId = existingCreatorId || metadata.creator_id || user.id;
+  const creatorId = existingCreatorId ?? metadata.creator_id ?? user.id;
 
   // Upload the data from the buffered content
   const uploadReadStream = createReadStream();
@@ -672,7 +672,7 @@ export const upload = async (
     mimetype: fileMime,
     encoding,
     sha256,
-    creator_id: creatorId as string,
+    creator_id: creatorId,
     entity_id: (entity as BasicStoreEntity)?.internal_id,
   };
   await rawUpload(key, uploadReadStream);
