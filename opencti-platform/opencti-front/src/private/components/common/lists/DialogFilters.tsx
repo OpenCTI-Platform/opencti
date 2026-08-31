@@ -9,6 +9,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { FilterSearchContext } from '../../../../utils/filters/filtersUtils';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 interface DialogFiltersProps {
   handleOpenFilters: (event: React.SyntheticEvent) => void;
@@ -54,6 +55,8 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         </IconButton>
       </Tooltip>
       <Dialog
+        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={open}
         onClose={handleCloseFilters}
         title={t_i18n('Advanced search')}

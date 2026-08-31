@@ -61,3 +61,20 @@ export const fdsLayerClass = (layer: FdsLayer) => `layer-${layer}`;
 
 /** Drawers and dialogs: layer 2. */
 export const SURFACE_LAYER: FdsLayer = 2;
+
+/**
+ * Filter popovers, per the designer's standing rule for ALL of them: the
+ * popover SURFACE is `--bg-elevation-highlight` taken at layer 1, and the
+ * fields inside sit at layer 2, exactly as they do in a drawer or a dialog.
+ *
+ * Both halves live on the paper itself, so no wrapper element is introduced.
+ * The layer-2 class plus `layerInputVars` give the fields their background;
+ * the surface then has to name its layer-1 value explicitly, because the class
+ * it shares the node with has just moved the ambient alias to layer 2.
+ */
+export const FILTER_POPOVER_LAYER: FdsLayer = 2;
+
+export const filterPopoverPaperSx = {
+  ...layerInputVars,
+  background: 'var(--bg-elevation-highlight-layer-1)',
+} as const;

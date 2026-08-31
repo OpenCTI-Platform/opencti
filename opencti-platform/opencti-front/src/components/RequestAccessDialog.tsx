@@ -19,6 +19,7 @@ import { handleErrorInForm } from '../relay/environment';
 import useAuth from '../utils/hooks/useAuth';
 import { FieldOption, fieldSpacingContainerStyle } from '../utils/field';
 import type { Theme } from './Theme';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../utils/fdsLayer';
 
 const requestAccessDialogMutation = graphql`
   mutation RequestAccessDialogMutation($input: RequestAccessAddInput!) {
@@ -98,7 +99,13 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
       <Dialog
         open={open}
         slotProps={{
-          paper: { variant: 'elevation', elevation: 1 },
+          // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+          paper: {
+            variant: 'elevation',
+            elevation: 1,
+            className: fdsLayerClass(SURFACE_LAYER),
+            sx: { ...layerInputVars },
+          },
         }}
         keepMounted={true}
         fullWidth={true}

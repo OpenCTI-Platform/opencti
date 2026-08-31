@@ -48,6 +48,7 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import UserHistory from './UserHistory';
 import UserTokenList from './UserTokenList';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -746,6 +747,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
       </Grid>
       <Dialog
+        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSession}
         onClose={handleCloseKillSession}
         title={t_i18n('Are you sure?')}
@@ -766,6 +769,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </DialogActions>
       </Dialog>
       <Dialog
+        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSessions}
         onClose={handleCloseKillSessions}
         title={t_i18n('Are you sure?')}

@@ -25,6 +25,7 @@ import { PaginationOptions } from 'src/components/list_lines';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
 import { type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../../utils/fdsLayer';
 
 export const searchStixCoreObjectsByRepresentativeQuery = graphql`
   query BulkRelationDialogQuery(
@@ -477,7 +478,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
+      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1, className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
           <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>

@@ -405,9 +405,16 @@ const ThemeDark = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
+          // Sandy's ruling: a dialog is treated EXACTLY like a drawer, which
+          // means the same paper colour. The drawer's paper reads
+          // `--bg-elevation-default` at layer 2; this used to be a hardcoded
+          // hex that resolved to a different shade, which is why the two
+          // surfaces never matched. Every dialog paper now declares layer 2
+          // (the shared Dialog, and every direct MUI mount), so the alias lands
+          // on the same value. A platform-customised paper colour still wins.
           backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-            ? '#0F1D34'
-            : (paper ?? '#0F1D34'),
+            ? 'var(--bg-elevation-default)'
+            : (paper ?? 'var(--bg-elevation-default)'),
           borderRadius: 4,
         },
       },
@@ -602,15 +609,12 @@ const ThemeDark = (
             border: '0 !important',
           },
           '.error .react-mde textarea': {
-            border: '0 !important',
-            borderBottom: '2px solid #F14337 !important',
+            border: '1px solid var(--border-input-error) !important',
             '&:hover': {
-              border: '0 !important',
-              borderBottom: '2px solid #F14337 !important',
+              border: '1px solid var(--border-input-error) !important',
             },
             '&:focus': {
-              border: '0 !important',
-              borderBottom: '2px solid #F14337 !important',
+              border: '1px solid var(--border-input-error) !important',
             },
           },
           '.mde-header': {
@@ -626,18 +630,25 @@ const ThemeDark = (
             fontFamily: '"IBM Plex Sans", sans-serif',
             color: `${text_color} !important`,
           },
+          // The markdown editor is a textarea like any other field, so it takes
+          // the field surface instead of the bare underline it had. Written in
+          // tokens, which makes it layer-aware for free: inside a drawer or a
+          // dialog `--bg-input-default` resolves to that surface's own layer
+          // (#0c1527), and at page level it stays layer 0.
           '.mde-textarea-wrapper textarea': {
             fontFamily: '"IBM Plex Sans", sans-serif',
             fontSize: 13,
             color: text_color,
-            background: 'transparent',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.7) !important',
-            transition: 'borderBottom .3s',
+            background: 'var(--bg-input-default)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '8px 12px',
+            border: '1px solid transparent !important',
+            transition: 'border-color .3s',
             '&:hover': {
-              borderBottom: '2px solid #ffffff !important',
+              border: '1px solid var(--border-input-hover) !important',
             },
             '&:focus': {
-              borderBottom: `2px solid ${primary || THEME_DARK_DEFAULT_PRIMARY} !important`,
+              border: '1px solid var(--border-input-focus) !important',
             },
           },
           '.mde-preview .mde-preview-content a': {

@@ -13,6 +13,7 @@ import useGraphInteractions from '../utils/useGraphInteractions';
 import { fetchQuery } from '../../../relay/environment';
 import { GraphToolbarExpandToolsRelationshipsQuery$data } from './__generated__/GraphToolbarExpandToolsRelationshipsQuery.graphql';
 import { ObjectToParse } from '../utils/useGraphParser';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 const expandRelationshipsQuery = graphql`
   query GraphToolbarExpandToolsRelationshipsQuery($filters: FilterGroup) {
@@ -664,6 +665,8 @@ const GraphToolbarExpandTools = ({
       />
 
       <Dialog
+        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         fullWidth
         maxWidth={false}
         open={isExpandOpen}

@@ -13,6 +13,7 @@ import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import type { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import FilterGroupsVisualDisplay from './FilterGroupsVisualDisplay';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 
 interface ImbricatedFilterGroupDisplayProps {
   filterObj: FilterGroup;
@@ -46,6 +47,8 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
       />
 
       <Dialog
+        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={open}
         onClose={handleClose}
         aria-labelledby="filter-groups-dialog-title"
