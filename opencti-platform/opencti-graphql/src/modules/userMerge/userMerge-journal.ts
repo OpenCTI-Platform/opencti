@@ -112,3 +112,24 @@ export const readJournalEntries = async (mergeId?: string, first?: number): Prom
   const sorted = [...entries].sort((a, b) => b.started_at.localeCompare(a.started_at));
   return first ? sorted.slice(0, first) : sorted;
 };
+
+/**
+ * The instant the first real merge on this pair started, or the given fallback when there is none.
+ *
+ * Handlers reading the history index cut on this to tell what named the source before the merge
+ * from what the merge itself wrote about the source. That boundary has to be a property of the
+ * pair, not of the run: the deletion gate answers by running a fresh dry-run, so a boundary set
+ * at the current instant would let the previous merge's own traces back in, count them as
+ * references still pending, and refuse the deletion forever.
+ *
+ * Dry-runs are skipped because they write nothing to bound. The journal expires after 30 days, so
+ * a pair merged longer ago reads as never merged and the gate refuses — the safe way to be wrong.
+ */
+export const resolveMergeStartedAt = async (sourceId: string, targetId: string, fallback: Date): Promise<Date> => {
+  const entries = await redisUserMergeJournalRead() as UserMergeJournalRecord[];
+  const starts = entries
+    .filter((entry) => !entry.dry_run && entry.source_user_id === sourceId && entry.target_user_id === targetId)
+    .map((entry) => new Date(entry.started_at).getTime())
+    .filter((time) => !Number.isNaN(time));
+  return starts.length > 0 ? new Date(Math.min(...starts)) : fallback;
+};
