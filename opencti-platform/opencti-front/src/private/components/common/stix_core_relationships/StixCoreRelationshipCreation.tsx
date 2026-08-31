@@ -705,6 +705,11 @@ const StixCoreRelationshipCreation = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        slotProps={{
+          paper: {
+            role: 'dialog',
+          },
+        }}
       >
         {step === 0
           || step === undefined

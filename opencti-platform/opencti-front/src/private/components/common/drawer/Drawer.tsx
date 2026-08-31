@@ -229,6 +229,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         slotProps={{
           paper: {
             ref,
+            role: 'dialog',
             sx: {
               minHeight: '100vh',
               width: getDrawerWidth(size),

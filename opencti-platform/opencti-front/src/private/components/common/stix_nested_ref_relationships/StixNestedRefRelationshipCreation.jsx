@@ -843,6 +843,11 @@ class StixNestedRefRelationshipCreation extends Component {
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}
+        slotProps={{
+          paper: {
+            role: 'dialog',
+          },
+        }}
       >
         {step === 0
           || step === undefined
