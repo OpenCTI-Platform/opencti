@@ -218,3 +218,15 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   // endregion
   return pagination;
 };
+
+// Get export files paginated for a given export context (entity_type + optional entity_id)
+export const paginatedForExportContext = async (
+  context: AuthContext,
+  user: AuthUser,
+  exportContext: { entity_type: string; entity_id?: string },
+  opts?: FilesOptions<BasicStoreEntityDocument>,
+) => {
+  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+  const listOpts = { ...opts, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
+  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, listOpts);
+};

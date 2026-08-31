@@ -60,7 +60,7 @@ import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
-import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { findById as documentFindById, paginatedForExportContext, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
@@ -527,9 +527,7 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 // region export
 export const stixCoreObjectsExportFiles = async (context, user, exportContext, args) => {
   const { first } = args;
-  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-  const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
-  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, opts);
+  return paginatedForExportContext(context, user, exportContext, { first });
 };
 
 export const stixCoreObjectsExportAsk = async (context, user, args) => {

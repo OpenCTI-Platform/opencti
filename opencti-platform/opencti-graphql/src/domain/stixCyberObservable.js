@@ -45,7 +45,7 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage';
 import { isNumericAttribute } from '../schema/schema-attributes';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { paginatedForExportContext } from '../modules/internal/document/document-domain';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -348,9 +348,7 @@ export const stixCyberObservableEditContext = async (context, user, stixCyberObs
 
 // region export
 export const stixCyberObservablesExportFiles = async (context, user, exportContext, { first }) => {
-  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-  const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
-  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, opts);
+  return paginatedForExportContext(context, user, exportContext, { first });
 };
 
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
