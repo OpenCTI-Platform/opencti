@@ -29,7 +29,7 @@ import { getParentTypes } from '../../../schema/schemaUtils';
 import * as jsonpatch from 'fast-json-patch';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
-import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
 
 const attributePathMapping: any = {
@@ -56,9 +56,9 @@ const attributePathMapping: any = {
     [ABSTRACT_STIX_RELATIONSHIP]: '/confidence',
   },
   x_opencti_score: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/score`,
     [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/score`,
     [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/score`,
-    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/score`,
     [ENTITY_TYPE_IDENTITY_ORGANIZATION]: `/extensions/${STIX_EXT_OCTI}/score`,
   },
   x_opencti_detection: {
@@ -155,10 +155,11 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+  executor: async ({ dataInstanceId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
     const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
     const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
+    const eventContext = buildPlaybookEventContext(event);
 
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType: string, attribute: string) => {
@@ -195,7 +196,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
-      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions

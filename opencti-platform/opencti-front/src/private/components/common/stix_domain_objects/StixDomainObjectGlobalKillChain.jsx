@@ -126,7 +126,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         this,
                         stixRelationship.id,
                       )}
-                      aria-haspopup="true"
+                      aria-expanded={this.state.expandedLines[stixRelationship.id]}
                     >
                       {this.state.expandedLines[stixRelationship.id]
                         === false ? (

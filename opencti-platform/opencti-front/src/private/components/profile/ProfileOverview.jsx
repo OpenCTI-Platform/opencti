@@ -157,7 +157,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
   }, [uri, theme]);
   return (
     <div style={{ textAlign: 'center' }}>
-      <img src={otpQrImage} style={{ width: 265 }} alt="" />
+      <img src={otpQrImage} style={{ width: 265 }} alt={t_i18n('QR code for two-factor authentication')} />
       {error ? (
         <Alert
           severity="error"

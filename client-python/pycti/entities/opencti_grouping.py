@@ -39,6 +39,10 @@ class Grouping:
                   color
                 }
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -225,6 +229,10 @@ class Grouping:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {

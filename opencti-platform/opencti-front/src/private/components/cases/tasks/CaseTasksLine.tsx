@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { tasksDataColumns } from './tasksDataColumns';
+import { useTasksDataColumns } from './useTasksDataColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
 import TaskPopover from './TaskPopover';
@@ -64,6 +64,16 @@ const CaseTaskFragment = graphql`
         color
       }
     }
+    workflowInstance {
+      id
+      currentStatus {
+        template {
+          id
+          name
+          color
+        }
+      }
+    }
     ...CaseTaskOverview_task
   }
 `;
@@ -83,6 +93,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
 }) => {
   const classes = useStyles();
   const { fld, t_i18n } = useFormatter();
+  const tasksDataColumns = useTasksDataColumns();
   const task = useFragment(CaseTaskFragment, node);
   const [open, setOpen] = useState(false);
   return (
@@ -148,6 +159,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
 export const CaseTasksLineDummy = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const tasksDataColumns = useTasksDataColumns();
   return (
     <ListItem
       classes={{ root: classes.item }}

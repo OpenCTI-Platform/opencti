@@ -13,9 +13,9 @@ import {
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
   DatabaseError,
+  DOC_INSUFFICIENT_CONFIDENCE_LEVEL,
   ForbiddenAccess,
   FunctionalError,
-  INSUFFICIENT_CONFIDENCE_LEVEL,
   LockTimeoutError,
   MissingReferenceError,
   TYPE_LOCK_ERROR,
@@ -25,6 +25,7 @@ import {
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
+import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -161,7 +162,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -2161,7 +2162,8 @@ const getPreviousInstanceValue = (key: string, instance: Record<string, any>) =>
   if (key.includes('.')) {
     const [base, target] = key.split('.');
     const data = instance[base]?.[target];
-    return data ? [data] : data;
+    // Always return an array (or undefined) so callers relying on Array methods (e.g. draft consolidation) never crash on falsy scalars
+    return isEmptyField(data) ? undefined : [data];
   }
   const data = instance[key];
   if (isEmptyField(data)) {
@@ -3597,6 +3599,9 @@ export const createRelation = async (
   opts: CreateRelationRawOpts = {},
 ) => {
   const data = await createRelationRaw(context, user, input, opts);
+  if (data.isCreation && isFeatureEnabled('ENTITIES_WORKFLOW')) {
+    await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
+  }
   return data.element;
 };
 type RuleContent = {
@@ -4030,7 +4035,7 @@ const createEntityRaw = async (
   } catch (e: any) {
     // In case of insufficient confidence level, don't reject and continue to upsert
     // as upsert have a complex strategy about confidence that doesn't reject everything
-    if (rawInput.update !== false && e?.extensions?.data?.doc_code === INSUFFICIENT_CONFIDENCE_LEVEL) {
+    if (rawInput.update !== false && e?.extensions?.data?.doc_code === DOC_INSUFFICIENT_CONFIDENCE_LEVEL) {
       logApp.warn('Merging stopped because of user confidence level, applying upsert', { cause: e });
       // Try to execute the method forcing update to false, prevent auto merging.
       return await internalCreateEntityRaw(context, user, { ...rawInput, update: false }, type, opts);
@@ -4054,6 +4059,9 @@ export const createEntity = async (
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
+    if (isFeatureEnabled('ENTITIES_WORKFLOW')) {
+      await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
+    }
   } else if (data.event !== null) { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
@@ -4236,6 +4244,19 @@ export const internalDeleteElementById = async <T extends StoreObject>(
     if (lock) await lock.unlock();
   }
   // - TRANSACTION END
+  const isTrashableElement = !isInferredIndex(element._index)
+    && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+  const isPermanentDelete = !!opts.forceDelete || !conf.get('app:trash:enabled') || !isTrashableElement;
+  if (isFeatureEnabled('ENTITIES_WORKFLOW') && isPermanentDelete) {
+    // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is permanently deleted.
+    // Skipped for trash (soft) deletions: the `has-workflow` relation is kept for restoration and must still
+    // point to a live WorkflowInstance, otherwise restoring the entity from trash would fail.
+    try {
+      await cleanupEntityWorkflow(context, user, element as BasicStoreBase);
+    } catch (err) {
+      logApp.error('[OPENCTI] Error cleaning up WorkflowInstance after entity deletion', { cause: err, id: (element as BasicStoreBase).internal_id });
+    }
+  }
   return { element, event };
 };
 export const deleteElementById = async <T extends StoreObject>(

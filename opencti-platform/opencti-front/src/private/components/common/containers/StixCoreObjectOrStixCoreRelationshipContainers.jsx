@@ -50,9 +50,10 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
   const LOCAL_STORAGE_KEY = `containers${
     authorId
       ? `-${authorId}`
@@ -128,11 +129,9 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       width: '10%',
       isSortable: true,
     },
-    x_opencti_workflow_id: {
-      label: 'Status',
-      width: '8%',
-      isSortable: true,
-    },
+    ...(isWorkflowInstanceEnabled
+      ? { workflowInstance: { label: 'Status', width: '8%', isSortable: true } }
+      : { x_opencti_workflow_id: { label: 'Status', width: '8%', isSortable: true } }),
     objectMarking: {
       label: 'Marking',
       width: '8%',

@@ -3781,14 +3781,6 @@ export const elAggregationRelationsCount = async (
                 aggs: {
                   parent: {
                     reverse_nested: {},
-                    aggs: {
-                      weight: {
-                        sum: {
-                          field: 'i_inference_weight',
-                          missing: 1,
-                        },
-                      },
-                    },
                   },
                 },
               },
@@ -3806,14 +3798,6 @@ export const elAggregationRelationsCount = async (
             : `${field}.keyword`,
           size: MAX_AGGREGATION_SIZE,
         },
-        aggs: {
-          weight: {
-            sum: {
-              field: 'i_inference_weight',
-              missing: 1,
-            },
-          },
-        },
       },
     };
   }
@@ -3825,11 +3809,11 @@ export const elAggregationRelationsCount = async (
       if (isAggregationConnection) {
         const { buckets } = data.aggregations.connections.filtered.genres;
         if (field === 'internal_id') {
-          return buckets.map((b: any) => ({ label: b.key, value: b.parent.weight.value }));
+          return buckets.map((b: any) => ({ label: b.key, value: b.parent.doc_count }));
         }
         // entity_type
         const filteredBuckets = buckets.filter((b: any) => !(isAbstract(pascalize(b.key)) || isAbstract(b.key)));
-        return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
+        return R.map((b) => ({ label: pascalize(b.key), value: b.parent.doc_count }), filteredBuckets);
       }
       const { buckets } = data.aggregations.genres;
       return buckets.map((b: any) => {
@@ -3839,7 +3823,7 @@ export const elAggregationRelationsCount = async (
         } else if (!isIdFields) {
           label = pascalize(b.key);
         }
-        return { label, value: b.weight.value };
+        return { label, value: b.doc_count };
       });
     })
     .catch((e) => {

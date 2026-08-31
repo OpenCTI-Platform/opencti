@@ -54,7 +54,7 @@ describe('Workflow Validation Resolver', () => {
     const result = await queryAsAdmin({
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: {
-        entityType: 'Malware', // Not a basic object
+        entityType: 'IPv4-Addr', // A StixCyberObservable, workflow_id is not an available setting for this type
         definition,
       },
     });

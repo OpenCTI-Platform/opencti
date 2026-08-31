@@ -50,9 +50,14 @@ vi.mock('../../../src/config/conf', () => ({
 
 // Mock heavy I/O modules that get pulled in transitively. vi.hoisted is
 // required so the mock fns are available when vi.mock is hoisted above imports.
-const { mockRedisGetXtmAgentResponse, mockRedisSetXtmAgentResponse } = vi.hoisted(() => ({
+const {
+  mockRedisGetXtmAgentResponse,
+  mockRedisSetXtmAgentResponse,
+  mockRedisDeleteXtmAgentResponse,
+} = vi.hoisted(() => ({
   mockRedisGetXtmAgentResponse: vi.fn(() => Promise.resolve(null)),
   mockRedisSetXtmAgentResponse: vi.fn(() => Promise.resolve()),
+  mockRedisDeleteXtmAgentResponse: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('../../../src/database/redis', () => ({
   getClientBase: vi.fn(() => ({ set: vi.fn(), get: vi.fn(), del: vi.fn() })),
@@ -62,6 +67,7 @@ vi.mock('../../../src/database/redis', () => ({
   redisGetXtmRegistrationResult: vi.fn(() => null),
   redisGetXtmAgentResponse: mockRedisGetXtmAgentResponse,
   redisSetXtmAgentResponse: mockRedisSetXtmAgentResponse,
+  redisDeleteXtmAgentResponse: mockRedisDeleteXtmAgentResponse,
 }));
 
 vi.mock('../../../src/lock/master-lock', () => ({
@@ -103,7 +109,11 @@ vi.mock('../../../src/domain/xtm-auth', () => ({
   issueXtmJwt: vi.fn(() => Promise.resolve('jwt-token-123')),
 }));
 
-vi.mock('../../../src/http/httpUtils', () => ({
+// Only `setCookieError` is stubbed here. `isBrowserSessionRequest` must stay
+// the real implementation — the approval tests below exercise that guard's
+// actual logic, and a stub would assert nothing.
+vi.mock('../../../src/http/httpUtils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/http/httpUtils')>()),
   setCookieError: vi.fn(),
 }));
 
@@ -147,12 +157,30 @@ vi.mock('../../../src/utils/http-client', () => ({
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
-import { deleteChatbotSession, getChatbotFileDownload, getChatbotSessions, postAgentMessageStream, postChatbotMessageSteer } from '../../../src/http/httpChatbotProxy';
+import {
+  deleteChatbotSession,
+  getChatbotFileDownload,
+  getChatbotPendingApprovals,
+  getChatbotSessions,
+  postAgentMessageStream,
+  postChatbotMessageApprove,
+  postChatbotMessageSteer,
+} from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 const buildReq = (body?: Record<string, unknown>) => ({ body, headers: {} } as any);
+
+// A request as it arrives from a signed-in browser: session cookie resolved to
+// the same identity `setupAuthenticatedContext` authenticates, and no bearer
+// token. The approval routes accept nothing else.
+const buildSessionReq = (body?: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
+  body,
+  headers: {},
+  session: { user: { id: 'user-1' } },
+  ...overrides,
+} as any);
 
 const buildRes = () => {
   const res: any = {};
@@ -404,6 +432,88 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(cacheKey).toHaveLength(64); // sha256 hex length
     expect(storedContent).toBe('Hello world');
     expect(ttlSeconds).toBeGreaterThan(0);
+  });
+
+  it('should not cache a turn that stopped for human approval', async () => {
+    // AI Insights never declares `supports_tool_approval`, so a gated tool ends
+    // its turn with this prose. Caching it would pin "I need approval before
+    // running X" to the entity for the whole TTL (24h by default) and replay it
+    // to every user, long after an administrator whitelists the tool.
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'summarize this report' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    const approvalMessage = 'I need approval before running: opencti_delete_entity.\n\nThis chat can\'t collect that approval, so I\'ve stopped rather than acting without it.';
+    dataHandlers.forEach((h) => h(Buffer.from(`data: ${JSON.stringify({ type: 'done', content: approvalMessage })}\n\n`)));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
+  it('should not cache an answer that stops for approval only after some prose', async () => {
+    // The agent can answer part of the question and then stop. A prefix-only test
+    // would let this half-answer be cached with a stale approval request attached.
+    const dataHandlers: ((chunk: Buffer) => void)[] = [];
+    const endHandlers: (() => void | Promise<void>)[] = [];
+    const fakeStream = {
+      pipe: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn((event: string, handler: any) => {
+        if (event === 'data') dataHandlers.push(handler);
+        if (event === 'end') endHandlers.push(handler);
+        return fakeStream;
+      }),
+    };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'summarize this report' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    const mixed = 'Here is what I found so far about this entity.\n\nI need approval before running: opencti_delete_entity.';
+    dataHandlers.forEach((h) => h(Buffer.from(`data: ${JSON.stringify({ type: 'done', content: mixed })}\n\n`)));
+
+    await Promise.all(endHandlers.map((h) => h()));
+
+    expect(mockRedisSetXtmAgentResponse).not.toHaveBeenCalled();
+  });
+
+  it('should evict an approval notice cached by an earlier build instead of replaying it', async () => {
+    // Redis outlives the deployment that wrote the entry, so the write guard alone
+    // cannot clear one. It must be dropped on read.
+    mockRedisGetXtmAgentResponse.mockResolvedValue({
+      content: 'I need approval before running: opencti_delete_entity.',
+      cached_at: '2026-08-20T10:00:00.000Z',
+    } as any);
+    const fakeStream = { pipe: vi.fn(), destroy: vi.fn(), on: vi.fn().mockReturnThis() };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'summarize this report' });
+    (req as any).on = vi.fn();
+
+    await postAgentMessageStream(req, res);
+
+    expect(mockRedisDeleteXtmAgentResponse).toHaveBeenCalledTimes(1);
+    // Not replayed to the client...
+    expect(res.write).not.toHaveBeenCalled();
+    // ...and the turn falls through to a live agent run.
+    expect(mockPost).toHaveBeenCalled();
   });
 
   it('should not cache the response when the stream emits an error event', async () => {
@@ -1013,6 +1123,239 @@ describe('httpChatbotProxy: postChatbotMessageSteer', () => {
     mockPost.mockRejectedValue(new Error('Network failure'));
 
     await postChatbotMessageSteer(buildReq({ conversation_id: 'c-1', content: 'steer' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotMessageApprove', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  const APPROVAL_BODY = {
+    conversation_id: '33333333-3333-3333-3333-333333333333',
+    decisions: [
+      { tool_call_id: 'call_abc123', decision: 'approve' },
+      { tool_call_id: 'call_ghi789', decision: 'reject', rejection_reason: 'Wrong target environment.' },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // The widget always reaches this route from a browser session.
+    setupAuthenticatedContext({ user_with_session: true });
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await postChatbotMessageApprove(buildReq(APPROVAL_BODY), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a token-authenticated identity without a session', async () => {
+    // An agent or service account must never be able to approve a tool call —
+    // least of all one it proposed itself.
+    setupAuthenticatedContext({ user_with_session: false });
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a bearer token presented alongside a session cookie', async () => {
+    // `authenticateUserFromRequest` returns on the bearer branch before it looks
+    // at the session, so a service token plus any user's cookie authenticates as
+    // the token identity while `user_with_session` still reports true. That
+    // combination must not be able to approve a call the token identity proposed.
+    await postChatbotMessageApprove(
+      buildSessionReq(APPROVAL_BODY, { headers: { authorization: 'Bearer service-token' } }),
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a session belonging to a different identity than the authenticated one', async () => {
+    await postChatbotMessageApprove(
+      buildSessionReq(APPROVAL_BODY, { session: { user: { id: 'someone-else' } } }),
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is missing', async () => {
+    await postChatbotMessageApprove(buildSessionReq(undefined), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body is missing' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should forward the decisions body whole and pass the upstream status through', async () => {
+    mockPost.mockResolvedValue({ status: 200, data: { status: 'accepted', decided: 2 } });
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, sentBody, opts] = mockPost.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/messages/approve');
+    // Forwarded untouched — a rebuilt body would drop `rejection_reason`, which
+    // is the only thing the agent has to adapt to a declined call.
+    expect(sentBody).toEqual(APPROVAL_BODY);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ status: 'accepted', decided: 2 });
+  });
+
+  it('should forward an upstream 409 so the widget knows nothing is waiting any more', async () => {
+    const httpError = new Error('Request failed with status code 409') as any;
+    httpError.response = { status: 409, data: { detail: 'No turn is currently awaiting approval for this conversation' } };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.send).toHaveBeenCalledWith({
+      status: 'error',
+      error: 'No turn is currently awaiting approval for this conversation',
+    });
+  });
+
+  it('should forward an upstream 422 for a partial decision set', async () => {
+    const httpError = new Error('Request failed with status code 422') as any;
+    httpError.response = { status: 422, data: { detail: 'Missing decisions for: call_ghi789' } };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(422);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Missing decisions for: call_ghi789' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockPost.mockRejectedValue(new Error('Network failure'));
+
+    await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotPendingApprovals', () => {
+  const VALID_CONVERSATION_ID = '44444444-4444-4444-4444-444444444444';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildPendingReq = (conversationId: string, overrides: Record<string, unknown> = {}) => ({
+    params: { conversationId },
+    headers: {},
+    session: { user: { id: 'user-1' } },
+    ...overrides,
+  } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext({ user_with_session: true });
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a token-authenticated identity without a session', async () => {
+    // The proposals payload spells out the tool, its arguments and its schema, and
+    // reaching this route also keeps a displayed prompt from being treated as
+    // abandoned. Neither is an API token's business.
+    setupAuthenticatedContext({ user_with_session: false });
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID, { session: undefined }), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Tool approval requires a user session' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID conversation id without calling XTM One', async () => {
+    await getChatbotPendingApprovals(buildPendingReq('../other-tenant/conversations'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid conversation id' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the recovered proposals and the turn state', async () => {
+    const upstream = {
+      conversation_id: VALID_CONVERSATION_ID,
+      proposals: [{
+        tool_call_id: 'call_abc123',
+        tool_name: 'opencti_delete_entity',
+        arguments: { entity_id: 'e-123', cascade: true },
+        input_schema: { type: 'object', properties: { cascade: { type: 'boolean', description: 'Also delete linked entities' } } },
+      }],
+      turn: 'running',
+    };
+    mockGet.mockResolvedValue({ status: 200, data: upstream });
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url] = mockGet.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/conversations/${VALID_CONVERSATION_ID}/pending-approvals`);
+    expect(res.status).toHaveBeenCalledWith(200);
+    // `input_schema` must survive the hop: without each argument's description
+    // the prompt is a rubber stamp.
+    expect(res.json).toHaveBeenCalledWith(upstream);
+  });
+
+  it('should forward an empty proposals list as the ordinary answer', async () => {
+    mockGet.mockResolvedValue({ status: 200, data: { conversation_id: VALID_CONVERSATION_ID, proposals: [], turn: 'idle' } });
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ conversation_id: VALID_CONVERSATION_ID, proposals: [], turn: 'idle' });
+  });
+
+  it('should surface the upstream detail and status on HTTP error', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Conversation not found' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Conversation not found' });
+  });
+
+  it('should fall back to the error message and 503 when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('Network failure'));
+
+    await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });

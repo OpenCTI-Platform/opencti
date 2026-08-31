@@ -156,7 +156,13 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     helpers: FormikHelpers<FintelDesignFormValues>,
   ) => {
     commitAdd({
-      variables: { input: { name: values.name, description: values.description, default: values.default } },
+      variables: {
+        input: {
+          name: values.name,
+          description: values.description,
+          default: values.default,
+        },
+      },
       updater: (store, response) => {
         if (response?.fintelDesignAdd) updater(store);
       },
@@ -197,7 +203,7 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     fetchQuery(fintelDesignsCurrentDefaultQuery, {}).toPromise().catch((err) => handleError(err));
   };
 
-  const patchField = (name: string, value: FieldOption | string) => {
+  const patchField = (name: string, value: FieldOption | string | boolean) => {
     commitPatch({
       variables: { id: fintelDesign!.id, input: [{ key: name, value: [value ?? ''] }] },
     });
@@ -236,7 +242,7 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     else handleUnsetDefault(revert);
   };
 
-  const handleSubmitField = (name: string, value: FieldOption | string) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | boolean) => {
     patchField(name, value);
   };
 

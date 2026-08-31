@@ -33,7 +33,7 @@ interface ThemeFormProps {
   };
   errors?: Record<string, string>;
   isSubmitting: boolean;
-  isSystemDefault?: boolean | null;
+  isDefaultTheme?: boolean;
   themeId?: string;
   onSubmit: () => void;
   onCancel: () => void;
@@ -53,7 +53,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   values,
   errors = {},
   isSubmitting,
-  isSystemDefault = false,
+  isDefaultTheme = false,
   themeId,
   onSubmit,
   onCancel,
@@ -132,7 +132,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             )
           }
           fullWidth
-          disabled={isSystemDefault}
+          disabled={isDefaultTheme}
           required
           onSubmit={handleFieldSubmit}
         />
@@ -146,6 +146,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="outlined"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -156,6 +157,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="outlined"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -166,6 +168,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="outlined"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -176,6 +179,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="outlined"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -186,6 +190,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="outlined"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -196,6 +201,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="outlined"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -206,6 +212,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           variant="outlined"
           required
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         {/* LOGOS */}
@@ -216,6 +223,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Logo URL')}
           fullWidth
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -225,6 +233,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Logo URL (collapsed)')}
           fullWidth
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
 
         <Field
@@ -234,6 +243,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           label={t_i18n('Logo URL (login)')}
           fullWidth
           onSubmit={handleFieldSubmit}
+          disabled={isDefaultTheme}
         />
       </Stack>
 
@@ -257,6 +267,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
               option row reads "Image URL" while the trigger reads "Add background
               image", and this conversion does not arbitrate that difference. */}
           <Select
+            disabled={isDefaultTheme}
             value={loginAsideType}
             onValueChange={(value) => handleLoginAsideTypeChange(value as '' | 'color' | 'gradient' | 'image')}
             clearable
@@ -288,6 +299,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                 variant="outlined"
                 onSubmit={handleFieldSubmit}
                 sx={{ textTransform: 'capitalize' }}
+                disabled={isDefaultTheme}
               />
             )}
 
@@ -301,6 +313,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   variant="outlined"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
+                  disabled={isDefaultTheme}
                 />
 
                 <Field
@@ -311,6 +324,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   variant="outlined"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
+                  disabled={isDefaultTheme}
                 />
               </Stack>
             )}
@@ -324,6 +338,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                 fullWidth
                 onSubmit={handleFieldSubmit}
                 sx={{ textTransform: 'capitalize' }}
+                disabled={isDefaultTheme}
               />
             )}
           </div>

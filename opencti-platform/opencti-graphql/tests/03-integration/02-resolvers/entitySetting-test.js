@@ -53,6 +53,7 @@ const UPDATE_QUERY = gql`
       platform_entity_files_ref
       platform_hidden_type
       enforce_reference
+      sync_workflow_status_by_name
       attributes_configuration
     }
   }
@@ -104,6 +105,19 @@ describe('EntitySetting resolver standard behavior', () => {
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
     expect(queryResult.errors[0].message).toEqual('This setting is not available for this entity');
+  });
+  it('should update entity settings by ids - valid option setting - sync_workflow_status_by_name', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdNote], input: { key: 'sync_workflow_status_by_name', value: ['true'] } },
+    });
+    const entityTypeDataComponent = queryResult.data.entitySettingsFieldPatch.filter((entityType) => entityType.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(entityTypeDataComponent.sync_workflow_status_by_name).toBeTruthy();
+    // Clean
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdNote], input: { key: 'sync_workflow_status_by_name', value: ['false'] } },
+    });
   });
   it('should update entity settings by ids - valid mandatory attributes', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'attribute_abstract', mandatory: true }]);

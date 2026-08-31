@@ -6,6 +6,7 @@ import {
   isBundleElementMatchFilters,
   convertMembersToUsersFromElements,
   MINIMAL_COMPATIBLE_SCOPE_VERSION,
+  buildPlaybookEventContext,
   updateImportedPlaybookDefinitionScope,
 } from '../../../../src/modules/playbook/playbook-utils';
 import { testContext } from '../../../utils/testQuery';
@@ -16,6 +17,8 @@ import { convertMembersToUsers, extractBundleBaseElement } from '../../../../src
 import type { StixBundle, StixDomainObject } from '../../../../src/types/stix-2-1-common';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import { PLAYBOOK_MATCHING_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
+import { StreamDataEventTypeEnum } from '../../../../src/manager/playbookManager/playbookManagerUtils';
 
 describe('Playbook utils unit tests', () => {
   const matchingFilter = JSON.stringify({
@@ -276,6 +279,98 @@ describe('Playbook utils unit tests', () => {
         spec_version: '2.1',
         type: 'malware',
       });
+    });
+  });
+
+  describe('Function: buildPlaybookEventContext()', () => {
+    it('should return changed attributes on update event', () => {
+      const event = {
+        type: StreamDataEventTypeEnum.UPDATE,
+        context: {
+          changes: [
+            { field: 'Malware--x_opencti_score' },
+            { field: 'Malware--name' },
+            { field: 'Malware--x_opencti_score' },
+          ],
+        },
+      } as any;
+
+      const result = buildPlaybookEventContext(event);
+      expect(result).toEqual({ changedAttributes: ['x_opencti_score', 'name'] });
+    });
+
+    it('should return creation context on create event', () => {
+      const event = { type: StreamDataEventTypeEnum.CREATE } as any;
+      const result = buildPlaybookEventContext(event);
+      expect(result).toEqual({ changedAttributes: [], isCreation: true });
+    });
+
+    it('should return undefined when event is missing', () => {
+      expect(buildPlaybookEventContext(undefined)).toBeUndefined();
+    });
+  });
+
+  describe('PLAYBOOK_MATCHING_COMPONENT executor', () => {
+    it('should pass update event context to stix filtering in base element mode', async () => {
+      const bundle = {
+        id: 'bundle--match-1',
+        spec_version: '2.1',
+        type: 'bundle',
+        objects: [{ id: 'malware--id-14', spec_version: '2.1', type: 'malware' }],
+      } as unknown as StixBundle;
+
+      await PLAYBOOK_MATCHING_COMPONENT.executor({
+        dataInstanceId: 'malware--id-14',
+        bundle,
+        playbookNode: {
+          id: 'node-1',
+          component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+          name: 'Match knowledge',
+          configuration: {
+            all: false,
+            filters: JSON.stringify({ mode: FilterMode.And, filters: [], filterGroups: [] }),
+          },
+        },
+        event: {
+          type: StreamDataEventTypeEnum.UPDATE,
+          context: { changes: [{ field: 'Malware--x_opencti_score' }] },
+        },
+      } as any);
+
+      const calls = vi.mocked(stixFiltering.isStixMatchFilterGroup).mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall?.[4]).toEqual({ changedAttributes: ['x_opencti_score'] });
+    });
+
+    it('should pass creation event context to stix filtering in all-elements mode', async () => {
+      const bundle = {
+        id: 'bundle--match-2',
+        spec_version: '2.1',
+        type: 'bundle',
+        objects: [
+          { id: 'malware--id-14', spec_version: '2.1', type: 'malware' },
+          { id: 'campaign--id-15', spec_version: '2.1', type: 'campaign' },
+        ],
+      } as unknown as StixBundle;
+
+      await PLAYBOOK_MATCHING_COMPONENT.executor({
+        dataInstanceId: 'malware--id-14',
+        bundle,
+        playbookNode: {
+          id: 'node-2',
+          component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+          name: 'Match knowledge',
+          configuration: {
+            all: true,
+            filters: JSON.stringify({ mode: FilterMode.And, filters: [], filterGroups: [] }),
+          },
+        },
+        event: { type: StreamDataEventTypeEnum.CREATE },
+      } as any);
+
+      const calls = vi.mocked(stixFiltering.isStixMatchFilterGroup).mock.calls;
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall?.[4]).toEqual({ changedAttributes: [], isCreation: true });
     });
   });
 

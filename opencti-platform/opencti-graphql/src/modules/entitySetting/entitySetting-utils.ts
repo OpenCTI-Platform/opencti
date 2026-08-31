@@ -60,6 +60,7 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
   enforce_reference: false,
   attributes_configuration: JSON.stringify([]),
   workflow_configuration: true,
+  sync_workflow_status_by_name: false,
 };
 
 export const defaultScale = JSON.stringify({
@@ -85,13 +86,13 @@ export const defaultScale = JSON.stringify({
   },
 });
 
-const templateObjectSettings = ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'templates'];
+const templateObjectSettings = ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'templates', 'workflow_id'];
 
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
-  [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration'],
-  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'workflow_configuration'],
-  [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'platform_hidden_type', 'workflow_configuration', 'workflow_id'],
+  [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_hidden_type'],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: ['platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER]: templateObjectSettings,
@@ -103,12 +104,12 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_VULNERABILITY]: templateObjectSettings,
   [ENTITY_TYPE_INCIDENT]: templateObjectSettings,
   // enforce_reference not available on specific entities
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_CASE_RFI]: [...templateObjectSettings, 'request_access_workflow'],
-  [ENTITY_TYPE_DRAFT_WORKSPACE]: ['attributes_configuration', 'platform_hidden_type', 'workflow_configuration', 'workflow_id'],
+  [ENTITY_TYPE_DRAFT_WORKSPACE]: ['attributes_configuration', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
 };
 
 export const getAvailableSettings = (targetType: string) => {

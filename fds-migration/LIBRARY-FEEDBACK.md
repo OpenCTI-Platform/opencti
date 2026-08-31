@@ -2209,3 +2209,23 @@ submenu content, or the equivalent guard inside `NavbarSubmenu`.
 **Removal test.** Hover a submenu parent, move the pointer up onto the group
 separator: the row returns to its resting state with no border. Tab to the same
 row: the border is still there.
+
+---
+
+## 59. No `Switch` precedent in the product, and `FormControlLabel` makes the swap unsafe
+
+Raised while re-syncing `design-system/current` with master: `GlobalWorkflowSettingsCard`
+arrived from master with a MUI `Switch` and the MUI regression gate flagged it.
+
+**Why it is still on MUI.** The control is mounted as `FormControlLabel`'s `control`
+element. `FormControlLabel` clones its child and injects `checked` and `onChange` into it,
+so replacing the child with a library `Switch` — which does not accept those MUI-injected
+props — drops the handler while the markup keeps looking right. No unit test and no gate
+sees it. The product also has no other library `Switch` call site to copy a correct
+mounting from.
+
+**Ask.** A documented mounting recipe for a library `Switch` inside a label, or a library
+`Switch` + label pair that owns its own labelling, so this hold can be lifted.
+
+**Removal test.** Convert this site, then toggle "Update entities' statuses by name match":
+the setting persists after a page reload.

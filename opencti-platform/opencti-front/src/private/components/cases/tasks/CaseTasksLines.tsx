@@ -23,7 +23,7 @@ import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.gra
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import CaseTaskCreation from './CaseTaskCreation';
 import { CaseTasksLine } from './CaseTasksLine';
-import { tasksDataColumns } from './tasksDataColumns';
+import { useTasksDataColumns } from './useTasksDataColumns';
 
 export const caseTasksLinesQuery = graphql`
   query CaseTasksLinesQuery(
@@ -94,6 +94,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   enableReferences,
 }) => {
   const { t_i18n } = useFormatter();
+  const tasksDataColumns = useTasksDataColumns();
   const [open, setOpen] = useState(false);
   const [openCaseTemplate, setOpenCaseTemplate] = useState(false);
   const handleOpen = () => setOpen(true);

@@ -139,6 +139,17 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
         // default ('/chat/messages/steer') assumes XTM One-style paths,
         // while the OpenCTI proxy exposes '/messages/steer'.
         steer: '/messages/steer',
+        // Human-in-the-loop tool approval. Setting `approve` is what makes the
+        // widget advertise `supports_tool_approval`, and that flag is a promise
+        // to answer — XTM One pauses the turn and waits indefinitely — so it
+        // must name a route the OpenCTI proxy actually serves
+        // (`httpPlatform.js`), never XTM One's own path.
+        approve: '/messages/approve',
+        // Reload recovery: `approval_required` arrives once on the SSE stream,
+        // so a refresh loses the prompt (and the `tool_call_id`s a decision has
+        // to name) while the turn goes on waiting. Read as
+        // `{apiBaseUrl}/conversations/{conversation_id}/pending-approvals`.
+        pendingApprovals: '/conversations',
         sessions: '/sessions',
         upload: '/upload',
         download: '/files',

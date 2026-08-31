@@ -35,6 +35,8 @@ const fintelTemplatesFragment = graphql`
           start_date
           entity_type
           default
+          includeCoverPageByDefault
+          includeBackPageByDefault
         }
       }
     }
@@ -65,6 +67,8 @@ const FintelTemplatesManager = () => {
       description: template.description ?? null,
       published: !!template.start_date,
       default: !!template.default,
+      include_cover_page_by_default: template.includeCoverPageByDefault ?? true,
+      include_back_page_by_default: template.includeBackPageByDefault ?? true,
     });
     setDrawerOpen(true);
   };

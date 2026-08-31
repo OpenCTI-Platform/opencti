@@ -159,6 +159,7 @@ const SavedFilterEditDialog = ({
               placeholder={t_i18n('My saved filter')}
               value={values.name}
               onChange={(e) => setFieldValue('name', e.target.value)}
+              autoFocus
             />
             <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
               <SavedFilterSharingSection

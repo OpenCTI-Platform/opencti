@@ -14,9 +14,12 @@ import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
 import { elFindByIds } from '../../database/engine';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import type { FilterEventContext } from '../../utils/filtering/boolean-logic-engine';
 import { playbookBundleElementsToApply, type ComponentDefinition, type LinkDefinition, type NodeDefinition, type PlaybookBundleElementsToApply } from './playbook-types';
 import { logApp } from '../../config/conf';
 import { pushAll } from '../../utils/arrayUtil';
+import { buildFilterEventContext, StreamDataEventTypeEnum } from '../../manager/playbookManager/playbookManagerUtils';
+import type { StreamDataEvent, UpdateEvent } from '../../types/event';
 import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-restrictions-component';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
 import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from './components/create-indicator-component';
@@ -31,6 +34,17 @@ export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle)
   const baseData = bundle.objects.find((o) => o.id === instanceId);
   if (!baseData) throw FunctionalError('Playbook base element no longer accessible');
   return baseData;
+};
+
+/**
+ * Rebuild the has_changed/not_has_changed evaluation context from the original stream event.
+ * Needed because that context is not carried by the STIX bundle itself as it flows through playbook nodes.
+ */
+export const buildPlaybookEventContext = (event?: StreamDataEvent): FilterEventContext | undefined => {
+  if (!event) return undefined;
+  if (event.type === StreamDataEventTypeEnum.UPDATE) return buildFilterEventContext(event as UpdateEvent);
+  if (event.type === StreamDataEventTypeEnum.CREATE) return { changedAttributes: [], isCreation: true };
+  return undefined;
 };
 
 export const isBundleElementInScope = (
@@ -57,6 +71,7 @@ export const isBundleElementMatchFilters = async (
   context: AuthContext,
   bundleElement: StixObject,
   filters: string | undefined,
+  eventContext?: FilterEventContext,
 ): Promise<boolean> => {
   if (!filters || isEmptyField(filters)) return true;
   const jsonFilters = JSON.parse(filters);
@@ -65,6 +80,7 @@ export const isBundleElementMatchFilters = async (
     SYSTEM_USER,
     bundleElement,
     jsonFilters,
+    eventContext,
   );
 };
 
