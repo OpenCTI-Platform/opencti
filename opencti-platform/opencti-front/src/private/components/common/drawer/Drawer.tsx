@@ -216,6 +216,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
       <DrawerMUI
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={1}
         onClose={disableBackdropClose
           ? (_, reason) => {
@@ -231,6 +232,8 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           paper: {
             ref,
             className: fdsLayerClass(SURFACE_LAYER),
+            'aria-modal': 'true',
+            role: 'dialog',
             sx: {
               ...layerInputVars,
               minHeight: '100vh',

@@ -49,12 +49,19 @@ class StixDomainObjectEdition extends Component {
       <Drawer
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={0}
         // Raw MUI Drawer, not the shared one: it has to declare the layer
         // itself or its fields resolve at layer 0. See utils/fdsLayer.ts.
         sx={{ zIndex: 1202, '& .MuiDrawer-paper': { ...layerInputVars } }}
         classes={{ paper: `${classes.drawerPaperInGraph} ${fdsLayerClass(SURFACE_LAYER)}` }}
         onClose={handleClose.bind(this)}
+        slotProps={{
+          paper: {
+            'aria-modal': 'true',
+            role: 'dialog',
+          },
+        }}
       >
         {stixDomainObjectId ? (
           <QueryRenderer
