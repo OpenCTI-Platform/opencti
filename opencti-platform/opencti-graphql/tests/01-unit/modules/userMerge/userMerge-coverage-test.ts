@@ -18,7 +18,7 @@ describe('userMerge coverage manifest', () => {
     expect(coverage.total).toEqual(99);
     expect(coverage.covered_count).toEqual(0);
     expect(coverage.uncovered_count).toEqual(99);
-    expect(coverage.gating_uncovered_count).toEqual(60);
+    expect(coverage.gating_uncovered_count).toEqual(62);
     expect(coverage.is_complete).toBe(false);
     expect(coverage.rows.length).toEqual(99);
     expect(coverage.rows.every((row) => !row.covered && row.handler === undefined)).toBe(true);
@@ -45,7 +45,7 @@ describe('userMerge coverage manifest', () => {
     expect(coverage.is_complete).toBe(true);
     // Completeness is not "everything is claimed": the invalidated, retained and out-of-scope
     // rows are deliberately left to no handler, so requiring them would shut the gate for good.
-    expect(coverage.uncovered_count).toEqual(39);
+    expect(coverage.uncovered_count).toEqual(37);
   });
 
   it('should stay incomplete when a single gating row is left uncovered', () => {
@@ -69,7 +69,7 @@ describe('userMerge coverage manifest', () => {
   it('should keep the counts on the whole register when rows are filtered', () => {
     const handlers = [mockHandler('creator', ['basic-object.creator-id'])];
     const filtered = buildUserMergeCoverage(handlers, UserMergeDisposition.Transfer);
-    expect(filtered.rows.length).toEqual(40);
+    expect(filtered.rows.length).toEqual(41);
     expect(filtered.rows.every((row) => row.disposition === UserMergeDisposition.Transfer)).toBe(true);
     // A filtered view must not be able to claim completeness by narrowing the question.
     expect(filtered.total).toEqual(99);
