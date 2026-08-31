@@ -16,7 +16,7 @@ import {
   type UserMergeHandlerPlan,
   type UserMergeRightsProjection,
 } from './userMerge-handler';
-import { journalRefusal, readJournalEntries, withJournalEntry } from './userMerge-journal';
+import { journalRefusal, readJournalEntries, resolveMergeStartedAt, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
@@ -224,7 +224,14 @@ export const executeUserMerge = async (
   try {
     const handlers = userMergeHandlers();
     const projection = await readRightsProjection(context, sourceId, targetId, options);
-    const handlerContext: UserMergeHandlerContext = { context, sourceId, targetId, options, ...projection };
+    const handlerContext: UserMergeHandlerContext = {
+      context,
+      sourceId,
+      targetId,
+      options,
+      mergeStartedAt: await resolveMergeStartedAt(sourceId, targetId, startedAt),
+      ...projection,
+    };
     const journalInput = { mergeId, sourceId, targetId };
 
     const dryOutcomes: UserMergeHandlerOutcome[] = [];
