@@ -1,32 +1,36 @@
-import { useTheme } from '@mui/styles';
-import { Theme } from '../../Theme';
-import { FDS } from '../../fds-tokens.generated';
 import { Stack, Typography } from '@mui/material';
 import IconButton from '../button/IconButton';
 import { Close } from '@mui/icons-material';
 import React from 'react';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 interface DrawerHeaderProps {
   title: string;
+  /**
+   * The elevation layer this header sits on. Defaults to the drawer layer.
+   *
+   * The header carries the layer class ITSELF rather than trusting its mount:
+   * `StixDomainObjectEdition` puts this header inside a RAW MUI Drawer, which
+   * declares no layer, so reading the bare `--bg-elevation-heading` fell back
+   * to layer 0 and the header came out a step too dark. Inside the shared
+   * Drawer the paper already declares the same layer, so re-declaring it here
+   * is a no-op. Exposed as a prop so a drawer at another depth can say so
+   * rather than inherit a wrong constant.
+   */
+  layer?: Parameters<typeof fdsLayerClass>[0];
   onClose?: () => void;
   endContent?: React.ReactNode;
 }
 
-const DrawerHeader = ({ title, onClose, endContent }: DrawerHeaderProps) => {
-  const theme = useTheme<Theme>();
-  // Figma node 5415-3010 (Design_System_2026) draws the drawer on elevation
-  // LAYER 2, not on the bare alias. Read straight off that node, the header is
-  // #101b33 and the body #13213e in dark -- which are `-layer-2`, while the
-  // unsuffixed `--bg-elevation-*` aliases resolve to layer 0 (#070d18). Two
-  // independent hexes both landing on layer 2 is what fixes the layer; taking
-  // the bare alias would have painted the drawer a full step too dark.
-  // Colours only: the structural conversion to a library drawer comes later.
-  const fds = theme.palette.mode === 'light' ? FDS.colors.light : FDS.colors.dark;
+const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: DrawerHeaderProps) => {
   return (
     <Stack
       direction="row"
+      className={fdsLayerClass(layer)}
       sx={{
-        backgroundColor: fds['--bg-elevation-heading-layer-2'],
+        ...layerInputVars,
+        // Resolves to the layer-2 value: the drawer paper declares layer 2.
+        backgroundColor: 'var(--bg-elevation-heading)',
         paddingX: 3,
         paddingY: 2,
         alignItems: 'center',

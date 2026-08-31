@@ -4,7 +4,7 @@ import DrawerMUI from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import { createStyles, useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import { FDS } from '../../../../components/fds-tokens.generated';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import classNames from 'classnames';
 import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
@@ -234,7 +234,15 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         slotProps={{
           paper: {
             ref,
+            // A drawer is a layer-2 surface. The class re-declares the
+            // elevation aliases; `layerInputVars` carries the three input
+            // backgrounds the library's own .layer-N blocks forget, and both
+            // must sit on the SAME node. With the layer declared, the colours
+            // below are plain aliases instead of the hardcoded layer-2 values
+            // this file used to carry -- the layer now decides them.
+            className: fdsLayerClass(SURFACE_LAYER),
             sx: {
+              ...layerInputVars,
               minHeight: '100vh',
               width: getDrawerWidth(size),
               position: 'fixed',
@@ -247,7 +255,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
               paddingBottom: `${bannerHeightNumber}px`,
               // The sheet itself, so the banner gutters above and below the
               // body match it instead of showing MUI's own Paper colour.
-              backgroundColor: (theme.palette.mode === 'light' ? FDS.colors.light : FDS.colors.dark)['--bg-elevation-default-layer-2'],
+              backgroundColor: 'var(--bg-elevation-default)',
             },
           },
         }}
@@ -267,10 +275,9 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           className={classes.container}
           style={{
             ...containerStyle,
-            // Figma node 5415-3010: the drawer body is elevation LAYER 2
-            // (#13213e dark), not the bare `--bg-elevation-default` alias,
-            // which resolves to layer 0 (#070d18) -- a full step too dark.
-            backgroundColor: (theme.palette.mode === 'light' ? FDS.colors.light : FDS.colors.dark)['--bg-elevation-default-layer-2'],
+            // Figma node 5415-3010. The alias is correct now that the paper
+            // declares layer 2 -- it resolves to the layer-2 value here.
+            backgroundColor: 'var(--bg-elevation-default)',
           }}
         >
           {renderSubHeader()}
