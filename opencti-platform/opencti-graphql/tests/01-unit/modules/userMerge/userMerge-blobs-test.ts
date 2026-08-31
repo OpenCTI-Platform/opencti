@@ -37,9 +37,10 @@ describe('userMerge blob targets', () => {
     userMergeBlobCoveredRows().forEach((rowId) => expect(known).toContain(rowId));
   });
 
-  it('should claim ten rows, the two case-rfi ones through a single field', () => {
-    expect(userMergeBlobCoveredRows()).toHaveLength(10);
+  it('should claim twelve rows, the paired case-rfi and workflow ones each through a single field', () => {
+    expect(userMergeBlobCoveredRows()).toHaveLength(12);
     expect(userMergeBlobCoveredRows()).toContain('case-rfi-terminal.request-access-applicant-id');
+    expect(userMergeBlobCoveredRows()).toContain('workflow-instance-pending.transition-actions');
   });
 
   // Two entity types can hold a field of the same name, and the disjointness check compares
