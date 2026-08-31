@@ -2020,7 +2020,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
     logApp.debug('[SEARCH] elInternalLoadById', { query });
     const searchType = `${ids} (${types ? (types as string[]).join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-      throw wrapEngineError('Find direct ids fail', err, { query, searchType });
+      throw wrapEngineError('Find direct ids fail', err, { query: JSON.stringify(query), searchType });
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
@@ -3402,7 +3402,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   } catch (err: any) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-    throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query, queryArguments: options });
+    throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query: JSON.stringify(query), queryArguments: options });
   }
 };
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
@@ -3542,7 +3542,7 @@ export const elCardinalityCount = async (
   };
   const searchType = `Aggregations (${field})`;
   const cardinalityData = await elRawSearch(context, user, searchType, cardinalityQuery).catch((err) => {
-    throw wrapEngineError('Cardinality computing fail', err, { cardinalityQuery });
+    throw wrapEngineError('Cardinality computing fail', err, { cardinalityQuery: JSON.stringify(cardinalityQuery) });
   });
   return cardinalityData.aggregations.cardinality_count.value;
 };
@@ -3919,7 +3919,7 @@ export const elAggregationsList = async (
   };
   const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
   const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-    throw wrapEngineError('Aggregations computing list fail', err, { query });
+    throw wrapEngineError('Aggregations computing list fail', err, { query: JSON.stringify(query) });
   });
   const aggsMap = Object.keys(data.aggregations);
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b: { key: string }) => b.key))));
