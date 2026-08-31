@@ -62,7 +62,7 @@ export const userMergeBulkUpdate = async (
   return result;
 };
 
-/** Page size of the rewrite scan. The entities carrying filters are configuration objects. */
+/** Page size of the rewrite scan. */
 const USER_MERGE_REWRITE_PAGE_SIZE = 500;
 
 /** Documents selected for a rewrite the engine cannot express as a script. */
@@ -73,12 +73,16 @@ export interface UserMergeRewriteCandidate {
 }
 
 /**
- * Reads the documents a query selects, across every merge index.
+ * Reads the documents a query selects, across every merge index, one page at a time.
  *
- * `_update_by_query` covers the rewrites a painless script can express. A filter field holds a
- * serialized filter group, which has to be parsed, walked and re-serialized — so these targets
- * are read into memory, rewritten there, and written back. The volumes are those of the
- * configuration entities that carry filters, orders of magnitude below the data indices.
+ * `_update_by_query` covers the rewrites a painless script can express. The payloads this scan
+ * feeds — serialized filters, Base64 manifests, playbook and workflow definitions, draft patches
+ * — have to be parsed, walked and re-serialized, so they are read into memory, rewritten there,
+ * and written back.
+ *
+ * The page is handed to the caller rather than accumulated: a dashboard manifest carries every
+ * widget of the dashboard, and holding all of them at once would make the peak depend on how
+ * much the platform holds rather than on how much the merge rewrites.
  *
  * Paged with `search_after`, so the scan does not depend on `from`/`size` staying under the
  * result window. `internal_id` alone would not do as a sort key here: the merge scope spans the
@@ -89,12 +93,12 @@ export interface UserMergeRewriteCandidate {
  * concrete index name even when the search goes through an alias, which is what the candidate
  * carries anyway.
  */
-export const userMergeScanForRewrite = async (
+export const userMergeScanPagesForRewrite = async (
   context: AuthContext,
   indices: string[],
   query: Record<string, unknown>,
-): Promise<UserMergeRewriteCandidate[]> => {
-  const candidates: UserMergeRewriteCandidate[] = [];
+  onPage: (page: UserMergeRewriteCandidate[]) => Promise<void> | void,
+): Promise<void> => {
   let searchAfter: unknown[] | undefined;
   for (;;) {
     const body: Record<string, unknown> = {
@@ -112,14 +116,25 @@ export const userMergeScanForRewrite = async (
       throw DatabaseError('User merge rewrite scan failed', { cause: err });
     });
     const hits = page.hits?.hits ?? [];
-    hits.forEach((hit: any) => {
-      candidates.push({ id: hit._id, index: hit._index, source: hit._source });
-    });
+    await onPage(hits.map((hit: any) => ({ id: hit._id, index: hit._index, source: hit._source })));
     if (hits.length < USER_MERGE_REWRITE_PAGE_SIZE) {
-      return candidates;
+      return;
     }
     searchAfter = hits[hits.length - 1].sort;
   }
+};
+
+/** Collecting form of {@link userMergeScanPagesForRewrite}, for the small configuration entities. */
+export const userMergeScanForRewrite = async (
+  context: AuthContext,
+  indices: string[],
+  query: Record<string, unknown>,
+): Promise<UserMergeRewriteCandidate[]> => {
+  const candidates: UserMergeRewriteCandidate[] = [];
+  await userMergeScanPagesForRewrite(context, indices, query, (page) => {
+    candidates.push(...page);
+  });
+  return candidates;
 };
 
 /**
