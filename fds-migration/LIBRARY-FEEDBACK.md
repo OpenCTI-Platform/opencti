@@ -2118,3 +2118,54 @@ a `role="group"` of links marked with `aria-current` instead of a radiogroup.
 That is a design arbitration, not a defect, so it is not re-raised as a new
 entry — but it is the reason this resolution is recorded with a caveat rather
 than a clean tick. If the arbitration lands on links, both sites change again.
+---
+
+## 57. `.layer-N` does not re-declare the input backgrounds, so fields never follow their layer
+
+Raised from a deployed-environment bug at pin `bd57527`: every form field in a
+drawer or a dialog paints the layer-0 background.
+
+**Needed.** The layer system is nesting depth (Figma node 5416-12183): page is
+layer 0, a panel over it layer 1, a panel inside that layer 2. A drawer or
+dialog is layer 2, and the designer's ruling is that a field on it reads
+`#0c1527` — which is exactly `--bg-elevation-highlight-layer-2`.
+
+**Today.** The library ships `.layer-0` … `.layer-3`, and each block
+re-declares the elevation aliases — `--bg-elevation-default`,
+`--bg-elevation-highlight`, `--bg-elevation-hover`, the borders. It does NOT
+re-declare the three input backgrounds that alias them:
+
+```css
+--bg-input-default:  var(--bg-elevation-highlight);
+--bg-input-disabled: var(--bg-elevation-disabled);
+--bg-input-hover:    var(--bg-elevation-hover);
+```
+
+Those three are declared once, at the root. A `var()` inside a custom-property
+declaration is substituted at computed-value time **on the element that declares
+it**, so they resolve against the ROOT's elevation values — layer 0 — and a
+`.layer-2` further down can no longer reach them.
+
+**Measured** in a browser on the shipped build, not reasoned:
+
+| context | `--bg-elevation-highlight` | `--bg-input-default` |
+|---|---|---|
+| root (layer 0) | `#13213e` | `#13213e` |
+| `.layer-1` | `#182a4e` | `#13213e` |
+| `.layer-2` | `#0c1527` | `#13213e` |
+| `.layer-3` | `#13213e` | `#13213e` |
+
+The input background is **constant across every layer**. That is the defect.
+
+**Consequence.** The product compensates by re-declaring the same three aliases
+on the element that carries the layer class, where they resolve against that
+element's own elevation values (`src/utils/fdsLayer.ts`, `layerInputVars`).
+With it, `.layer-2` yields `#0c1527` — the designer's value.
+
+**Ask.** Move those three declarations into each `.layer-N` block. They are
+already written as aliases; they are simply in the wrong scope. Only the three
+backgrounds are affected — the rest of the input family aliases feedback and
+text tokens, which are layer-independent and correctly left alone.
+
+**Removal test.** Delete `layerInputVars` from the product; a field inside a
+drawer still reads `#0c1527`.
