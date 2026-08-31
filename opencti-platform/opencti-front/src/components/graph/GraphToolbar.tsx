@@ -17,6 +17,7 @@ import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './compone
 import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
 
@@ -51,8 +52,10 @@ const GraphToolbar = ({
     <Drawer
       anchor="bottom"
       variant="permanent"
-      PaperProps={{
+      slotProps={{ paper: {
         elevation: 1,
+        className: fdsLayerClass(RIGHT_BAR_LAYER),
+        sx: { ...layerInputVars },
         style: {
           zIndex: 1,
           paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
@@ -63,7 +66,7 @@ const GraphToolbar = ({
           marginBottom: bannerHeightNumber,
           bottom: posBottom,
         },
-      }}
+      } }}
     >
       <LinearProgress
         style={{

@@ -13,8 +13,8 @@ interface StixCoreObjectContentHeaderProps {
   disableEditor: boolean;
 }
 
-// The library item declares a 16x16 glyph; the MUI buttons drew theirs at
-// fontSize="small" (20px).
+// The library item fixes its glyph slot at `size-4` (16px) for BOTH group
+// sizes, so this does not follow the group from sm to md.
 const GLYPH = { fontSize: 16 };
 
 const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeaderProps> = ({
@@ -28,7 +28,13 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
 
   return (
     <div style={{
-      margin: '-70px 0 0 0',
+      // The switcher is pulled up onto the tabs strip. The offset was tuned for
+      // a 24px (sm) control; the group is 36px (md) now, so it needed
+      // re-deriving. MEASURED, not guessed: with -70 the group's centre sat 3px
+      // above the strip's, so it is -67. To re-derive after any size change,
+      // compare `[role=tablist]`'s vertical centre with the group's and add the
+      // difference here — the invariant is that the two centres coincide.
+      margin: '-67px 0 0 0',
       float: 'right',
     }}
     >
@@ -37,7 +43,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           onValueChange: the route IS the state, which is why `value` is the
           current mode and nothing writes it back. */}
       <ButtonGroup
-        size="sm"
+        size="md"
         value={currentMode}
         aria-label={t_i18n('Change view')}
       >
