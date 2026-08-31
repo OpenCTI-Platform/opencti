@@ -69,7 +69,7 @@ const AuthProviderGroupsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.default_groups[${index}]`}
                       label={t_i18n('Group name')}
                       fullWidth
@@ -112,7 +112,7 @@ const AuthProviderGroupsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.groups_expr[${index}]`}
                       label={t_i18n('Expression')}
                       fullWidth
@@ -135,7 +135,7 @@ const AuthProviderGroupsFields = () => {
 
       <Field
         component={TextField}
-        variant="standard"
+        variant="outlined"
         name="groups_mapping.group_splitter"
         label={t_i18n('Groups splitter')}
         placeholder=","
@@ -165,14 +165,14 @@ const AuthProviderGroupsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.groups_mapping[${index}].provider`}
                       label={t_i18n('Provider group')}
                       fullWidth
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`groups_mapping.groups_mapping[${index}].platform`}
                       label={t_i18n('Platform group')}
                       fullWidth

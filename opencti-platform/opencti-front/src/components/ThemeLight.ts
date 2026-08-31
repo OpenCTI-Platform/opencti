@@ -507,16 +507,71 @@ const ThemeLight = (
     // screenshots before it lands, and e2e resolves many of those fields by
     // their label. The fields the pass named by hand are switched at their own
     // call sites instead.
+    MuiInputLabel: {
+      styleOverrides: {
+        outlined: {
+          // MUI centres the un-shrunk outlined label for ITS box height (56px)
+          // with `translate(14px, 16px)`. Our outlined box is 36px, so that
+          // same 16px put the label flush against the bottom edge of every
+          // empty, unfocused, labelled field — measured on the user-creation
+          // drawer: a 21px label at y=16 in a 37px box, i.e. 16..37. 8px
+          // centres it, and 12px matches the input's own left inset.
+          transform: 'translate(12px, 8px) scale(1)',
+          // The shrunk state is left exactly as MUI has it: measured at -9px
+          // above the box with a correctly cut legend notch.
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+        },
+      },
+    },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          backgroundColor: FDS.colors.light['--bg-input-default'],
+          // Layer-aware on purpose. This used to be the STATIC hex exported for
+          // `--bg-input-default`, so an outlined field kept the layer-0 colour
+          // even inside a drawer, a dialog or a filter popover that had
+          // correctly declared layer 2. Reading the custom property instead
+          // makes every outlined field pick up the surface it actually sits on.
+          backgroundColor: 'var(--bg-input-default)',
+          // Geometry borrowed from the library `Input` (h-9, rounded-sm,
+          // pl-3/pr-2, transparent resting border, token border on hover and
+          // focus) so a MUI field standing next to a library one reads as the
+          // same control. Behaviour is untouched — this is paint only.
+          borderRadius: 'var(--radius-sm)',
+          minHeight: 36,
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-hover)',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-focus)',
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-error)',
+          },
+          '&.Mui-disabled': {
+            backgroundColor: 'var(--bg-input-disabled)',
+          },
+        },
+        input: {
+          // MUI's outlined input pads 16.5px vertically, which makes a 54px
+          // row next to the library's 36px one. 8px lands the single-line row
+          // on the library's height; `minHeight` above keeps the floor, and
+          // multiline inputs still grow from their own rows.
+          padding: '8px 8px 8px 12px',
         },
       },
     },
     MuiTextField: {
       defaultProps: {
-        variant: 'standard',
+        // Sandy's standing ruling: every remaining MUI field is outlined,
+        // so it can carry the same background as the library fields beside
+        // it. This is the default for the mounts that name no variant; the
+        // ones that named `standard` explicitly were swept in the same change.
+        variant: 'outlined',
       },
       styleOverrides: {
         root: {
@@ -530,7 +585,11 @@ const ThemeLight = (
     },
     MuiSelect: {
       defaultProps: {
-        variant: 'standard',
+        // Sandy's standing ruling: every remaining MUI field is outlined,
+        // so it can carry the same background as the library fields beside
+        // it. This is the default for the mounts that name no variant; the
+        // ones that named `standard` explicitly were swept in the same change.
+        variant: 'outlined',
       },
       styleOverrides: {
         root: {
@@ -684,9 +743,40 @@ const ThemeLight = (
         },
       },
     },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          // The library's menu surface: `bg-elevation-highlight`, 4px radius,
+          // and no padding of its own (rows run edge to edge). Written as the
+          // alias so a menu opened from a layered surface follows it.
+          backgroundColor: 'var(--bg-elevation-highlight)',
+          borderRadius: 'var(--radius-sm)',
+        },
+        list: {
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+      },
+    },
     MuiMenuItem: {
       styleOverrides: {
         root: {
+          // Geometry moved toward the library's own menu row (SelectItem:
+          // min-h-8, gap-2, pl-4/pr-2, 12px compact type, 16px leading glyph).
+          // The selected and hover tones below are deliberately left as they
+          // are — this is spacing and size only, no behaviour and no colour.
+          minHeight: 32,
+          paddingLeft: 16,
+          paddingRight: 8,
+          gap: 8,
+          fontSize: 12,
+          lineHeight: 1.5,
+          '& .MuiListItemIcon-root': {
+            minWidth: 'auto',
+          },
+          '& .MuiSvgIcon-root': {
+            fontSize: 16,
+          },
           ':hover': {
             backgroundColor: 'rgba(0,0,0,0.04)',
           },
@@ -759,10 +849,12 @@ const ThemeLight = (
             color: '#494A50',
           },
           '& .MuiOutlinedInput-root': {
-            // the only way for now to know if we should apply the paper color or not
+            // Same layer-aware background as every other outlined field; the
+            // hardcoded hex this used to carry was a near-miss of the token's
+            // own value and could not follow a surface's layer.
             backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-              ? '#FFFFFF'
-              : (paper ?? '#FFFFFF'),
+              ? 'var(--bg-input-default)'
+              : (paper ?? 'var(--bg-input-default)'),
             '& fieldset': {
               borderColor: 'transparent',
             },

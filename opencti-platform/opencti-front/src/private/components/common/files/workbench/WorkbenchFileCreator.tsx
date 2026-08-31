@@ -189,7 +189,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
           >
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth
@@ -200,7 +200,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
               name="labels"
               multiple
               textfieldprops={{
-                variant: 'standard',
+                variant: 'outlined',
                 label: t_i18n('Labels'),
               }}
               options={[]}

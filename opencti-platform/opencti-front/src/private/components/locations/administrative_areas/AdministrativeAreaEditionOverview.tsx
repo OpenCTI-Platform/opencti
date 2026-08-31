@@ -252,7 +252,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           <AlertConfidenceForEntity entity={administrativeArea} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -289,7 +289,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="latitude"
             type="number"
@@ -304,7 +304,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="longitude"
             type="number"

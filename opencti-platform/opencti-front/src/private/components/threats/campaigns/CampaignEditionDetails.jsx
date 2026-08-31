@@ -172,7 +172,7 @@ const CampaignEditionDetailsComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('First seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="first_seen" />
@@ -186,7 +186,7 @@ const CampaignEditionDetailsComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Last seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (

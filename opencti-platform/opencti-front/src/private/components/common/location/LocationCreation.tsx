@@ -132,7 +132,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -149,7 +149,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="type"
             label={t_i18n('Entity type')}
             fullWidth={true}

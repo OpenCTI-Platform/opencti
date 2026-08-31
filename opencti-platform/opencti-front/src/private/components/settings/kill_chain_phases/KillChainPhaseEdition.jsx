@@ -116,7 +116,7 @@ class KillChainPhaseEditionContainer extends Component {
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="kill_chain_name"
                 label={t('Kill chain name')}
                 fullWidth={true}
@@ -131,7 +131,7 @@ class KillChainPhaseEditionContainer extends Component {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="phase_name"
                 label={t('Phase name')}
                 fullWidth={true}
@@ -147,7 +147,7 @@ class KillChainPhaseEditionContainer extends Component {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="x_opencti_order"
                 label={t('Order')}
                 fullWidth={true}

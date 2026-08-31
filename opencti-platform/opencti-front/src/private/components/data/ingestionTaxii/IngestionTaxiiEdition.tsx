@@ -291,7 +291,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -299,7 +299,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
@@ -309,7 +309,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           <IngestionSchedulingField handleSubmitField={handleSubmitField} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="uri"
             label={t_i18n('TAXII server URL')}
             fullWidth={true}
@@ -318,7 +318,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="version"
             label={t_i18n('TAXII version')}
             onSubmit={handleSubmitField}
@@ -332,7 +332,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           </Field>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="collection"
             label={t_i18n('TAXII Collection')}
             onSubmit={handleSubmitField}
@@ -341,7 +341,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="authentication_type"
             label={t_i18n('Authentication type')}
             onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
@@ -363,7 +363,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="username"
                 label={t_i18n('Username')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
@@ -390,7 +390,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
@@ -405,7 +405,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}

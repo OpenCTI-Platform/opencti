@@ -97,13 +97,13 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
 
           return (
             <>
-              <InputLabel variant="standard" shrink>
+              <InputLabel variant="outlined" shrink>
                 {label || t_i18n('Periodicity')}
               </InputLabel>
               <Box display="flex" gap={1} alignItems="flex-end">
                 <TextField
                   type="number"
-                  variant="standard"
+                  variant="outlined"
                   value={value}
                   onChange={handleValueChange}
                   inputProps={{ min: 0 }}
@@ -112,7 +112,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                 />
                 <TextField
                   select
-                  variant="standard"
+                  variant="outlined"
                   value={unit}
                   onChange={handleUnitChange}
                   style={{ flex: 1 }}

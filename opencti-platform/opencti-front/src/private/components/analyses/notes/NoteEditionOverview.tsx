@@ -168,7 +168,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Publication date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created" />

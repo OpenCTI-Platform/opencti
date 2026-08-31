@@ -223,7 +223,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -249,7 +249,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="latitude"
               label={t_i18n('Latitude')}
               required={(mandatoryAttributes.includes('latitude'))}
@@ -258,7 +258,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="longitude"
               label={t_i18n('Longitude')}
               required={(mandatoryAttributes.includes('longitude'))}

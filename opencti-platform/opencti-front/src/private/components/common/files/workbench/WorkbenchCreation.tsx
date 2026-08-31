@@ -169,7 +169,7 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth
@@ -181,7 +181,7 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
             name="labels"
             multiple
             textfieldprops={{
-              variant: 'standard',
+              variant: 'outlined',
               label: t_i18n('Labels'),
             }}
             options={[]}

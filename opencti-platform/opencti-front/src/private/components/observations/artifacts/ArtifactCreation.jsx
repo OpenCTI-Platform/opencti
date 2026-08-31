@@ -240,7 +240,7 @@ const ArtifactCreation = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="url"
                 label={t_i18n('URL')}
                 fullWidth={true}

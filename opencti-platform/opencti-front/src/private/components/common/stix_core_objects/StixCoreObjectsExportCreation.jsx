@@ -149,7 +149,7 @@ const StixCoreObjectsExportCreation = ({
                           <>
                             <Field
                               component={SelectFieldFds}
-                              variant="standard"
+                              variant="outlined"
                               name="format"
                               label={t_i18n('Export format')}
                               fullWidth={true}
@@ -185,7 +185,7 @@ const StixCoreObjectsExportCreation = ({
                               ? (
                                   <Field
                                     component={SelectFieldFds}
-                                    variant="standard"
+                                    variant="outlined"
                                     name="columns"
                                     label={t_i18n('Choose column to export')}
                                     fullWidth={true}

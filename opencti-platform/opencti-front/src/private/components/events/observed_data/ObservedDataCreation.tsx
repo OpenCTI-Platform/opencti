@@ -173,7 +173,7 @@ export const ObservedDataCreationForm: FunctionComponent<
             textFieldProps={{
               label: t_i18n('First observed'),
               required: (mandatoryAttributes.includes('first_observed')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -184,14 +184,14 @@ export const ObservedDataCreationForm: FunctionComponent<
             textFieldProps={{
               label: t_i18n('Last observed'),
               required: (mandatoryAttributes.includes('last_observed')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="number_observed"
             type="number"
             label={t_i18n('Number observed')}

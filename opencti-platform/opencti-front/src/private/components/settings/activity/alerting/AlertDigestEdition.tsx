@@ -159,7 +159,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -185,7 +185,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="period"
             label={t_i18n('Period')}
             fullWidth={true}
@@ -200,7 +200,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
           {values.period === 'week' && (
             <Field
               component={SelectFieldFds}
-              variant="standard"
+              variant="outlined"
               name="day"
               label={t_i18n('Week day')}
               fullWidth={true}
@@ -219,7 +219,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
           {values.period === 'month' && (
             <Field
               component={SelectFieldFds}
-              variant="standard"
+              variant="outlined"
               name="day"
               label={t_i18n('Month day')}
               fullWidth={true}
@@ -241,7 +241,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
               onSubmit={handleSubmitTime}
               textFieldProps={{
                 label: t_i18n('Time'),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
