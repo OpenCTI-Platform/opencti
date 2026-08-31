@@ -201,7 +201,7 @@ describe('Stix 2.0 opencti converter', () => {
     expect(result).toEqual(EXPECTED_TOOL);
   });
   it('should convert Vulnerability', async () => {
-    const result = convertVulnerabilityToStix_2_0(INSTANCE_VULNERABILITY);
+    const result = convertVulnerabilityToStix_2_0(INSTANCE_VULNERABILITY as any);
     expect(result).toEqual(EXPECTED_VULNERABILITY);
   });
   it('should convert Malware Analysis', async () => {
