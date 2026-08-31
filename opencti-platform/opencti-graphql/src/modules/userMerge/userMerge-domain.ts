@@ -1,13 +1,14 @@
-import { isFeatureEnabled, MERGE_USERS_FEATURE_FLAG } from '../../config/conf';
+import { ENABLED_DEMO_MODE, isFeatureEnabled, logApp, MERGE_USERS_FEATURE_FLAG } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
+import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreCommon } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { INTERNAL_USERS, isBypassUser } from '../../utils/access';
+import { INTERNAL_USERS, isBypassUser, REDACTED_USER } from '../../utils/access';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { executeUserMerge, readUserMergeJournal } from './userMerge-engine';
-import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeRightsStrategy } from './userMerge-types';
+import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeRightsStrategy, UserMergeStatus } from './userMerge-types';
 
 /**
  * Options as they arrive from GraphQL: every field is optional there, because the schema
@@ -65,12 +66,59 @@ export const assertUserMergeAllowed = (user: AuthUser): void => {
   }
 };
 
+type MergeableUser = BasicStoreCommon & { user_email?: string };
+
 const loadMergeableUser = async (context: AuthContext, user: AuthUser, userId: string, role: 'source' | 'target') => {
-  const found = await storeLoadById<BasicStoreCommon>(context, user, userId, ENTITY_TYPE_USER);
+  const found = await storeLoadById<MergeableUser>(context, user, userId, ENTITY_TYPE_USER);
   if (!found) {
     throw FunctionalError(`Unknown ${role} user`, { user_id: userId });
   }
   return found;
+};
+
+/**
+ * The merge trace asked for by the product: "user xxxx has been merged into user xxxx".
+ *
+ * Published here and not from the engine, which deliberately takes no calling user: the trace
+ * has to name the administrator who ran the merge, and the activity listener only retains
+ * actions whose origin is a real request — one published as SYSTEM_USER would be dropped.
+ *
+ * It is a readability aid, not evidence. Activity events are Enterprise Edition only and can
+ * be purged by a retention rule, which is acceptable precisely because nothing irreversible
+ * reads them: the deletion gate re-runs a dry-run instead of trusting a past attestation.
+ *
+ * The source carries the context id: the question asked later is why that account is disabled.
+ *
+ * Failing to publish does not fail the merge. The trace runs once every handler has written, and
+ * `publishUserAction` awaits its listeners: letting a listener reject here — the codebase default
+ * — would answer a GraphQL error for an applied merge and drop the id the operator needs to read
+ * the journal. Nothing else in the platform is asked to swallow this, but nothing else publishes
+ * after a write this hard to read back.
+ */
+const publishMergeTrace = async (user: AuthUser, source: MergeableUser, target: MergeableUser, result: UserMergeResult) => {
+  const sourceEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : source.user_email;
+  const targetEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : target.user_email;
+  try {
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `merges user \`${sourceEmail}\` into user \`${targetEmail}\``,
+      context_data: {
+        id: source.internal_id,
+        entity_type: ENTITY_TYPE_USER,
+        input: {
+          merge_id: result.id,
+          source_id: result.source_id,
+          target_id: result.target_id,
+          rights_strategy: result.rights_strategy,
+        },
+      },
+    });
+  } catch (err) {
+    logApp.error('[MERGE_USERS] merge trace not published', { merge_id: result.id, cause: err instanceof Error ? err.message : String(err) });
+  }
 };
 
 export const userMerge = async (
@@ -82,10 +130,14 @@ export const userMerge = async (
 ): Promise<UserMergeResult> => {
   assertUserMergeAllowed(user);
   assertValidUserMergeIds(sourceId, targetId);
-  await loadMergeableUser(context, user, sourceId, 'source');
-  await loadMergeableUser(context, user, targetId, 'target');
+  const source = await loadMergeableUser(context, user, sourceId, 'source');
+  const target = await loadMergeableUser(context, user, targetId, 'target');
   const resolvedOptions = resolveUserMergeOptions(options);
-  return executeUserMerge(context, sourceId, targetId, resolvedOptions);
+  const result = await executeUserMerge(context, sourceId, targetId, resolvedOptions);
+  if (!resolvedOptions.dryRun && result.status === UserMergeStatus.Success) {
+    await publishMergeTrace(user, source, target, result);
+  }
+  return result;
 };
 
 /**

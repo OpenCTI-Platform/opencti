@@ -15,7 +15,7 @@
  * produced the list, not a document to keep in sync at runtime.
  */
 
-export const USER_MERGE_REGISTER_VERSION = 'v3';
+export const USER_MERGE_REGISTER_VERSION = 'v4';
 
 export enum UserMergeDisposition {
   /** The reference must be re-pointed from the source to the target. */
@@ -138,7 +138,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('workflow-instance-pending.transition-actions', CONDITIONAL, 'WorkflowInstance (pending transition)', 'pendingTransition.actions[] / params'),
   row('workflow-instance-pending.transition-triggered-by', CONDITIONAL, 'WorkflowInstance (pending transition)', 'pendingTransition.triggeredBy'),
 
-  // --- retain (12) -----------------------------------------------------------------------
+  // --- retain (10) -----------------------------------------------------------------------
   row('live-event.origin-user-id', RETAIN, 'Activity / Notification / Live event', 'event.origin.user_id and stream payloads'),
   row('application-log.structured-fields', RETAIN, 'Application log / audit export', 'structured fields user_id / source_user_id / target_user_id'),
   row('file-content.object-bytes', RETAIN, 'File content', 'object bytes'),
@@ -148,9 +148,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('user.identity-fields', RETAIN, 'User', 'user_email / name / firstname / lastname / external / account_status'),
   row('user.ui-preferences', RETAIN, 'User', 'theme / language / bookmarks / default_dashboard / default_time_field / unit_system / UI preferences'),
   row('user.personal-notifiers', RETAIN, 'User', 'personal_notifiers'),
-  row('user.merged-into-id', RETAIN, 'User (field to introduce)', 'merged_into_id'),
   row('user-account.user-id', RETAIN, 'User-Account', 'user_id'),
-  row('user-merge-audit-record.fields', RETAIN, 'UserMerge audit record', 'source_user_id / target_user_id / register_version / outcome'),
 
   // --- out-of-scope (6) ------------------------------------------------------------------
   row('background-task-queue.message', OUT_OF_SCOPE, 'Background task queue message', 'background-task queues: initiator / actions context'),
