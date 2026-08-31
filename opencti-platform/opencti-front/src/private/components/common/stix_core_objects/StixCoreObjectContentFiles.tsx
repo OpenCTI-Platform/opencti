@@ -169,14 +169,11 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       variant="permanent"
       anchor="right"
       elevation={1}
-      // Same surface contract as the Knowledge bar next door: the two
-      // tab-scoped right bars are one family, so they sit on the same
-      // elevation step and carry the same edge. Positioning is untouched.
+      // Same surface contract as the Knowledge bar next door: the two tab-scoped right bars are
+      // one family, so they sit on the same elevation step and carry the same edge.
       slotProps={{
         paper: {
           // Same layer and the same mechanism as the Knowledge bar next door.
-          // This bar DOES hold fields (the file list's inline controls), so
-          // `layerInputVars` is load-bearing here rather than defensive.
           className: fdsLayerClass(RIGHT_BAR_LAYER),
           sx: { ...layerInputVars },
         },

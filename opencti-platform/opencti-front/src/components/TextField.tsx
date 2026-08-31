@@ -117,11 +117,7 @@ const TextField = (props: TextFieldProps) => {
     />
   ) : null;
 
-  // Props the design-system Input can actually place. `className` reaches its
-  // root wrapper; everything else it spreads onto the inner <input>. So a prop
-  // that must act on the field GROUP (style, sx, size) cannot be honoured here:
-  // OpenCTI's `style={{ marginTop: 20 }}` idiom would land on the input box and
-  // push it away from its own label. Those sites keep the MUI field.
+  // Props the design-system Input can actually place.
   const placeable = new Set([
     'id', 'name', 'type', 'label', 'required', 'placeholder', 'disabled',
     'autoFocus', 'className', 'value', 'error', 'helperText', 'variant',
@@ -136,14 +132,6 @@ const TextField = (props: TextFieldProps) => {
   const forwardable = (k: string) => nativeAttrs.has(k)
     || k.startsWith('data-') || k.startsWith('aria-');
   // Abandon on anything unrecognised rather than dropping it silently.
-  //
-  // Only props that CARRY A VALUE count. Formik's `Field` renders this
-  // component as `createElement(component, {field, form, ...props, className},
-  // children)` — three arguments, so React defines `props.children` even when
-  // the value is `undefined`, and `className` is spread unconditionally beside
-  // it. `children` is in neither set above, so keying off `Object.keys` made
-  // `unplaceable` non-empty at EVERY Formik site and sent all of them to the
-  // MUI fallback. An absent prop is not an unplaceable prop.
   const unplaceable = Object.entries(otherProps)
     .filter(([k, v]) => v !== undefined && !placeable.has(k) && !forwardable(k))
     .map(([k]) => k);
@@ -167,14 +155,8 @@ const TextField = (props: TextFieldProps) => {
         id={props.id}
         name={name}
         type={props.type as 'text' | 'password' | 'number' | 'email' | undefined}
-        // Every number field routed through this pivot takes the designed
-        // stepper instead of the browser's own spinners (library #190,
-        // RULE-14). Set here rather than at ~100 call sites across 50 files:
-        // the pivot already owns `type`, and the two travel together.
-        // Geometry is unchanged — `isTypeNumber` adds right padding INSIDE the
-        // field (`pr-7`, `pr-11` beside a state icon) and no height; the box
-        // stays `h-9`. `step`/`min`/`max` already reach the inner <input>
-        // through `nativeAttrs`, and the stepper reads them from there.
+        // Every number field routed through this pivot takes the designed stepper instead of
+        // the browser's own spinners (library #190, RULE-14).
         isTypeNumber={props.type === 'number'}
         label={typeof props.label === 'string' ? props.label : undefined}
         required={props.required}

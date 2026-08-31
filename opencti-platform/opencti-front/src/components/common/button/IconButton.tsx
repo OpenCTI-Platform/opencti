@@ -27,11 +27,7 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
 
   // The delegate has always defaulted to the quiet, small control.
   /**
-   * `color` is a TONE only. Under MUI the delegate forces `variant="tertiary"`,
-   * whose styles are `border: 'none'`, so `color="secondary"` with no `variant`
-   * has always rendered borderless: reading it as a priority would ADD a border
-   * that never existed. The sites that do carry a border pass
-   * `variant="secondary"`, which maps through LIB_PRIORITY.
+   * `color` is a TONE only.
    */
   const libPriority = variant ? LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY] : 'tertiary';
   const libTone = color
@@ -39,17 +35,14 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
     : LIB_TONE_FROM_INTENT[(intent ?? 'default') as keyof typeof LIB_TONE_FROM_INTENT];
 
   /**
-   * A site keeps MUI whenever the library cannot carry its meaning: no
-   * accessible name, MUI-only styling, or a tone/priority outside the tables
-   * above (`ee`, `warn`, `success`, `extra`, or anything dynamic). Dropping the
-   * tone silently would have cost these sites their signal.
+   * A site keeps MUI whenever the library cannot carry its meaning: no accessible name, MUI-
+   * only styling, or a tone/priority outside the tables above (`ee`, `warn`, `success`,
+   * `extra`, or anything dynamic).
    */
   /**
-   * `asChild` REPLACES the child's content with the glyph, so a control whose
-   * element must keep its own children cannot live there: `component="label"`
-   * wraps a real `<input type="file">`, which the library would destroy. Those
-   * keep MUI, where `ButtonBase` also gives the label the role and tab stop the
-   * library path would not (WCAG 2.1.1).
+   * `asChild` REPLACES the child's content with the glyph, so a control whose element must
+   * keep its own children cannot live there: `component="label"` wraps a real `<input
+   * type="file">`, which the library would destroy.
    */
   const rendersAnchor = Boolean(to) || Boolean(href) || component === 'a';
   const isPolymorphic = Boolean(component || to || href);
@@ -72,11 +65,9 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
     };
 
     /**
-     * An icon-only control that is really a LINK. It goes through the library
-     * IconButton, not the library Button: the Button carries the horizontal
-     * padding of a text label, which drew a 36x24 pill around a 20x20 glyph
-     * instead of a square control. `rest` carries the site's own props --
-     * `onClick`, `target`, `rel`, `data-testid` -- which the control needs.
+     * An icon-only control that is really a LINK. It goes through the library IconButton, not
+     * the library Button: the Button carries the horizontal padding of a text label, which
+     * drew a 36x24 pill around a 20x20 glyph instead of a square control.
      */
     if (rendersAnchor) {
       const Child = (component ?? 'a') as React.ElementType;

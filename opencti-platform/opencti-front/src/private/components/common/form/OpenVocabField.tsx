@@ -125,13 +125,7 @@ const OpenVocabFieldComponent = ({
       )}
       groupBy={Array.isArray(type) ? (o: VocabFieldOption) => o.category : undefined}
       isOptionDisabled={(o: VocabFieldOption) => disabledOptions.includes(o.value)}
-      // No custom identity here on purpose. The library calls
-      // `isOptionEqualToValue(selected, option)` — SELECTED FIRST — while MUI's
-      // contract is `(option, value)`. This site's function read `.value` off the
-      // first argument only, so with string values it never matched, the option
-      // was never marked selected, and re-clicking it APPENDED a duplicate
-      // instead of toggling it off. ComboboxField's default unwraps whichever
-      // side is an object and is therefore order-agnostic.
+      // No custom identity here on purpose.
       label={label}
       helperText={helperText}
     />

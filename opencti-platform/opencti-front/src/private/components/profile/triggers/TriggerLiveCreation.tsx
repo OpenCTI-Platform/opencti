@@ -195,10 +195,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           options={
             instance_trigger ? instanceEventTypesOptions : eventTypesOptions
           }
-          // The MenuItem and ListItemText were MUI row scaffolding, not a select
-          // item — the library row supplies both. The checkbox stays: it is the
-          // product's own multi-select affordance, still driven by the field
-          // value rather than by the row's internal state.
+          // The MenuItem and ListItemText were MUI row scaffolding, not a select item — the
+          // library row supplies both.
           renderOption={(option: { value: TriggerEventType; label: string }) => (
             <>
               <Checkbox

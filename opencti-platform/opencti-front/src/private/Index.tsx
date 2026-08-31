@@ -82,10 +82,8 @@ const Index = ({ settings }: IndexProps) => {
   }, [theme]);
 
   /**
-   * The bar is fixed and glassy (94% over a 4px backdrop blur), so the content
-   * has to travel UNDER it. The header inset therefore belongs to the SCROLLING
-   * box, as padding that scrolls away -- not to the wrapper above it, which
-   * starts the scroller below the bar and leaves the glass nothing to blur.
+   * The bar is fixed and glassy (94% over a 4px backdrop blur), so the content has to travel
+   * UNDER it.
    */
   const headerInset = isForcePasswordChangeRoute
     ? 0
@@ -108,9 +106,8 @@ const Index = ({ settings }: IndexProps) => {
   };
 
   return (
-    // One provider for the whole private app: a library Tooltip throws without
-    // one, and bar controls such as the import button also render on their own
-    // screens.
+    // One provider for the whole private app: a library Tooltip throws without one, and bar
+    // controls such as the import button also render on their own screens.
     <TooltipProvider delayDuration={TOOLTIP_DELAY_MS}>
       <ChatbotProvider>
         <SystemBanners settings={settings} />
