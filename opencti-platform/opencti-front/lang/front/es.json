@@ -4758,6 +4758,7 @@
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "Los distintos tipos de organizaciones que desempeñan un papel en la CTI, ya sea como fuente de información o como víctima o fuente de ataque, o incluso una forma de segregar a los usuarios en la plataforma.",
   "The widget is not called in the content": "El widget no se llama en el contenido",
   "Theme": "Tema",
+  "theme": "tema",
   "Theme successfully created": "Tema creado con éxito",
   "Themes": "Temas",
   "THEN": "THEN",

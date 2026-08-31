@@ -107,7 +107,7 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.platform_ip_whitelist_enabled).toBeDefined();
     expect(settings.caller_ip).toBeDefined();
     expect(settings.platform_ip_whitelist_exclusions).toBeDefined();
-    expect(settings.platform_theme.name).toEqual('Dark');
+    expect(settings.platform_theme.name).toEqual('Filigran Dark');
     expect(settings.password_policy_validity_days).toBeDefined();
     expect(settings.editContext.length).toEqual(0);
   });

@@ -4758,6 +4758,7 @@
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "정보 제공자, 피해자, 공격 주체, 심지어 플랫폼에서 사용자를 분리하는 방법 등 다양한 유형의 조직이 CTI에서 역할을 수행합니다.",
   "The widget is not called in the content": "콘텐츠에서 위젯이 호출되지 않음",
   "Theme": "테마",
+  "theme": "주제",
   "Theme successfully created": "테마가 성공적으로 생성되었습니다",
   "Themes": "테마",
   "THEN": "THEN",

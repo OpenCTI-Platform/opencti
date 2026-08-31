@@ -23,21 +23,30 @@ export const findThemePaginated = async (context: AuthContext, user: AuthUser, a
   return pageEntitiesConnection<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
 };
 
-const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string) => {
+/**
+ * Checks whether a theme with the given name already exists.
+ *
+ * @param context Auth context.
+ * @param user User performing the lookup.
+ * @param themeName Theme name to search for.
+ * @param excludeThemeId Optional theme id to exclude from the match (e.g. the theme being renamed).
+ * @returns True when another theme already uses the given name.
+ */
+const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['name'], values: [themeName], operator: FilterOperator.Eq }],
     filterGroups: [],
   };
   const themes = await findThemePaginated(context, user, { filters });
-  return themes.edges.findIndex((edge) => edge.node.name === themeName) > -1;
+  return themes.edges.some((edge) => edge.node.name === themeName && edge.node.id !== excludeThemeId);
 };
 
 export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput) => {
   const themeFound = await checkExistingTheme(context, user, input.name);
 
   if (themeFound) {
-    throw FunctionalError('Theme name already exists');
+    throw FunctionalError('Theme name already exists', { name: input.name });
   }
 
   const themeToCreate = {
@@ -65,9 +74,9 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
 export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER) => {
   logApp.info('[INIT] Theme defaults starts initialization');
 
-  // Create Dark theme with user customizations or defaults
+  // Create Filigran Dark theme
   const darkThemeInput = {
-    name: 'Dark',
+    name: 'Filigran Dark',
     theme_background: DARK_DEFAULTS.theme_background,
     theme_paper: DARK_DEFAULTS.theme_paper,
     theme_nav: DARK_DEFAULTS.theme_nav,
@@ -87,8 +96,9 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
 
   const darkTheme = await addTheme(context, user, darkThemeInput);
 
+  // Create Filigran Light theme
   const lightThemeInput = {
-    name: 'Light',
+    name: 'Filigran Light',
     theme_background: LIGHT_DEFAULTS.theme_background,
     theme_paper: LIGHT_DEFAULTS.theme_paper,
     theme_nav: LIGHT_DEFAULTS.theme_nav,
@@ -115,10 +125,10 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
 export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId: string) => {
   const theme = await findById(context, user, themeId);
   if (!theme) {
-    throw FunctionalError(`Theme ${themeId} cannot be found`);
+    throw FunctionalError('Theme cannot be found', { themeId });
   }
   if (theme.built_in) {
-    throw FunctionalError('System default themes cannot be deleted');
+    throw FunctionalError('System default themes cannot be deleted', { themeId });
   }
   return deleteInternalObject(context, user, themeId, ENTITY_TYPE_THEME);
 };
@@ -126,7 +136,20 @@ export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId:
 export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, themeId: string, input: EditInput[]) => {
   const theme = await findById(context, user, themeId);
   if (!theme) {
-    throw FunctionalError(`Theme ${themeId} cannot be found`);
+    throw FunctionalError('Theme cannot be found', { themeId });
+  }
+  if (theme.built_in && user.id !== SYSTEM_USER.id) { // built-in themes cannot be updated, except during internal migrations
+    throw FunctionalError('System default themes cannot be updated', { themeId });
+  }
+  // check the new theme name is not already used by another theme
+  const nameInput = input.find((i) => i.key === 'name');
+  if (nameInput) {
+    const [newThemeName] = nameInput.value;
+    // exclude the current theme so renaming with its own unchanged name is not flagged as a conflict
+    const themeFound = await checkExistingTheme(context, user, newThemeName, themeId);
+    if (themeFound) {
+      throw FunctionalError('Theme name already exists', { name: newThemeName });
+    }
   }
   const { element } = await updateAttribute<StoreEntityTheme>(context, user, themeId, ENTITY_TYPE_THEME, input);
   await publishUserAction({
@@ -172,7 +195,7 @@ export const themeImport = async (context: AuthContext, user: AuthUser, file: Pr
   const themeFound = await checkExistingTheme(context, user, validationResult.data.name);
 
   if (themeFound) {
-    throw FunctionalError('Theme name already exists');
+    throw FunctionalError('Theme name already exists', { name: validationResult.data.name });
   }
 
   return addTheme(context, user, validationResult.data);
