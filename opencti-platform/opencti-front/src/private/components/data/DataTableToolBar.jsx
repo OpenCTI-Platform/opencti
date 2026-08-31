@@ -2706,7 +2706,6 @@ class DataTableToolBar extends Component {
                               onClick={this.handleLaunchDelete.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
-                              keepMui
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
