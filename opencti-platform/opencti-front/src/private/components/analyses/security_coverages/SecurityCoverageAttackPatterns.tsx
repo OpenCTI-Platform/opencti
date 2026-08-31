@@ -230,7 +230,7 @@ const SecurityCoverageAttackPatternsComponent = ({
                         primary={(
                           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                             <Typography variant="body2" component="span" noWrap sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
-                            <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
+                            <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'end' }}>
                               <SecurityCoverageScores
                                 coverage_information={coverage}
                                 variant="header"
