@@ -646,7 +646,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         required={required}
         multiple={multiple}
         textfieldprops={{
-          variant: 'standard',
+          variant: 'outlined',
           label: label ?? (multiple ? t_i18n('Entities') : t_i18n('Entity')),
           helperText: helpertext,
           onFocus: searchStixCoreObjects,

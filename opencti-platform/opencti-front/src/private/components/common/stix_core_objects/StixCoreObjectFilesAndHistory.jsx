@@ -350,7 +350,7 @@ const StixCoreObjectFilesAndHistory = ({
             >
               <Field
                 component={SelectField}
-                variant="standard"
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth={true}
@@ -378,7 +378,7 @@ const StixCoreObjectFilesAndHistory = ({
               {!draftContext && (
                 <Field
                   component={SelectField}
-                  variant="standard"
+                  variant="outlined"
                   name="validation_mode"
                   label={t_i18n('Validation mode')}
                   fullWidth={true}
@@ -445,7 +445,7 @@ const StixCoreObjectFilesAndHistory = ({
                 ? (
                     <Field
                       component={SelectField}
-                      variant="standard"
+                      variant="outlined"
                       name="configuration"
                       label={t_i18n('Configuration')}
                       fullWidth={true}
@@ -525,7 +525,7 @@ const StixCoreObjectFilesAndHistory = ({
               >
                 <Field
                   component={SelectField}
-                  variant="standard"
+                  variant="outlined"
                   name="format"
                   label={t_i18n('Export format')}
                   fullWidth={true}
@@ -543,7 +543,7 @@ const StixCoreObjectFilesAndHistory = ({
                 </Field>
                 <Field
                   component={SelectField}
-                  variant="standard"
+                  variant="outlined"
                   name="type"
                   label={t_i18n('Export type')}
                   fullWidth={true}

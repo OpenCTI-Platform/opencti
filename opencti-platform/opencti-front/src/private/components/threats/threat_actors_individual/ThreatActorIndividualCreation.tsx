@@ -475,7 +475,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 required={(mandatoryAttributes.includes('first_seen'))}
                 textFieldProps={{
                   label: t_i18n('First seen'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
@@ -486,7 +486,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 required={(mandatoryAttributes.includes('last_seen'))}
                 textFieldProps={{
                   label: t_i18n('Last seen'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
@@ -578,7 +578,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 onSubmit={setFieldValue}
                 textFieldProps={{
                   label: t_i18n('Date of Birth'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}

@@ -63,7 +63,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                 >
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name={`${name}.${index}.measure`}
                     label={t_i18n(`Weight (${weightPrimaryUnit})`)}
                     type="number"
@@ -74,7 +74,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                     name={`${name}.${index}.date_seen`}
                     textFieldProps={{
                       label: t_i18n('Date Seen'),
-                      variant: 'standard',
+                      variant: 'outlined',
                     }}
                     type="date"
                   />
@@ -152,7 +152,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                   >
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       type="number"
                       min={0}
                       name={`${name}.${index}.measure`}
@@ -198,7 +198,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                       }}
                       textFieldProps={{
                         label: t_i18n('Date Seen'),
-                        variant: 'standard',
+                        variant: 'outlined',
                         helperText: (
                           <SubscriptionFocus
                             context={editContext}

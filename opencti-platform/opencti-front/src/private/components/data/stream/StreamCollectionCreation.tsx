@@ -146,14 +146,14 @@ const StreamCollectionCreationForm = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="description"
               label={t_i18n('Description')}
               fullWidth

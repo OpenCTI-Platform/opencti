@@ -584,7 +584,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
         <TextField
           fullWidth
-          variant="standard"
+          variant="outlined"
           label={t_i18n('Label')}
           value={field.label}
           onChange={(e) => {
@@ -907,7 +907,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         </Select>
 
         <TextField
-          variant="standard"
+          variant="outlined"
           label={t_i18n('Field Label')}
           fullWidth
           value={field.label}
@@ -955,7 +955,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               {field.options?.map((option, optIndex) => (
                 <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
                   <TextField
-                    variant="standard"
+                    variant="outlined"
                     label={t_i18n('Label')}
                     value={option.label}
                     onChange={(e) => {
@@ -966,7 +966,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                     style={{ flex: 1, marginRight: 10 }}
                   />
                   <TextField
-                    variant="standard"
+                    variant="outlined"
                     label={t_i18n('Value')}
                     value={option.value}
                     onChange={(e) => {
@@ -1008,7 +1008,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         {/* Default value field for text, number, textarea, select, and date fields */}
         {(field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date' || field.type === 'datetime' || field.type === 'select') && (
           <TextField
-            variant="standard"
+            variant="outlined"
             label={t_i18n('Default value')}
             fullWidth
             value={field.defaultValue || ''}
@@ -1188,7 +1188,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         </Select>
 
         <TextField
-          variant="standard"
+          variant="outlined"
           label={t_i18n('Label for entities')}
           fullWidth
           value={entity.label}
@@ -1233,7 +1233,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
         {entity.multiple ? (
           <TextField
-            variant="standard"
+            variant="outlined"
             label={t_i18n('Minimum amount (0 for optional)')}
             type="number"
             fullWidth
@@ -1736,7 +1736,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 )}
                 <TextField
                   fullWidth
-                  variant="standard"
+                  variant="outlined"
                   label={t_i18n('Default name')}
                   value={formData.draftDefaults?.name?.defaultValue || ''}
                   onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
@@ -1771,7 +1771,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 )}
                 <TextField
                   fullWidth
-                  variant="standard"
+                  variant="outlined"
                   label={t_i18n('Default description')}
                   multiline
                   rows={3}

@@ -118,7 +118,7 @@ const VocabularyEdition = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -126,7 +126,7 @@ const VocabularyEdition = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
@@ -138,7 +138,7 @@ const VocabularyEdition = ({
             name="aliases"
             multiple={true}
             createLabel={t_i18n('Add')}
-            textfieldprops={{ variant: 'standard', label: t_i18n('Aliases') }}
+            textfieldprops={{ variant: 'outlined', label: t_i18n('Aliases') }}
             options={(vocab.aliases ?? []).map((n) => ({
               id: n,
               value: n,
@@ -150,7 +150,7 @@ const VocabularyEdition = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="order"
             label={t_i18n('Order')}
             fullWidth={true}

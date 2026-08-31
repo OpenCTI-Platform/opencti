@@ -119,7 +119,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
       <Stack gap={2.5}>
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="name"
           label={t_i18n('Name')}
           error={!!errors.name}
@@ -143,7 +143,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_background"
           label={t_i18n('Background color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
         />
@@ -153,7 +153,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_paper"
           label={t_i18n('Paper color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
         />
@@ -163,7 +163,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_nav"
           label={t_i18n('Navigation color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
         />
@@ -173,7 +173,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_primary"
           label={t_i18n('Primary color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
         />
@@ -183,7 +183,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_secondary"
           label={t_i18n('Secondary color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
         />
@@ -193,7 +193,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_accent"
           label={t_i18n('Accent color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
         />
@@ -203,7 +203,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_text_color"
           label={t_i18n('Text color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
         />
@@ -211,7 +211,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         {/* LOGOS */}
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="theme_logo"
           label={t_i18n('Logo URL')}
           fullWidth
@@ -220,7 +220,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="theme_logo_collapsed"
           label={t_i18n('Logo URL (collapsed)')}
           fullWidth
@@ -229,7 +229,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="theme_logo_login"
           label={t_i18n('Logo URL (login)')}
           fullWidth
@@ -285,7 +285,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                 name="theme_login_aside_color"
                 label={t_i18n('Background color')}
                 fullWidth
-                variant="standard"
+                variant="outlined"
                 onSubmit={handleFieldSubmit}
                 sx={{ textTransform: 'capitalize' }}
               />
@@ -298,7 +298,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   name="theme_login_aside_gradient_start"
                   label={t_i18n('First color')}
                   fullWidth
-                  variant="standard"
+                  variant="outlined"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
                 />
@@ -308,7 +308,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   name="theme_login_aside_gradient_end"
                   label={t_i18n('Second color')}
                   fullWidth
-                  variant="standard"
+                  variant="outlined"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
                 />
@@ -318,7 +318,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             {loginAsideType === 'image' && (
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="theme_login_aside_image"
                 label={t_i18n('Add image URL')}
                 fullWidth

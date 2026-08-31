@@ -223,7 +223,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -243,7 +243,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Due Date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="due_date" />

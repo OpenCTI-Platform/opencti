@@ -185,7 +185,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                     <>
                                       <Field
                                         component={SelectFieldFds}
-                                        variant="standard"
+                                        variant="outlined"
                                         name="format"
                                         label={t('Export format')}
                                         fullWidth={true}
@@ -221,7 +221,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                         ? (
                                             <Field
                                               component={SelectFieldFds}
-                                              variant="standard"
+                                              variant="outlined"
                                               name="columns"
                                               label={t('Choose column to export')}
                                               fullWidth={true}

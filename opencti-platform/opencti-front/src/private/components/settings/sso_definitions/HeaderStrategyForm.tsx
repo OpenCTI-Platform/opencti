@@ -301,7 +301,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               <AuthProviderUserInfoFields fieldPrefix="user_info_mapping" />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="logout_uri"
                 label={t_i18n('Logout URI')}
                 fullWidth
@@ -332,7 +332,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
                           >
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               name={`headers_audit[${index}]`}
                               label={t_i18n('Header name')}
                               fullWidth
@@ -354,7 +354,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               </FieldArray>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth

@@ -282,7 +282,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
               <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Name')}
                   fullWidth={true}
@@ -309,7 +309,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   </Tooltip>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="uri"
                     label={t_i18n('Remote OpenCTI URL')}
                     fullWidth={true}
@@ -324,7 +324,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   {streams.length > 0 && (
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name="stream_id"
                       label={t_i18n('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
@@ -415,7 +415,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   name="current_state_date"
                   textFieldProps={{
                     label: t_i18n('Starting synchronization (empty = from start)'),
-                    variant: 'standard',
+                    variant: 'outlined',
                     fullWidth: true,
                     style: { marginTop: 20 },
                   }}

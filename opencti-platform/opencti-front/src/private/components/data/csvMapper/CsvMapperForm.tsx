@@ -166,7 +166,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth
