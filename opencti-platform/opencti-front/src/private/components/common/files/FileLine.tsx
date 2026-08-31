@@ -15,7 +15,6 @@ import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import type { OverridableStringUnion } from '@mui/types';
@@ -40,8 +39,6 @@ import { isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/use
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileWork from './FileWork';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
-import FieldOrEmpty from 'src/components/FieldOrEmpty';
-import { Truncate } from 'src/components/dataGrid/dataTableUtils';
 import ItemCreators from 'src/components/ItemCreators';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
@@ -292,7 +289,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             )}
             {!isProgress && !isFail && !isOutdated && isBypassUser(me) && (
               <ItemCreators
-                creators={[file?.metaData?.creator]}
+                creators={file?.metaData?.creator ? [file?.metaData?.creator] : []}
               >
               </ItemCreators>
             )}
