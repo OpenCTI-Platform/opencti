@@ -395,7 +395,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  padding: 0,
+                  minHeight: 32,
+                  padding: '0 8px 0 16px',
+                  gap: 8,
                   margin: 0,
                   pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
@@ -410,7 +412,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                     and that page model together; see NIGHT-LOG-2. */}
                 <Checkbox checked={checked} disabled={disabledOptions} />
                 <ItemIcon type={option.type} color={option.color} />
-                <span style={{ padding: '0 4px 0 4px' }}>
+                <span>
                   {option.label}
                 </span>
               </li>
@@ -550,13 +552,16 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         ? (
             <div
               style={{
-                width: 250,
+                minWidth: 250,
                 padding: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
               }}
             >
               {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
               <Chip
-                style={{ margin: '10px 10px 15px 0' }}
+                style={{ alignSelf: 'flex-start' }}
                 label={t_i18n('WITH')}
               />
               {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
@@ -566,15 +571,18 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             <div style={{ display: 'inline-flex' }}>
               <div
                 style={{
-                  width: 250,
+                  minWidth: 250,
                   padding: 8,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 16,
                 }}
               >
                 {displayOperatorAndFilter(filterKey)}
               </div>
               {filterOperator === 'within'
                 && (
-                  <div style={{ width: 150, display: 'inline-flex' }}>
+                  <div style={{ display: 'inline-flex', flexShrink: 0, width: 'max-content' }}>
                     <div style={{
                       color: theme.palette.text.disabled,
                       borderLeft: '0.5px solid',
