@@ -22,6 +22,10 @@ class MeterManager {
 
   private latencyHistogram: Histogram | null = null;
 
+  private lockWaitHistogram: Histogram | null = null;
+
+  private lockContentions: Counter | null = null;
+
   private directBulkGauge: Gauge | null = null;
 
   private sideBulkGauge: Gauge | null = null;
@@ -44,6 +48,14 @@ class MeterManager {
 
   latency(val: number, attributes: any) {
     this.latencyHistogram?.record(val, attributes);
+  }
+
+  lockWait(val: number, attributes?: any) {
+    this.lockWaitHistogram?.record(val, attributes);
+  }
+
+  lockContention(attributes?: any) {
+    this.lockContentions?.add(1, attributes);
   }
 
   directBulk(val: number, attributes: any) {
@@ -69,11 +81,20 @@ class MeterManager {
       valueType: ValueType.INT,
       description: 'Counts total number of errors',
     });
+    this.lockContentions = meter.createCounter('opencti_lock_contentions', {
+      valueType: ValueType.INT,
+      description: 'Counts lock acquisitions that needed more than one attempt',
+    });
     // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
       valueType: ValueType.INT,
       description: 'Latency computing per query',
       advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000, 10000, 20000, 30000] },
+    });
+    this.lockWaitHistogram = meter.createHistogram('opencti_lock_acquire_wait', {
+      valueType: ValueType.INT,
+      description: 'Lock acquisition wait time in milliseconds',
+      advice: { explicitBucketBoundaries: [0, 10, 50, 250, 500, 1000, 2500, 5000, 10000, 25000] },
     });
     // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
