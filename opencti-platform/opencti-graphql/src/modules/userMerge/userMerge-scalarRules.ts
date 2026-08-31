@@ -42,7 +42,9 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   '*.applicant_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History, Activity and PirHistory are rewritten by the history chunk' },
   '*.xtm_hub_registration_user_id': { kind: 'covered', registerRow: 'settings.xtm-hub-registration-user-id' },
   '*.platform_ip_whitelist_exclusion_ids': { kind: 'excluded', reason: 'another-chunk', detail: 'Register asks to invalidate the entry, not to transfer it' },
-  '*.recipients': { kind: 'excluded', reason: 'another-chunk', detail: 'Trigger recipients are rewritten by the notification chunk' },
+  // Removal then guarded append, which is what the register asks for: replace the source by the
+  // target, then deduplicate. A trigger already naming both members ends up naming the target once.
+  '*.recipients': { kind: 'covered', registerRow: 'trigger.recipients' },
   '*.feed_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   '*.taxii_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   '*.stream_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
