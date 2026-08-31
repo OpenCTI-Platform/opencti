@@ -105,6 +105,8 @@
       "identity_map_size": 200000,
       "identity_map_ttl_s": 600,
       "coalesce_update_events": true,
+      "bundle_intake": false,
+      "park_soft_refs": false,
       "origin": "worker"
     },
     "locked_account_statuses": {

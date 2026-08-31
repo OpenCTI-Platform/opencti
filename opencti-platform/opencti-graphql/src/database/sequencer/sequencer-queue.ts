@@ -93,6 +93,39 @@ export class SequencerQueue {
     return new Promise<SequencerIntent>((resolve) => this.takeWaiters.push(resolve));
   }
 
+  // Non-blocking dequeue (batch assembly of already-queued intents).
+  tryPop(): SequencerIntent | undefined {
+    return this.pop();
+  }
+
+  // Awaits an intent for at most timeoutMs; null on timeout. Used when parked intents exist:
+  // the loop must wake at the nearest parking deadline even if nothing new arrives.
+  async takeWithTimeout(timeoutMs: number): Promise<SequencerIntent | null> {
+    const intent = this.pop();
+    if (intent) return intent;
+    return new Promise<SequencerIntent | null>((resolve) => {
+      let settled = false;
+      const waiter = (taken: SequencerIntent) => {
+        if (settled) {
+          // timed out before an intent arrived: put it back for the next taker
+          this.push(taken);
+          return;
+        }
+        settled = true;
+        clearTimeout(timer);
+        resolve(taken);
+      };
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        const idx = this.takeWaiters.indexOf(waiter);
+        if (idx >= 0) this.takeWaiters.splice(idx, 1);
+        resolve(null);
+      }, Math.max(1, timeoutMs));
+      this.takeWaiters.push(waiter);
+    });
+  }
+
   // Batch formation (plan 0009 §2.6, C1): the loop takes EVERYTHING queued when it becomes
   // free (round-robin per source through pop), bounded by the size/bytes caps. No fixed
   // timer: the gathering window IS the previous batch's commit. gather_window_ms (default 0)

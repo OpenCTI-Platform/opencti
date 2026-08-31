@@ -207,6 +207,9 @@ import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
 import { isEsScriptFilterEnabled } from './engine-config';
+import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
+import { getCurrentWriteBuffer, type SequencerWriteBuffer } from './sequencer/sequencer-write-buffer';
+import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { AbortError } from 'node-fetch';
 
 const ELK_ENGINE = 'elk';
@@ -727,6 +730,9 @@ export const elRawBulk = async (context: AuthContext, args: any) => {
   return retryElOperations(bulkOperation);
 };
 export const elRawUpdateByQuery = async (query: any) => {
+  // POC ingestion sequencer (plan 0009 D6): mass rewrite with an unknown id scope, the
+  // identity map clears entirely (rare operation: rules, renames, background maintenance)
+  sequencerIdentityBarrier();
   const rawUpdateOperation = async () => {
     if (engine instanceof ElkClient) {
       const r = await engine.updateByQuery(query);
@@ -4166,6 +4172,13 @@ export const elUpdate = async (
   documentBody: any,
   retry = ES_RETRY_ON_CONFLICT,
 ) => {
+  // POC ingestion sequencer (plan 0009 E1): the upsert's scripted update (elReplace path) is
+  // buffered while a batch intent is applying; flushed in one refresh:false bulk at commit.
+  const sequencerBuffer = (context as any)?.sequencer?.scope === 'applying' ? getCurrentWriteBuffer() : null;
+  if (sequencerBuffer) {
+    sequencerBuffer.addUpdateOp({ index: indexName, id: documentId, body: documentBody, retry });
+    return { result: 'buffered' };
+  }
   const updateOperation = async () => {
     const entityType = documentBody.entity_type ? documentBody.entity_type : '';
     const updateRequest = {
@@ -4835,13 +4848,24 @@ const validateElementsToIndex = (context: AuthContext, user: AuthUser, elements:
     throw UnsupportedError('Cannot index unsupported element in draft context');
   }
 };
+// POC ingestion sequencer (plan 0009 E1): while a batch intent is applying, the whole call is
+// buffered and re-emitted at flush through ONE elIndexElements call for the batch, whose
+// per-impacted-id grouping below then merges denormalization side-writes across intents.
+// opts.refresh lets the flush write with refresh:false (one explicit refresh per batch).
 export const elIndexElements = async (
   context: AuthContext,
   user: AuthUser,
   indexingType: string | undefined,
   elements: Record<string, any>[],
+  opts: { refresh?: boolean | string } = {},
 ) => {
   validateElementsToIndex(context, user, elements);
+  const sequencerBuffer = (context as any).sequencer?.scope === 'applying' ? getCurrentWriteBuffer() : null;
+  if (sequencerBuffer) {
+    sequencerBuffer.addIndexCall(indexingType, elements);
+    return elements.length;
+  }
+  const refreshPolicy = opts.refresh ?? ES_REFRESH_CREATE;
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(context, user, elements);
@@ -4859,7 +4883,7 @@ export const elIndexElements = async (
       });
       if (body.length > 0) {
         meterManager.directBulk(body.length, { type: indexingType });
-        await elBulk(context, { refresh: ES_REFRESH_CREATE, timeout: BULK_TIMEOUT, body });
+        await elBulk(context, { refresh: refreshPolicy, timeout: BULK_TIMEOUT, body });
       }
     }
     // 02. If relation, generate impacts for from and to sides
@@ -4975,7 +4999,7 @@ export const elIndexElements = async (
         ]);
         if (bodyUpdate.length > 0) {
           meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-          const bulkPromise = elBulk(context, { refresh: ES_REFRESH_CREATE, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          const bulkPromise = elBulk(context, { refresh: refreshPolicy, timeout: BULK_TIMEOUT, body: bodyUpdate });
           await Promise.all([bulkPromise]);
         }
       }
@@ -4990,6 +5014,74 @@ export const elIndexElements = async (
     // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'insert',
   }, elIndexElementsFn);
+};
+
+// POC ingestion sequencer (plan 0009 E1). Mirror of the impact rule of elIndexElements above,
+// counting only: which entity documents would receive a denormalization side-write for these
+// elements. Used at flush to measure the cross-intent grouping (per-call sum vs whole batch).
+const countImpactedTargets = (elements: Record<string, any>[]): Set<string> => {
+  const impacted = new Set<string>();
+  elements.forEach((e: any) => {
+    if (e.base_type !== BASE_TYPE_RELATION) return;
+    const { fromType, fromRole, toType, toRole, entity_type: relationshipType } = e;
+    if (isImpactedRole(relationshipType, fromType, toType, fromRole)) impacted.add(e.fromId);
+    if (isImpactedRole(relationshipType, fromType, toType, toRole)) impacted.add(e.toId);
+  });
+  return impacted;
+};
+
+export const elRefreshIndices = async (indices: string[]) => {
+  const refreshOperation = async () => {
+    if (engine instanceof ElkClient) {
+      await engine.indices.refresh({ index: indices.join(',') });
+    } else {
+      await (engine as OpenClient).indices.refresh({ index: indices.join(',') });
+    }
+  };
+  return retryElOperations(refreshOperation);
+};
+
+// POC ingestion sequencer (plan 0009 E1/E5/E6). Flush one batch's buffered writes: ONE
+// elIndexElements call for every buffered create (documents bulk + side-writes grouped across
+// intents by the existing per-impacted-id logic), one bulk for the buffered scripted updates,
+// all refresh:false, then ONE refresh of the touched indices. On bulk failure the caller
+// rejects the batch's intents (workers retry through the full existence-checking path, so the
+// non-idempotent addAll scripts are never replayed as-is); the refresh still runs so whatever
+// DID land is searchable before those retries, or re-creates would duplicate.
+export const elFlushSequencerWrites = async (context: AuthContext, user: AuthUser, buffer: SequencerWriteBuffer) => {
+  const touched = new Set<string>();
+  try {
+    const allElements = buffer.indexCalls.flatMap((call) => call.elements);
+    if (allElements.length > 0) {
+      allElements.forEach((e: any) => touched.add(e._index));
+      const perCallSum = buffer.indexCalls.reduce((acc, call) => acc + countImpactedTargets(call.elements).size, 0);
+      const wholeCount = countImpactedTargets(allElements).size;
+      if (perCallSum > wholeCount) {
+        sequencerMetrics.sidewriteGrouped(perCallSum - wholeCount);
+      }
+      await elIndexElements(context, user, 'sequencer-flush', allElements, { refresh: false });
+      sequencerMetrics.esOp('bulk_docs');
+    }
+    if (buffer.updateOps.length > 0) {
+      buffer.updateOps.forEach((op) => touched.add(op.index));
+      const chunks = R.splitEvery(MAX_BULK_OPERATIONS, buffer.updateOps);
+      for (let i = 0; i < chunks.length; i += 1) {
+        const body = chunks[i].flatMap((op) => [
+          { update: { _index: op.index, _id: op.id, retry_on_conflict: op.retry } },
+          op.body,
+        ]);
+        await elBulk(context, { refresh: false, timeout: BULK_TIMEOUT, body });
+        sequencerMetrics.esOp('bulk_side');
+      }
+    }
+  } finally {
+    if (touched.size > 0) {
+      await elRefreshIndices(Array.from(touched)).catch((err: any) => {
+        logApp.error('[SEQUENCER] flush refresh failed', { cause: err });
+      });
+      sequencerMetrics.esOp('refresh');
+    }
+  }
 };
 
 export const elUpdateRelationConnections = async (context: AuthContext, elements: any[]) => {
@@ -5101,6 +5193,9 @@ export const elDeleteElements = async (
   opts: DeleteElementsOpts = {},
 ) => {
   if (elements.length === 0) return;
+  // POC ingestion sequencer (plan 0009 D6): deletions evict every involved id (any id form
+  // cascades through the map's secondary index)
+  sequencerIdentityBarrier(elements.map((e) => e.internal_id).filter((id) => !!id));
   if (getDraftContext(context, user)) {
     await elMarkElementsAsDraftDelete(context, user, elements);
     return;

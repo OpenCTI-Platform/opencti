@@ -19,6 +19,8 @@ export interface SequencerConfig {
   identityMapSize: number;
   identityMapTtlS: number;
   coalesceUpdateEvents: boolean;
+  bundleIntake: boolean;
+  parkSoftRefs: boolean;
   origin: string;
 }
 
@@ -39,6 +41,12 @@ const readConfig = (): SequencerConfig => {
     identityMapSize: Number(conf.get('app:ingestion_sequencer:identity_map_size') ?? 200000),
     identityMapTtlS: Number(conf.get('app:ingestion_sequencer:identity_map_ttl_s') ?? 600),
     coalesceUpdateEvents: booleanConf('app:ingestion_sequencer:coalesce_update_events', true),
+    // P3 (plan 0009 part 9): push whole bundles to the worker (bundle_inline marker), which
+    // imports them in place by nb_deps levels; batch depth then comes from the payload.
+    bundleIntake: booleanConf('app:ingestion_sequencer:bundle_intake', false),
+    // D2 v3 soft-ref parking, off by default: measured to deadlock against a bounded
+    // prefetch window (plan 0009 §8.8); default = v2 (hard endpoint deps only).
+    parkSoftRefs: booleanConf('app:ingestion_sequencer:park_soft_refs', false),
     origin: conf.get('app:ingestion_sequencer:origin') ?? 'worker',
   };
 };

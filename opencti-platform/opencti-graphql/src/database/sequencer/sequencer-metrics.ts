@@ -5,7 +5,7 @@ import { ValueType } from '@opentelemetry/api';
 import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { meterManager } from '../../config/tracing';
 
-export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed';
+export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred';
 export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events';
 export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate';
 
@@ -32,6 +32,10 @@ class SequencerMetrics {
 
   private eventsCoalesced: Counter | null = null;
 
+  private chainStepsCounter: Counter | null = null;
+
+  private deferReasons: Counter | null = null;
+
   register() {
     const meter = meterManager.meterProvider.getMeter('opencti-sequencer');
     this.intents = meter.createCounter('opencti_sequencer_intents_total', {
@@ -44,7 +48,7 @@ class SequencerMetrics {
     });
     this.batchSize = meter.createHistogram('opencti_sequencer_batch_size', {
       valueType: ValueType.INT,
-      description: 'Intents per committed batch',
+      description: 'Intents assembled per batch cycle (fresh + released deferred + parked re-entries)',
       advice: { explicitBucketBoundaries: [1, 2, 4, 8, 16, 32, 64, 128, 200] },
     });
     this.batchPhaseSeconds = meter.createHistogram('opencti_sequencer_batch_phase_seconds', {
@@ -81,6 +85,14 @@ class SequencerMetrics {
     this.eventsCoalesced = meter.createCounter('opencti_sequencer_events_coalesced_total', {
       valueType: ValueType.INT,
       description: 'Update events merged into a per-entity batch event (E8, coalesce_update_events)',
+    });
+    this.chainStepsCounter = meter.createCounter('opencti_sequencer_chain_steps_total', {
+      valueType: ValueType.INT,
+      description: 'Same-target applications chained behind a previous write in the same batch (P2 merge-fold, steps beyond each chain head)',
+    });
+    this.deferReasons = meter.createCounter('opencti_sequencer_defer_reasons_total', {
+      valueType: ValueType.INT,
+      description: 'Residual deferrals by refusal reason (relation, force_direct, self_not_foldable, head_not_foldable, unresolved_target)',
     });
   }
 
@@ -123,6 +135,14 @@ class SequencerMetrics {
 
   eventCoalesced(count = 1) {
     this.eventsCoalesced?.add(count);
+  }
+
+  chainSteps(count = 1) {
+    this.chainStepsCounter?.add(count);
+  }
+
+  deferReason(reason: string) {
+    this.deferReasons?.add(1, { reason });
   }
 }
 

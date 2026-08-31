@@ -18,6 +18,7 @@ import { userFilterStoreElements } from '../../utils/access';
 import { getDraftContext } from '../../utils/draftContext';
 import { TOPIC_PREFIX, logApp } from '../../config/conf';
 import { pubSubSubscription } from '../redis';
+import { registerSequencerBarrier } from './sequencer-barrier';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerMetrics } from './sequencer-metrics';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -115,6 +116,32 @@ export class SequencerIdentityMap {
     return this.lookup(id) !== undefined;
   }
 
+  // P2 chaining (plan 0009 s9.7): the loop re-ingests an applied result with-refs only when
+  // a with-refs basis already existed (the element predates the batch), so the next chain
+  // step diffs against it; a creation result is never a valid basis.
+  hasWithRefs(id: string) {
+    const entry = this.lookup(id);
+    return entry !== undefined && entry.withRefs !== null;
+  }
+
+  resolveInternalId(id: string): string | null {
+    const entry = this.lookup(id);
+    return entry ? entry.element.internal_id : null;
+  }
+
+  // Loop-internal read (lock key set, plan building): no metrics, no user filtering.
+  peekBare(id: string): any | null {
+    const entry = this.lookup(id);
+    return entry ? entry.element : null;
+  }
+
+  clear() {
+    const count = this.byInternalId.size;
+    this.byInternalId.clear();
+    this.idIndex.clear();
+    if (count > 0) sequencerMetrics.mapEvent('invalidate', count);
+  }
+
   // Serve hook called from elFindByIds through context.sequencer.resolutions (no import in
   // engine.ts). Returns null when the map cannot answer for these opts; otherwise the served
   // hits (user-filtered) and the ids to send to ES.
@@ -172,6 +199,13 @@ export class SequencerIdentityMap {
 }
 
 export const sequencerIdentityMap = new SequencerIdentityMap();
+
+// D6: identity-changing operations (merge, rename update_by_query, raw update-by-query,
+// delete) evict every involved id at their entry; an unknown scope clears the whole map.
+registerSequencerBarrier((ids) => {
+  if (ids && ids.length > 0) sequencerIdentityMap.evict(ids);
+  else if (!ids) sequencerIdentityMap.clear();
+});
 
 // C5 layer 2: cross-process edits/deletes through the existing pub/sub topics. ADDED is NOT
 // subscribed: it fires on every worker mutation, no-op upserts included.

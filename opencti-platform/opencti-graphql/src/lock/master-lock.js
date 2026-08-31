@@ -111,10 +111,22 @@ const childLockResources = async (ids, args = {}) => {
 
 // Lock resources, direct or child, depending
 export const lockResources = async (ids, args = {}) => {
-  if (USE_CHILD_LOCK) {
-    return childLockResources(ids, args);
+  // POC ingestion sequencer (plan 0009 D4): under an applying batch, keys already held by
+  // the batch lock are a no-op (re-locking them would deadlock against our own batch lock);
+  // only the keys the pre-resolution could not predict take a real lock. The returned handle
+  // exposes the batch lock's signal and a no-op unlock.
+  const { sequencer, ...cleanArgs } = args;
+  if (sequencer) {
+    const missing = ids.filter((id) => !sequencer.heldKeys.has(id));
+    if (missing.length === 0) {
+      return { operation: 'sequencer-batch', signal: sequencer.signal, unlock: async () => {} };
+    }
+    return lockResources(missing, cleanArgs);
   }
-  const lock = await lockResource(ids, args);
+  if (USE_CHILD_LOCK) {
+    return childLockResources(ids, cleanArgs);
+  }
+  const lock = await lockResource(ids, cleanArgs);
   recordLockAcquire(lock.acquireWaitMs, lock.acquireAttempts);
   return lock;
 };

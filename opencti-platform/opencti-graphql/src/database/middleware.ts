@@ -102,6 +102,8 @@ import {
 } from '../schema/identifier';
 import { isSequencerEligible, sequencerScopedContext } from './sequencer/sequencer-eligibility';
 import { registerSequencerLoaders, submitIntent } from './sequencer/sequencer-loop';
+import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
+import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
@@ -1019,6 +1021,13 @@ const depsKeys = (type: string): { src: string; dst?: string; types?: string[] }
 const idVocabulary = (nameOrId: string, category: string) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
 };
+
+// POC ingestion sequencer (plan 0009 D4): under an applying batch the lock call sites pass
+// the batch lock, so keys it already holds are a no-op and only the unpredicted rest is
+// really locked (see master-lock.lockResources).
+const sequencerLockArgs = (context: AuthContext) => (
+  context.sequencer?.scope === 'applying' ? (getCurrentBatchLock() ?? undefined) : undefined
+);
 
 // POC ingestion sequencer (plan 0009 B2/C2): the ids an input references, extracted with the
 // same depsKeys walk as inputResolveRefs, so the batch pre-resolution can warm the identity
@@ -2035,6 +2044,10 @@ export const mergeEntities = async (
       sourceEntityIds,
     });
   }
+  // POC ingestion sequencer (plan 0009 D6): identity-changing operation. Evict every involved
+  // id from the identity map before merging; the absorbed sources' remaining keys cascade
+  // through the map's secondary index. (Stage E: this barrier also commits the write buffer.)
+  sequencerIdentityBarrier([targetEntityId, ...sourceEntityIds]);
   logApp.info(`[OPENCTI] Merging ${sourceEntityIds} in ${targetEntityId}`);
   // targetEntity and sourceEntities must be accessible
   const mergedIds = [targetEntityId, ...sourceEntityIds];
@@ -2052,7 +2065,7 @@ export const mergeEntities = async (
   let lock;
   try {
     // Lock the participants that will be merged
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
     if (!initialInstance) {
@@ -2668,7 +2681,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities: BasicStoreBase[] = [];
@@ -3522,7 +3535,7 @@ export const createRelationRaw = async (
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
@@ -3834,7 +3847,7 @@ const internalCreateEntityRaw = async (
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
@@ -4161,9 +4174,14 @@ export const createEntity = async (
   if (isSequencerEligible(context, user, type, opts)) {
     let candidateIds: string[] = [];
     try {
-      candidateIds = getInputIds(type, input, false);
-    } catch {
+      // entity_type is passed separately to createEntity but getInputIds' alias/hash id
+      // generation reads it from the input (found live 2026-08-31: without it, every entity
+      // threw here and the silent catch left candidateIds EMPTY, collapsing every entity
+      // onto one canonical key and voiding coalescing, producer edges and the batch lock)
+      candidateIds = getInputIds(type, { ...input, entity_type: type }, false);
+    } catch (err) {
       // invalid or incomplete input: the direct path will fail identically when applied
+      logApp.warn('[SEQUENCER] candidate id computation failed, empty set', { type, cause: err });
     }
     return submitIntent(context, user, {
       kind: 'entity',
@@ -4209,7 +4227,7 @@ const draftInternalDeleteElement = async <T extends StoreObject>(
   const participantIds = [draftElement.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
 
     await elMarkElementsAsDraftDelete(context, user, [draftElement]);
   } catch (err: any) {
