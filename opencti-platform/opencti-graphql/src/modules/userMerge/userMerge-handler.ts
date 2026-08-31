@@ -17,6 +17,15 @@ import type { UserMergeProjectedRights, UserMergeRightsLabels } from './userMerg
  */
 export const USER_MERGE_TARGET_INDICES = [...READ_PLATFORM_INDICES, INDEX_DELETED_OBJECTS, READ_INDEX_DRAFT_OBJECTS];
 
+/**
+ * Identifier of the handler that closes the source account.
+ *
+ * Declared next to the contract rather than next to the handler: the registration guard is the
+ * one place that has to name it, and importing the handler module from there would pull the
+ * domain layer into a check that runs before any handler is loaded.
+ */
+export const USER_MERGE_SOURCE_DISABLE_HANDLER = 'source-deactivation';
+
 /** One planned or applied change, as it appears in the report. */
 export interface UserMergePlannedChange {
   /** Register row this change answers for. */
