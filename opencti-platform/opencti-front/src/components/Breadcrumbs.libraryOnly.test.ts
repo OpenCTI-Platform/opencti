@@ -2,15 +2,11 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-/**
- * The page path is drawn by the library, and by one file.
- */
+/** The page path is drawn by the library, and by one file. */
 
 const WRAPPER = 'src/components/Breadcrumbs.tsx';
 
-/**
- * Comments are blanked before anything is asserted.
- */
+/** Comments are blanked before anything is asserted. */
 const stripComments = (text: string) => text
   .replace(/\/\*[\s\S]*?\*\//g, ' ')
   .replace(/(^|[^:])\/\/.*$/gm, '$1');

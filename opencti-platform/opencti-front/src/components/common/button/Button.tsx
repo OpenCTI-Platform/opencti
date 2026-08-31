@@ -33,9 +33,7 @@ interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'si
   fullWidth?: boolean;
   iconOnly?: boolean;
   selected?: boolean;
-  /**
-   * Force the MUI path.
-   */
+  /** Force the MUI path. */
   keepMui?: boolean;
   component?: React.ElementType;
   to?: string;
@@ -64,9 +62,7 @@ export type CustomButtonProps = RestrictedIntentButtonProps | DefaultIntentButto
 const LIB_PRIORITY = { primary: 'primary', secondary: 'secondary', tertiary: 'tertiary' } as const;
 const LIB_TONE_FROM_INTENT = { default: 'default', destructive: 'destructive', ai: 'ia', ee: 'highlight' } as const;
 
-/**
- * `color` outranks `intent`, as it always did.
- */
+/** `color` outranks `intent`, as it always did. */
 const LIB_TONE_FROM_COLOR: Partial<Record<ButtonColorKey, 'default' | 'destructive' | 'ia' | 'highlight'>> = {
   default: 'default',
   primary: 'default',
@@ -125,9 +121,7 @@ const Button: React.FC<CustomButtonProps> = ({
   const libSize = LIB_SIZE[size as keyof typeof LIB_SIZE];
   const isPolymorphic = Boolean(Component || to || href);
 
-  /**
-   * The library is used only where it can reproduce the site exactly.
-   */
+  /** The library is used only where it can reproduce the site exactly. */
   const canUseLibrary = Boolean(libPriority)
     && Boolean(libTone)
     && Boolean(libSize)
@@ -149,9 +143,8 @@ const Button: React.FC<CustomButtonProps> = ({
 
   if (canUseLibrary) {
     /**
-     * MUI sized the glyph through `.MuiButton-startIcon`; the library's slot does not, so an
-     * icon with no intrinsic size paints 0x0 there -- the TableTuneIcon defect, which a class
-     * assertion cannot see.
+     * MUI sized the glyph through `.MuiButton-startIcon`; the library's slot does not, so an icon with no
+     * intrinsic size paints 0x0 there -- the TableTuneIcon defect, which a class assertion cannot see.
      */
     const iconSize = theme.button.sizes[size].iconSize;
     const sizedIcon = (node: React.ReactNode) => (node ? (

@@ -6,9 +6,7 @@ import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fds
 
 interface DrawerHeaderProps {
   title: string;
-  /**
-   * The elevation layer this header sits on.
-   */
+  /** The elevation layer this header sits on. */
   layer?: Parameters<typeof fdsLayerClass>[0];
   onClose?: () => void;
   endContent?: React.ReactNode;

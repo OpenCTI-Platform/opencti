@@ -5,9 +5,7 @@ import { Header } from '@filigran/design-system';
 import { describe, expect, it } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 
-/**
- * The fixed/glass doctrine of the bar, which regressed once with nothing to catch it.
- */
+/** The fixed/glass doctrine of the bar, which regressed once with nothing to catch it. */
 
 const read = (f: string) => readFileSync(path.resolve(f), 'utf8');
 

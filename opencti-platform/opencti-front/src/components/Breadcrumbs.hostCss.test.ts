@@ -1,27 +1,7 @@
 /**
- * Locks FDS-WORKAROUND #40: the breadcrumb link keeps its underline on hover
- * and on focus.
- *
- * The library ships `.underline` as an UNLAYERED utility, so the cascade is
- * settled by specificity alone. At rest `.underline` (0,1,0) beats this
- * product's global `a` reset (0,0,1). On hover and on focus it loses, because
- * `a:hover` / `a:focus` are (0,1,1) — one pseudo-class above the utility — and
- * the shorthand `text-decoration: none` takes the line away. The host rule
- * scopes the fix to the landmark, which puts it at (1,1,1) and back in front.
- *
- * Neither repository can see that on its own: the library's gates never load a
- * product stylesheet, and no product gate reads the library's. So this guard
- * reads BOTH — the served `index.css` from the installed package and this
- * product's own global sheets — and settles the cascade the way a browser
- * would: specificity first, load order only as the tie-break, with the order
- * itself read from `front.tsx` rather than assumed.
- *
- * It is a static guard and says so. What proves the RENDERING is the browser
- * measurement recorded in LIBRARY-FEEDBACK.md #40, taken against two separate
- * CSS builds — with and without this block — because the first attempt at that
- * proof disabled a rule through `cssRules`, which is inaccessible under
- * `file://`, and so measured nothing at all. jsdom cannot stand in for it: it
- * resolves no cascade for `:hover`.
+ * Locks FDS-WORKAROUND #40 (LIBRARY-FEEDBACK.md #40): the breadcrumb link keeps its
+ * underline on hover and on focus. Static guard; cascade analysis and the reason a
+ * browser measurement is the real proof: see fds-migration/MIGRATION-DECISIONS.md#breadcrumb-underline
  */
 import fs from 'node:fs';
 import path from 'node:path';

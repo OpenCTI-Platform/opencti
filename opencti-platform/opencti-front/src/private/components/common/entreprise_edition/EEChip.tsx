@@ -12,13 +12,9 @@ const EE_CHIP_GAP: CSSProperties = { marginInlineStart: 6 };
 
 interface EEChipProps {
   feature?: string;
-  /**
-   * `sm` is the library's small EE chip (lib #192).
-   */
+  /** `sm` is the library's small EE chip (lib #192). */
   size?: 'md' | 'sm';
-  /**
-   * Default `true`: the chip renders as a real `<button>` that opens the EE dialog.
-   */
+  /** Default `true`: the chip renders as a real `<button>` that opens the EE dialog. */
   clickable?: boolean;
   style?: CSSProperties;
 }

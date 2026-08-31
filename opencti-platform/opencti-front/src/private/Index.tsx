@@ -81,10 +81,7 @@ const Index = ({ settings }: IndexProps) => {
     }
   }, [theme]);
 
-  /**
-   * The bar is fixed and glassy (94% over a 4px backdrop blur), so the content has to travel
-   * UNDER it.
-   */
+  /** The bar is fixed and glassy (94% over a 4px backdrop blur), so the content has to travel UNDER it. */
   const headerInset = isForcePasswordChangeRoute
     ? 0
     : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`;

@@ -387,9 +387,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           open={this.state.displayDialog}
           onClose={this.handleCloseDialog.bind(this)}
         >
-          {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-              not MUI's — MUI dropped it silently and this dialog rendered
-              with no heading at all. */}
+          {/* A real DialogTitle. */}
           <DialogTitle>{t('Are you sure?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to remove this external reference?')}
@@ -416,9 +414,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           open={this.state.displayExternalLink}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
-          {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-              not MUI's — MUI dropped it silently and this dialog rendered
-              with no heading at all. */}
+          {/* A real DialogTitle. */}
           <DialogTitle>{t('Do you want to browse this external link?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to browse this external link?')}

@@ -1,6 +1,4 @@
-/**
- * Sweeps every Breadcrumbs call site and requires EXACTLY ONE current entry.
- */
+/** Sweeps every Breadcrumbs call site and requires EXACTLY ONE current entry. */
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';

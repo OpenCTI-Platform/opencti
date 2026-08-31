@@ -5,9 +5,7 @@ import userEvent from '@testing-library/user-event';
 import testRender from '../../../utils/tests/test-render';
 import Tag from './Tag';
 
-/**
- * What 200+ call sites owe this wrapper now that the design system draws it.
- */
+/** What 200+ call sites owe this wrapper now that the design system draws it. */
 
 const chipOf = (text: string) => screen.getByText(text).closest('[class*="box-border"]') as HTMLElement;
 

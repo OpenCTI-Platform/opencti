@@ -382,9 +382,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                               />
                             )}
                           />
-                          {/* The fixed 200px sizing goes: the library field
-                              owns its geometry. Flagged for Sandy's eye on the
-                              list rendering. */}
+                          {/* The fixed 200px sizing goes: the library field owns its geometry. */}
                           <Select
                             value={selectedEntity[suggestion.type]}
                             onValueChange={(value) => handleSelectEntity(suggestion.type, value)}

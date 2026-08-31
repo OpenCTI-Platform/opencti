@@ -12,9 +12,8 @@ export type TextareaFieldProps = FieldProps<string> & Omit<TextareaProps, 'error
 };
 
 /**
- * Formik adapter for the design-system Textarea — the multi-line counterpart of
- * components/TextField.tsx, and the reason the conversion is one component and not 26 call-
- * site rewrites.
+ * Formik adapter for the design-system Textarea — the multi-line counterpart of components/TextField.tsx, and the
+ * reason the conversion is one component and not 26 call- site rewrites.
  */
 const TextareaField = (props: TextareaFieldProps) => {
   const {

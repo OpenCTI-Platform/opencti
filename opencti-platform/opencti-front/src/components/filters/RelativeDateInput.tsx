@@ -16,9 +16,7 @@ interface RelativeDateInputProps {
   valueOrder: number;
   dateInput: string[];
   setDateInput: (value: string[]) => void;
-  /**
-   * Only ONE field in the popover may claim focus.
-   */
+  /** Only ONE field in the popover may claim focus. */
   autoFocus?: boolean;
 }
 

@@ -290,9 +290,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
 
     helpers.handleClearAllFilters();
     instanceTriggerFiltersHelpers.handleClearAllFilters();
-    // instance_trigger has to live in Formik too: enableReinitialize rebuilds
-    // the form from initialValues after every commitFieldPatch, so a value kept
-    // only in local state is wiped on the next round-trip.
+    // instance_trigger has to live in Formik too: enableReinitialize rebuilds the form from initialValues after
+    // every commitFieldPatch, so a value kept only in local state is wiped on the next round-trip.
     setFieldValue('instance_trigger', newInstanceTriggerValue);
     setInstanceTrigger(newInstanceTriggerValue);
 

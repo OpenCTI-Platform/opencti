@@ -296,10 +296,7 @@ export const itemEntity = (type: string | null | undefined): ChipEntityValue | u
   return family ? FAMILY_TO_CHIP_ENTITY[family] : undefined;
 };
 
-/**
- * True when `color`, painted as the usual 20% wash, is actually distinguishable from the
- * surface behind it.
- */
+/** True when `color`, painted as the usual 20% wash, is actually distinguishable from the surface behind it. */
 const toLab = (rgb: [number, number, number]): [number, number, number] => {
   const inv = (v: number) => {
     const x = v / 255;

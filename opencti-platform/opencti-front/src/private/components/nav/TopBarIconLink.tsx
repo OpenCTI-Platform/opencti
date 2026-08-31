@@ -31,7 +31,6 @@ interface TopBarIconLinkProps extends Omit<ComponentPropsWithoutRef<typeof Link>
   'aria-label': string;
   /** The glyph. Wrapped in an aria-hidden span, exactly as IconButton does. */
   icon: ReactNode;
-  /** Internal router route. */
   to: string;
   /** Current-page state, mirroring IconButton's `active`. */
   active?: boolean;
@@ -40,10 +39,7 @@ interface TopBarIconLinkProps extends Omit<ComponentPropsWithoutRef<typeof Link>
   badge?: TopBarIconLinkBadge;
 }
 
-/**
- * Same technique as the OpenAEV Header pilot (openaev-
- * front/src/admin/components/nav/TopBarIconLink.tsx).
- */
+/** Same technique as the OpenAEV Header pilot (openaev- front/src/admin/components/nav/TopBarIconLink.tsx). */
 const TopBarIconLink = React.forwardRef<HTMLAnchorElement, TopBarIconLinkProps>(({
   'aria-label': ariaLabel,
   icon,
@@ -51,9 +47,8 @@ const TopBarIconLink = React.forwardRef<HTMLAnchorElement, TopBarIconLinkProps>(
   active,
   id,
   badge,
-  // Merged, never spread: an incoming `className` — including the `undefined` one a cloning
-  // parent passes — would otherwise replace the library variant wholesale and the control would
-  // collapse to its glyph.
+  // Merged, never spread: an incoming `className` — including the `undefined` one a cloning parent passes — would
+  // otherwise replace the library variant wholesale and the control would collapse to its glyph.
   className,
   style: incomingStyle,
   ...rest

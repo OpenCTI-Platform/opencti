@@ -20,11 +20,9 @@ import { useFormatter } from './i18n';
 import { isNilField } from '../utils/utils';
 
 /**
- * Formik adapter for the library Combobox, replacing `AutocompleteField`.
- *
- * Prop surface differs from `AutocompleteField` on two points: there is no
- * `textfieldprops` (no MUI TextField underneath), and `renderOption` returns
- * the row CONTENT only — the library owns the `<li>` and its ARIA.
+ * Formik adapter for the library Combobox, replacing `AutocompleteField`. No
+ * `textfieldprops` (no MUI TextField underneath), and `renderOption` returns the row
+ * CONTENT only — the library owns the `<li>` and its ARIA.
  */
 
 type PossibleValue = FieldOption | string;
@@ -49,10 +47,7 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       id?: string;
       groupBy?: (option: Value) => string;
       getOptionLabel?: (option: Value) => string;
-      /**
-       * Argument order is NOT MUI's: the library passes the SELECTED value
-       * first. Prefer omitting it — the default below is order-agnostic.
-       */
+      /** Argument order is NOT MUI's: the library passes the SELECTED value first. */
       isOptionEqualToValue?: (a: Value, b: Value) => boolean;
       isOptionDisabled?: (option: Value) => boolean;
       /** Per-value chip tone; presentation only, never reaches the selection engine. */
@@ -80,9 +75,8 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       selectOnFocus?: boolean;
       openOnFocus?: boolean;
       /**
-       * Defaults to `true` in multiple mode for MUI parity (the library default
-       * is `false`): an open panel overlays the form's own action button in
-       * narrow drawers. Pass `closeOnSelect={false}` for the library behaviour.
+       * Defaults to `true` in multiple mode for MUI parity (the library default is `false`): an open panel
+       * overlays the form's own action button in narrow drawers.
        */
       closeOnSelect?: boolean;
       keepInputOnBlur?: boolean;
@@ -241,9 +235,8 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
 };
 
 /**
- * Narrows the adapter's dual-mode `onChange` for a single-value call site, so
- * the cast lives here once instead of at each site. Encoding the mode as a type
- * parameter was tried and reverted: it broke every `multiple` mount.
+ * Narrows the adapter's dual-mode `onChange` for a single-value call site, so the cast lives here once instead of
+ * at each site.
  */
 export const asSingleValue = <T,>(
   fn?: (name: string, value: T | null) => void,
@@ -251,11 +244,7 @@ export const asSingleValue = <T,>(
   ? (name: string, value: T | T[] | null) => fn(name, Array.isArray(value) ? (value[0] ?? null) : value)
   : undefined);
 
-/**
- * The `multiple` counterpart of {@link asSingleValue}. The library emits
- * `onValueChange(multiple ? [] : null, ...)`, so the `?? []` is unreachable
- * rather than a default that could swallow a real null.
- */
+/** The `multiple` counterpart of {@link asSingleValue}. */
 export const asMultiValue = <T,>(
   fn?: (name: string, values: T[]) => void,
 ) => (fn

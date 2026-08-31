@@ -46,9 +46,8 @@ const AutocompleteFreeSoloField = (props) => {
     setFieldTouched(name, true);
   }, [setFieldTouched, name]);
 
-  // Every consumer submits `values[name].map((v) => v.value)`, so a created
-  // value has to be an object, never the bare string MUI's freeSolo produced
-  // when the user pressed Enter instead of clicking the suggestion row.
+  // Every consumer submits `values[name].map((v) => v.value)`, so a created value has to be an object, never the
+  // bare string MUI's freeSolo produced when the user pressed Enter instead of clicking the suggestion row.
   const onCreateOption = React.useCallback(
     (input) => {
       const created = { value: input, label: input };

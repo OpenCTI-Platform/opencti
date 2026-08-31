@@ -753,9 +753,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         open={displayKillSession}
         onClose={handleCloseKillSession}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
+        {/* A real DialogTitle. */}
         <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill this session?')}
@@ -778,9 +776,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         open={displayKillSessions}
         onClose={handleCloseKillSessions}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
+        {/* A real DialogTitle. */}
         <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill all the sessions of this user?')}

@@ -4,9 +4,7 @@ import { screen } from '@testing-library/react';
 import testRender from '../utils/tests/test-render';
 import Breadcrumbs from './Breadcrumbs';
 
-/**
- * What the page path owes this product, now that the design system draws it.
- */
+/** What the page path owes this product, now that the design system draws it. */
 
 const PATH = [
   { label: 'Entities' },

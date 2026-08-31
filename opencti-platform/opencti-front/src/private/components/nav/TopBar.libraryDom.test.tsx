@@ -3,9 +3,7 @@ import { describe, expect, it } from 'vitest';
 import UploadImport from '../../../components/UploadImport';
 import testRender from '../../../utils/tests/test-render';
 
-/**
- * The source guard next door says what the bar *imports*.
- */
+/** The source guard next door says what the bar *imports*. */
 
 /** MUI classes the rendered tree may still carry, and what retires each. */
 const ALLOWED_RENDERED = {

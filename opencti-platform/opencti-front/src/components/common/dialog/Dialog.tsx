@@ -38,9 +38,8 @@ const Dialog = ({
       onClose={onClose}
       slotProps={{
         paper: {
-          // A dialog is a layer-2 surface: the class re-declares the elevation aliases,
-          // `layerInputVars` carries the three input backgrounds the library's own .layer-N
-          // blocks forget.
+          // A dialog is a layer-2 surface: the class re-declares the elevation aliases, `layerInputVars` carries
+          // the three input backgrounds the library's own .layer-N blocks forget.
           className: fdsLayerClass(SURFACE_LAYER),
           sx: {
             ...layerInputVars,
@@ -84,11 +83,9 @@ const Dialog = ({
         </DialogTitle>
       )}
 
-      {/* This element scrolls, and the library paints a focus ring 4px OUTSIDE the
-          field, so a field flush with the edge loses that ring to the clip; the
-          negative margin gives the padding back and leaves the layout as it was.
-          `&&` because MUI zeroes the top from `.MuiDialogTitle-root + &`, which
-          outranks a plain `sx`. */}
+      {/* This element scrolls, so a field flush with the edge loses the focus ring the
+          library paints 4px outside it; `&&` because MUI's `.MuiDialogTitle-root + &`
+          outranks a plain `sx`. See fds-migration/MIGRATION-DECISIONS.md#dialog-padding-keys */}
       <DialogContent {...contentProps} sx={{ px: 3, '&&': { py: '4px', my: '-4px' } }}>
         {children}
       </DialogContent>

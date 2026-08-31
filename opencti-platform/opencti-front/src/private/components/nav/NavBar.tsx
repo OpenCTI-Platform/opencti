@@ -33,19 +33,14 @@ export const navBarQuery = graphql`
   }
 `;
 
-/**
- * Route matching, reproduced verbatim from the rail this component replaces.
- * The `/dashboard/data` special case exists because drafts share the prefix.
- */
+/** Route matching, reproduced verbatim from the rail this component replaces. */
 export const isRouteSelected = (pathname: string, link: string, exact?: boolean): boolean => {
   if (exact) return pathname === link;
   if (link === '/dashboard/data' && pathname.includes('/import/draft/')) return false;
   return pathname === link || pathname.startsWith(`${link}/`);
 };
 
-/**
- * Props of the pure rail view.
- */
+/** Props of the pure rail view. */
 export interface NavBarViewProps {
   groups: NavGroup[];
   pathname: string;
@@ -189,9 +184,8 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
   const { height: topBannerHeight } = useTopBanner();
-  // Mirrors the app shell's own offsets (private/Index.tsx): the classification banners take
-  // the banner height at the top and at the bottom, the notification banner `topBannerHeight`
-  // at the top only.
+  // Mirrors the app shell's own offsets (private/Index.tsx): the classification banners take the banner height at
+  // the top and at the bottom, the notification banner `topBannerHeight` at the top only.
   const topOffset = `${topBannerHeight + bannerHeightNumber}px`;
   const bottomOffset = `${bannerHeightNumber}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
@@ -202,9 +196,8 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   const [openSubmenus, setOpenSubmenus] = useState<string[]>(readSelectedMenu());
 
   const handleCollapsedChange = (collapsed: boolean) => {
-    // Closing every submenu on toggle is the legacy behaviour: the collapsed
-    // rail shows submenus as flyouts, so a persisted expanded accordion would
-    // reopen unexpectedly the next time the rail expands.
+    // Closing every submenu on toggle is the legacy behaviour: the collapsed rail shows submenus as flyouts, so a
+    // persisted expanded accordion would reopen unexpectedly the next time the rail expands.
     setOpenSubmenus([]);
     writeSelectedMenu([]);
     setNavOpen(!collapsed);
@@ -228,9 +221,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
 
   const isLightTheme = theme.palette.mode === 'light';
 
-  /**
-   * The rail background, reproduced from the component this replaces.
-   */
+  /** The rail background, reproduced from the component this replaces. */
   const customBackground = (() => {
     // The light rail never honoured `theme_background`: it hardcoded two
     // constants. Nothing to preserve, so the library paints it.
@@ -272,11 +263,10 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
           logo={<img src={productLogo} alt="" width={126} height={28} style={{ objectFit: 'contain', objectPosition: 'left' }} />}
           logoCollapsed={<img src={productLogoCollapsed} alt="" height={28} width={28} style={{ objectFit: 'contain' }} />}
           logoTo="/dashboard"
-          // The logo link and the "Home" row both point at /dashboard, so the logo cannot be
-          // named "Home": two links with the same accessible name inside one navigation are
-          // ambiguous for screen readers and break the e2e page object's `exact` name lookup.
-          // "logo" is the accessible name the replaced rail exposed (its <img alt="logo">), and
-          // two settings specs anchor on it, so keep it identical.
+          // The logo link and the "Home" row both point at /dashboard, so the logo cannot be named "Home": two
+          // links with the same accessible name inside one navigation are ambiguous for screen readers and break
+          // the e2e page object's `exact` name lookup. "logo" is the accessible name the replaced rail exposed
+          // (its <img alt="logo">), and two settings specs anchor on it, so keep it identical.
           logoLabel="logo"
           options={[
             {

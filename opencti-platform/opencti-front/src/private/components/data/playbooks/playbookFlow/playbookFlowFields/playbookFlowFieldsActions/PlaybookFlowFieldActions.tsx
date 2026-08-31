@@ -130,9 +130,8 @@ const PlaybookFlowFieldActions = ({
                         multiple={false}
                         label={t_i18n('Action type')}
                         options={operationOptions}
-                        // Order-agnostic default: the library calls
-                        // isOptionEqualToValue(selected, option), MUI called it
-                        // (option, value), and this read .value off the first arg only.
+                        // Order-agnostic default: the library calls isOptionEqualToValue(selected, option), MUI
+                        // called it (option, value), and this read .value off the first arg only.
                         getOptionLabel={getOptionLabel(operationOptions)}
                         onInternalChange={(_: string, val: FieldOption | null) => handleOperationChange(i, val)}
                       />
@@ -146,9 +145,8 @@ const PlaybookFlowFieldActions = ({
                         label={t_i18n('Field')}
                         options={fieldOptions}
                         noOptionsText={t_i18n('None')}
-                        // Order-agnostic default: the library calls
-                        // isOptionEqualToValue(selected, option), MUI called it
-                        // (option, value), and this read .value off the first arg only.
+                        // Order-agnostic default: the library calls isOptionEqualToValue(selected, option), MUI
+                        // called it (option, value), and this read .value off the first arg only.
                         getOptionLabel={getOptionLabel(fieldOptions)}
                         onInternalChange={(_: string, val: FieldOption | null) => handleAttributeChange(i, action.op, val)}
                       />

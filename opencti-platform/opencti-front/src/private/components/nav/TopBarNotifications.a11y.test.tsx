@@ -6,9 +6,7 @@ import { describe, expect, it } from 'vitest';
 import TopBarIconLink from './TopBarIconLink';
 import testRender from '../../../utils/tests/test-render';
 
-/**
- * A counter-check, deliberately from a different angle than `TopBarIconLink.test.tsx`.
- */
+/** A counter-check, deliberately from a different angle than `TopBarIconLink.test.tsx`. */
 
 const renderAsTheBarDoes = (unread: number) => testRender(
   <Tooltip>

@@ -64,9 +64,7 @@ const Card = ({
     };
   }
 
-  /**
-   * ELEVATION LAYER 1, in every theme.
-   */
+  /** ELEVATION LAYER 1, in every theme. */
   const backgroundColor = 'var(--bg-elevation-default-layer-1)';
 
   const containerSx: SxProps = {
@@ -77,9 +75,8 @@ const Card = ({
       ? backgroundColor
       : 'transparent',
     /**
-     * The card's own edge, taken from the design system's token rather than from MUI's built-
-     * in `divider` default — which is what an `outlined` MUI Card would otherwise draw, and
-     * which the product never declares.
+     * The card's own edge, taken from the design system's token rather than from MUI's built- in `divider` default
+     * — which is what an `outlined` MUI Card would otherwise draw, and which the product never declares.
      */
     border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),

@@ -3,9 +3,7 @@ import { Select, SelectContent, SelectHelperText, SelectItem, SelectLabel, Selec
 import { FieldProps, useField } from 'formik';
 import { isNilField } from '../../utils/utils';
 
-/**
- * Formik adapter for the library `Select` — what `SelectField` is for MUI's.
- */
+/** Formik adapter for the library `Select` — what `SelectField` is for MUI's. */
 
 export type SelectFieldFdsProps = FieldProps<string> & {
   label?: ReactNode;
@@ -15,9 +13,7 @@ export type SelectFieldFdsProps = FieldProps<string> & {
   disabled?: boolean;
   containerstyle?: React.CSSProperties;
   className?: string;
-  /**
-   * MUI parity.
-   */
+  /** MUI parity. */
   fullWidth?: boolean;
   children?: ReactNode;
   onChange?: (name: string, value: string) => void;
@@ -27,9 +23,7 @@ export type SelectFieldFdsProps = FieldProps<string> & {
    * rather than for anything visual.
    */
   onFocus?: (name: string) => void;
-  /**
-   * The field's value is a NUMBER in the form and in the API, not a string.
-   */
+  /** The field's value is a NUMBER in the form and in the API, not a string. */
   numeric?: boolean;
 };
 
@@ -80,11 +74,7 @@ const SelectFieldFds = ({
         <SelectTrigger className={fullWidth ? 'w-full' : undefined}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        {/* Named after its field. Radix puts `role="listbox"` on the content,
-            and without a name every select panel in the product is anonymous —
-            the same defect `ComboboxContent` had with its "Suggestions"
-            default, found the same way, by an E2E locator that goes through the
-            accessible name exactly as a screen reader does. */}
+        {/* Named after its field. */}
         <SelectContent aria-label={typeof label === 'string' ? label : undefined}>
           {children}
         </SelectContent>

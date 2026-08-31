@@ -5,9 +5,7 @@ import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
 import { GARBAGE_COLLECTION_MANAGER } from '../../../utils/platformModulesHelper';
 
-/**
- * The information beside the trash breadcrumb.
- */
+/** The information beside the trash breadcrumb. */
 const TrashInformation = () => {
   const { t_i18n } = useFormatter();
   const { isModuleEnable } = useHelper();

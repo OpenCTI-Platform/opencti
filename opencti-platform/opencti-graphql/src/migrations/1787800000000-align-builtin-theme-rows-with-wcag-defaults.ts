@@ -7,30 +7,10 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 const message = '[MIGRATION] align built-in theme rows with the WCAG defaults';
 
 /**
- * Runs BEFORE `1787822440159-add-filigran-built-in-themes`, and deliberately so.
- *
- * That migration compares each built-in row against the constants field by field, with a
- * strict `===`. When they match it simply renames the row to `Filigran Dark` / `Filigran
- * Light`; when they do not, it seeds a second built-in row and demotes the original. The
- * design-system bridge moved these seeded defaults, so without this pass every existing
- * installation would take the second branch and end up with four themes, the WCAG values
- * never reaching the users who stay on the original one.
- *
- * Aligning first makes the comparison succeed, so the rename is clean and the WCAG values
- * travel with the row. The rows are still named `Dark` / `Light` at this point.
- *
- * The row is judged AS A WHOLE before anything is written (product ruling): every field the
- * downstream migration compares must still hold a value we recognise as a default — the
- * current one, or one of the historical ones it has carried. One unrecognised value anywhere
- * marks the row as customised and it is skipped ENTIRELY, including the fields that are
- * still on defaults. A half-aligned theme is not a state anyone asked for, and such a row is
- * exactly what the next migration is meant to preserve and demote.
- *
- * Only the fields whose SEEDED default moved need rewriting — the logo and login-aside
- * defaults did not move. Each records EVERY historical default it has carried, because some
- * moved more than once: `theme_secondary` on Light was seeded as `#00BD94` and later as
- * `#00f0bc`, and installations exist on both. `theme_text_color` moved by letter case alone;
- * rewriting it normalises the row so the strict comparison downstream succeeds.
+ * Runs BEFORE `1787822440159-add-filigran-built-in-themes`, deliberately: aligning the
+ * seeded defaults first makes that migration's strict comparison succeed, so it renames
+ * the row instead of seeding a second one. A row with any unrecognised value is skipped
+ * ENTIRELY. Full rationale: fds-migration/MIGRATION-DECISIONS.md#builtin-theme-migration-order
  */
 export const SUPERSEDED = {
   Dark: {
@@ -55,11 +35,7 @@ export type BuiltInThemeName = keyof typeof SUPERSEDED;
 
 const CURRENT = { Dark: DARK_DEFAULTS, Light: LIGHT_DEFAULTS } as const;
 
-/**
- * The fields `1787822440159-add-filigran-built-in-themes` compares (`ThemeDefaultComparable`).
- * The judgement below spans exactly that set: a row this pass declares clean is a row that
- * migration will then recognise.
- */
+/** The fields `1787822440159-add-filigran-built-in-themes` compares (`ThemeDefaultComparable`). */
 const COMPARED_FIELDS = [
   'theme_background', 'theme_paper', 'theme_nav', 'theme_primary', 'theme_secondary',
   'theme_accent', 'theme_text_color', 'theme_logo', 'theme_logo_collapsed', 'theme_logo_login',
@@ -72,11 +48,7 @@ const knownValues = (themeName: BuiltInThemeName, key: string): string[] => [
   ...((SUPERSEDED[themeName] as Record<string, readonly string[]>)[key] ?? []),
 ];
 
-/**
- * True when every compared field still holds a value we shipped. A missing field counts as
- * unrecognised: we cannot vouch for it, and the downstream comparison would reject the row
- * anyway.
- */
+/** True when every compared field still holds a value we shipped. */
 export const isRowOnDefaults = (
   themeName: BuiltInThemeName,
   row: Record<string, string | undefined>,
@@ -86,10 +58,7 @@ export const isRowOnDefaults = (
   return knownValues(themeName, key).some((known) => known.toLowerCase() === value.toLowerCase());
 });
 
-/**
- * Pure part of the migration, so the guard is testable without a database.
- * Returns the field patches to apply — empty when the row shows any customisation.
- */
+/** Pure part of the migration, so the guard is testable without a database. */
 export const patchesForTheme = (
   themeName: BuiltInThemeName,
   row: Record<string, string | undefined>,

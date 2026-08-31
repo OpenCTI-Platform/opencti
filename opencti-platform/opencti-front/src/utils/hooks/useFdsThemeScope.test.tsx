@@ -46,9 +46,7 @@ describe('Hook: useFdsThemeScope', () => {
     },
   );
 
-  // The built-in themes were renamed to `Filigran Dark` / `Filigran Light`. When this hook
-  // still tested the legacy name only, a light install wrote `.dark` on the root while MUI
-  // built the light palette: light surfaces painted with dark tokens.
+  // The built-in themes were renamed to `Filigran Dark` / `Filigran Light`.
   it('writes the light class for the built-in light theme', () => {
     renderHook(() => useFdsThemeScope('Filigran Light'));
 
@@ -63,9 +61,8 @@ describe('Hook: useFdsThemeScope', () => {
     expect(root().classList.contains('light')).toBe(false);
   });
 
-  // The three consumers of the theme name -- the MUI palette, this class, and the body
-  // `data-theme` attribute -- must never disagree. They agree because they all ask
-  // `isLightThemeName`; this pins that they still do.
+  // The three consumers of the theme name -- the MUI palette, this class, and the body `data-theme` attribute --
+  // must never disagree.
   it.each(['Filigran Light', 'Light', 'Filigran Dark', 'Dark', 'Corporate', undefined])(
     'agrees with isLightThemeName for %p',
     (name) => {

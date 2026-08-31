@@ -67,9 +67,7 @@ const collectBuildSteps = async (): Promise<BuildStep[]> => {
 
 const buildSteps = await collectBuildSteps();
 
-/**
- * Second enumeration, for the other half of the call graph.
- */
+/** Second enumeration, for the other half of the call graph. */
 
 const SECRET_NAME = 'FDS_GIT_TOKEN';
 

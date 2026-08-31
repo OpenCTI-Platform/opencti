@@ -61,9 +61,7 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         open={open}
         onClose={handleCloseFilters}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
+        {/* A real DialogTitle. */}
         <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
         <FilterIconButton
           filters={filters}

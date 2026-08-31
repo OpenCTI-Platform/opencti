@@ -98,9 +98,8 @@ describe('NavBarView', () => {
     const parent = screen.getByRole('link', { name: /Threats/ });
     expect(parent.tagName).toBe('A');
     expect(parent).toHaveAttribute('href', '/dashboard/threats');
-    // Recorded, not asserted as desirable: the library renders a bare anchor here, not a router
-    // Link, so this one navigation is a full page reload where the previous rail did a client-
-    // side navigate().
+    // Recorded, not asserted as desirable: the library renders a bare anchor here, not a router Link, so this one
+    // navigation is a full page reload where the previous rail did a client- side navigate().
   });
 
   it('renders a parent whose submenu was emptied by permissions as a plain link', () => {
@@ -211,9 +210,8 @@ describe('NavBarView accent compensation', () => {
    * the selected row from these exact custom properties.
    */
   const NOT_ACCENT_DERIVED: Record<string, string> = {
-    // lib pin a22b188 (#123): a selected row's GLYPH takes the ordinary primary text tone, not
-    // the accent — `group-[[aria-current=page]]:text-default-primary` on NavbarItem's icon
-    // span.
+    // lib pin a22b188 (#123): a selected row's GLYPH takes the ordinary primary text tone, not the accent —
+    // `group-[[aria-current=page]]:text-default-primary` on NavbarItem's icon span.
     '--text-default-primary': 'selected-row glyph colour, neutral by design',
   };
 
@@ -252,9 +250,7 @@ describe('NavBarView accent compensation', () => {
     });
   });
 
-  /**
-   * The tint set itself, in both directions.
-   */
+  /** The tint set itself, in both directions. */
   it('re-derives exactly the brand tints the installed library consumes', () => {
     const require = createRequire(import.meta.url);
     const css = readFileSync(require.resolve('@filigran/design-system/dist/index.css'), 'utf8');

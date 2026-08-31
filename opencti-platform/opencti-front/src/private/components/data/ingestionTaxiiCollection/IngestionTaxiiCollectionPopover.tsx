@@ -240,9 +240,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         open={displayStart}
         onClose={handleCloseStart}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
+        {/* A real DialogTitle. */}
         <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to start this TAXII ingester?')}
@@ -269,9 +267,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         open={displayStop}
         onClose={handleCloseStop}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
+        {/* A real DialogTitle. */}
         <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to stop this TAXII ingester?')}

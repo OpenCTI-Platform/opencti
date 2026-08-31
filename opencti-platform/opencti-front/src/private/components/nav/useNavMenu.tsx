@@ -106,9 +106,7 @@ export interface NavSubItem {
   icon?: React.ReactNode;
   /** Match the route exactly instead of by prefix. */
   exact?: boolean;
-  /**
-   * Entity type this row exposes.
-   */
+  /** Entity type this row exposes. */
   type?: string;
   /** Capability-based visibility, already resolved by the caller. */
   granted?: boolean;
@@ -116,9 +114,7 @@ export interface NavSubItem {
 
 /** A top-level navigation entry, with or without a submenu. */
 export interface NavItem {
-  /**
-   * Stable identifier.
-   */
+  /** Stable identifier. */
   id: string;
   label: string;
   icon: React.ReactNode;
@@ -133,17 +129,13 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/**
- * The shape the tree is *declared* in, before filtering.
- */
+/** The shape the tree is *declared* in, before filtering. */
 export interface RawNavGroup {
   id: string;
   items: (NavItem | false | null | undefined)[];
 }
 
-/**
- * Builds the navigation tree, fully filtered.
- */
+/** Builds the navigation tree, fully filtered. */
 const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
   const { me: { draftContext } } = useAuth();
@@ -439,10 +431,9 @@ export const filterNavGroups = (
         const subItems = item.subItems.filter(
           (sub) => sub.granted !== false && (!sub.type || !hiddenEntities.includes(sub.type)),
         );
-        // A parent whose submenu rows were ALL filtered out keeps its own row and degrades to a
-        // plain link: the legacy `LeftBarItem` did exactly that in its "No Subitems" branch
-        // (`hasSubItems === false` rendered a navigable `MenuItem`, it did not remove the
-        // entry).
+        // A parent whose submenu rows were ALL filtered out keeps its own row and degrades to a plain link: the
+        // legacy `LeftBarItem` did exactly that in its "No Subitems" branch (`hasSubItems === false` rendered a
+        // navigable `MenuItem`, it did not remove the entry).
         return { ...item, subItems };
       }),
   }))

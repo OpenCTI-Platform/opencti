@@ -2,9 +2,7 @@ import React from 'react';
 import { useFormatter } from '../../../components/i18n';
 import logoFiligran from '../../../static/images/logo_filigran_full.svg';
 
-/**
- * "Made by Filigran" signature, pinned to the bottom of the rail.
- */
+/** "Made by Filigran" signature, pinned to the bottom of the rail. */
 const WORDMARK_HEIGHT = 12;
 
 const MadeByFiligran: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {

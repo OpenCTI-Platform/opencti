@@ -97,9 +97,7 @@ interface KnowledgeBarProps {
   count: number;
 }
 
-/**
- * One row of the tab-scoped right bar.
- */
+/** One row of the tab-scoped right bar. */
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
@@ -395,12 +393,8 @@ const StixCoreObjectKnowledgeBar = ({
       // out beside it — the arrangement the product has always had.
       slotProps={{
         paper: {
-          // The layer comes from the shared helper, not a literal: the class
-          // and `layerInputVars` must sit on the SAME node for the three input
-          // aliases to resolve at this layer (LIBRARY-FEEDBACK #57), and
-          // hardcoding the string here would have been a second copy of a
-          // mechanism that already exists. `slotProps.paper`, not the
-          // deprecated `PaperProps`.
+          // Layer from the shared helper: the class and `layerInputVars` must sit on the SAME
+          // node (LIBRARY-FEEDBACK #57). `slotProps.paper`, not the deprecated `PaperProps`.
           className: fdsLayerClass(RIGHT_BAR_LAYER),
           sx: { ...layerInputVars },
         },
@@ -440,9 +434,8 @@ const StixCoreObjectKnowledgeBar = ({
           section.items.length > 0 && (
             <React.Fragment key={index}>
               {section.title && (
-                // `as="p"`: this bar is page chrome rendered next to the entity's own heading
-                // outline, so a real <h2> here would inject an out-of-order heading (WCAG
-                // 1.3.1).
+                // `as="p"`: this bar is page chrome rendered next to the entity's own heading outline, so a real
+                // <h2> here would inject an out-of-order heading (WCAG 1.3.1).
                 <NavbarTitle as="p">{section.title}</NavbarTitle>
               )}
               {section.items.map(({ path, label, iconType, count }) => (
