@@ -37,6 +37,7 @@ import { FilterRepresentative } from './FiltersModel';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 
 import FilterFiltersInput from './FilterFiltersInput';
+import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../utils/fdsLayer';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -538,7 +539,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       slotProps={{
         paper: {
           elevation: 1,
-          style: { marginTop: 10 },
+          // Filter popovers: surface on `--bg-elevation-highlight` at layer 1,
+          // the fields inside at layer 2. See utils/fdsLayer.ts.
+          className: fdsLayerClass(FILTER_POPOVER_LAYER),
+          sx: { ...filterPopoverPaperSx, marginTop: '10px' },
         },
       }}
     >

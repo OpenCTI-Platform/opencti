@@ -35,6 +35,7 @@ import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import ExternalReferencePopover from './ExternalReferencePopover';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -380,6 +381,8 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           )}
         </Card>
         <Dialog
+          // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+          slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayDialog}
           onClose={this.handleCloseDialog.bind(this)}
           title={t('Are you sure?')}
@@ -404,6 +407,8 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogActions>
         </Dialog>
         <Dialog
+          // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+          slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayExternalLink}
           onClose={this.handleCloseExternalLink.bind(this)}
           title={t('Do you want to browse this external link?')}
