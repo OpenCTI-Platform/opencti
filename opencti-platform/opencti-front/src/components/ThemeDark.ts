@@ -83,8 +83,7 @@ const ThemeDark = (
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
     },
-    // Aligned with the OpenAEV xtmhub token so the Filigran Experience
-    // screens share the same accent on both platforms.
+    // Same xtmhub token as OpenAEV, so the Filigran Experience accent matches.
     xtmhub: { main: '#00f1bd' },
     background: {
       default: background || THEME_DARK_DEFAULT_BACKGROUND,
@@ -121,10 +120,7 @@ const ThemeDark = (
       text: '#F2F2F3',
     },
     severity: {
-      // critical/high/medium/low/info mapped to the closest FDS feedback
-      // token (not 1:1 — see TOKEN-MAPPING.md). none/default now share the
-      // neutral feedback token (both are semantically "no severity set");
-      // this makes the two visually identical for the first time.
+      // Closest FDS feedback token, not 1:1 — see TOKEN-MAPPING.md.
       critical: FDS.colors.dark['--color-feedback-error-primary'],
       high: FDS.colors.dark['--color-feedback-warning-primary'],
       medium: FDS.colors.dark['--color-feedback-alert-primary'],
@@ -133,13 +129,8 @@ const ThemeDark = (
       none: FDS.colors.dark['--color-feedback-neutral-primary'],
       default: FDS.colors.dark['--color-feedback-neutral-primary'],
     },
-    // This block used to be hand-copied from Figma exports — every value
-    // below is now sourced from the generated FDS bridge (fds-tokens.generated.ts).
-    // Where no confident FDS equivalent exists, the original hardcoded value
-    // is kept as-is; see fds-migration/TOKEN-MAPPING.md for the full rationale.
     designSystem: {
-      // "filigran-brand" family: light/dark are the -secondary/-tertiary
-      // tiers of the same family as `main`.
+      // light/dark are the -secondary/-tertiary tiers of the brand family.
       primary: {
         main: FDS.colors.dark['--color-filigran-brand-primary'],
         light: FDS.colors.dark['--color-filigran-brand-secondary'],
@@ -165,16 +156,14 @@ const ThemeDark = (
       },
       background: {
         main: THEME_DARK_DEFAULT_BACKGROUND,
-        // bg1-bg4 map to the elevation-layer scale (layer-0..3, darkest to
-        // lightest); disabled uses the dedicated disabled-elevation token.
+        // bg1-bg4 map to the elevation-layer scale (layer-0..3).
         bg1: FDS.colors.dark['--bg-elevation-default-layer-0'],
         bg2: FDS.colors.dark['--bg-elevation-default-layer-1'],
         bg3: FDS.colors.dark['--bg-elevation-default-layer-2'],
         bg4: FDS.colors.dark['--bg-elevation-default-layer-3'],
         disabled: FDS.colors.dark['--bg-elevation-disabled'],
       },
-      // main uses the default elevation border; border1/border2 share the
-      // subtle elevation border (see TOKEN-MAPPING.md).
+      // border1/border2 share the subtle elevation border — see TOKEN-MAPPING.md.
       border: {
         main: FDS.colors.dark['--border-elevation-default'],
         border1: FDS.colors.dark['--border-elevation-subtle'],
@@ -214,10 +203,7 @@ const ThemeDark = (
           700: FDS.scalars['--gray-700'],
           800: FDS.scalars['--gray-800'],
         },
-        // Mapped to the opaque feedback-info-secondary token (not its
-        // -transparency sibling proposed by the guide — see TOKEN-MAPPING.md,
-        // ScaleBar.tsx needs a solid fill). .500/.900 now share one value;
-        // .900 has zero live consumers today (same note in the guide itself).
+        // Opaque sibling, not the -transparency token: ScaleBar.tsx needs a solid fill.
         blue: {
           500: FDS.colors.dark['--color-feedback-info-secondary'],
           900: FDS.colors.dark['--color-feedback-info-secondary'],
@@ -405,13 +391,8 @@ const ThemeDark = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
-          // Sandy's ruling: a dialog is treated EXACTLY like a drawer, which
-          // means the same paper colour. The drawer's paper reads
-          // `--bg-elevation-default` at layer 2; this used to be a hardcoded
-          // hex that resolved to a different shade, which is why the two
-          // surfaces never matched. Every dialog paper now declares layer 2
-          // (the shared Dialog, and every direct MUI mount), so the alias lands
-          // on the same value. A platform-customised paper colour still wins.
+          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at
+          // layer 2. A platform-customised paper colour still wins.
           backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
             ? 'var(--bg-elevation-default)'
             : (paper ?? 'var(--bg-elevation-default)'),
@@ -497,30 +478,14 @@ const ThemeDark = (
         },
       },
     },
-    // Interim homogenisation (night-3 visual pass). Every MUI field that is
-    // OUTLINED now sits on the same background as a library Input --
-    // `--bg-input-default` -- so the fields still waiting for a conversion read
-    // as one family with the converted ones instead of as a second set.
-    //
-    // Deliberately scoped to the outlined variant, and deliberately NOT paired
-    // with a flip of `MuiTextField.defaultProps.variant` to `outlined`: that
-    // one line would change the height, the label behaviour and the hit area of
-    // every remaining MUI field at once, which is a change to look at on
-    // screenshots before it lands, and e2e resolves many of those fields by
-    // their label. The fields the pass named by hand are switched at their own
-    // call sites instead.
+    // Every OUTLINED MUI field sits on the library Input background, so the
+    // unconverted fields read as one family with the converted ones.
     MuiInputLabel: {
       styleOverrides: {
         outlined: {
-          // MUI centres the un-shrunk outlined label for ITS box height (56px)
-          // with `translate(14px, 16px)`. Our outlined box is 36px, so that
-          // same 16px put the label flush against the bottom edge of every
-          // empty, unfocused, labelled field — measured on the user-creation
-          // drawer: a 21px label at y=16 in a 37px box, i.e. 16..37. 8px
-          // centres it, and 12px matches the input's own left inset.
+          // MUI centres the un-shrunk label for its own 56px box; ours is 36px, so
+          // its 16px put the label on the bottom edge. 8px centres it in 36px.
           transform: 'translate(12px, 8px) scale(1)',
-          // The shrunk state is left exactly as MUI has it: measured at -9px
-          // above the box with a correctly cut legend notch.
           '&.MuiInputLabel-shrink': {
             transform: 'translate(14px, -9px) scale(0.75)',
           },
@@ -530,16 +495,10 @@ const ThemeDark = (
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          // Layer-aware on purpose. This used to be the STATIC hex exported for
-          // `--bg-input-default`, so an outlined field kept the layer-0 colour
-          // even inside a drawer, a dialog or a filter popover that had
-          // correctly declared layer 2. Reading the custom property instead
-          // makes every outlined field pick up the surface it actually sits on.
+          // The custom property, not the static hex: an outlined field inside a
+          // drawer or popover must pick up that surface's own layer.
           backgroundColor: 'var(--bg-input-default)',
-          // Geometry borrowed from the library `Input` (h-9, rounded-sm,
-          // pl-3/pr-2, transparent resting border, token border on hover and
-          // focus) so a MUI field standing next to a library one reads as the
-          // same control. Behaviour is untouched — this is paint only.
+          // Geometry borrowed from the library `Input`; paint only, no behaviour.
           borderRadius: 'var(--radius-sm)',
           minHeight: 36,
           '& .MuiOutlinedInput-notchedOutline': {
@@ -554,10 +513,8 @@ const ThemeDark = (
           '&.Mui-error .MuiOutlinedInput-notchedOutline': {
             borderColor: 'var(--border-input-error)',
           },
-          // Disabled follows the library `Input`, which goes TRANSPARENT with a
-          // disabled border — not `--bg-input-disabled`. Painting that token
-          // put a light grey slab in the middle of a dark form (seen on the
-          // public-dashboard URI KEY field, which is always disabled).
+          // Transparent with a disabled border, as the library `Input` does —
+          // `--bg-input-disabled` paints a grey slab inside a dark form.
           '&.Mui-disabled': {
             backgroundColor: 'transparent',
             '& .MuiOutlinedInput-notchedOutline': {
@@ -566,20 +523,16 @@ const ThemeDark = (
           },
         },
         input: {
-          // MUI's outlined input pads 16.5px vertically, which makes a 54px
-          // row next to the library's 36px one. 8px lands the single-line row
-          // on the library's height; `minHeight` above keeps the floor, and
-          // multiline inputs still grow from their own rows.
+          // 8px lands the single-line row on the library's 36px height; MUI's own
+          // 16.5px makes a 54px row.
           padding: '8px 8px 8px 12px',
         },
       },
     },
     MuiTextField: {
       defaultProps: {
-        // Sandy's standing ruling: every remaining MUI field is outlined,
-        // so it can carry the same background as the library fields beside
-        // it. This is the default for the mounts that name no variant; the
-        // ones that named `standard` explicitly were swept in the same change.
+        // Every remaining MUI field is outlined, so it can carry the library
+        // field background.
         variant: 'outlined',
       },
       styleOverrides: {
@@ -594,10 +547,8 @@ const ThemeDark = (
     },
     MuiSelect: {
       defaultProps: {
-        // Sandy's standing ruling: every remaining MUI field is outlined,
-        // so it can carry the same background as the library fields beside
-        // it. This is the default for the mounts that name no variant; the
-        // ones that named `standard` explicitly were swept in the same change.
+        // Every remaining MUI field is outlined, so it can carry the library
+        // field background.
         variant: 'outlined',
       },
       styleOverrides: {
@@ -696,11 +647,8 @@ const ThemeDark = (
             fontFamily: '"IBM Plex Sans", sans-serif',
             color: `${text_color} !important`,
           },
-          // The markdown editor is a textarea like any other field, so it takes
-          // the field surface instead of the bare underline it had. Written in
-          // tokens, which makes it layer-aware for free: inside a drawer or a
-          // dialog `--bg-input-default` resolves to that surface's own layer
-          // (#0c1527), and at page level it stays layer 0.
+          // The markdown editor is a textarea, so it takes the field surface;
+          // written in tokens so it follows the layer it sits on.
           '.mde-textarea-wrapper textarea': {
             fontFamily: '"IBM Plex Sans", sans-serif',
             fontSize: 13,
@@ -755,9 +703,8 @@ const ThemeDark = (
     MuiMenu: {
       styleOverrides: {
         paper: {
-          // The library's menu surface: `bg-elevation-highlight`, 4px radius,
-          // and no padding of its own (rows run edge to edge). Written as the
-          // alias so a menu opened from a layered surface follows it.
+          // The library's menu surface, written as the alias so a menu opened from
+          // a layered surface follows it.
           backgroundColor: 'var(--bg-elevation-highlight)',
           borderRadius: 'var(--radius-sm)',
         },
@@ -770,10 +717,8 @@ const ThemeDark = (
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          // Geometry moved toward the library's own menu row (SelectItem:
-          // min-h-8, gap-2, pl-4/pr-2, 12px compact type, 16px leading glyph).
-          // The selected and hover tones below are deliberately left as they
-          // are — this is spacing and size only, no behaviour and no colour.
+          // Geometry from the library's own menu row; spacing and size only, the
+          // selected and hover tones below are unchanged.
           minHeight: 32,
           paddingLeft: 16,
           paddingRight: 8,
@@ -855,9 +800,7 @@ const ThemeDark = (
             color: '#AFB0B6',
           },
           '& .MuiOutlinedInput-root': {
-            // Same layer-aware background as every other outlined field; the
-            // hardcoded hex this used to carry was a near-miss of the token's
-            // own value and could not follow a surface's layer.
+            // Same layer-aware background as every other outlined field.
             backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
               ? 'var(--bg-input-default)'
               : (paper ?? 'var(--bg-input-default)'),

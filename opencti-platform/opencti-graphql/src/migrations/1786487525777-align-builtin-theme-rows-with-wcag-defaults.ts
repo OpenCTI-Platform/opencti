@@ -7,10 +7,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 const message = '[MIGRATION] align built-in theme rows with the WCAG defaults';
 
 /**
- * The two fields whose seeded default moved when the design-system token bridge
- * was regenerated (library PR #62, WCAG 2.1 AA contrast remediation). A row is
- * only rewritten when it still carries the superseded value: anything else is an
- * administrator's own colour and must survive untouched.
+ * The two fields whose seeded default moved when the design-system token bridge was
+ * regenerated (library PR #62, WCAG 2.1 AA contrast remediation).
  */
 export const SUPERSEDED = {
   Dark: { theme_primary: '#0fbcff' },

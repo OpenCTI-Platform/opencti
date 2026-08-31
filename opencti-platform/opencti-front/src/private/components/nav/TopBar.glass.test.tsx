@@ -6,16 +6,7 @@ import { describe, expect, it } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 
 /**
- * The fixed/glass doctrine of the bar, which regressed once with nothing to
- * catch it. It has three parts and each can break on its own:
- *
- *   1. the library paints the glass — a pin bump can drop it silently;
- *   2. the product positions the bar — the library never positions itself, so
- *      a lost `fixed` leaves the bar in the flow;
- *   3. the content scrolls UNDER the bar — the header inset has to be padding
- *      on the SCROLLING box. Put it on the wrapper above and the scroller
- *      starts below the bar: the glass survives every class assertion and has
- *      nothing left to blur, which is exactly how this went unnoticed.
+ * The fixed/glass doctrine of the bar, which regressed once with nothing to catch it.
  */
 
 const read = (f: string) => readFileSync(path.resolve(f), 'utf8');

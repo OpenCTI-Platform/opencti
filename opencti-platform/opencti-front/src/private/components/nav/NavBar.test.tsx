@@ -98,17 +98,14 @@ describe('NavBarView', () => {
     const parent = screen.getByRole('link', { name: /Threats/ });
     expect(parent.tagName).toBe('A');
     expect(parent).toHaveAttribute('href', '/dashboard/threats');
-    // Recorded, not asserted as desirable: the library renders a bare anchor
-    // here, not a router Link, so this one navigation is a full page reload
-    // where the previous rail did a client-side navigate(). Same destination,
-    // different mechanism. Filed as library feedback.
+    // Recorded, not asserted as desirable: the library renders a bare anchor here, not a router
+    // Link, so this one navigation is a full page reload where the previous rail did a client-
+    // side navigate().
   });
 
   it('renders a parent whose submenu was emptied by permissions as a plain link', () => {
-    // Iso-functionality: `LeftBarItem`'s "No Subitems" branch rendered such a
-    // parent as a navigable row. A user granted only INGESTION matches
-    // `canSeeData` but none of the eight Data sub-items, and must still be able
-    // to reach /dashboard/data.
+    // Iso-functionality: `LeftBarItem`'s "No Subitems" branch rendered such a parent as a
+    // navigable row.
     const gutted: NavGroup[] = [{
       id: 'data',
       items: [{
@@ -145,9 +142,8 @@ describe('NavBarView', () => {
   });
 
   it('pins the rail to the viewport, full height, below the banners', () => {
-    // The library lays its <nav> out in flow and sizes it with a percentage
-    // height; the fixed-position drawer it replaces was full height and did
-    // not scroll away with the page. Regression seen in the product.
+    // The library lays its <nav> out in flow and sizes it with a percentage height; the fixed-
+    // position drawer it replaces was full height and did not scroll away with the page.
     const { container } = renderNav({ topOffset: '50px', bottomOffset: '20px' });
     const nav = container.querySelector('nav') as HTMLElement;
     expect(nav.style.position).toBe('sticky');
@@ -161,10 +157,7 @@ describe('NavBarView', () => {
   });
 
   it('does not drive the hover flyout from the persisted submenu state', () => {
-    // Collapsed, `open`/`onOpenChange` drive the hover flyout, not an
-    // accordion. Binding them to product state made the flyout unusable
-    // (only the first hovered submenu ever opened) and wrote hover into the
-    // persisted menu state. Collapsed, the library owns that state.
+    // Collapsed, `open`/`onOpenChange` drive the hover flyout, not an accordion.
     const onSubmenuOpenChange = vi.fn();
     renderNav({ collapsed: true, openSubmenus: ['threats'], onSubmenuOpenChange });
     expect(screen.queryByRole('link', { name: 'Campaigns' })).not.toBeInTheDocument();
@@ -188,9 +181,8 @@ describe('MadeByFiligran', () => {
   it('shows the emblem alone when collapsed, by cropping the wordmark', () => {
     testRender(<MadeByFiligran collapsed />, { route: '/dashboard' });
     const logo = screen.getByAltText('Filigran');
-    // A square box cropped from the left edge of the wordmark asset: the
-    // emblem survives, the lettering is cut. Squashing the whole wordmark
-    // into 12px instead is what the rail showed before.
+    // A square box cropped from the left edge of the wordmark asset: the emblem survives, the
+    // lettering is cut.
     expect(logo.style.width).toBe('12px');
     expect(logo.style.height).toBe('12px');
     expect(logo.style.objectFit).toBe('cover');
@@ -215,32 +207,13 @@ describe('NavBarView accent compensation', () => {
   });
 
   /**
-   * NON-REGRESSION GUARD. The compensation above works only because the
-   * library still paints the selected row from these exact custom properties.
-   * If a future pin renames one, or derives the row from a token this rail
-   * does not override, nothing would fail at build or at runtime — the accent
-   * would silently fall back to Filigran blue and the customised
-   * `theme_primary` would be lost without a single red test. So this reads the
-   * installed stylesheet, extracts EVERY custom property the `aria-current`
-   * rules resolve, and asserts the rail overrides each one. A substring match
-   * is not enough: the first version of this guard passed while the row tint
-   * was in fact still blue, because the rule it checked mentioned the base
-   * token and the tint came from a derived one.
-   *
-   * NOT_ACCENT_DERIVED is the one escape, and it is deliberately a closed list
-   * rather than a filter on the token name. A property lands here only when the
-   * library paints the selected row with it ON PURPOSE in a tone that is not
-   * the accent — overriding it would be the bug, not the fix. Everything else,
-   * including any property a future pin introduces, must still be overridden or
-   * this test goes red. That is the whole point: the failure mode being guarded
-   * against is silent, so the guard must be the thing that has to be updated
-   * by hand, with a reason, each time the library's selected-row rules move.
+   * NON-REGRESSION GUARD. The compensation above works only because the library still paints
+   * the selected row from these exact custom properties.
    */
   const NOT_ACCENT_DERIVED: Record<string, string> = {
-    // lib pin a22b188 (#123): a selected row's GLYPH takes the ordinary primary
-    // text tone, not the accent — `group-[[aria-current=page]]:text-default-primary`
-    // on NavbarItem's icon span. Tinting it with `theme_primary` would repaint an
-    // icon the Figma component set says stays neutral when selected.
+    // lib pin a22b188 (#123): a selected row's GLYPH takes the ordinary primary text tone, not
+    // the accent — `group-[[aria-current=page]]:text-default-primary` on NavbarItem's icon
+    // span.
     '--text-default-primary': 'selected-row glyph colour, neutral by design',
   };
 
@@ -281,21 +254,6 @@ describe('NavBarView accent compensation', () => {
 
   /**
    * The tint set itself, in both directions.
-   *
-   * The sweep above only sees properties an `aria-current` rule resolves, and
-   * the brand tints are not among them: the selected row is not what consumes
-   * them. Measured on the installed stylesheet at this pin, the tints are
-   * referenced by 8 rules and by ZERO aria-current rules — so renaming the tint
-   * the rail re-derives passed all of this file's other tests. That is how
-   * `-transparency-50` survived after the library moved the alpha to 55%: the
-   * rail kept re-deriving a property nothing resolves any more, and the
-   * customised accent fell back to Filigran blue on every secondary control
-   * inside the rail, silently.
-   *
-   * So the assertion is set equality against the SERVED stylesheet, not a
-   * spelling. A tint the library consumes and the rail does not override is the
-   * original defect; a tint the rail overrides and the library no longer
-   * consumes is dead compensation, which is the same defect one pin later.
    */
   it('re-derives exactly the brand tints the installed library consumes', () => {
     const require = createRequire(import.meta.url);
@@ -319,9 +277,8 @@ describe('NavBarView accent compensation', () => {
 
 describe('NavBarView rail width', () => {
   it('collapses to the width the floating toolbars offset themselves by', () => {
-    // The library sizes the rail with a utility class, not an inline width, so
-    // this asserts the class the constants were derived from. `w-12` is 48px
-    // and `w-45` is 180px, which is what SMALL_BAR_WIDTH / OPEN_BAR_WIDTH say.
+    // The library sizes the rail with a utility class, not an inline width, so this asserts the
+    // class the constants were derived from.
     const { container, unmount } = renderNav({ collapsed: true });
     expect(container.querySelector('nav')?.className).toContain('w-12');
     unmount();

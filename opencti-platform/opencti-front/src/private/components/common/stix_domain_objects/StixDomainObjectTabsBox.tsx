@@ -160,9 +160,8 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       marginBottom: 3,
       display: 'flex',
       justifyContent: 'space-between',
-      // Without this the row's default `align-items: stretch` made
-      // `extraActions` -- the Aperçu par IA button -- as tall as the tabs strip
-      // instead of sitting on its centre line.
+      // Without this the row's default `align-items: stretch` made `extraActions` -- the Aperçu
+      // par IA button -- as tall as the tabs strip instead of sitting on its centre line.
       alignItems: 'center',
     }}
     >

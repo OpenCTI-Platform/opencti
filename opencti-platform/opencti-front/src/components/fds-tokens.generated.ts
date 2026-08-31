@@ -1,19 +1,5 @@
 /**
- * GENERATED — do not edit by hand. This module is a pure data snapshot of
- * the @filigran/design-system tokens (theme.css), resolved to concrete
- * values for both modes. It does not build a MUI theme — this product's own
- * ThemeDark.ts/ThemeLight.ts assign individual FDS keys to existing theme
- * fields. Wiring: fds-migration/TOKEN-MAPPING.md.
- *
- * Source: @filigran/design-system packages/filigran-design-system/src/tokens/theme.css
- * Theme.css content hash: sha256:4719a8a35ab7c376301f1b39942ad6a67ae93ec882a7bfa8c9e439ab0afdbd8e
- * Regenerate (from the filigran-design-system repo, not here):
- *   pnpm generate:mui-bridge --product opencti --write-to-product
- *
- * fds-migration/scripts/check-fds-conformity.mjs hashes this file's exact
- * content and compares it against fds-tokens.generated.meta.json — that is
- * how the reconciliation loop (fds-migration/AGENTS.md) detects a local
- * edit. Never hand-edit this file; change theme.css upstream instead.
+ * GENERATED — do not edit by hand.
  */
 
 export const FDS_META = {
@@ -23,11 +9,7 @@ export const FDS_META = {
 } as const;
 
 /**
- * Resolved color-shaped tokens, per mode. Keyed by the full CSS
- * custom-property name. Covers --color-*, the category-scoped --bg-*,
- * --border-*, --icon-* namespaces, and the color-shaped subset of --text-*
- * (e.g. --text-default-primary) — all genuinely mode-dependent, all resolved
- * through the same dark/light path (see scripts/mui-bridge/resolve.ts).
+ * Resolved color-shaped tokens, per mode.
  */
 const colorsDark = {
   "--bg-alert-alert": "#b8870a4d",
@@ -357,10 +339,9 @@ const gradientsLight = {
 } as const;
 
 /**
- * Every remaining scalar namespace (font, leading, radius, shadow, tracking)
- * plus the font-size subset of --text-* — mode-invariant in the current
- * theme.css (verified at generation time, not assumed: see
- * scripts/mui-bridge/resolve.ts).
+ * Every remaining scalar namespace (font, leading, radius, shadow, tracking) plus the font-
+ * size subset of --text-* — mode-invariant in the current theme.css (verified at generation
+ * time, not assumed: see scripts/mui-bridge/resolve.ts).
  */
 const scalars = {
   "--black-100": "#0000000d",

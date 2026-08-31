@@ -12,9 +12,8 @@ describe('createTextGradientSx', () => {
 
   it('does not let the transparent fill reach nested components', () => {
     const sx = createTextGradientSx(GRADIENT, 90) as unknown as Record<string, Record<string, unknown>>;
-    // `-webkit-text-fill-color` inherits and beats `color`, so a component
-    // nested in a gradient button renders invisible glyphs unless the fill is
-    // put back for element children. Bare text nodes keep the gradient.
+    // `-webkit-text-fill-color` inherits and beats `color`, so a component nested in a gradient
+    // button renders invisible glyphs unless the fill is put back for element children.
     const reset = sx['& > *'];
     expect(reset).toBeDefined();
     expect(reset.WebkitTextFillColor).toBe('currentColor');
@@ -25,9 +24,7 @@ describe('createTextGradientSx', () => {
 
   it('hides the glyphs through the fill alone, so the reset has a colour to resolve to', () => {
     const sx = createTextGradientSx(GRADIENT, 90) as Record<string, unknown>;
-    // The library hides the label with `-webkit-text-fill-color` only. Adding
-    // `color: transparent` on top breaks the reset below it: a child asking for
-    // `currentColor` would resolve to transparent and stay invisible.
+    // The library hides the label with `-webkit-text-fill-color` only.
     expect(sx.color).toBeUndefined();
   });
 

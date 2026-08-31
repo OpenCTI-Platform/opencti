@@ -13,14 +13,8 @@ export type TextareaFieldProps = FieldProps<string> & Omit<TextareaProps, 'error
 
 /**
  * Formik adapter for the design-system Textarea — the multi-line counterpart of
- * components/TextField.tsx, and the reason the conversion is one component and
- * not 26 call-site rewrites.
- *
- * The error wiring is deliberately identical to TextField.tsx's: an error shows
- * only once the field is touched or the form has been submitted at least once,
- * so a pristine form is not painted red. The one difference is forced by the
- * library contract: Textarea's `error` is a STRING that replaces the helper
- * text, never a boolean, so the message is passed rather than a flag.
+ * components/TextField.tsx, and the reason the conversion is one component and not 26 call-
+ * site rewrites.
  */
 const TextareaField = (props: TextareaFieldProps) => {
   const {

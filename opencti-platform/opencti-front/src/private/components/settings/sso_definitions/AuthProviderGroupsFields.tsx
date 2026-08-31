@@ -1,5 +1,4 @@
 import React from 'react';
-// FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no `mt-*` — remove when it ships consumer utilities — see fds-migration/LIBRARY-FEEDBACK.md #36
 import { Paper } from '@filigran/design-system';
 import { Field, FieldArray } from 'formik';
 import Typography from '@mui/material/Typography';
@@ -51,6 +50,7 @@ const AuthProviderGroupsFields = () => {
       <FieldArray name="groups_mapping.default_groups">
         {({ push, remove, form }) => {
           const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.default_groups ?? [];
+          // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no `mt-*` — remove when it ships consumer utilities — see fds-migration/LIBRARY-FEEDBACK.md #36
           return (
             <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

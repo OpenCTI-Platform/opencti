@@ -32,11 +32,7 @@ const ChipMarking = ({
   const theme = useTheme<Theme>();
 
   const getColor = () => {
-    // The admin's colour wins whenever it can be seen. It is only replaced by
-    // the neutral default in the theme where it disappears into the surface --
-    // today that is the seeded white of TLP:CLEAR / PAP:CLEAR on the light
-    // surface. A general guard on marking colours, not a rule about one level:
-    // an admin who repaints TLP:CLEAR blue sees blue.
+    // The admin's colour wins whenever it can be seen.
     const stored = markingDefinition.x_opencti_color;
     if (stored) {
       return isWashVisibleOn(stored, theme.palette.background.paper) ? stored : undefined;

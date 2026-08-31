@@ -270,19 +270,8 @@ export const itemColor = (
 };
 
 /**
- * The library Chip's `entity` value for an OpenCTI entity type, or undefined
- * when the type has no equivalent and should stay on the neutral tone.
- *
- * Nine of the twelve colour families map 1:1 by name -- the library's set was
- * built from this list. The three that do not:
- *  - `observables` -> `observations`: the 36 observable types share the
- *    observation layer's colour (arbitrated 27/08). Note that
- *    COLOR_FAMILIES.observables is dead code -- itemColor short-circuits to
- *    stringToColour before reaching it -- so nothing is being overridden here.
- *  - `relationships` / `restricted` -> undefined. Both are already grey
- *    (#616161, #424242), so neutral is what they render today.
- * A type with no family at all also returns undefined: its colour is hashed
- * from the type name, so there is no closed value to map.
+ * The library Chip's `entity` value for an OpenCTI entity type, or undefined when the type has
+ * no equivalent and should stay on the neutral tone.
  */
 export type ChipEntityValue
   = | 'analyses' | 'cases' | 'events' | 'observations' | 'all-threats'
@@ -308,23 +297,8 @@ export const itemEntity = (type: string | null | undefined): ChipEntityValue | u
 };
 
 /**
- * True when `color`, painted as the usual 20% wash, is actually distinguishable
- * from the surface behind it.
- *
- * A GENERAL guard for marking colours, not a rule about any one marking: admins
- * choose these colours, and the product must show what they chose whenever it
- * can be seen. The fallback only takes over when it cannot.
- *
- * Perceptual distance (CIE76 dE), not WCAG contrast, because contrast measures
- * luminance alone and gives the wrong answer here: over the dark surface the
- * real TLP colours measure 1.12-1.18:1 while white measures 1.79:1, so a
- * luminance threshold would discard RED and keep white -- exactly backwards.
- * dE separates them cleanly, and is evaluated against the CURRENT theme's
- * surface, so a colour is only replaced in the theme where it disappears.
- *
- * Threshold 10 sits in an empty band: the four coloured TLP levels never fall
- * below 14.1 in either theme, while white reads 1.1 on the light surface,
- * near-white 0.8, and black 2.4 on the dark one.
+ * True when `color`, painted as the usual 20% wash, is actually distinguishable from the
+ * surface behind it.
  */
 const toLab = (rgb: [number, number, number]): [number, number, number] => {
   const inv = (v: number) => {

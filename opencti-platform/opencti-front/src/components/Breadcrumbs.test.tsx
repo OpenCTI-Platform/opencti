@@ -6,9 +6,6 @@ import Breadcrumbs from './Breadcrumbs';
 
 /**
  * What the page path owes this product, now that the design system draws it.
- *
- * Each block below fails on the wrapper this replaced — verified by running
- * this file against it before it was converted, not assumed.
  */
 
 const PATH = [
