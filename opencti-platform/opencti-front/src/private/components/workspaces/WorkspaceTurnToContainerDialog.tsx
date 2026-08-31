@@ -17,13 +17,11 @@ import {
   ComboboxTrigger,
 } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
-import { useTheme } from '@mui/styles';
 import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
-import type { Theme } from '../../../components/Theme';
 import { handleError } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
