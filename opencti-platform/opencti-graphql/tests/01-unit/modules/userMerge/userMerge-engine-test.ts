@@ -5,6 +5,7 @@ import type { UserMergeHandler, UserMergeHandlerPlan } from '../../../../src/mod
 import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
 
 const openedEntries: { handler: string; dryRun: boolean }[] = [];
+const FIRST_MERGE_STARTED_AT = new Date('2025-03-01T08:30:00.000Z');
 
 vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
   withJournalEntry: async (input: { handler: string; dryRun: boolean }, execute: () => Promise<unknown>) => {
@@ -12,6 +13,7 @@ vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
     return execute();
   },
   readJournalEntries: async () => [],
+  resolveMergeStartedAt: async () => FIRST_MERGE_STARTED_AT,
 }));
 
 const cachedUsers = new Map<string, unknown>([
