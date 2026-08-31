@@ -8,6 +8,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { INTERNAL_USERS, isBypassUser, REDACTED_USER } from '../../utils/access';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { executeUserMerge, readUserMergeJournal } from './userMerge-engine';
+import { computeUserMergeSourceDeletionReadiness, type UserMergeSourceDeletionReadiness } from './userMerge-sourceDeletion';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeRightsStrategy, UserMergeStatus } from './userMerge-types';
 
 /**
@@ -151,6 +152,28 @@ export const userMergeCoverage = async (
 ): Promise<UserMergeApiCoverage> => {
   assertUserMergeAllowed(user);
   return buildApiUserMergeCoverage(undefined, disposition);
+};
+
+/**
+ * Whether the source may now be deleted. Exposed as a read: the operator has to be able to check
+ * the answer before scheduling the operation at all.
+ *
+ * "Read" describes what it returns, not what it costs: the verdict comes from a full dry-run on
+ * the pair, which the engine journals handler by handler like any other pass. Trusting a stored
+ * attestation instead would answer from the state of a past run, and the whole point of the gate
+ * is that it answers from the state of now.
+ */
+export const userMergeSourceDeletionReadiness = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceId: string,
+  targetId: string,
+): Promise<UserMergeSourceDeletionReadiness> => {
+  assertUserMergeAllowed(user);
+  assertValidUserMergeIds(sourceId, targetId);
+  await loadMergeableUser(context, user, sourceId, 'source');
+  await loadMergeableUser(context, user, targetId, 'target');
+  return computeUserMergeSourceDeletionReadiness(context, sourceId, targetId);
 };
 
 // Bounds enforced here so that a future, real journal implementation cannot be abused
