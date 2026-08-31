@@ -108,9 +108,9 @@ const ThemeLight = (
     },
     text: {
       secondary: THEME_LIGHT_DEFAULT_TEXT,
-      tertiary: '#717172',
+      tertiary: '#5F5F60',
       light: '#494A50',
-      disabled: '#6E7788',
+      disabled: '#5F6B7A',
     },
     leftBar: {
       header: {

@@ -14,7 +14,7 @@ RUN <<EOT
 
   # git is required to install @filigran/design-system, which is consumed as a
   # pinned git dependency: node:alpine ships no git at all.
-  apk --no-cache add make g++ python3 python3-dev libmagic git
+  apk --no-cache add make g++ python3 python3-dev git
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   python3 -m ensurepip
   npm install -g corepack
