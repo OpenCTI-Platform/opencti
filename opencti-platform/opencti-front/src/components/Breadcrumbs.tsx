@@ -39,7 +39,9 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
   // inside the list.
   const beside = isSensitive ? (
     <>
-      <DangerZoneChip />
+      <span className="ml-2">
+        <DangerZoneChip />
+      </span>
       {adornment}
     </>
   ) : adornment;
