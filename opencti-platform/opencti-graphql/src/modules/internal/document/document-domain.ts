@@ -219,7 +219,15 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   return pagination;
 };
 
-// Get export files paginated for a given export context (entity_type + optional entity_id)
+/**
+ * Retrieve export files paginated for a given export context.
+ *
+ * @param context - The current authentication context.
+ * @param user - The user performing the request.
+ * @param exportContext - The export target, defining the entity type and an optional entity id.
+ * @param opts - Optional file listing options (e.g. `first`) merged into the query.
+ * @returns A paginated connection of export files for the resolved path.
+ */
 export const paginatedForExportContext = async (
   context: AuthContext,
   user: AuthUser,
