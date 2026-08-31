@@ -583,12 +583,32 @@ export const normalizeFilterGroupForFrontend = (
 ): FilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup?.filters?.map((f) => ({
-      ...f,
-      id: uuid(),
-      key: Array.isArray(f.key) ? f.key[0] : f.key,
-      values: f.values.map((v) => v || 'todo: delete this'),
-    })),
+    filters: filterGroup?.filters?.map((f) => {
+      const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      // build values
+      let values: FilterValue[];
+      if (key === 'dynamicRegardingOf') { // add id in dynamic regarding of subfilter for React rendering purposes
+        values = f.values.map((dynamicRegardingOfValue) => {
+          if (dynamicRegardingOfValue.key === 'dynamic') { // values with 'dynamic' key contains filters
+            return {
+              ...dynamicRegardingOfValue,
+              values: dynamicRegardingOfValue.values.map((filterValue) => normalizeFilterGroupForFrontend(filterValue)),
+            };
+          } else {
+            return dynamicRegardingOfValue;
+          }
+        });
+      } else {
+        values = f.values.map((v) => v || 'todo: delete this');
+      }
+      // return the filter with normalized key and values, and add an id
+      return {
+        ...f,
+        id: uuid(),
+        key,
+        values,
+      };
+    }),
     filterGroups: filterGroup?.filterGroups?.map((fg) => normalizeFilterGroupForFrontend(fg)),
   } as FilterGroup;
 };
@@ -609,7 +629,7 @@ export const serializeFilterGroupForBackend = (
 
 /**
  * Parse a filterGroup as given by the backend (backend format, i.e. with array keys),
- * And turns it into the frontend format (single key).²
+ * And turns it into the frontend format (single key).
  * @param filterGroup
  */
 export const deserializeFilterGroupForFrontend = (
