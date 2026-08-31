@@ -31,6 +31,10 @@ export const transformHasCoveredFromId = async (
   user: AuthUser,
   relInput: StixCoreRelationshipAddInput,
 ) => {
+  // We remove the stix_id send by OpenAEV because it cannot compute the right one.
+  // It misses the knowledge of the SCR that we are computing below.
+  delete relInput.stix_id;
+
   const securityCoverage = await findById(context, user, relInput.fromId);
   const securityCoverageResults = await listSecurityCoverageResults(context, user, securityCoverage);
   const matchingSCR = relInput.external_uri
