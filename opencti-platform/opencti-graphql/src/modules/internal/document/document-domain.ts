@@ -13,7 +13,7 @@ import type { BasicStoreCommon } from '../../../types/store';
 import { type File, FilterMode, FilterOperator, OrderingMode, State } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
-import { SYSTEM_USER } from '../../../utils/access';
+import { isBypassUser, SYSTEM_USER } from '../../../utils/access';
 import { FROM_START_STR } from '../../../utils/format';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
@@ -21,6 +21,7 @@ import { getDraftContext } from '../../../utils/draftContext';
 import { DRAFT_OPERATION_CREATE } from '../../draftWorkspace/draftOperations';
 import { getDraftFilePrefix } from '../../../database/draft-utils';
 import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from './document-types';
+import { addFilter } from '../../../utils/filtering/filtering-utils';
 
 export { SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH };
 
@@ -217,4 +218,34 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   }
   // endregion
   return pagination;
+};
+
+/**
+ * Retrieve export files created by a given user and paginated for a given export context.
+ *
+ * @param context - The current authentication context.
+ * @param user - The user performing the request.
+ * @param exportContext - The export target, defining the entity type and an optional entity id.
+ * @param opts - Optional file listing options (e.g. `first`) merged into the query.
+ * @returns A paginated connection of export files for the resolved path.
+ */
+export const paginatedExportFilesForExportContext = async (
+  context: AuthContext,
+  user: AuthUser,
+  exportContext: { entity_type: string; entity_id?: string },
+  opts?: FilesOptions<BasicStoreEntityDocument>,
+) => {
+  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+  // Users should only see their own exports & Bypass users should see all the exports
+  const filters = isBypassUser(user)
+    ? undefined
+    : addFilter(undefined, 'metaData.creator_id', [user.id]);
+
+  const listOpts = {
+    ...opts,
+    entity_id: exportContext.entity_id,
+    entity_type: exportContext.entity_type,
+    filters,
+  };
+  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, listOpts);
 };

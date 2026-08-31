@@ -51,7 +51,7 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES, validateMarking } from '../
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { paginatedExportFilesForExportContext, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
@@ -175,6 +175,10 @@ export const getFintelTemplates = async (context, user, stixDomainObject) => {
 };
 
 // region export
+export const stixDomainObjectsExportFiles = async (context, user, exportContext, { first }) => {
+  return paginatedExportFilesForExportContext(context, user, exportContext, { first });
+};
+
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters } = args;

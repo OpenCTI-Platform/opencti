@@ -54,13 +54,13 @@ import {
   isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { createWork, worksForSource, workToExportFile } from './work';
+import { createWork, loadWorkById, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
-import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { findById as documentFindById, paginatedExportFilesForExportContext, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
@@ -525,6 +525,35 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 // endregion
 
 // region export
+export const stixCoreObjectsExportFiles = async (context, user, exportContext, { first }) => {
+  return paginatedExportFilesForExportContext(context, user, exportContext, { first });
+};
+
+/**
+ * Starts a list/selection export by requesting its generation asynchronously.
+ *
+ * This is the "ask" side of the export lifecycle: it does not produce a file. It transforms the
+ * provided filtering arguments, then delegates to {@link askListExport}, which creates an export
+ * Work (persisting the requesting user as `user_id`) and pushes a job onto the connector queue for
+ * the export connector to process. The returned works are exposed to the UI as pending export
+ * files. The generated file is later uploaded back through {@link stixCoreObjectsExportPush}.
+ *
+ * @param {AuthContext} context - The request context.
+ * @param {AuthUser} user - The user requesting the export.
+ * @param {object} args - Export request arguments.
+ * @param {object} args.exportContext - Export context (entity type, optional entity id, visible columns...).
+ * @param {string} args.format - Target export mime type/format.
+ * @param {string} args.exportType - Export type (e.g. simple or full).
+ * @param {string[]} args.contentMaxMarkings - Maximum content markings the export can include.
+ * @param {string[]} [args.selectedIds] - Ids selected via checkboxes (selection export); absent for a full-query export.
+ * @param {string[]} args.fileMarkings - Markings to apply on the resulting file.
+ * @param {string} [args.search] - Optional full-text search applied to the exported list.
+ * @param {string} [args.orderBy] - Optional ordering field.
+ * @param {string} [args.orderMode] - Optional ordering direction.
+ * @param {object} [args.filters] - Optional filter group applied to the exported list.
+ * @returns {Promise<object[]>} The pending export works mapped to export file descriptors.
+ * @throws {UnsupportedError} When called within a draft context.
+ */
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot ask for export in draft');
@@ -547,8 +576,49 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, i
   return works.map((w) => workToExportFile(w));
 };
 
+/**
+ * Resolves the id of the user who originally requested an export.
+ *
+ * When an export file is pushed back by a connector, the request is authenticated as the
+ * connector user (typically the admin who registered it), not as the user who asked for the
+ * export. The requester is persisted on the export Work (`user_id`), so when the current request
+ * is associated with a work (via the `opencti-work-id` header, exposed as `context.workId`) we
+ * load that work and return its `user_id` to be used as the file `creator_id`.
+ *
+ * @param {AuthContext} context - The request context; `context.workId` holds the originating work id when present.
+ * @param {AuthUser} user - The user performing the upload (the connector user in the export push-back case).
+ * @returns {Promise<string | undefined>} The requesting user's id, or `undefined` when no work is
+ * associated with the request or the work cannot be loaded.
+ */
+const resolveExportCreatorId = async (context, user) => {
+  if (!context.workId) {
+    return undefined;
+  }
+  const work = await loadWorkById(context, user, context.workId).catch(() => null);
+  return work?.user_id;
+};
+
+/**
+ * Uploads a generated list/selection export file back to storage.
+ *
+ * This is the "push" side of the export lifecycle, counterpart to {@link stixCoreObjectsExportAsk}:
+ * it is called by the export connector once it has produced the STIX bundle. Because the request is
+ * authenticated as the connector user (not the original requester), the true requester is resolved
+ * from the export Work via {@link resolveExportCreatorId} and passed as `creator_id` so the stored
+ * file is attributed to the user who asked for the export.
+ *
+ * @param {AuthContext} context - The request context; `context.workId` links the push-back to its export Work.
+ * @param {AuthUser} user - The user performing the upload (the connector user in the push-back case).
+ * @param {string} [entity_id] - Optional id of the entity the export is hosted on; when absent the export is global.
+ * @param {string} entity_type - The exported entity type, used to build the storage path.
+ * @param {FileUploadData} file - The generated export file to upload.
+ * @param {string[]} file_markings - Markings to apply on the uploaded file.
+ * @param {string} [listFilters] - The filters used for the export, stored as file metadata.
+ * @returns {Promise<boolean>} `true` once the file has been uploaded.
+ */
 export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
-  const meta = { list_filters: listFilters };
+  const creatorId = await resolveExportCreatorId(context, user);
+  const meta = { list_filters: listFilters, creator_id: creatorId };
   const entity = entity_id ? await internalLoadById(context, user, entity_id) : undefined;
   const opts = { entity, meta, file_markings };
   await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, opts);
@@ -561,7 +631,9 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
+  const creatorId = await resolveExportCreatorId(context, user);
+  const meta = creatorId ? { creator_id: creatorId } : {};
+  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, meta, file_markings: args.file_markings });
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,

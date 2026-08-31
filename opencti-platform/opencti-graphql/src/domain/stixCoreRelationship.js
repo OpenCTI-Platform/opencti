@@ -17,6 +17,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filtering-utils';
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { paginatedExportFilesForExportContext } from '../modules/internal/document/document-domain';
 
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
@@ -79,6 +80,10 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
 // endregion
 
 // region export
+export const stixCoreRelationshipsExportFiles = async (context, user, exportContext, { first }) => {
+  return paginatedExportFilesForExportContext(context, user, exportContext, { first });
+};
+
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { fromOrToId, elementWithTargetTypes, fromId, fromRole, fromTypes, toId, toRole, toTypes, relationship_type } = args;

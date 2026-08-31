@@ -22,13 +22,13 @@ import {
   stixDomainObjectsTimeSeriesByAuthor,
   getFilesFromTemplate,
   getFintelTemplates,
+  stixDomainObjectsExportFiles,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadAssignees } from '../database/members';
 
 const stixDomainObjectResolvers = {
@@ -48,11 +48,7 @@ const stixDomainObjectResolvers = {
       }
       return [];
     },
-    stixDomainObjectsExportFiles: (_, { exportContext, first }, context) => {
-      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      const opts = { first, entity_type: exportContext.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
-    },
+    stixDomainObjectsExportFiles: (_, { exportContext, first }, context) => stixDomainObjectsExportFiles(context, context.user, exportContext, { first }),
   },
   StixDomainObjectsOrdering: StixDomainObjectsOptions.StixDomainObjectsOrdering,
   StixDomainObject: {
