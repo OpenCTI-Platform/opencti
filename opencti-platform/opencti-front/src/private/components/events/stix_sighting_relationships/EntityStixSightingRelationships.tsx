@@ -177,6 +177,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
       },
       confidence: {
         label: 'Confidence level',
+        width: '15%',
         isSortable: true,
       },
     };
