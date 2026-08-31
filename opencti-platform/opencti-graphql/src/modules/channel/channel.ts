@@ -23,7 +23,6 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_CHANNEL, type Stix2Channel, type StixChannel, type StoreEntityChannel } from './channel-types';
@@ -45,6 +44,7 @@ import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 
 export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel, Stix2Channel> = {
   type: {

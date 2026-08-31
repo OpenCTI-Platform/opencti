@@ -75,6 +75,7 @@ generates:
         TaxiiCollection: ../modules/dataSharing/taxiiCollection-types#BasicStoreEntityTaxiiCollection
         StreamCollection: ../modules/dataSharing/streamCollection-types#BasicStoreEntityStreamCollection
         RetentionRule: ../modules/retentionRules/retentionRules-types#BasicStoreEntityRetentionRule
+        Vulnerability: ../modules/vulnerability/vulnerability-types#BasicStoreEntityVulnerability
 
 
   ./graphql.schema.json:

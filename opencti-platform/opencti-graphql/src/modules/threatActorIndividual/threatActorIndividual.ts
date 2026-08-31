@@ -40,7 +40,6 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
@@ -51,6 +50,7 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import type { NestedObjectAttribute } from '../../schema/attribute-definition';
 import { DefaultFormating, humanizeDate, humanizeHeight, humanizeWeight } from '../../utils/humanize';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 
 export type Measurement = {
   measure: number;

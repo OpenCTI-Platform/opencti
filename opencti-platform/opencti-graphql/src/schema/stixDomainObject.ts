@@ -26,6 +26,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatf
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'attribute_abstract';
@@ -55,7 +56,6 @@ export const ENTITY_TYPE_LOCATION_POSITION = 'Position';
 export const ENTITY_TYPE_MALWARE = 'Malware';
 export const ENTITY_TYPE_THREAT_ACTOR_GROUP = 'Threat-Actor-Group';
 export const ENTITY_TYPE_TOOL = 'Tool';
-export const ENTITY_TYPE_VULNERABILITY = 'Vulnerability';
 export const ENTITY_TYPE_INCIDENT = 'Incident';
 export const ENTITY_TYPE_DATA_COMPONENT = 'Data-Component';
 export const ENTITY_TYPE_DATA_SOURCE = 'Data-Source';
@@ -170,7 +170,6 @@ const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_VULNERABILITY,
 ];
 export const registerStixDomainAliased = (type: string) => {
   STIX_DOMAIN_OBJECT_ALIASED.push(type);

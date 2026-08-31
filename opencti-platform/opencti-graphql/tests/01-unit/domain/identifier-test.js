@@ -26,8 +26,8 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
 } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_MUTEX, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';

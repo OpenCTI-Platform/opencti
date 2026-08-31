@@ -229,7 +229,7 @@
   "CVSS4 Privileges Required (PR)": "CVSS4 권한 필요(PR)",
   "CVSS4 Score": "CVSS4 점수",
   "CVSS4 Severity": "CVSS4 심각도",
-  "CVSS4 SS Avalability Impact (SA)": "CVSS4 SS 가용성 영향(SA)",
+  "CVSS4 SS Availability Impact (SA)": "CVSS4 SS 가용성 영향(SA)",
   "CVSS4 SS Confidentiality Impact (SC)": "CVSS4 SS 기밀성 영향(SC)",
   "CVSS4 SS Integrity Impact (SI)": "CVSS4 SS 무결성 영향(SI)",
   "CVSS4 User Interaction (UI)": "CVSS4 사용자 상호작용(UI)",

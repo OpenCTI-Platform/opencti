@@ -12,16 +12,10 @@ import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CAMPAIGN,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_VULNERABILITY,
-} from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
