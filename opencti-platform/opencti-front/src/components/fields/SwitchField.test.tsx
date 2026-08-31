@@ -1,7 +1,5 @@
 /**
- * Contract tests for the SwitchField pivot. It carries 107 <Field> sites, and
- * before this file nothing covered it — the three regressions these tests pin
- * were all found by review, not by the suite.
+ * Contract tests for the SwitchField pivot.
  */
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

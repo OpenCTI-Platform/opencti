@@ -1,40 +1,14 @@
 /**
- * Elevation LAYERS — the half of the library's contract the product has to
- * declare itself.
+ * Elevation layers: the page is layer 0, a panel over it layer 1, a panel
+ * inside that layer 2. The library's `.layer-N` class re-declares the elevation
+ * aliases, but a `var()` inside a custom-property declaration is substituted on
+ * the element that DECLARES it — so `--bg-input-default`, declared once at the
+ * root, keeps the layer-0 value however deep the class is applied. The three
+ * input tokens that alias an elevation token must therefore be re-declared on
+ * the same element as the class.
  *
- * The library ships `.layer-0` … `.layer-3` classes that re-declare the
- * elevation aliases (`--bg-elevation-default`, `--bg-elevation-highlight`, …)
- * to that layer's value. Nesting depth is the whole idea: the page is layer 0,
- * a panel over it is layer 1, a panel inside that is layer 2 (Figma
- * 0PmhuZzF9XcaIEfMMW2a51, node 5416-12183).
- *
- * The product declared NO layer anywhere, so every surface resolved at the
- * root — layer 0 — including drawers and dialogs and every field inside them.
- *
- * WHY A CLASS IS NOT ENOUGH, and this is the part that bites:
- *
- * A `var()` inside a custom-property declaration is substituted at
- * computed-value time ON THE ELEMENT THAT DECLARES IT. The library declares
- *
- *     --bg-input-default: var(--bg-elevation-highlight);
- *
- * once, at the root. So it is resolved against the ROOT's highlight — layer 0 —
- * and adding `.layer-2` further down re-declares the elevation alias but can no
- * longer reach the input one. Measured in the browser on the served build:
- *
- *     context              --bg-elevation-highlight   --bg-input-default
- *     root (layer 0)       #13213e                    #13213e
- *     .layer-2 alone       #0c1527                    #13213e   <- the bug
- *     .layer-2 + below     #0c1527                    #0c1527   <- wanted
- *
- * Re-declaring the three aliases ON THE SAME ELEMENT as the layer class makes
- * them resolve against that element's own elevation values. Exactly three input
- * tokens alias an elevation token; the rest of the family aliases feedback and
- * text tokens, which are layer-independent and correctly left alone.
- *
- * This is a LIBRARY GAP (LIBRARY-FEEDBACK #57), not a product decision: the
- * `.layer-N` blocks should carry these three themselves. When they do, drop
- * `layerInputVars` and keep the class.
+ * LIBRARY GAP (LIBRARY-FEEDBACK #57): when the `.layer-N` blocks carry these
+ * three themselves, drop `layerInputVars` and keep the class.
  */
 
 export type FdsLayer = 0 | 1 | 2 | 3;
@@ -52,10 +26,6 @@ export const layerInputVars = {
 /**
  * The library class for a layer. Put it on the SAME node that carries
  * `layerInputVars`, or the compensation resolves against the wrong layer.
- *
- * Drawers and dialogs are layer 2 — the designer's ruling, and it agrees with
- * the drawer's own Figma frame (node 5415-3010), whose body reads
- * `--bg-elevation-default-layer-2`.
  */
 export const fdsLayerClass = (layer: FdsLayer) => `layer-${layer}`;
 
@@ -63,14 +33,10 @@ export const fdsLayerClass = (layer: FdsLayer) => `layer-${layer}`;
 export const SURFACE_LAYER: FdsLayer = 2;
 
 /**
- * Filter popovers, per the designer's standing rule for ALL of them: the
- * popover SURFACE is `--bg-elevation-highlight` taken at layer 1, and the
- * fields inside sit at layer 2, exactly as they do in a drawer or a dialog.
- *
- * Both halves live on the paper itself, so no wrapper element is introduced.
- * The layer-2 class plus `layerInputVars` give the fields their background;
- * the surface then has to name its layer-1 value explicitly, because the class
- * it shares the node with has just moved the ambient alias to layer 2.
+ * Filter popovers: the surface is `--bg-elevation-highlight` at layer 1, the
+ * fields inside sit at layer 2. Both halves live on the paper itself, so the
+ * surface must name its layer-1 value explicitly — the layer-2 class it shares
+ * the node with has already moved the ambient alias.
  */
 export const FILTER_POPOVER_LAYER: FdsLayer = 2;
 
@@ -80,13 +46,7 @@ export const filterPopoverPaperSx = {
 } as const;
 
 /**
- * The tab-scoped right bars (Knowledge, Content).
- *
- * Layer 1, not 2: they are page chrome sitting beside the content, not a panel
- * over it. Pinned by two independent hexes read off the Figma node
- * (0PmhuZzF9XcaIEfMMW2a51, 7472:48226) — `--bg-elevation-default` #0d172b and
- * `--bg-elevation-highlight` #182a4e, which are the layer-1 values. A bare
- * alias would have resolved layer 0 (#070d18), which is what the bars painted
- * before.
+ * The tab-scoped right bars (Knowledge, Content): layer 1, not 2 — they are
+ * page chrome beside the content, not a panel over it.
  */
 export const RIGHT_BAR_LAYER: FdsLayer = 1;

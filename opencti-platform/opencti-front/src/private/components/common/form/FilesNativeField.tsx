@@ -119,14 +119,12 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
       <Combobox<{ label: string; value: string }>
         selectOnFocus={true}
         multiple={true}
-        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel
-        // closed after each pick. The library keeps it open in multiple mode, which
-        // overlays the form's own action button in a dialog this narrow.
+        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel closed
+        // after each pick.
         closeOnSelect
         value={currentValue}
-        // Truncation lives in the label function here, so it already applied to
-        // BOTH the chips and the input under MUI — unlike the fields whose
-        // renderTags used a different label. Nothing to decide: it carries over.
+        // Truncation lives in the label function here, so it already applied to BOTH the chips
+        // and the input under MUI — unlike the fields whose renderTags used a different label.
         getOptionLabel={(option) => truncate(option?.label ?? '', 40)}
         // MUI hid its clear indicator with display:none; the library defaults
         // clearable to true, so the affordance must be declined explicitly.

@@ -78,9 +78,8 @@ const reachesBreadcrumbLink = (selector: string) => selector
   .some((part) => {
     if (!/:(?:hover|focus)\b/.test(part)) return false;
     if (/#page-breadcrumb\b/.test(part)) return true;
-    // A bare anchor selector — `a:hover`, `a:focus` — reaches every link in the
-    // application, the breadcrumb's included. Anything carrying its own class or
-    // id targets some other element and is a different question.
+    // A bare anchor selector — `a:hover`, `a:focus` — reaches every link in the application,
+    // the breadcrumb's included.
     return /^a:(?:hover|focus)$/.test(part.replace(/:visited\b/g, ''));
   });
 

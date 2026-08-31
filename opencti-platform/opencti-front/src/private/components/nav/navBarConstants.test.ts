@@ -12,10 +12,9 @@ import {
 } from './navBarConstants';
 
 /**
- * These constants and helpers are a cross-component contract, not internals of
- * the rail: seven floating toolbars offset themselves by the widths, and ten
- * components read the collapsed flag straight out of localStorage. The rail
- * component may be replaced again; this contract may not silently change.
+ * These constants and helpers are a cross-component contract, not internals of the rail: seven
+ * floating toolbars offset themselves by the widths, and ten components read the collapsed
+ * flag straight out of localStorage.
  */
 describe('navBarConstants', () => {
   afterEach(() => {

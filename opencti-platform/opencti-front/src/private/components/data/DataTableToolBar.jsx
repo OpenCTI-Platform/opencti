@@ -670,9 +670,7 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  // Event moved last and made optional: the library reports the DOM event on
-  // ComboboxChangeMeta rather than as a positional first argument. The
-  // stopPropagation stays — this toolbar sits over clickable table rows.
+  // Event last and optional: the library reports it on ComboboxChangeMeta.
   handleChangeActionInputValues(i, value, event) {
     if (event) {
       event.stopPropagation();
@@ -1578,17 +1576,10 @@ class DataTableToolBar extends Component {
               getOptionLabel={(option) => option.label ?? ''}
               value={actionsInputs[i]?.values || []}
               multiple={true}
-              // This panel opens inside the mass-edit dialog and is long enough to
-              // overlay the dialog's own Update button. The library keeps a multi-value
-              // panel open after each pick (documented `closeOnSelect` default false in
-              // multiple mode) where MUI closed it, so the action becomes unreachable.
-              // Measured: elementFromPoint at the button centre returns an option row.
               closeOnSelect
               options={this.state.containers}
               inputValue={actionsInputs[i]?.inputValue || ''}
               onInputChange={(newValue, meta) => {
-                // Keystroke only. MUI reported an input change for every reason, which
-                // is why every one of these searches opened with `if (!event) return`.
                 if (meta.cause === 'type') (this.searchContainers.bind(this, i))(newValue);
               }}
               onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1633,17 +1624,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.markingDefinitions}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchMarkingDefinitions.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1679,17 +1663,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.labels}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchLabels.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1727,8 +1704,6 @@ class DataTableToolBar extends Component {
             options={this.state.identities}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchIdentities.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1764,8 +1739,6 @@ class DataTableToolBar extends Component {
             options={this.state.statuses}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1808,17 +1781,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.externalReferences}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchExternalReferences.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1854,17 +1820,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.assignees}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchAssignees.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1900,17 +1859,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.participants}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchParticipants.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1952,8 +1904,6 @@ class DataTableToolBar extends Component {
             options={this.state.vocabularies[selectedField] || []}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchVocabulary.bind(this, i, selectedField))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -1985,17 +1935,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || null}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.vocabularies[selectedField] || []}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchVocabulary.bind(this, i, selectedField))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -2030,8 +1973,6 @@ class DataTableToolBar extends Component {
             options={this.state.users}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchUsers.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -2077,17 +2018,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.killChainPhases}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchKillChains.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -2136,17 +2070,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.organizations}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchActionInputOrganizations.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -2182,17 +2109,10 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            // This panel opens inside the mass-edit dialog and is long enough to
-            // overlay the dialog's own Update button. The library keeps a multi-value
-            // panel open after each pick (documented `closeOnSelect` default false in
-            // multiple mode) where MUI closed it, so the action becomes unreachable.
-            // Measured: elementFromPoint at the button centre returns an option row.
             closeOnSelect
             options={this.state.groups}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchGroups.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -2230,8 +2150,6 @@ class DataTableToolBar extends Component {
             options={this.constructor.getUserStatusOptionList(userStatuses)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
-              // Keystroke only. MUI reported an input change for every reason, which
-              // is why every one of these searches opened with `if (!event) return`.
               if (meta.cause === 'type') (this.searchAccountStatus.bind(this, i))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
@@ -3353,17 +3271,10 @@ class DataTableToolBar extends Component {
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={actionsInputs[0]?.values || []}
                   multiple={true}
-                  // This panel opens inside the mass-edit dialog and is long enough to
-                  // overlay the dialog's own Update button. The library keeps a multi-value
-                  // panel open after each pick (documented `closeOnSelect` default false in
-                  // multiple mode) where MUI closed it, so the action becomes unreachable.
-                  // Measured: elementFromPoint at the button centre returns an option row.
                   closeOnSelect
                   options={this.state.containers}
                   inputValue={actionsInputs[0]?.inputValue || ''}
                   onInputChange={(newValue, meta) => {
-                    // Keystroke only. MUI reported an input change for every reason, which
-                    // is why every one of these searches opened with `if (!event) return`.
                     if (meta.cause === 'type') (this.searchContainers.bind(this, 0))(newValue);
                   }}
                   onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, 0))(next, meta.event)}
@@ -3472,17 +3383,10 @@ class DataTableToolBar extends Component {
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
-                  // This panel opens inside the mass-edit dialog and is long enough to
-                  // overlay the dialog's own Update button. The library keeps a multi-value
-                  // panel open after each pick (documented `closeOnSelect` default false in
-                  // multiple mode) where MUI closed it, so the action becomes unreachable.
-                  // Measured: elementFromPoint at the button centre returns an option row.
                   closeOnSelect
                   options={this.state.organizations}
                   inputValue={this.state.organizationInput}
                   onInputChange={(newValue, meta) => {
-                    // Keystroke only. MUI reported an input change for every reason, which
-                    // is why every one of these searches opened with `if (!event) return`.
                     if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
                   }}
                   onValueChange={(next, meta) => ((_, value) => this.setState({ shareOrganizations: value }))(next, meta.event)}
@@ -3552,17 +3456,10 @@ class DataTableToolBar extends Component {
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
-                  // This panel opens inside the mass-edit dialog and is long enough to
-                  // overlay the dialog's own Update button. The library keeps a multi-value
-                  // panel open after each pick (documented `closeOnSelect` default false in
-                  // multiple mode) where MUI closed it, so the action becomes unreachable.
-                  // Measured: elementFromPoint at the button centre returns an option row.
                   closeOnSelect
                   options={this.state.organizations}
                   inputValue={this.state.organizationInput}
                   onInputChange={(newValue, meta) => {
-                    // Keystroke only. MUI reported an input change for every reason, which
-                    // is why every one of these searches opened with `if (!event) return`.
                     if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
                   }}
                   onValueChange={(next, meta) => ((_, value) => this.setState({ shareOrganizations: value }))(next, meta.event)}

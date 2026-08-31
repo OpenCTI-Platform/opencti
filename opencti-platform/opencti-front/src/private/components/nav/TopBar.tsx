@@ -213,9 +213,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
 
-  // Stops stay OPAQUE: the library's Header carries the glass itself, a ::before
-  // layer at Figma's 94% over a 4px backdrop blur. Pre-multiplying them here, as
-  // the MUI bar did at 90%, would apply the transparency twice.
+  // Stops stay OPAQUE: the library's Header carries the glass itself, a ::before layer at
+  // Figma's 94% over a 4px backdrop blur.
   const getAppTopBarGradient = (): { start: string; end: string } => {
     if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.end) {
       return {
@@ -318,9 +317,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         to="/dashboard/profile/notifications/alerts"
                         active={location.pathname.startsWith('/dashboard/profile/notifications')}
                         icon={<NotificationsOutlined fontSize="medium" />}
-                        // Marks the control, never the glyph: the glyph sits in an
-                        // aria-hidden span, where the badge's description reaches
-                        // nobody. `dot`: unread without a count, total still announced.
+                        // Marks the control, never the glyph: the glyph sits in an aria-hidden
+                        // span, where the badge's description reaches nobody.
                         badge={{
                           content: unreadCount,
                           dot: true,

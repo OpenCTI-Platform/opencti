@@ -28,12 +28,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
 
   return (
     <div style={{
-      // The switcher is pulled up onto the tabs strip. The offset was tuned for
-      // a 24px (sm) control; the group is 36px (md) now, so it needed
-      // re-deriving. MEASURED, not guessed: with -70 the group's centre sat 3px
-      // above the strip's, so it is -67. To re-derive after any size change,
-      // compare `[role=tablist]`'s vertical centre with the group's and add the
-      // difference here — the invariant is that the two centres coincide.
+      // The switcher is pulled up onto the tabs strip.
       margin: '-67px 0 0 0',
       float: 'right',
     }}

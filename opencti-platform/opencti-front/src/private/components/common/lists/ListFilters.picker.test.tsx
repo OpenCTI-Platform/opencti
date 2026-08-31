@@ -39,11 +39,6 @@ const props = (entityTypes: string[]) => ({
 describe('ListFilters — the Add filter picker', () => {
   // Mirrors tests_e2e/model/filters.pageModel addFilterInDatatable, which
   // searchOnDataEntitiesPerLabels runs TWICE against the same mounted field.
-  // The second pass is the regression: the library answers a pick by writing
-  // the chosen label back into the input, and if the product accepts that
-  // write the field never returns to empty -- so filling the same text again
-  // is a no-op, no input event fires, the panel never reopens and the option
-  // never appears.
   it('returns to empty after a pick, so the same filter can be picked twice', () => {
     testRender(<ListFilters {...props(['Stix-Core-Object'])} />, {
       userContext: createMockUserContext({ schema }),
@@ -60,9 +55,7 @@ describe('ListFilters — the Add filter picker', () => {
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toContain('Label');
   });
 
-  // The grouped branch (isNotUniqEntityTypes) is the one /dashboard/data/entities
-  // takes. Kept because it was the first hypothesis for the failure above and
-  // was wrong: grouping renders its options correctly.
+  // The grouped branch (isNotUniqEntityTypes) is the one /dashboard/data/entities takes.
   it('renders options in both the grouped and ungrouped branches', () => {
     const { unmount } = testRender(<ListFilters {...props(['Stix-Core-Object'])} />, {
       userContext: createMockUserContext({ schema }),

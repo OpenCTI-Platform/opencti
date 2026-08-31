@@ -66,11 +66,8 @@ const KillChainPhasesField = ({
       helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={killChainPhases}
-      // No getChipColor here on purpose: this query maps label, value,
-      // kill_chain_name and phase_name and never a colour, so `option.color` is
-      // always undefined. The row's icon reads it and paints nothing, which is
-      // what it did before. In the 47 sites that COULD carry a tone, not in the
-      // 32 that build one.
+      // No getChipColor here on purpose: this query maps label, value, kill_chain_name and
+      // phase_name and never a colour, so `option.color` is always undefined.
       onInputChange={(search: string, meta: ComboboxChangeMeta) => {
         if (meta.cause === 'type') searchKillChainPhases(search);
       }}
