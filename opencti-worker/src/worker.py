@@ -99,6 +99,51 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             default=5,
         )
+        # POC (plan 0009 worker v0): unacked deliveries allowed per push queue. 1 = historic
+        # one-message-per-queue behavior; >1 removes the per-queue serialization (execution
+        # stays bounded by the push execution pool).
+        self.push_prefetch_count = get_config_variable(
+            "WORKER_PUSH_PREFETCH_COUNT",
+            ["worker", "push_prefetch_count"],
+            config,
+            True,
+            default=1,
+        )
+        # POC (plan 0009 P3): thread width for in-place level-parallel import of an inline
+        # bundle (message flagged bundle_inline by the platform).
+        self.bundle_parallelism = get_config_variable(
+            "WORKER_BUNDLE_PARALLELISM",
+            ["worker", "bundle_parallelism"],
+            config,
+            True,
+            default=8,
+        )
+        # POC (plan 0009 §9.6.7): import ANY multi-object bundle inline (external
+        # connectors publish straight to RabbitMQ, so the platform marker never reaches
+        # them). Off = historic behavior.
+        self.bundle_inline = get_config_variable(
+            "WORKER_BUNDLE_INLINE",
+            ["worker", "bundle_inline"],
+            config,
+            False,
+            default=False,
+        )
+        # POC (plan 0009 §9.6.6/§9.6.9): wave grouping policy for inline bundles
+        # (chunks | levels | phases | all), see push_handler.bundle_wave_policy.
+        # "chunks" (default) submits fixed-size waves of bundle_parallelism objects in
+        # nb_deps order: the wave size is chosen, not dictated by the bundle's shape.
+        self.bundle_wave_policy = get_config_variable(
+            "WORKER_BUNDLE_WAVE_POLICY",
+            ["worker", "bundle_wave_policy"],
+            config,
+            default="chunks",
+        )
+        if self.bundle_wave_policy not in ("chunks", "levels", "phases", "all"):
+            self.worker_logger.warning(
+                "Invalid bundle_wave_policy, falling back to chunks",
+                {"value": self.bundle_wave_policy},
+            )
+            self.bundle_wave_policy = "chunks"
         self.opencti_api_requests_timeout = get_config_variable(
             "OPENCTI_REQUESTS_TIMEOUT",
             ["opencti", "requests_timeout"],
@@ -287,6 +332,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_global_counter,
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
+                            bundle_parallelism=self.bundle_parallelism,
+                            bundle_wave_policy=self.bundle_wave_policy,
+                            bundle_inline=self.bundle_inline,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]
@@ -301,6 +349,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 push_thread_pool_selector.submit, is_realtime
                             ),
                             push_handler.handle_message,
+                            prefetch_count=self.push_prefetch_count,
                         )
 
                     # Listen for webhook message

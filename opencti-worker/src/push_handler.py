@@ -1,9 +1,11 @@
 import base64
 import datetime
+import itertools
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, List, Literal, Union
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
@@ -28,6 +30,28 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     bundles_global_counter: Any
     bundles_processing_time_gauge: Any
     objects_max_refs: int
+    # POC (plan 0009 P3): thread width for the level-parallel import of an inline bundle
+    # (message flagged bundle_inline by the platform). 1 = strictly sequential levels.
+    bundle_parallelism: int = 8
+    # POC (plan 0009 §9.6.6/§9.6.9): how an inline bundle is grouped into concurrent waves.
+    # "chunks" (default, recommended) = accumulate objects in nb_deps order up to
+    # bundle_parallelism and submit that chunk, barrier, repeat: the wave size is CHOSEN
+    # instead of being dictated by the graph's shape, so small bundles are not fragmented
+    # into width-1 waves and huge bundles are not submitted wholesale. Consecutive
+    # dependent objects land in the same chunk, hence very likely in the same sequencer
+    # batch, where the planner's producer->consumer edges order them.
+    # "levels" = one wave per nb_deps value (strict: no intra-bundle race possible, but
+    # width is whatever the graph gives: measured median 2, 43.5% of waves width 1).
+    # "phases" = entities, then relationships, then containers/rel-on-rel (D1 mirror).
+    # "all" = no barrier, everything submitted at once, executor-bounded.
+    bundle_wave_policy: str = "chunks"
+    # POC (plan 0009 §9.6.7): treat ANY multi-object bundle as inline, whatever its origin.
+    # Required because external connectors (and the bench replay) publish straight to
+    # RabbitMQ through pycti, never through the platform's pushBundleToWorker, so the
+    # platform-side bundle_intake marker never reaches them. With this on, a multi-object
+    # message (no_split from the connector, or unflagged) is imported in place by waves
+    # instead of being imported sequentially / split and requeued.
+    bundle_inline: bool = False
 
     def __post_init__(self) -> None:
         self.api = OpenCTIApiClient(
@@ -37,6 +61,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             json_logging=self.json_logging,
             ssl_verify=self.ssl_verify,
             provider="worker/" + __version__,
+        )
+        self.bundle_executor = ThreadPoolExecutor(
+            max_workers=max(1, self.bundle_parallelism),
+            thread_name_prefix="bundle-inline",
         )
 
     def send_bundle_to_specific_queue(
@@ -80,6 +108,138 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 self.logger.debug("Unable to send bundle error", {"error": str(err)})
                 time.sleep(10)
 
+    def send_too_large_to_dead_letter(
+        self, data: Dict[str, Any], too_large_items_bundles: List[Any]
+    ) -> None:
+        if len(too_large_items_bundles) == 0:
+            return
+        with pika.BlockingConnection(self.pika_parameters) as push_pika_connection:
+            with push_pika_connection.channel() as push_channel:
+                try:
+                    push_channel.confirm_delivery()
+                except Exception as err:  # pylint: disable=broad-except
+                    self.logger.warning(str(err))
+                for too_large_item_bundle in too_large_items_bundles:
+                    rejection_info = too_large_item_bundle.setdefault("rejection_info", {})
+                    rejection_info["original_connector_id"] = self.connector_id
+                    self.logger.warning(
+                        "Detected a bundle too large, sending it to dead letter queue...",
+                        {
+                            "bundle_id": too_large_item_bundle["id"],
+                            "connector_id": self.connector_id,
+                        },
+                    )
+                    self.send_bundle_to_specific_queue(
+                        push_channel,
+                        self.listen_exchange,
+                        self.dead_letter_routing,
+                        data,
+                        too_large_item_bundle,
+                    )
+
+    def build_waves(self, bundles: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+        """Group the split mini-bundles into the concurrent waves to submit.
+
+        The splitter returns them sorted by nb_deps (dependencies before dependents), and
+        every policy preserves that order; they differ only in where the barriers fall.
+        """
+        if self.bundle_wave_policy == "chunks":
+            # POC (plan 0009 §9.6.9): fixed-size waves in dependency order. Size is a
+            # choice (bundle_parallelism), not a property of the bundle's shape.
+            size = max(1, self.bundle_parallelism)
+            return [bundles[i : i + size] for i in range(0, len(bundles), size)]
+        keyed = sorted(
+            ((self.wave_key(b), b) for b in bundles), key=lambda pair: pair[0]
+        )
+        return [
+            [pair[1] for pair in group]
+            for _, group in itertools.groupby(keyed, key=lambda pair: pair[0])
+        ]
+
+    def wave_key(self, mini_bundle: Dict[str, Any]) -> int:
+        # POC (plan 0009 §9.6.6): the wave a mini-bundle belongs to; waves import
+        # concurrently, with a barrier between waves (see bundle_wave_policy).
+        if self.bundle_wave_policy == "all":
+            return 0
+        obj = mini_bundle["objects"][0]
+        if self.bundle_wave_policy == "phases":
+            obj_type = obj.get("type")
+            if obj_type in ("relationship", "sighting"):
+                endpoint_refs = [
+                    str(obj.get("source_ref", "")),
+                    str(obj.get("target_ref", "")),
+                    str(obj.get("sighting_of_ref", "")),
+                ]
+                if any(ref.startswith("relationship--") for ref in endpoint_refs):
+                    return 2  # relationship whose endpoint is a relationship
+                return 1
+            if len(obj.get("object_refs") or []) > 0:
+                return 2  # containers
+            return 0  # entities
+        # default "levels": one wave per nb_deps value (equal counts form an antichain)
+        return obj.get("nb_deps", mini_bundle.get("x_opencti_seq", 0))
+
+    def import_bundle_inline(
+        self,
+        content: Dict[str, Any],
+        data: Dict[str, Any],
+        work_id: Any,
+        types: Any,
+    ) -> List[Any]:
+        # POC (plan 0009 P3, bundle-level intake): the platform pushed the bundle WHOLE
+        # (bundle_inline). Split it here (same splitter as the historic requeue path, same
+        # expectation counting) but import in place instead of requeueing: mini-bundles
+        # sharing one nb_deps value (x_opencti_seq) form an antichain (A depends on B
+        # implies nb_deps(A) > nb_deps(B)), so each level imports concurrently on the
+        # bundle executor, with a barrier between levels: producers are committed before
+        # their consumers fly, which preserves the intra-bundle ordering the queue used to
+        # provide, while offering the platform level-width concurrent arrivals.
+        update = data.get("update", False)
+        event_version = content.get("x_opencti_event_version")
+        stix2_splitter = OpenCTIStix2Splitter()
+        expectations, _, bundles = stix2_splitter.split_bundle_with_expectations(
+            content, False, event_version
+        )
+        if work_id is not None:
+            work_alive = self.api.work.add_expectations(work_id, expectations)
+            if not work_alive:
+                return []
+        imported_items: List[Any] = []
+        too_large_items_bundles: List[Any] = []
+        # bundles come out sorted by nb_deps (the splitter sorts): group into waves per
+        # the policy; python's stable sort keeps the nb_deps submission order inside a wave
+        waves = self.build_waves(bundles)
+        # Traceable proof that the inline path actually RAN (and how wide its waves were):
+        # a marker present in the image is not a marker reached at runtime (plan 0009 §9.6.7).
+        self.logger.info(
+            "Inline bundle import",
+            {
+                "objects": expectations,
+                "waves": len(waves),
+                "widths": [len(w) for w in waves][:12],
+                "policy": self.bundle_wave_policy,
+            },
+        )
+        for level_bundles in waves:
+            futures = [
+                self.bundle_executor.submit(
+                    self.api.stix2.import_bundle_from_json,
+                    json.dumps(mini_bundle),
+                    update,
+                    types,
+                    work_id,
+                    self.objects_max_refs,
+                )
+                for mini_bundle in level_bundles
+            ]
+            for future in futures:
+                items, too_large = future.result()
+                imported_items.extend(items)
+                too_large_items_bundles.extend(too_large)
+        # dead-letter forwarding after the levels, from the handler thread (one connection)
+        self.send_too_large_to_dead_letter(data, too_large_items_bundles)
+        return imported_items
+
     def handle_message(
         self,
         body: str,
@@ -121,7 +281,17 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 # Standard event with STIX information
                 if "objects" not in content or len(content["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
-                if len(content["objects"]) == 1 or data.get("no_split", False):
+                objects_count = len(content["objects"])
+                # POC (plan 0009 P3): inline when the platform flagged it, or when the
+                # worker knob is on and the message actually carries several objects.
+                inline = objects_count > 1 and (
+                    data.get("bundle_inline", False) or self.bundle_inline
+                )
+                if inline:
+                    imported_items = self.import_bundle_inline(
+                        content, data, work_id, types
+                    )
+                elif objects_count == 1 or data.get("no_split", False):
                     update = data.get("update", False)
                     imported_items, too_large_items_bundles = (
                         self.api.stix2.import_bundle_from_json(
