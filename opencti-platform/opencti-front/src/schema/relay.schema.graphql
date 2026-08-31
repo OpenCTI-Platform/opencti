@@ -16255,6 +16255,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
