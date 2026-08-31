@@ -23,8 +23,6 @@ const useStyles = makeStyles(() => ({
   container: {
     width: 600,
     padding: 20,
-    // Filter popovers: surface on `--bg-elevation-highlight` at layer 1, the
-    // fields inside at layer 2. See utils/fdsLayer.ts.
     ...filterPopoverPaperSx,
   },
 }));
@@ -217,7 +215,6 @@ const ListFilters = ({
             groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
             getOptionLabel={(option) => option.label}
             inputValue={inputValue}
-            // ONLY a keystroke may write this field.
             onInputChange={(newValue, meta) => {
               if (meta.cause !== 'type') {
                 return;

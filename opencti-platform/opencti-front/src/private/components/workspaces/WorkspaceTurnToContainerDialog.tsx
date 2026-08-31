@@ -120,8 +120,6 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
     });
   };
 
-  // The `if (!event) return` guard this function used to open with is gone: the engine states the CAUSE of every
-  // change, so the call site gates on `meta.cause === 'type'` and this only ever runs for a keystroke.
   const searchContainers = (
     event: React.SyntheticEvent<Element, Event>,
     incomingValue?: string,

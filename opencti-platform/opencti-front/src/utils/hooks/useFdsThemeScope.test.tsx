@@ -46,7 +46,6 @@ describe('Hook: useFdsThemeScope', () => {
     },
   );
 
-  // The built-in themes were renamed to `Filigran Dark` / `Filigran Light`.
   it('writes the light class for the built-in light theme', () => {
     renderHook(() => useFdsThemeScope('Filigran Light'));
 

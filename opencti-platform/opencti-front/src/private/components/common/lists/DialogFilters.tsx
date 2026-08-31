@@ -56,12 +56,10 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         </IconButton>
       </Tooltip>
       <Dialog
-        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
         slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={open}
         onClose={handleCloseFilters}
       >
-        {/* A real DialogTitle. */}
         <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
         <FilterIconButton
           filters={filters}

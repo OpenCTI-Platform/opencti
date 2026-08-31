@@ -13,7 +13,6 @@ const HOST_CSS = 'static/css/design-system-host.css';
 
 const read = (relative: string) => fs.readFileSync(path.join(FRONT_SRC, relative), 'utf8');
 
-/** The stylesheets the application loads, in the order `front.tsx` loads them. */
 const loadOrder = () => {
   const entry = read('front.tsx');
   return [...entry.matchAll(/^import\s+['"]([^'"]+\.css)['"];?$/gm)].map((m) => m[1]);
@@ -21,7 +20,6 @@ const loadOrder = () => {
 
 interface Rule { selector: string; body: string; sheet: string; order: number }
 
-/** Flattens a stylesheet into rules, ignoring at-rule wrappers we do not need. */
 const rulesOf = (css: string, sheet: string, order: number): Rule[] => {
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   const rules: Rule[] = [];
@@ -33,7 +31,6 @@ const rulesOf = (css: string, sheet: string, order: number): Rule[] => {
   return rules;
 };
 
-/** CSS specificity of a single compound selector, as (id, class, type). */
 const specificity = (selector: string): [number, number, number] => {
   const ids = (selector.match(/#[\w-]+/g) ?? []).length;
   const classes = (selector.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)(?!hover\b|focus\b|visited\b)[\w-]+/g) ?? []).length
@@ -51,7 +48,6 @@ const beats = (a: Rule, b: Rule) => {
   return a.order > b.order;
 };
 
-/** True when the selector applies to a breadcrumb link in the hover/focus state. */
 const reachesBreadcrumbLink = (selector: string) => selector
   .split(',')
   .map((part) => part.trim())

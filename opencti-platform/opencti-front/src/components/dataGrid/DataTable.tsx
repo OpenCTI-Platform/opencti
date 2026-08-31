@@ -111,7 +111,6 @@ const DataTableInternalFilters = ({
           )}
         </div>
       )}
-      {/* A row of its own, below the toolbar and only when filters are active. */}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}

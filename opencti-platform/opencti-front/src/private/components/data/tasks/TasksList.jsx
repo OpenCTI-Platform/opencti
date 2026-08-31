@@ -459,7 +459,6 @@ const TasksList = ({ data, options }) => {
         onClose={handleCloseMessages}
       >
         <DialogContentText>
-          {/* Surface = the library Paper; TableContainer goes back to being a plain scroll container. */}
           <Paper padding={0}>
             <TableContainer>
               <Table className={classes.table} aria-label="simple table">
@@ -496,7 +495,6 @@ const TasksList = ({ data, options }) => {
         onClose={handleCloseErrors}
       >
         <DialogContentText>
-          {/* Surface = the library Paper; TableContainer goes back to being a plain scroll container. */}
           <Paper padding={0}>
             <TableContainer>
               <Table className={classes.table} aria-label="simple table">

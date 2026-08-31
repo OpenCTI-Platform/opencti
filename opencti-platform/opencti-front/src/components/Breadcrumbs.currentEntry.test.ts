@@ -1,4 +1,3 @@
-/** Sweeps every Breadcrumbs call site and requires EXACTLY ONE current entry. */
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
@@ -20,7 +19,6 @@ const sourceFiles = () => {
   return out;
 };
 
-/** Every array literal an expression resolves to, within its own file. */
 const arraysOf = (expr: ts.Expression | undefined, sf: ts.SourceFile): ts.ArrayLiteralExpression[] => {
   if (!expr) return [];
   if (ts.isArrayLiteralExpression(expr)) return [expr];
@@ -45,7 +43,6 @@ const flagsCurrent = (node: ts.Node, sf: ts.SourceFile) => ts.isObjectLiteralExp
     && p.name.getText(sf) === 'current'
     && p.initializer.getText(sf) === 'true');
 
-/** How many entries of one array flag themselves as the current page. */
 const currentCount = (array: ts.ArrayLiteralExpression, sf: ts.SourceFile) => array.elements
   .filter((el) => (ts.isConditionalExpression(el)
     ? flagsCurrent(el.whenTrue, sf) || flagsCurrent(el.whenFalse, sf)

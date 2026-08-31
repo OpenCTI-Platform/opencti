@@ -43,14 +43,12 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       optionLength?: number;
       style?: React.CSSProperties;
       className?: string;
-      /** Forwarded to the input; call sites use it to tell two mounts apart. */
       id?: string;
       groupBy?: (option: Value) => string;
       getOptionLabel?: (option: Value) => string;
       /** Argument order is NOT MUI's: the library passes the SELECTED value first. */
       isOptionEqualToValue?: (a: Value, b: Value) => boolean;
       isOptionDisabled?: (option: Value) => boolean;
-      /** Per-value chip tone; presentation only, never reaches the selection engine. */
       getChipColor?: (option: Value) => string | undefined;
       filterOptions?: (options: Value[], inputValue: string) => Value[];
       renderOption?: (option: Value, state: { selected: boolean; active: boolean }) => ReactNode;
@@ -60,13 +58,11 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       /** A server-backed field must gate its query on `meta.cause === 'type'`. */
       onInputChange?: (value: string, meta: ComboboxChangeMeta) => void;
       onOpenChange?: (open: boolean, meta: ComboboxChangeMeta) => void;
-      /** Runs when focus reaches the input — where server-backed sites load page one. */
       onFocusInput?: (event: React.FocusEvent<HTMLInputElement>) => void;
       onChange?: (name: string, value: Value | Value[] | null) => void;
       onInternalChange?: (name: string, value: Value | Value[] | null) => void;
       /** Persistent create button on the field line; also stands in for `onCreateOption`. */
       openCreate?: () => void;
-      /** Opens the product's creation form for the text the list does not hold. */
       onCreateOption?: (input: string, meta: ComboboxChangeMeta) => void;
       createOptionLabel?: (input: string) => string;
       createHintLabel?: (input: string) => string;
@@ -234,17 +230,12 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   );
 };
 
-/**
- * Narrows the adapter's dual-mode `onChange` for a single-value call site, so the cast lives here once instead of
- * at each site.
- */
 export const asSingleValue = <T,>(
   fn?: (name: string, value: T | null) => void,
 ) => (fn
   ? (name: string, value: T | T[] | null) => fn(name, Array.isArray(value) ? (value[0] ?? null) : value)
   : undefined);
 
-/** The `multiple` counterpart of {@link asSingleValue}. */
 export const asMultiValue = <T,>(
   fn?: (name: string, values: T[]) => void,
 ) => (fn

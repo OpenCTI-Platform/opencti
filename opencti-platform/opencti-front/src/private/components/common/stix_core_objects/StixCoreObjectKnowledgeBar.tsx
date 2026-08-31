@@ -97,7 +97,6 @@ interface KnowledgeBarProps {
   count: number;
 }
 
-/** One row of the tab-scoped right bar. */
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
@@ -389,8 +388,6 @@ const StixCoreObjectKnowledgeBar = ({
     <Drawer
       variant="permanent"
       anchor="right"
-      // Position is deliberately untouched: fixed to the right edge, full height, content laid
-      // out beside it — the arrangement the product has always had.
       slotProps={{
         paper: {
           // Layer from the shared helper: the class and `layerInputVars` must sit on the SAME
@@ -408,9 +405,6 @@ const StixCoreObjectKnowledgeBar = ({
           padding: 0,
           zIndex: theme.zIndex.appBar - 1,
           paddingBottom: draftContext ? '69px' : 0, // Add 69px in case DraftToolbar is opened
-          // The bar is an elevation layer of its own: `layer-1` on the paper repoints --bg-
-          // elevation-default to #0d172b and --bg-elevation-highlight to #182a4e, so the rows'
-          // own hover and selected tones land on the right step without being restated here.
           background: 'var(--bg-elevation-default)',
           borderLeft: '1px solid var(--border-elevation-subtle-soft)',
         },

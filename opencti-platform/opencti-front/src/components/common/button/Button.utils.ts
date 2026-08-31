@@ -172,9 +172,7 @@ export const createTextGradientSx = (
     background: gradientStr,
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
-    // Hiding the glyphs through the fill alone, as the library does.
     WebkitTextFillColor: 'transparent',
-    // The gradient is for the button's own text nodes.
     '& > *': {
       WebkitTextFillColor: 'currentColor',
     },

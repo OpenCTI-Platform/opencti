@@ -11,10 +11,6 @@ import {
   writeSelectedMenu,
 } from './navBarConstants';
 
-/**
- * These constants and helpers are a cross-component contract, not internals of the rail: seven floating toolbars
- * offset themselves by the widths, and ten components read the collapsed flag straight out of localStorage.
- */
 describe('navBarConstants', () => {
   afterEach(() => {
     localStorage.clear();
@@ -34,8 +30,6 @@ describe('navBarConstants', () => {
   });
 
   it('defaults to a collapsed rail when nothing was ever persisted', () => {
-    // Iso-functional with the component this replaced and with the ten other
-    // readers, which all spell it `localStorage.getItem('navOpen') === 'true'`.
     expect(readNavOpen()).toBe(false);
   });
 

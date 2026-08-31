@@ -269,10 +269,6 @@ export const itemColor = (
   return stringToColour(normalizedType, reversed);
 };
 
-/**
- * The library Chip's `entity` value for an OpenCTI entity type, or undefined when the type has
- * no equivalent and should stay on the neutral tone.
- */
 export type ChipEntityValue
   = | 'analyses' | 'cases' | 'events' | 'observations' | 'all-threats'
     | 'arsenal' | 'techniques' | 'victimology' | 'location';
@@ -296,7 +292,6 @@ export const itemEntity = (type: string | null | undefined): ChipEntityValue | u
   return family ? FAMILY_TO_CHIP_ENTITY[family] : undefined;
 };
 
-/** True when `color`, painted as the usual 20% wash, is actually distinguishable from the surface behind it. */
 const toLab = (rgb: [number, number, number]): [number, number, number] => {
   const inv = (v: number) => {
     const x = v / 255;

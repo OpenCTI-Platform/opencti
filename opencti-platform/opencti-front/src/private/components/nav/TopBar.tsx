@@ -129,7 +129,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     : 0;
   const isNewNewsFeed = newsFeedCount > 0;
   const hasUnread = isNewNotification || isNewNewsFeed;
-  // The bar shows a dot, never a count; the total is still announced.
   const unreadCount = (notificationsNumber !== null ? notificationsNumber : (data.myUnreadNotificationsCount ?? 0)) + newsFeedCount;
   const subConfig = useMemo(
     () => ({
@@ -166,7 +165,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   useEffect(() => {
     page();
   }, [location.pathname]);
-  // The library's Menu owns its own anchoring, so the product only tracks openness.
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
 
@@ -238,7 +236,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         fullWidth={false}
         style={{
           position: 'fixed',
-          // The three banner offsets stack, exactly as the Toolbar's marginTop did.
           top: bannerHeightNumber + settingsMessagesBannerHeight + topBannerHeight,
           left: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
           right: 0,
@@ -279,8 +276,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               }
             </>
           </Security>
-          {/* The rule belongs to the cluster that follows it, and only draws
-              when an AI cluster precedes it. */}
           <HeaderGroup separatorBefore={showAiCluster}>
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
@@ -327,7 +322,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </Security>
             )}
             <Menu open={menuOpen} onOpenChange={setMenuOpen}>
-              {/* MenuTrigger + asChild around an IconButton is the library's canonical pairing. */}
               <MenuTrigger asChild>
                 <IconButton
                   priority="tertiary"

@@ -14,11 +14,9 @@ interface BreadcrumbsProps {
   elements: element[];
   noMargin?: boolean;
   isSensitive?: boolean;
-  /** Content shown beside the path — an information icon and its tooltip, a status marker. */
   adornment?: ReactNode;
 }
 
-/** The page path, rendered by the design-system Breadcrumbs. */
 const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin = false, isSensitive = false, adornment }) => {
   const { t_i18n } = useFormatter();
 
@@ -30,8 +28,6 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
     ...(!current && link ? { to: link } : {}),
   }));
 
-  // The sensitive-zone chip is not a path entry, so it goes in the adornment slot rather than
-  // inside the list.
   const beside = isSensitive ? (
     <>
       <span className="ml-2">

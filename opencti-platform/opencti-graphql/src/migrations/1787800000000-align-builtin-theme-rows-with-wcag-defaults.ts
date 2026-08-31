@@ -35,7 +35,6 @@ export type BuiltInThemeName = keyof typeof SUPERSEDED;
 
 const CURRENT = { Dark: DARK_DEFAULTS, Light: LIGHT_DEFAULTS } as const;
 
-/** The fields `1787822440159-add-filigran-built-in-themes` compares (`ThemeDefaultComparable`). */
 const COMPARED_FIELDS = [
   'theme_background', 'theme_paper', 'theme_nav', 'theme_primary', 'theme_secondary',
   'theme_accent', 'theme_text_color', 'theme_logo', 'theme_logo_collapsed', 'theme_logo_login',
@@ -48,7 +47,6 @@ const knownValues = (themeName: BuiltInThemeName, key: string): string[] => [
   ...((SUPERSEDED[themeName] as Record<string, readonly string[]>)[key] ?? []),
 ];
 
-/** True when every compared field still holds a value we shipped. */
 export const isRowOnDefaults = (
   themeName: BuiltInThemeName,
   row: Record<string, string | undefined>,
@@ -58,7 +56,6 @@ export const isRowOnDefaults = (
   return knownValues(themeName, key).some((known) => known.toLowerCase() === value.toLowerCase());
 });
 
-/** Pure part of the migration, so the guard is testable without a database. */
 export const patchesForTheme = (
   themeName: BuiltInThemeName,
   row: Record<string, string | undefined>,

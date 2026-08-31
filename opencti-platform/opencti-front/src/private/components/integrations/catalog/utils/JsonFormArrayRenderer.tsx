@@ -51,13 +51,9 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
     <Box sx={{ mb: 2 }}>
       <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>{label}</Typography>
       <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>{description}</Typography>
-      {/* `freeSolo` over an empty option list is a pure free-text tag input, and it is exactly what
-          allowCustomValue + createValueFromInput are for. */}
       <Combobox<string>
         labelPosition="none"
         multiple
-        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel closed
-        // after each pick.
         closeOnSelect
         allowCustomValue
         createValueFromInput={(input) => input}

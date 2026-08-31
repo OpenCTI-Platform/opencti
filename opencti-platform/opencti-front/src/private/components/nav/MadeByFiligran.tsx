@@ -2,7 +2,6 @@ import React from 'react';
 import { useFormatter } from '../../../components/i18n';
 import logoFiligran from '../../../static/images/logo_filigran_full.svg';
 
-/** "Made by Filigran" signature, pinned to the bottom of the rail. */
 const WORDMARK_HEIGHT = 12;
 
 const MadeByFiligran: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
@@ -12,8 +11,6 @@ const MadeByFiligran: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
       style={{
         display: 'flex',
         alignItems: 'center',
-        // The row is our own container, spanning the rail's full width, so centring lands
-        // exactly on the axis of the icons above (measured in the running product).
         justifyContent: collapsed ? 'center' : 'flex-start',
         gap: 4,
         height: 36,

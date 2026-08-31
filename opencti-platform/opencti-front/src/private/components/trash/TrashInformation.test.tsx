@@ -1,4 +1,3 @@
-/** The breadcrumb adornment on the trash page must be reachable by keyboard. */
 import React from 'react';
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
@@ -21,8 +20,6 @@ describe('the trash breadcrumb adornment', () => {
     const { user } = renderTrail();
     const link = screen.getByRole('link', { name: 'Data' });
 
-    // Walk the tab order from the start of the document and collect what the keyboard actually lands on, so the
-    // assertion is about reachability and not about an element merely existing in the DOM.
     const reached: string[] = [];
     for (let step = 0; step < 4; step += 1) {
       await user.tab();

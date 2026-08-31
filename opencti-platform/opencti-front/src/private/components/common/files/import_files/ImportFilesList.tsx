@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Box, Collapse, Grid, List, ListItem, Tooltip, Typography } from '@mui/material';
-// The configuration picker is single-value and the connector picker is multi-value, so a library Select and a
-// library Combobox sit on the same row; the Select is aliased because the file also names a Combobox.
 import {
   Combobox,
   ComboboxChips,

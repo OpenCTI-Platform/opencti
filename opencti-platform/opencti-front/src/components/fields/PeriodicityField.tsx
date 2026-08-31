@@ -102,7 +102,6 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                 {label || t_i18n('Periodicity')}
               </InputLabel>
               <Box display="flex" gap={1} alignItems="flex-end">
-                {/* The library Input, not a raw MUI one: this is the validity period the pass names. */}
                 <Box style={{ flex: 1 }}>
                   <Input
                     type="number"

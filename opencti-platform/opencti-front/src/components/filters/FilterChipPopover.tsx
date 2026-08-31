@@ -534,8 +534,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       slotProps={{
         paper: {
           elevation: 1,
-          // Filter popovers: surface on `--bg-elevation-highlight` at layer 1,
-          // the fields inside at layer 2. See utils/fdsLayer.ts.
           className: fdsLayerClass(FILTER_POPOVER_LAYER),
           sx: { ...filterPopoverPaperSx, marginTop: '10px' },
         },

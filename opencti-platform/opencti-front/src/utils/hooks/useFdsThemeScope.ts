@@ -30,7 +30,6 @@ const useFdsThemeScope = (
       root.style.setProperty(SURFACE_BASE, customPaperColor);
       root.style.setProperty(BORDER_BASE, customPaperColor);
     } else {
-      // Back to a built-in theme: hand the ramp back rather than leave a stale override.
       root.style.removeProperty(SURFACE_BASE);
       root.style.removeProperty(BORDER_BASE);
     }

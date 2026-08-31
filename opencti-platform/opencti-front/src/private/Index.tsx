@@ -137,7 +137,6 @@ const Index = ({ settings }: IndexProps) => {
                         )
                       : boundaryWrapper(HomeDashboard)}
                   />
-                  {/* Search need to be rework */}
                   <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
                   <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
                   <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
@@ -147,7 +146,6 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
                   <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
                   <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
-                  {/* Need to refactor below */}
                   <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
                   <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
                   <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />

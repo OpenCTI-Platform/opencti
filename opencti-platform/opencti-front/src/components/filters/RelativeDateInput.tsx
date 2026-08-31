@@ -120,7 +120,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         slotProps={{
           input: {
             endAdornment: (
-              // A flex row with a real gap, NOT negative margins.
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                 {dateInput[valueOrder] && (
                   <IconButton

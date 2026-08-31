@@ -62,7 +62,6 @@ interface PublicDashboardCreationFormComponentProps {
   onCompleted?: () => void;
 }
 
-/** 16px between fields, per the visual pass on this dialog. */
 const publicDashboardFieldSpacing = { marginTop: 16, width: '100%' };
 
 const PublicDashboardCreationFormComponent = ({

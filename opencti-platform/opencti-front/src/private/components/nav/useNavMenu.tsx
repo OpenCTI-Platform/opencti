@@ -99,22 +99,16 @@ import useGranted, {
 import useHelper from '../../../utils/hooks/useHelper';
 import useImportAccess from '../../../utils/hooks/useImportAccess';
 
-/** A navigable row nested under a top-level entry. */
 export interface NavSubItem {
   link: string;
   label: string;
   icon?: React.ReactNode;
-  /** Match the route exactly instead of by prefix. */
   exact?: boolean;
-  /** Entity type this row exposes. */
   type?: string;
-  /** Capability-based visibility, already resolved by the caller. */
   granted?: boolean;
 }
 
-/** A top-level navigation entry, with or without a submenu. */
 export interface NavItem {
-  /** Stable identifier. */
   id: string;
   label: string;
   icon: React.ReactNode;
@@ -123,19 +117,16 @@ export interface NavItem {
   subItems?: NavSubItem[];
 }
 
-/** A run of entries rendered between two separators. */
 export interface NavGroup {
   id: string;
   items: NavItem[];
 }
 
-/** The shape the tree is *declared* in, before filtering. */
 export interface RawNavGroup {
   id: string;
   items: (NavItem | false | null | undefined)[];
 }
 
-/** Builds the navigation tree, fully filtered. */
 const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
   const { me: { draftContext } } = useAuth();
@@ -168,7 +159,6 @@ const useNavMenu = (): NavGroup[] => {
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isDataHealthEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
 
-  // `<Security>` wrappers, one per group, verbatim capability lists.
   const canSeeExplore = useGranted([EXPLORE]);
   const canSeeInvestigation = useGranted([INVESTIGATION]);
   const canSeePir = useGranted([PIRAPI]);
@@ -412,11 +402,6 @@ const useNavMenu = (): NavGroup[] => {
   return filterNavGroups(groups, hiddenEntities.filter((e): e is string => !!e));
 };
 
-/**
- * Drops every falsy entry produced by the conditional expressions above, then applies the row-
- * level `granted` flag and the hidden-entity filter, and finally removes groups that ended up
- * empty so no separator is rendered against nothing.
- */
 export const filterNavGroups = (
   groups: (RawNavGroup | false)[],
   hiddenEntities: string[],

@@ -5,15 +5,12 @@ import { Header } from '@filigran/design-system';
 import { describe, expect, it } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 
-/** The fixed/glass doctrine of the bar, which regressed once with nothing to catch it. */
-
 const read = (f: string) => readFileSync(path.resolve(f), 'utf8');
 
 describe('the bar keeps its fixed/glass treatment', () => {
   it('the library still paints the glass on the Header we consume', () => {
     const { container } = testRender(<Header>bar</Header>);
     const root = container.firstElementChild as HTMLElement;
-    // 94% over a 4px backdrop blur, on the root layer.
     expect(root.className).toContain('backdrop-blur-sm');
     expect(root.className).toContain('before:bg-gradient-default');
     expect(root.className).toContain('before:opacity-94');

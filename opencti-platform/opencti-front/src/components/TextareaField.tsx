@@ -11,10 +11,6 @@ export type TextareaFieldProps = FieldProps<string> & Omit<TextareaProps, 'error
   onSubmit?: (name: string, value: string) => void;
 };
 
-/**
- * Formik adapter for the design-system Textarea — the multi-line counterpart of components/TextField.tsx, and the
- * reason the conversion is one component and not 26 call- site rewrites.
- */
 const TextareaField = (props: TextareaFieldProps) => {
   const {
     form: { setFieldValue, setFieldTouched, submitCount },

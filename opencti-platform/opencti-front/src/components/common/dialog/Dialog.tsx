@@ -38,13 +38,10 @@ const Dialog = ({
       onClose={onClose}
       slotProps={{
         paper: {
-          // A dialog is a layer-2 surface: the class re-declares the elevation aliases, `layerInputVars` carries
-          // the three input backgrounds the library's own .layer-N blocks forget.
           className: fdsLayerClass(SURFACE_LAYER),
           sx: {
             ...layerInputVars,
             paddingTop: 3,
-            // Symmetric with paddingTop.
             paddingBottom: 3,
           },
         },

@@ -70,7 +70,6 @@ const styles = (theme) => ({
     flex: 'auto',
   },
   views: {
-    // No `marginTop: -5`.
     display: 'flex',
   },
   linesContainer: {
@@ -421,7 +420,6 @@ class ListLines extends Component {
             </div>
           </div>
         )}
-        {/* The chips are a ROW OF THEIR OWN, below the filter row and only when filters are active. */}
         <FilterIconButton
           helpers={helpers}
           availableFilterKeys={availableFilterKeys}
@@ -559,7 +557,6 @@ class ListLines extends Component {
           )}
           {handleSwitchRedirectionMode && (
             <Dialog
-              // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
               slotProps={{
                 paper: {
                   className: fdsLayerClass(SURFACE_LAYER),
@@ -576,7 +573,6 @@ class ListLines extends Component {
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
             >
-              {/* A real DialogTitle. */}
               <DialogTitle>{t('List settings')}</DialogTitle>
               <FormControl style={{ width: '100%' }}>
                 <Select

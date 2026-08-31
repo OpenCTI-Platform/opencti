@@ -21,7 +21,6 @@ const useStyles = makeStyles({
   },
 });
 
-/** Composition: the EE badge is a sibling at a 4px gap to the button's right, so each keeps its own box. */
 const eeRow: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 4 };
 
 const EnterpriseEditionButton = ({
@@ -60,7 +59,6 @@ const EnterpriseEditionButton = ({
           <Button
             size={size}
             variant="secondary"
-            // color="ee"
             onClick={() => setOpenEnterpriseEditionConsent(true)}
             startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
             disabled={disabled}

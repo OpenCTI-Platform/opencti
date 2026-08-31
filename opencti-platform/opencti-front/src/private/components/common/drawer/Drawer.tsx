@@ -230,7 +230,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         slotProps={{
           paper: {
             ref,
-            // A drawer is a layer-2 surface.
             className: fdsLayerClass(SURFACE_LAYER),
             sx: {
               ...layerInputVars,
@@ -244,8 +243,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
               }),
               paddingTop: `${bannerHeightNumber}px`,
               paddingBottom: `${bannerHeightNumber}px`,
-              // The sheet itself, so the banner gutters above and below the
-              // body match it instead of showing MUI's own Paper colour.
               backgroundColor: 'var(--bg-elevation-default)',
             },
           },
@@ -266,8 +263,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           className={classes.container}
           style={{
             ...containerStyle,
-            // Figma node 5415-3010. The alias is correct now that the paper
-            // declares layer 2 -- it resolves to the layer-2 value here.
             backgroundColor: 'var(--bg-elevation-default)',
           }}
         >

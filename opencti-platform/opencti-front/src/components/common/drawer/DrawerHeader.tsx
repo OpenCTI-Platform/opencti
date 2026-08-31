@@ -6,7 +6,6 @@ import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fds
 
 interface DrawerHeaderProps {
   title: string;
-  /** The elevation layer this header sits on. */
   layer?: Parameters<typeof fdsLayerClass>[0];
   onClose?: () => void;
   endContent?: React.ReactNode;
@@ -19,7 +18,6 @@ const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: Dra
       className={fdsLayerClass(layer)}
       sx={{
         ...layerInputVars,
-        // Resolves to the layer-2 value: the drawer paper declares layer 2.
         backgroundColor: 'var(--bg-elevation-heading)',
         paddingX: 3,
         paddingY: 2,

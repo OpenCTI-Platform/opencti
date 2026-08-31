@@ -3,8 +3,6 @@ import { Select, SelectContent, SelectHelperText, SelectItem, SelectLabel, Selec
 import { FieldProps, useField } from 'formik';
 import { isNilField } from '../../utils/utils';
 
-/** Formik adapter for the library `Select` — what `SelectField` is for MUI's. */
-
 export type SelectFieldFdsProps = FieldProps<string> & {
   label?: ReactNode;
   helpertext?: ReactNode;
@@ -13,7 +11,6 @@ export type SelectFieldFdsProps = FieldProps<string> & {
   disabled?: boolean;
   containerstyle?: React.CSSProperties;
   className?: string;
-  /** MUI parity. */
   fullWidth?: boolean;
   children?: ReactNode;
   onChange?: (name: string, value: string) => void;
@@ -74,7 +71,6 @@ const SelectFieldFds = ({
         <SelectTrigger className={fullWidth ? 'w-full' : undefined}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        {/* Named after its field. */}
         <SelectContent aria-label={typeof label === 'string' ? label : undefined}>
           {children}
         </SelectContent>

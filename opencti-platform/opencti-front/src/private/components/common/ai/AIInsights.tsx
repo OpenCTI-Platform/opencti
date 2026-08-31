@@ -359,8 +359,6 @@ const AIInsights = ({
             getOptionLabel={(option) => option?.name ?? ''}
             value={selectedAgent ?? null}
             onValueChange={(next) => handleAgentChange(next as AgentOption | null)}
-            // Replaces the CircularProgress hand-mounted in the input's
-            // endAdornment: the field renders its own busy state.
             loading={loadingAgents}
             disabled={agentOptions.length === 0 || loading}
           >
