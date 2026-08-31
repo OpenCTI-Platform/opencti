@@ -3,10 +3,11 @@ import { Divider, Grid } from '@mui/material';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
-// fds:keep-mui the library Switch has no product precedent yet, and this control is
-// mounted inside MUI's `FormControlLabel`, which injects `checked`/`onChange` into its
-// `control` element -- a swap silently drops the handler. Tracked in
-// fds-migration/LIBRARY-FEEDBACK.md #58.
+// This control is mounted inside MUI's `FormControlLabel`, which injects
+// `checked`/`onChange` into its `control` element: swapping the child alone
+// silently drops the handler, and the library Switch has no product precedent
+// yet to copy. Recorded in fds-migration/LIBRARY-FEEDBACK.md #59.
+// fds:keep-mui FormControlLabel injects the handler into its control; see LIBRARY-FEEDBACK #59
 import Switch from '@mui/material/Switch';
 import { graphql } from 'react-relay';
 import { InformationOutline } from 'mdi-material-ui';
