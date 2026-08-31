@@ -65,7 +65,6 @@ const investigationToContainerMutation = graphql`
 
 const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainerDialogProps> = ({ workspace, open, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const [containerCreation, setContainerCreation] = useState(false);
   const [actionsInputs, setActionsInputs] = useState<ActionInputs | null>(null);
   const [targetContainerId, setTargetContainerId] = useState('');
@@ -191,19 +190,13 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       />
       <Combobox<EntityValue>
         multiple
-        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel closed
-        // after each pick.
-        closeOnSelect
         options={containersFromElements}
-        // `actionsInputs.value` is declared as the loose FilterOption while the options are the
-        // narrower FilterOptionValue.
         value={actionsInputs?.value ? [actionsInputs.value as EntityValue] : []}
         onValueChange={(next, meta) => handleChangeActionInputValues(
           meta.event,
           (next ?? []) as EntityValue[],
         )}
         inputValue={actionsInputs?.inputValue || ''}
-        // Keystroke only.
         onInputChange={(userInput: string, meta: ComboboxChangeMeta) => {
           if (meta.cause === 'type' && meta.event) searchContainers(meta.event, userInput);
         }}
@@ -212,26 +205,24 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
         clearable={false}
         renderOption={(option) => (
           <>
-            <div style={{
-              display: 'inline-block',
-              paddingTop: 4,
-              marginRight: theme.spacing(1),
-            }}
-            >
+            <div style={{ padding: '4px' }}>
               <ItemIcon type={option.type} />
             </div>
-            <div style={{
-              display: 'inline-block',
-              flexGrow: 1,
-            }}
-            >
-              {option.label}
-            </div>
+            <div style={{ marginLeft: 10 }}>{option.label}</div>
           </>
         )}
       >
         <ComboboxLabel>{t_i18n('Container')}</ComboboxLabel>
-        <ComboboxField>
+        <ComboboxField adornment={(
+          <IconButton
+            aria-label={t_i18n('Create')}
+            onClick={() => setContainerCreation(true)}
+            size="small"
+          >
+            <AddOutlined />
+          </IconButton>
+        )}
+        >
           <ComboboxChips />
           <ComboboxInput />
           <ComboboxControls>
@@ -243,13 +234,6 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           listAriaLabel={t_i18n('Container')}
         />
       </Combobox>
-      <IconButton
-        aria-label={t_i18n('Add')}
-        onClick={() => setContainerCreation(true)}
-        style={{ position: 'absolute', top: 68, right: 48 }}
-      >
-        <AddOutlined />
-      </IconButton>
       <DialogActions>
         <Button variant="secondary" onClick={() => handleClose()}>
           {t_i18n('Cancel')}

@@ -480,7 +480,15 @@ const StixDomainObjectHeader = (props) => {
         titleRight={
           typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
-              <FormControl variant="outlined">
+              <FormControl
+                variant="outlined"
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 1,
+                  '&& > *': { marginBottom: 0, whiteSpace: 'nowrap', flexShrink: 0 },
+                }}
+              >
                 <Select
                   name="view-as"
                   value={viewAs}
@@ -651,7 +659,7 @@ const StixDomainObjectHeader = (props) => {
                   onClick={handleToggleOpenAliases}
                   size="small"
                   variant="tertiary"
-                  startIcon={openAlias ? <Close fontSize="small" /> : <Add fontSize="small" />}
+                  startIcon={openAlias ? <Close sx={{ fontSize: 16 }} /> : <Add sx={{ fontSize: 16 }} />}
                 >
                   {t_i18n('add alias')}
                 </Button>

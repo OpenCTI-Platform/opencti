@@ -1,7 +1,7 @@
 import React from 'react';
 import { FieldProps } from 'formik';
 import FormControl from '@mui/material/FormControl';
-import { ButtonGroup, FormLabel } from '@mui/material';
+import { FormLabel, Stack } from '@mui/material';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@common/button/Button';
@@ -43,7 +43,7 @@ const CheckboxesField = ({
     <FormControl component="fieldset" name={name}>
       <FormLabel component="legend">{label}</FormLabel>
 
-      <ButtonGroup size="small" sx={{ marginY: 1.5 }}>
+      <Stack direction="row" spacing={1} sx={{ marginY: 1.5 }}>
         <Button
           disabled={items.length === 0}
           variant={(items.length > 0 && value.length === items.length) ? 'primary' : 'secondary'}
@@ -58,12 +58,13 @@ const CheckboxesField = ({
         >
           {t_i18n('None')}
         </Button>
-      </ButtonGroup>
+      </Stack>
 
       <FormGroup sx={{
         maxHeight: '300px',
         flexWrap: 'nowrap',
         overflowY: 'auto',
+        pl: '11px',
       }}
       >
         {items.map((item) => (
@@ -77,6 +78,11 @@ const CheckboxesField = ({
                 onCheckedChange={() => toggle(item)}
               />
             )}
+            sx={{
+              '& .MuiFormControlLabel-label': {
+                ml: 1,
+              },
+            }}
           />
         ))}
       </FormGroup>

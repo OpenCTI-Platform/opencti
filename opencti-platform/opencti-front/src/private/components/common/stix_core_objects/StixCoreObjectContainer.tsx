@@ -225,6 +225,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
               <div style={{ marginLeft: 10 }}>{option.label}</div>
             </>
           )}
+          getOptionLabel={(option) => option.label}
         >
           <ComboboxLabel>{t_i18n('Values')}</ComboboxLabel>
           {/* #155: the create control is interactive, so it takes the

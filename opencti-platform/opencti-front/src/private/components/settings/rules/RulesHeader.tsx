@@ -120,7 +120,6 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
         variant="small"
         onSubmit={helpers.handleSearch}
         keyword={viewStorage.searchTerm ?? ''}
-        style={{ marginBottom: theme.spacing(3) }}
       />
       <Grid container spacing={3}>
         <Grid size={{ xs: 6 }} container spacing={3}>
