@@ -13,7 +13,7 @@ const IngestionSchedulingField = ({ handleSubmitField }: IngestionSchedulingProp
   return (
     <Field
       component={SelectFieldFds}
-      variant="standard"
+      variant="outlined"
       name="scheduling_period"
       label={t_i18n('Schedule period')}
       fullWidth={true}

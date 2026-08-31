@@ -682,7 +682,7 @@ const StixDomainObjectHeader = (props) => {
               <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="new_alias"
                   autoFocus={true}
                   placeholder={t_i18n('New alias')}
@@ -757,7 +757,7 @@ const StixDomainObjectHeader = (props) => {
                 <Form>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="new_alias"
                     autoFocus={true}
                     fullWidth={true}

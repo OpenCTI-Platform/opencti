@@ -45,13 +45,13 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
                   >
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.name`}
                       label={t_i18n('Header name')}
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.value`}
                       label={t_i18n('Header value')}
                     />

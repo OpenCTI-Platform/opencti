@@ -186,7 +186,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -240,7 +240,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="source"
             label={t_i18n('Source')}
             required={(mandatoryAttributes.includes('source'))}

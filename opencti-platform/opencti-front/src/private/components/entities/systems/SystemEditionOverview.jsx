@@ -194,7 +194,7 @@ const SystemEditionOverviewComponent = (props) => {
           <AlertConfidenceForEntity entity={system} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             disabled={external}
             label={t_i18n('Name')}

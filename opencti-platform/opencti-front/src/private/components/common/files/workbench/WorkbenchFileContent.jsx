@@ -1825,7 +1825,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -1836,7 +1836,7 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
@@ -1907,7 +1907,7 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
@@ -2114,7 +2114,7 @@ const WorkbenchFileContentComponent = ({
             {targetsFrom.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="targets_from"
                 title={t_i18n('relationship_targets')}
                 fullWidth
@@ -2137,7 +2137,7 @@ const WorkbenchFileContentComponent = ({
             {usesFrom.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="uses_from"
                 title={t_i18n('relationship_uses')}
                 fullWidth
@@ -2155,7 +2155,7 @@ const WorkbenchFileContentComponent = ({
             {attributedToFrom.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="attributed-to_from"
                 title={t_i18n('relationship_attributed-to')}
                 fullWidth
@@ -2167,7 +2167,7 @@ const WorkbenchFileContentComponent = ({
             {targetsTo.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="targets_to"
                 title={t_i18n('relationship_targets')}
                 fullWidth
@@ -2186,7 +2186,7 @@ const WorkbenchFileContentComponent = ({
             {attributedToTo.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="attributed-to_to"
                 title={t_i18n('relationship_attributed-to') + t_i18n(' (reversed)')}
                 fullWidth
@@ -2198,7 +2198,7 @@ const WorkbenchFileContentComponent = ({
             {usesTo.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="uses_to"
                 title={t_i18n('relationship_uses') + t_i18n(' (reversed)')}
                 fullWidth
@@ -2296,7 +2296,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds={true}
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -2307,7 +2307,7 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
@@ -2359,7 +2359,7 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
@@ -2519,7 +2519,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -2531,7 +2531,7 @@ const WorkbenchFileContentComponent = ({
                             <div key={attribute}>
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes.MD5"
                                 label={t_i18n('hash_md5')}
                                 fullWidth
@@ -2539,7 +2539,7 @@ const WorkbenchFileContentComponent = ({
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes_SHA-1"
                                 label={t_i18n('hash_sha-1')}
                                 fullWidth
@@ -2547,7 +2547,7 @@ const WorkbenchFileContentComponent = ({
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes_SHA-256"
                                 label={t_i18n('hash_sha-256')}
                                 fullWidth
@@ -2555,7 +2555,7 @@ const WorkbenchFileContentComponent = ({
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes.SHA-512"
                                 label={t_i18n('hash_sha-512')}
                                 fullWidth
@@ -2568,7 +2568,7 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
@@ -2639,7 +2639,7 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
@@ -2758,7 +2758,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -2769,7 +2769,7 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
@@ -2843,7 +2843,7 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
@@ -4223,7 +4223,7 @@ const WorkbenchFileContentComponent = ({
               )}
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth
@@ -4292,7 +4292,7 @@ const WorkbenchFileContentComponent = ({
               )}
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth

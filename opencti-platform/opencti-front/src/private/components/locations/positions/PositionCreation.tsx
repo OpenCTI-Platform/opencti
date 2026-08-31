@@ -257,7 +257,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -283,7 +283,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="latitude"
               label={t_i18n('Latitude')}
               required={(mandatoryAttributes.includes('latitude'))}
@@ -292,7 +292,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="longitude"
               label={t_i18n('Longitude')}
               required={(mandatoryAttributes.includes('longitude'))}
@@ -301,7 +301,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="street_address"
               label={t_i18n('Street address')}
               required={(mandatoryAttributes.includes('street_address'))}
@@ -310,7 +310,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="postal_code"
               required={(mandatoryAttributes.includes('postal_code'))}
               label={t_i18n('Postal code')}

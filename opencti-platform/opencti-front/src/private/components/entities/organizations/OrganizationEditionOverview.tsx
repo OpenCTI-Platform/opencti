@@ -251,7 +251,7 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
           <AlertConfidenceForEntity entity={organization} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -326,7 +326,7 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="x_opencti_score"
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}

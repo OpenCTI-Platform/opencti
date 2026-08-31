@@ -413,7 +413,7 @@ const OidcProviderForm = ({
                 {/* Mandatory fields */}
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Configuration name')}
                   fullWidth
@@ -464,7 +464,7 @@ const OidcProviderForm = ({
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="identifier_override"
                         label={t_i18n('Provider identifier')}
                         placeholder={slugifyIdentifier(values.name) || undefined}
@@ -489,7 +489,7 @@ const OidcProviderForm = ({
                         <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             name="callback_url"
                             label={t_i18n('Callback URL override')}
                             fullWidth
@@ -509,7 +509,7 @@ const OidcProviderForm = ({
                 </Accordion>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="description"
                   label={t_i18n('Description')}
                   fullWidth
@@ -520,7 +520,7 @@ const OidcProviderForm = ({
 
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="issuer"
                   label={t_i18n('Issuer')}
                   fullWidth
@@ -529,7 +529,7 @@ const OidcProviderForm = ({
                 />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="client_id"
                   label={t_i18n('Client ID')}
                   fullWidth
@@ -548,7 +548,7 @@ const OidcProviderForm = ({
                 <AuthProviderUserInfoFields />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="button_label_override"
                   label={t_i18n('Login button label')}
                   fullWidth
@@ -575,7 +575,7 @@ const OidcProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="scopes"
                       label={t_i18n('Scopes (comma-separated, defaults to openid email profile)')}
                       fullWidth
@@ -583,7 +583,7 @@ const OidcProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="audience"
                       label={t_i18n('Audience')}
                       fullWidth
@@ -591,7 +591,7 @@ const OidcProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="logout_callback_url"
                       label={t_i18n('Logout callback URL')}
                       fullWidth
@@ -639,7 +639,7 @@ const OidcProviderForm = ({
                             >
                               <Field
                                 component={SelectFieldFds}
-                                variant="standard"
+                                variant="outlined"
                                 name={`extra_conf[${index}].type`}
                                 label={t_i18n('Type')}
                                 containerstyle={{ width: '20%' }}
@@ -650,14 +650,14 @@ const OidcProviderForm = ({
                               </Field>
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name={`extra_conf[${index}].key`}
                                 label={t_i18n('Key')}
                                 fullWidth
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name={`extra_conf[${index}].value`}
                                 label={t_i18n('Value')}
                                 fullWidth

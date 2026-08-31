@@ -149,7 +149,7 @@ const FileIndexingConfiguration: FunctionComponent<
             </List>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="max_file_size"
               label={t_i18n('Max file size (in MB)')}
               fullWidth={true}

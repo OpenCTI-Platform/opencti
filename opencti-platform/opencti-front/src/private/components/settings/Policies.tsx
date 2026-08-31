@@ -251,7 +251,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Card title={t_i18n('Platform Banner Configuration')}>
                       <Field
                         component={SelectFieldFds}
-                        variant="standard"
+                        variant="outlined"
                         name="platform_banner_level"
                         label={t_i18n('Platform banner level')}
                         fullWidth={true}
@@ -268,7 +268,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       </Field>
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         className="mt-5"
                         name="platform_banner_text"
                         label={t_i18n('Platform banner text')}
@@ -289,7 +289,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         multiline={true}
                         rows="3"
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                       <Field
                         component={MarkdownField}
@@ -298,7 +298,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         fullWidth
                         style={{ marginTop: 20 }}
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                       <Field
                         component={MarkdownField}
@@ -308,7 +308,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         style={{ marginTop: 20 }}
                         height={38}
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                     </Card>
                   </Grid>
@@ -324,7 +324,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         multiline={true}
                         rows={3}
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                     </Card>
                   </Grid>

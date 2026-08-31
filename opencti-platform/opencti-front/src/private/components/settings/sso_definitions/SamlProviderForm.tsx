@@ -467,7 +467,7 @@ const SamlProviderForm = ({
                 {/* Mandatory fields */}
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Configuration name')}
                   fullWidth
@@ -518,7 +518,7 @@ const SamlProviderForm = ({
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="identifier_override"
                         label={t_i18n('Provider identifier')}
                         placeholder={slugifyIdentifier(values.name) || undefined}
@@ -543,7 +543,7 @@ const SamlProviderForm = ({
                         <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             name="callback_url"
                             label={t_i18n('Callback URL override')}
                             fullWidth
@@ -563,7 +563,7 @@ const SamlProviderForm = ({
                 </Accordion>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="description"
                   label={t_i18n('Description')}
                   fullWidth
@@ -574,7 +574,7 @@ const SamlProviderForm = ({
 
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="issuer"
                   label={t_i18n('Issuer')}
                   fullWidth
@@ -583,7 +583,7 @@ const SamlProviderForm = ({
                 />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="entry_point"
                   label={t_i18n('Entry point')}
                   fullWidth
@@ -592,7 +592,7 @@ const SamlProviderForm = ({
                 />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="idp_certificate"
                   label={t_i18n('IDP certificate')}
                   fullWidth
@@ -614,7 +614,7 @@ const SamlProviderForm = ({
                 <AuthProviderUserInfoFields />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="button_label_override"
                   label={t_i18n('Login button label')}
                   fullWidth
@@ -641,7 +641,7 @@ const SamlProviderForm = ({
                     />
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name="signature_algorithm"
                       label={t_i18n('Signature algorithm')}
                       fullWidth
@@ -654,7 +654,7 @@ const SamlProviderForm = ({
                     </Field>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="digest_algorithm"
                       label={t_i18n('Digest algorithm')}
                       fullWidth
@@ -662,7 +662,7 @@ const SamlProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="identifier_format"
                       label={t_i18n('Identifier format (NameID)')}
                       fullWidth
@@ -670,7 +670,7 @@ const SamlProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="signing_cert"
                       label={t_i18n('Signing certificate')}
                       fullWidth
@@ -689,7 +689,7 @@ const SamlProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="decryption_cert"
                       label={t_i18n('Decryption certificate')}
                       fullWidth
@@ -738,7 +738,7 @@ const SamlProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="authn_context"
                       label={t_i18n('Authentication context (comma-separated)')}
                       fullWidth
@@ -746,7 +746,7 @@ const SamlProviderForm = ({
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="sso_binding_type"
                       label={t_i18n('SSO Binding type')}
                       fullWidth
@@ -794,7 +794,7 @@ const SamlProviderForm = ({
                             >
                               <Field
                                 component={SelectFieldFds}
-                                variant="standard"
+                                variant="outlined"
                                 name={`extra_conf[${index}].type`}
                                 label={t_i18n('Type')}
                                 containerstyle={{ width: '20%' }}
@@ -805,14 +805,14 @@ const SamlProviderForm = ({
                               </Field>
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name={`extra_conf[${index}].key`}
                                 label={t_i18n('Key')}
                                 fullWidth
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name={`extra_conf[${index}].value`}
                                 label={t_i18n('Value')}
                                 fullWidth

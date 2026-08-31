@@ -57,7 +57,7 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
         name="name"
         required
         component={TextField}
-        variant="standard"
+        variant="outlined"
         label={t_i18n('Name')}
         className="mt-5"
       />
@@ -71,7 +71,7 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
       <Field
         component={SelectFieldFds}
         required
-        variant="standard"
+        variant="outlined"
         name="pir_rescan_days"
         label={t_i18n('Rescan period (days)')}
         fullWidth={true}

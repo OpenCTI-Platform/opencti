@@ -122,7 +122,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 <Form>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="newTag"
                     aria-label="tag field"
                     autoFocus
@@ -147,7 +147,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
               <Form style={{ float: 'right' }}>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="newTag"
                   autoFocus
                   placeholder={t_i18n('New tag')}

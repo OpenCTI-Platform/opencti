@@ -225,7 +225,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             required={(mandatoryAttributes.includes('name'))}
             label={t_i18n('Name')}
@@ -238,7 +238,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             required={(mandatoryAttributes.includes('created'))}
             textFieldProps={{
               label: t_i18n('Request For Takedown Date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}

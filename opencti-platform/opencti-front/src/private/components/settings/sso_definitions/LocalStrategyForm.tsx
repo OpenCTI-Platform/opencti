@@ -186,7 +186,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             name="password_policy_min_length"
             label={t_i18n('Number of chars must be greater or equals to')}
             fullWidth
@@ -194,7 +194,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="password_policy_max_length"
             label={`${t_i18n('Number of chars must be lower or equals to')} (${t_i18n('0 equals no maximum')})`}
@@ -203,7 +203,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="password_policy_min_symbols"
             label={t_i18n('Number of symbols must be greater or equals to')}
@@ -212,7 +212,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="password_policy_min_numbers"
             label={t_i18n('Number of digits must be greater or equals to')}
@@ -221,7 +221,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="password_policy_min_words"
             label={t_i18n('Number of words (split on hyphen, space) must be greater or equals to')}
@@ -230,7 +230,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="password_policy_min_lowercase"
             label={t_i18n('Number of lowercase chars must be greater or equals to')}
@@ -239,7 +239,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="password_policy_min_uppercase"
             label={t_i18n('Number of uppercase chars must be greater or equals to')}
@@ -248,7 +248,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="password_policy_validity_days"
             label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}

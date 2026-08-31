@@ -648,7 +648,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
                                 : 'Enter values separated by commas')}
-                              variant="standard"
+                              variant="outlined"
                               fullWidth
                               helperText={helperText}
                             />
@@ -809,7 +809,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
                                         : 'Enter values separated by commas')}
-                                      variant="standard"
+                                      variant="outlined"
                                       fullWidth
                                       helperText={helperText}
                                     />

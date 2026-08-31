@@ -2061,7 +2061,7 @@ class DataTableToolBar extends Component {
       case 'confidence':
         return (
           <TextField
-            variant="standard"
+            variant="outlined"
             disabled={disabled}
             label={t('Values')}
             fullWidth={true}
@@ -2301,7 +2301,7 @@ class DataTableToolBar extends Component {
       default:
         return (
           <TextField
-            variant="standard"
+            variant="outlined"
             disabled={disabled}
             label={t('Values')}
             fullWidth={true}

@@ -92,7 +92,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                     onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)
                     }
                     disabled={!isEnterpriseEdition}
-                    variant="standard"
+                    variant="outlined"
                     helperText={(
                       <SubscriptionFocus
                         context={editContext}

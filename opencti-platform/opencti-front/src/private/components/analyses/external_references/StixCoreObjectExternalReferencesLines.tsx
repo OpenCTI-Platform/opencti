@@ -554,7 +554,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                 ? (
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name="configuration"
                       label={t_i18n('Configuration')}
                       fullWidth={true}

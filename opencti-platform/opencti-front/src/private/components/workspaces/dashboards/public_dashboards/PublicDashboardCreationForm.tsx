@@ -136,7 +136,7 @@ const PublicDashboardCreationFormComponent = ({
         <Form>
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="dashboard_id"
             label={t_i18n('Custom dashboard')}
             fullWidth={true}
@@ -161,7 +161,7 @@ const PublicDashboardCreationFormComponent = ({
           <Field
             name="name"
             component={TextField}
-            variant="standard"
+            variant="outlined"
             label={t_i18n('Name')}
             className="mt-5"
             onChange={(_: string, val: string) => {
@@ -172,7 +172,7 @@ const PublicDashboardCreationFormComponent = ({
             disabled
             name="uri_key"
             component={TextField}
-            variant="standard"
+            variant="outlined"
             label={t_i18n('Public dashboard URI KEY')}
             helperText={t_i18n('ID of your public dashboard')}
             style={fieldSpacingContainerStyle}

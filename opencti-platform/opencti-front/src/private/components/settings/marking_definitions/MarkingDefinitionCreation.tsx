@@ -108,14 +108,14 @@ const MarkingDefinitionCreation: FunctionComponent<
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="definition_type"
                 label={t_i18n('Type')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="definition"
                 label={t_i18n('Definition')}
                 fullWidth={true}
@@ -130,7 +130,7 @@ const MarkingDefinitionCreation: FunctionComponent<
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="x_opencti_order"
                 label={t_i18n('Order')}
                 fullWidth={true}

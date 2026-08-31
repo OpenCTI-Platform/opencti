@@ -164,7 +164,7 @@ class IdentityCreation extends Component {
               >
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
@@ -181,7 +181,7 @@ class IdentityCreation extends Component {
                 />
                 <Field
                   component={SelectFieldFds}
-                  variant="standard"
+                  variant="outlined"
                   name="type"
                   label={t('Entity type')}
                   fullWidth={true}

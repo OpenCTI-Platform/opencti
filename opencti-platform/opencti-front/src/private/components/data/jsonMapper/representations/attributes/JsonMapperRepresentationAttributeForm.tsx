@@ -96,7 +96,7 @@ const JsonMapperRepresentationAttributeForm: FunctionComponent<
       <div>
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${name}.attr_path.path`}
           // value={value?.attr_path?.path ?? ''}
           // onChange={(_: unknown, val: string) => onPathChange(val)}

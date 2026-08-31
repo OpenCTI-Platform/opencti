@@ -129,14 +129,14 @@ const UserTokenCreationForm: FunctionComponent<UserTokenCreationFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
           />
           <Field
             component={SelectFieldFds}
-            variant="standard"
+            variant="outlined"
             name="duration"
             label={t_i18n('Duration')}
             fullWidth={true}

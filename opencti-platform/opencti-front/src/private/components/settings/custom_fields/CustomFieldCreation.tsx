@@ -128,7 +128,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
             <Form>
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="field_type"
                 label={t_i18n('Field type')}
                 fullWidth={true}
@@ -147,7 +147,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                 <>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="label"
                     label={t_i18n('Label')}
                     fullWidth={true}
@@ -155,7 +155,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="nameSuffix"
                     label={t_i18n('Technical name')}
                     fullWidth={true}
@@ -171,7 +171,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     <>
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         type="number"
                         name="min_value"
                         label={t_i18n('Min value')}
@@ -180,7 +180,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         type="number"
                         name="max_value"
                         label={t_i18n('Max value')}
@@ -226,7 +226,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                   )}
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="description"
                     label={t_i18n('Description')}
                     fullWidth={true}

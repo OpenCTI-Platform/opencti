@@ -99,7 +99,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="order"
             label={t_i18n('Order of Carousel')}
             fullWidth={true}

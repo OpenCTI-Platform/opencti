@@ -355,7 +355,7 @@ const IngestionCatalogConnectorCreation = ({
                     <Field
                       component={TextField}
                       className="mt-5"
-                      variant="standard"
+                      variant="outlined"
                       name="display_name"
                       label={t_i18n('Display name')}
                       required
@@ -368,7 +368,7 @@ const IngestionCatalogConnectorCreation = ({
                     <Field
                       component={TextField}
                       className="mt-5"
-                      variant="standard"
+                      variant="outlined"
                       name="name"
                       label={t_i18n('Instance name')}
                       fullWidth={true}

@@ -226,7 +226,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}

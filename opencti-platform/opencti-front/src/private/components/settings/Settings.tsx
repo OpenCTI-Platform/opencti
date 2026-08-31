@@ -463,7 +463,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <Form>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="platform_title"
                     label={t_i18n('Platform title')}
                     fullWidth
@@ -478,7 +478,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="platform_favicon"
                     label={t_i18n('Platform favicon URL')}
                     fullWidth
@@ -494,7 +494,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="platform_email"
                     disabled={!settings.platform_email_configurable}
                     label={t_i18n('Sender email address')}
@@ -654,7 +654,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       />
                       <Field
                         component={Switch}
-                        variant="standard"
+                        variant="outlined"
                         name="platform_whitemark"
                         disabled={!isEnterpriseEditionValid}
                         checked={

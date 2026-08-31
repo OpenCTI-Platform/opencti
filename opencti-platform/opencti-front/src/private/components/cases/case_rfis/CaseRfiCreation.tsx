@@ -223,7 +223,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -237,7 +237,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             textFieldProps={{
               label: t_i18n('Request For Information Date'),
               required: (mandatoryAttributes.includes('created')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}

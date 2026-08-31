@@ -223,7 +223,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             name="created"
             textFieldProps={{
               label: t_i18n('Publication date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               required: mandatoryAttributes.includes('created'),
             }}

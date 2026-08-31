@@ -262,7 +262,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 textFieldProps={{
                   label: t_i18n('First seen'),
                   required: (mandatoryAttributes.includes('first_seen')),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   helperText: (
                     <SubscriptionFocus
@@ -280,7 +280,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 textFieldProps={{
                   label: t_i18n('Last seen'),
                   required: (mandatoryAttributes.includes('last_seen')),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (

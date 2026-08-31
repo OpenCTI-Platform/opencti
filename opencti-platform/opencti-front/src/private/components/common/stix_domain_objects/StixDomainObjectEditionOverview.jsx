@@ -295,7 +295,7 @@ const StixDomainObjectEditionContainer = (props) => {
               {'result_name' in stixDomainObject ? (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="result_name"
                   label={t_i18n('Result Name')}
                   fullWidth={true}
@@ -308,7 +308,7 @@ const StixDomainObjectEditionContainer = (props) => {
               ) : ('name' in stixDomainObject && (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Name')}
                   fullWidth={true}
@@ -325,7 +325,7 @@ const StixDomainObjectEditionContainer = (props) => {
               {'aliases' in stixDomainObject && stixDomainObject.aliases !== undefined && (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="aliases"
                   label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}
@@ -343,7 +343,7 @@ const StixDomainObjectEditionContainer = (props) => {
               {'x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined && (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="x_opencti_aliases"
                   label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}

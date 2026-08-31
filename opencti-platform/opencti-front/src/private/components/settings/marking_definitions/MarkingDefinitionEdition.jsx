@@ -118,7 +118,7 @@ class MarkingDefinitionEditionContainer extends Component {
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="definition_type"
                 label={t('Type')}
                 fullWidth={true}
@@ -133,7 +133,7 @@ class MarkingDefinitionEditionContainer extends Component {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="definition"
                 label={t('Definition')}
                 fullWidth={true}
@@ -164,7 +164,7 @@ class MarkingDefinitionEditionContainer extends Component {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="x_opencti_order"
                 label={t('Order')}
                 fullWidth={true}

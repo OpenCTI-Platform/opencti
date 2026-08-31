@@ -114,7 +114,7 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.coverage_score`}
                       label={t_i18n('Coverage score (0-100)')}
                       type="number"
@@ -239,7 +239,7 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.coverage_score`}
                       label={t_i18n('Coverage score (0-100)')}
                       type="number"

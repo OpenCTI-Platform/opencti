@@ -122,14 +122,14 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
@@ -141,7 +141,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 name="aliases"
                 multiple={true}
                 textfieldprops={{
-                  variant: 'standard',
+                  variant: 'outlined',
                   label: t_i18n('Aliases'),
                 }}
                 options={[]}
@@ -151,7 +151,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="order"
                 label={t_i18n('Order')}
                 fullWidth={true}

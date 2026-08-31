@@ -93,14 +93,14 @@ const KillChainPhaseCreation: FunctionComponent<
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="kill_chain_name"
                 label={t_i18n('Kill chain name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="phase_name"
                 label={t_i18n('Phase name')}
                 fullWidth={true}
@@ -108,7 +108,7 @@ const KillChainPhaseCreation: FunctionComponent<
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="x_opencti_order"
                 label={t_i18n('Order')}
                 fullWidth={true}

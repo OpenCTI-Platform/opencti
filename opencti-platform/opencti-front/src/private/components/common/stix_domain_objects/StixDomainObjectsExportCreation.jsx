@@ -182,7 +182,7 @@ class StixDomainObjectsExportCreation extends Component {
                   >
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name="format"
                       label={t('Export format')}
                       fullWidth={true}
@@ -200,7 +200,7 @@ class StixDomainObjectsExportCreation extends Component {
                     </Field>
                     <Field
                       component={SelectFieldFds}
-                      variant="standard"
+                      variant="outlined"
                       name="type"
                       label={t('Export type')}
                       fullWidth={true}
@@ -235,7 +235,7 @@ class StixDomainObjectsExportCreation extends Component {
                       ? (
                           <Field
                             component={SelectFieldFds}
-                            variant="standard"
+                            variant="outlined"
                             name="columns"
                             label={t('Choose column to export')}
                             fullWidth={true}

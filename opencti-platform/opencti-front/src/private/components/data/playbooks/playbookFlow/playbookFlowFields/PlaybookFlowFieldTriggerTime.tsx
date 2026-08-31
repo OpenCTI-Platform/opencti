@@ -33,7 +33,7 @@ const PlaybookFlowFieldTriggerTime = () => {
         <Field
           fullWidth
           name="day"
-          variant="standard"
+          variant="outlined"
           component={SelectFieldFds}
           label={t_i18n('Week day')}
           containerstyle={fieldSpacingContainerStyle}
@@ -52,7 +52,7 @@ const PlaybookFlowFieldTriggerTime = () => {
         <Field
           fullWidth
           name="day"
-          variant="standard"
+          variant="outlined"
           component={SelectFieldFds}
           label={t_i18n('Month day')}
           containerstyle={fieldSpacingContainerStyle}
@@ -72,7 +72,7 @@ const PlaybookFlowFieldTriggerTime = () => {
           component={TimePickerField}
           textFieldProps={{
             label: t_i18n('Time'),
-            variant: 'standard',
+            variant: 'outlined',
             fullWidth: true,
             style: fieldSpacingContainerStyle,
           }}

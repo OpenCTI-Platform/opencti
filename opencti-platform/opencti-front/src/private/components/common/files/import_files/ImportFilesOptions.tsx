@@ -72,7 +72,7 @@ const ImportFilesOptions = ({
             <div>
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="validationMode"
                 containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
                 disabled={isForcedImportToDraft}
@@ -113,7 +113,7 @@ const ImportFilesOptions = ({
                   label={t_i18n('Draft name')}
                   required={mandatoryAttributes.includes('name')}
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                 />
                 <Field
                   component={MarkdownField}

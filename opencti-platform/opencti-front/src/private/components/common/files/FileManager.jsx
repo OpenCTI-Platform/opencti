@@ -375,7 +375,7 @@ const FileManager = ({
               >
                 <Field
                   component={SelectFieldFds}
-                  variant="standard"
+                  variant="outlined"
                   name="connector_id"
                   label={t('Connector')}
                   fullWidth={true}
@@ -403,7 +403,7 @@ const FileManager = ({
                 {selectedConnector?.configurations?.length > 0 && (
                   <Field
                     component={SelectFieldFds}
-                    variant="standard"
+                    variant="outlined"
                     name="configuration"
                     label={t('Configuration')}
                     fullWidth={true}
@@ -496,7 +496,7 @@ const FileManager = ({
                         <>
                           <Field
                             component={SelectFieldFds}
-                            variant="standard"
+                            variant="outlined"
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -514,7 +514,7 @@ const FileManager = ({
                           </Field>
                           <Field
                             component={SelectFieldFds}
-                            variant="standard"
+                            variant="outlined"
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}

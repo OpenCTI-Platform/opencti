@@ -28,7 +28,7 @@ const PlaybookFlowFieldNumber = ({
   return (
     <Field
       fullWidth
-      variant="standard"
+      variant="outlined"
       type="number"
       name={name}
       label={label}

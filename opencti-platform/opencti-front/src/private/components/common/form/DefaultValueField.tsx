@@ -156,7 +156,7 @@ const DefaultValueField = ({
         textFieldProps={{
           textField: {
             label,
-            variant: 'standard',
+            variant: 'outlined',
             fullWidth: true,
             style: { marginTop: 20 },
           },
@@ -184,7 +184,7 @@ const DefaultValueField = ({
       <Field
         component={TextField}
         type="number"
-        variant="standard"
+        variant="outlined"
         name={name}
         label={label}
         fullWidth={true}
@@ -228,7 +228,7 @@ const DefaultValueField = ({
   return (
     <Field
       component={TextField}
-      variant="standard"
+      variant="outlined"
       name={name}
       label={label}
       fullWidth={true}

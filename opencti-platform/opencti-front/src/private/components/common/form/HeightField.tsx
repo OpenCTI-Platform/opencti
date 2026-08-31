@@ -68,7 +68,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                   >
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       type="number"
                       min={0}
                       name={`${name}.${index}.measure`}
@@ -114,7 +114,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       }}
                       textFieldProps={{
                         label: t_i18n('Date Seen'),
-                        variant: 'standard',
+                        variant: 'outlined',
                         helperText: (
                           <SubscriptionFocus
                             context={editContext}
@@ -204,7 +204,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                   >
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       type="number"
@@ -215,7 +215,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                       name={`${name}.${index}.date_seen`}
                       textFieldProps={{
                         label: t_i18n('Date Seen'),
-                        variant: 'standard',
+                        variant: 'outlined',
                       }}
                       type="date"
                     />

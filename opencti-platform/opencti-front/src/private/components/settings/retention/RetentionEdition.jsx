@@ -122,7 +122,7 @@ const RetentionEditionContainer = (props) => {
           <Form>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               onChange={() => setVerified(false)}
@@ -131,7 +131,7 @@ const RetentionEditionContainer = (props) => {
             />
             <Field
               component={SelectFieldFds}
-              variant="standard"
+              variant="outlined"
               name="retention_unit"
               label={t_i18n('Unit')}
               fullWidth={true}
@@ -144,7 +144,7 @@ const RetentionEditionContainer = (props) => {
             </Field>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="max_retention"
               label={t_i18n('Maximum retention')}
               onChange={() => setVerified(false)}

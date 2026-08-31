@@ -238,7 +238,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -283,7 +283,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="x_opencti_score"
               required={(mandatoryAttributes.includes('x_opencti_score'))}
               label={t_i18n('Score')}

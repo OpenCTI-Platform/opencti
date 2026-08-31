@@ -213,7 +213,7 @@ const PositionEditionOverviewComponent = (props) => {
           <AlertConfidenceForEntity entity={position} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -250,7 +250,7 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="latitude"
             type="number"
@@ -265,7 +265,7 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="longitude"
             type="number"
@@ -280,7 +280,7 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="street_address"
             label={t_i18n('Street address')}
@@ -294,7 +294,7 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             className="mt-5"
             name="postal_code"
             label={t_i18n('Postal code')}

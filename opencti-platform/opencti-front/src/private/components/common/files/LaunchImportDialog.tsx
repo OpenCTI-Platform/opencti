@@ -275,7 +275,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
             >
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth={true}
@@ -306,7 +306,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               {isXtmOneConfigured && selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
                 <Field
                   component={SelectFieldFds}
-                  variant="standard"
+                  variant="outlined"
                   name="configuration"
                   label={t_i18n('Select agent')}
                   fullWidth={true}
@@ -322,7 +322,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               {!isDraftContext && (
                 <Field
                   component={SelectFieldFds}
-                  variant="standard"
+                  variant="outlined"
                   name="validation_mode"
                   label={t_i18n('Validation mode')}
                   fullWidth={true}
@@ -378,7 +378,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
                 <Field
                   component={SelectFieldFds}
-                  variant="standard"
+                  variant="outlined"
                   name="configuration"
                   label={t_i18n('Configuration')}
                   fullWidth={true}

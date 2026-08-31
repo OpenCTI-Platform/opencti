@@ -228,7 +228,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -242,7 +242,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             textFieldProps={{
               label: t_i18n('Incident date'),
               required: mandatoryAttributes.includes('created'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}

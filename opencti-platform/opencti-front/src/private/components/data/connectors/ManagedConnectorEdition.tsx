@@ -223,7 +223,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
               <Field
                 component={TextField}
                 className="mt-5"
-                variant="standard"
+                variant="outlined"
                 name="display_name"
                 label={t_i18n('Display name')}
                 required
@@ -233,7 +233,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
               <Field
                 component={TextField}
                 className="mt-5"
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Instance name')}
                 required

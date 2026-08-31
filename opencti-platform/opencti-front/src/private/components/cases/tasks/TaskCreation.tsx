@@ -145,7 +145,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
           <Field
             className="mb-5"
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -157,7 +157,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             required={(mandatoryAttributes.includes('due_date'))}
             textFieldProps={{
               label: t_i18n('Due Date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
             }}
           />

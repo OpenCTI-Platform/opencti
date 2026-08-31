@@ -495,7 +495,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
@@ -503,7 +503,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
@@ -513,7 +513,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               <IngestionSchedulingField handleSubmitField={handleSubmitField} />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="uri"
                 label={t_i18n('CSV URL')}
                 fullWidth={true}
@@ -597,7 +597,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               }
               <Field
                 component={SelectFieldFds}
-                variant="standard"
+                variant="outlined"
                 name="authentication_type"
                 label={t_i18n('Authentication type')}
                 onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
@@ -619,7 +619,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 <>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="username"
                     label={t_i18n('Username')}
                     onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
@@ -646,7 +646,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 <>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="cert"
                     label={t_i18n('Certificate (base64)')}
                     onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
@@ -661,7 +661,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="ca"
                     label={t_i18n('CA certificate (base64)')}
                     onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}

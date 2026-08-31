@@ -240,7 +240,7 @@ const ReportEditionOverviewComponent = (props) => {
             textFieldProps={{
               label: t_i18n('Publication date'),
               required: mandatoryAttributes.includes('published'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (

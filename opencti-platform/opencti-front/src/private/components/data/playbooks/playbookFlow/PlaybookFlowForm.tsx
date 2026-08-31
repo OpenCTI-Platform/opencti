@@ -173,7 +173,7 @@ const PlaybookFlowForm = ({
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 value={values.name ? t_i18n(values.name) : ''}
                 label={t_i18n('Name')}
@@ -182,7 +182,7 @@ const PlaybookFlowForm = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 placeholder={t_i18n(selectedComponent?.description ?? '')}
@@ -223,7 +223,7 @@ const PlaybookFlowForm = ({
                       <Field
                         key={propName}
                         component={SelectFieldFds}
-                        variant="standard"
+                        variant="outlined"
                         name="type_affinity"
                         label={t_i18n('Type affinity')}
                         fullWidth={true}
