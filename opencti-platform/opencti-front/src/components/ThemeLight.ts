@@ -552,8 +552,15 @@ const ThemeLight = (
           '&.Mui-error .MuiOutlinedInput-notchedOutline': {
             borderColor: 'var(--border-input-error)',
           },
+          // Disabled follows the library `Input`, which goes TRANSPARENT with a
+          // disabled border — not `--bg-input-disabled`. Painting that token
+          // put a light grey slab in the middle of a dark form (seen on the
+          // public-dashboard URI KEY field, which is always disabled).
           '&.Mui-disabled': {
-            backgroundColor: 'var(--bg-input-disabled)',
+            backgroundColor: 'transparent',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--border-elevation-disabled)',
+            },
           },
         },
         input: {

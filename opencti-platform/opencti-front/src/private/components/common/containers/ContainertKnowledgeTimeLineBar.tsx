@@ -15,6 +15,7 @@ import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-ty
 import { Stack } from '@mui/material';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -87,6 +88,10 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
             paper: {
               variant: 'elevation',
               elevation: 1,
+              // Layer 1, like every other tab-scoped bar; on the same node as
+              // the input aliases so the search field inside resolves here.
+              className: fdsLayerClass(RIGHT_BAR_LAYER),
+              sx: { ...layerInputVars },
               style: {
                 paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                 bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
