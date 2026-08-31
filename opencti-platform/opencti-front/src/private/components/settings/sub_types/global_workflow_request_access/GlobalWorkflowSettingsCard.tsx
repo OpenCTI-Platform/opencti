@@ -1,7 +1,12 @@
 import Card from '@common/card/Card';
-import { Divider, Grid, Tooltip } from '@mui/material';
+import { Divider, Grid } from '@mui/material';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
+// fds:keep-mui the library Switch has no product precedent yet, and this control is
+// mounted inside MUI's `FormControlLabel`, which injects `checked`/`onChange` into its
+// `control` element -- a swap silently drops the handler. Tracked in
+// fds-migration/LIBRARY-FEEDBACK.md #58.
 import Switch from '@mui/material/Switch';
 import { graphql } from 'react-relay';
 import { InformationOutline } from 'mdi-material-ui';
@@ -65,16 +70,18 @@ const GlobalWorkflowSettingsCard = () => {
               <Label
                 sx={{ marginTop: 4 }}
                 action={(
-                  <Tooltip
-                    title={!isSyncWorkflowStatusByNameAvailable
-                      ? t_i18n('This configuration is not available for this entity type')
-                      : t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
-                    }
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                    />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {!isSyncWorkflowStatusByNameAvailable
+                        ? t_i18n('This configuration is not available for this entity type')
+                        : t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")}
+                    </TooltipContent>
                   </Tooltip>
                 )}
               >
