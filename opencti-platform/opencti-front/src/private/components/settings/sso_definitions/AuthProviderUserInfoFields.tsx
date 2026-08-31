@@ -29,7 +29,8 @@ const AuthProviderUserInfoFields = ({
   const { t_i18n } = useFormatter();
   const prefix = fieldPrefix ? `${fieldPrefix}.` : '';
 
-  // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no `mt-*` — remove when it ships consumer utilities — see fds-migration/LIBRARY-FEEDBACK.md #36
+  // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no
+  // `mt-*` — remove when it ships consumer utilities — see LIBRARY-FEEDBACK.md #36
   return (
     <Paper padding={0} className="overflow-hidden" style={{ marginTop: 20 }}>
       <Box sx={{ px: 2, py: 1.5, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center' }}>

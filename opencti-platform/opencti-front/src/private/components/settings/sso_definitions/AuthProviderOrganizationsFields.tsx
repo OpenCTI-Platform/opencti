@@ -39,7 +39,8 @@ const AuthProviderOrganizationsFields = () => {
       <FieldArray name="organizations_mapping.default_organizations">
         {({ push, remove, form }) => {
           const entries = (form.values as { organizations_mapping: OrganizationsMappingValues }).organizations_mapping.default_organizations ?? [];
-          // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no `mt-*` — remove when it ships consumer utilities — see fds-migration/LIBRARY-FEEDBACK.md #36
+          // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no
+          // `mt-*` — remove when it ships consumer utilities — see LIBRARY-FEEDBACK.md #36
           return (
             <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

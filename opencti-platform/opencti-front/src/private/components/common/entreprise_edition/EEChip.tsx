@@ -43,7 +43,7 @@ const EEChip = React.forwardRef<HTMLElement, EEChipProps>((
     <>
       <Chip
         ref={ref}
-        label="EE"
+        label={t_i18n('EE')}
         severity="ee"
         size={size}
         onClick={clickable ? onClick : undefined}

@@ -18,7 +18,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the page path is the design-system landmark', () => {
+describe('Breadcrumbs', () => {
   it('is a named navigation landmark holding an ordered list', () => {
     testRender(<Breadcrumbs elements={PATH} />);
     // The wrapper this replaced rendered a bare <div>: no landmark, no list.
