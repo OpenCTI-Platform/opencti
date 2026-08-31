@@ -214,6 +214,7 @@ const Audit = () => {
         )}
         label={t_i18n('Include knowledge')}
         labelPlacement="end"
+        sx={{ '& .MuiFormControlLabel-label': { ml: 1 } }}
       />
     </div>
   ) : <></>;
