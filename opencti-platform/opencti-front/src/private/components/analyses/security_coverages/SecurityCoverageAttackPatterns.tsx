@@ -6,9 +6,8 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import React, { useEffect, useMemo, useState } from 'react';
-import { createRefetchContainer, graphql, RelayRefetchProp, useFragment } from 'react-relay';
+import { createFragmentContainer, graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
-import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
 import { Box, IconButton, ListItemButton, Stack, Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -49,13 +48,11 @@ const securityCoverageKillChainPhasesFragment = graphql`
 interface SecurityCoverageAttackPatternsProps {
   securityCoverage: SecurityCoverageAttackPatternsFragment$data;
   dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
-  relay: RelayRefetchProp;
 }
 
 const SecurityCoverageAttackPatternsComponent = ({
   securityCoverage,
   dataKillChains,
-  relay,
 }: SecurityCoverageAttackPatternsProps) => {
   const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -220,14 +217,6 @@ const SecurityCoverageAttackPatternsComponent = ({
                     dense={true}
                     divider={true}
                     disablePadding={true}
-                    secondaryAction={(
-                      <StixCoreRelationshipPopover
-                        objectId={securityCoverage.id}
-                        stixCoreRelationshipId={attackPatternEntity.relationship_id}
-                        onDelete={() => relay.refetch({ id: securityCoverage.id })}
-                        isCoverage={true}
-                      />
-                    )}
                   >
                     <ListItemButton
                       component={Link}
@@ -262,7 +251,7 @@ const SecurityCoverageAttackPatternsComponent = ({
   );
 };
 
-const SecurityCoverageAttackPatterns = createRefetchContainer(
+const SecurityCoverageAttackPatterns = createFragmentContainer(
   SecurityCoverageAttackPatternsComponent,
   {
     securityCoverage: graphql`
@@ -292,13 +281,6 @@ const SecurityCoverageAttackPatterns = createRefetchContainer(
       }
     `,
   },
-  graphql`
-    query SecurityCoverageAttackPatternsRefetchQuery($id: String!) {
-      securityCoverage(id: $id) {
-        ...SecurityCoverageAttackPatternsFragment
-      }
-    }
-  `,
 );
 
 export default SecurityCoverageAttackPatterns;
