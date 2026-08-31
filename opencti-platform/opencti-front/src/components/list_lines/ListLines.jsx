@@ -565,7 +565,19 @@ class ListLines extends Component {
           {handleSwitchRedirectionMode && (
             <Dialog
               // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
-              slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
+              slotProps={{
+                paper: {
+                  className: fdsLayerClass(SURFACE_LAYER),
+                  sx: {
+                    ...layerInputVars,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3,
+                    padding: 3,
+                    '& .MuiDialogTitle-root, & .MuiDialogActions-root': { padding: 0 },
+                  },
+                },
+              }}
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
             >
