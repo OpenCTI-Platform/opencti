@@ -27,6 +27,10 @@ const ClearFiltersIcon = ({
         onClick={onClear}
         size="small"
         disabled={hasActiveFilters != undefined ? !hasActiveFilters : disabled}
+        // Back on MUI, by Sandy's ruling. Releasing it to the library made it
+        // the ONLY library icon button on the Créer Rapport toolbar, which is
+        // the opposite of the homogeneity F19 asks for: the rest of that
+        // toolbar is MUI, so this one follows the rest rather than leading it.
         keepMui
         aria-label={t_i18n('Clear filters')}
       >

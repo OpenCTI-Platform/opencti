@@ -207,6 +207,14 @@ const ListFilters = ({
               the row and re-open the very alignment defect the same pass asks to
               fix. The accessible name is kept on the input. */}
           <Combobox<OptionType>
+            // The Combobox ROOT carries `flex w-full flex-col`, so in a flex
+            // row it claims the whole line and pushes the search field, the
+            // funnel and the chips onto lines of their own — the stacked
+            // filter bar reported on the Triggers page and the threat-actor
+            // card page. The inner `ComboboxField` was already 200px; the root
+            // is what had to be told. `w-50` is 200px, and tailwind-merge drops
+            // the `w-full` it replaces.
+            className="w-50 shrink-0"
             options={options as OptionType[]}
             labelPosition="none"
             value={null}

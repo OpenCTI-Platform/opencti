@@ -16,6 +16,12 @@ interface RelativeDateInputProps {
   valueOrder: number;
   dateInput: string[];
   setDateInput: (value: string[]) => void;
+  /**
+   * Only ONE field in the popover may claim focus. This used to be hardcoded
+   * true, and `DateRangeFilter` renders two of these -- so both asked for focus
+   * and the second took it from the first on every render.
+   */
+  autoFocus?: boolean;
 }
 
 const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
@@ -26,6 +32,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   valueOrder,
   dateInput,
   setDateInput,
+  autoFocus = false,
 }) => {
   const { t_i18n } = useFormatter();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -103,7 +110,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         label={label}
         value={dateInput[valueOrder]}
         onChange={(event) => handleChangeValue(event.target.value)}
-        autoFocus={true}
+        autoFocus={autoFocus}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
             handleChangeRangeDateFilter((event.target as HTMLInputElement).value);
@@ -117,7 +124,14 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         slotProps={{
           input: {
             endAdornment: (
-              <>
+              // A flex row with a real gap, NOT negative margins. These are
+              // library IconButtons sitting in a MUI outlined field's adornment
+              // slot: the previous pass compensated their geometry with
+              // `marginRight: -8` and `marginLeft: 4, marginRight: -16`, which
+              // pushed both buttons OUT of the field's padding box -- the clear
+              // and calendar glyphs spilling past the right edge in the report.
+              // Letting the row lay itself out keeps them inside the field.
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                 {dateInput[valueOrder] && (
                   <IconButton
                     variant="default"
@@ -125,7 +139,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
                     size="sm"
                     onClick={handleClear}
                     aria-label="clear"
-                    style={{ marginRight: -8 }}
                     icon={<ClearOutlined fontSize="small" />}
                   />
                 )}
@@ -135,10 +148,9 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
                   size="sm"
                   onClick={() => setIsDatePickerOpen(true)}
                   aria-label="open date picker"
-                  style={{ marginLeft: 4, marginRight: -16 }}
                   icon={<DateRangeOutlined fontSize="small" />}
                 />
-              </>
+              </span>
             ),
           },
         }}

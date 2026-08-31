@@ -344,13 +344,23 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
       isSortable: isRuntimeSort,
       render: ({ notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         return (
+          // `textOverflow` on this box never did anything: it applies to TEXT
+          // in the box, not to a child element, so the Chip simply overflowed
+          // and the box hard-clipped it mid-glyph — the rendering bug reported
+          // on this column. Measured: a 266px Chip inside a 192px cell, its
+          // label capped at the library's own `max-w-[250px]`, which is wider
+          // than the cell and so never engaged.
+          //
+          // Capping the CHIP at the cell's width is what makes the library's
+          // own truncation do the work: the label then ellipsises at the real
+          // width instead of being cut by the parent.
           <div style={{
             height: 20,
             fontSize: 13,
             float: 'left',
+            maxWidth: '100%',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
             paddingRight: 10,
           }}
           >
@@ -358,7 +368,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
               <Chip
                 severity={notification_type === 'live' ? 'high' : 'info'}
                 label={name ?? EMPTY_VALUE}
-                style={{ marginRight: 10 }}
+                style={{ marginRight: 10, maxWidth: '100%' }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

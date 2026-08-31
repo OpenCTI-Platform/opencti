@@ -113,7 +113,12 @@ const DataTableFilters = ({
 
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+      {/* `alignItems: center`: without it the row defaults to `stretch`, so the
+          left group (which centres its own children) and the right group of
+          36px toggles resolved to different centre lines — measured 305 against
+          303 on the entity Analyses tab, which is the 2px misalignment reported
+          there. */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignItems: 'center' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',

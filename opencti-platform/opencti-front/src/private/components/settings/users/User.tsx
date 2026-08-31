@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { Add, DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -751,8 +752,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSession}
         onClose={handleCloseKillSession}
-        title={t_i18n('Are you sure?')}
       >
+        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
+            not MUI's — MUI dropped it silently and this dialog rendered
+            with no heading at all. */}
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill this session?')}
         </DialogContentText>
@@ -773,8 +777,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSessions}
         onClose={handleCloseKillSessions}
-        title={t_i18n('Are you sure?')}
       >
+        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
+            not MUI's — MUI dropped it silently and this dialog rendered
+            with no heading at all. */}
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill all the sessions of this user?')}
         </DialogContentText>

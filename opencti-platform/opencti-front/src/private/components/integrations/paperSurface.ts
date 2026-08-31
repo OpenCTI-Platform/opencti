@@ -19,8 +19,21 @@ import { FDS } from '../../../components/fds-tokens.generated';
  */
 const fdsFor = (theme: Theme) => (theme.palette.mode === 'light' ? FDS.colors.light : FDS.colors.dark);
 
-/** Background of a library Paper. */
-export const paperBg = (theme: Theme) => fdsFor(theme)['--bg-elevation-default'];
+/**
+ * Background of an integration box.
+ *
+ * REVERTED, and deliberately not the token: pointing this at
+ * `--bg-elevation-default` painted these boxes #070d18 in dark mode — the
+ * layer-0 surface, DARKER than the page they sit on. Sandy reported it as a
+ * background nobody asked for and asked for the previous one back, so this is
+ * `background.paper` again, exactly what these boxes had before the
+ * homogenisation pass.
+ *
+ * The border below keeps the token: it was not part of the complaint, and it
+ * replaced a border derived from the TEXT colour, which is the thing that kept
+ * these boxes from matching a real Paper.
+ */
+export const paperBg = (theme: Theme) => theme.palette.background.paper;
 
 /** Border colour of a library Paper — pass it to `border`/`borderBottom`. */
 export const paperBorder = (theme: Theme) => fdsFor(theme)['--border-elevation-subtle-soft'];

@@ -32,6 +32,7 @@ import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hoo
 import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { Stack, useTheme } from '@mui/material';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 interface ContentBlocProps {
   title: ReactNode;
@@ -176,11 +177,25 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       variant="permanent"
       anchor="right"
       elevation={1}
+      // Same surface contract as the Knowledge bar next door: the two
+      // tab-scoped right bars are one family, so they sit on the same
+      // elevation step and carry the same edge. Positioning is untouched.
+      slotProps={{
+        paper: {
+          // Same layer and the same mechanism as the Knowledge bar next door.
+          // This bar DOES hold fields (the file list's inline controls), so
+          // `layerInputVars` is load-bearing here rather than defensive.
+          className: fdsLayerClass(RIGHT_BAR_LAYER),
+          sx: { ...layerInputVars },
+        },
+      }}
       sx={{
         width: 350,
         '& .MuiDrawer-paper': {
           zIndex: theme.zIndex.appBar - 1,
           width: 350,
+          background: 'var(--bg-elevation-default)',
+          borderLeft: '1px solid var(--border-elevation-subtle-soft)',
           paddingBottom: draftContext ? '89px' : '20px', // Add 69px in case DraftToolbar is opened
           paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 16 for margin, 64 for top bar,
         },

@@ -11,7 +11,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption } from '../../../../../utils/field';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -61,6 +61,13 @@ interface PublicDashboardCreationFormComponentProps {
   onCancel?: () => void;
   onCompleted?: () => void;
 }
+
+/**
+ * 16px between fields, per the visual pass on this dialog. The app-wide
+ * `fieldSpacingContainerStyle` is still 20px; this is scoped to the surface
+ * that was reviewed rather than changing the rhythm everywhere at once.
+ */
+const publicDashboardFieldSpacing = { marginTop: 16, width: '100%' };
 
 const PublicDashboardCreationFormComponent = ({
   queryRef,
@@ -163,7 +170,7 @@ const PublicDashboardCreationFormComponent = ({
             component={TextField}
             variant="outlined"
             label={t_i18n('Name')}
-            className="mt-5"
+            style={publicDashboardFieldSpacing}
             onChange={(_: string, val: string) => {
               setFieldValue('uri_key', generatePublicDashboardUriKey(val));
             }}
@@ -175,7 +182,7 @@ const PublicDashboardCreationFormComponent = ({
             variant="outlined"
             label={t_i18n('Public dashboard URI KEY')}
             helperText={t_i18n('ID of your public dashboard')}
-            style={fieldSpacingContainerStyle}
+            style={publicDashboardFieldSpacing}
             slotProps={{
               input: {
                 startAdornment: (
@@ -191,14 +198,14 @@ const PublicDashboardCreationFormComponent = ({
             type="checkbox"
             name="enabled"
             label={t_i18n('Enabled')}
-            containerstyle={fieldSpacingContainerStyle}
+            containerstyle={publicDashboardFieldSpacing}
             helpertext={t_i18n('Disabled dashboard...')}
           />
           <ObjectMarkingField
             name="max_markings"
             label={t_i18n('Max level markings')}
             helpertext={t_i18n('To prevent people seeing all the data...')}
-            style={fieldSpacingContainerStyle}
+            style={publicDashboardFieldSpacing}
             onChange={() => {}}
             setFieldValue={setFieldValue}
             limitToMaxSharing

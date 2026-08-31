@@ -155,7 +155,10 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEECh
             className={floating ? classes.chipFloating : classes.chip}
             disabled={disabled}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size="small" />
+            {/* 16, not `size="small"`: FiligranIcon's `small` is MUI's 20px,
+                which overflowed the 24px small button by a pixel and sat off
+                its centre line. 16 is the library's own small-button glyph. */}
+            <FiligranIcon icon={LogoXtmOneIcon} size={16} />
           </IconButton>
         ) : (
           <Button
@@ -164,7 +167,9 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEECh
             onClick={onClick}
             intent="ai"
             aria-label={buttonLabel}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+            // 16 is the library's small-button glyph; FiligranIcon's `small`
+            // is MUI's 20px, a pixel taller than the button itself.
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size={16} />}
             disabled={disabled}
           >
             {t_i18n('AI Insights')}

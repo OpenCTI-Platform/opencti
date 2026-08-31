@@ -2,6 +2,7 @@ import Button from '@common/button/Button';
 import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
@@ -69,7 +70,11 @@ const styles = (theme) => ({
     flex: 'auto',
   },
   views: {
-    marginTop: -5,
+    // No `marginTop: -5`. That nudge pulled the view controls 5px above the
+    // row they sit in, which is where the 2px centre-line difference on the
+    // entity Analyses tab came from: the row already centres its children, so
+    // the offset was fighting it. Measured after removal: every control on the
+    // row shares one centre line.
     display: 'flex',
   },
   linesContainer: {
@@ -421,6 +426,11 @@ class ListLines extends Component {
             </div>
           </div>
         )}
+        {/* The chips are a ROW OF THEIR OWN, below the filter row and only
+            when filters are active. Moving them into the filter row pushed the
+            count and the action buttons off it -- reported on every list page.
+            The three-row shape is: breadcrumb, then filters left with count and
+            buttons right, then this. */}
         <FilterIconButton
           helpers={helpers}
           availableFilterKeys={availableFilterKeys}
@@ -563,9 +573,11 @@ class ListLines extends Component {
               slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
-              size="small"
-              title={t('List settings')}
             >
+              {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
+                  not MUI's — MUI dropped it silently and this dialog rendered
+                  with no heading at all. */}
+              <DialogTitle>{t('List settings')}</DialogTitle>
               <FormControl style={{ width: '100%' }}>
                 <Select
                   value={redirectionMode}

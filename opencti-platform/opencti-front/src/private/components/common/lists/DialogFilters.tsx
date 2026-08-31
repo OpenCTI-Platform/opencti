@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { BiotechOutlined } from '@mui/icons-material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Tooltip from '@mui/material/Tooltip';
@@ -59,8 +60,11 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={open}
         onClose={handleCloseFilters}
-        title={t_i18n('Advanced search')}
       >
+        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
+            not MUI's — MUI dropped it silently and this dialog rendered
+            with no heading at all. */}
+        <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
         <FilterIconButton
           filters={filters}
           handleRemoveFilter={defaultHandleRemoveFilter}

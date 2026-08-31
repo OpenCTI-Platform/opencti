@@ -245,8 +245,12 @@ const useNavMenu = (): NavGroup[] => {
           icon: <InsertChartOutlinedOutlined />,
           link: '/dashboard/workspaces/dashboards',
           subItems: [
-            { granted: canSeeExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: t_i18n('Custom dashboards'), exact: true },
-            { granted: canSeeExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: t_i18n('Public dashboards'), exact: true },
+            // No `exact`: a dashboard's own page is `/…/dashboards/<id>`, and an
+            // exact match left the sub-item inactive the moment you opened one.
+            // Prefix matching is safe between these two links because
+            // `/…/dashboards_public` does not start with `/…/dashboards/`.
+            { granted: canSeeExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards', label: t_i18n('Custom dashboards') },
+            { granted: canSeeExplore, type: 'Dashboard', link: '/dashboard/workspaces/dashboards_public', label: t_i18n('Public dashboards') },
           ],
         },
         !inDraft && canSeeInvestigation && {

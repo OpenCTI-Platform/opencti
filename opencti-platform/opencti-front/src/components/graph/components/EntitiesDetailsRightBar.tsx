@@ -18,6 +18,7 @@ import { GraphLink, GraphNode, isGraphLink, isGraphNode } from '../graph.types';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import Label from '../../../components/common/label/Label';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -116,6 +117,10 @@ const EntitiesDetailsRightsBar = () => {
       open={true}
       variant="permanent"
       anchor="right"
+      // A tab-scoped bar is layer 1 like the Knowledge and Content bars it sits
+      // beside; the class and `layerInputVars` share the node so the fields
+      // inside resolve at that layer instead of at the root.
+      slotProps={{ paper: { className: fdsLayerClass(RIGHT_BAR_LAYER), sx: { ...layerInputVars } } }}
       classes={{ paper: classes.drawerPaper }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
