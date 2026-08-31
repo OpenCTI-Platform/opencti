@@ -13,9 +13,9 @@ import {
  * transcription mistake it is supposed to catch.
  */
 const V5_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 40,
-  [UserMergeDisposition.Invalidate]: 22,
-  [UserMergeDisposition.Conditional]: 20,
+  [UserMergeDisposition.Transfer]: 41,
+  [UserMergeDisposition.Invalidate]: 20,
+  [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 11,
   [UserMergeDisposition.OutOfScope]: 6,
 };

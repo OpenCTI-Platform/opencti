@@ -49,7 +49,7 @@ const RETAIN = UserMergeDisposition.Retain;
 const OUT_OF_SCOPE = UserMergeDisposition.OutOfScope;
 
 export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
-  // --- transfer (40) ---------------------------------------------------------------------
+  // --- transfer (41) ---------------------------------------------------------------------
   row('activity.user-id', TRANSFER, 'Activity', 'user_id'),
   row('activity-history-pir-history.applicant-id', TRANSFER, 'Activity / History / PirHistory', 'applicant_id'),
   row('background-task-terminal.initiator-id', TRANSFER, 'BackgroundTask (done/failed/cancelled)', 'initiator_id'),
@@ -78,6 +78,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('playbook.definition-nodes-configuration', TRANSFER, 'Playbook', 'playbook_definition.nodes[].configuration'),
   row('public-dashboard.user-id', TRANSFER, 'PublicDashboard', 'user_id'),
   row('public-dashboard.manifests', TRANSFER, 'PublicDashboard', 'private_manifest / public_manifest (Base64)'),
+  row('settings.activity-listeners-ids', TRANSFER, 'Settings', 'activity_listeners_ids[]'),
   row('settings.xtm-hub-registration-user-id', TRANSFER, 'Settings', 'xtm_hub_registration_user_id'),
   row('stream-collection.filters', TRANSFER, 'StreamCollection', 'filters'),
   row('stream-collection.origin-filters', TRANSFER, 'StreamCollection', 'origin_filters'),
@@ -91,7 +92,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('workflow-instance.history-user-id', TRANSFER, 'WorkflowInstance', 'history[].user_id'),
   row('workspace.manifest', TRANSFER, 'Workspace', 'manifest (Base64)'),
 
-  // --- invalidate (22) -------------------------------------------------------------------
+  // --- invalidate (20) -------------------------------------------------------------------
   row('accesses-to.connections', INVALIDATE, 'accesses-to', 'connections[].internal_id (source user)'),
   row('api-token.usage-key', INVALIDATE, 'API token', '{token_usage}:{tokenId}'),
   row('auth-user.cache-entries', INVALIDATE, 'AuthUser / Settings / access cache', 'entries keyed by user ID or containing memberships'),
@@ -106,8 +107,6 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('password-reset.keys', INVALIDATE, 'Password reset', 'forgot_password_otp_{transactionId} / forgot_password_transactionId_{email}'),
   row('session.key', INVALIDATE, 'User session', 'sess:{sessionId}'),
   row('session.platform-sessions', INVALIDATE, 'User session', 'platform_sessions'),
-  row('settings.ip-whitelist-exclusion-ids', INVALIDATE, 'Settings', 'platform_ip_whitelist_exclusion_ids[]'),
-  row('settings.activity-listeners-ids', INVALIDATE, 'Settings', 'activity_listeners_ids[]'),
   row('sso.session-and-refresh-token', INVALIDATE, 'SSO session / refresh token', 'external subject, session, refresh token'),
   row('user.password', INVALIDATE, 'User', 'password / password_valid_until'),
   row('user.administration-fields', INVALIDATE, 'User', 'administrated_organizations / user_confidence_level / user_service_account'),
@@ -115,7 +114,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('user.otp', INVALIDATE, 'User', 'otp_secret / otp_qr / otp_activated'),
   row('user.api-tokens', INVALIDATE, 'User', 'api_tokens[]'),
 
-  // --- conditional (20) ------------------------------------------------------------------
+  // --- conditional (21) ------------------------------------------------------------------
   row('background-task.actions-context-values', CONDITIONAL, 'BackgroundTask', 'actions[].context.values'),
   row('background-task.task-filters', CONDITIONAL, 'BackgroundTask', 'task_filters'),
   row('background-task-pending.initiator-id', CONDITIONAL, 'BackgroundTask (queued/running)', 'initiator_id'),
@@ -129,6 +128,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('notification.subscription-topics', CONDITIONAL, 'Notification / activity subscription', 'topics and payloads containing user ID'),
   row('retention-rule.filters', CONDITIONAL, 'RetentionRule', 'filters'),
   row('saved-filter.filters', CONDITIONAL, 'SavedFilter', 'filters'),
+  row('settings.ip-whitelist-exclusion-ids', CONDITIONAL, 'Settings', 'platform_ip_whitelist_exclusion_ids[]'),
   row('stream-collection.public-user-id', CONDITIONAL, 'StreamCollection', 'stream_public_user_id'),
   row('taxii-collection.public-user-id', CONDITIONAL, 'TaxiiCollection', 'taxii_public_user_id'),
   row('any-type.unregistered-serialized-field', CONDITIONAL, 'Any type', 'unregistered JSON/Base64 field containing exactly the source UUID'),
