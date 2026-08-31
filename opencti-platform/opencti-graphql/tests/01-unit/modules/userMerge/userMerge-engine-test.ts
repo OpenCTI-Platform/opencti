@@ -5,6 +5,7 @@ import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/module
 
 const openedEntries: { handler: string; dryRun: boolean }[] = [];
 const refusals: { handler: string; message: string }[] = [];
+const FIRST_MERGE_STARTED_AT = new Date('2025-03-01T08:30:00.000Z');
 
 vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
   withJournalEntry: async (input: { handler: string; dryRun: boolean }, execute: () => Promise<unknown>) => {
@@ -15,6 +16,7 @@ vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
     refusals.push({ handler: input.handler, message });
   },
   readJournalEntries: async () => [],
+  resolveMergeStartedAt: async () => FIRST_MERGE_STARTED_AT,
 }));
 
 const cacheResets: string[] = [];
