@@ -5,6 +5,7 @@ import {
   planFingerprint,
   type UserMergeHandler,
   type UserMergeHandlerContext,
+  USER_MERGE_SOURCE_DISABLE_HANDLER,
   USER_MERGE_TARGET_INDICES,
 } from '../../../../src/modules/userMerge/userMerge-handler';
 import {
@@ -137,6 +138,42 @@ describe('Handler registry', () => {
 
   it('should not treat a handler reading what it writes as a conflict', () => {
     expect(() => assertHandlersAreDisjoint([mockHandler({ reads: ['same.field'], writes: ['same.field'] })])).not.toThrow();
+  });
+
+  it('should reject a handler writing a user identity field', () => {
+    expect(() => registerUserMergeHandler(mockHandler({ writes: ['User.user_email'] }))).toThrow('user identity fields');
+  });
+
+  it('should reject a handler other than the deactivation one writing the account status', () => {
+    expect(() => registerUserMergeHandler(mockHandler({ writes: ['User.account_status'] }))).toThrow('user identity fields');
+  });
+
+  it('should accept the deactivation handler writing the account status', () => {
+    // Named exemption rather than an unprotected field: closing the source is a write on the
+    // source, and `writes` cannot say on which account, so the identifier is what scopes it.
+    const disable = mockHandler({ identifier: USER_MERGE_SOURCE_DISABLE_HANDLER, writes: ['User.account_status'] });
+    expect(() => registerUserMergeHandler(disable)).not.toThrow();
+  });
+
+  // The two fields that reach the same authentication state as the ones above by another path:
+  // a validity date in the past forces a password reset on the target, a lock date locks it out.
+  it('should reject a handler writing the password validity date', () => {
+    expect(() => registerUserMergeHandler(mockHandler({ writes: ['User.password_valid_until'] }))).toThrow('user identity fields');
+  });
+
+  it('should reject a handler writing the account lock date', () => {
+    expect(() => registerUserMergeHandler(mockHandler({ writes: ['User.account_lock_after_date'] }))).toThrow('user identity fields');
+  });
+
+  // The exemption is on the status alone. The deactivation handler leaves the lock date to the
+  // platform, so extending its exemption to the whole row would grant more than it asks for.
+  it('should reject the deactivation handler writing the account lock date', () => {
+    const disable = mockHandler({ identifier: USER_MERGE_SOURCE_DISABLE_HANDLER, writes: ['User.account_lock_after_date'] });
+    expect(() => registerUserMergeHandler(disable)).toThrow('user identity fields');
+  });
+
+  it('should accept a handler writing a user field that carries no identity', () => {
+    expect(() => registerUserMergeHandler(mockHandler({ writes: ['User.personal_notifiers'] }))).not.toThrow();
   });
 
   it('should leave the registry untouched when a registration is refused', () => {
