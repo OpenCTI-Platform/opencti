@@ -85,7 +85,7 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
             <div style={{ display: 'flex', gap: 8 }}>
               {customFile && (
                 <Button
-                  variant="outlined"
+                  variant="secondary"
                   size="small"
                   startIcon={<DownloadOutlined />}
                   href={`${APP_BASE_PATH}/maps/world.pmtiles`}
@@ -96,7 +96,7 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
               )}
               <Button
                 component="label"
-                variant="outlined"
+                variant="secondary"
                 size="small"
                 startIcon={<CloudUploadOutlined />}
                 disabled={uploading}
@@ -106,7 +106,7 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
               </Button>
               {customFile && (
                 <Button
-                  variant="outlined"
+                  variant="secondary"
                   size="small"
                   color="error"
                   startIcon={<DeleteOutlined />}
