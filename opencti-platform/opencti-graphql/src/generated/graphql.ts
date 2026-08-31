@@ -25066,6 +25066,7 @@ export type Query = {
   userAlreadyExists?: Maybe<Scalars['Boolean']['output']>;
   userMergeCoverage: UserMergeCoverage;
   userMergeJournal: Array<UserMergeJournalEntry>;
+  userMergeSourceDeletionReadiness: UserMergeSourceDeletionReadiness;
   users?: Maybe<UserConnection>;
   vocabularies?: Maybe<VocabularyConnection>;
   vocabulary?: Maybe<Vocabulary>;
@@ -28206,6 +28207,12 @@ export type QueryUserMergeCoverageArgs = {
 export type QueryUserMergeJournalArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   mergeId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type QueryUserMergeSourceDeletionReadinessArgs = {
+  sourceId: Scalars['ID']['input'];
+  targetId: Scalars['ID']['input'];
 };
 
 
@@ -37395,6 +37402,14 @@ export enum UserMergeRightsStrategy {
   Union = 'UNION'
 }
 
+export type UserMergeSourceDeletionReadiness = {
+  __typename?: 'UserMergeSourceDeletionReadiness';
+  allowed: Scalars['Boolean']['output'];
+  blockers: Array<Scalars['String']['output']>;
+  coverage_complete: Scalars['Boolean']['output'];
+  pending_change_count: Scalars['Int']['output'];
+};
+
 export enum UserMergeStatus {
   Failed = 'FAILED',
   Running = 'RUNNING',
@@ -41078,6 +41093,7 @@ export type ResolversTypes = ResolversObject<{
   UserMergeResult: ResolverTypeWrapper<UserMergeResult>;
   UserMergeRightsAlert: ResolverTypeWrapper<UserMergeRightsAlert>;
   UserMergeRightsStrategy: UserMergeRightsStrategy;
+  UserMergeSourceDeletionReadiness: ResolverTypeWrapper<UserMergeSourceDeletionReadiness>;
   UserMergeStatus: UserMergeStatus;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
@@ -42094,6 +42110,7 @@ export type ResolversParentTypes = ResolversObject<{
   UserMergePlannedChange: UserMergePlannedChange;
   UserMergeResult: UserMergeResult;
   UserMergeRightsAlert: UserMergeRightsAlert;
+  UserMergeSourceDeletionReadiness: UserMergeSourceDeletionReadiness;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
@@ -50404,6 +50421,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   userAlreadyExists?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryUserAlreadyExistsArgs, 'name'>>;
   userMergeCoverage?: Resolver<ResolversTypes['UserMergeCoverage'], ParentType, ContextType, Partial<QueryUserMergeCoverageArgs>>;
   userMergeJournal?: Resolver<Array<ResolversTypes['UserMergeJournalEntry']>, ParentType, ContextType, Partial<QueryUserMergeJournalArgs>>;
+  userMergeSourceDeletionReadiness?: Resolver<ResolversTypes['UserMergeSourceDeletionReadiness'], ParentType, ContextType, RequireFields<QueryUserMergeSourceDeletionReadinessArgs, 'sourceId' | 'targetId'>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   vocabularies?: Resolver<Maybe<ResolversTypes['VocabularyConnection']>, ParentType, ContextType, Partial<QueryVocabulariesArgs>>;
   vocabulary?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<QueryVocabularyArgs, 'id'>>;
@@ -53467,6 +53485,13 @@ export type UserMergeRightsAlertResolvers<ContextType = any, ParentType extends 
   register_row_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type UserMergeSourceDeletionReadinessResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeSourceDeletionReadiness'] = ResolversParentTypes['UserMergeSourceDeletionReadiness']> = ResolversObject<{
+  allowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  blockers?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  coverage_complete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  pending_change_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type UserSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserSession'] = ResolversParentTypes['UserSession']> = ResolversObject<{
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -54816,6 +54841,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   UserMergePlannedChange?: UserMergePlannedChangeResolvers<ContextType>;
   UserMergeResult?: UserMergeResultResolvers<ContextType>;
   UserMergeRightsAlert?: UserMergeRightsAlertResolvers<ContextType>;
+  UserMergeSourceDeletionReadiness?: UserMergeSourceDeletionReadinessResolvers<ContextType>;
   UserSession?: UserSessionResolvers<ContextType>;
   UserStatus?: UserStatusResolvers<ContextType>;
   VerifyOtp?: VerifyOtpResolvers<ContextType>;
