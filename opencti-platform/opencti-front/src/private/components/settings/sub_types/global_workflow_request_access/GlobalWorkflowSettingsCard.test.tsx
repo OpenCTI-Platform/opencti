@@ -2,15 +2,20 @@ import React, { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
+import { TooltipProvider } from '@filigran/design-system';
 import GlobalWorkflowSettingsCard from './GlobalWorkflowSettingsCard';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import ThemeDark from '../../../../../components/ThemeDark';
 
 const testTheme = createTheme(ThemeDark() as ThemeOptions);
+// The card's help tooltip is the library one, and it throws outside a
+// `TooltipProvider` -- the app mounts one in `private/Index.tsx`.
 const renderWithTheme = (component: React.ReactElement) => render(
   <ThemeProvider theme={testTheme}>
-    {component}
+    <TooltipProvider>
+      {component}
+    </TooltipProvider>
   </ThemeProvider>,
 );
 
@@ -42,6 +47,16 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [mockCommit],
 }));
 
+const mockIsFeatureEnable = vi.fn();
+vi.mock('../../../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: mockIsFeatureEnable }),
+}));
+
+const mockCommit = vi.fn();
+vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
+  default: () => [mockCommit],
+}));
+
 vi.mock('./GlobalWorkflowSettings', () => ({
   default: () => <div>global-workflow-settings</div>,
 }));
@@ -63,11 +78,12 @@ const makeSubType = (availableSettings: string[], syncWorkflowStatusByName = fal
 
 describe('GlobalWorkflowSettingsCard', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockIsFeatureEnable.mockReturnValue(true);
   });
 
   afterEach(() => {
     mockCommit.mockReset();
+    mockIsFeatureEnable.mockReset();
   });
 
   it('renders request access settings when request_access_workflow is available', () => {
@@ -137,5 +153,18 @@ describe('GlobalWorkflowSettingsCard', () => {
         input: { key: 'sync_workflow_status_by_name', value: 'true' },
       },
     });
+  });
+
+  it('does not render the sync workflow status by name switch when the feature flag is disabled', () => {
+    mockIsFeatureEnable.mockReturnValue(false);
+    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+    vi.mocked(useSubTypeOutletContext).mockReturnValue({
+      subType: makeSubType(['workflow_configuration', 'sync_workflow_status_by_name'], true),
+    } as never);
+
+    renderWithTheme(<GlobalWorkflowSettingsCard />);
+
+    expect(screen.queryByText("Update entities' statuses by name match")).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import Button from '@mui/material/Button';
+import Button from '../../../../components/common/button/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -85,7 +85,7 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
             <div style={{ display: 'flex', gap: 8 }}>
               {customFile && (
                 <Button
-                  variant="outlined"
+                  variant="secondary"
                   size="small"
                   startIcon={<DownloadOutlined />}
                   href={`${APP_BASE_PATH}/maps/world.pmtiles`}
@@ -96,7 +96,7 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
               )}
               <Button
                 component="label"
-                variant="outlined"
+                variant="secondary"
                 size="small"
                 startIcon={<CloudUploadOutlined />}
                 disabled={uploading}
@@ -106,7 +106,7 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
               </Button>
               {customFile && (
                 <Button
-                  variant="outlined"
+                  variant="secondary"
                   size="small"
                   color="error"
                   startIcon={<DeleteOutlined />}

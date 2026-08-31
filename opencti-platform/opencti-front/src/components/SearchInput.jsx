@@ -210,6 +210,7 @@ const SearchInput = (props) => {
     return (
       <SearchField
         name="keyword"
+        aria-label={t_i18n('Search')}
         size={SIZE_BY_VARIANT[variant] ?? 'md'}
         value={searchValue}
         placeholder={placeholder}
@@ -304,6 +305,7 @@ const SearchInput = (props) => {
         {/* ── Search Input Field (left, fills remaining space) ──── */}
         <SearchField
           name="keyword"
+          aria-label={t_i18n('Search')}
           value={searchValue}
           fullWidth
           placeholder={getPlaceholder()}
