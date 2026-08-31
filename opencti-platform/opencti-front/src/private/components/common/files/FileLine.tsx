@@ -521,6 +521,11 @@ const FileLine = createFragmentContainer(FileLineComponent, {
       lastModified
       lastModifiedSinceMin
       metaData {
+        creator_id
+        creator {
+          id
+          name
+        }
         mimetype
         list_filters
         external_reference_id

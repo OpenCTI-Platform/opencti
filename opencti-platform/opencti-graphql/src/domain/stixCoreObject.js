@@ -54,7 +54,7 @@ import {
   isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { createWork, worksForSource, workToExportFile } from './work';
+import { createWork, loadWorkById, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
@@ -552,8 +552,31 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, i
   return works.map((w) => workToExportFile(w));
 };
 
+/**
+ * Resolves the id of the user who originally requested an export.
+ *
+ * When an export file is pushed back by a connector, the request is authenticated as the
+ * connector user (typically the admin who registered it), not as the user who asked for the
+ * export. The requester is persisted on the export Work (`user_id`), so when the current request
+ * is associated with a work (via the `opencti-work-id` header, exposed as `context.workId`) we
+ * load that work and return its `user_id` to be used as the file `creator_id`.
+ *
+ * @param {AuthContext} context - The request context; `context.workId` holds the originating work id when present.
+ * @param {AuthUser} user - The user performing the upload (the connector user in the export push-back case).
+ * @returns {Promise<string | undefined>} The requesting user's id, or `undefined` when no work is
+ * associated with the request or the work cannot be loaded.
+ */
+const resolveExportCreatorId = async (context, user) => {
+  if (!context.workId) {
+    return undefined;
+  }
+  const work = await loadWorkById(context, user, context.workId).catch(() => null);
+  return work?.user_id;
+};
+
 export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
-  const meta = { list_filters: listFilters };
+  const creatorId = await resolveExportCreatorId(context, user);
+  const meta = { list_filters: listFilters, creator_id: creatorId };
   const entity = entity_id ? await internalLoadById(context, user, entity_id) : undefined;
   const opts = { entity, meta, file_markings };
   await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, opts);
@@ -566,7 +589,9 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
+  const creatorId = await resolveExportCreatorId(context, user);
+  const meta = creatorId ? { creator_id: creatorId } : {};
+  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, meta, file_markings: args.file_markings });
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,

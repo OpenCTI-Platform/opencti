@@ -656,7 +656,12 @@ export const upload = async (
     }
   }
 
-  const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id ? (currentFile.metaData as FileMetadata).creator_id : user.id;
+  // Determine the file creator id:
+  // - Preserve the creator of an already existing file
+  // - Otherwise, honor an explicitly provided creator_id (e.g. an export pushed back on behalf of the user who requested it)
+  // - And finally fall back to the uploading user.
+  const existingCreatorId = (currentFile?.metaData as FileMetadata)?.creator_id;
+  const creatorId = existingCreatorId || metadata.creator_id || user.id;
 
   // Upload the data from the buffered content
   const uploadReadStream = createReadStream();

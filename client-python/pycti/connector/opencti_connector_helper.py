@@ -636,6 +636,12 @@ class ListenQueue(threading.Thread):
             work_id = internal_data["work_id"]
             draft_id = internal_data.get("draft_id", "")
             self.helper.work_id = work_id
+            # Expose the work context to the API clients so calls made while processing the
+            # message (e.g. pushing an export file back) are attributed to the originating work,
+            # allowing the platform to record the requesting user as the file creator.
+            if work_id:
+                self.helper.api.set_work_id(work_id)
+                self.helper.api_impersonate.set_work_id(work_id)
 
             self.helper.validation_mode = validation_mode
             self.helper.force_validation = force_validation
@@ -758,6 +764,11 @@ class ListenQueue(threading.Thread):
                     self.helper.connector_logger.error(
                         "Failing reporting the processing"
                     )
+        finally:
+            # Clear the work context so it does not leak to subsequent messages.
+            if work_id:
+                self.helper.api.set_work_id("")
+                self.helper.api_impersonate.set_work_id("")
 
     def is_token_valid(self, token):
         """
