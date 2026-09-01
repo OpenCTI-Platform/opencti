@@ -676,6 +676,79 @@ describe('Workflow Domain', () => {
     );
   });
 
+  it('should not mark an orphaned Status for deletion when it is still referenced by an entity inside a draft', async () => {
+    const publishedVersion = {
+      id: 'pub-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'tpl-a',
+        states: [{ statusId: 'tpl-a' }, { statusId: 'tpl-b' }],
+        transitions: [{ from: 'tpl-a', to: 'tpl-b', event: 'finish' }],
+      }),
+      validation_errors: [],
+    };
+    const draftVersion = {
+      id: 'draft-1',
+      timestamp: '2024-01-02T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'tpl-a',
+        states: [{ statusId: 'tpl-a' }],
+        transitions: [],
+      }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any)
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        published_version: publishedVersion,
+        draft_version: draftVersion,
+        all_versions: [draftVersion, publishedVersion],
+      })
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        published_version: draftVersion,
+        draft_version: null,
+        all_versions: [draftVersion, publishedVersion],
+      });
+
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[], args: any) => {
+      if (types[0] === ENTITY_TYPE_STATUS) {
+        return Promise.resolve([
+          { id: 'status-a-id', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-a', order: 0 },
+          { id: 'status-b-id', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-b', order: 1 },
+        ]);
+      }
+      if (types[0] === ENTITY_TYPE_ENTITY_SETTING) {
+        return Promise.resolve([]);
+      }
+      if (types[0] === 'Incident') {
+        // No entity in the live index references status-b-id, but a draft-only entity does —
+        // this must still block the orphan mark.
+        if (args?.indices?.some((index: string) => index.includes('_draft_objects'))) {
+          return Promise.resolve([{ id: 'draft-entity-id', x_opencti_workflow_id: 'status-b-id' }]);
+        }
+        return Promise.resolve([]);
+      }
+      return Promise.resolve([]);
+    });
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(updateAttribute).not.toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'status-b-id',
+      ENTITY_TYPE_STATUS,
+      expect.anything(),
+    );
+  });
+
   it('should not mark an orphaned Status for deletion when it is still referenced by a request-access workflow', async () => {
     const publishedVersion = {
       id: 'pub-1',
