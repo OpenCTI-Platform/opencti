@@ -28,7 +28,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     position: 'fixed',
     top: '50%',
-    right: 20,
+    right: 'calc(20px + var(--chatbot-sidebar-width, 0px))',
+    transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1)',
     transform: 'translateY(-50%)',
     width: 400,
     maxWidth: 400,
