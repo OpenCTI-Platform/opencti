@@ -8,7 +8,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { INTERNAL_USERS, isBypassUser, REDACTED_USER } from '../../utils/access';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { executeUserMerge, readUserMergeJournal } from './userMerge-engine';
-import { computeUserMergeSourceDeletionReadiness, type UserMergeSourceDeletionReadiness } from './userMerge-sourceDeletion';
+import { computeUserMergeSourceDeletionReadiness, deleteUserMergeSource, type UserMergeSourceDeletionReadiness } from './userMerge-sourceDeletion';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeRightsStrategy, UserMergeStatus } from './userMerge-types';
 
 /**
@@ -174,6 +174,24 @@ export const userMergeSourceDeletionReadiness = async (
   await loadMergeableUser(context, user, sourceId, 'source');
   await loadMergeableUser(context, user, targetId, 'target');
   return computeUserMergeSourceDeletionReadiness(context, sourceId, targetId);
+};
+
+/**
+ * Deletes the source once the gate opens. A mutation rather than a step of the merge: the
+ * operator decides when, and re-checking readiness here rather than trusting a readiness read
+ * earlier means the answer cannot have gone stale between the two calls.
+ */
+export const userMergeDeleteSource = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceId: string,
+  targetId: string,
+): Promise<string> => {
+  assertUserMergeAllowed(user);
+  assertValidUserMergeIds(sourceId, targetId);
+  await loadMergeableUser(context, user, sourceId, 'source');
+  await loadMergeableUser(context, user, targetId, 'target');
+  return deleteUserMergeSource(context, user, sourceId, targetId);
 };
 
 // Bounds enforced here so that a future, real journal implementation cannot be abused
