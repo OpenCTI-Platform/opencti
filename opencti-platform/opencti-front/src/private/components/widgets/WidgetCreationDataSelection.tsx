@@ -165,11 +165,11 @@ const WidgetCreationDataSelection = () => {
             aria-label={t_i18n('Add')}
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
-            size="small"
+            // The wrapper has no default size: omitting it resolves to `sm`, not `md`.
+            size="default"
             onClick={() => handleAddDataSelection('entities')}
             style={{
               width: '100%',
-              height: 20,
               flex: 1,
             }}
           >
@@ -214,17 +214,15 @@ const WidgetCreationDataSelection = () => {
               getCurrentDataSelectionLimit(type) === dataSelection.length
               || getCurrentCategory(type) === 'distribution'
             }
+            aria-label={t_i18n('Add')}
             color="secondary"
-            size="small"
+            startIcon={<AddOutlined />}
             onClick={() => handleAddDataSelection('audits')}
             style={{
               width: '100%',
-              height: 20,
               flex: 1,
             }}
-          >
-            <AddOutlined fontSize="small" />
-          </Button>
+          />
         </Stack>
       )}
 
