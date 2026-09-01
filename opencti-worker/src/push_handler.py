@@ -137,6 +137,34 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         too_large_item_bundle,
                     )
 
+    # Option B (plan 0009 s9.8.3): suffix in place every ref pointing to a member of the
+    # bundle. Only *_ref / *_refs keys are touched (the object's own id and every non-ref
+    # field stay pristine); the platform strips the mark at its write boundary, so it can
+    # never persist in ES.
+    MEMBER_REF_MARK = "||M||"
+
+    def mark_member_refs(self, node: Any, member_ids: set) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                is_ref_key = key.endswith("_ref") or key.endswith("_refs")
+                if is_ref_key and isinstance(value, str):
+                    if value in member_ids:
+                        node[key] = value + self.MEMBER_REF_MARK
+                elif is_ref_key and isinstance(value, list):
+                    node[key] = [
+                        (
+                            item + self.MEMBER_REF_MARK
+                            if isinstance(item, str) and item in member_ids
+                            else item
+                        )
+                        for item in value
+                    ]
+                elif isinstance(value, (dict, list)):
+                    self.mark_member_refs(value, member_ids)
+        elif isinstance(node, list):
+            for item in node:
+                self.mark_member_refs(item, member_ids)
+
     def build_waves(self, bundles: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
         """Group the split mini-bundles into the concurrent waves to submit.
 
@@ -206,6 +234,19 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 return []
         imported_items: List[Any] = []
         too_large_items_bundles: List[Any] = []
+        # Option B (plan 0009 s9.8.3, suffix transport): suffix every ref id that points to
+        # an object of THIS bundle with ||M|| ("travels with me"). The platform strips the
+        # mark at its write boundary and uses it to classify missing refs with certainty
+        # (defer on queued producer, final on dead producer) instead of burning retries;
+        # unmarked refs keep today's external retry path. O(refs) cost, works for any
+        # bundle size (no header, no size cap). Suffix, not prefix: type-prefix routing
+        # keeps working on a not-yet-stripped id.
+        member_ids = {
+            obj["id"] for obj in content.get("objects", []) if "id" in obj
+        }
+        for mini_bundle in bundles:
+            for obj in mini_bundle.get("objects", []):
+                self.mark_member_refs(obj, member_ids)
         # bundles come out sorted by nb_deps (the splitter sorts): group into waves per
         # the policy; python's stable sort keeps the nb_deps submission order inside a wave
         waves = self.build_waves(bundles)
@@ -220,6 +261,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 "policy": self.bundle_wave_policy,
             },
         )
+        # Per-object isolation (s9.8.4): pycti reports and drops failed objects internally
+        # (import_item), so a future raising here is an ESCAPED error (transport, bundle
+        # format). It must never abort the remaining waves nor discard the bundle message:
+        # log, report the expectation for that object, and continue.
         for level_bundles in waves:
             futures = [
                 self.bundle_executor.submit(
@@ -233,9 +278,22 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 for mini_bundle in level_bundles
             ]
             for future in futures:
-                items, too_large = future.result()
-                imported_items.extend(items)
-                too_large_items_bundles.extend(too_large)
+                try:
+                    items, too_large = future.result()
+                    imported_items.extend(items)
+                    too_large_items_bundles.extend(too_large)
+                except Exception as err:  # pylint: disable=broad-except
+                    self.logger.error(
+                        "Inline object import failed, continuing the bundle",
+                        {"error": str(err)},
+                    )
+                    if work_id is not None:
+                        try:
+                            self.api.work.report_expectation(
+                                work_id, {"error": str(err), "source": "inline import"}
+                            )
+                        except Exception:  # pylint: disable=broad-except
+                            pass
         # dead-letter forwarding after the levels, from the handler thread (one connection)
         self.send_too_large_to_dead_letter(data, too_large_items_bundles)
         return imported_items
