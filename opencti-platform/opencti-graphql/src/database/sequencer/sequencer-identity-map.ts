@@ -73,6 +73,13 @@ export class SequencerIdentityMap {
   private store(element: any, withRefs: any | null) {
     const internalId = element.internal_id;
     if (!internalId) return;
+    // Memory-served elements must be ES-shaped: consumers key on `_id` (the ES doc id,
+    // which IS the internal id in every OpenCTI index). An apply result is built in
+    // memory and lacks it; without it the creation path's second inputResolveRefs
+    // (middleware isAlreadyResolved) treats already-resolved refs as raw ids and sends
+    // OBJECTS to elFindByIds (found live 2026-09-01, run ch16-d: every co-batched
+    // container create rejected DATABASE_ERROR, plan 0009 s9.9.6).
+    if (!element._id) element._id = internalId;
     const previous = this.byInternalId.get(internalId);
     if (previous) this.removeEntry(internalId);
     const keys = getInstanceIds(element);
