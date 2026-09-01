@@ -1,56 +1,64 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-const upsert = vi.fn();
+let journalEntries: unknown[] = [];
+
 vi.mock('../../../../src/database/redis', () => ({
-  redisUserMergeJournalUpsert: (...args: unknown[]) => upsert(...args),
-  redisUserMergeJournalRead: async () => [],
+  redisUserMergeJournalRead: async () => journalEntries,
+  redisUserMergeJournalUpsert: async () => undefined,
 }));
 
-const { withJournalEntry } = await import('../../../../src/modules/userMerge/userMerge-journal');
-const { UserMergeStatus } = await import('../../../../src/modules/userMerge/userMerge-types');
+const { resolveMergeStartedAt } = await import('../../../../src/modules/userMerge/userMerge-journal');
 
-const input = { mergeId: 'merge-1', sourceId: 'source', targetId: 'target', handler: 'handler-a', dryRun: false };
-const outcome = { handler: 'handler-a', changes: [], alerts: [], updated: 4 };
+const FALLBACK = new Date('2025-06-01T12:00:00.000Z');
 
-describe('userMerge journal', () => {
-  beforeEach(() => {
-    upsert.mockReset();
-    upsert.mockResolvedValue(undefined);
+const entry = (overrides: Record<string, unknown>) => ({
+  source_user_id: 'source-id',
+  target_user_id: 'target-id',
+  dry_run: false,
+  started_at: '2025-01-01T00:00:00.000Z',
+  ...overrides,
+});
+
+describe('merge start resolution', () => {
+  it('should fall back to the given instant when the pair was never merged', async () => {
+    journalEntries = [];
+    expect(await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toEqual(FALLBACK);
   });
 
-  it('should record the outcome of a handler that succeeded', async () => {
-    await expect(withJournalEntry(input, async () => outcome)).resolves.toEqual(outcome);
-    expect(upsert).toHaveBeenCalledTimes(2);
-    expect(upsert.mock.calls[1][2]).toMatchObject({ status: UserMergeStatus.Success, updated_count: 4 });
+  // The boundary has to name the first merge, not the last: the deletion gate answers by running a
+  // fresh dry-run, and anchoring on anything later would let the first merge's own traces count as
+  // references still pending.
+  it('should take the earliest real run on the pair', async () => {
+    journalEntries = [
+      entry({ started_at: '2025-03-02T00:00:00.000Z' }),
+      entry({ started_at: '2025-03-01T08:30:00.000Z' }),
+      entry({ started_at: '2025-03-01T09:00:00.000Z' }),
+    ];
+    expect((await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toISOString())
+      .toEqual('2025-03-01T08:30:00.000Z');
   });
 
-  it('should record a handler that threw, and let the failure through', async () => {
-    await expect(withJournalEntry(input, async () => {
-      throw new Error('handler exploded');
-    })).rejects.toThrow('handler exploded');
-    expect(upsert.mock.calls[1][2]).toMatchObject({ status: UserMergeStatus.Failed, message: 'handler exploded' });
+  it('should ignore dry-runs, which wrote nothing to bound', async () => {
+    journalEntries = [
+      entry({ dry_run: true, started_at: '2025-02-01T00:00:00.000Z' }),
+      entry({ started_at: '2025-03-01T00:00:00.000Z' }),
+    ];
+    expect((await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toISOString())
+      .toEqual('2025-03-01T00:00:00.000Z');
   });
 
-  it('should keep a successful handler successful when the journal cannot be written', async () => {
-    // The handler has already written to the platform at this point. Losing the trace is bad;
-    // reporting the write as failed, and aborting the merge over it, is worse.
-    upsert.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('redis is down'));
-    await expect(withJournalEntry(input, async () => outcome)).resolves.toEqual(outcome);
+  it('should ignore a run on another pair', async () => {
+    journalEntries = [
+      entry({ source_user_id: 'other-source', started_at: '2025-01-01T00:00:00.000Z' }),
+      entry({ target_user_id: 'other-target', started_at: '2025-01-02T00:00:00.000Z' }),
+      entry({ started_at: '2025-03-01T00:00:00.000Z' }),
+    ];
+    expect((await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toISOString())
+      .toEqual('2025-03-01T00:00:00.000Z');
   });
 
-  it('should still surface the handler failure when the journal cannot be written either', async () => {
-    upsert.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('redis is down'));
-    await expect(withJournalEntry(input, async () => {
-      throw new Error('handler exploded');
-    })).rejects.toThrow('handler exploded');
-  });
-
-  it('should refuse to run a handler it cannot open an entry for', async () => {
-    // Symmetrical to the above on purpose: failing before anything is written is the safe
-    // direction, so opening keeps throwing.
-    upsert.mockRejectedValueOnce(new Error('redis is down'));
-    const execute = vi.fn(async () => outcome);
-    await expect(withJournalEntry(input, execute)).rejects.toThrow('redis is down');
-    expect(execute).not.toHaveBeenCalled();
+  it('should fall back rather than return an invalid date', async () => {
+    journalEntries = [entry({ started_at: 'not-a-date' })];
+    expect(await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toEqual(FALLBACK);
   });
 });
