@@ -20,9 +20,13 @@ export const PRESENTATION_EXCERPT = 'What would you like help with today?';
 // Asked by the test, and the title the history menu shows for that conversation.
 export const QUESTION = 'Hello, who are you?';
 
-// The only error text the widget renders on its own; anything else it displays
-// comes from the proxy and replaces the assistant message content.
-export const WIDGET_ERROR_MESSAGE = 'Sorry, an error occurred. Please try again.';
+/**
+ * Every error the widget can render on its own: a failed turn, a request that
+ * never reached the proxy, and a stream that ended without a `done` event.
+ * Anything else it displays comes from the proxy and replaces the assistant
+ * message content.
+ */
+export const WIDGET_ERROR_MESSAGES = /Sorry, an error occurred|Unable to connect|No response\./;
 
 const CONVERSATION_ID = '89d60741-81c1-45c8-8d73-ce0ded38bf6f';
 const MESSAGE_ID = '786d810d-34f8-48f6-ad61-f8f18707b79a';
@@ -99,11 +103,14 @@ const json = (body: unknown) => ({
 const unstubbedRequests: string[] = [];
 
 /**
- * Paths the widget asks for that the OpenCTI proxy does not serve: they fall
- * through to the SPA index in production, so 404 is the faithful answer and the
- * widget is expected to cope with it.
+ * Paths the widget asks for that the OpenCTI proxy does not serve: `/chat/*`
+ * falls through to the SPA catch-all (`app.get('*any')` in `httpPlatform.js`),
+ * which answers 200 with the index page. Serving HTML rather than a 404 keeps
+ * the widget on the same branch as in production, where `r.ok` holds and the
+ * JSON parse is what fails.
  */
 const UNSERVED_BY_PROXY = '**/chatbot/chat/**';
+const SPA_INDEX = '<!doctype html><html lang="en"><head><title>OpenCTI</title></head><body><div id="root"></div></body></html>';
 
 /**
  * Everything the panel requested during the test that the mock did not expect.
@@ -126,9 +133,9 @@ export const mockChatbotBackend = async (page: Page) => {
   });
 
   await page.route(UNSERVED_BY_PROXY, (route) => route.fulfill({
-    status: 404,
-    contentType: 'application/json',
-    body: '{}',
+    status: 200,
+    contentType: 'text/html',
+    body: SPA_INDEX,
   }));
 
   await page.route('**/chatbot/config', (route) => route.fulfill(json({

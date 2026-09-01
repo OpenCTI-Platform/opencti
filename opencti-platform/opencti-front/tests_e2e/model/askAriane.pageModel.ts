@@ -3,13 +3,13 @@ import { Page } from '@playwright/test';
 /**
  * The panel is rendered by the external `@filigran/chatbot` package, which
  * ships no `data-testid` and gives an accessible name to only some of its
- * controls. The unnamed header buttons are located by their lucide icon path:
- * an index would break the day a button is added, and the icons are what the
- * user actually recognises.
+ * controls. The unnamed header buttons are located by their lucide icon path,
+ * scoped to the tooltip wrappers the header uses: the same icons appear in the
+ * mode menu and in the conversation list, so an unscoped path is ambiguous as
+ * soon as one of those is open.
  */
 const ICON_NEW_CHAT = 'M12 20h9';
-const ICON_SWITCH_VIEW = 'M15 3v18';
-const ICON_CLOSE = 'M18 6 6 18';
+const CGU_STATUS_FIELD = 'filigran_chatbot_ai_cgu_status';
 
 export default class AskArianePageModel {
   constructor(private page: Page) {}
@@ -40,16 +40,8 @@ export default class AskArianePageModel {
     return this.getHeaderButton(ICON_NEW_CHAT);
   }
 
-  getSwitchViewButton() {
-    return this.getHeaderButton(ICON_SWITCH_VIEW);
-  }
-
-  getCloseButton() {
-    return this.getHeaderButton(ICON_CLOSE);
-  }
-
   private getHeaderButton(iconPath: string) {
-    return this.getPanel().locator(`button:has(svg path[d="${iconPath}"])`);
+    return this.getPanel().locator(`span.inline-flex > button:has(svg path[d="${iconPath}"])`);
   }
 
   // region Filigran AI terms
@@ -76,8 +68,12 @@ export default class AskArianePageModel {
     await this.getPanel().or(this.getTermsDialog()).waitFor();
     if (await this.getTermsDialog().isVisible()) {
       await this.getTermsDialog().getByRole('checkbox').check();
+      // The dialog closes on click without waiting for its own mutation, so the
+      // button would still read the old 'pending' status and just reopen it.
+      const cguPatched = this.page.waitForResponse((response) => response.url().includes('/graphql')
+        && (response.request().postData() ?? '').includes(CGU_STATUS_FIELD));
       await this.getTermsAgreeButton().click();
-      await this.getTermsDialog().waitFor({ state: 'hidden' });
+      await cguPatched;
       await this.getOpenButton().click();
       await this.getPanel().waitFor();
     }
