@@ -6,10 +6,6 @@ import { describe, expect, it } from 'vitest';
 import TopBarIconLink from './TopBarIconLink';
 import testRender from '../../../utils/tests/test-render';
 
-/**
- * A counter-check, deliberately from a different angle than `TopBarIconLink.test.tsx`.
- */
-
 const renderAsTheBarDoes = (unread: number) => testRender(
   <Tooltip>
     <TooltipTrigger asChild>
@@ -40,8 +36,6 @@ describe('the notifications control, composed as the bar composes it', () => {
   it('announces the count as the control accessible description', () => {
     const { baseElement } = renderAsTheBarDoes(4);
     const description = computeAccessibleDescription(controlIn(baseElement));
-    // The value, not the markup: whatever element carries it, it has to resolve
-    // onto the control the user actually focuses.
     expect(description).toContain('4');
     expect(description).toContain('unread');
   });

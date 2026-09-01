@@ -81,10 +81,7 @@ const Index = ({ settings }: IndexProps) => {
     }
   }, [theme]);
 
-  /**
-   * The bar is fixed and glassy (94% over a 4px backdrop blur), so the content has to travel
-   * UNDER it.
-   */
+  /** The bar is fixed and glassy (94% over a 4px backdrop blur), so the content has to travel UNDER it. */
   const headerInset = isForcePasswordChangeRoute
     ? 0
     : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`;
@@ -140,7 +137,6 @@ const Index = ({ settings }: IndexProps) => {
                         )
                       : boundaryWrapper(HomeDashboard)}
                   />
-                  {/* Search need to be rework */}
                   <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
                   <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
                   <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
@@ -150,7 +146,6 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
                   <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
                   <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
-                  {/* Need to refactor below */}
                   <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
                   <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
                   <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />

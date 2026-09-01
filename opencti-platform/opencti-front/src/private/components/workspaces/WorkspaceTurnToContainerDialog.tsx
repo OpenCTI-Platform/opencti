@@ -17,13 +17,11 @@ import {
   ComboboxTrigger,
 } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
-import { useTheme } from '@mui/styles';
 import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
-import type { Theme } from '../../../components/Theme';
 import { handleError } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
@@ -120,9 +118,6 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
     });
   };
 
-  // The `if (!event) return` guard this function used to open with is gone: the engine states
-  // the CAUSE of every change, so the call site gates on `meta.cause === 'type'` and this only
-  // ever runs for a keystroke.
   const searchContainers = (
     event: React.SyntheticEvent<Element, Event>,
     incomingValue?: string,

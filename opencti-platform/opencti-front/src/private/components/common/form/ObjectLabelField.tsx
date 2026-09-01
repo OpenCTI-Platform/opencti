@@ -100,7 +100,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         onFocusInput={() => searchLabels('')}
         // The label's own colour, straight from the database.
         getChipColor={(option: FieldOption) => option.color}
-        onCreateOption={() => setLabelCreation(true)}
+        openCreate={() => setLabelCreation(true)}
         onChange={onChange}
         renderOption={(option: FieldOption) => (
           <>

@@ -48,6 +48,7 @@ const DisseminationListField: FunctionComponent = () => {
       component={SelectFieldFds}
       label={t_i18n('Dissemination list')}
       name="disseminationListId"
+      fullWidth
       required
     >
       {lists?.edges?.map((edge) => (

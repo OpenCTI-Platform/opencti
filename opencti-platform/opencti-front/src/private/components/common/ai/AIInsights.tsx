@@ -155,9 +155,8 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEECh
             className={floating ? classes.chipFloating : classes.chip}
             disabled={disabled}
           >
-            {/* 16, not `size="small"`: FiligranIcon's `small` is MUI's 20px,
-                which overflowed the 24px small button by a pixel and sat off
-                its centre line. 16 is the library's own small-button glyph. */}
+            {/* 16, not `size="small"`: FiligranIcon's `small` is MUI's 20px, which overflowed the 24px small button
+                by a pixel and sat off its centre line. 16 is the library's own small-button glyph. */}
             <FiligranIcon icon={LogoXtmOneIcon} size={16} />
           </IconButton>
         ) : (
@@ -360,8 +359,6 @@ const AIInsights = ({
             getOptionLabel={(option) => option?.name ?? ''}
             value={selectedAgent ?? null}
             onValueChange={(next) => handleAgentChange(next as AgentOption | null)}
-            // Replaces the CircularProgress hand-mounted in the input's
-            // endAdornment: the field renders its own busy state.
             loading={loadingAgents}
             disabled={agentOptions.length === 0 || loading}
           >

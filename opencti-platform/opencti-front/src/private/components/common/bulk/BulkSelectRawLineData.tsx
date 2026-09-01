@@ -92,10 +92,8 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
     }}
     >
       <Box sx={{ minWidth: `${entityTypeHeaderWidth}px` }}>
-        {/* `disablePortal` has no equivalent here and needs none: the library
-            panel always portals, and it is measured opening over this dialog
-            without closing it. `disableClearable` becomes `clearable={false}`,
-            and `autoHighlight` is the engine's unconditional behaviour. */}
+        {/* `disablePortal` has no equivalent here and needs none: the library panel always portals, and it is
+            measured opening over this dialog without closing it. */}
         <Combobox<autocompleteOptionsType>
           labelPosition="none"
           options={getAutocompleteOptions()}
