@@ -107,6 +107,31 @@ export const withJournalEntry = async <T extends UserMergeHandlerOutcome>(
   return outcome;
 };
 
+/**
+ * Records a refusal that happens between the two passes, outside any handler.
+ *
+ * Without it the journal cannot tell a plain dry-run from a real merge the platform refused:
+ * the dry pass of a real run is journalled as dry, so a run stopped before the write loop
+ * leaves the exact same entries as a dry-run, all successful.
+ *
+ * The entry is dry because nothing was written, which is also what keeps
+ * `resolveMergeStartedAt` honest: it anchors the history cut on the runs that could have
+ * written, and a refusal recorded as real would move that anchor back to a run that wrote
+ * nothing, dropping later history out of the scan.
+ *
+ * Journal failures are swallowed: a Redis write must not replace the refusal the caller is
+ * about to raise with an error about the trace of it.
+ */
+export const journalRefusal = async (input: Omit<JournalEntryInput, 'dryRun'>, message: string): Promise<void> => {
+  try {
+    const entryId = await openJournalEntry({ ...input, dryRun: true });
+    await closeJournalEntry(entryId, input.mergeId, { status: UserMergeStatus.Failed, message });
+  } catch (err) {
+    const cause = err instanceof Error ? err.message : String(err);
+    logApp.error('[MERGE_USERS] refusal not journalled', { merge_id: input.mergeId, handler: input.handler, cause });
+  }
+};
+
 export const readJournalEntries = async (mergeId?: string, first?: number): Promise<UserMergeJournalRecord[]> => {
   const entries = await redisUserMergeJournalRead(mergeId) as UserMergeJournalRecord[];
   const sorted = [...entries].sort((a, b) => b.started_at.localeCompare(a.started_at));
