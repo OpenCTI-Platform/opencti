@@ -37,6 +37,7 @@ const queue = new SequencerQueue();
 let loopStarted = false;
 let loopDead = false;
 let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
+let strippedSamples = 0; // s9.10.2: bounded dead-soft-strip sampling
 // s9.9: batches a group may be skipped for a failed in-batch producer before it applies
 // through today's path anyway
 const FAILED_PRODUCER_DEFER_LIMIT = 2;
@@ -280,6 +281,19 @@ const runBatchLoop = async () => {
       sequencerMetrics.intent('failed', intent.kind);
       sequencerMetrics.memberDead();
       intent.reject(MissingReferenceFinalError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }));
+    });
+    // s9.10.2: dead SOFT member refs were stripped in the plan; the intents apply without
+    // them. Counted per stripped id; first occurrences sampled for live diagnosis.
+    plan.strippedDead.forEach(({ intent, stripped }) => {
+      sequencerMetrics.memberDeadStripped(stripped.length);
+      if (strippedSamples < 20) {
+        strippedSamples += 1;
+        logApp.info('[SEQUENCER] dead member refs stripped', {
+          type: intent.type,
+          kind: intent.kind,
+          stripped: stripped.slice(0, 5),
+        });
+      }
     });
     plan.deferred.forEach(({ intent, reason }) => {
       deferToLane(intent);

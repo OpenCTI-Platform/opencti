@@ -40,6 +40,10 @@ export interface BatchPlan {
   // wait: its producer failed, no retry can help. The loop rejects with final: true and
   // the worker drops (hard) or strips-and-resends (soft) the object, never the bundle.
   finalMissing: { intent: SequencerIntent; missing: string[] }[];
+  // s9.10.2: dead member refs that were SOFT: stripped from the surviving intent's input
+  // (the container applies without the edge that could never exist) instead of condemning
+  // the whole object. Only hard dead refs (relation endpoints) still reject final.
+  strippedDead: { intent: SequencerIntent; stripped: string[] }[];
   // P2: applications beyond each chain's first step (the volume that left `deferred`)
   chainedSteps: number;
 }
@@ -164,16 +168,48 @@ export interface BatchPlanOptions {
 }
 
 // s9.8.2 classification of ONE missing id (not resolved, no in-batch producer):
-//   - declared in-bundle and in the queue -> certain one-batch wait;
+//   - producer visible in the queue -> certain one-batch wait, WHATEVER the ref's origin
+//     (s9.10.2: the queue index is the same certainty as a member declaration; before this
+//     an external ref whose producer sat in the queue failed the apply and burnt the
+//     worker's retry budget, measured ch16-e: 5,037 external roots);
 //   - declared in-bundle, not seen, under the attempt limit -> bounded wait;
 //   - declared in-bundle, not seen, limit reached -> its producer failed: final;
-//   - not declared (or no annotation) -> external: today's behavior.
+//   - not declared (or no annotation), not queued -> external: today's behavior.
 type MissingClass = 'queued_producer' | 'member_wait' | 'member_dead' | 'external';
 const classifyMissing = (intent: SequencerIntent, id: string, options: BatchPlanOptions): MissingClass => {
-  if (!intent.memberRefIds?.has(id)) return 'external';
   if (options.queueHas?.(id)) return 'queued_producer';
+  if (!intent.memberRefIds?.has(id)) return 'external';
   if ((intent.memberWaitAttempts ?? 0) >= (options.memberWaitLimit ?? 2)) return 'member_dead';
   return 'member_wait';
+};
+
+// s9.10.2 member-dead soft-strip: remove the dead ids everywhere in the input, in place
+// (string entries leave their array, scalar ref fields null out). The apply closure holds
+// this same object, so the direct path creates the element without the dead references,
+// deterministically and in zero extra round trips (the upstream reject-twice heuristic
+// reaches the same end state after 2 blind worker retries).
+const stripDeadRefIds = (value: any, deadIds: Set<string>): void => {
+  if (Array.isArray(value)) {
+    for (let i = value.length - 1; i >= 0; i -= 1) {
+      const entry = value[i];
+      if (typeof entry === 'string' && deadIds.has(entry)) value.splice(i, 1);
+      else if (entry !== null && typeof entry === 'object') stripDeadRefIds(entry, deadIds);
+    }
+    return;
+  }
+  if (value !== null && typeof value === 'object') {
+    Object.keys(value).forEach((key) => {
+      const v = value[key];
+      if (typeof v === 'string' && deadIds.has(v)) value[key] = null;
+      else if (v !== null && typeof v === 'object') stripDeadRefIds(v, deadIds);
+    });
+  }
+};
+
+const stripDeadFromIntent = (intent: SequencerIntent, deadIds: Set<string>): void => {
+  stripDeadRefIds(intent.input, deadIds);
+  intent.referencedIds = intent.referencedIds.filter((id) => !deadIds.has(id));
+  deadIds.forEach((id) => intent.memberRefIds?.delete(id));
 };
 
 export const buildBatchPlan = (
@@ -243,6 +279,7 @@ export const buildBatchPlan = (
   // 3. edges, and classification of unresolved refs (D2 + s9.8.2 certainty rules)
   const parked: { intent: SequencerIntent; missing: string[] }[] = [];
   const finalMissing: { intent: SequencerIntent; missing: string[] }[] = [];
+  const strippedDead: { intent: SequencerIntent; stripped: string[] }[] = [];
   const edges: Set<number>[] = groups.map(() => new Set());
   const applicable: boolean[] = groups.map(() => true);
   const missingByGroup = new Map<number, string[]>();
@@ -256,6 +293,7 @@ export const buildBatchPlan = (
     if (chainPrev[index] >= 0) edges[index].add(chainPrev[index]);
     const parkIds: string[] = [];
     const finalIds: string[] = [];
+    const deadSoftIds: string[] = [];
     let defer: DeferReason | null = null;
     const onMissing = (id: string, soft: boolean) => {
       const cls = classifyMissing(group.leader, id, options);
@@ -264,7 +302,10 @@ export const buildBatchPlan = (
       } else if (cls === 'queued_producer') {
         defer = defer ?? 'queued_producer';
       } else if (cls === 'member_dead') {
-        finalIds.push(id);
+        // s9.10.2: a dead SOFT ref is stripped (the container survives without the edge
+        // that could never exist); a dead HARD ref (relation endpoint) still condemns.
+        if (soft) deadSoftIds.push(id);
+        else finalIds.push(id);
       } else if (!soft) {
         parkIds.push(id); // external hard: park with deadline, today's healing path
       } else if (options.parkSoftRefs) {
@@ -289,9 +330,21 @@ export const buildBatchPlan = (
         onMissing(id, true);
       }
     });
+    // s9.10.2 strip point: a group not condemned by a hard dead ref sheds its dead soft
+    // refs HERE, before routing, so whatever path it takes (apply now, defer, park) it
+    // travels clean (absorbed re-enter individually on defer: strip them too, their
+    // inputs are distinct objects with equal content)
+    if (finalIds.length === 0 && deadSoftIds.length > 0) {
+      const dead = new Set(deadSoftIds);
+      [group.leader, ...group.absorbed].forEach((intent) => {
+        stripDeadFromIntent(intent, dead);
+        strippedDead.push({ intent, stripped: deadSoftIds });
+      });
+    }
     if (finalIds.length > 0) {
-      // a dead member ref condemns the intent regardless of its other refs: reject now,
-      // the worker strips (soft) or drops (hard) and a resent object re-enters fresh
+      // a dead HARD ref condemns the intent regardless of its other refs: reject now,
+      // pycti reports-and-drops the object in one round trip (a relation without its
+      // endpoint is meaningless)
       applicable[index] = false;
       groupClass.set(index, 'final');
       missingByGroup.set(index, finalIds);
@@ -371,5 +424,5 @@ export const buildBatchPlan = (
     orderPosition.set(next, order.length);
     order.push({ leader: groups[next].leader, absorbed: groups[next].absorbed, dependsOn });
   }
-  return { order, deferred, parked, finalMissing, chainedSteps };
+  return { order, deferred, parked, finalMissing, strippedDead, chainedSteps };
 };

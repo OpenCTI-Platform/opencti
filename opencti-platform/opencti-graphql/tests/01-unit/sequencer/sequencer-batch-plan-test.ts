@@ -261,6 +261,45 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(plan.deferred).toEqual([{ intent: entity, reason: 'queued_producer' }]);
   });
 
+  it('defers with certainty when a missing EXTERNAL ref has its producer in the queue (s9.10.2)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [] });
+    const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
+    const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: (id) => id === 'software--s' });
+    expect(plan.deferred).toEqual([{ intent: rel, reason: 'queued_producer' }]);
+    expect(plan.parked).toEqual([]); // before s9.10 this hard external ref parked
+  });
+
+  it('strips dead SOFT member refs and applies the container without them (s9.10.2)', () => {
+    const note = intentOf({
+      kind: 'entity',
+      type: 'Note',
+      input: { name: 'N', objects: ['vulnerability--v', 'report--r'], createdBy: 'identity--dead' },
+      candidateIds: ['note--n'],
+      referencedIds: ['vulnerability--v', 'report--r', 'identity--dead'],
+      memberRefIds: new Set(['vulnerability--v', 'identity--dead']),
+    });
+    const resolve = (id: string) => (id === 'report--r' ? 'intR' : null);
+    const opts = { queueHas: () => false, memberWaitLimit: 2 };
+    expect(buildBatchPlan([note], resolve, new Set(), opts).deferred.map((d) => d.reason)).toEqual(['member_wait']);
+    expect(buildBatchPlan([note], resolve, new Set(), opts).deferred.map((d) => d.reason)).toEqual(['member_wait']);
+    const p3 = buildBatchPlan([note], resolve, new Set(), opts);
+    expect(p3.finalMissing).toEqual([]); // soft dead refs no longer condemn the container
+    expect(p3.strippedDead).toEqual([{ intent: note, stripped: ['vulnerability--v', 'identity--dead'] }]);
+    expect(p3.order.map((g) => g.leader)).toEqual([note]);
+    expect(note.input.objects).toEqual(['report--r']); // dead array entry removed
+    expect(note.input.createdBy).toBeNull(); // dead scalar ref nulled
+    expect(note.referencedIds).toEqual(['report--r']);
+  });
+
+  it('a dead HARD member ref (relation endpoint) still rejects final, no strip (s9.10.2)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+    rel.memberWaitAttempts = 2; // bounded wait already exhausted
+    const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
+    const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
+    expect(plan.strippedDead).toEqual([]);
+    expect(plan.finalMissing).toEqual([{ intent: rel, missing: ['software--s'] }]);
+  });
+
   it('exposes producer positions as dependsOn in the order (s9.9 failure-aware execution)', () => {
     const org = intentOf({ kind: 'entity', type: 'Organization', input: { name: 'ACME' }, candidateIds: ['identity--org'] });
     const malware = intentOf({ kind: 'entity', input: { name: 'M', createdBy: 'identity--org' }, candidateIds: ['malware--m'], referencedIds: ['identity--org'] });

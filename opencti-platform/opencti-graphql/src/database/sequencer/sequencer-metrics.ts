@@ -38,6 +38,8 @@ class SequencerMetrics {
 
   private memberDeadCounter: Counter | null = null;
 
+  private memberDeadStrippedCounter: Counter | null = null;
+
   private rootFailures: Counter | null = null;
 
   register() {
@@ -102,6 +104,10 @@ class SequencerMetrics {
       valueType: ValueType.INT,
       description: 'Intents rejected final: an in-bundle ref whose producer never arrived (its creation failed), s9.8.2',
     });
+    this.memberDeadStrippedCounter = meter.createCounter('opencti_sequencer_member_dead_stripped_total', {
+      valueType: ValueType.INT,
+      description: 'Dead SOFT member refs stripped from a surviving intent (the container applies without the impossible edge), s9.10.2',
+    });
     this.rootFailures = meter.createCounter('opencti_sequencer_root_failures_total', {
       valueType: ValueType.INT,
       description: 'Apply failures with NO failed in-batch producer (cascade roots), by error code (s9.9.3)',
@@ -159,6 +165,10 @@ class SequencerMetrics {
 
   memberDead(count = 1) {
     this.memberDeadCounter?.add(count);
+  }
+
+  memberDeadStripped(count = 1) {
+    this.memberDeadStrippedCounter?.add(count);
   }
 
   rootFailure(code: string) {
