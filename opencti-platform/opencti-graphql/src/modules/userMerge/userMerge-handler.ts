@@ -107,12 +107,33 @@ export const handlerDryRun = async (
  * Order-independent signature of a plan, used by the engine to prove that what the real
  * pass is about to write is what the dry pass showed the operator.
  */
-export const planFingerprint = (plan: UserMergeHandlerPlan): string => {
-  const changes = [...plan.changes]
-    .map((change) => `${change.register_row_id}|${change.entity_type}|${change.count}|${change.exact}`)
-    .sort();
-  const alerts = [...plan.alerts]
-    .map((alert) => `${alert.register_row_id}|${alert.kind}|${alert.message}`)
-    .sort();
-  return JSON.stringify({ handler: plan.handler, changes, alerts });
+const changeKeys = (plan: UserMergeHandlerPlan): string[] => [...plan.changes]
+  .map((change) => `${change.register_row_id}|${change.entity_type}|${change.count}|${change.exact}`)
+  .sort();
+
+const alertKeys = (plan: UserMergeHandlerPlan): string[] => [...plan.alerts]
+  .map((alert) => `${alert.register_row_id}|${alert.kind}|${alert.message}`)
+  .sort();
+
+export const planFingerprint = (plan: UserMergeHandlerPlan): string => JSON.stringify({
+  handler: plan.handler,
+  changes: changeKeys(plan),
+  alerts: alertKeys(plan),
+});
+
+/**
+ * What differs between the two passes, computed with the same normalisation as the
+ * fingerprint so an entry listed here is exactly what made the two prints differ.
+ *
+ * Stating that the platform moved without naming what moved leaves the operator with a
+ * refusal and no lead: the register row that changed is what tells them which activity
+ * was still running.
+ */
+export const planDivergence = (dry: UserMergeHandlerPlan, real: UserMergeHandlerPlan): { dry_only: string[]; real_only: string[] } => {
+  const before = [...changeKeys(dry), ...alertKeys(dry)];
+  const after = [...changeKeys(real), ...alertKeys(real)];
+  return {
+    dry_only: before.filter((entry) => !after.includes(entry)),
+    real_only: after.filter((entry) => !before.includes(entry)),
+  };
 };

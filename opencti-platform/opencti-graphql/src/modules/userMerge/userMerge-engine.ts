@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
 import type { AuthContext } from '../../types/user';
-import { handlerDryRun, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
+import { handlerDryRun, planDivergence, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
 import { readJournalEntries, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { USER_MERGE_REGISTRY_VERSION } from './userMerge-register';
@@ -49,6 +49,7 @@ const applyHandler = async (
   if (planFingerprint(plan) !== planFingerprint(dryOutcome)) {
     throw UnsupportedError('Platform state changed between the dry pass and the real pass, nothing was written for this handler', {
       handler: handler.identifier,
+      ...planDivergence(dryOutcome, plan),
     });
   }
   const updated = await handler.apply(handlerContext, plan);
