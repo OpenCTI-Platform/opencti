@@ -313,7 +313,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                         </div>
                       ))}
 
-                      <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+                      <div style={{ display: 'flex', gap: theme.spacing(2), alignItems: 'end' }}>
                         <FormControl sx={{ flex: 1 }}>
                           <Select
                             value=""
@@ -361,7 +361,13 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             },
                           }}
                         />
-                        <IconButton aria-label={t_i18n('Delete')} size="small" color="primary" disabled>
+                        <IconButton
+                          aria-label={t_i18n('Delete')}
+                          size="small"
+                          color="primary"
+                          disabled
+                          sx={{ mb: '6px' }}
+                        >
                           <DeleteOutlined fontSize="small" />
                         </IconButton>
                       </div>

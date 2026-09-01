@@ -79,13 +79,6 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     color: theme.palette.text.primary,
   },
-  buttonBack: {
-    marginTop: 20,
-    float: 'left',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
 }));
 
 const STIX_SIGHTING_TYPE = 'stix-sighting-relationship';
@@ -324,18 +317,19 @@ const StixSightingRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            {typeof handleResetSelection === 'function' && (
-              <div className={classes.buttonBack}>
-                <Button
-                  variant="secondary"
-                  onClick={handleResetSelection}
-                  disabled={isSubmitting}
-                >
-                  {t_i18n('Back')}
-                </Button>
-              </div>
-            )}
             <FormButtonContainer>
+              {typeof handleResetSelection === 'function' && (
+                // A wrapper, not `sx`: the product Button falls back to MUI when given one.
+                <div style={{ marginRight: 'auto' }}>
+                  <Button
+                    variant="secondary"
+                    onClick={handleResetSelection}
+                    disabled={isSubmitting}
+                  >
+                    {t_i18n('Back')}
+                  </Button>
+                </div>
+              )}
               <Button
                 variant="secondary"
                 onClick={handleReset}
