@@ -236,7 +236,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
               minHeight: '100vh',
               width: getDrawerWidth(size),
               position: 'fixed',
-              overflow: 'auto',
+              overflow: 'hidden',
               transition: theme.transitions.create('width', {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen,

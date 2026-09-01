@@ -1,5 +1,4 @@
 import {
-  Checkbox,
   Combobox,
   ComboboxChips,
   type ComboboxChangeMeta,
@@ -96,11 +95,6 @@ const EntitySelectComponent = ({
           width: '100%',
         }}
         >
-          {multiple && (
-            <Checkbox
-              checked={!!(value as EntityOption[]).find((v) => option.value === v.value)}
-            />
-          )}
           <ItemIcon type={option.type} />
           <span style={{
             overflow: 'hidden',

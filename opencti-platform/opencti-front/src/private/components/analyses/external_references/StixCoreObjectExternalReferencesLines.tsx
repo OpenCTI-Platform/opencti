@@ -33,7 +33,6 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import { truncate } from '../../../../utils/String';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -273,6 +272,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                     const externalReferenceId = externalReference.external_id
                       ? `(${externalReference.external_id})`
                       : '';
+                    const externalReferenceName = `${externalReference.source_name} ${externalReferenceId}`;
                     let externalReferenceSecondary: string;
                     if (externalReference.url && externalReference.url.length > 0) {
                       externalReferenceSecondary = externalReference.url;
@@ -342,8 +342,16 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                 <ItemIcon type="External-Reference" />
                               </ListItemIcon>
                               <ListItemText
-                                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                                secondary={externalReferenceSecondary}
+                                primary={(
+                                  <Tooltip title={externalReferenceName}>
+                                    <span>{externalReferenceName}</span>
+                                  </Tooltip>
+                                )}
+                                secondary={(
+                                  <Tooltip title={externalReferenceSecondary}>
+                                    <span>{externalReferenceSecondary}</span>
+                                  </Tooltip>
+                                )}
                                 slotProps={{
                                   primary: {
                                     overflow: 'hidden',
@@ -419,13 +427,38 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                           <ListItemButton
                             component={Link}
                             to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                            sx={{
+                              '&.MuiListItemButton-root': {
+                                paddingRight: `${BUTTON_CONTAINER_WIDTH}px`,
+                              },
+                            }}
                           >
                             <ListItemIcon>
                               <ItemIcon type="External-Reference" />
                             </ListItemIcon>
                             <ListItemText
-                              primary={`${externalReference.source_name} ${externalReferenceId}`}
-                              secondary={truncate(externalReference.description, 120)}
+                              primary={(
+                                <Tooltip title={externalReferenceName}>
+                                  <span>{externalReferenceName}</span>
+                                </Tooltip>
+                              )}
+                              secondary={(
+                                <Tooltip title={externalReference.description}>
+                                  <span>{externalReference.description}</span>
+                                </Tooltip>
+                              )}
+                              slotProps={{
+                                primary: {
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                },
+                                secondary: {
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                },
+                              }}
                             />
                           </ListItemButton>
                         </ListItem>

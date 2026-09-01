@@ -69,6 +69,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
   draftCheckbox: {
     marginTop: 20,
+    marginLeft: 0,
   },
   fieldGroup: {
     marginBottom: 20,
@@ -973,6 +974,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       checked={isDraft}
                       onCheckedChange={(checked) => setIsDraft(checked === true)}
                       disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                      style={{ marginRight: 10 }}
                     />
                   )}
                   label={t_i18n('Create as draft')}

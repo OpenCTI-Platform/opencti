@@ -33,6 +33,8 @@ import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { Stack, useTheme } from '@mui/material';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import useAuth from '../../../../utils/hooks/useAuth';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
 
 interface ContentBlocProps {
   title: ReactNode;
@@ -130,6 +132,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { bannerSettings } = useAuth();
+  const { height: topBannerHeight } = useTopBanner();
+  const topOffset = topBannerHeight + bannerSettings.bannerHeightNumber;
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayCreate, setDisplayCreate] = useState(false);
@@ -194,7 +199,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
           background: 'var(--bg-elevation-default)',
           borderLeft: '1px solid var(--border-elevation-subtle-soft)',
           paddingBottom: draftContext ? '89px' : '20px', // Add 69px in case DraftToolbar is opened
-          paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 16 for margin, 64 for top bar,
+          paddingTop: `calc(16px + 64px + ${topOffset}px + ${settingsMessagesBannerHeight ?? 0}px)`,
         },
       }}
     >

@@ -87,16 +87,15 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
     navStyle['--color-filigran-brand-primary-transparency-55'] = `color-mix(in srgb, ${accentColor} 55%, transparent)`;
   }
 
-  // FDS-WORKAROUND #2: submenu icons composed product-side — remove when a slotted child keeps icon handling — see fds-migration/LIBRARY-FEEDBACK.md #2
   const renderSubItem = (sub: NavSubItem) => (
-    <NavbarSubmenuItem key={sub.link} asChild>
-      <Link
-        to={sub.link}
-        aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
-      >
-        {submenuShowIcons && sub.icon}
-        <span>{sub.label}</span>
-      </Link>
+    <NavbarSubmenuItem
+      key={sub.link}
+      to={sub.link}
+      linkComponent={Link}
+      icon={sub.icon}
+      aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
+    >
+      {sub.label}
     </NavbarSubmenuItem>
   );
 
@@ -133,6 +132,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
         // exactly what the previous `handleParentClick` did: expanded, a click toggled the
         // accordion; collapsed, it navigated to the parent route.
         to={item.link}
+        linkComponent={Link}
       >
         {item.subItems.map(renderSubItem)}
       </NavbarSubmenu>
@@ -248,6 +248,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
           logo={<img src={productLogo} alt="" width={126} height={28} style={{ objectFit: 'contain', objectPosition: 'left' }} />}
           logoCollapsed={<img src={productLogoCollapsed} alt="" height={28} width={28} style={{ objectFit: 'contain' }} />}
           logoTo="/dashboard"
+          linkComponent={Link}
           // The logo link and the "Home" row both point at /dashboard, so the logo cannot be named "Home": two
           // links with the same accessible name inside one navigation are ambiguous for screen readers and break
           // the e2e page object's `exact` name lookup. "logo" is the accessible name the replaced rail exposed

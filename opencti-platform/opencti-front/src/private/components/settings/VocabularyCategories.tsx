@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
 import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -16,7 +16,6 @@ const LOCAL_STORAGE_KEY = 'vocabulary_categories';
 const VocabularyCategories = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const theme = useTheme();
 
   setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
 
@@ -74,12 +73,11 @@ const VocabularyCategories = () => {
           { label: t_i18n('Vocabularies'), current: true },
         ]}
       />
-      <div>
+      <Stack gap={2}>
         <SearchInput
           variant="small"
           onSubmit={handleSearch}
           keyword={searchTerm}
-          style={{ marginBottom: theme.spacing(2) }}
         />
         <DataTableWithoutFragment
           storageKey={LOCAL_STORAGE_KEY}
@@ -92,7 +90,7 @@ const VocabularyCategories = () => {
           icon={() => (<ShortTextOutlined color="primary" />)}
           onSort={onSort}
         />
-      </div>
+      </Stack>
     </div>
   );
 };
