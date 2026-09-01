@@ -17,6 +17,9 @@ export const AGENT_SLUG = 'ctem-assistant';
 // markdown rendering (the widget strips the `**` emphasis).
 export const PRESENTATION_EXCERPT = 'What would you like help with today?';
 
+// Asked by the test, and the title the history menu shows for that conversation.
+export const QUESTION = 'Hello, who are you?';
+
 // The only error text the widget renders on its own; anything else it displays
 // comes from the proxy and replaces the assistant message content.
 export const WIDGET_ERROR_MESSAGE = 'Sorry, an error occurred. Please try again.';
@@ -64,11 +67,26 @@ const MESSAGES_STREAM = [
   },
 ].map((event) => `data: ${JSON.stringify(event)}\n\n`).join('');
 
+// POST resumes a conversation and replays its messages.
 const SESSION = {
   conversation_id: CONVERSATION_ID,
   messages: [
-    { role: 'user', content: 'Hello, who are you?' },
+    { role: 'user', content: QUESTION },
     { role: 'assistant', content: PRESENTATION_ANSWER },
+  ],
+};
+
+// GET lists the conversations, and is requested when the history menu opens.
+const SESSIONS = {
+  conversations: [
+    {
+      conversation_id: CONVERSATION_ID,
+      title: QUESTION,
+      updated_at: '2026-09-01T09:08:20.357532+00:00',
+      message_count: 2,
+      agent_id: AGENTS[0].id,
+      agent_name: AGENT_NAME,
+    },
   ],
 };
 
@@ -120,7 +138,9 @@ export const mockChatbotBackend = async (page: Page) => {
 
   await page.route('**/chatbot/agents**', (route) => route.fulfill(json(AGENTS)));
 
-  await page.route('**/chatbot/sessions', (route) => route.fulfill(json(SESSION)));
+  await page.route('**/chatbot/sessions', (route) => route.fulfill(
+    json(route.request().method() === 'GET' ? SESSIONS : SESSION),
+  ));
 
   await page.route('**/chatbot/messages', (route) => route.fulfill({
     status: 200,

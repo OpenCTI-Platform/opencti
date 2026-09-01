@@ -12,8 +12,7 @@ const ICON_SWITCH_VIEW = 'M15 3v18';
 const ICON_CLOSE = 'M18 6 6 18';
 
 export default class AskArianePageModel {
-  constructor(private page: Page) {
-  }
+  constructor(private page: Page) {}
 
   // The top bar button opens the panel. Its accessible name comes from the
   // tooltip, not from the visible 'Ask Ariane' label.

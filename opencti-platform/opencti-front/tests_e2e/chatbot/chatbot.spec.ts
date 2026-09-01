@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import AskArianePageModel from '../model/askAriane.pageModel';
-import { AGENT_DESCRIPTION, AGENT_NAME, PRESENTATION_EXCERPT, WIDGET_ERROR_MESSAGE, getUnstubbedChatbotRequests, mockChatbotBackend } from './chatbotBackendMock';
+import { AGENT_DESCRIPTION, AGENT_NAME, PRESENTATION_EXCERPT, QUESTION, WIDGET_ERROR_MESSAGE, getUnstubbedChatbotRequests, mockChatbotBackend } from './chatbotBackendMock';
 
 /**
  * Content of the test
@@ -34,9 +34,9 @@ test('Ask Ariane chatbot', { tag: ['@ee'] }, async ({ page }) => {
 
   // region The agent answers a question
   // ----------------------------------
-  await askAriane.getPromptInput().fill('Hello, who are you?');
+  await askAriane.getPromptInput().fill(QUESTION);
   await askAriane.getPromptInput().press('Enter');
-  await expect(panel).toContainText('Hello, who are you?');
+  await expect(panel).toContainText(QUESTION);
   await expect(panel).toContainText(PRESENTATION_EXCERPT);
   await expect(panel).not.toContainText(WIDGET_ERROR_MESSAGE);
   // endregion
@@ -44,7 +44,7 @@ test('Ask Ariane chatbot', { tag: ['@ee'] }, async ({ page }) => {
   // region Starting a new chat resets the conversation
   // -------------------------------------------------
   await askAriane.getNewChatButton().click();
-  await expect(panel).not.toContainText('Hello, who are you?');
+  await expect(panel).not.toContainText(QUESTION);
   await expect(panel).toContainText(`How can ${AGENT_NAME} help you`);
   await expect(panel).not.toContainText(WIDGET_ERROR_MESSAGE);
   // endregion
