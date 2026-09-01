@@ -13,7 +13,8 @@ import {
   findCoveredEntitiesDistribution,
   findResultsRelationshipsPaginated,
 } from './securityCoverage-domain';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
