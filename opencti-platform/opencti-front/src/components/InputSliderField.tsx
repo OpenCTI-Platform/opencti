@@ -91,7 +91,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               onValueChange={updateFromSelect}
               disabled={finalDisabled}
             >
-              <SelectTrigger aria-label={label}>
+              <SelectTrigger aria-label={label} className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={label}>
@@ -145,7 +145,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             onValueChange={(newValue) => setFieldValue(name, newValue)}
             disabled={disabled}
           >
-            <SelectTrigger aria-label={label}>
+            <SelectTrigger aria-label={label} className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={label}>
