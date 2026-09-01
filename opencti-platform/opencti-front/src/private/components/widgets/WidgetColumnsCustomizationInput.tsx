@@ -52,7 +52,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                 <ListItem
                   disablePadding
                   key={column.attribute}
-                  sx={{ height: 42 }}
+                  sx={{ height: 42, paddingLeft: theme.spacing(2), gap: theme.spacing(1) }}
                 >
                   <Checkbox
                     checked={value.some((col) => col.attribute === column.attribute)}
