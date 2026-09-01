@@ -11,9 +11,12 @@ import {
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
+  Icon,
+  IconButton,
 } from '@filigran/design-system';
 import { FieldProps, useField } from 'formik';
 import { FieldOption } from '../utils/field';
+import { useFormatter } from './i18n';
 import { isNilField } from '../utils/utils';
 
 /**
@@ -66,6 +69,8 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       onFocusInput?: (event: React.FocusEvent<HTMLInputElement>) => void;
       onChange?: (name: string, value: Value | Value[] | null) => void;
       onInternalChange?: (name: string, value: Value | Value[] | null) => void;
+      /** Persistent create button on the field line; also stands in for `onCreateOption`. */
+      openCreate?: () => void;
       /** Opens the product's creation form for the text the list does not hold. */
       onCreateOption?: (input: string, meta: ComboboxChangeMeta) => void;
       createOptionLabel?: (input: string) => string;
@@ -113,6 +118,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   onFocusInput,
   onChange,
   onInternalChange,
+  openCreate,
   onCreateOption,
   createOptionLabel,
   createHintLabel,
@@ -123,6 +129,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   closeOnSelect,
   keepInputOnBlur,
 }: ComboboxFieldProps<Value>) => {
+  const { t_i18n } = useFormatter();
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
 
@@ -177,7 +184,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         inputValue={inputValue}
         onInputChange={onInputChange}
         onOpenChange={onOpenChange}
-        onCreateOption={onCreateOption}
+        onCreateOption={onCreateOption ?? (openCreate && (() => openCreate()))}
         createOptionLabel={createOptionLabel}
         createHintLabel={createHintLabel}
         allowCustomValue={allowCustomValue}
@@ -188,7 +195,17 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         keepInputOnBlur={keepInputOnBlur}
       >
         {label ? <ComboboxLabel>{label}</ComboboxLabel> : null}
-        <FdsComboboxField>
+        <FdsComboboxField
+          adornment={openCreate ? (
+            <IconButton
+              icon={<Icon name="plus" size={16} />}
+              aria-label={t_i18n('Add')}
+              priority="tertiary"
+              size="sm"
+              onClick={openCreate}
+            />
+          ) : undefined}
+        >
           {/* Named after the field: ComboboxChips otherwise defaults to one
               untranslated name shared by every chip row in the product. */}
           {multiple ? (
