@@ -612,7 +612,9 @@ const STATUS_DELETION_GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 /**
  * True if any entity of `entityType` currently has its legacy `x_opencti_workflow_id` field
- * pointing at this `Status`.
+ * pointing at this `Status`, either in the live index or inside any draft (across all drafts,
+ * not just one) — a `Status` referenced only from within a draft must not be deleted, since
+ * publishing that draft later would leave it pointing at a hard-deleted record.
  */
 const isStatusReferencedByEntity = async (
   context: AuthContext,
@@ -620,14 +622,19 @@ const isStatusReferencedByEntity = async (
   entityType: string,
   statusId: string,
 ): Promise<boolean> => {
-  const entities = await fullEntitiesList<any>(context, user, [entityType], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['x_opencti_workflow_id'], values: [statusId] }],
-      filterGroups: [],
-    },
+  const statusFilters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['x_opencti_workflow_id'], values: [statusId] }],
+    filterGroups: [],
+  };
+  const entities = await fullEntitiesList<any>(context, user, [entityType], { filters: statusFilters });
+  if (entities.length > 0) return true;
+
+  const draftEntities = await fullEntitiesList<any>(context, user, [entityType], {
+    indices: [READ_INDEX_DRAFT_OBJECTS],
+    filters: statusFilters,
   });
-  return entities.length > 0;
+  return draftEntities.length > 0;
 };
 
 /**
