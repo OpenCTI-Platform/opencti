@@ -150,6 +150,10 @@ bundles_missing_reference_error_counter = meter.create_counter(
     name="opencti_bundles_missing_reference_error_counter",
     description="number of bundles in missing reference error",
 )
+bundles_missing_reference_retry_attempt_counter = meter.create_counter(
+    name="opencti_bundles_missing_reference_retry_attempt_counter",
+    description="number of missing reference retries, by 1-based attempt number",
+)
 bundles_bad_gateway_error_counter = meter.create_counter(
     name="opencti_bundles_bad_gateway_error_counter",
     description="number of bundles in bad gateway error",
@@ -3642,8 +3646,9 @@ class OpenCTIStix2:
                     processing_count += 1
                 # Platform detects a missing reference and have to retry
                 elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
+                    bundles_missing_reference_error_counter.add(1)
                     # attempt is 1-based: 1 = first retry, PROCESSING_COUNT = last one
-                    bundles_missing_reference_error_counter.add(
+                    bundles_missing_reference_retry_attempt_counter.add(
                         1, {"attempt": processing_count + 1}
                     )
                     time.sleep(missing_ref_retry_delay(processing_count))

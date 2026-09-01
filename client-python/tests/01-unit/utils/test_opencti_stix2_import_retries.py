@@ -50,19 +50,25 @@ class _MissingRefThenSuccess:
 
 
 def _run_import_with_retries(monkeypatch, opencti_stix2, failures):
-    """Run import_item_with_retries against a failing import_item; capture sleeps and attempts."""
+    """Run import_item_with_retries against a failing import_item; capture sleeps and counters."""
     sleeps = []
     attempts = []
+    error_adds = []
     monkeypatch.setattr(time, "sleep", lambda s: sleeps.append(s))
     monkeypatch.setattr(
         stix2_module.bundles_missing_reference_error_counter,
+        "add",
+        lambda amount, attributes=None: error_adds.append((amount, attributes)),
+    )
+    monkeypatch.setattr(
+        stix2_module.bundles_missing_reference_retry_attempt_counter,
         "add",
         lambda amount, attributes=None: attempts.append(attributes["attempt"]),
     )
     monkeypatch.setattr(opencti_stix2, "import_item", _MissingRefThenSuccess(failures))
     # No work_id: nothing is reported to the platform on the terminal path.
     result = opencti_stix2.import_item_with_retries({"id": "x", "type": "report"})
-    return result, sleeps, attempts
+    return result, sleeps, attempts, error_adds
 
 
 # --- schedule function -------------------------------------------------------------------------
@@ -103,13 +109,15 @@ def test_exponential_schedule_honors_knobs(monkeypatch, uniform_bounds):
 def test_missing_ref_retry_loop_legacy(
     opencti_stix2: OpenCTIStix2, monkeypatch, uniform_bounds
 ):
-    result, sleeps, attempts = _run_import_with_retries(
+    result, sleeps, attempts, error_adds = _run_import_with_retries(
         monkeypatch, opencti_stix2, failures=PROCESSING_COUNT
     )
     # Healed on the 5th call, after the 4 retries allowed by PROCESSING_COUNT.
     assert result is None
     assert sleeps == [2.0] * PROCESSING_COUNT
-    # attempt attribute is 1-based, whatever the schedule.
+    # The historical counter keeps its exact shape: one label-free add per retry.
+    assert error_adds == [(1, None)] * PROCESSING_COUNT
+    # attempt attribute is 1-based, on the dedicated counter, whatever the schedule.
     assert attempts == [1, 2, 3, 4]
 
 
@@ -117,11 +125,12 @@ def test_missing_ref_retry_loop_exponential(
     opencti_stix2: OpenCTIStix2, monkeypatch, uniform_bounds
 ):
     monkeypatch.setattr(stix2_module, "MISSING_REF_RETRY_EXPONENTIAL", True)
-    result, sleeps, attempts = _run_import_with_retries(
+    result, sleeps, attempts, error_adds = _run_import_with_retries(
         monkeypatch, opencti_stix2, failures=PROCESSING_COUNT
     )
     assert result is None
     assert sleeps == [0.5, 1.0, 2.0, 4.0]
+    assert error_adds == [(1, None)] * PROCESSING_COUNT
     assert attempts == [1, 2, 3, 4]
 
 
@@ -130,11 +139,12 @@ def test_missing_ref_retry_loop_stops_after_processing_count(
 ):
     # One failure too many: the missing-reference branch is no longer in retry, the item goes
     # to the terminal technical-error path (no more sleep) and is not re-attempted.
-    result, sleeps, attempts = _run_import_with_retries(
+    result, sleeps, attempts, error_adds = _run_import_with_retries(
         monkeypatch, opencti_stix2, failures=PROCESSING_COUNT + 1
     )
     assert result is None
     assert len(sleeps) == PROCESSING_COUNT
+    assert error_adds == [(1, None)] * PROCESSING_COUNT
     assert attempts == list(range(1, PROCESSING_COUNT + 1))
     assert opencti_stix2.import_item.calls == PROCESSING_COUNT + 1
 
