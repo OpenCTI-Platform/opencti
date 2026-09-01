@@ -748,14 +748,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
       </Grid>
       <Dialog
-        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
         slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSession}
         onClose={handleCloseKillSession}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
         <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill this session?')}
@@ -773,14 +769,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
         slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSessions}
         onClose={handleCloseKillSessions}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
         <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill all the sessions of this user?')}

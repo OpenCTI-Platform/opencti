@@ -23,8 +23,6 @@ const useStyles = makeStyles(() => ({
   container: {
     width: 600,
     padding: 20,
-    // Filter popovers: surface on `--bg-elevation-highlight` at layer 1, the
-    // fields inside at layer 2. See utils/fdsLayer.ts.
     ...filterPopoverPaperSx,
   },
 }));
@@ -198,19 +196,11 @@ const ListFilters = ({
         </Tooltip>
       ) : (
         <>
-          {/* The picker never HOLDS a value: choosing an option adds a filter and
-              the field goes straight back to empty, which is why `value` is a
-              literal null rather than state. `placeholder` carries the name
-              instead of a <ComboboxLabel>: the library renders a label ABOVE the
-              control, and this control sits in a flex row beside the unlabelled
-              search field — a label here would make this the only tall item in
-              the row and re-open the very alignment defect the same pass asks to
-              fix. The accessible name is kept on the input. */}
+          {/* Null value and no <ComboboxLabel>, both deliberate — see fds-migration/MIGRATION-DECISIONS.md#add-filter-picker */}
           <Combobox<OptionType>
-            // The Combobox ROOT carries `flex w-full flex-col`, so in a flex row it claims the
-            // whole line and pushes the search field, the funnel and the chips onto lines of
-            // their own — the stacked filter bar reported on the Triggers page and the threat-
-            // actor card page.
+            // The Combobox ROOT carries `flex w-full flex-col`, so in a flex row it claims the whole line and
+            // pushes the search field, the funnel and the chips onto lines of their own — the stacked filter bar
+            // reported on the Triggers page and the threat- actor card page.
             className="w-50 shrink-0"
             options={options as OptionType[]}
             labelPosition="none"
@@ -225,7 +215,6 @@ const ListFilters = ({
             groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
             getOptionLabel={(option) => option.label}
             inputValue={inputValue}
-            // ONLY a keystroke may write this field.
             onInputChange={(newValue, meta) => {
               if (meta.cause !== 'type') {
                 return;
@@ -233,9 +222,8 @@ const ListFilters = ({
               setInputValue(newValue);
             }}
           >
-            {/* The declared width was shrunk to 119px by the flex row, which cut
-                the label off at 95px of the 101px it needs. flexShrink keeps it
-                at 200. */}
+            {/* The declared width was shrunk to 119px by the flex row, which cut the label off at 95px of the 101px
+                it needs. flexShrink keeps it at 200. */}
             <ComboboxField style={{ width: 200, flexShrink: 0 }}>
               <ComboboxInput
                 placeholder={placeholder}
@@ -243,12 +231,7 @@ const ListFilters = ({
                 required={required}
               />
               <ComboboxControls>
-                {/* No aria-label here on purpose. Naming the trigger after the
-                    field too gave TWO elements the accessible name "Add filter"
-                    -- the input and the chevron -- and getByLabel('Add filter')
-                    in filters.pageModel then failed strict mode. The library
-                    already names it "Toggle options", which is what every other
-                    converted Combobox in this product relies on. */}
+                {/* No aria-label on purpose — see fds-migration/MIGRATION-DECISIONS.md#add-filter-picker */}
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>

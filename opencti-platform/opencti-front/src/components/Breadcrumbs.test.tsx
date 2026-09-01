@@ -4,10 +4,6 @@ import { screen } from '@testing-library/react';
 import testRender from '../utils/tests/test-render';
 import Breadcrumbs from './Breadcrumbs';
 
-/**
- * What the page path owes this product, now that the design system draws it.
- */
-
 const PATH = [
   { label: 'Entities' },
   { label: 'Sectors', link: '/dashboard/entities/sectors' },
@@ -21,7 +17,6 @@ afterEach(() => {
 describe('Breadcrumbs', () => {
   it('is a named navigation landmark holding an ordered list', () => {
     testRender(<Breadcrumbs elements={PATH} />);
-    // The wrapper this replaced rendered a bare <div>: no landmark, no list.
     const nav = screen.getByRole('navigation', { name: 'Breadcrumb' });
     expect(nav.tagName).toBe('NAV');
     expect(nav.querySelector('ol')).not.toBeNull();
@@ -36,7 +31,6 @@ describe('Breadcrumbs', () => {
 
   it('keeps the whole label in the DOM and in title, instead of cutting it', () => {
     testRender(<Breadcrumbs elements={PATH} />);
-    // 30 and 50 character cuts were applied in JS, with no way to read the rest.
     const current = screen.getByText(PATH[2].label);
     expect(current.textContent).toBe(PATH[2].label);
     expect(current).toHaveAttribute('title', PATH[2].label);
@@ -84,7 +78,6 @@ describe('Breadcrumbs', () => {
   });
 
   it('puts the bottom margin on the landmark, and drops it for noMargin', () => {
-    // theme.spacing(1) was 8px, which is mb-2 on the library's 4px scale.
     const { unmount } = testRender(<Breadcrumbs elements={PATH} />);
     expect(screen.getByRole('navigation').className).toContain('mb-2');
     unmount();
@@ -97,8 +90,6 @@ describe('Breadcrumbs', () => {
     const nav = screen.getByRole('navigation');
     const list = screen.getByRole('list');
     const chip = screen.getByText('Danger Zone');
-    // Inside the landmark — this wrapper no longer builds a row of its own,
-    // and that row is what made the landmark a shrink-to-fit flex item.
     expect(nav.contains(chip)).toBe(true);
     // Outside the list — it is not a step of the path, so it is not an <li>
     // and assistive technology never announces it as one.

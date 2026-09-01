@@ -62,13 +62,7 @@ class StixDomainObjectBookmarksComponent extends Component {
             DummyCardComponent={<StixDomainObjectBookmarkDummy />}
             rowHeight={112}
           />
-          {/* The sibling title the pass asks for, under the favourites block:
-              same shape as "Favorite entities", 16px below the favourite cards
-              and 8px above the entity cards it labels. It lives here rather
-              than in the five *Cards pages because this component already
-              renders nothing when there are no favourites, so the title appears
-              exactly when the block it belongs under does -- and the two
-              spacings stay in one place. */}
+          {/* Title lives here, not in the five *Cards pages — see fds-migration/MIGRATION-DECISIONS.md#bookmarks-sibling-title */}
           <Typography
             variant="h4"
             gutterBottom={true}

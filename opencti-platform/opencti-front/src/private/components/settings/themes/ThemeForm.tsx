@@ -258,14 +258,8 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         </Label>
 
         <Stack gap={2.5}>
-          {/* FDS-WORKAROUND #45 retired: `clearable` landed in library #190, so the
-              endAdornment that used to carry the clear IconButton is gone and the
-              library owns the control. The empty string is still a real product
-              state — clearing means "the login page keeps its default panel".
-              `SelectValue` receives the mapped label as children, which is what
-              keeps the trigger's wording identical to MUI's `renderValue`: the
-              option row reads "Image URL" while the trigger reads "Add background
-              image", and this conversion does not arbitrate that difference. */}
+          {/* FDS-WORKAROUND #45 retired in library #190; the empty string is still a real
+              product state — see fds-migration/MIGRATION-DECISIONS.md#theme-background-select */}
           <Select
             disabled={isDefaultTheme}
             value={loginAsideType}

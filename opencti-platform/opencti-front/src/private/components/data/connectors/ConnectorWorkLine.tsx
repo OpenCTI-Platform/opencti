@@ -188,9 +188,6 @@ const ConnectorWorkLine: FunctionComponent<
             <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
             <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
           </Tabs>
-          {/* Surface = the library Paper; TableContainer goes back to being a
-              plain scroll container. Arbitrated: the MUI elevation shadow gives
-              way to the library border. */}
           <Paper padding={0}>
             <TableContainer>
               <Table aria-label="errors table">

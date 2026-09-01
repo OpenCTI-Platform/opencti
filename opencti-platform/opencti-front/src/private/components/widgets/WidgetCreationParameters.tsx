@@ -516,33 +516,35 @@ const WidgetCreationParameters = () => {
                       marginTop: 20,
                     }}
                   >
-                    <Select
-                      value={dataSelection[i].sort_by ?? 'created_at'}
-                      onValueChange={(value) => handleChangeDataValidationParameter(
-                        i,
-                        'sort_by',
-                        value,
-                      )
-                      }
-                    >
-                      <SelectLabel>{t_i18n('Sort by')}</SelectLabel>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent aria-label={t_i18n('Sort by')}>
-                        {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
-                          ? draftWorkspaceSortByValues
-                          : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
-                        ).map(({ value, label }) => (
-                          <SelectItem
-                            key={value}
-                            value={value}
-                          >
-                            {t_i18n(label)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl fullWidth={true} style={{ flex: 1 }}>
+                      <Select
+                        value={dataSelection[i].sort_by ?? 'created_at'}
+                        onValueChange={(value) => handleChangeDataValidationParameter(
+                          i,
+                          'sort_by',
+                          value,
+                        )
+                        }
+                      >
+                        <SelectLabel>{t_i18n('Sort by')}</SelectLabel>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent aria-label={t_i18n('Sort by')}>
+                          {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
+                            ? draftWorkspaceSortByValues
+                            : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
+                          ).map(({ value, label }) => (
+                            <SelectItem
+                              key={value}
+                              value={value}
+                            >
+                              {t_i18n(label)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
                   </div>
                 )}
 
@@ -845,33 +847,41 @@ const WidgetCreationParameters = () => {
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0
                       && (
-                        <Select
-                          value={dataSelection[i].attribute ?? 'entity_type'}
-                          onValueChange={(value) => handleChangeDataValidationParameter(
-                            i,
-                            'attribute',
-                            value,
-                          )
-                          }
+                        <FormControl
+                          fullWidth={true}
+                          style={{
+                            flex: 1,
+                            width: '100%',
+                          }}
                         >
-                          <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent aria-label={t_i18n('Attribute')}>
-                            {[
-                              'entity_type',
-                              ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
-                            ].map((value) => (
-                              <SelectItem
-                                key={value}
-                                value={value}
-                              >
-                                {t_i18n(capitalizeFirstLetter(value))}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          <Select
+                            value={dataSelection[i].attribute ?? 'entity_type'}
+                            onValueChange={(value) => handleChangeDataValidationParameter(
+                              i,
+                              'attribute',
+                              value,
+                            )
+                            }
+                          >
+                            <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent aria-label={t_i18n('Attribute')}>
+                              {[
+                                'entity_type',
+                                ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
+                              ].map((value) => (
+                                <SelectItem
+                                  key={value}
+                                  value={value}
+                                >
+                                  {t_i18n(capitalizeFirstLetter(value))}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
                       )}
 
                     {((dataSelection[i].perspective === 'audits' && getCurrentAvailableParameters(type).includes('attribute'))

@@ -88,9 +88,6 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={notifiersTemplates}
-        // Fires on the keystroke only: `select`, `clear` and `reset` reach this
-        // callback too, and querying on them is the bug the pre-library sites
-        // guarded against by testing for a DOM event.
         onInputChange={(search: string, meta: ComboboxChangeMeta) => {
           if (meta.cause === 'type') searchNotifiers(search);
         }}

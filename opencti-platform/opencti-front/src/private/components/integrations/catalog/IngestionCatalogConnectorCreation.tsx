@@ -27,6 +27,9 @@ import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import Tooltip from '@mui/material/Tooltip';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
+import JsonFormInputRenderer, { jsonFormInputTester } from '@components/integrations/catalog/utils/JsonFormInputRenderer';
+import JsonFormEnumRenderer, { jsonFormEnumTester } from '@components/integrations/catalog/utils/JsonFormEnumRenderer';
+import JsonFormBooleanRenderer, { jsonFormBooleanTester } from '@components/integrations/catalog/utils/JsonFormBooleanRenderer';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
@@ -84,6 +87,9 @@ const customRenderers = [
   { tester: jsonFormDeprecatedTester, renderer: JsonFormDeprecatedRenderer },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormInputTester, renderer: JsonFormInputRenderer },
+  { tester: jsonFormEnumTester, renderer: JsonFormEnumRenderer },
+  { tester: jsonFormBooleanTester, renderer: JsonFormBooleanRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 

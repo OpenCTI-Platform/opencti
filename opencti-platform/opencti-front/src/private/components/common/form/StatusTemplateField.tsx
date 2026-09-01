@@ -131,7 +131,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         onInputChange={(value: string, meta: ComboboxChangeMeta) => {
           if (meta.cause === 'type') handleSearch(value);
         }}
-        onCreateOption={handleOpenStatusTemplateCreation}
+        openCreate={handleOpenStatusTemplateCreation}
         renderOption={(option: { color: string; label: string }) => (
           <>
             <div className={classes.icon} style={{ color: option.color }}>

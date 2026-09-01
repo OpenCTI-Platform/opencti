@@ -1,5 +1,3 @@
-import { Checkbox } from '@filigran/design-system';
-
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useEffect, useState } from 'react';
@@ -292,9 +290,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
 
     helpers.handleClearAllFilters();
     instanceTriggerFiltersHelpers.handleClearAllFilters();
-    // instance_trigger has to live in Formik too: enableReinitialize rebuilds
-    // the form from initialValues after every commitFieldPatch, so a value kept
-    // only in local state is wiped on the next round-trip.
+    // instance_trigger has to live in Formik too: enableReinitialize rebuilds the form from initialValues after
+    // every commitFieldPatch, so a value kept only in local state is wiped on the next round-trip.
     setFieldValue('instance_trigger', newInstanceTriggerValue);
     setInstanceTrigger(newInstanceTriggerValue);
 
@@ -373,17 +370,6 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 name,
                 value.map((n) => n.value),
               ))}
-              renderOption={(option: { value: TriggerEventType; label: string }) => (
-                <>
-                  <Checkbox
-                    presentational
-                    checked={values.event_types
-                      .map((n) => n.value)
-                      .includes(option.value)}
-                  />
-                  <span>{option.label}</span>
-                </>
-              )}
             />
           )}
           {trigger.trigger_type === 'digest' && (

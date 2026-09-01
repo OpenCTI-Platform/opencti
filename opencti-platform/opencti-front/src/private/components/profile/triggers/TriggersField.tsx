@@ -153,7 +153,7 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
           if (meta.cause === 'type') searchTriggers(search);
         }}
         onFocusInput={() => searchTriggers('')}
-        onCreateOption={handleOpenTriggerCreation}
+        openCreate={handleOpenTriggerCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option: FieldOption) => (
           <>

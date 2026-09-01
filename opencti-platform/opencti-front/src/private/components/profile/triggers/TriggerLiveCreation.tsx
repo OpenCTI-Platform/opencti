@@ -32,7 +32,6 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
-import { Checkbox } from '@filigran/design-system';
 
 // region live
 export const triggerLiveKnowledgeCreationMutation = graphql`
@@ -195,18 +194,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           options={
             instance_trigger ? instanceEventTypesOptions : eventTypesOptions
           }
-          // The MenuItem and ListItemText were MUI row scaffolding, not a select item — the
-          // library row supplies both.
-          renderOption={(option: { value: TriggerEventType; label: string }) => (
-            <>
-              <Checkbox
-                checked={values.event_types
-                  .map((n) => n.value)
-                  .includes(option.value)}
-              />
-              <span>{option.label}</span>
-            </>
-          )}
         />
         <NotifierField name="notifiers" onChange={setFieldValue} />
         <Field

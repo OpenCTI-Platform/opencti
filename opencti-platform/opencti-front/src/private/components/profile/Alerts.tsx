@@ -6,7 +6,7 @@ import { AlertsLines_data$data } from '@components/profile/__generated__/AlertsL
 import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from '@components/profile/__generated__/AlertsLinesPaginationQuery.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
-import { Badge, Tooltip } from '@mui/material';
+import { Badge, Stack, Tooltip } from '@mui/material';
 import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -172,7 +172,7 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   };
 
   return (
-    <div style={{ marginLeft: -40 }}>
+    <Stack direction="row" alignItems="center">
       <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}>
         <IconButton
           disabled={updating}
@@ -207,7 +207,7 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           <DeleteOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
-    </div>
+    </Stack>
   );
 };
 
@@ -291,7 +291,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           none: t_i18n('Unknown'),
         };
         return (
-          <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+          <div style={{ fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
             <Chip
               severity={operationSeverity(firstOperation)}
               label={
@@ -347,7 +347,6 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           // to a child element, so the Chip simply overflowed and the box hard-clipped it mid-
           // glyph — the rendering bug reported on this column.
           <div style={{
-            height: 20,
             fontSize: 13,
             float: 'left',
             maxWidth: '100%',
@@ -360,7 +359,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
               <Chip
                 severity={notification_type === 'live' ? 'high' : 'info'}
                 label={name ?? EMPTY_VALUE}
-                style={{ marginRight: 10, maxWidth: '100%' }}
+                // style={{ marginRight: 10, maxWidth: '100%' }}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();

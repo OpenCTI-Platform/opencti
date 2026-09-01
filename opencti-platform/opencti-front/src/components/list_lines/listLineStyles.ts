@@ -1,8 +1,5 @@
 import type { CreateCSSProperties } from '@mui/styles/withStyles';
 
-/**
- * The cell of a legacy list line (`ListLines` + its `*Line` components).
- */
 export const bodyItemStyle: CreateCSSProperties = {
   height: 25,
   fontSize: 13,

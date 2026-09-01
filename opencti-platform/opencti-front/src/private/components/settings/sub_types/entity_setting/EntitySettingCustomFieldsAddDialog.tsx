@@ -78,13 +78,8 @@ const EntitySettingCustomFieldsAddDialog: FunctionComponent<EntitySettingCustomF
 
   return (
     <Dialog open={open} onClose={handleClose} title={t_i18n('Add a custom field')}>
-      {/* The MUI `renderTags` here built a plain uncoloured Chip, so nothing on
-          this site waits on the per-value chip tone: the library chip row
-          replaces it one-to-one. */}
       <Combobox<CustomFieldDefinitionNode>
         multiple
-        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel closed
-        // after each pick.
         closeOnSelect
         options={candidates}
         value={selected}

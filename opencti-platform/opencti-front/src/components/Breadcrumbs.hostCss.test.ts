@@ -1,27 +1,7 @@
 /**
- * Locks FDS-WORKAROUND #40: the breadcrumb link keeps its underline on hover
- * and on focus.
- *
- * The library ships `.underline` as an UNLAYERED utility, so the cascade is
- * settled by specificity alone. At rest `.underline` (0,1,0) beats this
- * product's global `a` reset (0,0,1). On hover and on focus it loses, because
- * `a:hover` / `a:focus` are (0,1,1) — one pseudo-class above the utility — and
- * the shorthand `text-decoration: none` takes the line away. The host rule
- * scopes the fix to the landmark, which puts it at (1,1,1) and back in front.
- *
- * Neither repository can see that on its own: the library's gates never load a
- * product stylesheet, and no product gate reads the library's. So this guard
- * reads BOTH — the served `index.css` from the installed package and this
- * product's own global sheets — and settles the cascade the way a browser
- * would: specificity first, load order only as the tie-break, with the order
- * itself read from `front.tsx` rather than assumed.
- *
- * It is a static guard and says so. What proves the RENDERING is the browser
- * measurement recorded in LIBRARY-FEEDBACK.md #40, taken against two separate
- * CSS builds — with and without this block — because the first attempt at that
- * proof disabled a rule through `cssRules`, which is inaccessible under
- * `file://`, and so measured nothing at all. jsdom cannot stand in for it: it
- * resolves no cascade for `:hover`.
+ * Locks FDS-WORKAROUND #40 (LIBRARY-FEEDBACK.md #40): the breadcrumb link keeps its
+ * underline on hover and on focus. Static guard; cascade analysis and the reason a
+ * browser measurement is the real proof: see fds-migration/MIGRATION-DECISIONS.md#breadcrumb-underline
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -33,7 +13,6 @@ const HOST_CSS = 'static/css/design-system-host.css';
 
 const read = (relative: string) => fs.readFileSync(path.join(FRONT_SRC, relative), 'utf8');
 
-/** The stylesheets the application loads, in the order `front.tsx` loads them. */
 const loadOrder = () => {
   const entry = read('front.tsx');
   return [...entry.matchAll(/^import\s+['"]([^'"]+\.css)['"];?$/gm)].map((m) => m[1]);
@@ -41,7 +20,6 @@ const loadOrder = () => {
 
 interface Rule { selector: string; body: string; sheet: string; order: number }
 
-/** Flattens a stylesheet into rules, ignoring at-rule wrappers we do not need. */
 const rulesOf = (css: string, sheet: string, order: number): Rule[] => {
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, '');
   const rules: Rule[] = [];
@@ -53,7 +31,6 @@ const rulesOf = (css: string, sheet: string, order: number): Rule[] => {
   return rules;
 };
 
-/** CSS specificity of a single compound selector, as (id, class, type). */
 const specificity = (selector: string): [number, number, number] => {
   const ids = (selector.match(/#[\w-]+/g) ?? []).length;
   const classes = (selector.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)(?!hover\b|focus\b|visited\b)[\w-]+/g) ?? []).length
@@ -71,7 +48,6 @@ const beats = (a: Rule, b: Rule) => {
   return a.order > b.order;
 };
 
-/** True when the selector applies to a breadcrumb link in the hover/focus state. */
 const reachesBreadcrumbLink = (selector: string) => selector
   .split(',')
   .map((part) => part.trim())

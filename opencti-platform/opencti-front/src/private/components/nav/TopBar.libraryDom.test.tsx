@@ -3,17 +3,11 @@ import { describe, expect, it } from 'vitest';
 import UploadImport from '../../../components/UploadImport';
 import testRender from '../../../utils/tests/test-render';
 
-/**
- * The source guard next door says what the bar *imports*.
- */
-
-/** MUI classes the rendered tree may still carry, and what retires each. */
 const ALLOWED_RENDERED = {
   // Retired by: a library icon set covering the product's glyphs.
   MuiSvgIcon: 'glyph only — the library ships no icon set',
 };
 
-/** Every MUI class in a rendered tree, deduplicated by component family. */
 const muiFamilies = (root: HTMLElement) => {
   const families = new Set<string>();
   for (const el of [root, ...Array.from(root.querySelectorAll('*'))]) {

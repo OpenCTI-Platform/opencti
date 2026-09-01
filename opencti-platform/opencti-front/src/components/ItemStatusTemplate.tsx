@@ -1,7 +1,6 @@
 import { ArrowRightAltOutlined } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import React, { ReactElement } from 'react';
-import { hexToRGB } from '../utils/Colors';
 import Tag from './common/tag/Tag';
 import { useFormatter } from './i18n';
 
@@ -46,7 +45,7 @@ const ItemStatusTemplate = ({ statuses, disabled, actionComponent }: ItemStatusT
               <Tag
                 key={status.id}
                 label={status.template?.name}
-                color={hexToRGB(status.template?.color ?? '#000000')}
+                color={status.template?.color ?? '#000000'}
               />
             ))}
           </Stack>

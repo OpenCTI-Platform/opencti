@@ -555,7 +555,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ paddingInline: 3, paddingBottom: 3 }}>
           <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
           <Button onClick={handleSubmit} disabled={isSubmitDisable || isSubmitting}>
             {t_i18n('Create')}

@@ -2,11 +2,6 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 
-/**
- * `@filigran/design-system` is a private git dependency, so the frontend install inside the
- * platform image runs behind `RUN --mount=type=secret,id=fds_git_token`.
- */
-
 const CI_ROOT = path.resolve('../../.github');
 const REPO_ROOT = path.resolve('../..');
 const SECRET_ID = 'fds_git_token';
@@ -21,7 +16,6 @@ const listYamlFiles = async (dir: string): Promise<string[]> => {
   return files.flat();
 };
 
-/** Splits a YAML job body into its individual `- name:` / `- uses:` steps. */
 const splitSteps = (content: string): string[] => content
   .split(/^\s*-\s+(?=(?:name|uses):)/m)
   .slice(1);
@@ -66,13 +60,8 @@ const collectBuildSteps = async (): Promise<BuildStep[]> => {
 
 const buildSteps = await collectBuildSteps();
 
-/**
- * Second enumeration, for the other half of the call graph.
- */
-
 const SECRET_NAME = 'FDS_GIT_TOKEN';
 
-/** Splits a workflow's `jobs:` mapping into its individual job bodies. */
 const splitJobs = (content: string): string[] => content
   .split(/^ {2}(?=[A-Za-z0-9_-]+:\s*$)/m)
   .slice(1);
@@ -89,11 +78,9 @@ const workflows: WorkflowFile[] = await Promise.all(
   })),
 );
 
-/** Reusable workflows that read the secret and must therefore declare it. */
 const consumers = workflows.filter(({ content }) => content.includes(`secrets.${SECRET_NAME}`)
   && content.includes('workflow_call:'));
 
-/** Every `uses: ./.github/workflows/<consumer>` job, with the job body around it. */
 const callSites = workflows.flatMap(({ name, content }) => splitJobs(content)
   .flatMap((job) => {
     const called = job.match(/^\s*uses:\s*\.\/\.github\/workflows\/(\S+)\s*$/m)?.[1];
@@ -108,7 +95,6 @@ describe('CI wiring for the private design-system dependency', () => {
   });
 
   it.each(buildSteps)('$source builds $file with the secret it needs', async ({ file, body, target }) => {
-    // A step that stops at an earlier stage never reaches the frontend install.
     const reachesInstall = target === undefined || target.startsWith('builder-front');
     const needsSecret = reachesInstall && await dockerfileNeedsSecret(file);
     expect(body.includes(`${SECRET_ID}=`)).toBe(needsSecret);

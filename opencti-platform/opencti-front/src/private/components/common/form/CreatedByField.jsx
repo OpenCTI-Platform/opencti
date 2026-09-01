@@ -140,7 +140,7 @@ const CreatedByField = (props) => {
         options={identities.sort((a, b) => a.label.localeCompare(b.label))}
         onInputChange={handleSearch}
         onFocusInput={searchIdentities}
-        onCreateOption={handleOpenIdentityCreation}
+        openCreate={handleOpenIdentityCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option) => (
           <>

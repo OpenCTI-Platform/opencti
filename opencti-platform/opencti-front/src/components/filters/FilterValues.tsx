@@ -295,7 +295,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             {label}
           </strong>
         </Button>{' '}
-        <Box sx={{ display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', overflow: 'hidden' }}>
           {sortedFilterValues
             .map((val) => {
               const subKey = val.key;

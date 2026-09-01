@@ -29,9 +29,6 @@ const CardAccordion = ({
 
   const containerSx: SxProps = {
     padding: theme.spacing(3),
-    // Follows `Card.tsx` exactly, including WHICH lever it reads: the library's
-    // per-layer hook, so this panel answers a host redeclaring a layer the same
-    // way cards and library Papers now do.
     background: 'var(--bg-elevation-default-layer-1)',
   };
 

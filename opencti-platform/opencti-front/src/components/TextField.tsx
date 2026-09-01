@@ -17,10 +17,12 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   onSubmit?: (name: string, value: string) => void;
   onKeyDown?: (key: string) => void;
   onBeforePaste?: (value: string) => string;
+  /** Trailing slot of the library `Input`; a password toggle is the arbitrated interactive case. */
+  endIcon?: React.ComponentProps<typeof Input>['endIcon'];
 };
 
 const TextField = (props: TextFieldProps) => {
-  const { detectDuplicate, onBeforePaste, startAdornment, askAi, ...htmlProps } = props;
+  const { detectDuplicate, onBeforePaste, startAdornment, askAi, endIcon, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
@@ -167,7 +169,7 @@ const TextField = (props: TextFieldProps) => {
         value={(value as string) ?? ''}
         error={showError ? (meta.error as string) : undefined}
         helperText={helper}
-        endIcon={askAiSlot ? { type: 'icon', icon: askAiSlot } : undefined}
+        endIcon={endIcon ?? (askAiSlot ? { type: 'icon', icon: askAiSlot } : undefined)}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

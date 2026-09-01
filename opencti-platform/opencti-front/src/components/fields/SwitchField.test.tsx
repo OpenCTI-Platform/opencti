@@ -1,6 +1,3 @@
-/**
- * Contract tests for the SwitchField pivot.
- */
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Formik, Form, Field, useFormikContext } from 'formik';

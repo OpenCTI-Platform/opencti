@@ -2,10 +2,6 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-/**
- * The bar and its controls are built from library components.
- */
-
 const FILES = [
   'src/private/components/nav/TopBar.tsx',
   'src/private/components/nav/TopBarIconLink.tsx',
@@ -14,19 +10,11 @@ const FILES = [
   'src/components/UploadImport.tsx',
 ];
 
-/**
- * The search field carries the two exempted gaps, so its allow-list is the one below plus
- * `EXEMPTED`.
- */
 const SEARCH_FIELD = 'src/components/SearchInput.jsx';
 
 const read = (f: string) => readFileSync(path.resolve(f), 'utf8');
 const SOURCES = new Map([...FILES, SEARCH_FIELD].map((f) => [f, read(f)]));
 
-/**
- * MUI symbols the bar may still import, and the condition that retires each.
- * Nothing else is allowed — not even from a module already named here.
- */
 const ALLOWED: Record<string, string> = {
   // Retired by: a library icon set covering the bar's glyphs.
   AccountCircleOutlined: 'glyph',
@@ -47,20 +35,15 @@ const ALLOWED: Record<string, string> = {
   AppBar: 'Suspense fallback only',
 };
 
-/** Component families the rendered bar must no longer contain. */
 const RETIRED = ['MuiBadge-', 'MuiStack-', 'CircularProgress'];
 
-/**
- * NAMED EXEMPTIONS — the only MUI the bar may render, besides glyphs.
- */
 const EXEMPTED: Record<string, string> = {
   // Segmented control — LIBRARY-FEEDBACK #24. All of these go together the day
   // the library ships one.
   ToggleButtonGroup: '#24 segmented control',
   ToggleButton: '#24 segmented control',
-  // MUI's group injects `value`/`selected` into its children THROUGH the tooltip (measured:
-  // `data-mui-internal-clone-element` on the wrapper, and `Mui-selected` arriving on the
-  // toggle).
+  // MUI's group injects `value`/`selected` into its children THROUGH the tooltip (measured: `data-mui-internal-
+  // clone-element` on the wrapper, and `Mui-selected` arriving on the toggle).
   Tooltip: '#24 inside the segmented control cloning contract',
   // The agent dropdown hangs off the caret inside a `ToggleButton`; a Radix
   // trigger would have to nest a button inside a button.
@@ -68,21 +51,12 @@ const EXEMPTED: Record<string, string> = {
   MenuItem: '#24 blocked by the same missing segmented control',
   ListItemIcon: '#24 rows of that same menu',
   ListItemText: '#24 rows of that same menu',
-  // Popover — the second exemption.
   Popover: '#24 MUI draws the exempted menu with it; no library Popover yet',
-  // Not the bar: `GradientBorderTextField` serves the drawer and page variants
-  // of this same component. The bar's own field is the library `SearchField`.
   TextField: 'non-topBar variants only, never rendered in the bar',
 };
 
-/**
- * Declared but not imported today.
- */
 const DECLARED_NOT_IMPORTED = ['Popover'];
 
-/**
- * Named survivors: MUI still rendered, with the gap that keeps them alive.
- */
 const SURVIVORS = Object.entries(EXEMPTED)
   .filter(([symbol, why]) => why.startsWith('#24') && !DECLARED_NOT_IMPORTED.includes(symbol))
   .map(([symbol, why]) => ({
@@ -114,15 +88,12 @@ const importedSymbols = (source: string) => {
 describe('the admin top bar is built from library components', () => {
   it.each(FILES)('%s imports no MUI symbol outside the allow-list', (file) => {
     for (const symbol of importedSymbols(SOURCES.get(file) as string)) {
-      // The message names the symbol, so a failure says what arrived rather
-      // than only that a count changed.
       expect(ALLOWED, `${symbol} is imported by ${file} and is not an allowed MUI symbol`)
         .toHaveProperty(symbol);
     }
   });
 
   it('grants no exemption beyond the two that were named', () => {
-    // The failure guarded against here is a THIRD kind of exemption appearing.
     const NAMED = [
       '#24', // the segmented control, and everything that depends on it
       'non-topBar', // not the bar at all: other variants of a shared component
@@ -136,8 +107,6 @@ describe('the admin top bar is built from library components', () => {
   });
 
   it('the search field imports no MUI symbol outside the allow-list and the two exemptions', () => {
-    // `Stack` and `Box` were here and are not: pure MUI layout inside the one MUI control left
-    // in the bar.
     for (const symbol of importedSymbols(SOURCES.get(SEARCH_FIELD) as string)) {
       expect(
         { ...ALLOWED, ...EXEMPTED },
@@ -151,8 +120,6 @@ describe('the admin top bar is built from library components', () => {
   });
 
   it.each(SURVIVORS)('$symbol survives only while $retiredBy', ({ symbol, file }) => {
-    // A survivor that disappears should delete its entry here, not leave a
-    // stale licence behind.
     expect(read(file)).toContain(symbol);
   });
 
@@ -161,14 +128,12 @@ describe('the admin top bar is built from library components', () => {
     for (const symbol of ['Header', 'HeaderGroup', 'IconButton', 'Menu']) {
       expect(bar).toMatch(new RegExp(`import \\{[^}]*\\b${symbol}\\b[^}]*\\} from '@filigran/design-system'`, 's'));
     }
-    // The unread marker lives on the control that carries it, one file down.
     const link = SOURCES.get('src/private/components/nav/TopBarIconLink.tsx') as string;
     expect(link).toMatch(/import \{[^}]*\bBadge\b[^}]*\} from '@filigran\/design-system'/s);
   });
 
   it('marks the control with the badge, never the aria-hidden glyph', () => {
     const link = SOURCES.get('src/private/components/nav/TopBarIconLink.tsx') as string;
-    // The badge wraps the anchor; the glyph stays inside its hidden span.
     expect(link).toMatch(/<Badge \{\.\.\.badge\}>\{link\}<\/Badge>/);
     expect(link).not.toMatch(/<Badge[\s\S]*?\{icon\}/);
     const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
@@ -213,15 +178,11 @@ describe('the admin top bar is built from library components', () => {
 
   it('sizes the loader from the slot it sits in, not by eye', () => {
     const search = read('src/components/SearchInput.jsx');
-    // The sibling rows render a 20px glyph in the same icon slot, which is the library's `md`.
     expect(search).toMatch(/<Spinner size="md"/);
     expect(search).not.toMatch(/<Spinner size="(sm|lg|xl)"/);
   });
 
   it('leaves the unread marker on the library default tone', () => {
-    // Red, on both products — arbitrated 2026-08-14. No `tone` anywhere on the
-    // path from the call site to the anchor: the library default IS the
-    // decision, and overriding it later has to be written down when it is made.
     const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
     const call = /badge=\{\{[\s\S]*?\}\}/.exec(bar);
     expect(call).not.toBeNull();

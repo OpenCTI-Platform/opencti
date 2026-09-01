@@ -24,14 +24,9 @@ const customViewPreviewEntitySelectorQuery = graphql`
   }
 `;
 
-// FDS-WORKAROUND #43: kept on MUI Autocomplete, waiting on a DESIGN decision
-// rather than a library prop. This field tints its own border
-// AND its label `designSystem.tertiary.orange.400` while a preview entity is
-// selected — a product state signal, not decoration. The library field owns its
-// border and ships no per-state tint, and hardcoding the colour is forbidden, so
-// the conversion was made and reverted rather than drop the signal. Remove when
-// the library documents a token-based way for a host to tint the field shell —
-// see fds-migration/LIBRARY-FEEDBACK.md #43 (V2 backlog)
+// FDS-WORKAROUND #43: kept on MUI Autocomplete — the library field exposes no
+// per-state tint. Remove when it does; see fds-migration/LIBRARY-FEEDBACK.md #43
+// and fds-migration/MIGRATION-DECISIONS.md#field-state-tint
 const IN_PREVIEW_SX_PROPS: SxProps = {
   '& .MuiOutlinedInput-root': {
     '& fieldset': {

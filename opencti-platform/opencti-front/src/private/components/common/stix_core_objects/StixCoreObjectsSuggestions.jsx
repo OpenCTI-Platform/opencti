@@ -92,7 +92,6 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
     return suggestions;
   };
 
-  // Takes the value directly.
   const handleSelectEntity = (type, value) => {
     if (value) {
       setSelectedEntity({ ...selectedEntity, [type]: value });
@@ -382,9 +381,6 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                               />
                             )}
                           />
-                          {/* The fixed 200px sizing goes: the library field
-                              owns its geometry. Flagged for Sandy's eye on the
-                              list rendering. */}
                           <Select
                             value={selectedEntity[suggestion.type]}
                             onValueChange={(value) => handleSelectEntity(suggestion.type, value)}

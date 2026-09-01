@@ -62,9 +62,6 @@ describe('TopBarIconLink', () => {
     it('announces the count as the control DESCRIPTION, computed, not as text in the tree', () => {
       renderBadged(3);
       const link = screen.getByRole('link', { name: 'Notifications' });
-      // Computed through the accname/description algorithm — the same thing a
-      // screen reader resolves, and the thing that was empty when the badge
-      // wrapped the aria-hidden glyph instead of the control.
       expect(link).toHaveAccessibleName('Notifications');
       expect(link).toHaveAccessibleDescription('3 unread');
     });

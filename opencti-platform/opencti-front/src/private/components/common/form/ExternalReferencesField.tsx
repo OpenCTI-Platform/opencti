@@ -169,7 +169,7 @@ export const ExternalReferencesField: FunctionComponent<
           if (meta.cause === 'type') searchExternalReferences(search);
         }}
         onFocusInput={() => searchExternalReferences('')}
-        onCreateOption={noCreation ? undefined : handleOpenExternalReferenceCreation}
+        openCreate={noCreation ? undefined : handleOpenExternalReferenceCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option: FieldOption) => (
           <>
