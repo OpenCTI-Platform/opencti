@@ -40,7 +40,7 @@
     "@cfworker/json-schema": "4.1.1",
     "@filigran/chatbot": "3.9.1",
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2",
-    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=934dca68473c7cd9a8d4cde7f8e0a78ef2c36fd2",
+    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=2e384c892e9e872ecf2de92f41f6b19a8e18a363",
     "@filigran/rich-text-editor": "1.2.0",
     "@fontsource/geologica": "5.3.0",
     "@fontsource/ibm-plex-sans": "5.3.0",
