@@ -126,10 +126,9 @@ const AISummaryContainersComponent = ({
               </Select>
             </Grid>
             <Grid item={true} xs={3}>
-              {/* Numeric field: Radix keys on strings only, so the options
-                  carry stringified values and the handler converts back — the
-                  same round-trip `SelectFieldFds`'s `numeric` prop does, spelled
-                  out here because this site composes the parts directly. */}
+              {/* Numeric field: Radix keys on strings only, so the options carry stringified values and the handler
+                  converts back — the same round-trip `SelectFieldFds`'s `numeric` prop does, spelled out here
+                  because this site composes the parts directly. */}
               <Select
                 value={String(first)}
                 onValueChange={(value) => changeFirst(Number(value))}

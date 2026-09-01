@@ -68,9 +68,6 @@ const SectorField = ({
       style={containerStyle}
       noOptionsText={t_i18n('No available options')}
       options={options}
-      // The query leaves on the keystroke and on nothing else: `select`,
-      // `clear` and `reset` all reach this callback too, and firing on them is
-      // what the pre-library sites guarded against by testing for a DOM event.
       onInputChange={(search: string, meta: ComboboxChangeMeta) => {
         if (meta.cause === 'type') searchSectors(search);
       }}

@@ -3,11 +3,7 @@ import { Tooltip } from '@mui/material';
 import React from 'react';
 
 export interface TagProps {
-  /**
-   * Text only.
-   */
   label?: string | number | null;
-  /** Free colour from the data (a label or marking hex). The library bounds it. */
   color?: string | null;
   onClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;
@@ -26,16 +22,10 @@ export interface TagProps {
   id?: string;
   disabled?: boolean;
   style?: React.CSSProperties;
-  /**
-   * Legacy MUI escape hatch.
-   */
   sx?: Record<string, unknown>;
-  /** MUI-only axes with no library equivalent; accepted so call sites still type-check. */
   size?: 'small' | 'medium';
   variant?: 'filled' | 'outlined';
 }
-
-// The library has no case axis, so the wrapper keeps its own.
 
 const Tag = ({
   label,
@@ -84,16 +74,14 @@ const Tag = ({
     />
   );
 
-  // The library Chip carries its own tooltip for a clipped label.
   const addsSomething = tooltipTitle !== undefined && tooltipTitle !== text;
   if (disableTooltip || !addsSomething) {
     return chip;
   }
 
   return (
-    // The Chip is the Tooltip's direct child on purpose: an intermediate <span> makes MUI label
-    // the wrapper AND leaves the chip's own text matchable, so `getByLabel` resolves to two
-    // elements.
+    // The Chip is the Tooltip's direct child on purpose: an intermediate <span> makes MUI label the wrapper AND
+    // leaves the chip's own text matchable, so `getByLabel` resolves to two elements.
     <Tooltip title={tooltipTitle} placement="bottom-start">
       {chip}
     </Tooltip>

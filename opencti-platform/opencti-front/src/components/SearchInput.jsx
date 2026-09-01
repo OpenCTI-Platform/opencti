@@ -31,9 +31,6 @@ const MODE_BULK = 'bulk';
 const isNlqMode = (mode) => typeof mode === 'string' && mode.startsWith('nlq:');
 const nlqSlugFromMode = (mode) => (isNlqMode(mode) ? mode.slice(4) : null);
 
-/**
- * Product variant -> library size.
- */
 const SIZE_BY_VARIANT = {
   thin: 'sm',
 };
@@ -231,9 +228,8 @@ const SearchInput = (props) => {
             onSubmit('');
           }
         }}
-        // Spread last, exactly as the MUI field did: the three call sites that
-        // pass their own onChange drive the value themselves and must keep
-        // winning over the internal handler above.
+        // Spread last, exactly as the MUI field did: the three call sites that pass their own onChange drive the
+        // value themselves and must keep winning over the internal handler above.
         {...otherProps}
         autoComplete="off"
       />
@@ -300,7 +296,6 @@ const SearchInput = (props) => {
 
   return (
     <>
-      {/* Width is owned by the bar, not by this component — see topBarConstants.ts */}
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
         {/* ── Search Input Field (left, fills remaining space) ──── */}
         <SearchField
@@ -372,9 +367,8 @@ const SearchInput = (props) => {
                   onClick={handleNlqToggleClick}
                   disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
                 >
-                  {/* Plain elements, not MUI layout: the segmented control is the
-                      only MUI left in the bar and its inside must not add more —
-                      see TopBar.libraryOnly.test.ts, RETIRED. */}
+                  {/* Plain elements, not MUI layout: the segmented control is the only MUI left in the bar and its
+                      inside must not add more — see TopBar.libraryOnly.test.ts, RETIRED. */}
                   <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <FiligranIcon
                       icon={LogoXtmOneIcon}
@@ -425,11 +419,6 @@ const SearchInput = (props) => {
           {nlqAgentsLoading && (
             <MenuItem disabled>
               <ListItemIcon>
-                {/* The only thing saying the agents are loading — this row has
-                    no visible text, so the spinner carries the message.
-                    `md` is 20px, the size the sibling rows render in this same
-                    icon slot; nothing is being encircled here, so the 32px tier
-                    would not be sitting in anything. */}
                 <Spinner size="md" label={t_i18n('Loading agents...')} />
               </ListItemIcon>
             </MenuItem>

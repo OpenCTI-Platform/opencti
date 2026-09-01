@@ -190,10 +190,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
       {variant && (
         <Fab
-          /* FAB — Sandy's UX decision pending (2026-08-26). Deliberately still
-             MUI: whether these floating action buttons keep their shape or are
-             rethought as in-page buttons is a product/UX call, not a mechanical
-             conversion, so the Button/Chip wave leaves all 9 untouched. */
+          /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
           onClick={() => setOpen(true)}
           color="primary"
           aria-label={update ? 'Edit' : 'Add'}
@@ -233,7 +230,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         slotProps={{
           paper: {
             ref,
-            // A drawer is a layer-2 surface.
             className: fdsLayerClass(SURFACE_LAYER),
             sx: {
               ...layerInputVars,
@@ -247,8 +243,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
               }),
               paddingTop: `${bannerHeightNumber}px`,
               paddingBottom: `${bannerHeightNumber}px`,
-              // The sheet itself, so the banner gutters above and below the
-              // body match it instead of showing MUI's own Paper colour.
               backgroundColor: 'var(--bg-elevation-default)',
             },
           },
@@ -269,8 +263,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           className={classes.container}
           style={{
             ...containerStyle,
-            // Figma node 5415-3010. The alias is correct now that the paper
-            // declares layer 2 -- it resolves to the layer-2 value here.
             backgroundColor: 'var(--bg-elevation-default)',
           }}
         >

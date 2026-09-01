@@ -84,10 +84,8 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
       title={t_i18n('Testing notifier')}
     >
       <div className={classes.container}>
-        {/* The bare `Typography` label becomes `SelectLabel`, so the visible
-            text is actually ASSOCIATED with the field instead of merely sitting
-            above it. `fullWidth` goes: the library field is full-width by
-            construction. */}
+        {/* The bare `Typography` label becomes `SelectLabel`, so the visible text is actually ASSOCIATED with the
+            field instead of merely sitting above it. */}
         <Select value={target} onValueChange={setTarget}>
           <SelectLabel>{t_i18n('Choose target')}</SelectLabel>
           <SelectTrigger className="w-full">

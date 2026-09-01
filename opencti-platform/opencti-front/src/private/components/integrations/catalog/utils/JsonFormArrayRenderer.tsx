@@ -51,16 +51,9 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
     <Box sx={{ mb: 2 }}>
       <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>{label}</Typography>
       <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>{description}</Typography>
-      {/* `freeSolo` over an empty option list is a pure free-text tag input, and
-          it is exactly what allowCustomValue + createValueFromInput are for.
-          The hand-rolled Enter handler goes away with it: the engine owns the
-          Enter path, so the local handleKeyDown that re-implemented it — and
-          which silently swallowed a value already present — is gone. */}
       <Combobox<string>
         labelPosition="none"
         multiple
-        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel closed
-        // after each pick.
         closeOnSelect
         allowCustomValue
         createValueFromInput={(input) => input}

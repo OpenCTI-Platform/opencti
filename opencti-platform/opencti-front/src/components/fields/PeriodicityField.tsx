@@ -102,11 +102,6 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                 {label || t_i18n('Periodicity')}
               </InputLabel>
               <Box display="flex" gap={1} alignItems="flex-end">
-                {/* The library Input, not a raw MUI one: this is the validity
-                    period the pass names. `isTypeNumber` brings the designed
-                    stepper. The Input puts `className` on its root and spreads
-                    everything else onto the inner <input>, so the flex sizing
-                    goes on a wrapper rather than on the component. */}
                 <Box style={{ flex: 1 }}>
                   <Input
                     type="number"

@@ -20,11 +20,9 @@ import { useFormatter } from './i18n';
 import { isNilField } from '../utils/utils';
 
 /**
- * Formik adapter for the library Combobox, replacing `AutocompleteField`.
- *
- * Prop surface differs from `AutocompleteField` on two points: there is no
- * `textfieldprops` (no MUI TextField underneath), and `renderOption` returns
- * the row CONTENT only — the library owns the `<li>` and its ARIA.
+ * Formik adapter for the library Combobox, replacing `AutocompleteField`. No
+ * `textfieldprops` (no MUI TextField underneath), and `renderOption` returns the row
+ * CONTENT only — the library owns the `<li>` and its ARIA.
  */
 
 type PossibleValue = FieldOption | string;
@@ -45,17 +43,12 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       optionLength?: number;
       style?: React.CSSProperties;
       className?: string;
-      /** Forwarded to the input; call sites use it to tell two mounts apart. */
       id?: string;
       groupBy?: (option: Value) => string;
       getOptionLabel?: (option: Value) => string;
-      /**
-       * Argument order is NOT MUI's: the library passes the SELECTED value
-       * first. Prefer omitting it — the default below is order-agnostic.
-       */
+      /** Argument order is NOT MUI's: the library passes the SELECTED value first. */
       isOptionEqualToValue?: (a: Value, b: Value) => boolean;
       isOptionDisabled?: (option: Value) => boolean;
-      /** Per-value chip tone; presentation only, never reaches the selection engine. */
       getChipColor?: (option: Value) => string | undefined;
       filterOptions?: (options: Value[], inputValue: string) => Value[];
       renderOption?: (option: Value, state: { selected: boolean; active: boolean }) => ReactNode;
@@ -65,13 +58,11 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       /** A server-backed field must gate its query on `meta.cause === 'type'`. */
       onInputChange?: (value: string, meta: ComboboxChangeMeta) => void;
       onOpenChange?: (open: boolean, meta: ComboboxChangeMeta) => void;
-      /** Runs when focus reaches the input — where server-backed sites load page one. */
       onFocusInput?: (event: React.FocusEvent<HTMLInputElement>) => void;
       onChange?: (name: string, value: Value | Value[] | null) => void;
       onInternalChange?: (name: string, value: Value | Value[] | null) => void;
       /** Persistent create button on the field line; also stands in for `onCreateOption`. */
       openCreate?: () => void;
-      /** Opens the product's creation form for the text the list does not hold. */
       onCreateOption?: (input: string, meta: ComboboxChangeMeta) => void;
       createOptionLabel?: (input: string) => string;
       createHintLabel?: (input: string) => string;
@@ -80,9 +71,8 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       selectOnFocus?: boolean;
       openOnFocus?: boolean;
       /**
-       * Defaults to `true` in multiple mode for MUI parity (the library default
-       * is `false`): an open panel overlays the form's own action button in
-       * narrow drawers. Pass `closeOnSelect={false}` for the library behaviour.
+       * Defaults to `true` in multiple mode for MUI parity (the library default is `false`): an open panel
+       * overlays the form's own action button in narrow drawers.
        */
       closeOnSelect?: boolean;
       keepInputOnBlur?: boolean;
@@ -240,22 +230,12 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   );
 };
 
-/**
- * Narrows the adapter's dual-mode `onChange` for a single-value call site, so
- * the cast lives here once instead of at each site. Encoding the mode as a type
- * parameter was tried and reverted: it broke every `multiple` mount.
- */
 export const asSingleValue = <T,>(
   fn?: (name: string, value: T | null) => void,
 ) => (fn
   ? (name: string, value: T | T[] | null) => fn(name, Array.isArray(value) ? (value[0] ?? null) : value)
   : undefined);
 
-/**
- * The `multiple` counterpart of {@link asSingleValue}. The library emits
- * `onValueChange(multiple ? [] : null, ...)`, so the `?? []` is unreachable
- * rather than a default that could swallow a real null.
- */
 export const asMultiValue = <T,>(
   fn?: (name: string, values: T[]) => void,
 ) => (fn
