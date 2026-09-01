@@ -10,9 +10,10 @@ import {
   ComboboxField,
   ComboboxHelperText,
   ComboboxInput,
+  ComboboxLabel,
   ComboboxTrigger,
 } from '@filigran/design-system';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
 import { splitAndTrimArray } from '../../../../../utils/String';
 
@@ -49,10 +50,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>{label}</Typography>
-      <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>{description}</Typography>
       <Combobox<string>
-        labelPosition="none"
         multiple
         closeOnSelect
         allowCustomValue
@@ -66,10 +64,10 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
         isOptionEqualToValue={(a, b) => a === b}
         error={!!errors}
       >
+        <ComboboxLabel>{label}</ComboboxLabel>
         <ComboboxField>
-          <ComboboxChips />
+          <ComboboxChips aria-label={String(label)} />
           <ComboboxInput
-            aria-label={String(label)}
             placeholder={currentValues.length === 0
               ? t_i18n('Type and press Enter to add items')
               : t_i18n('Add more items...')
@@ -80,7 +78,9 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
           </ComboboxControls>
         </ComboboxField>
         <ComboboxContent listAriaLabel={String(label)} />
-        {errors ? <ComboboxHelperText>{errors}</ComboboxHelperText> : null}
+        {(errors || description) ? (
+          <ComboboxHelperText>{errors || description}</ComboboxHelperText>
+        ) : null}
       </Combobox>
     </Box>
   );
