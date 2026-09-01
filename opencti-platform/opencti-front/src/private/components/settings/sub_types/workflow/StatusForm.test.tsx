@@ -7,7 +7,6 @@ import testRender from '../../../../../utils/tests/test-render';
 import { WorkflowActionType } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -151,7 +150,7 @@ describe('StatusForm – EE / CE gating', () => {
         const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
         expect(uamAction?.params?.authorized_members).toEqual(
           expect.arrayContaining([
-            expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+            expect.objectContaining({ value: 'CREATORS', accessRight: 'admin' }),
           ]),
         );
       });
@@ -170,7 +169,7 @@ describe('StatusForm – EE / CE gating', () => {
         const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
         expect(uamAction?.params?.authorized_members).toEqual(
           expect.arrayContaining([
-            expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+            expect.objectContaining({ value: 'CREATORS', accessRight: 'admin' }),
           ]),
         );
       });
