@@ -6675,15 +6675,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-rate-limit@npm:8.6.2":
-  version: 8.6.2
-  resolution: "express-rate-limit@npm:8.6.2"
+"express-rate-limit@npm:8.7.0":
+  version: 8.7.0
+  resolution: "express-rate-limit@npm:8.7.0"
   dependencies:
     debug: "npm:^4.4.3"
     ip-address: "npm:^10.2.0"
   peerDependencies:
     express: ">= 4.11"
-  checksum: 10c0/34dba96f7daa01fe9f73a965c0ddaa73bf83d2cb1691ed5e060451ddacebc10fda211a3cf0c34592cf0360bf00d6d9354f3e11ccda7c899705ec1e43383c3144
+  checksum: 10c0/a83aca1af73280e07695bcb989d40835691b3cbec411782ac56a49d20555008acdcfedd8235c2df63ad8fd60288a9e1a73760a10bba3b3a8160b270f417b05b8
   languageName: node
   linkType: hard
 
@@ -9841,7 +9841,7 @@ __metadata:
     eventsource: "npm:5.1.1"
     eventsource-parser: "npm:4.1.0"
     express: "npm:5.2.1"
-    express-rate-limit: "npm:8.6.2"
+    express-rate-limit: "npm:8.7.0"
     express-session: "npm:1.19.0"
     fast-json-patch: "npm:3.1.1"
     file-type: "npm:22.0.2"
