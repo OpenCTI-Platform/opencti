@@ -1,7 +1,7 @@
+import { REGISTER_BANNER_DISMISSED_KEY } from '../src/utils/bannerConstants';
 import { expect, test as setup } from './fixtures/baseFixtures';
 import DashboardPage from './model/dashboard.pageModel';
 import LoginFormPageModel from './model/form/loginForm.pageModel';
-import { REGISTER_BANNER_DISMISSED_KEY } from '../src/utils/bannerConstants';
 
 const authFile = 'tests_e2e/.setup/.auth/user.json';
 
