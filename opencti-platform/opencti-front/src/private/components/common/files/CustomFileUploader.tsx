@@ -1,14 +1,9 @@
-import React, { FormEvent, FunctionComponent, useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Button from '@common/button/Button';
-import { Theme } from '@mui/material/styles/createTheme';
-import makeStyles from '@mui/styles/makeStyles';
-import classNames from 'classnames';
-import InputLabel from '@mui/material/InputLabel';
+import React, { FunctionComponent, useState } from 'react';
+import { FileSelect } from '@filigran/design-system';
+import type { FileRejection } from '@filigran/design-system';
 import { FieldProps } from 'formik';
-import VisuallyHiddenInput from '../VisuallyHiddenInput';
 import { useFormatter } from '../../../../components/i18n';
-import { splitAndTrim, truncate } from '../../../../utils/String';
+import { truncate } from '../../../../utils/String';
 
 interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefined>> {
   setFieldValue: (
@@ -30,41 +25,6 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
   onChange?: (key: string, value: File | undefined) => void;
 }
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  box: {
-    width: '100%',
-    marginTop: '0.2rem',
-    paddingBottom: '0.35rem',
-    borderBottom: `0.1rem solid ${theme.palette.grey['400']}`,
-    cursor: 'default',
-    '&:hover': {
-      borderBottom: '0.1rem solid white',
-    },
-    '&:active': {
-      borderBottom: `0.1rem solid ${theme.palette.primary.main}`,
-    },
-  },
-  boxError: {
-    borderBottom: `0.1rem solid ${theme.palette.error.main}`,
-  },
-  button: {
-    lineHeight: '0.65rem',
-  },
-  div: {
-    marginTop: 20,
-    width: '100%',
-  },
-  error: {
-    color: theme.palette.error.main,
-  },
-  span: {
-    marginLeft: 5,
-    verticalAlign: 'bottom',
-  },
-}));
-
 const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   setFieldValue,
   isEmbeddedInExternalReferenceCreation,
@@ -80,108 +40,54 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   onChange,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  const [fileNameForDisplay, setFileNameForDisplay] = useState('');
-  const [errorText, setErrorText] = useState('');
+  // Rendered without a Formik <Field> at 21 of the 44 call sites, so there is no
+  // form-side value to read back — track the selection locally in that case.
+  const [internalValue, setInternalValue] = useState<File | null>(null);
 
-  useEffect(() => {
-    if (field) {
-      const fileName = field.value?.name ?? '';
-      if (fileName !== fileNameForDisplay) {
-        setFileNameForDisplay(fileName);
-      }
+  const selectedFile = field ? (field.value ?? null) : internalValue;
+
+  const commitValue = async (file: File | null) => {
+    if (!field) {
+      setInternalValue(file);
     }
-  }, [field, fileNameForDisplay, setFileNameForDisplay]);
+    await setFieldValue('file', file ?? undefined);
+    onChange?.('file', file ?? undefined);
 
-  useEffect(() => {
-    if (formikErrors?.file) {
-      setErrorText(formikErrors?.file);
-    } else {
-      setErrorText('');
-    }
-  }, [formikErrors]);
-
-  const internalOnChange = async (event: FormEvent) => {
-    const inputElement = event.target as HTMLInputElement;
-    const eventTargetValue = inputElement.value as string;
-    const file = inputElement.files?.[0];
-    const fileSize = file?.size || 0;
-
-    const newFileName = eventTargetValue.substring(
-      eventTargetValue.lastIndexOf('\\') + 1,
-    );
-    setFileNameForDisplay(truncate(newFileName, 60));
-    setErrorText('');
-
-    // check the file type; user might still provide something bypassing 'accept'
-    // this will work only if accept is using MIME types only
-    const acceptedList = splitAndTrim(acceptMimeTypes);
-    if (
-      acceptedList.length > 0
-      && !!file?.type
-      && !acceptedList.includes(file?.type)
-    ) {
-      setErrorText(`${t_i18n('This file is not in the specified format')} : ${acceptMimeTypes}`);
-      return;
-    }
-
-    // check the size limit if any set; if file is too big it is not set as value
-    if (fileSize > 0 && sizeLimit > 0 && fileSize > sizeLimit) {
-      setErrorText(t_i18n('This file is too large'));
-      return;
-    }
-
-    await setFieldValue('file', inputElement.files?.[0]);
-    onChange?.('file', inputElement.files?.[0]);
-
-    if (isEmbeddedInExternalReferenceCreation) {
+    if (file && isEmbeddedInExternalReferenceCreation) {
       const externalIdValue = (
-        document.getElementById('external_id') as HTMLInputElement
-      ).value;
+        document.getElementById('external_id') as HTMLInputElement | null
+      )?.value;
       if (!externalIdValue) {
-        await setFieldValue('external_id', truncate(newFileName, 60));
+        await setFieldValue('external_id', truncate(file.name, 60));
       }
     }
   };
 
-  const noFileLabel = noFileSelectedLabel ?? t_i18n('No file selected.');
+  // Translates the library's own in-field rejection message. Local state cannot
+  // hold it: Formik hands back a new `formikErrors` identity on every render, so
+  // any effect syncing it would clear the rejection before it is read.
+  const rejectionMessage = (rejections: FileRejection[]) => (
+    rejections[0].reason === 'accept'
+      ? `${t_i18n('This file is not in the specified format')} : ${acceptMimeTypes}`
+      : t_i18n('This file is too large')
+  );
 
   return (
-    <div className={classes.div} style={noMargin ? { margin: 0 } : {}}>
-      <InputLabel shrink={true} variant="outlined" className={classNames({ [classes.error]: !!errorText })}>
-        {label ? t_i18n(label) : t_i18n('Associated file')} {required && '*'}
-      </InputLabel>
-      <Box
-        className={classNames({
-          [classes.box]: true,
-          [classes.boxError]: !!errorText,
-        })}
-      >
-        <Button
-          size="small"
-          component="label"
-          onChange={internalOnChange}
-          className={classes.button}
-          disabled={disabled}
-        >
-          {t_i18n('Select your file')}
-          <VisuallyHiddenInput type="file" accept={acceptMimeTypes} />
-        </Button>
-        <span
-          title={fileNameForDisplay || noFileLabel}
-          className={classNames({
-            [classes.span]: true,
-            [classes.error]: !!errorText,
-          })}
-        >
-          {fileNameForDisplay || noFileLabel}
-        </span>
-      </Box>
-      {!!errorText && (
-        <div>
-          <span className={classes.error}>{t_i18n(errorText)}</span>
-        </div>
-      )}
+    <div style={{ width: '100%', marginTop: noMargin ? 0 : 20 }}>
+      <FileSelect
+        label={label ? t_i18n(label) : t_i18n('Associated file')}
+        required={required}
+        value={selectedFile}
+        onValueChange={(value) => commitValue((value as File | null) ?? null)}
+        rejectionMessage={rejectionMessage}
+        triggerLabel={t_i18n('Select your file')}
+        placeholder={noFileSelectedLabel ?? t_i18n('No file selected.')}
+        accept={acceptMimeTypes}
+        maxSize={sizeLimit > 0 ? sizeLimit : undefined}
+        error={formikErrors?.file ? t_i18n(formikErrors.file) : undefined}
+        disabled={disabled}
+        clearLabel={t_i18n('Remove file')}
+      />
     </div>
   );
 };

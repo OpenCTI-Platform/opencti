@@ -623,7 +623,7 @@ const ContainerHeader = (props) => {
                           through `asChild` (lib #193, for LIBRARY-FEEDBACK #56).
                           No onValueChange: the route IS the state. */}
                       <ButtonGroup
-                        size="sm"
+                        size="md"
                         value={currentMode}
                         aria-label={t_i18n('Change view')}
                       >

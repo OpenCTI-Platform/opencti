@@ -718,7 +718,7 @@ const ThemeDark = (
           // selected and hover tones below are unchanged.
           minHeight: 32,
           paddingLeft: 16,
-          paddingRight: 8,
+          paddingRight: 16,
           gap: 8,
           fontSize: 12,
           lineHeight: 1.5,

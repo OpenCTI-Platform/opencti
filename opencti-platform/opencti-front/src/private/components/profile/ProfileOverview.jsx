@@ -36,6 +36,7 @@ import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
 import ProfileOverviewNewsFeed from './ProfileOverviewNewsFeed';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
+import TextareaField from '../../../components/TextareaField';
 
 const styles = () => ({
   container: {
@@ -347,15 +348,16 @@ const ProfileOverviewComponent = (props) => {
                 onSubmit={handleSubmitField}
               />
               <Field
-                component={TextField}
+                component={TextareaField}
                 variant="outlined"
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
+                resize="vertical"
               />
             </Form>
           )}

@@ -1,5 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
-import { Grid2 as Grid } from '@mui/material';
+import { Box, Grid2 as Grid } from '@mui/material';
 import { AutoFix, Database, GraphOutline } from 'mdi-material-ui';
 import { useTheme } from '@mui/material/styles';
 import { SettingsSuggestOutlined } from '@mui/icons-material';
@@ -116,11 +116,13 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
 
   return (
     <>
-      <SearchInput
-        variant="small"
-        onSubmit={helpers.handleSearch}
-        keyword={viewStorage.searchTerm ?? ''}
-      />
+      <Box sx={{ marginBottom: 2 }}>
+        <SearchInput
+          variant="small"
+          onSubmit={helpers.handleSearch}
+          keyword={viewStorage.searchTerm ?? ''}
+        />
+      </Box>
       <Grid container spacing={3}>
         <Grid size={{ xs: 6 }} container spacing={3}>
           <Grid size={{ xs: 6 }}>

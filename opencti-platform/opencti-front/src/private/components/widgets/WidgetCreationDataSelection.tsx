@@ -1,7 +1,5 @@
 import IconButton from '@common/button/IconButton';
-import { AddOutlined, CancelOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
+import { AddOutlined } from '@mui/icons-material';
 import WidgetFilters from '@components/widgets/WidgetFilters';
 import Button from '@common/button/Button';
 import React, { useState } from 'react';
@@ -13,7 +11,7 @@ import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
-import { Input } from '@filigran/design-system';
+import { Icon, IconButton as FdsIconButton, Input, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -115,42 +113,40 @@ const WidgetCreationDataSelection = () => {
               key={itemIds[i]}
               perspective={item.perspective}
             >
-              <IconButton
+              <FdsIconButton
                 disabled={dataSelection.length === 1}
-                aria-label="Delete"
-                style={{
-                  position: 'absolute',
-                  top: -20,
-                  right: -20,
-                }}
+                aria-label={t_i18n('Delete')}
+                icon={<Icon name="x" size={16} />}
+                variant="default"
+                priority="tertiary"
+                size="sm"
+                className="absolute top-2 right-2"
                 onClick={() => handleRemoveDataSelection(i)}
-              >
-                <CancelOutlined fontSize="small" />
-              </IconButton>
+              />
 
-              <Stack direction="row" sx={{ width: '100%' }}>
-                <Input
-                  className="flex-1"
-                  label={`${t_i18n('Label')} (${dataSelection[i].perspective})`}
-                  value={dataSelection[i].label ?? ''}
-                  onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
-                />
-                {
-                  perspective === 'relationships' && (
-                    <Tooltip
-                      title={t_i18n(
+              <Input
+                label={`${t_i18n('Label')} (${dataSelection[i].perspective})`}
+                value={dataSelection[i].label ?? ''}
+                onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
+                infoTooltip={perspective === 'relationships' ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <FdsIconButton
+                        icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
+                        aria-label={t_i18n('More information')}
+                        variant="default"
+                        priority="tertiary"
+                        size="sm"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t_i18n(
                         'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
                       )}
-                    >
-                      <InformationOutline
-                        fontSize="small"
-                        color="primary"
-                        style={{ marginRight: 5, marginTop: 20 }}
-                      />
-                    </Tooltip>
-                  )
-                }
-              </Stack>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : undefined}
+              />
 
               <WidgetFilters
                 dataSelection={dataSelection[i]}
@@ -169,11 +165,11 @@ const WidgetCreationDataSelection = () => {
             aria-label={t_i18n('Add')}
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
-            size="small"
+            // The wrapper has no default size: omitting it resolves to `sm`, not `md`.
+            size="default"
             onClick={() => handleAddDataSelection('entities')}
             style={{
               width: '100%',
-              height: 20,
               flex: 1,
             }}
           >
@@ -186,29 +182,27 @@ const WidgetCreationDataSelection = () => {
         <Stack direction="row">
           <Button
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
-            size="small"
+            startIcon={<AddOutlined />}
             onClick={() => handleAddDataSelection('relationships')}
             style={{
               width: '100%',
-              height: 20,
               flex: 1,
               marginRight: 20,
             }}
           >
-            <AddOutlined fontSize="small" /> {t_i18n('Relationships')}
+            {t_i18n('Relationships')}
           </Button>
           <Button
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
-            size="small"
+            startIcon={<AddOutlined />}
             onClick={() => handleAddDataSelection('entities')}
             style={{
               width: '100%',
-              height: 20,
               flex: 1,
             }}
           >
-            <AddOutlined fontSize="small" /> {t_i18n('Entities')}
+            {t_i18n('Entities')}
           </Button>
         </Stack>
       )}
@@ -220,17 +214,15 @@ const WidgetCreationDataSelection = () => {
               getCurrentDataSelectionLimit(type) === dataSelection.length
               || getCurrentCategory(type) === 'distribution'
             }
+            aria-label={t_i18n('Add')}
             color="secondary"
-            size="small"
+            startIcon={<AddOutlined />}
             onClick={() => handleAddDataSelection('audits')}
             style={{
               width: '100%',
-              height: 20,
               flex: 1,
             }}
-          >
-            <AddOutlined fontSize="small" />
-          </Button>
+          />
         </Stack>
       )}
 

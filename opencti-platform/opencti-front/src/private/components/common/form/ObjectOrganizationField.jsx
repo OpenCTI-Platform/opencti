@@ -21,10 +21,6 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
 
 }));
 
@@ -139,15 +135,12 @@ const ObjectOrganizationField = (props) => {
     return FieldElement;
   }
   return (
-    <Alert
-      severity="warning"
-      variant="outlined"
-      style={style}
-      classes={{ message: classes.message }}
-    >
-      <AlertTitle>{t_i18n('Organizations restriction')}</AlertTitle>
-      <div style={{ marginTop: 10 }}>{FieldElement}</div>
-    </Alert>
+    <>
+      <Alert severity="warning" variant="outlined" style={style}>
+        <AlertTitle>{t_i18n('Organizations restriction')}</AlertTitle>
+      </Alert>
+      <div style={{ marginTop: 16 }}>{FieldElement}</div>
+    </>
   );
 };
 

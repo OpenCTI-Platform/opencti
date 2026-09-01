@@ -79,7 +79,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
       sx={{ position: 'relative' }}
     >
       { user && !!user.effective_confidence_level && (
-        <Box>
+        <Box sx={{ mb: 2 }}>
           {t_i18n('Effective Max Confidence Level:')}
           &nbsp;
           <UserConfidenceLevel user={user} />
@@ -99,7 +99,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           {t_i18n('This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.')}
         </Box>
       )}
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         {/* we still use a technical field for this switch to be able to do lazy yup validation ; do NOT submit! */}
         <Field
           component={SwitchField}
@@ -111,7 +111,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           onChange={handleSwitchChange}
         />
         <Tooltip
-          sx={{ zIndex: 2 }}
+          sx={{ zIndex: 2, ml: 1, mb: 1 }}
           title={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
         >
           <InformationOutline fontSize="small" color="primary" />

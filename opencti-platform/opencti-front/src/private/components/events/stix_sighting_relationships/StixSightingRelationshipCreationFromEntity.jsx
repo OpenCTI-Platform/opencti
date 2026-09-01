@@ -437,7 +437,6 @@ const StixSightingRelationshipCreationFromEntity = ({
             paginationOptions={stixDomainObjectsPaginationOptions}
             stixDomainObjectTypes={stixCoreObjectTypes}
             controlledDialStyles={{ float: 'right' }}
-            controlledDialSize="small"
           />
         )}
       >

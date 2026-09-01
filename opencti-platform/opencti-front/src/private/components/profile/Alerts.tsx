@@ -355,18 +355,15 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
             paddingRight: 10,
           }}
           >
-            <Tooltip title={name ?? EMPTY_VALUE}>
-              <Chip
-                severity={notification_type === 'live' ? 'high' : 'info'}
-                label={name ?? EMPTY_VALUE}
-                // style={{ marginRight: 10, maxWidth: '100%' }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleAddFilter('name', name, 'eq');
-                }}
-              />
-            </Tooltip>
+            <Chip
+              severity={notification_type === 'live' ? 'high' : 'info'}
+              label={name ?? EMPTY_VALUE}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddFilter('name', name, 'eq');
+              }}
+            />
           </div>
         );
       },

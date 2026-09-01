@@ -96,6 +96,7 @@ const SearchBulkContainer = () => {
             value={textFieldValue}
             minRows={20}
             placeholder={t_i18n('One keyword by line or separated by commas')}
+            resize="none"
           />
         </Grid>
         <Grid item xs={10}>

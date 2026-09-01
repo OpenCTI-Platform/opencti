@@ -112,7 +112,7 @@ const AuthorizedMembersFieldListItem = ({
       <Field
         component={SelectField}
         name={name}
-        sx={{ m: 1, minWidth: 120 }}
+        sx={{ m: 1, width: 150 }}
         inputProps={{ 'aria-label': 'Without label' }}
         disabled={
           disabled || authorizedMember.value === me.id || !authorizedMember.label
@@ -145,7 +145,7 @@ const AuthorizedMembersFieldListItem = ({
               <Delete fontSize="small" />
             </IconButton>
           )
-        : <div style={{ width: 36 }}></div>
+        : <div style={{ width: 24 }}></div>
       }
     </ListItem>
   );

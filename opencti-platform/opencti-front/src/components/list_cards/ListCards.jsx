@@ -116,7 +116,7 @@ class ListCards extends Component {
                       value={sortBy}
                       onValueChange={this.sortBy.bind(this)}
                     >
-                      <SelectLabel>{t('Sort by')}</SelectLabel>
+                      <SelectLabel style={{ marginBottom: 0 }}>{t('Sort by')}</SelectLabel>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
