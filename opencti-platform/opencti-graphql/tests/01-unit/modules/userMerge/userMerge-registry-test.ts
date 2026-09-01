@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   handlerDryRun,
+  planDivergence,
   planFingerprint,
   type UserMergeHandler,
   type UserMergeHandlerContext,
@@ -64,6 +65,26 @@ describe('Handler execution modes', () => {
     const base = { handler: 'mock', changes: [{ register_row_id: 'user.password', entity_type: 'User', count: 1, exact: true }], alerts: [] };
     const moved = { ...base, changes: [{ ...base.changes[0], count: 2 }] };
     expect(planFingerprint(base)).not.toEqual(planFingerprint(moved));
+  });
+
+  it('should name the entries that moved between the two passes', async () => {
+    const dry = {
+      handler: 'mock',
+      changes: [
+        { register_row_id: 'user.password', entity_type: 'User', count: 1, exact: true },
+        { register_row_id: 'activity.user-id', entity_type: 'Activity', count: 3, exact: true },
+      ],
+      alerts: [],
+    };
+    const real = { ...dry, changes: [dry.changes[0], { ...dry.changes[1], count: 4 }] };
+    const divergence = planDivergence(dry, real);
+    expect(divergence.dry_only).toEqual(['activity.user-id|Activity|3|true']);
+    expect(divergence.real_only).toEqual(['activity.user-id|Activity|4|true']);
+  });
+
+  it('should report nothing when the two passes agree', async () => {
+    const plan = { handler: 'mock', changes: [{ register_row_id: 'user.password', entity_type: 'User', count: 1, exact: true }], alerts: [] };
+    expect(planDivergence(plan, { ...plan, changes: [...plan.changes] })).toEqual({ dry_only: [], real_only: [] });
   });
 });
 
