@@ -55,9 +55,13 @@ describe('userMerge restricted members transfer', () => {
     const sourceGroup = await addGroup(testContext, SYSTEM_USER, { name: `${SUFFIX}-source-group` });
     sharedGroupId = sharedGroup.id;
     sourceGroupId = sourceGroup.id;
-    const source = await addUser(testContext, SYSTEM_USER, { name: `${SUFFIX}-source`, password: SUFFIX, user_email: `${SUFFIX}-source@opencti.invalid` });
-    const target = await addUser(testContext, SYSTEM_USER, { name: `${SUFFIX}-target`, password: SUFFIX, user_email: `${SUFFIX}-target@opencti.invalid` });
-    const other = await addUser(testContext, SYSTEM_USER, { name: `${SUFFIX}-other`, password: SUFFIX, user_email: `${SUFFIX}-other@opencti.invalid` });
+    // Without this, the three accounts join the platform default groups, and the rights handler
+    // then counts memberships and authorities that come from fixture objects shared with the rest
+    // of the integration suite. A count moving between the dry pass and the real one aborts the
+    // merge, so the test only owns what it creates itself.
+    const source = await addUser(testContext, SYSTEM_USER, { name: `${SUFFIX}-source`, password: SUFFIX, user_email: `${SUFFIX}-source@opencti.invalid`, prevent_default_groups: true });
+    const target = await addUser(testContext, SYSTEM_USER, { name: `${SUFFIX}-target`, password: SUFFIX, user_email: `${SUFFIX}-target@opencti.invalid`, prevent_default_groups: true });
+    const other = await addUser(testContext, SYSTEM_USER, { name: `${SUFFIX}-other`, password: SUFFIX, user_email: `${SUFFIX}-other@opencti.invalid`, prevent_default_groups: true });
     sourceId = source.id;
     targetId = target.id;
     otherUserId = other.id;
