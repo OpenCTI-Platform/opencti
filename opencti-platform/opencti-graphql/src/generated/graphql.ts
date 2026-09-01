@@ -17677,6 +17677,7 @@ export type Mutation = {
   userAdminTokenRevoke?: Maybe<Scalars['ID']['output']>;
   userEdit?: Maybe<UserEditMutations>;
   userMerge: UserMergeResult;
+  userMergeDeleteSource: Scalars['ID']['output'];
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
@@ -20342,6 +20343,12 @@ export type MutationUserEditArgs = {
 
 export type MutationUserMergeArgs = {
   options?: InputMaybe<UserMergeOptions>;
+  sourceId: Scalars['ID']['input'];
+  targetId: Scalars['ID']['input'];
+};
+
+
+export type MutationUserMergeDeleteSourceArgs = {
   sourceId: Scalars['ID']['input'];
   targetId: Scalars['ID']['input'];
 };
@@ -48575,6 +48582,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userAdminTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserAdminTokenRevokeArgs, 'id' | 'userId'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
   userMerge?: Resolver<ResolversTypes['UserMergeResult'], ParentType, ContextType, RequireFields<MutationUserMergeArgs, 'sourceId' | 'targetId'>>;
+  userMergeDeleteSource?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUserMergeDeleteSourceArgs, 'sourceId' | 'targetId'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;

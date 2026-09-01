@@ -10628,6 +10628,7 @@ type Mutation {
   dataSanityOperationRequestRun(operation_name: String!): ID
   dataSanityOperationStop(operation_name: String!): ID
   userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult!
+  userMergeDeleteSource(sourceId: ID!, targetId: ID!): ID!
   customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
   customFieldDefinitionDelete(id: ID!): ID
   customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
