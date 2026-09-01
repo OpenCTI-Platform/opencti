@@ -91,7 +91,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
       paddingLeft: '5px',
     }}
     >
-      <Box sx={{ minWidth: `${entityTypeHeaderWidth}px` }}>
+      <Box sx={{ width: `${entityTypeHeaderWidth}px` }}>
         {/* `disablePortal` has no equivalent here and needs none: the library panel always portals, and it is
             measured opening over this dialog without closing it. */}
         <Combobox<autocompleteOptionsType>
@@ -121,7 +121,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           />
         </Combobox>
       </Box>
-      <Box sx={{ minWidth: `${entityNameHeaderWidth}px` }}>
+      <Box sx={{ width: `${entityNameHeaderWidth}px` }}>
         <Typography
           sx={{
             fontSize: '0.9rem',
@@ -135,7 +135,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           {truncate(isSearchTermEmpty ? entity.searchTerm : entity.representative, 20)}
         </Typography>
       </Box>
-      <Box sx={{ minWidth: `${matchHeaderWidth}px` }}>
+      <Box sx={{ width: `${matchHeaderWidth}px` }}>
         <Chip
           label={getRelationMatchStatus()}
           severity={getChipColor()}

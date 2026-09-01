@@ -42,7 +42,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     gap: '8px',
   },
   external: {
-    marginTop: 24,
+    marginTop: 32,
     paddingLeft: 10,
     paddingRight: 10,
   },

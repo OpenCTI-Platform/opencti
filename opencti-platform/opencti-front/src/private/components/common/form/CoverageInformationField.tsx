@@ -90,14 +90,16 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     marginTop: index === 0 ? 10 : 20,
                     width: '100%',
                     position: 'relative',
-                    paddingRight: 50,
+                    display: 'flex',
+                    gap: 8,
                   }}
                 >
                   <div
                     style={{
                       display: 'grid',
-                      gap: 20,
+                      gap: 12,
                       gridTemplateColumns: '1fr 1fr',
+                      flex: 1,
                     }}
                   >
                     <OpenVocabField
@@ -127,13 +129,12 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                   <IconButton
                     variant="default"
                     priority="tertiary"
-                    size="sm"
+                    style={{ marginTop: 28 }}
                     id={`deleteCoverageInfo_${index}`}
                     aria-label="Delete"
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
                     icon={<DeleteOutlined />}
                   />
                 </div>
@@ -191,10 +192,17 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                     marginTop: index === 0 ? 10 : 20,
                     width: '100%',
                     position: 'relative',
-                    paddingRight: 50,
+                    display: 'flex',
+                    gap: 8,
                   }}
                 >
-                  <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
+                  <div style={{
+                    display: 'grid',
+                    gap: 12,
+                    gridTemplateColumns: '1fr 1fr',
+                    flex: 1,
+                  }}
+                  >
                     <OpenVocabField
                       label={t_i18n('Coverage name')}
                       type="coverage_ov"
@@ -276,10 +284,9 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                     <IconButton
                       variant="default"
                       priority="tertiary"
-                      size="sm"
+                      style={{ marginTop: 28 }}
                       id={`deleteCoverageInfo_${index}`}
                       aria-label="Delete"
-                      style={{ position: 'absolute', right: -10, top: 5 }}
                       icon={<DeleteOutlined />}
                     />
                   )}

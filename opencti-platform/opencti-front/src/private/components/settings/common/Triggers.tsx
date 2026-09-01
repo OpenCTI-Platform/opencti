@@ -98,7 +98,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       <Card
         title={t_i18n('Triggers and Digests')}
         action={(
-          <Stack direction="row" gap={1}>
+          <Stack direction="row" gap={1} alignItems="center">
             <div>
               <Tooltip title={t_i18n('Add a live trigger')}>
                 <IconButton
@@ -128,7 +128,6 @@ const Triggers: FunctionComponent<TriggersProps> = ({
               </Tooltip>
             </div>
             <SearchInput
-              style={{ transform: 'translateY(-5px)' }}
               variant="thin"
               onSubmit={helpers.handleSearch}
               keyword={searchTerm}

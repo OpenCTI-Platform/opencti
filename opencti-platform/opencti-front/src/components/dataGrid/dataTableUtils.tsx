@@ -1195,7 +1195,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         >
           <div>
             <Chip label={tags[0]} style={{ marginRight: 7 }} />
-            <Chip label="..." style={{ marginRight: 7 }} />
+            {tags.length > 1 && (
+              <Chip label="..." style={{ marginRight: 7 }} />
+            )}
           </div>
         </Tooltip>
       );

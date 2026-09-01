@@ -1,7 +1,5 @@
 import List from '@mui/material/List';
-import ListItemText from '@mui/material/ListItemText';
 import Popover from '@mui/material/Popover';
-import React from 'react';
 import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { Checkbox } from '@filigran/design-system';
@@ -44,12 +42,12 @@ function GraphToolbarOptionsList<T>({
               <ListItemIcon sx={{ minWidth: 0 }}>
                 <Checkbox
                   aria-label={getOptionText(option)}
+                  label={getOptionText(option)}
                   className="py-1"
                   checked={isOptionSelected(option)}
                 />
               </ListItemIcon>
             )}
-            <ListItemText primary={getOptionText(option)} />
           </ListItemButton>
         ))}
       </List>
