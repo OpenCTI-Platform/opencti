@@ -36,7 +36,6 @@ const Dialog = ({
       {...dialogProps}
       fullScreen={fullScreen}
       onClose={onClose}
-      onClick={(e) => e.stopPropagation()}
       slotProps={{
         paper: {
           // A dialog is a layer-2 surface: the class re-declares the elevation aliases,

@@ -227,7 +227,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
               }
             }
           : handleClose}
-        onClick={(e) => e.stopPropagation()}
         sx={{
           zIndex: 1202,
         }}
