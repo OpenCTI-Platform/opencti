@@ -227,4 +227,22 @@ describe('userMerge engine', () => {
     expect(result.status).toEqual(UserMergeStatus.Success);
     expect(apply).toHaveBeenCalled();
   });
+
+  // Handlers cut the history index on this instant to leave the merge's own traces alone. Take it
+  // from the current run and the deletion gate, which answers by running a fresh dry-run, would see
+  // the traces of the merge it is asked about as references still pending, and never open.
+  it('should hand the handlers the first merge of the pair, not the start of this run', async () => {
+    const seen: Date[] = [];
+    registerUserMergeHandler(mockHandler('handler-a', {
+      compute: async ({ mergeStartedAt }) => {
+        seen.push(mergeStartedAt);
+        return plan('handler-a', 3);
+      },
+    }));
+    const result = await execute(true);
+    expect(result.status).toEqual(UserMergeStatus.Success);
+    expect(seen).toEqual([FIRST_MERGE_STARTED_AT]);
+    // The run keeps its own clock: the report says when it ran, the handlers cut on the pair.
+    expect(result.started_at.getTime()).toBeGreaterThan(FIRST_MERGE_STARTED_AT.getTime());
+  });
 });
