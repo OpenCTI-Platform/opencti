@@ -54,13 +54,8 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-<<<<<<< Updated upstream
 testCreatedCounter.relationship = 146;
-testCreatedCounter.report = 47;
-=======
-testCreatedCounter.relationship = 145;
 testCreatedCounter.report = 49;
->>>>>>> Stashed changes
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
 testCreatedCounter['threat-actor'] = 25;
@@ -156,11 +151,7 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 4;
-<<<<<<< Updated upstream
-testDeletedCounter.report = 38;
-=======
 testDeletedCounter.report = 40;
->>>>>>> Stashed changes
 testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter['threat-actor'] = 16;
