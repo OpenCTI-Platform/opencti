@@ -84,15 +84,12 @@ const Dialog = ({
         </DialogTitle>
       )}
 
-      {/* `py`/`px`, not `pY`/`pX`. MUI's system keys are lower-case, so the
-          previous spelling was dropped silently and every dialog fell back to
-          DialogContent's own `padding: 20px 24px`. Net effect of the fix,
-          measured against the installed MUI source: horizontal is unchanged
-          (24px either way) and the top was already 0 for a titled dialog
-          (`.MuiDialogTitle-root + & { paddingTop: 0 }`), so what actually
-          changes is the BOTTOM -- 20px to 0. A dialog with no title loses its
-          20px top as well. */}
-      <DialogContent {...contentProps} sx={{ py: 0, px: 3 }}>
+      {/* This element scrolls, and the library paints a focus ring 4px OUTSIDE the
+          field, so a field flush with the edge loses that ring to the clip; the
+          negative margin gives the padding back and leaves the layout as it was.
+          `&&` because MUI zeroes the top from `.MuiDialogTitle-root + &`, which
+          outranks a plain `sx`. */}
+      <DialogContent {...contentProps} sx={{ px: 3, '&&': { py: '4px', my: '-4px' } }}>
         {children}
       </DialogContent>
     </MUIDialog>
