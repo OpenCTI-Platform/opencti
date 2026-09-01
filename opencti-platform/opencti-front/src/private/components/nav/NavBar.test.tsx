@@ -85,27 +85,19 @@ describe('NavBarView', () => {
   });
 
   it('leaves a submenu parent non-navigable while the rail is expanded', () => {
-    // Iso-functional with the previous rail: expanded, clicking a parent only
-    // toggled its submenu; it never navigated.
     renderNav({ collapsed: false });
     const parent = screen.getByRole('button', { name: /Threats/ });
     expect(parent).not.toHaveAttribute('href');
   });
 
   it('makes a submenu parent navigable while the rail is collapsed', () => {
-    // ...and collapsed, clicking the parent DID navigate to its own route.
     renderNav({ collapsed: true });
     const parent = screen.getByRole('link', { name: /Threats/ });
     expect(parent.tagName).toBe('A');
     expect(parent).toHaveAttribute('href', '/dashboard/threats');
-    // Recorded, not asserted as desirable: the library renders a bare anchor here, not a router
-    // Link, so this one navigation is a full page reload where the previous rail did a client-
-    // side navigate().
   });
 
   it('renders a parent whose submenu was emptied by permissions as a plain link', () => {
-    // Iso-functionality: `LeftBarItem`'s "No Subitems" branch rendered such a parent as a
-    // navigable row.
     const gutted: NavGroup[] = [{
       id: 'data',
       items: [{
@@ -137,7 +129,6 @@ describe('NavBarView', () => {
 
   it('separates groups so no separator is rendered against nothing', () => {
     const { container } = renderNav();
-    // Two groups, therefore exactly one separator between them.
     expect(container.querySelectorAll('hr')).toHaveLength(1);
   });
 
@@ -157,7 +148,6 @@ describe('NavBarView', () => {
   });
 
   it('does not drive the hover flyout from the persisted submenu state', () => {
-    // Collapsed, `open`/`onOpenChange` drive the hover flyout, not an accordion.
     const onSubmenuOpenChange = vi.fn();
     renderNav({ collapsed: true, openSubmenus: ['threats'], onSubmenuOpenChange });
     expect(screen.queryByRole('link', { name: 'Campaigns' })).not.toBeInTheDocument();
@@ -173,16 +163,12 @@ describe('MadeByFiligran', () => {
     unmount();
     testRender(<MadeByFiligran collapsed />, { route: '/dashboard' });
     expect(screen.getByAltText('Filigran')).toBeInTheDocument();
-    // Collapsed, the label goes: the rail is 48px wide and the emblem alone
-    // stands for the signature, as in the OpenAEV pilot.
     expect(screen.queryByText('Made by')).not.toBeInTheDocument();
   });
 
   it('shows the emblem alone when collapsed, by cropping the wordmark', () => {
     testRender(<MadeByFiligran collapsed />, { route: '/dashboard' });
     const logo = screen.getByAltText('Filigran');
-    // A square box cropped from the left edge of the wordmark asset: the emblem survives, the
-    // lettering is cut.
     expect(logo.style.width).toBe('12px');
     expect(logo.style.height).toBe('12px');
     expect(logo.style.objectFit).toBe('cover');
@@ -211,9 +197,8 @@ describe('NavBarView accent compensation', () => {
    * the selected row from these exact custom properties.
    */
   const NOT_ACCENT_DERIVED: Record<string, string> = {
-    // lib pin a22b188 (#123): a selected row's GLYPH takes the ordinary primary text tone, not
-    // the accent — `group-[[aria-current=page]]:text-default-primary` on NavbarItem's icon
-    // span.
+    // lib pin a22b188 (#123): a selected row's GLYPH takes the ordinary primary text tone, not the accent —
+    // `group-[[aria-current=page]]:text-default-primary` on NavbarItem's icon span.
     '--text-default-primary': 'selected-row glyph colour, neutral by design',
   };
 
@@ -252,9 +237,6 @@ describe('NavBarView accent compensation', () => {
     });
   });
 
-  /**
-   * The tint set itself, in both directions.
-   */
   it('re-derives exactly the brand tints the installed library consumes', () => {
     const require = createRequire(import.meta.url);
     const css = readFileSync(require.resolve('@filigran/design-system/dist/index.css'), 'utf8');

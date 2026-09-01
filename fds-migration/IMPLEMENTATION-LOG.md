@@ -948,3 +948,54 @@ invisible — the control simply swaps engine on interaction.
 It is a static rule, which is exactly the level the information exists at — the
 same reason `check-accessible-names.mjs` had to be static. The sweep that found
 the 20 sites is the rule already; it needs turning into a gate, not inventing.
+
+## 2026-09-01 — The Select width fix, and why the field width is not the wrapper width
+
+Pin bumped bd57527 -> 934dca6 for two library fixes: the collapsed Navbar
+flyout anchor (#204, squash of 287f28a) and the Select trigger wrapper width
+(#203). Diffing the two installed `dist/` trees is what made the sweep
+tractable: the file sets are identical, `index.css` and `tokens/theme.css` are
+byte-identical, and only `select/Select.*` and `navbar-submenu/NavbarSubmenu.*`
+differ. The blast radius is therefore closed by construction — no token moved,
+so no component outside those two can look different.
+
+The Select change is `flex w-full items-center` -> `flex items-center` on the
+trigger's wrapper span. Only a Select whose DIRECT DOM parent is a row-direction
+flex container can move at all; in block and flex-column parents a block-level
+flex box fills its container either way. Static analysis over the 84 library
+`<Select>` sites found 10 such parents. The other 74 are safe by construction,
+and `SelectFieldFds` — ~90 call sites — is safe for all of them because it wraps
+its `<Select>` in its own plain block `<div>`, whatever the outer layout does.
+
+The measurement that mattered: **the wrapper is not the field.** The wrapper
+paints nothing. What a user sees is the trigger `<button>`, and across the six
+flex-row sites whose `<SelectTrigger>` carries no `w-full`, the trigger width is
+identical before and after — only the invisible wrapper shrinks. On
+StixDomainObjectHeader a 58-element neighbourhood diff moved exactly one box: the
+wrapper itself. So "the wrapper shrank" is not "the field shrank", and treating
+the two as the same would have produced a pile of unnecessary width overrides.
+
+The trigger only collapses where the call site put `w-full` ON the trigger: that
+percentage then resolves against a shrink-to-fit box and degenerates to content
+width. Three sites did that — WidgetCreationParameters (868.08 -> 120.52 and
+869.92 -> 80.66) and FeedCreation's Multi-match (638.39 -> 120.23). The first two
+are restored here with the `<FormControl fullWidth style={{ flex: 1 }}>` wrapper
+their own sibling fields two lines below already use.
+
+FeedCreation's is deliberately left alone: pre-bump, that Select's `w-full`
+wrapper drove the sibling "Column name" TextField to **0px** — the field was not
+narrow, it was gone. Restoring the old width would delete it again. Same shape at
+SecretFieldControl, where the two fields stopped wrapping onto separate lines.
+Those are the repair, not the regression.
+
+Simulation method, and its proof: post-bump, setting `width:100%` on a wrapper
+reproduces the pre-bump geometry exactly. Verified against the genuine pre-bump
+build served on :3010 — wrapper 291.73, trigger 197.10, x 258.53, label 86.63,
+matching the simulated numbers to the second decimal. That is what let the whole
+sweep run on one server instead of alternating two builds.
+
+Not covered: StixCoreObjectsSuggestions' entity Select (MUI `ListItem`, a flex
+row). No container in this dataset generates suggestions, so the dialog never
+opens and the site could not be measured. Its trigger carries no `w-full`, which
+in every measured instance of that shape left the field width untouched — but
+that is an inference, not a measurement, and it is recorded as one.

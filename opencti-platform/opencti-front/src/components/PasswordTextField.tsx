@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import { IconButton } from '@filigran/design-system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Field, useField, useFormikContext } from 'formik';
 import { useFormatter } from './i18n';
@@ -30,38 +29,27 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
   };
 
   return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-      <Field
-        component={TextField}
-        variant="outlined"
-        type={isVisible ? 'text' : 'password'}
-        fullWidth={true}
-        className="mt-5"
-        {...textFieldProps}
-        {...(isSecret && ({
-          onSubmit: (name: string, value: string) => {
-            if (textFieldProps?.onSubmit && dirty) {
-              textFieldProps.onSubmit(name, value);
-            }
-          },
-          placeholder: isUndefinedCredential ? '••••' : undefined,
-          InputLabelProps: {
-            shrink: isUndefinedCredential ? true : undefined,
-          },
-        }))}
-      />
-      {!isUndefinedCredential && (
-        <IconButton
-          variant="default"
-          priority="tertiary"
-          size="sm"
-          onClick={toggleVisibility}
-          aria-label={isVisible ? t_i18n('Hide') : t_i18n('Show')}
-          style={{ position: 'absolute', right: 1, top: '60%', zIndex: 1 }}
-          icon={isVisible ? <VisibilityOff /> : <Visibility />}
-        />
-      )}
-    </div>
+    <Field
+      component={TextField}
+      variant="outlined"
+      type={isVisible ? 'text' : 'password'}
+      fullWidth={true}
+      endIcon={isUndefinedCredential ? undefined : {
+        type: 'iconButton' as const,
+        icon: isVisible ? <VisibilityOff /> : <Visibility />,
+        label: isVisible ? t_i18n('Hide') : t_i18n('Show'),
+        onClick: toggleVisibility,
+      }}
+      {...textFieldProps}
+      {...(isSecret && ({
+        onSubmit: (name: string, value: string) => {
+          if (textFieldProps?.onSubmit && dirty) {
+            textFieldProps.onSubmit(name, value);
+          }
+        },
+        placeholder: isUndefinedCredential ? '••••' : undefined,
+      }))}
+    />
   );
 };
 

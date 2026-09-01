@@ -36,7 +36,7 @@ import { useNavigate } from 'react-router-dom';
 import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
-import { Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -158,7 +158,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const link = `${resolveLink(entity_type)}/${id}`;
       const linkAnalyses = `${link}/analyses`;
       return (
-        <>
+        <Box
+          component="span"
+          sx={{
+            display: 'inline-flex',
+            '& button:hover::before': {
+              backgroundColor: 'color-mix(in srgb, var(--color-feedback-neutral-secondary) 55%, transparent) !important',
+            },
+          }}
+        >
           {typesWithNoAnalysesTab.includes(entity_type) ? (
             <Tag label={n(analysesNumber)} disableTooltip />
           ) : (
@@ -172,7 +180,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               }}
             />
           )}
-        </>
+        </Box>
       );
     },
   },

@@ -115,9 +115,8 @@ const EntitySelectComponent = ({
     >
       <ComboboxLabel>{label}</ComboboxLabel>
       <ComboboxField>
-        {/* renderTags is gone: chips come from getOptionLabel, so the 50-char
-            truncation goes with it — the same removal as the other chip fields,
-            since one label function now serves the chip, the input and the
+        {/* renderTags is gone: chips come from getOptionLabel, so the 50-char truncation goes with it — the same
+            removal as the other chip fields, since one label function now serves the chip, the input and the
             filter. */}
         {multiple && <ComboboxChips aria-label={label} />}
         <ComboboxInput />

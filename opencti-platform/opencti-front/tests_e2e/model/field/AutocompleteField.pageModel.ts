@@ -40,13 +40,9 @@ export default class AutocompleteFieldPageModel {
   }
 
   /**
-   * The MUI-era create affordance: a persistent `+` overlaid on the field,
-   * rendered by AutocompleteField's `openCreate`.
-   *
-   * Kept for the sites still on MUI — the five in the ornament batch. It named
-   * `CreatedByField` and `ExternalReferencesField` as users, and both have since
-   * been converted, which is how four call sites came to click a button that no
-   * longer exists. Use `createOption` on any converted field.
+   * The persistent `+` beside the field, in the shape MUI's `AutocompleteField`
+   * gives it. A converted field renders its own into the library's adornment
+   * slot, which this locator does not reach — use `createOption` there.
    */
   openAddOptionForm() {
     return this.parentLocator.getByRole('button', { name: 'Add', exact: true }).click();
@@ -54,8 +50,7 @@ export default class AutocompleteFieldPageModel {
 
   /**
    * The library create affordance: type a value the list does not hold, then
-   * pick the `Create '<value>'` row. Per design nodes 6920-11382 / 6920-11841,
-   * accepted 2026-08-25 — the persistent `+` is gone on converted sites.
+   * pick the `Create '<value>'` row, per design nodes 6920-11382 / 6920-11841.
    *
    * The row OPENS the creation form. Whether it PREFILLS it is per-site and must
    * be measured, not assumed — measured scoped to the dialog, since the page

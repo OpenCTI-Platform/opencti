@@ -33,19 +33,12 @@ export const navBarQuery = graphql`
   }
 `;
 
-/**
- * Route matching, reproduced verbatim from the rail this component replaces.
- * The `/dashboard/data` special case exists because drafts share the prefix.
- */
 export const isRouteSelected = (pathname: string, link: string, exact?: boolean): boolean => {
   if (exact) return pathname === link;
   if (link === '/dashboard/data' && pathname.includes('/import/draft/')) return false;
   return pathname === link || pathname.startsWith(`${link}/`);
 };
 
-/**
- * Props of the pure rail view.
- */
 export interface NavBarViewProps {
   groups: NavGroup[];
   pathname: string;
@@ -54,13 +47,9 @@ export interface NavBarViewProps {
   openSubmenus: string[];
   onSubmenuOpenChange: (id: string, open: boolean) => void;
   submenuShowIcons: boolean;
-  /** Inline background, set only when a custom theme must be honoured. */
   customBackground?: string;
-  /** Inline accent, overriding the library's fixed brand token. */
   accentColor?: string;
-  /** Space the banners take at the top of the viewport, as a CSS length. */
   topOffset: string;
-  /** Space the banners take at the bottom of the viewport, as a CSS length. */
   bottomOffset: string;
   header: React.ReactNode;
   footer: React.ReactNode;
@@ -189,9 +178,8 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
   const { height: topBannerHeight } = useTopBanner();
-  // Mirrors the app shell's own offsets (private/Index.tsx): the classification banners take
-  // the banner height at the top and at the bottom, the notification banner `topBannerHeight`
-  // at the top only.
+  // Mirrors the app shell's own offsets (private/Index.tsx): the classification banners take the banner height at
+  // the top and at the bottom, the notification banner `topBannerHeight` at the top only.
   const topOffset = `${topBannerHeight + bannerHeightNumber}px`;
   const bottomOffset = `${bannerHeightNumber}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
@@ -202,9 +190,6 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   const [openSubmenus, setOpenSubmenus] = useState<string[]>(readSelectedMenu());
 
   const handleCollapsedChange = (collapsed: boolean) => {
-    // Closing every submenu on toggle is the legacy behaviour: the collapsed
-    // rail shows submenus as flyouts, so a persisted expanded accordion would
-    // reopen unexpectedly the next time the rail expands.
     setOpenSubmenus([]);
     writeSelectedMenu([]);
     setNavOpen(!collapsed);
@@ -212,8 +197,6 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   };
 
   const handleSubmenuOpenChange = (id: string, open: boolean) => {
-    // `submenu_auto_collapse` is a user preference: when on, opening one
-    // submenu closes the others; when off, several stay open at once.
     let updated: string[];
     if (!open) {
       updated = openSubmenus.filter((menu) => menu !== id);
@@ -228,17 +211,10 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
 
   const isLightTheme = theme.palette.mode === 'light';
 
-  /**
-   * The rail background, reproduced from the component this replaces.
-   */
   const customBackground = (() => {
-    // The light rail never honoured `theme_background`: it hardcoded two
-    // constants. Nothing to preserve, so the library paints it.
     if (isLightTheme) return undefined;
     const start = theme.palette.background?.gradient?.start ?? theme.palette.background?.default;
     const end = theme.palette.background?.gradient?.end ?? theme.palette.background?.secondary;
-    // `gradient.start` is `theme_background || THEME_DARK_DEFAULT_BACKGROUND`,
-    // so equality with the default is an exact test for "no custom background".
     if (start === THEME_DARK_DEFAULT_BACKGROUND) return undefined;
     return `linear-gradient(100deg, ${start} 0%, ${end} 100%)`;
   })();
@@ -272,11 +248,10 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
           logo={<img src={productLogo} alt="" width={126} height={28} style={{ objectFit: 'contain', objectPosition: 'left' }} />}
           logoCollapsed={<img src={productLogoCollapsed} alt="" height={28} width={28} style={{ objectFit: 'contain' }} />}
           logoTo="/dashboard"
-          // The logo link and the "Home" row both point at /dashboard, so the logo cannot be
-          // named "Home": two links with the same accessible name inside one navigation are
-          // ambiguous for screen readers and break the e2e page object's `exact` name lookup.
-          // "logo" is the accessible name the replaced rail exposed (its <img alt="logo">), and
-          // two settings specs anchor on it, so keep it identical.
+          // The logo link and the "Home" row both point at /dashboard, so the logo cannot be named "Home": two
+          // links with the same accessible name inside one navigation are ambiguous for screen readers and break
+          // the e2e page object's `exact` name lookup. "logo" is the accessible name the replaced rail exposed
+          // (its <img alt="logo">), and two settings specs anchor on it, so keep it identical.
           logoLabel="logo"
           options={[
             {

@@ -382,14 +382,10 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           )}
         </Card>
         <Dialog
-          // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
           slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayDialog}
           onClose={this.handleCloseDialog.bind(this)}
         >
-          {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-              not MUI's — MUI dropped it silently and this dialog rendered
-              with no heading at all. */}
           <DialogTitle>{t('Are you sure?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to remove this external reference?')}
@@ -411,14 +407,10 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogActions>
         </Dialog>
         <Dialog
-          // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
           slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayExternalLink}
           onClose={this.handleCloseExternalLink.bind(this)}
         >
-          {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-              not MUI's — MUI dropped it silently and this dialog rendered
-              with no heading at all. */}
           <DialogTitle>{t('Do you want to browse this external link?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to browse this external link?')}
