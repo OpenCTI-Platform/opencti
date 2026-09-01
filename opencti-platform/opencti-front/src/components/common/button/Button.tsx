@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
+import { Box, Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
 import { Button as LibButton } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import type { ButtonColorKey, ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
@@ -155,12 +155,22 @@ const Button: React.FC<CustomButtonProps> = ({
      */
     const iconSize = theme.button.sizes[size].iconSize;
     const sizedIcon = (node: React.ReactNode) => (node ? (
-      <span
-        style={{ display: 'inline-flex', width: iconSize, height: iconSize, fontSize: iconSize }}
+      <Box
+        component="span"
+        // `font-size` on this wrapper sizes a glyph that reads `1em`, but never a
+        // MUI SvgIcon: it carries its own `fontSize` class, so it stayed 24px in a
+        // 16px slot and hung 4px below the label. The child rule outranks it.
+        sx={{
+          display: 'inline-flex',
+          width: iconSize,
+          height: iconSize,
+          fontSize: iconSize,
+          '& > svg': { width: iconSize, height: iconSize, fontSize: iconSize },
+        }}
         aria-hidden="true"
       >
         {node}
-      </span>
+      </Box>
     ) : undefined);
 
     const libProps = {
