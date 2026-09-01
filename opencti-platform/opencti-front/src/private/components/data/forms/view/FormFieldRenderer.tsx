@@ -414,6 +414,8 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         );
 
       case 'files': {
+        // Stays MUI: this value is a base64 payload ({ name, data, mime_type, size }), not a File,
+        // so FileSelect cannot represent it — convert once the library accepts a stored-file value.
         // multiple defaults to false (single file mode)
         // Set multiple=true explicitly to allow multiple files
         const allowMultipleFiles = field.multiple === true;
