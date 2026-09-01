@@ -13,7 +13,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 11;
+testCreatedCounter['attack-pattern'] = 20;
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 7;
 testCreatedCounter['case-rfi'] = 8;
@@ -54,8 +54,13 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
+<<<<<<< Updated upstream
 testCreatedCounter.relationship = 146;
 testCreatedCounter.report = 47;
+=======
+testCreatedCounter.relationship = 145;
+testCreatedCounter.report = 49;
+>>>>>>> Stashed changes
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
 testCreatedCounter['threat-actor'] = 25;
@@ -63,8 +68,8 @@ testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 10;
-testCreatedCounter['security-coverage'] = 13;
-testCreatedCounter['security-coverage-result'] = 12;
+testCreatedCounter['security-coverage'] = 18;
+testCreatedCounter['security-coverage-result'] = 17;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -115,7 +120,7 @@ testMergedCounter['attack-pattern'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 6;
+testDeletedCounter['attack-pattern'] = 15;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 7;
 testDeletedCounter['case-rfi'] = 8;
@@ -151,7 +156,11 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 4;
+<<<<<<< Updated upstream
 testDeletedCounter.report = 38;
+=======
+testDeletedCounter.report = 40;
+>>>>>>> Stashed changes
 testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter['threat-actor'] = 16;
@@ -161,8 +170,8 @@ testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
-testDeletedCounter['security-coverage'] = 11;
-testDeletedCounter['security-coverage-result'] = 10;
+testDeletedCounter['security-coverage'] = 16;
+testDeletedCounter['security-coverage-result'] = 15;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
