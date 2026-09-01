@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useIntl } from 'react-intl';
 import { ChatPanel, ChatMode } from '@filigran/chatbot';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
@@ -35,6 +36,15 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   const location = useLocation();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const intl = useIntl();
+
+  // The widget's `t` is a lookup: it must return the sentence with its
+  // `{placeholder}` slots intact, because the panel splices the values in
+  // itself. `t_i18n` would ICU-format it and throw on an unfilled slot.
+  const tChatbot = useCallback((key: string) => {
+    const message = intl.messages[key];
+    return typeof message === 'string' ? message : key;
+  }, [intl]);
   const { me, bannerSettings: { bannerHeightNumber } } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
@@ -156,7 +166,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       }}
       user={{ firstName }}
       disableFileManagement={false}
-      t={t_i18n}
+      t={tChatbot}
       accentColor={accentColor}
       logoIcon={logoIcon}
       agentDashboardUrl={xtmOneUrl || undefined}

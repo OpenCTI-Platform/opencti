@@ -52,6 +52,19 @@ const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_M
 // arbitrary strings out of the upstream URL path.
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
+// XTM One reports a refusal as `{detail: {code, message}}` as often as a bare
+// string, and an object interpolated into the SSE error line reaches the chat
+// bubble as "[object Object]".
+const detailToText = (detail: unknown, fallback: string): string => {
+  if (typeof detail === 'string' && detail.trim()) return detail.trim();
+  if (detail && typeof detail === 'object') {
+    const { message, detail: nested } = detail as { message?: unknown; detail?: unknown };
+    if (typeof message === 'string' && message.trim()) return message.trim();
+    if (typeof nested === 'string' && nested.trim()) return nested.trim();
+  }
+  return fallback;
+};
+
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
 const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, string>) => {
   return getHttpClient({
@@ -500,9 +513,10 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
       res.setHeader('Connection', 'keep-alive');
       res.status(200);
 
+      const detailText = detailToText(detail, message);
       const errorContent = code === 429
-        ? `⚠️ **Quota exceeded** — ${detail}`
-        : `⚠️ **Error** — ${detail}`;
+        ? `⚠️ **Quota exceeded** — ${detailText}`
+        : `⚠️ **Error** — ${detailText}`;
 
       res.write(`data: ${JSON.stringify({ type: 'error', content: errorContent, code })}\n\n`);
       res.end();
@@ -1041,7 +1055,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.status(200);
-      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detail}` })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detailToText(detail, message)}` })}\n\n`);
       res.end();
     } else {
       const userMessage = 'XTM One is unreachable';
