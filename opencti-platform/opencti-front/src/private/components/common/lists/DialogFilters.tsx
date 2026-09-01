@@ -56,14 +56,10 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         </IconButton>
       </Tooltip>
       <Dialog
-        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
         slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={open}
         onClose={handleCloseFilters}
       >
-        {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-            not MUI's — MUI dropped it silently and this dialog rendered
-            with no heading at all. */}
         <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
         <FilterIconButton
           filters={filters}

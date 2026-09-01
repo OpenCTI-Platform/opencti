@@ -68,6 +68,7 @@ const FilterValuesForDynamicSubKeyContainer = ({
           sx={{
             padding: '0 4px',
             display: 'flex',
+            alignItems: 'center',
           }}
         >
           <Chip

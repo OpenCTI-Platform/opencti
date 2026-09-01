@@ -3,10 +3,9 @@ import { IconButton as LibIconButton } from '@filigran/design-system';
 import Button, { CustomButtonProps } from './Button';
 
 /**
- * Same two axes as `Button`: the wrapper's `variant` is a PRIORITY, its
- * `intent`/`color` are the TONE. The library IconButton is NOT the library
- * Button: its tone axis has no `highlight`, so `ee` has no expression here and
- * a site using it keeps MUI. See fds-migration/LIBRARY-FEEDBACK.md.
+ * `variant` is a PRIORITY, `intent`/`color` the TONE. This tone axis has no
+ * `highlight`, so `ee` has no expression here and such a site keeps MUI.
+ * See fds-migration/LIBRARY-FEEDBACK.md.
  */
 const LIB_PRIORITY = { primary: 'primary', secondary: 'secondary', tertiary: 'tertiary' } as const;
 const LIB_TONE_FROM_INTENT = { default: 'default', destructive: 'destructive', ai: 'ia' } as const;
@@ -25,24 +24,14 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
   };
   const label = (props as { 'aria-label'?: string })['aria-label'] ?? title;
 
-  // The delegate has always defaulted to the quiet, small control.
-  /**
-   * `color` is a TONE only.
-   */
   const libPriority = variant ? LIB_PRIORITY[variant as keyof typeof LIB_PRIORITY] : 'tertiary';
   const libTone = color
     ? LIB_TONE_FROM_COLOR[color as keyof typeof LIB_TONE_FROM_COLOR]
     : LIB_TONE_FROM_INTENT[(intent ?? 'default') as keyof typeof LIB_TONE_FROM_INTENT];
 
   /**
-   * A site keeps MUI whenever the library cannot carry its meaning: no accessible name, MUI-
-   * only styling, or a tone/priority outside the tables above (`ee`, `warn`, `success`,
-   * `extra`, or anything dynamic).
-   */
-  /**
-   * `asChild` REPLACES the child's content with the glyph, so a control whose element must
-   * keep its own children cannot live there: `component="label"` wraps a real `<input
-   * type="file">`, which the library would destroy.
+   * `asChild` REPLACES the child's content with the glyph, so a control whose element must keep its own children
+   * cannot live there: `component="label"` wraps a real `<input type="file">`, which the library would destroy.
    */
   const rendersAnchor = Boolean(to) || Boolean(href) || component === 'a';
   const isPolymorphic = Boolean(component || to || href);
@@ -64,11 +53,6 @@ const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
       icon: children,
     };
 
-    /**
-     * An icon-only control that is really a LINK. It goes through the library IconButton, not
-     * the library Button: the Button carries the horizontal padding of a text label, which
-     * drew a 36x24 pill around a 20x20 glyph instead of a square control.
-     */
     if (rendersAnchor) {
       const Child = (component ?? 'a') as React.ElementType;
       // `disabled` is not an anchor attribute; the library drops the control's

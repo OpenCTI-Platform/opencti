@@ -70,7 +70,6 @@ const styles = (theme) => ({
     flex: 'auto',
   },
   views: {
-    // No `marginTop: -5`.
     display: 'flex',
   },
   linesContainer: {
@@ -255,9 +254,8 @@ class ListLines extends Component {
             )}
             <div className={classes.filler} />
 
-            {/* alignItems: the row's own container centres its children, but
-                this inner one did not, so the buttons stretched to the row
-                height instead of sitting on the filters' centre line. */}
+            {/* alignItems: the row's own container centres its children, but this inner one did not, so the buttons
+                stretched to the row height instead of sitting on the filters' centre line. */}
             <div className={classes.views} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
 
               {numberOfElements && (
@@ -422,11 +420,6 @@ class ListLines extends Component {
             </div>
           </div>
         )}
-        {/* The chips are a ROW OF THEIR OWN, below the filter row and only
-            when filters are active. Moving them into the filter row pushed the
-            count and the action buttons off it -- reported on every list page.
-            The three-row shape is: breadcrumb, then filters left with count and
-            buttons right, then this. */}
         <FilterIconButton
           helpers={helpers}
           availableFilterKeys={availableFilterKeys}
@@ -564,7 +557,6 @@ class ListLines extends Component {
           )}
           {handleSwitchRedirectionMode && (
             <Dialog
-              // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
               slotProps={{
                 paper: {
                   className: fdsLayerClass(SURFACE_LAYER),
@@ -581,9 +573,6 @@ class ListLines extends Component {
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
             >
-              {/* A real DialogTitle. `title` is a prop of the SHARED Dialog,
-                  not MUI's — MUI dropped it silently and this dialog rendered
-                  with no heading at all. */}
               <DialogTitle>{t('List settings')}</DialogTitle>
               <FormControl style={{ width: '100%' }}>
                 <Select

@@ -142,7 +142,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
         }}
         onFocusInput={() => searchTasks('')}
         onChange={asMultiValue(onChange)}
-        onCreateOption={() => setOpenCreation(true)}
+        openCreate={() => setOpenCreation(true)}
         renderOption={(option) => (
           <>
             <div className={classes.icon} style={{ color: option.color }}>

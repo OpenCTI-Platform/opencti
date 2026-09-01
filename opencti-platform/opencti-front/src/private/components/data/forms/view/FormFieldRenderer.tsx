@@ -222,10 +222,9 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         return (
           <Field name={fieldName}>
             {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
-              // Only `name` and `onBlur` are taken off the Formik field here:
-              // spreading it whole would also hand the library box Formik's own
-              // `value` and `onChange`, which the Radix root reads as form props
-              // and which no longer describe how this control reports a change.
+              // Only `name` and `onBlur` are taken off the Formik field here: spreading it whole would also hand
+              // the library box Formik's own `value` and `onChange`, which the Radix root reads as form props and
+              // which no longer describe how this control reports a change.
               <div style={fieldSpacingContainerStyle}>
                 <Checkbox
                   name={formikField.name}

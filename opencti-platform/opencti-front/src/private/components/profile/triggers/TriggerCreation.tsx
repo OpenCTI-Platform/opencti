@@ -37,10 +37,8 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   };
   return (
     <>
-      {/* No marginRight: the row that holds these two buttons is a flex
-          container with `gap: 8`, so an 8px margin on top of it made the pair
-          16px apart -- the "trop éloignés" in the pass. The gap is the row's
-          to own. */}
+      {/* No marginRight: the row that holds these two buttons is a flex container with `gap: 8`, so an 8px margin
+          on top of it made the pair 16px apart -- the "trop éloignés" in the pass. */}
       <Button
         onClick={handleOpenCreateDigest}
       >

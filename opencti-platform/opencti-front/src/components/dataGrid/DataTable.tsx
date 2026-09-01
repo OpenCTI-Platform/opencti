@@ -111,9 +111,6 @@ const DataTableInternalFilters = ({
           )}
         </div>
       )}
-      {/* A row of its own, below the toolbar and only when filters are active.
-          Inside the toolbar it pushed the count and the action buttons off the
-          row -- reported on every list page. */}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}

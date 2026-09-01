@@ -36,17 +36,12 @@ const Dialog = ({
       {...dialogProps}
       fullScreen={fullScreen}
       onClose={onClose}
-      onClick={(e) => e.stopPropagation()}
       slotProps={{
         paper: {
-          // A dialog is a layer-2 surface: the class re-declares the elevation aliases,
-          // `layerInputVars` carries the three input backgrounds the library's own .layer-N
-          // blocks forget.
           className: fdsLayerClass(SURFACE_LAYER),
           sx: {
             ...layerInputVars,
             paddingTop: 3,
-            // Symmetric with paddingTop.
             paddingBottom: 3,
           },
         },
@@ -85,15 +80,10 @@ const Dialog = ({
         </DialogTitle>
       )}
 
-      {/* `py`/`px`, not `pY`/`pX`. MUI's system keys are lower-case, so the
-          previous spelling was dropped silently and every dialog fell back to
-          DialogContent's own `padding: 20px 24px`. Net effect of the fix,
-          measured against the installed MUI source: horizontal is unchanged
-          (24px either way) and the top was already 0 for a titled dialog
-          (`.MuiDialogTitle-root + & { paddingTop: 0 }`), so what actually
-          changes is the BOTTOM -- 20px to 0. A dialog with no title loses its
-          20px top as well. */}
-      <DialogContent {...contentProps} sx={{ py: 0, px: 3 }}>
+      {/* This element scrolls, so a field flush with the edge loses the focus ring the
+          library paints 4px outside it; `&&` because MUI's `.MuiDialogTitle-root + &`
+          outranks a plain `sx`. See fds-migration/MIGRATION-DECISIONS.md#dialog-padding-keys */}
+      <DialogContent {...contentProps} sx={{ px: 3, '&&': { py: '4px', my: '-4px' } }}>
         {children}
       </DialogContent>
     </MUIDialog>

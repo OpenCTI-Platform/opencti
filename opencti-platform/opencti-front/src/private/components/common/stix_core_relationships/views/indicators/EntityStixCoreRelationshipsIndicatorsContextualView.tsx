@@ -176,9 +176,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
         const linkAnalyses = `${link}/analyses`;
         return (
-          // The chip is wrapped in the Link rather than being the link itself: the library Chip
-          // has no `asChild`, and routing through `onClick` would cost middle-click and open-
-          // in-new-tab.
+          // The chip is wrapped in the Link rather than being the link itself: the library Chip has no `asChild`,
+          // and routing through `onClick` would cost middle-click and open- in-new-tab.
           <Link to={linkAnalyses}>
             <Chip label={String(n(stixCoreObject.containers?.edges?.length))} />
           </Link>

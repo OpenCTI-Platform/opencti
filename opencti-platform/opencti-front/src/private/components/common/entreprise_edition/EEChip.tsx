@@ -7,18 +7,11 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 
-/** Matches the legacy marker's `marginLeft: 6`; a call site may override it. */
 const EE_CHIP_GAP: CSSProperties = { marginInlineStart: 6 };
 
 interface EEChipProps {
   feature?: string;
-  /**
-   * `sm` is the library's small EE chip (lib #192).
-   */
   size?: 'md' | 'sm';
-  /**
-   * Default `true`: the chip renders as a real `<button>` that opens the EE dialog.
-   */
   clickable?: boolean;
   style?: CSSProperties;
 }

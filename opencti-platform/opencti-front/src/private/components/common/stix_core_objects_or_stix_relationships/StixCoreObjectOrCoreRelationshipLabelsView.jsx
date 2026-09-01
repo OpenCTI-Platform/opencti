@@ -281,7 +281,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 }}
                 onFocusInput={() => searchLabels('')}
                 getChipColor={(option) => option.color}
-                onCreateOption={isLabelManager ? handleOpenCreate : undefined}
+                openCreate={isLabelManager ? handleOpenCreate : undefined}
                 renderOption={(option) => (
                   <>
                     <div
