@@ -42,6 +42,39 @@ export const isSequencerEligible = (
   return true;
 };
 
+// Option B transport (plan 0009 s9.8.3, suffix form): the worker suffixes every ref id
+// that points INSIDE the same bundle with ||M||. The marker is transport-only information
+// ("this reference travels with me"): it MUST be stripped here, at the single convergence
+// point of ingestion writes, BEFORE any id resolution, queue/map lookup, standard-id
+// generation or storage: a marked id must never persist in ES. Unannotated traffic
+// (external connectors, non-inline paths) carries no marker: everything then classifies
+// as external, exactly today's behavior. Suffix (not prefix) so type-prefix routing
+// (startsWith checks) still works on a not-yet-stripped id.
+export const MEMBER_REF_MARK = '||M||';
+export const stripMemberRefMarks = (value: any, collected: Set<string>): any => {
+  if (typeof value === 'string') {
+    if (value.endsWith(MEMBER_REF_MARK) && value.length > MEMBER_REF_MARK.length) {
+      const stripped = value.slice(0, -MEMBER_REF_MARK.length);
+      collected.add(stripped);
+      return stripped;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i += 1) {
+      value[i] = stripMemberRefMarks(value[i], collected);
+    }
+    return value;
+  }
+  if (value !== null && typeof value === 'object') {
+    Object.keys(value).forEach((k) => {
+      value[k] = stripMemberRefMarks(value[k], collected);
+    });
+    return value;
+  }
+  return value;
+};
+
 // Marks a context so every boundary call below it runs direct. Used by the loop when applying an
 // intent (re-entrancy) and by denylisted lock-holding mutations (stixCoreObjectImportPush).
 // An 'applying' scope also carries the identity map (Stage C4): the read chokepoints

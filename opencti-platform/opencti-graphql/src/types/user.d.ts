@@ -84,6 +84,9 @@ interface AuthContext {
   user_with_session?: boolean;
   synchronizedUpsert?: boolean;
   previousStandard?: string;
+  // POC ingestion sequencer (plan 0009 s9.8.3): in-bundle ref ids collected when the
+  // ||M|| marks were stripped from this request's variables (httpAuthenticatedContext)
+  memberRefIds?: Set<string>;
   req?: Express.Request;
   requestAbortSignal?: AbortSignal;
   blocked_for_lts_validation?: boolean;

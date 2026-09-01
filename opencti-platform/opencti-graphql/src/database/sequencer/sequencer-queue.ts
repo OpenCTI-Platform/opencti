@@ -23,8 +23,32 @@ export class SequencerQueue {
   // FIFO of takers waiting for an intent (queue empty); the loop is the only taker today
   private takeWaiters: Array<(intent: SequencerIntent) => void> = [];
 
+  // P1/queue index (plan 0009 s9.8.3): candidate ids of QUEUED intents, refcounted (the
+  // same id can be asserted by several queued intents). The planner asks hasCandidate(id)
+  // to turn "missing in-bundle ref" into a certain one-batch wait instead of an error.
+  private candidateIndex = new Map<string, number>();
+
   size() {
     return this.count;
+  }
+
+  hasCandidate(id: string): boolean {
+    return this.candidateIndex.has(id);
+  }
+
+  private indexAdd(intent: SequencerIntent) {
+    intent.candidateIds.forEach((id) => {
+      this.candidateIndex.set(id, (this.candidateIndex.get(id) ?? 0) + 1);
+    });
+  }
+
+  private indexRemove(intent: SequencerIntent) {
+    intent.candidateIds.forEach((id) => {
+      const current = this.candidateIndex.get(id);
+      if (current === undefined) return;
+      if (current <= 1) this.candidateIndex.delete(id);
+      else this.candidateIndex.set(id, current - 1);
+    });
   }
 
   private hasCapacity(intent: SequencerIntent) {
@@ -43,6 +67,7 @@ export class SequencerQueue {
     }
     this.count += 1;
     this.bytes += intent.sizeBytes;
+    this.indexAdd(intent);
     sequencerMetrics.queueDepth(this.count);
   }
 
@@ -63,6 +88,7 @@ export class SequencerQueue {
         }
         this.count -= 1;
         this.bytes -= intent.sizeBytes;
+        this.indexRemove(intent);
         sequencerMetrics.queueDepth(this.count);
         const waiter = this.slotWaiters.shift();
         if (waiter) waiter();
@@ -153,6 +179,7 @@ export class SequencerQueue {
         }
         this.count += 1;
         this.bytes += next.sizeBytes;
+        this.indexAdd(next);
         break;
       }
       batch.push(next);

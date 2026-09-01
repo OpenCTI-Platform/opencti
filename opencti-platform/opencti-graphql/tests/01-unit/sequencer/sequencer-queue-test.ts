@@ -28,6 +28,40 @@ describe('sequencer queue (plan 0009 B4)', () => {
     SEQUENCER_CONFIG.queueMaxBytes = savedBytes;
   });
 
+  it('indexes queued candidate ids, refcounted across intents (s9.8.3 queue index)', async () => {
+    const queue = new SequencerQueue();
+    const a = buildIntent({
+      kind: 'entity',
+      type: 'Malware',
+      input: { name: 'a' },
+      user: { id: 'u', origin: { applicant_id: 'c1' } } as unknown as AuthUser,
+      context: {} as unknown as AuthContext,
+      opts: {},
+      candidateIds: ['malware--x', 'malware--alias'],
+      apply: async () => 'a',
+    });
+    const b = buildIntent({
+      kind: 'entity',
+      type: 'Malware',
+      input: { name: 'b' },
+      user: { id: 'u', origin: { applicant_id: 'c2' } } as unknown as AuthUser,
+      context: {} as unknown as AuthContext,
+      opts: {},
+      candidateIds: ['malware--x'],
+      apply: async () => 'b',
+    });
+    await queue.put(a);
+    await queue.put(b);
+    expect(queue.hasCandidate('malware--x')).toBe(true);
+    expect(queue.hasCandidate('malware--alias')).toBe(true);
+    expect(queue.hasCandidate('malware--other')).toBe(false);
+    queue.tryPop(); // pops a (c1 first in the ring)
+    expect(queue.hasCandidate('malware--x')).toBe(true); // still asserted by b
+    expect(queue.hasCandidate('malware--alias')).toBe(false);
+    queue.tryPop();
+    expect(queue.hasCandidate('malware--x')).toBe(false);
+  });
+
   it('dequeues round-robin by source', async () => {
     const q = new SequencerQueue();
     await q.put(intentFrom('connA', 'a1'));

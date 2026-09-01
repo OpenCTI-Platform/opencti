@@ -14,6 +14,7 @@ import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
+import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -72,6 +73,17 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
+  // POC ingestion sequencer (plan 0009 s9.8.3, option B suffix transport): strip the worker's
+  // in-bundle ref marks (||M||) from the GraphQL variables HERE, before variable coercion:
+  // the StixRef scalar validation rejects a marked id as an invalid STIX id, so the boundary
+  // is too late for validated fields (measured live 2026-09-01: every relationship with a
+  // marked endpoint died BAD_USER_INPUT). Gated on worker origin; the collected ids ride the
+  // context to the sequencer boundary. The mark never reaches validation, resolvers or storage.
+  if (req.headers['opencti-retry-number'] !== undefined && req.body?.variables) {
+    const memberRefs = new Set();
+    stripMemberRefMarks(req.body.variables, memberRefs);
+    if (memberRefs.size > 0) executeContext.memberRefIds = memberRefs;
+  }
   // region handle user
   try {
     const user = await authenticateUserFromRequest(executeContext, req);

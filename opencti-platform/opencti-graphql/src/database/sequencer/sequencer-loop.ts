@@ -15,6 +15,7 @@
 // Errors are caught per intent and rejected on its promise: the GraphQL error contract is
 // unchanged. Fail-open watchdog: a dead loop sends every later submit direct and logs.
 import { logApp } from '../../config/conf';
+import { MissingReferenceFinalError } from '../../config/errors';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { getInstanceIds } from '../../schema/identifier';
 import { elFindByIds, elFlushSequencerWrites } from '../engine';
@@ -36,6 +37,9 @@ const queue = new SequencerQueue();
 let loopStarted = false;
 let loopDead = false;
 let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
+// s9.9: batches a group may be skipped for a failed in-batch producer before it applies
+// through today's path anyway
+const FAILED_PRODUCER_DEFER_LIMIT = 2;
 
 export const isSequencerLoopAlive = () => loopStarted && !loopDead;
 
@@ -149,9 +153,10 @@ const applyGroup = async (
   writtenIds: string[],
   pendings: PendingResolution[],
   onFailure: (group: CoalesceGroup, err: unknown) => void,
-) => {
+): Promise<boolean> => {
   const { leader, absorbed } = group;
   const t0 = Date.now();
+  let success = true;
   try {
     const result = await leader.apply();
     const element = result?.element ?? result;
@@ -171,9 +176,11 @@ const applyGroup = async (
     }
     pendings.push({ leader, absorbed, result });
   } catch (err) {
+    success = false;
     onFailure(group, err);
   }
   sequencerMetrics.phase('apply', (Date.now() - t0) / 1000);
+  return success;
 };
 
 const runBatchLoop = async () => {
@@ -187,7 +194,17 @@ const runBatchLoop = async () => {
   // at most ONE per target re-admitted per batch, so a backlog never recycles through
   // pre-resolve + plan every cycle.
   const deferredByTarget = new Map<string, SequencerIntent[]>();
+  const deferToLane = (intent: SequencerIntent) => {
+    const laneKey = canonicalKey(intent, (id) => sequencerIdentityMap.resolveInternalId(id));
+    const lane = deferredByTarget.get(laneKey);
+    if (lane) {
+      lane.push(intent);
+    } else {
+      deferredByTarget.set(laneKey, [intent]);
+    }
+  };
   let parked: ParkedIntent[] = [];
+  let rootFailureSamples = 0; // s9.9.3 bounded root-attribution sampling
   for (;;) {
     // 1. assemble: one deferred intent per target lane first; when nothing at all is
     // pending, wait for an arrival or the nearest parking deadline (never re-plan a pure
@@ -249,17 +266,23 @@ const runBatchLoop = async () => {
       if (p.deadline <= now) forceDirect.add(p.intent.id);
     });
     const t0 = Date.now();
-    const plan = buildBatchPlan(batch, (id) => sequencerIdentityMap.resolveInternalId(id), forceDirect, { parkSoftRefs: SEQUENCER_CONFIG.parkSoftRefs });
+    const plan = buildBatchPlan(batch, (id) => sequencerIdentityMap.resolveInternalId(id), forceDirect, {
+      parkSoftRefs: SEQUENCER_CONFIG.parkSoftRefs,
+      queueHas: (id) => queue.hasCandidate(id), // s9.8.3 queue index
+    });
     sequencerMetrics.phase('order', (Date.now() - t0) / 1000);
     if (plan.chainedSteps > 0) sequencerMetrics.chainSteps(plan.chainedSteps);
+    // s9.8.2 "member dead": the ref was declared in-bundle and its producer never showed
+    // up within the bounded wait: it failed its own creation, no retry can help. Reject
+    // NOW with the FINAL error code (distinct from MISSING_REFERENCE_ERROR on purpose):
+    // pycti's retry classifier reports the object once and drops it, no retry budget burnt.
+    plan.finalMissing.forEach(({ intent, missing }) => {
+      sequencerMetrics.intent('failed', intent.kind);
+      sequencerMetrics.memberDead();
+      intent.reject(MissingReferenceFinalError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }));
+    });
     plan.deferred.forEach(({ intent, reason }) => {
-      const laneKey = canonicalKey(intent, (id) => sequencerIdentityMap.resolveInternalId(id));
-      const lane = deferredByTarget.get(laneKey);
-      if (lane) {
-        lane.push(intent);
-      } else {
-        deferredByTarget.set(laneKey, [intent]);
-      }
+      deferToLane(intent);
       sequencerMetrics.intent('deferred', intent.kind);
       sequencerMetrics.deferReason(reason);
       // P2 diagnosis: sample the first refusals with every predicate clause, so a live run
@@ -269,7 +292,6 @@ const runBatchLoop = async () => {
         logApp.info('[SEQUENCER] defer sample', {
           reason,
           type: intent.type,
-          laneKey,
           candidates: intent.candidateIds.slice(0, 3),
           resolved: intent.candidateIds.slice(0, 3).map((id) => sequencerIdentityMap.resolveInternalId(id) !== null),
           refsOpts: intent.opts?.references?.length ?? 0,
@@ -354,8 +376,46 @@ const runBatchLoop = async () => {
     const pendings: PendingResolution[] = [];
     setCurrentWriteBuffer(buffer);
     try {
+      // s9.9 failure-aware execution: a consumer whose in-batch producer failed (or was
+      // itself skipped) must NOT apply behind it: it would fail in cascade and burn its
+      // worker retry budget (measured on ch16-c: 5.7k cascade retries, estate -1,493).
+      // Skipped groups defer one batch (the producer's worker retry usually lands within
+      // a cycle), bounded to FAILED_PRODUCER_DEFER_LIMIT; at the limit the group applies
+      // through today's path, so degradation is never a new loss class.
+      const failedAt: boolean[] = new Array(plan.order.length).fill(false);
       for (let i = 0; i < plan.order.length; i += 1) {
-        await applyGroup(plan.order[i], writtenIds, pendings, onApplyFailure);
+        const group = plan.order[i];
+        const failedDep = (group.dependsOn ?? []).some((d) => failedAt[d]);
+        if (failedDep && (group.leader.failedProducerDefers ?? 0) < FAILED_PRODUCER_DEFER_LIMIT) {
+          group.leader.failedProducerDefers = (group.leader.failedProducerDefers ?? 0) + 1;
+          failedAt[i] = true; // transitive: dependents of a skipped group skip too
+          [group.leader, ...group.absorbed].forEach((intent) => {
+            deferToLane(intent);
+            sequencerMetrics.intent('deferred', intent.kind);
+            sequencerMetrics.deferReason('failed_producer');
+          });
+          continue;
+        }
+        // s9.9.3 root attribution: a failure with NO failed in-batch producer is a
+        // cascade ROOT: count it by code and sample the first ones
+        const onFailure = (g: CoalesceGroup, err: unknown) => {
+          if (!failedDep) {
+            const code = String((err as any)?.extensions?.code ?? (err as any)?.name ?? 'UNKNOWN');
+            sequencerMetrics.rootFailure(code);
+            if (rootFailureSamples < 20) {
+              rootFailureSamples += 1;
+              logApp.info('[SEQUENCER] cascade root failure', {
+                code,
+                type: g.leader.type,
+                kind: g.leader.kind,
+                unresolvedIds: (err as any)?.extensions?.data?.unresolvedIds ?? (err as any)?.data?.unresolvedIds ?? null,
+              });
+            }
+          }
+          onApplyFailure(g, err);
+        };
+        const ok = await applyGroup(group, writtenIds, pendings, onFailure);
+        if (!ok) failedAt[i] = true;
       }
       setCurrentWriteBuffer(null); // flush must not re-buffer
       try {
@@ -439,6 +499,7 @@ interface SubmitArgs {
   opts: Record<string, any>;
   candidateIds: string[];
   referencedIds?: string[];
+  memberRefIds?: Set<string>;
   apply: () => Promise<any>;
 }
 

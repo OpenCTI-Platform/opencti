@@ -36,6 +36,10 @@ class SequencerMetrics {
 
   private deferReasons: Counter | null = null;
 
+  private memberDeadCounter: Counter | null = null;
+
+  private rootFailures: Counter | null = null;
+
   register() {
     const meter = meterManager.meterProvider.getMeter('opencti-sequencer');
     this.intents = meter.createCounter('opencti_sequencer_intents_total', {
@@ -92,7 +96,15 @@ class SequencerMetrics {
     });
     this.deferReasons = meter.createCounter('opencti_sequencer_defer_reasons_total', {
       valueType: ValueType.INT,
-      description: 'Residual deferrals by refusal reason (relation, force_direct, self_not_foldable, head_not_foldable, unresolved_target)',
+      description: 'Deferrals by reason (P2 residual reasons + s9.8 certainty reasons queued_producer/member_wait)',
+    });
+    this.memberDeadCounter = meter.createCounter('opencti_sequencer_member_dead_total', {
+      valueType: ValueType.INT,
+      description: 'Intents rejected final: an in-bundle ref whose producer never arrived (its creation failed), s9.8.2',
+    });
+    this.rootFailures = meter.createCounter('opencti_sequencer_root_failures_total', {
+      valueType: ValueType.INT,
+      description: 'Apply failures with NO failed in-batch producer (cascade roots), by error code (s9.9.3)',
     });
   }
 
@@ -143,6 +155,14 @@ class SequencerMetrics {
 
   deferReason(reason: string) {
     this.deferReasons?.add(1, { reason });
+  }
+
+  memberDead(count = 1) {
+    this.memberDeadCounter?.add(count);
+  }
+
+  rootFailure(code: string) {
+    this.rootFailures?.add(1, { code });
   }
 }
 

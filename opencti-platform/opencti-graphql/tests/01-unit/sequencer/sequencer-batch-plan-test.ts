@@ -12,6 +12,7 @@ const intentOf = (args: {
   referencedIds?: string[];
   context?: Record<string, any>;
   opts?: Record<string, any>;
+  memberRefIds?: Set<string>;
 }) => {
   const intent = buildIntent({
     kind: args.kind,
@@ -22,6 +23,7 @@ const intentOf = (args: {
     opts: args.opts ?? {},
     candidateIds: args.candidateIds ?? [],
     referencedIds: args.referencedIds ?? [],
+    memberRefIds: args.memberRefIds,
     apply: async () => null,
   });
   arrival += 1;
@@ -217,6 +219,57 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(plan.deferred).toEqual([]);
     expect(plan.order.map((g) => g.leader)).toEqual([l1, l2, m]);
     expect(plan.chainedSteps).toBe(0);
+  });
+
+  it('defers with certainty when a missing in-bundle ref has its producer in the queue (s9.8.2)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+    const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
+    const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: (id) => id === 'software--s' });
+    expect(plan.order).toEqual([]);
+    expect(plan.parked).toEqual([]);
+    expect(plan.deferred).toEqual([{ intent: rel, reason: 'queued_producer' }]);
+    expect(plan.finalMissing).toEqual([]);
+  });
+
+  it('waits a bounded number of passes for a declared member not yet seen, then rejects final (member dead)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+    const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
+    const opts = { queueHas: () => false, memberWaitLimit: 2 };
+    const p1 = buildBatchPlan([rel], resolve, new Set(), opts);
+    expect(p1.deferred).toEqual([{ intent: rel, reason: 'member_wait' }]);
+    const p2 = buildBatchPlan([rel], resolve, new Set(), opts);
+    expect(p2.deferred).toEqual([{ intent: rel, reason: 'member_wait' }]);
+    const p3 = buildBatchPlan([rel], resolve, new Set(), opts);
+    expect(p3.deferred).toEqual([]);
+    expect(p3.finalMissing).toEqual([{ intent: rel, missing: ['software--s'] }]);
+  });
+
+  it('a missing ref NOT declared in the bundle keeps today path: hard parks, soft applies (external)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--unknown' }, candidateIds: [], memberRefIds: new Set(['other--x']) });
+    const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
+    const planHard = buildBatchPlan([rel], resolve, new Set(), { queueHas: () => false });
+    expect(planHard.parked.length).toBe(1);
+    expect(planHard.finalMissing).toEqual([]);
+    const entity = intentOf({ kind: 'entity', input: { name: 'M', createdBy: 'identity--ext' }, candidateIds: ['malware--m'], referencedIds: ['identity--ext'], memberRefIds: new Set(['other--x']) });
+    const planSoft = buildBatchPlan([entity], noResolve, new Set(), { queueHas: () => false });
+    expect(planSoft.order.map((g) => g.leader)).toEqual([entity]); // applies as today
+  });
+
+  it('soft member refs use the certainty rules without needing parkSoftRefs', () => {
+    const entity = intentOf({ kind: 'entity', input: { name: 'M', createdBy: 'identity--i' }, candidateIds: ['malware--m'], referencedIds: ['identity--i'], memberRefIds: new Set(['identity--i']) });
+    const plan = buildBatchPlan([entity], noResolve, new Set(), { queueHas: (id) => id === 'identity--i' });
+    expect(plan.deferred).toEqual([{ intent: entity, reason: 'queued_producer' }]);
+  });
+
+  it('exposes producer positions as dependsOn in the order (s9.9 failure-aware execution)', () => {
+    const org = intentOf({ kind: 'entity', type: 'Organization', input: { name: 'ACME' }, candidateIds: ['identity--org'] });
+    const malware = intentOf({ kind: 'entity', input: { name: 'M', createdBy: 'identity--org' }, candidateIds: ['malware--m'], referencedIds: ['identity--org'] });
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'identity--org' }, candidateIds: [] });
+    const plan = buildBatchPlan([rel, malware, org], noResolve);
+    const pos = (i: any) => plan.order.findIndex((g) => g.leader === i);
+    expect(plan.order[pos(org)].dependsOn).toEqual([]);
+    expect(plan.order[pos(malware)].dependsOn).toEqual([pos(org)]);
+    expect([...(plan.order[pos(rel)].dependsOn ?? [])].sort()).toEqual([pos(org), pos(malware)].sort());
   });
 
   it('breaks cycles by arrival order', () => {

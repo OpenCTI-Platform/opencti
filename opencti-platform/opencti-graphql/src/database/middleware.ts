@@ -100,7 +100,7 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
-import { isSequencerEligible, sequencerScopedContext } from './sequencer/sequencer-eligibility';
+import { isSequencerEligible, sequencerScopedContext, stripMemberRefMarks } from './sequencer/sequencer-eligibility';
 import { registerSequencerLoaders, submitIntent } from './sequencer/sequencer-loop';
 import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
@@ -3681,6 +3681,13 @@ export const createRelation = async (
   input: Record<string, any>,
   opts: CreateRelationRawOpts = {},
 ) => {
+  // Option B (plan 0009 s9.8.3): the ||M|| marks were stripped at the HTTP edge
+  // (httpAuthenticatedContext, BEFORE scalar validation) and the collected ids ride
+  // context.memberRefIds. The local strip stays as a safety net for any non-HTTP path:
+  // the marker must never survive past this boundary.
+  const memberRefs = new Set<string>();
+  stripMemberRefMarks(input, memberRefs);
+  const memberRefIds = memberRefs.size > 0 ? memberRefs : context.memberRefIds;
   // POC ingestion sequencer (plan 0009 B1): worker-origin STIX creates go through the sequencer,
   // everything else takes the direct path unchanged.
   const relationshipType = input.relationship_type;
@@ -3696,6 +3703,7 @@ export const createRelation = async (
       opts,
       candidateIds,
       referencedIds: sequencerReferencedIds(relationshipType, input),
+      memberRefIds,
       apply: () => createRelationDirect(sequencerScopedContext(context, 'applying'), user, input, opts),
     });
   }
@@ -4169,6 +4177,13 @@ export const createEntity = async (
   type: string,
   opts: { complete?: boolean } & CreateEntityRawOpts = {},
 ) => {
+  // Option B (plan 0009 s9.8.3): the ||M|| marks were stripped at the HTTP edge
+  // (httpAuthenticatedContext, BEFORE scalar validation) and the collected ids ride
+  // context.memberRefIds. The local strip stays as a safety net for any non-HTTP path:
+  // the marker must never survive past this boundary.
+  const memberRefs = new Set<string>();
+  stripMemberRefMarks(input, memberRefs);
+  const memberRefIds = memberRefs.size > 0 ? memberRefs : context.memberRefIds;
   // POC ingestion sequencer (plan 0009 B1): worker-origin STIX creates go through the sequencer,
   // everything else takes the direct path unchanged.
   if (isSequencerEligible(context, user, type, opts)) {
@@ -4190,6 +4205,7 @@ export const createEntity = async (
       opts,
       candidateIds,
       referencedIds: sequencerReferencedIds(type, input),
+      memberRefIds,
       apply: () => createEntityDirect(sequencerScopedContext(context, 'applying'), user, input, type, opts),
     });
   }

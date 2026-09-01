@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { isSequencerEligible, sequencerScopedContext } from '../../../src/database/sequencer/sequencer-eligibility';
+import { isSequencerEligible, sequencerScopedContext, stripMemberRefMarks } from '../../../src/database/sequencer/sequencer-eligibility';
 import { SEQUENCER_CONFIG } from '../../../src/database/sequencer/sequencer-config';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
@@ -63,5 +63,42 @@ describe('sequencer eligibility (plan 0009 B1 bypass matrix)', () => {
     const base = ctx();
     sequencerScopedContext(base, 'bypass');
     expect(base.sequencer).toBeUndefined();
+  });
+});
+
+describe('member ref marks (plan 0009 s9.8.3, option B suffix transport)', () => {
+  it('strips ||M|| marks in place everywhere and collects the ids', () => {
+    const input = {
+      stix_id: 'report--r1',
+      createdBy: 'identity--ext',
+      objects: ['malware--m1||M||', 'identity--ext2', 'relationship--r9||M||'],
+      objectMarking: ['marking-definition--tlp'],
+      fromId: 'malware--m1||M||',
+      nested: { granted_refs: ['identity--org1||M||'] },
+    };
+    const collected = new Set<string>();
+    stripMemberRefMarks(input, collected);
+    expect(input.objects).toEqual(['malware--m1', 'identity--ext2', 'relationship--r9']);
+    expect(input.fromId).toBe('malware--m1');
+    expect(input.nested.granted_refs).toEqual(['identity--org1']);
+    expect(input.createdBy).toBe('identity--ext');
+    expect(input.stix_id).toBe('report--r1');
+    expect(Array.from(collected).sort()).toEqual(['identity--org1', 'malware--m1', 'relationship--r9']);
+  });
+
+  it('is a no-op on unannotated input (no marks, empty set)', () => {
+    const input = { stix_id: 'malware--a', createdBy: 'identity--b', name: 'clean' };
+    const collected = new Set<string>();
+    stripMemberRefMarks(input, collected);
+    expect(input).toEqual({ stix_id: 'malware--a', createdBy: 'identity--b', name: 'clean' });
+    expect(collected.size).toBe(0);
+  });
+
+  it('never produces an empty id (a bare mark is left untouched)', () => {
+    const input = { weird: '||M||' };
+    const collected = new Set<string>();
+    stripMemberRefMarks(input, collected);
+    expect(input.weird).toBe('||M||');
+    expect(collected.size).toBe(0);
   });
 });

@@ -22,6 +22,17 @@ export interface SequencerIntent {
   sizeBytes: number;
   candidateIds: string[];
   referencedIds: string[];
+  // P1/option B (plan 0009 s9.8.3, suffix transport): the referenced ids this object's
+  // bundle DECLARED as travelling with it (||M|| marks, stripped and collected at the
+  // boundary). Undefined on non-annotated traffic: every missing ref then classifies as
+  // external, exactly today's behavior.
+  memberRefIds?: Set<string>;
+  // s9.8.2 bounded wait: plan passes spent waiting for a declared member ref not yet seen
+  // in the queue (mutated by the planner; at the limit the ref is declared dead)
+  memberWaitAttempts?: number;
+  // s9.9 bounded wait: batches this intent was skipped in because its in-batch producer
+  // failed at apply (mutated by the loop; at the limit it applies through today's path)
+  failedProducerDefers?: number;
   apply: () => Promise<any>;
   resolve: (value: any) => void;
   reject: (err: any) => void;
@@ -37,6 +48,7 @@ interface BuildIntentArgs {
   opts: Record<string, any>;
   candidateIds: string[];
   referencedIds?: string[];
+  memberRefIds?: Set<string>;
   apply: () => Promise<any>;
 }
 
@@ -68,6 +80,7 @@ export const buildIntent = (args: BuildIntentArgs): SequencerIntent => {
     sizeBytes: intentSize(args.input),
     candidateIds: args.candidateIds,
     referencedIds: args.referencedIds ?? [],
+    memberRefIds: args.memberRefIds,
     apply: args.apply,
     resolve,
     reject,

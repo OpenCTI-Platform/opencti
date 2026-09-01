@@ -20,15 +20,26 @@ import type { SequencerIntent } from './sequencer-intent';
 export interface CoalesceGroup {
   leader: SequencerIntent;
   absorbed: SequencerIntent[];
+  // s9.9: positions (within BatchPlan.order) of this group's applicable producers. The
+  // loop uses them to SKIP a consumer whose producer failed mid-batch instead of letting
+  // it apply and fail in cascade.
+  dependsOn?: number[];
 }
 
-// P2 diagnosis: WHY a same-target different-input intent was refused a chain (s9.7.4)
-export type DeferReason = 'relation' | 'force_direct' | 'self_not_foldable' | 'head_not_foldable' | 'unresolved_target';
+// P2 diagnosis reasons (s9.7.4) + iteration-3 certainty reasons (s9.8.2): queued_producer =
+// the missing in-bundle ref is physically in the queue (one-batch wait, no deadline);
+// member_wait = declared in-bundle but not seen yet (transport jitter, bounded attempts)
+export type DeferReason = 'relation' | 'force_direct' | 'self_not_foldable' | 'head_not_foldable' | 'unresolved_target'
+  | 'queued_producer' | 'member_wait' | 'failed_producer';
 
 export interface BatchPlan {
   order: CoalesceGroup[];
   deferred: { intent: SequencerIntent; reason: DeferReason }[];
   parked: { intent: SequencerIntent; missing: string[] }[];
+  // s9.8.2 "member dead": a ref declared in-bundle, absent everywhere after the bounded
+  // wait: its producer failed, no retry can help. The loop rejects with final: true and
+  // the worker drops (hard) or strips-and-resends (soft) the object, never the bundle.
+  finalMissing: { intent: SequencerIntent; missing: string[] }[];
   // P2: applications beyond each chain's first step (the volume that left `deferred`)
   chainedSteps: number;
 }
@@ -144,7 +155,26 @@ export interface BatchPlanOptions {
   // window (plan 0009 §8.8), it only makes sense when the transport guarantees the
   // producer can still be delivered.
   parkSoftRefs?: boolean;
+  // s9.8: queue index lookup (candidate ids of QUEUED intents). Absent = classification
+  // degrades to external-only (today's behavior).
+  queueHas?: (id: string) => boolean;
+  // s9.8.2 K: plan passes a member ref may stay unseen (transport jitter) before it is
+  // declared dead
+  memberWaitLimit?: number;
 }
+
+// s9.8.2 classification of ONE missing id (not resolved, no in-batch producer):
+//   - declared in-bundle and in the queue -> certain one-batch wait;
+//   - declared in-bundle, not seen, under the attempt limit -> bounded wait;
+//   - declared in-bundle, not seen, limit reached -> its producer failed: final;
+//   - not declared (or no annotation) -> external: today's behavior.
+type MissingClass = 'queued_producer' | 'member_wait' | 'member_dead' | 'external';
+const classifyMissing = (intent: SequencerIntent, id: string, options: BatchPlanOptions): MissingClass => {
+  if (!intent.memberRefIds?.has(id)) return 'external';
+  if (options.queueHas?.(id)) return 'queued_producer';
+  if ((intent.memberWaitAttempts ?? 0) >= (options.memberWaitLimit ?? 2)) return 'member_dead';
+  return 'member_wait';
+};
 
 export const buildBatchPlan = (
   batch: SequencerIntent[],
@@ -210,25 +240,44 @@ export const buildBatchPlan = (
       if (!producers.has(id)) producers.set(id, index);
     });
   });
-  // 3. edges and parking (D2)
+  // 3. edges, and classification of unresolved refs (D2 + s9.8.2 certainty rules)
   const parked: { intent: SequencerIntent; missing: string[] }[] = [];
+  const finalMissing: { intent: SequencerIntent; missing: string[] }[] = [];
   const edges: Set<number>[] = groups.map(() => new Set());
   const applicable: boolean[] = groups.map(() => true);
   const missingByGroup = new Map<number, string[]>();
+  const groupClass = new Map<number, 'parked' | 'defer' | 'final'>();
+  const deferReasonByGroup = new Map<number, DeferReason>();
   groups.forEach((group, index) => {
     if (forceDirect.has(group.leader.id)) return; // expired: apply as-is, no deps, no parking
     // P2 chain edge: each step orders after its predecessor (its diff basis is the
     // predecessor's in-memory result); the parking fixpoint below parks a whole chain
     // when its head parks
     if (chainPrev[index] >= 0) edges[index].add(chainPrev[index]);
-    const missing: string[] = [];
+    const parkIds: string[] = [];
+    const finalIds: string[] = [];
+    let defer: DeferReason | null = null;
+    const onMissing = (id: string, soft: boolean) => {
+      const cls = classifyMissing(group.leader, id, options);
+      if (cls === 'member_wait') {
+        defer = 'member_wait'; // dominates queued_producer: this pass counts an attempt
+      } else if (cls === 'queued_producer') {
+        defer = defer ?? 'queued_producer';
+      } else if (cls === 'member_dead') {
+        finalIds.push(id);
+      } else if (!soft) {
+        parkIds.push(id); // external hard: park with deadline, today's healing path
+      } else if (options.parkSoftRefs) {
+        parkIds.push(id); // D2 v3 (opt-in): external soft park
+      } // external soft, default: apply as today (may reject at apply, worker retries)
+    };
     hardDependencyIds(group.leader).forEach((id) => {
       if (resolveId(id)) return;
       const producer = producers.get(id);
       if (producer !== undefined && producer !== index) {
         edges[index].add(producer);
       } else if (producer === undefined) {
-        missing.push(id);
+        onMissing(id, false);
       }
     });
     softDependencyIds(group.leader).forEach((id) => {
@@ -236,13 +285,26 @@ export const buildBatchPlan = (
       const producer = producers.get(id);
       if (producer !== undefined && producer !== index) {
         edges[index].add(producer); // order after the in-batch producer
-      } else if (options.parkSoftRefs && producer === undefined && !isAutoCreatedRef(id)) {
-        missing.push(id); // D2 v3 (opt-in): the producer may be in flight, park until it lands
+      } else if (producer === undefined && !isAutoCreatedRef(id)) {
+        onMissing(id, true);
       }
     });
-    if (missing.length > 0) {
+    if (finalIds.length > 0) {
+      // a dead member ref condemns the intent regardless of its other refs: reject now,
+      // the worker strips (soft) or drops (hard) and a resent object re-enters fresh
       applicable[index] = false;
-      missingByGroup.set(index, missing);
+      groupClass.set(index, 'final');
+      missingByGroup.set(index, finalIds);
+    } else if (defer) {
+      applicable[index] = false;
+      groupClass.set(index, 'defer');
+      deferReasonByGroup.set(index, defer);
+      if (defer === 'member_wait') {
+        group.leader.memberWaitAttempts = (group.leader.memberWaitAttempts ?? 0) + 1;
+      }
+    } else if (parkIds.length > 0) {
+      applicable[index] = false;
+      missingByGroup.set(index, parkIds);
     }
   });
   // a consumer whose in-batch producer is itself parked cannot apply either: park it too
@@ -263,9 +325,19 @@ export const buildBatchPlan = (
   groups.forEach((group, index) => {
     if (applicable[index]) return;
     const missing = missingByGroup.get(index) ?? [];
-    parked.push({ intent: group.leader, missing });
-    // absorbed follow their leader to parking: they resolve with the same application
-    group.absorbed.forEach((a) => parked.push({ intent: a, missing }));
+    const cls = groupClass.get(index) ?? 'parked'; // fixpoint-blocked consumers default to parked
+    if (cls === 'final') {
+      finalMissing.push({ intent: group.leader, missing });
+      group.absorbed.forEach((a) => finalMissing.push({ intent: a, missing }));
+    } else if (cls === 'defer') {
+      const reason = deferReasonByGroup.get(index) as DeferReason;
+      deferred.push({ intent: group.leader, reason });
+      group.absorbed.forEach((a) => deferred.push({ intent: a, reason }));
+    } else {
+      parked.push({ intent: group.leader, missing });
+      // absorbed follow their leader to parking: they resolve with the same application
+      group.absorbed.forEach((a) => parked.push({ intent: a, missing }));
+    }
   });
   // 4. topological order among applicable groups, (phase, arrival) priority, cycles broken
   // by taking the lowest-priority remaining node
@@ -276,6 +348,7 @@ export const buildBatchPlan = (
   const remaining = new Set<number>(groups.map((_, i) => i).filter((i) => applicable[i]));
   const done = new Set<number>();
   const order: CoalesceGroup[] = [];
+  const orderPosition = new Map<number, number>(); // group index -> position in order
   while (remaining.size > 0) {
     const ready = Array.from(remaining)
       .filter((i) => Array.from(edges[i]).every((dep) => done.has(dep) || !applicable[dep]));
@@ -290,7 +363,13 @@ export const buildBatchPlan = (
     const next = pool[0];
     remaining.delete(next);
     done.add(next);
-    order.push({ leader: groups[next].leader, absorbed: groups[next].absorbed });
+    // s9.9: expose the applicable producers as order positions (emitted earlier by
+    // construction; a cycle-broken edge may point forward and is then omitted)
+    const dependsOn = Array.from(edges[next])
+      .filter((dep) => applicable[dep] && orderPosition.has(dep))
+      .map((dep) => orderPosition.get(dep) as number);
+    orderPosition.set(next, order.length);
+    order.push({ leader: groups[next].leader, absorbed: groups[next].absorbed, dependsOn });
   }
-  return { order, deferred, parked, chainedSteps };
+  return { order, deferred, parked, finalMissing, chainedSteps };
 };
