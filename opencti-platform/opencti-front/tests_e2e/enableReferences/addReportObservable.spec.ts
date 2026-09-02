@@ -15,9 +15,8 @@ import GroupFormPage from '../model/form/groupForm.pageModel';
 import UsersSettingsPage from '../model/usersSettings.pageModel';
 import UserPage from '../model/user.pageModel';
 import UserFormPage from '../model/form/userForm.pageModel';
-import LeftBarPage from '../model/menu/leftBar.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
-import SearchPageModel from '../model/search.pageModel';
+import { patchEntitySetting } from '../dataForTesting/entitySetting.data';
 
 const noBypassUserAuthFile = 'tests_e2e/.setup/.auth/no-bypass-ref-user.json';
 const nowTime = `${new Date().getTime()}`;
@@ -107,17 +106,18 @@ test.describe('Authenticate no bypass user', { tag: ['@ce'] }, () => {
   });
 });
 
-test('Add and remove observable from Observables tab of a Report as Admin user', { tag: ['@ce'] }, async ({ page }) => {
+test('Add and remove observable from Observables tab of a Report as Admin user', { tag: ['@ce'] }, async ({ page, request }) => {
   const reportPage = new ReportPage(page);
   const reportDetailsPage = new ReportDetailsPage(page);
   const reportForm = new ReportFormPage(page);
   const containerObservablesPage = new ContainerObservablesPage(page);
   const containerAddObservablesPage = new ContainerAddObservablesPage(page);
-  const leftBarPage = new LeftBarPage(page);
+
+  // Make sure references are not enforced on reports, in case a previous run leaked the setting
+  await patchEntitySetting(request, 'Report', 'enforce_reference', false);
 
   // Create a report and check that adding an observable is possible
   await page.goto('/dashboard/analyses/reports');
-  await leftBarPage.open();
 
   const reportName = `Test add observable e2e ${nowTime}`;
 
@@ -135,44 +135,43 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await containerAddObservablesPage.getCloseObservablesListButton().click();
   await expect(containerObservablesPage.getObservableInContainer('IPv4 address 8.8.8.8')).toBeVisible();
 
-  // Enable report references and check that removing observable is still possible as admin user
-  await leftBarPage.clickOnMenu('Settings', 'Customization');
-  const search = new SearchPageModel(page);
-  await search.addSearch('report');
-  await page.getByRole('link', { name: 'Report' }).click();
-  await page.locator('span').filter({ hasText: 'Enforce references' }).click();
+  try {
+    // Enable report references and check that removing observable is still possible as admin user
+    await patchEntitySetting(request, 'Report', 'enforce_reference', true);
+    // Entity settings are fetched on full page load only, so reload instead of navigating from the menu
+    await page.goto('/dashboard/analyses/reports');
 
-  await leftBarPage.clickOnMenu('Analyses', 'Reports');
-  await reportPage.getItemFromList(reportName).click();
-  await reportDetailsPage.tabs.goToObservablesTab();
-  await expect(containerObservablesPage.getPage()).toBeVisible();
-  await containerObservablesPage.getAddObservableListButton().click();
-  await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
-  await containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8').click();
-  await containerAddObservablesPage.getCloseObservablesListButton().click();
-  await expect(containerObservablesPage.getObservableInContainer('IPv4 address 8.8.8.8')).toBeHidden();
-
-  // Clean up report "enable references" configuration
-  await leftBarPage.clickOnMenu('Settings', 'Customization');
-  await page.getByRole('link', { name: 'Report' }).click();
-  await page.locator('span').filter({ hasText: 'Enforce references' }).click();
+    await reportPage.getItemFromList(reportName).click();
+    await reportDetailsPage.tabs.goToObservablesTab();
+    await expect(containerObservablesPage.getPage()).toBeVisible();
+    await containerObservablesPage.getAddObservableListButton().click();
+    await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
+    await containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8').click();
+    await containerAddObservablesPage.getCloseObservablesListButton().click();
+    await expect(containerObservablesPage.getObservableInContainer('IPv4 address 8.8.8.8')).toBeHidden();
+  } finally {
+    // Clean up report "enforce references" configuration through the API: an awaited call
+    // cannot be aborted by the page closing at the end of the test, unlike a UI click
+    await patchEntitySetting(request, 'Report', 'enforce_reference', false);
+  }
 });
 
 test.describe('Add and remove observable from Observables tab of a Report as noBypass user', { tag: ['@ce'] }, () => {
   test.use({ storageState: noBypassUserAuthFile });
-  test('Run test as noBypass user', async ({ page }) => {
+  test('Run test as noBypass user', async ({ page, request }) => {
     const reportPage = new ReportPage(page);
     const reportDetailsPage = new ReportDetailsPage(page);
     const reportForm = new ReportFormPage(page);
     const containerObservablesPage = new ContainerObservablesPage(page);
     const containerAddObservablesPage = new ContainerAddObservablesPage(page);
     const commitMessagePage = new CommitMessagePage(page);
-    const leftBarPage = new LeftBarPage(page);
+
+    // Make sure references are not enforced on reports, in case a previous run leaked the setting
+    await patchEntitySetting(request, 'Report', 'enforce_reference', false);
 
     // Create a report and check that adding an observable is possible
     const reportName = `Test add observable e2e 2 ${nowTime}`;
     await reportPage.goto();
-    await page.getByTestId('ChevronRightIcon').click();
     await reportPage.openNewReportForm();
     await reportForm.nameField.fill(reportName);
     await reportPage.getCreateReportButton().click();
@@ -187,32 +186,30 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     await containerAddObservablesPage.getCloseObservablesListButton().click();
     await expect(containerObservablesPage.getObservableInContainer('IPv4 address 9.9.9.9')).toBeVisible();
 
-    // Enable report references and check that removing observable asks for an external reference
-    await leftBarPage.clickOnMenu('Settings', 'Customization');
-    const search = new SearchPageModel(page);
-    await search.addSearch('report');
-    await page.getByRole('link', { name: 'Report' }).click();
-    await page.locator('span').filter({ hasText: 'Enforce references' }).click();
+    try {
+      // Enable report references and check that removing observable asks for an external reference
+      await patchEntitySetting(request, 'Report', 'enforce_reference', true);
+      // Entity settings are fetched on full page load only, so reload instead of navigating from the menu
+      await reportPage.goto();
 
-    await leftBarPage.clickOnMenu('Analyses', 'Reports');
-    await reportPage.getItemFromList(reportName).click();
-    await reportDetailsPage.tabs.goToObservablesTab();
-    await expect(containerObservablesPage.getPage()).toBeVisible();
-    await containerObservablesPage.getAddObservableListButton().click();
-    await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
-    await containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9').click();
-    await expect(commitMessagePage.getPage()).toBeVisible();
-    await commitMessagePage.getAddNewReferenceButton().click();
-    await commitMessagePage.fillNewReferenceSourceNameInput('SourceTest');
-    await commitMessagePage.fillNewReferenceExternalIDInput('SourceTest');
-    await commitMessagePage.getNewReferenceCreateButton().click();
-    await commitMessagePage.getValidateButton().click();
-    await containerAddObservablesPage.getCloseObservablesListButton().click();
-    await expect(containerObservablesPage.getObservableInContainer('IPv4 address 9.9.9.9')).toBeHidden();
-
-    // Clean up report "enable references" configuration
-    await leftBarPage.clickOnMenu('Settings', 'Customization');
-    await page.getByRole('link', { name: 'Report' }).click();
-    await page.locator('span').filter({ hasText: 'Enforce references' }).click();
+      await reportPage.getItemFromList(reportName).click();
+      await reportDetailsPage.tabs.goToObservablesTab();
+      await expect(containerObservablesPage.getPage()).toBeVisible();
+      await containerObservablesPage.getAddObservableListButton().click();
+      await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
+      await containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9').click();
+      await expect(commitMessagePage.getPage()).toBeVisible();
+      await commitMessagePage.getAddNewReferenceButton().click();
+      await commitMessagePage.fillNewReferenceSourceNameInput('SourceTest');
+      await commitMessagePage.fillNewReferenceExternalIDInput('SourceTest');
+      await commitMessagePage.getNewReferenceCreateButton().click();
+      await commitMessagePage.getValidateButton().click();
+      await containerAddObservablesPage.getCloseObservablesListButton().click();
+      await expect(containerObservablesPage.getObservableInContainer('IPv4 address 9.9.9.9')).toBeHidden();
+    } finally {
+      // Clean up report "enforce references" configuration through the API: an awaited call
+      // cannot be aborted by the page closing at the end of the test, unlike a UI click
+      await patchEntitySetting(request, 'Report', 'enforce_reference', false);
+    }
   });
 });

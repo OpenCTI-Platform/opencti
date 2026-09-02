@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import { awaitUntilCondition } from 'tests_e2e/utils';
+import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
 
 const openThemeEditMenu = async (themeName: string, page: Page) => {
   await page
@@ -38,7 +39,7 @@ const editThemeLogo = async (themeName: string, page: Page, logoUrl: string) => 
  * MUST change custom theme logo.
  * MUST delete custom theme.
  */
-test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, async ({ page }) => {
+test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, async ({ page, request }) => {
   const THEME = {
     name: `${new Date().toISOString()} Test Theme`,
     theme_background: '#e72a2a',
@@ -50,6 +51,11 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
     theme_text_color: '#353131',
     theme_logo: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png',
   };
+
+  // Capture the current default theme to restore it whatever happens to the test:
+  // the platform theme is a platform-wide state shared with every other test
+  const settings = await getSettings(request);
+  const initialThemeId = settings.platform_theme?.id ?? await getThemeIdByName(request, 'Filigran Dark');
 
   // Navigate to Settings
   const leftBarPage = new LeftBarPage(page);
@@ -69,69 +75,63 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   await page.getByRole('button', { name: 'Create' }).click();
 
   // Assert exists on screen
-  expect(await page.getByText(THEME.name).count() > 0);
+  await expect(page.getByText(THEME.name).first()).toBeVisible();
 
-  // Select system default
-  await page.locator('#mui-component-select-platform_theme').click();
-  await page.getByTestId(`${THEME.name}-li`).click();
-  await page.waitForTimeout(1000);
-  let logoSrc = await page
-    .getByRole('link', { name: 'logo' })
-    .locator('img').getAttribute('src');
-  expect(logoSrc).toContain('googlelogo');
+  const logoImage = page.getByRole('link', { name: 'logo' }).locator('img');
 
-  // Edit theme
-  // edit the logo url by removing the url
-  await editThemeLogo(THEME.name, page, '');
-  await page.waitForTimeout(1000);
+  try {
+    // Select system default
+    await page.locator('#mui-component-select-platform_theme').click();
+    await page.getByTestId(`${THEME.name}-li`).click();
+    // The logo swap also proves the settings mutation completed
+    await expect(logoImage).toHaveAttribute('src', /googlelogo/);
 
-  // expect to have the default dark logo
-  logoSrc = await page
-    .getByRole('link', { name: 'logo' })
-    .locator('img').getAttribute('src');
-  expect(logoSrc).toContain('logo_text_dark');
+    // Edit theme
+    // edit the logo url by removing the url, expect to be back on the default dark logo
+    await editThemeLogo(THEME.name, page, '');
+    await expect(logoImage).toHaveAttribute('src', /logo_text_dark/);
 
-  // Set theme logo to the Google logo
-  await editThemeLogo(THEME.name, page, THEME.theme_logo);
-  const isLogoChanged = async () => {
-    await page.reload();
-    const logoSrcChangedToGoogle = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-    if (logoSrcChangedToGoogle) {
-      return logoSrcChangedToGoogle.includes('googlelogo');
-    }
-    return false;
-  };
-  await awaitUntilCondition(isLogoChanged);
+    // Set theme logo to the Google logo
+    await editThemeLogo(THEME.name, page, THEME.theme_logo);
+    const isLogoChanged = async () => {
+      await page.reload();
+      const logoSrcChangedToGoogle = await logoImage.getAttribute('src');
+      if (logoSrcChangedToGoogle) {
+        return logoSrcChangedToGoogle.includes('googlelogo');
+      }
+      return false;
+    };
+    await awaitUntilCondition(isLogoChanged);
+    await expect(logoImage).toHaveAttribute('src', /googlelogo/);
 
-  logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-  expect(logoSrc).toContain('googlelogo');
+    // Reset logo
+    await editThemeLogo(THEME.name, page, '');
+    const isLogoBackToDefault = async () => {
+      await page.reload();
+      const logoSrcChangedToDefault = await logoImage.getAttribute('src');
+      if (logoSrcChangedToDefault) {
+        return logoSrcChangedToDefault.includes('logo_text_dark');
+      }
+      return false;
+    };
+    await awaitUntilCondition(isLogoBackToDefault);
+    await expect(logoImage).toHaveAttribute('src', /logo_text_dark/);
+  } finally {
+    // Restore the default theme through the API: an awaited call cannot be aborted by the
+    // page closing at the end of the test, and it also runs when an assertion failed
+    // mid-test, so the platform theme cannot leak to other tests
+    await patchSettings(request, settings.id, 'platform_theme', initialThemeId);
+  }
 
-  // Reset logo
-  await editThemeLogo(THEME.name, page, '');
-  await page.waitForTimeout(1000);
-
-  const isLogoBackToDefault = async () => {
-    await page.reload();
-    const logoSrcChangedToDefault = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-    if (logoSrcChangedToDefault) {
-      return logoSrcChangedToDefault.includes('logo_text_dark');
-    }
-    return false;
-  };
-  await awaitUntilCondition(isLogoBackToDefault);
-  logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-  expect(logoSrc).toContain('logo_text_dark');
-
-  // Select Dark theme again to delete custom theme
-  await page.locator('#mui-component-select-platform_theme').click();
-  await page.getByTestId('Filigran Dark-li').click();
-  await page.waitForTimeout(1000);
+  // Reload so the UI is back on the restored theme before deleting the custom one
+  await page.reload();
 
   // Delete custom theme
   await page.getByTestId(`${THEME.name}-popover`).click();
   await page.getByLabel('Delete').click();
   await page.getByRole('button', { name: 'Confirm' }).click();
-  expect(await page.getByText('Theme successfully deleted').count() > 0);
+  // The snackbar also keeps the page open until the delete mutation completes
+  await expect(page.getByText('Theme successfully deleted')).toBeVisible();
 });
 
 /**
@@ -146,6 +146,8 @@ test('Cannot delete or update system theme', { tag: ['@ce'] }, async ({ page }) 
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
   await page.getByTestId('Filigran Light-popover').click();
-  expect(await page.getByLabel('Delete').count() === 0);
-  expect(await page.getByLabel('Update').count() === 0);
+  // A built-in theme only offers View and Export in its popover
+  await expect(page.getByRole('menuitem', { name: 'View' })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: 'Update' })).toHaveCount(0);
+  await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
 });
