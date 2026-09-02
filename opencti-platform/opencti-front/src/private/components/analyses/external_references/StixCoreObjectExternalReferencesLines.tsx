@@ -272,6 +272,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                     const externalReferenceId = externalReference.external_id
                       ? `(${externalReference.external_id})`
                       : '';
+                    const externalReferenceName = `${externalReference.source_name} ${externalReferenceId}`;
                     let externalReferenceSecondary: string;
                     if (externalReference.url && externalReference.url.length > 0) {
                       externalReferenceSecondary = externalReference.url;
@@ -341,8 +342,16 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                 <ItemIcon type="External-Reference" />
                               </ListItemIcon>
                               <ListItemText
-                                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                                secondary={externalReferenceSecondary}
+                                primary={(
+                                  <Tooltip title={externalReferenceName}>
+                                    <span>{externalReferenceName}</span>
+                                  </Tooltip>
+                                )}
+                                secondary={(
+                                  <Tooltip title={externalReferenceSecondary}>
+                                    <span>{externalReferenceSecondary}</span>
+                                  </Tooltip>
+                                )}
                                 slotProps={{
                                   primary: {
                                     overflow: 'hidden',
@@ -428,8 +437,16 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                               <ItemIcon type="External-Reference" />
                             </ListItemIcon>
                             <ListItemText
-                              primary={`${externalReference.source_name} ${externalReferenceId}`}
-                              secondary={externalReference.description}
+                              primary={(
+                                <Tooltip title={externalReferenceName}>
+                                  <span>{externalReferenceName}</span>
+                                </Tooltip>
+                              )}
+                              secondary={(
+                                <Tooltip title={externalReference.description}>
+                                  <span>{externalReference.description}</span>
+                                </Tooltip>
+                              )}
                               slotProps={{
                                 primary: {
                                   overflow: 'hidden',
