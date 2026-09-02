@@ -114,7 +114,7 @@ const connectorResolvers = {
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
-    manager_contract_image: (cn) => computeManagerConnectorImage(cn),
+    manager_contract_image: (cn, _, context) => computeManagerConnectorImage(context, context.user, cn),
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
     jwks: () => getConnectorJwks(),
   },
@@ -127,7 +127,7 @@ const connectorResolvers = {
       // Configuration for composer must contain encrypted authentication information
       return computeManagerConnectorConfiguration(context, context.user, cn, { withEncrypted: true });
     },
-    manager_contract_image: (cn) => computeManagerConnectorImage(cn),
+    manager_contract_image: (cn, _, context) => computeManagerConnectorImage(context, context.user, cn),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },
   ConnectorManager: {
