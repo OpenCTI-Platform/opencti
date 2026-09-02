@@ -11,6 +11,7 @@ import { donutChartOptions } from '../../../../../utils/Charts';
 import type { Theme } from '../../../../../components/Theme';
 import { capitalizeFirstLetter } from '../../../../../utils/String';
 import { CoverageInformation } from '../SecurityCoverage-types';
+import { useCoverageVocabulariesOrder } from './useCoverageVocabulariesOrder';
 
 const useStyles = makeStyles((theme: Theme) => ({
   charts: {
@@ -59,7 +60,7 @@ interface SecurityCoverageScoresProps {
 }
 
 const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = ({ coverage_information, variant = 'header' }) => {
-  console.log({ coverage_information, variant });
+  const orderedCoverageInformation = useCoverageVocabulariesOrder(coverage_information);
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
@@ -108,7 +109,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
     const chartSize = variant === 'matrix' ? 38 : 50;
     const iconSize = variant === 'matrix' ? 12 : 18;
     const iconPosition = variant === 'matrix' ? 13 : 17;
-    if (isEmptyField(coverage_information)) {
+    if (isEmptyField(orderedCoverageInformation)) {
       const { options, series } = genOpts(null);
       return (
         <div className={classes.chartContainer} style={{ width: size, height: size }}>
@@ -125,7 +126,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
     }
     return (
       <div style={{ display: 'flex' }}>
-        {(coverage_information ?? []).map((coverageResult) => {
+        {(orderedCoverageInformation ?? []).map((coverageResult) => {
           const { options, series } = genOpts(coverageResult.coverage_score);
           return (
             <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
@@ -145,7 +146,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
   }
 
   // Details variant with scores
-  if (isEmptyField(coverage_information)) {
+  if (isEmptyField(orderedCoverageInformation)) {
     const { options, series } = genOpts(null);
     return (
       <div className={classes.charts}>
@@ -168,7 +169,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
   }
   return (
     <div className={classes.charts}>
-      {(coverage_information ?? []).map((coverageResult) => {
+      {(orderedCoverageInformation ?? []).map((coverageResult) => {
         const { options, series } = genOpts(coverageResult.coverage_score);
         const warningColor = (theme.palette as { warning?: { main: string } }).warning?.main;
         let scoreColor;
