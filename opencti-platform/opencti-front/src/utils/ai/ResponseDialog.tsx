@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
-import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -280,6 +280,11 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 
   // ── Content editors ───────────────────────────────────────────────────
 
+  const askAiEmbedStyle: Record<'markdown' | 'html', CSSProperties> = {
+    html: { position: 'absolute', top: 2, right: 45 },
+    markdown: { position: 'absolute', top: 2, right: 10, paddingTop: 4 },
+  };
+
   const renderContentEditors = () => (
     <>
       {(format === 'text' || format === 'json') && (
@@ -353,7 +358,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           format={format}
           variant={format}
           disabled={isDisabled}
-          style={format === 'html' ? { position: 'absolute', top: 2, right: 45 } : undefined}
+          style={format === 'markdown' || format === 'html' ? askAiEmbedStyle[format] : undefined}
         />
       )}
     </>
