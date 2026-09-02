@@ -11,7 +11,22 @@ import { donutChartOptions } from '../../../../../utils/Charts';
 import type { Theme } from '../../../../../components/Theme';
 import { capitalizeFirstLetter } from '../../../../../utils/String';
 import { CoverageInformation } from '../SecurityCoverage-types';
-import { useCoverageVocabulariesOrder } from './useCoverageVocabulariesOrder';
+import { SecurityCoverageScoresVocabulariesOrderQuery } from './__generated__/SecurityCoverageScoresVocabulariesOrderQuery.graphql';
+import { coverageVocabulariesOrder } from './SecurityCoverageScores-utils';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+
+const coverageVocabulariesOrderQuery = graphql`
+  query SecurityCoverageScoresVocabulariesOrderQuery {
+    vocabularies(category: coverage_ov) {
+      edges {
+        node {
+          order
+          name
+        }
+      }
+    }
+  }
+`;
 
 const useStyles = makeStyles((theme: Theme) => ({
   charts: {
@@ -60,7 +75,6 @@ interface SecurityCoverageScoresProps {
 }
 
 const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = ({ coverage_information, variant = 'header' }) => {
-  const orderedCoverageInformation = useCoverageVocabulariesOrder(coverage_information);
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
@@ -103,12 +117,17 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
       : <HourglassEmpty style={{ fontSize: iconSize }} />;
   };
 
+  // Order the coverage information with the stored order for coverage vocabulary
+  const { vocabularies } = useLazyLoadQuery<SecurityCoverageScoresVocabulariesOrderQuery>(coverageVocabulariesOrderQuery, {});
+  const orderedCoverageInformation = coverageVocabulariesOrder(coverage_information, vocabularies);
+
   // Original variant for header or matrix (compact)
   if (variant === 'header' || variant === 'matrix') {
     const size = variant === 'matrix' ? 28 : 40;
     const chartSize = variant === 'matrix' ? 38 : 50;
     const iconSize = variant === 'matrix' ? 12 : 18;
     const iconPosition = variant === 'matrix' ? 13 : 17;
+
     if (isEmptyField(orderedCoverageInformation)) {
       const { options, series } = genOpts(null);
       return (
