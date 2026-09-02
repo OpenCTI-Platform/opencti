@@ -151,6 +151,16 @@ def get_config_variable(
     else:
         return default
 
+    # A configuration key can be present but explicitly null (for example a
+    # Pydantic settings model that dumps every field, including unset Optional
+    # ones, as None). Treat an explicit None the same as an absent/empty value:
+    # honour `required`, otherwise fall back to `default` instead of letting it
+    # reach `int(None)` when isNumber=True and crash the connector at startup.
+    if result is None:
+        if required and default is None:
+            raise ValueError("The configuration " + env_var + " is required")
+        return default
+
     if result in TRUTHY:
         return True
     if result in FALSY:
