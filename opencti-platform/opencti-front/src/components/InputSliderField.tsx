@@ -3,7 +3,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Grid, Slider } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormHelperText from '@mui/material/FormHelperText';
-import SimpleTextField from './SimpleTextField';
+import TextField from './TextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
 
@@ -64,15 +64,17 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   const currentLevel = buildScaleLevel(value, scale);
 
   const [initialValue] = useState(value);
+  // An empty helper row still costs its 8px gap, which would drop the select.
+  const someoneElseIsEditing = (editContext ?? []).some((c) => c?.focusOn === name);
   if (variant === 'edit') {
     // disabled prop is "forced", be it true or false
     const finalDisabled = (disabled === true || disabled === false) ? disabled : initialValue > max;
     return (
       <>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={3} alignItems="flex-end">
           <Grid item xs={6}>
             <Field
-              component={SimpleTextField}
+              component={TextField}
               fullWidth
               type="number"
               name={name}
@@ -80,9 +82,9 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               onSubmit={onSubmit}
               onFocus={onFocus}
               disabled={finalDisabled}
-              helpertext={
+              helperText={someoneElseIsEditing ? (
                 <SubscriptionFocus context={editContext} fieldName={name} />
-              }
+              ) : undefined}
             />
           </Grid>
           <Grid item xs={6}>
@@ -128,10 +130,10 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   }
   return (
     <>
-      <Grid container={true} spacing={3}>
+      <Grid container={true} spacing={3} alignItems="flex-end">
         <Grid item xs={6}>
           <Field
-            component={SimpleTextField}
+            component={TextField}
             fullWidth
             type="number"
             name={name}

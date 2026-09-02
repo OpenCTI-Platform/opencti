@@ -2,7 +2,7 @@ import TextField from '@mui/material/TextField';
 import ReactMde from 'react-mde';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Checkbox, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { stixCyberObservablesLinesAttributesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -435,6 +435,7 @@ const WidgetCreationParameters = () => {
           .map((_, i) => {
             const currentInstanceId = dataSelection[i].instance_id;
             const isNumberError = (dataSelection[i].number ?? 10) > maxResultCount;
+            const limitHelper = `${t_i18n('The number of results should be lower than')} ${maxResultCount}`;
 
             return (
               <div key={i} data-testid={`widget-params-selection-${i}`}>
@@ -490,13 +491,14 @@ const WidgetCreationParameters = () => {
 
                 {(getCurrentCategory(type) === 'distribution'
                   || getCurrentCategory(type) === 'list') && (
-                  <TextField
+                  <Input
                     label={t_i18n('Number of results')}
-                    fullWidth={true}
                     type="number"
-                    error={isNumberError}
-                    helperText={`${t_i18n('The number of results should be lower than')} ${maxResultCount}`}
-                    value={dataSelection[i].number ?? 10}
+                    isTypeNumber
+                    // The library swaps helper for error, so one sentence serves both.
+                    error={isNumberError ? limitHelper : undefined}
+                    helperText={limitHelper}
+                    value={String(dataSelection[i].number ?? 10)}
                     onChange={(event) => handleChangeDataValidationParameter(
                       i,
                       'number',
