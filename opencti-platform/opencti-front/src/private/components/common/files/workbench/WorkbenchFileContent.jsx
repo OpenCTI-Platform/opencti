@@ -105,7 +105,11 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   sortIcon: {
-    position: 'absolute',
+    // In flow, not absolute: the header cells are floats with no positioned
+    // ancestor, so an absolute arrow anchored far up the tree and landed in a
+    // different spot on each tab. Anchoring it to the cell instead is not an
+    // option — the cell clips with overflow:hidden for its ellipsis.
+    verticalAlign: 'middle',
     margin: '0 0 0 5px',
     padding: 0,
   },
@@ -114,9 +118,6 @@ const useStyles = makeStyles((theme) => ({
 const inlineStylesHeaders = {
   ttype: {
     float: 'left',
-    // the sort arrow is position:absolute; without this it anchors to a
-    // distant ancestor instead of its own cell, so it drifted per tab
-    position: 'relative',
     width: '18%',
     fontSize: 12,
     fontWeight: '700',
@@ -127,9 +128,6 @@ const inlineStylesHeaders = {
   },
   default_value: {
     float: 'left',
-    // the sort arrow is position:absolute; without this it anchors to a
-    // distant ancestor instead of its own cell, so it drifted per tab
-    position: 'relative',
     width: '30%',
     fontSize: 12,
     fontWeight: '700',
@@ -140,9 +138,6 @@ const inlineStylesHeaders = {
   },
   labels: {
     float: 'left',
-    // the sort arrow is position:absolute; without this it anchors to a
-    // distant ancestor instead of its own cell, so it drifted per tab
-    position: 'relative',
     width: '22%',
     fontSize: 12,
     fontWeight: '700',
@@ -154,9 +149,6 @@ const inlineStylesHeaders = {
   },
   markings: {
     float: 'left',
-    // the sort arrow is position:absolute; without this it anchors to a
-    // distant ancestor instead of its own cell, so it drifted per tab
-    position: 'relative',
     width: '20%',
     fontSize: 12,
     fontWeight: '700',
@@ -167,9 +159,6 @@ const inlineStylesHeaders = {
   },
   in_platform: {
     float: 'left',
-    // the sort arrow is position:absolute; without this it anchors to a
-    // distant ancestor instead of its own cell, so it drifted per tab
-    position: 'relative',
     width: '10%',
     fontSize: 12,
     fontWeight: '700',
@@ -1694,9 +1683,9 @@ const WorkbenchFileContentComponent = ({
   };
   const sortHeader = (field, label, isSortable) => {
     const sortComponent = orderAsc ? (
-      <ArrowDropDown classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropDown classes={{ root: classes.sortIcon }} />
     ) : (
-      <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropUp classes={{ root: classes.sortIcon }} />
     );
     if (isSortable) {
       return (
@@ -1721,9 +1710,9 @@ const WorkbenchFileContentComponent = ({
   };
   const sortHeaderContainer = (field, label, isSortable) => {
     const sortComponent = containerOrderAsc ? (
-      <ArrowDropDown classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropDown classes={{ root: classes.sortIcon }} />
     ) : (
-      <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropUp classes={{ root: classes.sortIcon }} />
     );
     if (isSortable) {
       return (

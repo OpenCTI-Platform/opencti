@@ -53,7 +53,7 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
                 <Badge badgeContent={filesCount} color="primary">
                   <div style={{ padding: '0px 12px', display: 'flex' }}>
                     {t_i18n('Files search')}
-                    <EEChip clickable={false} />
+                    <EEChip />
                   </div>
                 </Badge>
               </Link>

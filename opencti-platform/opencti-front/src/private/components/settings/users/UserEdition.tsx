@@ -144,7 +144,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
                   value="organizations-admin"
                   disabled={user.objectAssignedOrganization?.edges.length === 0}
                 >
-                  {t_i18n('Organizations admin')}<EEChip clickable={false} />
+                  {t_i18n('Organizations admin')}<EEChip />
                 </TabsTrigger>
               )}
               {hasSetAccess && <TabsTrigger value="confidences">{t_i18n('Confidences')}</TabsTrigger>}
