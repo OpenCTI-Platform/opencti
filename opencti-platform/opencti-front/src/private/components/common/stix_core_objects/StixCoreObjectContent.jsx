@@ -122,6 +122,12 @@ const styles = (theme) => ({
     overflowY: 'scroll',
     overflowX: 'hidden',
   },
+  htmlEditorContainer: {
+    '& .MuiToggleButtonGroup-root.MuiToggleButtonGroup-horizontal': {
+      // reduce gap between buttons in the toolbar to let space for the AI button
+      gap: 0,
+    },
+  },
 });
 
 const interval$ = interval(FIVE_SECONDS);
@@ -619,7 +625,7 @@ class StixCoreObjectContentComponent extends Component {
                   navOpen={navOpen}
                 />
                 <div
-                  className={classes.editorContainer}
+                  className={`${classes.editorContainer} ${classes.htmlEditorContainer}`}
                   style={{ minHeight: height, height }}
                 >
                   <RichTextEditor

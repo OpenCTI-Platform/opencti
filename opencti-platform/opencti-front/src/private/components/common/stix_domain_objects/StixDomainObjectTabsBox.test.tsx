@@ -32,13 +32,6 @@ describe('StixDomainObjectTabsBox', () => {
         default: false,
         others: 'none',
       },
-      dropDownMenuState: {
-        anchorEl: null,
-        onOpen: vi.fn(),
-        onClose: vi.fn(),
-        close: vi.fn(),
-        isOpen: false,
-      },
       currentCustomViewTab: undefined,
       currentCustomViewMenuItem: undefined,
     });
@@ -86,13 +79,6 @@ describe('StixDomainObjectTabsBox', () => {
         default: true,
         others: 'none',
       },
-      dropDownMenuState: {
-        anchorEl: null,
-        onOpen: vi.fn(),
-        onClose: vi.fn(),
-        close: vi.fn(),
-        isOpen: false,
-      },
       currentCustomViewTab: undefined,
       currentCustomViewMenuItem: undefined,
     });
@@ -127,13 +113,6 @@ describe('StixDomainObjectTabsBox', () => {
         default: false,
         others: 'single',
       },
-      dropDownMenuState: {
-        anchorEl: null,
-        onOpen: vi.fn(),
-        onClose: vi.fn(),
-        close: vi.fn(),
-        isOpen: false,
-      },
       currentCustomViewTab: undefined,
       currentCustomViewMenuItem: undefined,
     });
@@ -154,7 +133,7 @@ describe('StixDomainObjectTabsBox', () => {
     );
   });
 
-  it('renders the custom view dropdown tab and menu items when in dropdown display mode', () => {
+  it('renders the custom view dropdown tab and menu items when in dropdown display mode', async () => {
     mockUseCustomViewTabs.mockReturnValue({
       defaultCustomView: undefined,
       otherCustomViews: [{
@@ -174,18 +153,11 @@ describe('StixDomainObjectTabsBox', () => {
         default: false,
         others: 'dropdown',
       },
-      dropDownMenuState: {
-        anchorEl: document.body,
-        onOpen: vi.fn(),
-        onClose: vi.fn(),
-        close: vi.fn(),
-        isOpen: true,
-      },
       currentCustomViewTab: undefined,
       currentCustomViewMenuItem: undefined,
     });
 
-    testRender(
+    const { user } = testRender(
       <StixDomainObjectTabsBox
         entityType="Intrusion-Set"
         tabs={[]}
@@ -193,16 +165,18 @@ describe('StixDomainObjectTabsBox', () => {
       />,
     );
 
-    const tabElem = screen.getByText(/^custom view$/i).closest('[role="tab"]');
-    expect(tabElem).toBeInTheDocument();
+    // Menu button, not role="tab": it opens a menu instead of owning a panel.
+    const tabElem = screen.getByRole('button', { name: /^custom view$/i });
+    expect(tabElem).toHaveAttribute('aria-haspopup', 'menu');
+    await user.click(tabElem);
 
-    const firstLinkElem = screen.getByRole('link', { name: /first custom view/i });
+    const firstLinkElem = await screen.findByRole('menuitem', { name: /first custom view/i });
     expect(firstLinkElem).toHaveAttribute(
       'href',
       expect.stringMatching(/first-custom-view-20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9$/),
     );
 
-    const secondLinkElem = screen.getByRole('link', { name: /second custom view/i });
+    const secondLinkElem = screen.getByRole('menuitem', { name: /second custom view/i });
     expect(secondLinkElem).toHaveAttribute(
       'href',
       expect.stringMatching(/second-custom-view-e9a6f2f9-354a-4a7b-9749-84f852e3d6d7$/),

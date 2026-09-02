@@ -1,6 +1,7 @@
 import { Handle, NodeProps, Position } from 'reactflow';
 import { useTheme } from '@mui/material';
 import { Chip } from '@filigran/design-system';
+import { hexToRGB } from '../../../../../../utils/Colors';
 import { NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 
@@ -8,7 +9,7 @@ const StatusNode = ({ id, data }: NodeProps) => {
   const theme = useTheme();
   const { name, color } = data.statusTemplate;
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="workflow-status-node" style={{ position: 'relative' }}>
       <div
         style={{
           position: 'absolute',
@@ -26,15 +27,17 @@ const StatusNode = ({ id, data }: NodeProps) => {
       />
       <Chip
         key={id}
-        color={color}
+        // NOT `color`: its wash is merged over the caller's own background.
         style={{
-          fontSize: 12,
           height: NODE_SIZE.height,
-          textTransform: 'uppercase',
           borderRadius: 4,
           minWidth: NODE_SIZE.width,
           cursor: 'pointer',
           position: 'relative',
+          // The chip starts its label and washes its border; a node is a box.
+          justifyContent: 'center',
+          // The label inherits it; the chip's own ink is off in the host sheet.
+          ...(color ? { border: `1px solid ${color}`, color, backgroundColor: hexToRGB(color) } : {}),
         }}
         label={snakeCaseToSentenceCase(name)}
       />

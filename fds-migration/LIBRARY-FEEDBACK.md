@@ -2229,3 +2229,38 @@ mounting from.
 
 **Removal test.** Convert this site, then toggle "Update entities' statuses by name match":
 the setting persists after a page reload.
+
+## 60. A data-coloured `Chip` owns its wash, its label ink and its label size, so a caller can state none of them
+
+`Chip` has two fill paths. With a tone (`entity`/`severity`) the label takes that
+tone's ink. With a runtime `color` — the data-colour path — the source says the
+fill becomes the inline wash and "the label and icon take the system's own ink
+instead of the tone's". The label also carries the global Content/base size
+(14px, node 2752-19169).
+
+Both land on an inner `<span>`. The caller only reaches the root, so neither an
+inline `style` nor a `className` can restore the colour or the size: a class on
+the label beats an inherited value from the root.
+
+**Where it bites.** OpenCTI's workflow status nodes drew their label in the
+status colour at 12px before the Chip conversion (`StatusNode`, previous
+implementation: `color: color`, `fontSize: 12`). After conversion the labels
+render in system ink at 14px, and the nodes no longer read as coloured states.
+
+**The wash is not overridable either.** The root style is composed as
+`{ ...style, ...washStyle }` — the library's own wash is spread LAST, so a caller
+passing `backgroundColor` has it silently replaced. A status node needs its fill
+at 10% of the status colour; the wash is a different value.
+
+**Workaround.** Two parts, both in OpenCTI:
+
+- `StatusNode` stops passing `color` altogether. Without it the data-colour path
+  never runs, no wash is composed, and the node states its own
+  `backgroundColor`, `border` and `color` inline — the pre-conversion rendering.
+- FDS-WORKAROUND #60 in `design-system-host.css` scopes `font-size`,
+  `font-weight` and `color: inherit` to `.workflow-status-node span`, the inner
+  label the root cannot otherwise reach.
+
+It retires the day the label follows the data colour and the wash yields to a
+caller-supplied background, or the day `Chip` exposes a label slot.
+

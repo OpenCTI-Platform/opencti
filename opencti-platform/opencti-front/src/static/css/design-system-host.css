@@ -121,3 +121,35 @@
   text-decoration-line: underline;
   text-decoration-thickness: from-font;
 }
+
+/* FDS-WORKAROUND #60: a data-coloured Chip hands its label the system ink and the
+   14px Content/base size on an inner span, so a status node cannot state its own
+   colour or its 12px label — remove when the Chip carries the data colour through
+   to the label — see fds-migration/LIBRARY-FEEDBACK.md #60 */
+.workflow-status-node span {
+  font-size: 12px;
+  font-weight: 600;
+  color: inherit;
+}
+
+/* HOST CONCERN, not library debt: the dashboard's refresh control is a Button and
+   a Select trigger read as one segmented control. The library ships no
+   `rounded-l-none`/`rounded-r-none`, so the seam is squared here; the negative
+   margin collapses the two 1px borders into a single line. Scoped to the one
+   control by its id. */
+#dashboard-refresh-control > button:first-of-type {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  /* The same subtle border as the trigger beside it, so the pair reads as one
+     control rather than a tonal button glued to a neutral one. Declared here
+     rather than as a class: the button's own secondary border is a class too,
+     and this sheet is loaded after the library's. */
+  border: 1px solid var(--border-elevation-subtle);
+}
+
+#dashboard-refresh-control [role='combobox'] {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+

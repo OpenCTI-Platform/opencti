@@ -64,6 +64,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       display: 'grid',
                       gap: 20,
                       gridTemplateColumns: 'repeat(2, 1fr)',
+                      alignItems: 'end',
                     }}
                   >
                     <Field
@@ -127,11 +128,11 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                   <IconButton
                     variant="default"
                     priority="tertiary"
-                    size="sm"
+                    size="md"
                     id="deleteHeight"
                     aria-label="Delete"
-                    style={{ position: 'absolute', right: -10, top: 5 }}
-                    icon={<DeleteOutlined />}
+                    style={{ position: 'absolute', right: -10, bottom: 0 }}
+                    icon={<DeleteOutlined sx={{ fontSize: 20 }} />}
                   />
                 </div>
               );
@@ -200,6 +201,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                       display: 'grid',
                       gap: 20,
                       gridTemplateColumns: 'repeat(2, 1fr)',
+                      alignItems: 'end',
                     }}
                   >
                     <Field
@@ -223,14 +225,14 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                   <IconButton
                     variant="default"
                     priority="tertiary"
-                    size="sm"
+                    size="md"
                     id="deleteHeight"
                     aria-label="Delete"
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
-                    icon={<DeleteOutlined />}
+                    style={{ position: 'absolute', right: -10, bottom: 0 }}
+                    icon={<DeleteOutlined sx={{ fontSize: 20 }} />}
                   />
                 </div>
               ))}

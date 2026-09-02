@@ -16,6 +16,9 @@ import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
 import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
 
+// The library item declares a 16x16 glyph.
+const GLYPH = { fontSize: 16 };
+
 interface UserHistoryProps {
   userId: string;
 }
@@ -79,8 +82,8 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
     <Card
       title={t_i18n('History')}
       action={(
-        <Stack direction="row" gap={1}>
-          <div>
+        <Stack direction="row" gap={1} alignItems="center">
+          <Stack direction="row" alignItems="center" gap={0.5}>
             <Tooltip title={t_i18n('View all entities created by user')}>
               <IconButton
                 component={Link}
@@ -89,7 +92,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
                 color="primary"
                 aria-label={t_i18n('View all entities created by user')}
               >
-                <StorageOutlined fontSize="small" />
+                <StorageOutlined sx={GLYPH} />
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('View all relationships created by user')}>
@@ -100,12 +103,11 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
                 color="primary"
                 aria-label={t_i18n('View all relationships created by user')}
               >
-                <VectorRadius fontSize="small" />
+                <VectorRadius sx={GLYPH} />
               </IconButton>
             </Tooltip>
-          </div>
+          </Stack>
           <SearchInput
-            style={{ transform: 'translateY(-5px)' }}
             variant="thin"
             onSubmit={handleSearchEntity}
             keyword={entitySearchTerm}

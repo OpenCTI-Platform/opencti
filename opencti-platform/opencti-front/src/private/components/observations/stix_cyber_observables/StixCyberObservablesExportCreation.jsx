@@ -1,7 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Add, InfoOutlined } from '@mui/icons-material';
-import { Stack } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Fab from '@mui/material/Fab';
 import Slide from '@mui/material/Slide';
@@ -21,6 +20,7 @@ import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../../common/files/FileManager';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import GenerateExportTitle from '../../common/GenerateExportTitle';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -192,14 +192,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         this.handleClose();
                       }}
                       data-testid="StixCyberObservablesExportCreationDialog"
-                      title={(
-                        <Stack direction="row" alignItems="center" gap={1}>
-                          {t('Generate an export')}
-                          <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                            <InfoOutlined fontSize="small" color="primary" />
-                          </Tooltip>
-                        </Stack>
-                      )}
+                      title={<GenerateExportTitle />}
                     >
                       <QueryRenderer
                         query={markingDefinitionsLinesSearchQuery}

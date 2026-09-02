@@ -3,6 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Slide from '@mui/material/Slide';
+import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
@@ -168,12 +169,12 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               onClose();
                             }}
                             title={(
-                              <>
+                              <Stack direction="row" alignItems="center" gap={1}>
                                 {t('Generate an export')}
                                 <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                                  <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                                  <InfoOutlined sx={{ display: 'block' }} fontSize="medium" color="primary" />
                                 </Tooltip>
-                              </>
+                              </Stack>
                             )}
                           >
                             <QueryRenderer

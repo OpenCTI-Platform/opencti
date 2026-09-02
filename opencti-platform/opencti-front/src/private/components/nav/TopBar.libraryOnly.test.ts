@@ -134,7 +134,7 @@ describe('the admin top bar is built from library components', () => {
 
   it('marks the control with the badge, never the aria-hidden glyph', () => {
     const link = SOURCES.get('src/private/components/nav/TopBarIconLink.tsx') as string;
-    expect(link).toMatch(/<Badge \{\.\.\.badge\}>\{link\}<\/Badge>/);
+    expect(link).toMatch(/<Badge[^>]*\{\.\.\.badge\}>\{link\}<\/Badge>/);
     expect(link).not.toMatch(/<Badge[\s\S]*?\{icon\}/);
     const bar = SOURCES.get('src/private/components/nav/TopBar.tsx') as string;
     expect(bar).not.toMatch(/<Badge\b/);

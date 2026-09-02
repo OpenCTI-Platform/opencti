@@ -18,8 +18,6 @@ import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionC
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
 import { CsvMapperAddInput } from '@components/data/csvMapper/CsvMapperUtils';
 import { useTheme } from '@mui/styles';
@@ -54,6 +52,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 export const ingestionCsvEditionUserHandlingPatch = graphql`
   mutation IngestionCsvEditionUserHandlingMutation($id: ID!, $input: IngestionCsvAddAutoUserInput!) {
@@ -291,8 +290,8 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
       )),
     ),
   ));
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleChangeTab = (value: number) => {
+  const [currentTab, setCurrentTab] = useState('overview');
+  const handleChangeTab = (value: string) => {
     setCurrentTab(value);
   };
   const [creatorId, setCreatorId] = useState(ingestionCsvData.user?.id);
@@ -469,256 +468,254 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
         dirty,
       }) => (
         <>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 2 }}>
-            <Tabs
-              value={currentTab}
-              onChange={(_event, value) => handleChangeTab(value)}
-            >
-              <Tab label={t_i18n('Overview')} />
-              <Tab label={t_i18n('Inline csv mapper')} disabled={values.csv_mapper_type} />
-            </Tabs>
-          </Box>
-          <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
-            <IngestionCsvInlineWrapper>
-              <IngestionCsvInlineMapperForm
-                csvMapper={values.csv_mapper as CsvMapperAddInput}
-                setCSVMapperFieldValue={(name, value) => {
-                  handleSubmitField(name, value);
-                  setTempStateInlineCsv(value);
-                }}
-                returnCSVFormat={(_, value) => setTempStateInlineCsv(value)}
-              />
-            </IngestionCsvInlineWrapper>
-          </Box>
+          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+              <TabsTrigger value="mapper" disabled={values.csv_mapper_type}>{t_i18n('Inline csv mapper')}</TabsTrigger>
+            </TabsList>
+            {/* forceMount keeps form state across tab switches; hidden is explicit because forceMount pins Radix's own hidden to false. */}
+            <TabsContent value="mapper" forceMount hidden={currentTab !== 'mapper'}>
+              <IngestionCsvInlineWrapper>
+                <IngestionCsvInlineMapperForm
+                  csvMapper={values.csv_mapper as CsvMapperAddInput}
+                  setCSVMapperFieldValue={(name, value) => {
+                    handleSubmitField(name, value);
+                    setTempStateInlineCsv(value);
+                  }}
+                  returnCSVFormat={(_, value) => setTempStateInlineCsv(value)}
+                />
+              </IngestionCsvInlineWrapper>
+            </TabsContent>
 
-          <Form>
-            <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>
-              <Field
-                component={TextField}
-                variant="outlined"
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="outlined"
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth={true}
-                className="mt-5"
-                onSubmit={handleSubmitField}
-              />
-              <IngestionSchedulingField handleSubmitField={handleSubmitField} />
-              <Field
-                component={TextField}
-                variant="outlined"
-                name="uri"
-                label={t_i18n('CSV URL')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-                className="mt-5"
-              />
-              <CreatorField
-                name="user_id"
-                label={t_i18n('User responsible for data creation')}
-                onChange={handleSubmitField}
-                containerStyle={fieldSpacingContainerStyle}
-                showConfidence
-              />
-              {ingestionCsvData.user?.name === 'SYSTEM'
-                && (
-                  <IngestionEditionUserHandling
-                    key={values.name}
-                    feedName={values.name}
-                    onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
-                    dataId={ingestionCsvData.id}
-                    mutation={ingestionCsvEditionUserHandlingPatch}
+            <Form>
+              <TabsContent value="overview" forceMount hidden={currentTab !== 'overview'}>
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="name"
+                  label={t_i18n('Name')}
+                  fullWidth={true}
+                  onSubmit={handleSubmitField}
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="description"
+                  label={t_i18n('Description')}
+                  fullWidth={true}
+                  className="mt-5"
+                  onSubmit={handleSubmitField}
+                />
+                <IngestionSchedulingField handleSubmitField={handleSubmitField} />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="uri"
+                  label={t_i18n('CSV URL')}
+                  fullWidth={true}
+                  onSubmit={handleSubmitField}
+                  className="mt-5"
+                />
+                <CreatorField
+                  name="user_id"
+                  label={t_i18n('User responsible for data creation')}
+                  onChange={handleSubmitField}
+                  containerStyle={fieldSpacingContainerStyle}
+                  showConfidence
+                />
+                {ingestionCsvData.user?.name === 'SYSTEM'
+                  && (
+                    <IngestionEditionUserHandling
+                      key={values.name}
+                      feedName={values.name}
+                      onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
+                      dataId={ingestionCsvData.id}
+                      mutation={ingestionCsvEditionUserHandlingPatch}
+                    />
+                  )
+                }
+                <Box sx={{
+                  marginTop: 2,
+                }}
+                >
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="csv_mapper_type"
+                    label={t_i18n('Existing csv mappers')}
+                    onChange={(name: string, value: string) => handleSubmitField(name, value, values)}
                   />
-                )
-              }
-              <Box sx={{
-                marginTop: 2,
-              }}
-              >
+                </Box>
+                {
+                  values.csv_mapper_type && queryRef && (
+                    <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
+                      <Box sx={{ width: '100%', marginTop: 5 }}>
+                        <Alert
+                          severity="info"
+                          variant="outlined"
+                          style={{ padding: '0px 10px 0px 10px' }}
+                        >
+                          {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                          <br />
+                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
+                        </Alert>
+                      </Box>
+                      <CsvMapperField
+                        name="csv_mapper_id"
+                        isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
+                        onChange={async (_, option) => {
+                          handleSubmitField('csv_mapper_id', option);
+                          await updateCsvMapper(setFieldValue, option);
+                          const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option as CsvMapperFieldOption);
+                          await updateObjectMarkingField(setFieldValue, values, hasUserChoiceCsvMapperRepresentations);
+                        }}
+                        queryRef={queryRef}
+                      />
+                    </React.Suspense>
+                  )
+                }
+                {
+                  hasUserChoiceCsvMapper && (
+                    <ObjectMarkingField
+                      name="markings"
+                      isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
+                      label={t_i18n('Marking definition levels')}
+                      style={fieldSpacingContainerStyle}
+                      allowedMarkingOwnerId={isGranted ? creatorId : undefined}
+                      setFieldValue={setFieldValue}
+                      onChange={(name, value) => {
+                        if (value.length) {
+                          handleSubmitField(name, value.map((marking) => marking.value));
+                        }
+                      }}
+                    />
+                  )
+                }
+                <Field
+                  component={SelectFieldFds}
+                  variant="outlined"
+                  name="authentication_type"
+                  label={t_i18n('Authentication type')}
+                  onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
+                  onSubmit={handleSubmitField}
+                  fullWidth={true}
+                  containerstyle={{
+                    width: '100%',
+                    marginTop: 20,
+                  }}
+                >
+                  <SelectItem value="none">{t_i18n('None')}</SelectItem>
+                  <SelectItem value="basic">{t_i18n('Basic user / password')}</SelectItem>
+                  <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+                  <SelectItem value="certificate">
+                    {t_i18n('Client certificate')}
+                  </SelectItem>
+                </Field>
+                {values.authentication_type === BASIC_AUTH && (
+                  <>
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="username"
+                      label={t_i18n('Username')}
+                      onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
+                      fullWidth={true}
+                      className="mt-5"
+                    />
+                    <PasswordTextField
+                      name="password"
+                      label={t_i18n('Password')}
+                      isSecret
+                      onSubmit={(name: string, submitValue: string) => handleSubmitField(name, submitValue, values)}
+                    />
+                  </>
+                )}
+                {values.authentication_type === BEARER_AUTH && (
+                  <PasswordTextField
+                    name="token"
+                    label={t_i18n('Token')}
+                    isSecret
+                    onSubmit={(name: string, submitValue: string) => handleSubmitField(name, submitValue, values)}
+                  />
+                )}
+                {values.authentication_type === CERT_AUTH && (
+                  <>
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="cert"
+                      label={t_i18n('Certificate (base64)')}
+                      onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
+                      fullWidth={true}
+                      className="mt-5"
+                    />
+                    <PasswordTextField
+                      name="key"
+                      label={t_i18n('Key (base64)')}
+                      isSecret
+                      onSubmit={(name: string, submitValue: string) => handleSubmitField(name, submitValue, values)}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="ca"
+                      label={t_i18n('CA certificate (base64)')}
+                      onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
+                      fullWidth={true}
+                      className="mt-5"
+                    />
+                  </>
+                )}
                 <Field
                   component={SwitchField}
                   type="checkbox"
-                  name="csv_mapper_type"
-                  label={t_i18n('Existing csv mappers')}
-                  onChange={(name: string, value: string) => handleSubmitField(name, value, values)}
+                  name="ssl_verify"
+                  label={t_i18n('Verify SSL certificate')}
+                  onChange={handleSubmitField}
+                  containerstyle={fieldSpacingContainerStyle}
                 />
-              </Box>
-              {
-                values.csv_mapper_type && queryRef && (
-                  <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-                    <Box sx={{ width: '100%', marginTop: 5 }}>
-                      <Alert
-                        severity="info"
-                        variant="outlined"
-                        style={{ padding: '0px 10px 0px 10px' }}
-                      >
-                        {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
-                        <br />
-                        {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
-                      </Alert>
-                    </Box>
-                    <CsvMapperField
-                      name="csv_mapper_id"
-                      isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
-                      onChange={async (_, option) => {
-                        handleSubmitField('csv_mapper_id', option);
-                        await updateCsvMapper(setFieldValue, option);
-                        const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option as CsvMapperFieldOption);
-                        await updateObjectMarkingField(setFieldValue, values, hasUserChoiceCsvMapperRepresentations);
-                      }}
-                      queryRef={queryRef}
-                    />
-                  </React.Suspense>
-                )
-              }
-              {
-                hasUserChoiceCsvMapper && (
-                  <ObjectMarkingField
-                    name="markings"
-                    isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
-                    label={t_i18n('Marking definition levels')}
-                    style={fieldSpacingContainerStyle}
-                    allowedMarkingOwnerId={isGranted ? creatorId : undefined}
+                {enableReferences && (
+                  <CommitMessage
+                    submitForm={submitForm}
+                    disabled={isSubmitting || !isValid || !dirty}
                     setFieldValue={setFieldValue}
-                    onChange={(name, value) => {
-                      if (value.length) {
-                        handleSubmitField(name, value.map((marking) => marking.value));
-                      }
-                    }}
+                    open={false}
+                    values={values.references}
+                    id={ingestionCsvData.id}
                   />
-                )
-              }
-              <Field
-                component={SelectFieldFds}
-                variant="outlined"
-                name="authentication_type"
-                label={t_i18n('Authentication type')}
-                onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
-                onSubmit={handleSubmitField}
-                fullWidth={true}
-                containerstyle={{
-                  width: '100%',
-                  marginTop: 20,
-                }}
-              >
-                <SelectItem value="none">{t_i18n('None')}</SelectItem>
-                <SelectItem value="basic">{t_i18n('Basic user / password')}</SelectItem>
-                <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
-                <SelectItem value="certificate">
-                  {t_i18n('Client certificate')}
-                </SelectItem>
-              </Field>
-              {values.authentication_type === BASIC_AUTH && (
-                <>
-                  <Field
-                    component={TextField}
+                )}
+                <Box sx={{ width: '100%', marginTop: 5 }}>
+                  <Alert
+                    severity="info"
                     variant="outlined"
-                    name="username"
-                    label={t_i18n('Username')}
-                    onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
-                    fullWidth={true}
-                    className="mt-5"
-                  />
-                  <PasswordTextField
-                    name="password"
-                    label={t_i18n('Password')}
-                    isSecret
-                    onSubmit={(name: string, submitValue: string) => handleSubmitField(name, submitValue, values)}
-                  />
-                </>
-              )}
-              {values.authentication_type === BEARER_AUTH && (
-                <PasswordTextField
-                  name="token"
-                  label={t_i18n('Token')}
-                  isSecret
-                  onSubmit={(name: string, submitValue: string) => handleSubmitField(name, submitValue, values)}
-                />
-              )}
-              {values.authentication_type === CERT_AUTH && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="outlined"
-                    name="cert"
-                    label={t_i18n('Certificate (base64)')}
-                    onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
-                    fullWidth={true}
-                    className="mt-5"
-                  />
-                  <PasswordTextField
-                    name="key"
-                    label={t_i18n('Key (base64)')}
-                    isSecret
-                    onSubmit={(name: string, submitValue: string) => handleSubmitField(name, submitValue, values)}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="outlined"
-                    name="ca"
-                    label={t_i18n('CA certificate (base64)')}
-                    onSubmit={(name: string, value: FieldValue) => handleSubmitField(name, value, values)}
-                    fullWidth={true}
-                    className="mt-5"
-                  />
-                </>
-              )}
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="ssl_verify"
-                label={t_i18n('Verify SSL certificate')}
-                onChange={handleSubmitField}
-                containerstyle={fieldSpacingContainerStyle}
-              />
-              {enableReferences && (
-                <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting || !isValid || !dirty}
-                  setFieldValue={setFieldValue}
-                  open={false}
-                  values={values.references}
-                  id={ingestionCsvData.id}
-                />
-              )}
-              <Box sx={{ width: '100%', marginTop: 5 }}>
-                <Alert
-                  severity="info"
-                  variant="outlined"
-                  style={{ padding: '0px 10px 0px 10px' }}
+                    style={{ padding: '0px 10px 0px 10px' }}
+                  >
+                    {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br />
+                    {t_i18n('Only successful tests allow the ingestion edition.')}
+                  </Alert>
+                </Box>
+              </TabsContent>
+              <div style={{ marginTop: 20, textAlign: 'right' }}>
+                <Button
+                  color="secondary"
+                  onClick={() => setOpen(true)}
+                  style={{ marginLeft: theme.spacing(2) }}
+                  disabled={!(values.uri && (values.csv_mapper_id || values.csv_mapper))}
                 >
-                  {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br />
-                  {t_i18n('Only successful tests allow the ingestion edition.')}
-                </Alert>
-              </Box>
-            </Box>
-            <div style={{ marginTop: 20, textAlign: 'right' }}>
-              <Button
-                color="secondary"
-                onClick={() => setOpen(true)}
-                style={{ marginLeft: theme.spacing(2) }}
-                disabled={!(values.uri && (values.csv_mapper_id || values.csv_mapper))}
-              >
-                {t_i18n('Verify')}
-              </Button>
-            </div>
-            <IngestionCsvFeedTestDialog
-              open={open}
-              onClose={() => setOpen(false)}
-              values={{
-                ...values,
-                csv_mapper: tempStateInlineCsv,
-                csv_mapper_type: values.csv_mapper_type ? 'id' : 'inline',
-              }}
-            />
-          </Form>
+                  {t_i18n('Verify')}
+                </Button>
+              </div>
+              <IngestionCsvFeedTestDialog
+                open={open}
+                onClose={() => setOpen(false)}
+                values={{
+                  ...values,
+                  csv_mapper: tempStateInlineCsv,
+                  csv_mapper_type: values.csv_mapper_type ? 'id' : 'inline',
+                }}
+              />
+            </Form>
+          </Tabs>
         </>
       )}
     </Formik>

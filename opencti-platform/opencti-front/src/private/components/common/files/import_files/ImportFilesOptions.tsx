@@ -74,21 +74,22 @@ const ImportFilesOptions = ({
                 component={SelectFieldFds}
                 variant="outlined"
                 name="validationMode"
-                containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
+                containerstyle={{ marginTop: 16, width: '100%' }}
+                fullWidth
                 disabled={isForcedImportToDraft}
                 label={(
-                  <>
+                  // Select has no `infoTooltip` slot, so the icon rides in the label.
+                  <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     {t_i18n('Validation mode')}
                     <Tooltip
                       title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
                     >
                       <InformationOutline
-                        style={{ display: 'flex', marginTop: -22, marginLeft: 115 }}
-                        fontSize="small"
+                        sx={{ fontSize: 16, cursor: 'default' }}
                         color="primary"
                       />
                     </Tooltip>
-                  </>
+                  </Box>
                 )}
               >
                 <SelectItem

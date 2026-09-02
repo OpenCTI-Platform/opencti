@@ -1,9 +1,7 @@
 import Button from '@common/button/Button';
-import { InfoOutlined } from '@mui/icons-material';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Slide from '@mui/material/Slide';
-import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
@@ -18,7 +16,7 @@ import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import { Stack } from '@mui/material';
+import GenerateExportTitle from '../GenerateExportTitle';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -171,14 +169,7 @@ class StixDomainObjectsExportCreation extends Component {
                     open={this.props.open}
                     onClose={this.props.onClose}
                     data-testid="StixDomainObjectsExportCreationDialog"
-                    title={(
-                      <Stack direction="row" gap={1} alignContent="center">
-                        {t('Generate an export')}
-                        <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                          <InfoOutlined color="primary" />
-                        </Tooltip>
-                      </Stack>
-                    )}
+                    title={<GenerateExportTitle />}
                   >
                     <Field
                       component={SelectFieldFds}

@@ -91,7 +91,8 @@ const DashboardRefreshControl = ({
     // NOT a MUI ButtonGroup any more, and that single swap is both halves of the report.
     <Box
       id="dashboard-refresh-control"
-      sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+      // One segmented control; the seam is squared in design-system-host.css.
+      sx={{ display: 'flex', alignItems: 'center', gap: 0 }}
     >
       <Button
         // The library's Spinner, not MUI's CircularProgress: `md` is the same 20px box, and
@@ -106,7 +107,10 @@ const DashboardRefreshControl = ({
         {t_i18n('Refresh')}
       </Button>
       <Select value={String(interval)} onValueChange={handleIntervalChange}>
-        <SelectTrigger aria-label={t_i18n('Refresh interval')}>
+        <SelectTrigger
+          aria-label={t_i18n('Refresh interval')}
+          className="h-9 border border-elevation-subtle"
+        >
           {/* Radix renders these children in place of the selected item, which is
               how the previous `renderValue` kept the trigger blank when off. */}
           <SelectValue>{interval === 0 ? '' : getIntervalLabel(interval)}</SelectValue>

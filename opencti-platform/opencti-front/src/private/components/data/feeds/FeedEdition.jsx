@@ -10,11 +10,21 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
-import { Chip, Select, SelectContent, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import {
+  Chip,
+  Icon,
+  IconButton as FdsIconButton,
+  Input,
+  Select,
+  SelectContent,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import MuiTextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
@@ -74,7 +84,7 @@ const styles = (theme) => ({
     right: 20,
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: '10px 28px 20px 0',
   },
   appBar: {
     width: '100%',
@@ -113,8 +123,9 @@ const styles = (theme) => ({
   },
   stepCloseButton: {
     position: 'absolute',
-    top: -20,
-    right: -20,
+    // Offsets resolve against the padding box; the 1px border sits outside it.
+    top: -1,
+    right: -29,
   },
   icon: {
     paddingTop: 4,
@@ -122,7 +133,6 @@ const styles = (theme) => ({
   },
   buttonAdd: {
     width: '100%',
-    height: 20,
   },
   alert: {
     width: '100%',
@@ -130,7 +140,8 @@ const styles = (theme) => ({
   },
   message: {
     width: '100%',
-    overflow: 'hidden',
+    // The library paints the focus ring outside the box; hidden clipped it.
+    overflow: 'visible',
   },
 });
 
@@ -481,34 +492,34 @@ const FeedEditionContainer = (props) => {
                       fullWidth={true}
                       className="mt-5"
                     />
-                    <Field
-                      component={TextField}
-                      variant="outlined"
-                      type="number"
-                      name="rolling_time"
-                      label={t_i18n('Rolling time (in minutes)')}
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                      slotProps={{
-                        input: {
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <Tooltip
-                                title={t_i18n(
-                                  'Return all objects matching the filters that have been updated since this amount of minutes',
-                                )}
-                              >
-                                <InformationOutline
-                                  fontSize="small"
-                                  color="primary"
-                                  style={{ cursor: 'default' }}
-                                />
-                              </Tooltip>
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
+                    {/* `style` and `slotProps` are unplaceable; a number field owns its trailing slot. */}
+                    <div style={{ marginTop: 20 }}>
+                      <Field
+                        component={TextField}
+                        type="number"
+                        name="rolling_time"
+                        label={t_i18n('Rolling time (in minutes)')}
+                        fullWidth={true}
+                        infoTooltip={(
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <FdsIconButton
+                                icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
+                                aria-label={t_i18n('More information')}
+                                variant="default"
+                                priority="tertiary"
+                                size="sm"
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {t_i18n(
+                                'Return all objects matching the filters that have been updated since this amount of minutes',
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      />
+                    </div>
                     <Field
                       component={SelectFieldFds}
                       variant="outlined"
@@ -571,19 +582,17 @@ const FeedEditionContainer = (props) => {
                                 className={classes.stepCloseButton}
                                 onClick={() => handleRemoveAttribute(i)}
                               >
-                                <CancelOutlined fontSize="small" />
+                                <CancelOutlined sx={{ fontSize: 16 }} />
                               </IconButton>
                               <Box sx={{ width: '100%' }}>
                                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', mb: 2 }}>
-                                  <MuiTextField
-                                    variant="outlined"
-                                    name="attribute"
-                                    label={t_i18n('Column name')}
-                                    fullWidth={true}
-                                    value={feedAttributes[i].attribute || ''}
-                                    onChange={(event) => handleChangeField(i, event.target.value)}
-                                    sx={{ flex: 1 }}
-                                  />
+                                  <Box sx={{ flex: 1 }}>
+                                    <Input
+                                      label={t_i18n('Column name')}
+                                      value={feedAttributes[i].attribute || ''}
+                                      onChange={(event) => handleChangeField(i, event.target.value)}
+                                    />
+                                  </Box>
                                   {hasNeighborMapping && (
                                     <>
                                       <Select
@@ -778,11 +787,12 @@ const FeedEditionContainer = (props) => {
                           <IconButton
                             aria-label={t_i18n('Add')}
                             disabled={selectedTypes.length === 0}
-                            size="small"
+                            size="default"
+                            color="primary"
+                            className="w-full"
                             onClick={() => handleAddAttribute()}
-                            classes={{ root: classes.buttonAdd }}
                           >
-                            <AddOutlined fontSize="small" />
+                            <AddOutlined sx={{ fontSize: 16 }} />
                           </IconButton>
                         </div>
                       </div>

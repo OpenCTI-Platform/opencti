@@ -36,8 +36,33 @@ const styles = (theme) => ({
   list: {
     width: '100%',
   },
-  listItem: {
-    width: '100M',
+  item: {
+    minHeight: 48,
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(0.5),
+  },
+  // The icon keeps the summary title's left edge; only the name track moves in.
+  itemIcon: {
+    minWidth: 'auto',
+    marginRight: theme.spacing(2),
+  },
+  // Shrink-to-fit, so the labels follow the name instead of a far column.
+  itemText: {
+    flex: '0 1 auto',
+    minWidth: 0,
+    margin: 0,
+    marginRight: theme.spacing(1),
+    '& .MuiListItemText-primary, & .MuiListItemText-secondary': {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+  },
+  // Without a shrinkable track of their own the labels win the row and the
+  // name is the one that gets cut; they fold to `+N` instead.
+  itemLabels: {
+    flex: '0 1 auto',
+    minWidth: 0,
   },
   icon: {
     color: theme.palette.primary.main,
@@ -84,13 +109,11 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
     const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
     const stixDomainObjects = byType(stixDomainObjectsNodes);
     const stixDomainObjectsTypes = keys(stixDomainObjects);
-    let increment = 0;
 
     return (
       <div className={classes.container}>
         {stixDomainObjectsTypes.length > 0 ? (
           stixDomainObjectsTypes.map((type) => {
-            increment += 1;
             return (
               <Accordion
                 key={type}
@@ -100,18 +123,10 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                   stixDomainObjectsTypes.length,
                 )}
                 onChange={this.handleChangePanel.bind(this, type)}
-                elevation={3}
-                style={{
-                  marginBottom:
-                    increment === stixDomainObjectsTypes.length
-                    && this.isExpanded(
-                      type,
-                      stixDomainObjects[type].length,
-                      stixDomainObjectsTypes.length,
-                    )
-                      ? 16
-                      : 0,
-                }}
+                // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+                elevation={0}
+                disableGutters
+                sx={{ backgroundColor: 'var(--bg-input-default)' }}
               >
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Typography className={classes.heading}>
@@ -128,14 +143,15 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                     {stixDomainObjects[type].map((stixDomainObject) => (
                       <ListItemButton
                         key={stixDomainObject.id}
-                        classes={{ root: classes.menuItem }}
+                        classes={{ root: classes.item }}
                         divider={true}
                         onClick={handleSelect.bind(this, stixDomainObject)}
                       >
-                        <ListItemIcon>
+                        <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
+                          classes={{ root: classes.itemText }}
                           primary={
                             stixDomainObject.name
                             || stixDomainObject.attribute_abstract
@@ -147,11 +163,13 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                             100,
                           )}
                         />
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={stixDomainObject.objectLabel}
-                          revoked={stixDomainObject.revoked}
-                        />
+                        <div className={classes.itemLabels}>
+                          <StixCoreObjectLabels
+                            variant="inList"
+                            labels={stixDomainObject.objectLabel}
+                            revoked={stixDomainObject.revoked}
+                          />
+                        </div>
                       </ListItemButton>
                     ))}
                   </List>

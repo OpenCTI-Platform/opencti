@@ -16,7 +16,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { fetchQuery } from '../../../../../relay/environment';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
@@ -33,9 +33,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -194,29 +191,30 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
               label={t_i18n('Name')}
               fullWidth
             />
-            <Field
-              component={AutocompleteFreeSoloField}
-              style={{ marginTop: 20 }}
-              name="labels"
-              multiple
-              textfieldprops={{
-                variant: 'outlined',
-                label: t_i18n('Labels'),
-              }}
-              options={[]}
-              renderOption={(option: FieldOption) => (
-                <>
-                  <div className={classes.icon}>
-                    <ItemIcon type="Label" />
-                  </div>
-                  <div className={classes.text}>{option.label}</div>
-                </>
-              )}
-            />
+            <div style={{ marginTop: 24 }}>
+              <Field
+                component={AutocompleteFreeSoloField}
+                name="labels"
+                multiple
+                textfieldprops={{
+                  variant: 'outlined',
+                  label: t_i18n('Labels'),
+                }}
+                options={[]}
+                renderOption={(option: FieldOption) => (
+                  <>
+                    <div className={classes.icon}>
+                      <ItemIcon type="Label" />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </>
+                )}
+              />
+            </div>
             <ObjectMarkingField
               name="fileMarkings"
               label={t_i18n('File marking definition levels')}
-              style={fieldSpacingContainerStyle}
+              style={{ marginTop: 24, width: '100%' }}
               setFieldValue={setFieldValue}
               required={false}
             />

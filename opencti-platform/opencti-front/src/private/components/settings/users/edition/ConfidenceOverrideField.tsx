@@ -101,7 +101,8 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
       <Accordion
         expanded={open}
         variant="outlined"
-        style={{ width: '100%', marginBottom: '20px' }}
+        // This accordion only; the themed paper is left alone elsewhere.
+        style={{ width: '100%', marginBottom: '20px', backgroundColor: 'transparent' }}
       >
         <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
           <div style={{ display: 'inline-flex', alignItems: 'center' }}>

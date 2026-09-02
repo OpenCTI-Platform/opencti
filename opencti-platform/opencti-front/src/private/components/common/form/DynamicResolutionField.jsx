@@ -19,33 +19,35 @@ import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { isEmptyField } from '../../../../utils/utils';
 
+// Floated cells capped at 20px cut the 36px select and the chip; flex row now.
 const inlineStyles = {
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
   type: {
     fontSize: 13,
-    float: 'left',
-    width: '30%',
-    height: 20,
+    width: '36%',
+    minWidth: 0,
+    flexShrink: 0,
+  },
+  typeText: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   default_value: {
     fontSize: 13,
-    float: 'left',
-    width: '50%',
-    height: 20,
+    flex: 1,
+    minWidth: 0,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   in_platform: {
     fontSize: 13,
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    flexShrink: 0,
   },
 };
 
@@ -184,10 +186,12 @@ const DynamicResolutionField = ({
                   </ListItemIcon>
                   <ListItemText
                     primary={(
-                      <div>
+                      <div style={inlineStyles.row}>
                         <div style={inlineStyles.type}>
                           {item.in_platform ? (
-                            t_i18n(`entity_${item.type}`)
+                            <div style={inlineStyles.typeText}>
+                              {t_i18n(`entity_${item.type}`)}
+                            </div>
                           ) : (
                             <Select
                               value={convertFromStixType(item.type)}
