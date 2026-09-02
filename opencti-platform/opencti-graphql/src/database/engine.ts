@@ -2182,17 +2182,23 @@ type ProcessSearchArgs = {
   useWildcardPrefix?: boolean;
   historyFiltering?: boolean;
 };
+
+// Hard cap user-provided search input to limit normalization + query parsing cost
+const MAX_SEARCH_LENGTH = 512;
+
 function processSearch(
   search: string,
   args: ProcessSearchArgs,
 ): { exactSearch: string[]; querySearch: string[] } {
   const { useWildcardPrefix } = args;
+  const boundedSearch = search.length > MAX_SEARCH_LENGTH ? search.slice(0, MAX_SEARCH_LENGTH) : search;
+
   let decodedSearch;
   try {
-    decodedSearch = decodeURIComponent(refang(search))
+    decodedSearch = decodeURIComponent(refang(boundedSearch))
       .trim();
   } catch (_e) {
-    decodedSearch = refang(search).trim();
+    decodedSearch = refang(boundedSearch).trim();
   }
   let remainingSearch = decodedSearch;
   const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
