@@ -104,7 +104,7 @@ const TabsWithCustomViews = ({
 
   return (
     <Tabs value={(currentCustomViewTab ?? currentTab) || ''} panels="external">
-      <TabsList actions={extraActions}>
+      <TabsList className="mb-6" actions={extraActions}>
         <DefaultCustomViewTab
           value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
           displayMode={displayMode}
