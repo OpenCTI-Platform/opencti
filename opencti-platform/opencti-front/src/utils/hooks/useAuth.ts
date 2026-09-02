@@ -37,6 +37,7 @@ export type PlatformLang
   = | 'de-de'
     | 'en-us'
     | 'es-es'
+    | 'fa-ir'
     | 'fr-fr'
     | 'it-it'
     | 'ja-jp'
