@@ -112,7 +112,7 @@ const AuthorizedMembersFieldListItem = ({
       <Field
         component={SelectField}
         name={name}
-        sx={{ m: 1, minWidth: 120 }}
+        sx={{ m: 1, width: 150 }}
         inputProps={{ 'aria-label': 'Without label' }}
         disabled={
           disabled || authorizedMember.value === me.id || !authorizedMember.label
