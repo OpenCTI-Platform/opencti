@@ -12,6 +12,13 @@ from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpressio
 ALIASES_FIELD = "aliases"
 X_OPENCTI_ALIASES_FIELD = "x_opencti_aliases"
 
+# Sentinel used to distinguish "value not provided by the caller" from an
+# explicit ``None``/``null``. Any dict value equal (by identity) to this
+# sentinel is stripped from GraphQL mutation variables before the request
+# is sent, so the corresponding key is entirely omitted from the payload
+# instead of being sent as ``null``.
+NOT_PROVIDED = object()
+
 SUPPORTED_INTERNAL_OBJECTS = [
     "user",
     "group",
