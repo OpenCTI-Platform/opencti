@@ -288,7 +288,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
         values,
         setFieldValue,
       }) => (
-        <div style={{ margin: '20px 0 20px 0' }}>
+        <div style={{ margin: '0px 0 20px 0' }}>
           <AlertConfidenceForEntity entity={securityCoverageData} />
           <Field
             component={TextField}

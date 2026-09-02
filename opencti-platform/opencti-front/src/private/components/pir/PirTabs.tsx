@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 import { Link, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
@@ -35,44 +35,28 @@ const PirTabs = ({ data }: PirTabsProps) => {
   const { pathname } = useLocation();
   const { t_i18n } = useFormatter();
 
-  let index = 0;
-  if (pathname.endsWith('threats')) index = 1;
-  if (pathname.endsWith('analyses')) index = 2;
-  if (pathname.endsWith('activities')) index = 3;
+  let current = 'overview';
+  if (pathname.endsWith('threats')) current = 'threats';
+  if (pathname.endsWith('analyses')) current = 'analyses';
+  if (pathname.endsWith('activities')) current = 'activities';
 
   return (
-    <Box sx={{
-      borderBottom: 1,
-      borderColor: 'divider',
-      marginBottom: 3,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}
-    >
-      <Tabs value={index}>
-        <Tab
-          component={Link}
-          label={t_i18n('Overview')}
-          to={`/dashboard/pirs/${id}`}
-        />
-        <Tab
-          component={Link}
-          label={t_i18n('Threats')}
-          to={`/dashboard/pirs/${id}/threats`}
-        />
-        <Tab
-          component={Link}
-          label={t_i18n('Analyses')}
-          to={`/dashboard/pirs/${id}/analyses`}
-        />
-        <Tab
-          component={Link}
-          label={t_i18n('Activities')}
-          to={`/dashboard/pirs/${id}/activities`}
-        />
-      </Tabs>
-    </Box>
+    <Tabs value={current} panels="external">
+      <TabsList className="mb-6">
+        <TabsTrigger value="overview" asChild>
+          <Link to={`/dashboard/pirs/${id}`}>{t_i18n('Overview')}</Link>
+        </TabsTrigger>
+        <TabsTrigger value="threats" asChild>
+          <Link to={`/dashboard/pirs/${id}/threats`}>{t_i18n('Threats')}</Link>
+        </TabsTrigger>
+        <TabsTrigger value="analyses" asChild>
+          <Link to={`/dashboard/pirs/${id}/analyses`}>{t_i18n('Analyses')}</Link>
+        </TabsTrigger>
+        <TabsTrigger value="activities" asChild>
+          <Link to={`/dashboard/pirs/${id}/activities`}>{t_i18n('Activities')}</Link>
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 };
 

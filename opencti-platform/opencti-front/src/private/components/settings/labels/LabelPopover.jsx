@@ -1,5 +1,4 @@
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogActions from '@mui/material/DialogActions';
@@ -15,6 +14,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import LabelEdition from './LabelEdition';
+import { IconButton } from '@filigran/design-system';
 
 const styles = () => ({
   container: {
@@ -92,13 +92,14 @@ class LabelPopover extends Component {
     return (
       <div className={classes.container}>
         <IconButton
+          variant="default"
+          priority="tertiary"
           aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           color="primary"
-        >
-          <MoreVert />
-        </IconButton>
+          icon={<MoreVert />}
+        />
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}

@@ -215,7 +215,7 @@ const DataTableLine = ({
               <Checkbox
                 aria-label={t_i18n('Select line')}
                 onClick={handleSelectLine}
-                className="mr-2"
+                className="mx-2"
                 checked={
                   (selectAll
                     && !((data.id || 'id') in (deSelectedElements || {})))

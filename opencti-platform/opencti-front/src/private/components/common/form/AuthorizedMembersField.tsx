@@ -428,7 +428,8 @@ const AuthorizedMembersField = ({
                     mt: '16px',
                     width: '100%',
                     paddingBottom: '16px',
-                    '.MuiAlert-message': { width: '100%' },
+                    // MUI's `overflow: auto` here clips the focus ring.
+                    '.MuiAlert-message': { width: '100%', overflow: 'visible' },
                   }}
                   severity="info"
                   icon={false}
@@ -464,7 +465,7 @@ const AuthorizedMembersField = ({
                       name="newAccessRight"
                       component={SelectField}
                       label={t_i18n('Access right')}
-                      style={{ minWidth: 120 }}
+                      style={{ minWidth: 124 }}
                       size="small"
                       disabled={!values.applyAccesses}
                     >

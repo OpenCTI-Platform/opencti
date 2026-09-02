@@ -73,7 +73,7 @@ const ListFiltersWithoutLocalStorage = ({
         sx={{
           '& .MuiPaper-root': {
             width: 600,
-            padding: 20,
+            padding: 2,
             ...filterPopoverPaperSx,
           },
         }}
