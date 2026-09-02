@@ -434,8 +434,8 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         field="created-by.internal_id"
         title={t_i18n('Distribution of reports')}
       />
-      <Tabs value={viewType} onValueChange={handleChangeViewType}>
-        <TabsList className="float-left">
+      <Tabs value={viewType} onValueChange={handleChangeViewType} style={{ float: 'left' }}>
+        <TabsList>
           <TabsTrigger value="diamond">{t_i18n('Diamond')}</TabsTrigger>
           <TabsTrigger value="timeline">{t_i18n('Timeline')}</TabsTrigger>
           <TabsTrigger value="killchain">{t_i18n('Global kill chain')}</TabsTrigger>

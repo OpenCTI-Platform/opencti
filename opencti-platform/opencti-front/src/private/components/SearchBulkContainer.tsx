@@ -98,10 +98,13 @@ const SearchBulkContainer = () => {
         </Grid>
         <Grid item xs={10}>
           <Tabs value={currentTab} onValueChange={handleChangeTab}>
-            <TabsList className="mb-6 -mt-3">
-              <TabsTrigger value="known" badge={numberOfKnownEntities}>{t_i18n('Known entities')}</TabsTrigger>
-              <TabsTrigger value="unknown" badge={numberOfUnknownEntities}>{t_i18n('Unknown entities')}</TabsTrigger>
-            </TabsList>
+            {/* -24px: inline, the negative utility is absent from the shipped CSS */}
+            <div style={{ marginTop: -24 }}>
+              <TabsList className="mb-6">
+                <TabsTrigger value="known" badge={numberOfKnownEntities}>{t_i18n('Known entities')}</TabsTrigger>
+                <TabsTrigger value="unknown" badge={numberOfUnknownEntities}>{t_i18n('Unknown entities')}</TabsTrigger>
+              </TabsList>
+            </div>
             <TabsContent value="known">
               {values.length > 0 && (
                 <SearchBulk

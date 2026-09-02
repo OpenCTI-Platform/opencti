@@ -32,11 +32,15 @@ const DecayRuleTabs = () => {
       <Box>
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
           {/* The right nav is a fixed 200px drawer floating over the content;
-              both panels already reserve that gutter, the strip did not. */}
-          <TabsList className="mb-6 mr-[200px]">
-            <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>
-            <TabsTrigger value="exclusions">{t_i18n('Decay exclusion rules')}</TabsTrigger>
-          </TabsList>
+              both panels already reserve that gutter, the strip did not.
+              Inline style, not a utility: the product ships no Tailwind build,
+              so an arbitrary class would never be compiled. */}
+          <div style={{ marginRight: 200 }}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>
+              <TabsTrigger value="exclusions">{t_i18n('Decay exclusion rules')}</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="rules">
             <DecayRules />
