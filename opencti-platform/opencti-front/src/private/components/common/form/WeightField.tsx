@@ -59,6 +59,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                     display: 'grid',
                     gap: 20,
                     gridTemplateColumns: 'repeat(2, 1fr)',
+                    alignItems: 'end',
                   }}
                 >
                   <Field
@@ -82,12 +83,13 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                 <IconButton
                   id="deleteHeight"
                   aria-label="Delete"
+                  size="default"
                   onClick={() => {
                     arrayHelpers.remove(index);
                   }}
-                  style={{ position: 'absolute', right: -10, top: 5 }}
+                  style={{ position: 'absolute', right: -10, bottom: 0 }}
                 >
-                  <DeleteOutlined />
+                  <DeleteOutlined sx={{ fontSize: 20 }} />
                 </IconButton>
               </div>
             ))}
@@ -148,6 +150,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                       display: 'grid',
                       gap: 20,
                       gridTemplateColumns: 'repeat(2, 1fr)',
+                      alignItems: 'end',
                     }}
                   >
                     <Field
@@ -211,6 +214,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                   <IconButton
                     id="deleteWeight"
                     aria-label="Delete"
+                    size="default"
                     onClick={() => {
                       arrayHelpers.remove(index);
                       commitMutation({
@@ -227,9 +231,9 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                         },
                       });
                     }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
+                    style={{ position: 'absolute', right: -10, bottom: 0 }}
                   >
-                    <DeleteOutlined />
+                    <DeleteOutlined sx={{ fontSize: 20 }} />
                   </IconButton>
                 </div>
               );
