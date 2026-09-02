@@ -183,9 +183,9 @@ const ConnectorWorkLine: FunctionComponent<
           <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
           <Tabs value={tabValue} onValueChange={setTabValue}>
             <TabsList>
-              <TabsTrigger value="Critical" badge={criticals.length}>{t_i18n('Critical')}</TabsTrigger>
-              <TabsTrigger value="Warning" badge={warnings.length}>{t_i18n('Warning')}</TabsTrigger>
-              <TabsTrigger value="All" badge={errors.length}>{t_i18n('All')}</TabsTrigger>
+              <TabsTrigger value="Critical" badge={criticals.length} badgeLabel={`${criticals.length} ${t_i18n('errors')}`}>{t_i18n('Critical')}</TabsTrigger>
+              <TabsTrigger value="Warning" badge={warnings.length} badgeLabel={`${warnings.length} ${t_i18n('errors')}`}>{t_i18n('Warning')}</TabsTrigger>
+              <TabsTrigger value="All" badge={errors.length} badgeLabel={`${errors.length} ${t_i18n('errors')}`}>{t_i18n('All')}</TabsTrigger>
             </TabsList>
             <Paper padding={0}>
               <TableContainer>

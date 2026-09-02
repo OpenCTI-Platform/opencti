@@ -108,6 +108,7 @@ const Notifications: FunctionComponent = () => {
           <TabsTrigger
             value="alerts"
             badge={unreadNotificationsCount}
+            badgeLabel={`${unreadNotificationsCount} ${t_i18n('unread')}`}
             badgeColor="error"
             badgeMax={99}
             badgeInvisible={unreadNotificationsCount === 0}
@@ -117,6 +118,7 @@ const Notifications: FunctionComponent = () => {
           <TabsTrigger
             value="news-feed"
             badge={unreadNewsFeedsCount}
+            badgeLabel={`${unreadNewsFeedsCount} ${t_i18n('unread')}`}
             badgeColor="error"
             badgeMax={99}
             badgeInvisible={unreadNewsFeedsCount === 0}

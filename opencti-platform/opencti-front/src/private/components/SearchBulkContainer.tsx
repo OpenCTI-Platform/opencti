@@ -101,8 +101,8 @@ const SearchBulkContainer = () => {
             {/* -24px: inline, the negative utility is absent from the shipped CSS */}
             <div style={{ marginTop: -24 }}>
               <TabsList className="mb-6">
-                <TabsTrigger value="known" badge={numberOfKnownEntities}>{t_i18n('Known entities')}</TabsTrigger>
-                <TabsTrigger value="unknown" badge={numberOfUnknownEntities}>{t_i18n('Unknown entities')}</TabsTrigger>
+                <TabsTrigger value="known" badge={numberOfKnownEntities} badgeLabel={`${numberOfKnownEntities} ${t_i18n('items')}`}>{t_i18n('Known entities')}</TabsTrigger>
+                <TabsTrigger value="unknown" badge={numberOfUnknownEntities} badgeLabel={`${numberOfUnknownEntities} ${t_i18n('items')}`}>{t_i18n('Unknown entities')}</TabsTrigger>
               </TabsList>
             </div>
             <TabsContent value="known">

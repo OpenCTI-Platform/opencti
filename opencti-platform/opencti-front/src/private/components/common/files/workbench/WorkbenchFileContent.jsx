@@ -4164,11 +4164,11 @@ const WorkbenchFileContentComponent = ({
 
       <Tabs value={currentTab} onValueChange={handleChangeTab}>
         <TabsList className="mb-4">
-          <TabsTrigger value="entities" badge={stixDomainObjects.length}>{t_i18n('Entities')}</TabsTrigger>
-          <TabsTrigger value="observables" badge={stixCyberObservables.length}>{t_i18n('Observables')}</TabsTrigger>
-          <TabsTrigger value="relationships" badge={stixCoreRelationships.length}>{t_i18n('Relationships')}</TabsTrigger>
-          <TabsTrigger value="sightings" badge={stixSightings.length}>{t_i18n('Sightings')}</TabsTrigger>
-          <TabsTrigger value="containers" badge={containers.length}>{t_i18n('Containers')}</TabsTrigger>
+          <TabsTrigger value="entities" badge={stixDomainObjects.length} badgeLabel={`${stixDomainObjects.length} ${t_i18n('items')}`}>{t_i18n('Entities')}</TabsTrigger>
+          <TabsTrigger value="observables" badge={stixCyberObservables.length} badgeLabel={`${stixCyberObservables.length} ${t_i18n('items')}`}>{t_i18n('Observables')}</TabsTrigger>
+          <TabsTrigger value="relationships" badge={stixCoreRelationships.length} badgeLabel={`${stixCoreRelationships.length} ${t_i18n('items')}`}>{t_i18n('Relationships')}</TabsTrigger>
+          <TabsTrigger value="sightings" badge={stixSightings.length} badgeLabel={`${stixSightings.length} ${t_i18n('items')}`}>{t_i18n('Sightings')}</TabsTrigger>
+          <TabsTrigger value="containers" badge={containers.length} badgeLabel={`${containers.length} ${t_i18n('items')}`}>{t_i18n('Containers')}</TabsTrigger>
         </TabsList>
         <TabsContent value="entities">{renderEntities()}</TabsContent>
         <TabsContent value="observables">{renderObservables()}</TabsContent>

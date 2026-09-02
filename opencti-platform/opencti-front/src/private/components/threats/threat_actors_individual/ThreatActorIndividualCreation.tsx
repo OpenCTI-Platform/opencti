@@ -330,6 +330,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 <TabsTrigger
                   value="overview"
                   badge={Object.keys(errors).length}
+                  badgeLabel={`${Object.keys(errors).length} ${t_i18n('errors')}`}
                   badgeColor="error"
                   badgeMax={99}
                   badgeInvisible={Object.keys(errors).length === 0}
