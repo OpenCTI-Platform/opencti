@@ -63,7 +63,8 @@ const TopBarIconLink = React.forwardRef<HTMLAnchorElement, TopBarIconLinkProps>(
 
   // `Badge` clones `aria-describedby` onto the single element it is given, so
   // the element it is given has to be the anchor itself.
-  return badge ? <Badge {...badge}>{link}</Badge> : link;
+  // `bareAnchor`: this anchor paints no box until hover, so the badge has nothing to sit against without the inset.
+  return badge ? <Badge bareAnchor="md" {...badge}>{link}</Badge> : link;
 });
 
 TopBarIconLink.displayName = 'TopBarIconLink';

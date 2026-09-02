@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Paper } from '@filigran/design-system';
+import { Paper, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
@@ -7,8 +7,6 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Button from '@common/button/Button';
 import { Delete } from 'mdi-material-ui';
 import Alert from '@mui/material/Alert';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -183,36 +181,49 @@ const ConnectorWorkLine: FunctionComponent<
       >
         <>
           <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
-          <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-            <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
-            <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
-            <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
+          <Tabs value={tabValue} onValueChange={setTabValue}>
+            <TabsList>
+              <TabsTrigger value="Critical" badge={criticals.length} badgeLabel={`${criticals.length} ${t_i18n('errors')}`}>{t_i18n('Critical')}</TabsTrigger>
+              <TabsTrigger value="Warning" badge={warnings.length} badgeLabel={`${warnings.length} ${t_i18n('errors')}`}>{t_i18n('Warning')}</TabsTrigger>
+              <TabsTrigger value="All" badge={errors.length} badgeLabel={`${errors.length} ${t_i18n('errors')}`}>{t_i18n('All')}</TabsTrigger>
+            </TabsList>
+            <Paper padding={0}>
+              <TableContainer>
+                <Table aria-label="errors table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>{t_i18n('Timestamp')}</TableCell>
+                      <TableCell>{t_i18n('Code')}</TableCell>
+                      <TableCell>{t_i18n('Message')}</TableCell>
+                      <TableCell>{t_i18n('Source')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  {/* asChild: the panel IS the <tbody> — a TabsContent <div> is invalid inside <table> */}
+                  <TabsContent value="Critical" asChild>
+                    <TableBody>
+                      {criticals.map((error, i) => (
+                        <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                      ))}
+                    </TableBody>
+                  </TabsContent>
+                  <TabsContent value="Warning" asChild>
+                    <TableBody>
+                      {warnings.map((error, i) => (
+                        <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                      ))}
+                    </TableBody>
+                  </TabsContent>
+                  <TabsContent value="All" asChild>
+                    <TableBody>
+                      {errors.map((error, i) => (
+                        <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                      ))}
+                    </TableBody>
+                  </TabsContent>
+                </Table>
+              </TableContainer>
+            </Paper>
           </Tabs>
-          <Paper padding={0}>
-            <TableContainer>
-              <Table aria-label="errors table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t_i18n('Timestamp')}</TableCell>
-                    <TableCell>{t_i18n('Code')}</TableCell>
-                    <TableCell>{t_i18n('Message')}</TableCell>
-                    <TableCell>{t_i18n('Source')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {tabValue === 'Critical' && criticals.map((error, i) => (
-                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                  ))}
-                  {tabValue === 'Warning' && warnings.map((error, i) => (
-                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                  ))}
-                  {tabValue === 'All' && errors.map((error, i) => (
-                    <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
         </>
       </Drawer>
     </>

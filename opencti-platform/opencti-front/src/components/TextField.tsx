@@ -19,10 +19,12 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   onBeforePaste?: (value: string) => string;
   /** Trailing slot of the library `Input`; a password toggle is the arbitrated interactive case. */
   endIcon?: React.ComponentProps<typeof Input>['endIcon'];
+  /** Slot beside the label; the only place an info icon can go once a number field owns the trailing slot. */
+  infoTooltip?: React.ComponentProps<typeof Input>['infoTooltip'];
 };
 
 const TextField = (props: TextFieldProps) => {
-  const { detectDuplicate, onBeforePaste, startAdornment, askAi, endIcon, ...htmlProps } = props;
+  const { detectDuplicate, onBeforePaste, startAdornment, askAi, endIcon, infoTooltip, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
@@ -170,6 +172,7 @@ const TextField = (props: TextFieldProps) => {
         error={showError ? (meta.error as string) : undefined}
         helperText={helper}
         endIcon={endIcon ?? (askAiSlot ? { type: 'icon', icon: askAiSlot } : undefined)}
+        infoTooltip={infoTooltip}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

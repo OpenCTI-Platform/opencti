@@ -85,7 +85,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
             <Checkbox
               aria-label={t_i18n('Select all')}
               checked={selectAll}
-              className="mr-2"
+              className="mx-2"
               onCheckedChange={() => handleToggleSelectAll?.()}
               disabled={!handleToggleSelectAll}
             />

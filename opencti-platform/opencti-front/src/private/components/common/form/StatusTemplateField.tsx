@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
@@ -58,7 +58,6 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   required = false,
   label,
 }) => {
-  const { values } = useFormikContext<Record<string, { value: string; label: string; color: string } | { id: string; name: string; color: string }>>();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -100,11 +99,10 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
       });
   };
 
-  const fieldValue = values[name];
-
-  const normalizedValue = (fieldValue && 'id' in fieldValue)
-    ? { value: fieldValue.id, label: fieldValue.name, color: fieldValue.color }
-    : (fieldValue ?? null);
+  // Formik hands the stored `{ id, name }` to a combobox fed `{ value, label }`.
+  type AnyTemplate = { value?: string; label?: string; id?: string; name?: string };
+  const optionLabel = (option: AnyTemplate) => option?.label ?? option?.name ?? '';
+  const optionValue = (option: AnyTemplate) => option?.value ?? option?.id;
 
   return (
     <div style={{ width: '100%' }}>
@@ -115,7 +113,8 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         clearable={false}
         name={name}
         style={style}
-        value={normalizedValue}
+        getOptionLabel={optionLabel}
+        isOptionEqualToValue={(a: AnyTemplate, b: AnyTemplate) => optionValue(a) === optionValue(b)}
         onChange={(name: string, value: FieldOption) => {
           if (setFieldValue) {
             setFieldValue(name, value);

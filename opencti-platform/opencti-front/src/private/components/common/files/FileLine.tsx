@@ -52,7 +52,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 50,
   },
   itemNested: {
-    paddingLeft: theme.spacing(4),
+    // Same inset as the reference rows above it, not a further 16px.
+    paddingLeft: theme.spacing(2),
     height: 50,
   },
   itemText: {

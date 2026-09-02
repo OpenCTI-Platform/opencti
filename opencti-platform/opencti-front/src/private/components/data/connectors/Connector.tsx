@@ -9,8 +9,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
@@ -56,6 +54,7 @@ import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -135,7 +134,7 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} className="mb-5">
       <QueryRenderer
         key="connector-works-in-progress"
         query={connectorWorksQuery}
@@ -245,7 +244,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const connectorFiltersScope = useGetConnectorFilterEntityTypes(connectorConfig);
   const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState('overview');
   const [editionOpen, setEditionOpen] = useState(false);
 
   // API mutations - defined early to avoid use-before-define errors
@@ -296,10 +295,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   const isBuffering = () => {
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
   };
 
   // Component for Overview content (without ConnectorWorks)
@@ -998,24 +993,20 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </div>
       </div>
 
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-        }}
-      >
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label={t_i18n('Overview')} />
-          <Tab label={t_i18n('Works')} />
-          {connector.is_managed && <Tab label={t_i18n('Logs')} />}
-        </Tabs>
-      </Box>
-      <Box>
-        {tabValue === 0 && overviewTabContent}
-        {tabValue === 1 && <ConnectorWorksSection connectorId={connector.id} />}
-        {tabValue === 2 && connector.is_managed && connectorLogsContent}
-      </Box>
+      <Tabs value={tabValue} onValueChange={setTabValue}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+          <TabsTrigger value="works">{t_i18n('Works')}</TabsTrigger>
+          {connector.is_managed && <TabsTrigger value="logs">{t_i18n('Logs')}</TabsTrigger>}
+        </TabsList>
+        <Box>
+          <TabsContent value="overview">{overviewTabContent}</TabsContent>
+          <TabsContent value="works">
+            <ConnectorWorksSection connectorId={connector.id} />
+          </TabsContent>
+          <TabsContent value="logs">{connector.is_managed && connectorLogsContent}</TabsContent>
+        </Box>
+      </Tabs>
 
       {connector.is_managed && connector.manager_contract_definition && (
         <ManagedConnectorEdition

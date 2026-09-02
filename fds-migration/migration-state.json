@@ -288,17 +288,6 @@
       "reason": "FDS-WORKAROUND #45 retired: the clear control is the library`s own `clearable` (lib #190), no longer an endAdornment IconButton"
     },
     {
-      "component": "Checkbox",
-      "importFrom": "@filigran/design-system",
-      "files": [
-        "opencti-platform/opencti-front/src/private/components/common/form/EntitySelect.tsx"
-      ],
-      "guards": [
-        "imported-from-library"
-      ],
-      "reason": "display-only checkbox inside the Combobox renderOption row — `checked` alone, the field value drives it"
-    },
-    {
       "component": "Input",
       "importFrom": "@filigran/design-system",
       "files": [
@@ -323,7 +312,7 @@
         "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContainer.tsx",
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
         "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
-          "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
         "opencti-platform/opencti-front/src/private/components/settings/hidden_types/HiddenTypesField.tsx",
         "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
       ]
