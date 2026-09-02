@@ -434,12 +434,19 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         field="created-by.internal_id"
         title={t_i18n('Distribution of reports')}
       />
-      <Tabs value={viewType} onValueChange={handleChangeViewType} style={{ float: 'left' }}>
-        <TabsList>
-          <TabsTrigger value="diamond">{t_i18n('Diamond')}</TabsTrigger>
-          <TabsTrigger value="timeline">{t_i18n('Timeline')}</TabsTrigger>
-          <TabsTrigger value="killchain">{t_i18n('Global kill chain')}</TabsTrigger>
-        </TabsList>
+      <Tabs value={viewType} onValueChange={handleChangeViewType}>
+        {/* Only the strip floats, as the MUI bar did: the export block floats
+            right beside it and the clearfix below clears both. Floating the
+            Tabs root instead would drag the filters and all three panels into
+            the float, and the clearfix — a child of that root — could never
+            clear its own ancestor. */}
+        <div style={{ float: 'left' }}>
+          <TabsList>
+            <TabsTrigger value="diamond">{t_i18n('Diamond')}</TabsTrigger>
+            <TabsTrigger value="timeline">{t_i18n('Timeline')}</TabsTrigger>
+            <TabsTrigger value="killchain">{t_i18n('Global kill chain')}</TabsTrigger>
+          </TabsList>
+        </div>
         {viewType !== 'diamond' && (
           <div className={classes.filters}>
             <Filters

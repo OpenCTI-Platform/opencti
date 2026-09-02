@@ -142,7 +142,9 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       }}
       >
         <Tabs value={currentTab} onValueChange={setTab} className="flex flex-col flex-1 min-h-0">
-          <TabsList>
+          {/* shrink-0: the strip must not compress against the filling panel,
+              as the MUI wrapper's flexShrink:0 used to guarantee. */}
+          <TabsList className="shrink-0">
             <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
             <TabsTrigger value="roles">{t_i18n('Roles')}</TabsTrigger>
             <TabsTrigger value="markings">{t_i18n('Markings')}</TabsTrigger>
@@ -165,7 +167,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
           <TabsContent value="markings">
             <GroupEditionMarkings group={group} />
           </TabsContent>
-          <TabsContent value="members" className="flex-1 min-h-0">
+          <TabsContent value="members" className="flex flex-col flex-1 min-h-0">
             {userQueryRef && (
               <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 <React.Suspense

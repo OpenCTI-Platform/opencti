@@ -341,7 +341,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 <TabsTrigger id="threat-bio" value="biographics">{t_i18n('Biographics')}</TabsTrigger>
               </TabsList>
               {/* forceMount: all four panels stay mounted so form state survives a tab switch (matches the previous display:none behaviour) */}
-              <TabsContent value="overview" forceMount>
+              <TabsContent value="overview" forceMount hidden={currentTab !== 'overview'}>
                 <BulkTextModal
                   open={bulkModalOpen}
                   onClose={onBulkModalClose}
@@ -446,7 +446,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                   }
                 />
               </TabsContent>
-              <TabsContent value="details" forceMount>
+              <TabsContent value="details" forceMount hidden={currentTab !== 'details'}>
                 <Field
                   component={DateTimePickerField}
                   name="first_seen"
@@ -532,7 +532,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                   className="mt-5"
                 />
               </TabsContent>
-              <TabsContent value="demographics" forceMount>
+              <TabsContent value="demographics" forceMount hidden={currentTab !== 'demographics'}>
                 <CountryField
                   id="PlaceOfBirth"
                   name="bornIn"
@@ -596,7 +596,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                   onSubmit={setFieldValue}
                 />
               </TabsContent>
-              <TabsContent value="biographics" forceMount>
+              <TabsContent value="biographics" forceMount hidden={currentTab !== 'biographics'}>
                 <OpenVocabField
                   name="eye_color"
                   label={t_i18n('Eye Color')}

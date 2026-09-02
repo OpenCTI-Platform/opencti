@@ -324,7 +324,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               <TabsTrigger value="mapper" disabled={values.csv_mapper_type}>{t_i18n('Inline csv mapper')}</TabsTrigger>
             </TabsList>
             {/* forceMount: both panels stay mounted so in-progress form state survives a tab switch (matches the previous display:none behaviour) */}
-            <TabsContent value="mapper" forceMount>
+            <TabsContent value="mapper" forceMount hidden={currentTab !== 'mapper'}>
               <IngestionCsvInlineWrapper>
                 <IngestionCsvInlineMapperForm
                   csvMapper={ingestionCsvData?.csv_mapper_type === 'inline' ? (ingestionCsvData.csvMapper as CsvMapperAddInput) : undefined}
@@ -334,7 +334,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               </IngestionCsvInlineWrapper>
             </TabsContent>
             <Form>
-              <TabsContent value="overview" forceMount>
+              <TabsContent value="overview" forceMount hidden={currentTab !== 'overview'}>
                 <Field
                   component={TextField}
                   variant="outlined"

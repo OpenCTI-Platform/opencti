@@ -118,7 +118,7 @@ const SearchBulkContainer = () => {
             </TabsContent>
             {/* forceMount: this panel's query feeds the tab-label count, so it
                 must stay mounted while inactive; isDisplayed gates the table. */}
-            <TabsContent value="unknown" forceMount>
+            <TabsContent value="unknown" forceMount hidden={currentTab !== 'unknown'}>
               <SearchBulkUnknownEntities
                 values={values}
                 setNumberOfEntities={setNumberOfUnknownEntities}
