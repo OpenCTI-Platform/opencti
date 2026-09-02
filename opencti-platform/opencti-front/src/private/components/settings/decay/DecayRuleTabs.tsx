@@ -31,7 +31,9 @@ const DecayRuleTabs = () => {
       />
       <Box>
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="mb-6">
+          {/* The right nav is a fixed 200px drawer floating over the content;
+              both panels already reserve that gutter, the strip did not. */}
+          <TabsList className="mb-6 mr-[200px]">
             <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>
             <TabsTrigger value="exclusions">{t_i18n('Decay exclusion rules')}</TabsTrigger>
           </TabsList>
