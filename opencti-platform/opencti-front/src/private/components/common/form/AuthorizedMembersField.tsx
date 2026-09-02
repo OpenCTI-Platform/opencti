@@ -438,7 +438,7 @@ const AuthorizedMembersField = ({
                   <div
                     style={{
                       display: 'flex',
-                      alignItems: 'flex-start',
+                      alignItems: 'flex-end',
                       gap: 16,
                     }}
                   >
@@ -464,7 +464,7 @@ const AuthorizedMembersField = ({
                       name="newAccessRight"
                       component={SelectField}
                       label={t_i18n('Access right')}
-                      style={{ marginTop: 25, minWidth: 120 }}
+                      style={{ minWidth: 120 }}
                       size="small"
                       disabled={!values.applyAccesses}
                     >
@@ -486,7 +486,6 @@ const AuthorizedMembersField = ({
                         || doesNewMemberAlreadyExist(values)
                         || !values.applyAccesses
                       }
-                      style={{ marginTop: 25 }}
                     >
                       {t_i18n('Add')}
                     </Button>
