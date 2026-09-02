@@ -110,7 +110,6 @@
     "react-mde": "11.5.0",
     "react-otp-input": "3.1.1",
     "react-pdf": "10.5.0",
-    "react-rectangle-selection": "1.0.4",
     "react-relay": "21.0.1",
     "react-relay-network-modern": "6.2.2",
     "react-router-dom": "6.30.6",
@@ -184,8 +183,6 @@
     "axios": "1.20.0",
     "d3-color": "3.1.0",
     "json5": "2.2.3",
-    "react": "19.2.8",
-    "webpack": "5.110.1",
     "unrs-resolver": "1.11.1",
     "react-relay": "patch:react-relay@21.0.1#./patch/react-relay.patch"
   },
