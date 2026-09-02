@@ -893,6 +893,7 @@ const WidgetCreationParameters = () => {
                     {dataSelection[i].perspective === 'relationships' && !['number', 'area', 'line'].includes(type) && (
                       <>
                         <FormControlLabel
+                          sx={{ marginTop: 3 }}
                           control={(
                             <Switch
                               onChange={() => handleToggleDataValidationIsTo(i)}
@@ -909,7 +910,10 @@ const WidgetCreationParameters = () => {
                           <InformationOutline
                             fontSize="small"
                             color="primary"
-                            style={{ marginTop: 14 }}
+                            sx={{
+                              marginTop: 3,
+                              height: 38,
+                            }}
                           />
                         </Tooltip>
                       </>
