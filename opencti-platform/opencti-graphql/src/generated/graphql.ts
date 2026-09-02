@@ -6521,9 +6521,14 @@ export enum DashboardFilterKeyType {
   Boolean = 'boolean',
   Date = 'date',
   EntityRef = 'entity_ref',
+  Group = 'group',
   KillChain = 'kill_chain',
+  Label = 'label',
+  Marking = 'marking',
   Numeric = 'numeric',
+  Status = 'status',
   Text = 'text',
+  User = 'user',
   Vocabulary = 'vocabulary'
 }
 
@@ -6546,6 +6551,9 @@ export type DashboardVariable = {
   filterKeyType: DashboardFilterKeyType;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  restrictionFilters?: Maybe<Scalars['String']['output']>;
+  restrictionMode?: Maybe<Scalars['String']['output']>;
+  restrictionValues?: Maybe<Array<Scalars['String']['output']>>;
 };
 
 export type DashboardVariableInput = {
@@ -6553,6 +6561,9 @@ export type DashboardVariableInput = {
   filterKey: Scalars['String']['input'];
   filterKeyType: DashboardFilterKeyType;
   name: Scalars['String']['input'];
+  restrictionFilters?: InputMaybe<Scalars['String']['input']>;
+  restrictionMode?: InputMaybe<Scalars['String']['input']>;
+  restrictionValues?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -16644,6 +16655,7 @@ export type MeUser = BasicObject & InternalObject & {
   capabilities: Array<Capability>;
   capabilitiesInDraft: Array<Capability>;
   default_dashboard?: Maybe<Workspace>;
+  default_dashboard_preset_id?: Maybe<Scalars['ID']['output']>;
   default_dashboards: Array<Workspace>;
   default_hidden_types: Array<Maybe<Scalars['String']['output']>>;
   default_marking?: Maybe<Array<DefaultMarking>>;
@@ -43945,6 +43957,9 @@ export type DashboardVariableResolvers<ContextType = any, ParentType extends Res
   filterKeyType?: Resolver<ResolversTypes['DashboardFilterKeyType'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  restrictionFilters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  restrictionMode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  restrictionValues?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
 }>;
 
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
@@ -47425,6 +47440,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   capabilitiesInDraft?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   default_dashboard?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
+  default_dashboard_preset_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   default_dashboards?: Resolver<Array<ResolversTypes['Workspace']>, ParentType, ContextType>;
   default_hidden_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   default_marking?: Resolver<Maybe<Array<ResolversTypes['DefaultMarking']>>, ParentType, ContextType>;

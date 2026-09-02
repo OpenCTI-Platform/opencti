@@ -5,6 +5,13 @@ type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup;
 } & U;
 
+/** Removes a single occurrence of `value` (not every matching occurrence), so duplicate values are handled correctly. */
+const removeOneOccurrence = (values: FilterValue[], value: FilterValue): FilterValue[] => {
+  const index = values.indexOf(value);
+  if (index === -1) return values;
+  return [...values.slice(0, index), ...values.slice(index + 1)];
+};
+
 const updateFilters = (filters: FilterGroup, updateFn: (filter: Filter) => Filter): FilterGroup => {
   return {
     ...filters,
@@ -88,7 +95,7 @@ export const handleRemoveRepresentationFilterUtil = ({ filters, id, value }: Fil
   return updateFilters(filters, (f) => (f.id === id
     ? {
         ...f,
-        values: f.values.filter((v) => v !== value),
+        values: removeOneOccurrence(f.values, value),
       }
     : f));
 };

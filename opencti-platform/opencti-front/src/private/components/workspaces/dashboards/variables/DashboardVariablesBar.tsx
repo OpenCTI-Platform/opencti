@@ -16,6 +16,9 @@ const variablesBarFragment = graphql`
       filterKey
       filterKeyType
       defaultValue
+      restrictionMode
+      restrictionValues
+      restrictionFilters
     }
     ...PresetSelectorDropdown_workspace
   }
@@ -47,10 +50,7 @@ const DashboardVariablesBar: React.FC<DashboardVariablesBarProps> = ({
 }) => {
   const workspace = useFragment(variablesBarFragment, data);
   const [localVariables, setLocalVariables] = useState([...workspace.variables]);
-  const { rawVariableValues, variableValues } = useDashboardVariables();
-  const ENABLED_PREFIX = '__enabled__:';
-
-  const isEnabled = (variableId: string) => rawVariableValues[`${ENABLED_PREFIX}${variableId}`] !== 'false';
+  const { variableValues } = useDashboardVariables();
 
   useEffect(() => {
     setLocalVariables([...workspace.variables]);
@@ -62,7 +62,7 @@ const DashboardVariablesBar: React.FC<DashboardVariablesBarProps> = ({
     setLocalVariables((prev) => prev.filter((v) => v.id !== deletedVariableId));
   };
 
-  const { variables } = { variables: localVariables.filter((variable) => isEnabled(variable.id)) };
+  const variables = localVariables;
 
   if (!canSwitchValues && variables.length === 0) return null;
 
@@ -80,6 +80,9 @@ const DashboardVariablesBar: React.FC<DashboardVariablesBarProps> = ({
             isUsedInWidgets={usedVariablesSet.has(variable.id)}
             currentValue={variableValues[variable.id] ?? null}
             defaultValue={variable.defaultValue ?? null}
+            restrictionMode={variable.restrictionMode}
+            restrictionValues={variable.restrictionValues}
+            restrictionFilters={variable.restrictionFilters}
             onVariableDeleted={handleVariableDeleted}
           />
         ))}

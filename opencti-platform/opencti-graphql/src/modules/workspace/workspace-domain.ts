@@ -39,6 +39,9 @@ interface DashboardVariableInput {
   filterKey: string;
   filterKeyType: string;
   defaultValue?: string | null;
+  restrictionMode?: string | null;
+  restrictionValues?: string[] | null;
+  restrictionFilters?: string | null;
 }
 
 interface DashboardPresetInput {
@@ -483,6 +486,9 @@ export const workspaceVariableAdd = async (
     filterKey: input.filterKey,
     filterKeyType: input.filterKeyType as DashboardVariable['filterKeyType'],
     defaultValue: input.defaultValue ?? null,
+    restrictionMode: input.restrictionMode ?? null,
+    restrictionValues: input.restrictionValues ?? null,
+    restrictionFilters: input.restrictionFilters ?? null,
   };
   const updatedManifest: DashboardManifest = {
     ...manifest,

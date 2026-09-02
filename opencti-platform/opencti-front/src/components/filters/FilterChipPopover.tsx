@@ -70,6 +70,20 @@ const AUTOCOMPLETE_KEY_ACTIONS: { [k: string]: AutocompleteChangeReason | Autoco
   RESET: 'reset',
 };
 
+/** Multiset difference: values present in `from` that are not matched by an occurrence in `subtracted`. */
+const arrayDiffRespectingDuplicates = (from: FilterValue[], subtracted: FilterValue[]): FilterValue[] => {
+  const remainingCounts = new Map<FilterValue, number>();
+  subtracted.forEach((value) => remainingCounts.set(value, (remainingCounts.get(value) ?? 0) + 1));
+  return from.filter((value) => {
+    const count = remainingCounts.get(value) ?? 0;
+    if (count > 0) {
+      remainingCounts.set(value, count - 1);
+      return false;
+    }
+    return true;
+  });
+};
+
 const OperatorKeyValues: {
   [key: string]: string;
 } = {
@@ -202,7 +216,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         // the representation to add = the former values + the added value
         representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] };
       } else {
-        const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
+        // remove a single occurrence of the value, not every matching duplicate
+        const cleanedValues = arrayDiffRespectingDuplicates(alreadySelectedValues, [value]);
         // the representation to add = the former values - the removed value
         representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined;
       }
@@ -389,8 +404,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         ? filterValues.filter((filterValue) => filterValue && filterValue.key === subKey).at(0)?.values ?? []
         : filterValues;
 
-      const added = newValues.filter((v) => !actualFilterValues.includes(v));
-      const removed = actualFilterValues.filter((v: FilterValue) => !newValues.includes(v));
+      // Diff as multisets (not sets) so that removing one occurrence of a duplicated
+      // value (e.g. the same value/variable referenced several times) is detected —
+      // a plain `.includes()` diff would consider the value still present as long as
+      // at least one duplicate remains, silently dropping the removal.
+      const added = arrayDiffRespectingDuplicates(newValues, actualFilterValues);
+      const removed = arrayDiffRespectingDuplicates(actualFilterValues, newValues);
 
       if (added.length === 1) {
         const value = added[0];

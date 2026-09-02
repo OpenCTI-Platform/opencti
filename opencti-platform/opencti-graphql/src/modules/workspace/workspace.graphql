@@ -48,6 +48,11 @@ enum DashboardFilterKeyType {
     numeric
     date
     text
+    label
+    user
+    marking
+    status
+    group
 }
 
 type DashboardVariable {
@@ -56,6 +61,9 @@ type DashboardVariable {
     filterKey: String!
     filterKeyType: DashboardFilterKeyType!
     defaultValue: String
+    restrictionMode: String
+    restrictionValues: [String!]
+    restrictionFilters: String
 }
 
 input DashboardVariableInput {
@@ -63,6 +71,9 @@ input DashboardVariableInput {
     filterKey: String!
     filterKeyType: DashboardFilterKeyType!
     defaultValue: String
+    restrictionMode: String
+    restrictionValues: [String!]
+    restrictionFilters: String
 }
 
 type DashboardPreset {

@@ -13209,6 +13209,11 @@ enum DashboardFilterKeyType {
   numeric
   date
   text
+  label
+  user
+  marking
+  status
+  group
 }
 
 type DashboardVariable {
@@ -13217,13 +13222,20 @@ type DashboardVariable {
   filterKey: String!
   filterKeyType: DashboardFilterKeyType!
   defaultValue: String
+  restrictionMode: String
+  restrictionValues: [String!]
+  restrictionFilters: String
 }
 
 input DashboardVariableInput {
+  "*Constraints:*\n* Minimal length: `1`\n"
   name: String!
   filterKey: String!
   filterKeyType: DashboardFilterKeyType!
   defaultValue: String
+  restrictionMode: String
+  restrictionValues: [String!]
+  restrictionFilters: String
 }
 
 type DashboardPreset {
@@ -13233,16 +13245,9 @@ type DashboardPreset {
 }
 
 input DashboardPresetInput {
+  "*Constraints:*\n* Minimal length: `1`\n"
   name: String!
   variable_values: String!
-}
-
-type WorkspaceUserState {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  workspace_id: ID!
-  variable_values: String
 }
 
 enum WorkspacesOrdering {
@@ -13294,6 +13299,14 @@ input ImportConfigurationInput {
 input ImportWidgetInput {
   file: Upload!
   dashboardManifest: String
+}
+
+type WorkspaceUserState {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  workspace_id: ID!
+  variable_values: String
 }
 
 type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -15016,6 +15029,8 @@ type PublicDashboard implements InternalObject & BasicObject {
   updated_at: DateTime
   editContext: [EditUserContext!]
   enabled: Boolean!
+  preset_id: ID
+  frozen_variable_values: String
 }
 
 type PublicDistribution {
@@ -15054,6 +15069,8 @@ input PublicDashboardAddInput {
   dashboard_id: String!
   allowed_markings_ids: [String!]
   enabled: Boolean!
+  preset_id: ID
+  frozen_variable_values: String
 }
 
 type Theme implements InternalObject & BasicObject {

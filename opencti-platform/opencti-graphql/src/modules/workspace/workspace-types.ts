@@ -15,6 +15,12 @@ export interface DashboardVariable {
   filterKey: string;
   filterKeyType: DashboardFilterKeyType;
   defaultValue: string | null;
+  /** Semantics depend on filterKeyType: entity_ref -> 'none' | 'filter' | 'manual'; others -> 'none' | 'restricted' */
+  restrictionMode?: string | null;
+  /** Allowed values (ids/names) when restrictionMode restricts the selectable options */
+  restrictionValues?: string[] | null;
+  /** Serialised FilterGroup JSON, only used for entity_ref 'filter' restriction mode */
+  restrictionFilters?: string | null;
 }
 
 export interface DashboardPreset {

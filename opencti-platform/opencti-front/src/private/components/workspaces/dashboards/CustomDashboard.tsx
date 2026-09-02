@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import TuneOutlined from '@mui/icons-material/TuneOutlined';
+import AddOutlined from '@mui/icons-material/AddOutlined';
 import DashboardTimeFilters from '../../../../components/dashboard/DashboardTimeFilters';
 import { useFormatter } from '../../../../components/i18n';
-import VariablesManagementDrawer from './variables/VariablesManagementDrawer';
+import VariableDefinitionDialog from './variables/VariableDefinitionDialog';
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation, handleError, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
@@ -69,6 +69,9 @@ const dashboardFragment = graphql`
       filterKey
       filterKeyType
       defaultValue
+      restrictionMode
+      restrictionValues
+      restrictionFilters
     }
     owner {
       id
@@ -126,7 +129,7 @@ const CustomDashboard = ({ data, userVariableValues, noToolbar = false }: Custom
     );
   }, [userVariableValues]);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
-  const [variablesDrawerOpen, setVariablesDrawerOpen] = useState(false);
+  const [addVariableDialogOpen, setAddVariableDialogOpen] = useState(false);
   const { t_i18n } = useFormatter();
 
   const { canSwitchValues, canEditStructure } = useDashboardPermissions(workspace.currentUserAccessRight);
@@ -308,12 +311,12 @@ const CustomDashboard = ({ data, userVariableValues, noToolbar = false }: Custom
                 />
                 {canEditStructure && (
                   <Button
-                    startIcon={<TuneOutlined />}
+                    startIcon={<AddOutlined />}
                     variant="outlined"
                     size="small"
-                    onClick={() => setVariablesDrawerOpen(true)}
+                    onClick={() => setAddVariableDialogOpen(true)}
                   >
-                    {t_i18n('Variables')}
+                    {t_i18n('Add variable')}
                   </Button>
                 )}
               </Box>
@@ -336,12 +339,10 @@ const CustomDashboard = ({ data, userVariableValues, noToolbar = false }: Custom
           />
         </DashboardRefreshProvider>
       </div>
-      <VariablesManagementDrawer
-        open={variablesDrawerOpen}
-        onClose={() => setVariablesDrawerOpen(false)}
+      <VariableDefinitionDialog
+        open={addVariableDialogOpen}
+        onClose={() => setAddVariableDialogOpen(false)}
         workspaceId={workspace.id}
-        variables={workspace.variables}
-        userVariableValues={userVariableValues}
       />
     </Stack>
     </DashboardVariablesProvider>
