@@ -43,7 +43,7 @@ describe('syncManager large payload safeguards', () => {
         },
       },
     };
-    const logger = { error: vi.fn() };
+    const logger = { error: vi.fn(), warn: vi.fn(), info: vi.fn(), query: vi.fn(), _log: vi.fn(), debug: vi.fn() };
     const encodeToBase64 = vi
       .fn()
       .mockImplementationOnce(() => {
