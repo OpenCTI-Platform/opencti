@@ -162,9 +162,20 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(searchContext.entityTypes);
   const filterDef = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
   // Map from FilterDefinition.type to DashboardFilterKeyType enum
-  const resolveVariableType = (defType: string | undefined): string | null => {
+  const resolveVariableType = (defType: string | undefined, elementsForFilterValuesSearch?: readonly string[]): string | null => {
+    if (defType === 'id') {
+      // 'id' filters can target very different kinds of objects; use the declared
+      // target entity types to route to the matching variable type instead of
+      // always falling back to a generic entity selector.
+      const elements = elementsForFilterValuesSearch ?? [];
+      if (elements.includes('Label')) return 'label';
+      if (elements.includes('Marking-Definition')) return 'marking';
+      if (elements.includes('User')) return 'user';
+      if (elements.includes('Group')) return 'group';
+      if (elements.includes('StatusTemplate')) return 'status';
+      return 'entity_ref';
+    }
     switch (defType) {
-      case 'id': return 'entity_ref';
       case 'vocabulary':
       case 'enum': return 'vocabulary';
       case 'boolean': return 'boolean';
@@ -172,10 +183,11 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       case 'float': return 'numeric';
       case 'string':
       case 'text': return 'text';
+      case 'date': return 'date';
       default: return null;
     }
   };
-  const matchedVarType = resolveVariableType(filterDef?.type);
+  const matchedVarType = resolveVariableType(filterDef?.type, filterDef?.elementsForFilterValuesSearch);
   const variableOptions: FilterOptionValue[] = (onVariableSelected && matchedVarType)
     ? dashboardVariables
       .filter((v) => v.filterKeyType === matchedVarType)

@@ -136,9 +136,21 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   // ── Dashboard variable injection ──────────────────────────────────────────
   const { variables: dashboardVariables } = useDashboardVariables();
   const { onVariableSelected } = useFilterVariableSelection();
-  const resolveVariableTypeForFilter = (defType: string | undefined): string | null => {
+  const resolveVariableTypeForFilter = (filterDef?: FilterDefinition): string | null => {
+    const defType = filterDef?.type;
+    if (defType === 'id') {
+      // 'id' filters can target very different kinds of objects; use the declared
+      // target entity types to route to the matching variable type instead of
+      // always falling back to a generic entity selector.
+      const elements = filterDef?.elementsForFilterValuesSearch ?? [];
+      if (elements.includes('Label')) return 'label';
+      if (elements.includes('Marking-Definition')) return 'marking';
+      if (elements.includes('User')) return 'user';
+      if (elements.includes('Group')) return 'group';
+      if (elements.includes('StatusTemplate')) return 'status';
+      return 'entity_ref';
+    }
     switch (defType) {
-      case 'id': return 'entity_ref';
       case 'vocabulary':
       case 'enum': return 'vocabulary';
       case 'boolean': return 'boolean';
@@ -146,11 +158,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       case 'float': return 'numeric';
       case 'string':
       case 'text': return 'text';
+      case 'date': return 'date';
       default: return null;
     }
   };
-  const buildVariableOptions = (defType: string | undefined): FilterOptionValue[] => {
-    const matchedVarType = resolveVariableTypeForFilter(defType);
+  const buildVariableOptions = (filterDef?: FilterDefinition): FilterOptionValue[] => {
+    const matchedVarType = resolveVariableTypeForFilter(filterDef);
     if (!onVariableSelected || !matchedVarType) return [];
     return dashboardVariables
       .filter((v) => v.filterKeyType === matchedVarType)
@@ -299,11 +312,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     fLabel?: string,
     subKey?: string,
     disabled = false,
-    effectiveFilterType?: string,
+    effectiveFilterDefinition?: FilterDefinition,
   ): ReactNode => {
     const getEntitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
-    const variableOptions = buildVariableOptions(effectiveFilterType);
+    const variableOptions = buildVariableOptions(effectiveFilterDefinition);
     const hasVariableTypeMatch = variableOptions.length > 0;
 
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
@@ -369,7 +382,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         if (varOption) {
           const variableId = varOption.value.slice('__var__:'.length);
           const variable = dashboardVariables.find((v) => v.id === variableId);
-          const fkt = variable?.filterKeyType ?? (effectiveFilterType ? resolveVariableTypeForFilter(effectiveFilterType) : null);
+          const fkt = variable?.filterKeyType ?? (effectiveFilterDefinition ? resolveVariableTypeForFilter(effectiveFilterDefinition) : null);
           // Set a sentinel filter value so the runtime substitution in resolveDataSelection
           // can replace it with the variable's current value.
           handleChange(true, `__var__:${variableId}`, subKey);
@@ -544,7 +557,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       const firstValue = computedValues[0];
       const currentValue = typeof firstValue === 'string' ? firstValue : '';
       const isVariableSentinel = currentValue.startsWith('__var__:');
-      const variableOptions = buildVariableOptions(fDefinition?.type);
+      const variableOptions = buildVariableOptions(fDefinition);
       const canUseVariable = variableOptions.length > 0 && !!onVariableSelected;
       const useVariableMode = canUseVariable && (numericUseVariable[numericModeKey] ?? isVariableSentinel);
 
@@ -597,7 +610,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 }
                 const variableId = option.value.slice('__var__:'.length);
                 const variable = dashboardVariables.find((v) => v.id === variableId);
-                const fkt = variable?.filterKeyType ?? (fDefinition?.type ? resolveVariableTypeForFilter(fDefinition.type) : null);
+                const fkt = variable?.filterKeyType ?? (fDefinition ? resolveVariableTypeForFilter(fDefinition) : null);
                 handleChange(true, `__var__:${variableId}`, subKey);
                 if (variable && fkt) {
                   onVariableSelected?.(variableId, variable.name, fkt);
@@ -632,7 +645,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       const firstValue = computedValues[0];
       const currentValue = typeof firstValue === 'string' ? firstValue : '';
       const isVariableSentinel = currentValue.startsWith('__var__:');
-      const variableOptions = buildVariableOptions(fDefinition?.type);
+      const variableOptions = buildVariableOptions(fDefinition);
       const canUseVariable = variableOptions.length > 0 && !!onVariableSelected;
       const useVariableMode = canUseVariable && (textUseVariable[textModeKey] ?? isVariableSentinel);
 
@@ -685,7 +698,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 }
                 const variableId = option.value.slice('__var__:'.length);
                 const variable = dashboardVariables.find((v) => v.id === variableId);
-                const fkt = variable?.filterKeyType ?? (fDefinition?.type ? resolveVariableTypeForFilter(fDefinition.type) : null);
+                const fkt = variable?.filterKeyType ?? (fDefinition ? resolveVariableTypeForFilter(fDefinition) : null);
                 handleChange(true, `__var__:${variableId}`, subKey);
                 if (variable && fkt) {
                   onVariableSelected?.(variableId, variable.name, fkt);
@@ -749,7 +762,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             finalFilterDefinition?.label ?? t_i18n(fKey),
             subKey,
             disabled,
-            finalFilterDefinition?.type,
+            finalFilterDefinition,
           )}</>
         )}
       </>
