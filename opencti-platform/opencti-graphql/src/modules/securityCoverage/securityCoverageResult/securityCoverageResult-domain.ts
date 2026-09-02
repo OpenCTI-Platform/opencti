@@ -1,23 +1,18 @@
 import { BUS_TOPICS, logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
-import { deleteElementById, storeLoadByIdWithRefs } from '../../../database/middleware';
-import { fullRelationsList, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
+import { deleteElementById } from '../../../database/middleware';
+import { pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
 import { ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, createListTask } from '../../../domain/backgroundTask-common';
-import { type SecurityCoverageResultAddInput } from '../../../generated/graphql';
+import { createQueryTask } from '../../../domain/backgroundTask';
+import { type FilterGroup, type SecurityCoverageResultAddInput, type SecurityCoverageSelectedEntitiesInput } from '../../../generated/graphql';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
-import { RELATION_TARGETS, RELATION_USES } from '../../../schema/stixCoreRelationship';
-import { isStixDomainObjectContainer } from '../../../schema/stixDomainObject';
-import type { StoreEntity } from '../../../types/store';
+import { isNotEmptyField } from '../../../database/utils';
+import { emptyFilterGroup, isFilterGroupNotEmpty } from '../../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED, type BasicStoreEntitySecurityCoverage } from '../securityCoverage-types';
-import {
-  ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-  INPUT_RESULT_OF,
-  type BasicStoreEntitySecurityCoverageResult,
-  type StoreEntitySecurityCoverageResult,
-} from './securityCoverageResult-types';
-import { HAS_COVERED_TARGETS_TYPE, internalCreateSecurityCoverageResult } from './securityCoverageResult-utils';
+import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
+import { internalCreateSecurityCoverageResult } from './securityCoverageResult-utils';
 
 /**
  * Find a security coverage results by its ID.
@@ -120,59 +115,66 @@ export const deleteSecurityCoverageResult = async (
  * Create a background task that will create has-covered relationships between
  * a security coverage result and its covered entities.
  *
+ * If `selection.selected_ids` is provided and non-empty, a LIST task is created
+ * targeting exactly those ids. Otherwise a QUERY task is created using
+ * `selection.filters` / `selection.search` / `selection.excluded_ids`, letting the
+ * background task itself resolve the matching entities.
+ *
+ * The selection must target something: either explicit ids, or a non-empty filter
+ * group, or a search term. Otherwise the task would apply to every entity of the
+ * platform, so an error is raised instead.
+ *
  * @param context
  * @param user User making the request.
  * @param securityCoverageResultId ID of the security coverage result to populate.
+ * @param selection Entity selection (selected_ids, or filters/search/excluded_ids).
  * @returns The created background task.
  */
 export const createHasCoveredRelTask = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverageResultId: string,
+  selection: SecurityCoverageSelectedEntitiesInput,
 ) => {
-  const securityCoverageResult = await storeLoadByIdWithRefs<StoreEntitySecurityCoverageResult>(
-    context,
-    user,
-    securityCoverageResultId,
-  );
-  if (!securityCoverageResult) {
-    throw FunctionalError(`No security coverage result found for the id ${securityCoverageResultId}`);
+  const description = `Create has-covered relationships for SCR ${securityCoverageResultId}`;
+  const actions = [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, id: securityCoverageResultId }];
+
+  const selectedIds = selection.selected_ids ?? [];
+  if (selectedIds.length > 0) {
+    logApp.info(
+      `[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, ${selectedIds.length} explicit entities selected for has-covered relationships`,
+      { selectedIds },
+    );
+    return createListTask(context, user, {
+      description,
+      scope: 'KNOWLEDGE',
+      ids: selectedIds,
+      actions,
+      orderMode: 'asc',
+    });
   }
 
-  const coveredId = securityCoverageResult[INPUT_RESULT_OF][RELATION_COVERED];
-  const coveredEntity = await storeLoadByIdWithRefs<StoreEntity>(context, user, coveredId);
-  if (!coveredEntity) {
-    throw FunctionalError(`No covered entity found for the id ${coveredId}`);
-  }
-
-  let targets: string[] = [];
-  if (isStixDomainObjectContainer(coveredEntity.entity_type)) {
-    // In case of containers add entities from the ones contained.
-    targets = (coveredEntity.objects ?? []).flatMap((o) => {
-      if (!HAS_COVERED_TARGETS_TYPE.includes(o.entity_type)) return [];
-      return o.id;
-    });
-  } else {
-    // In case of non-containers add entities from targets and uses relationships.
-    await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
-      fromId: coveredEntity.id,
-      toTypes: HAS_COVERED_TARGETS_TYPE,
-      callback: async (relationships) => {
-        targets.push(...relationships.map((r) => r.toId));
-      },
-    });
+  const filterGroup: FilterGroup = isNotEmptyField(selection.filters)
+    ? JSON.parse(selection.filters as string)
+    : emptyFilterGroup;
+  const search = isNotEmptyField(selection.search) ? selection.search as string : undefined;
+  if (!isFilterGroupNotEmpty(filterGroup) && !search) {
+    throw FunctionalError(
+      'Cannot create has-covered relationships without any entity selection, please provide ids, filters or a search term.',
+      { securityCoverageResultId },
+    );
   }
 
   logApp.info(
-    `[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, ${targets.length} entities found for has-covered relationships`,
-    { targets },
+    '[SECURITY-COVERAGE] addSecurityCoverage: Manual creation, resolving has-covered relationships targets from filters/search/exclusions',
+    { filters: filterGroup, search, excluded_ids: selection.excluded_ids },
   );
-
-  return createListTask(context, user, {
-    description: `Create has-covered relationships with related covered entities for SCR ${securityCoverageResultId}`,
+  return createQueryTask(context, user, {
+    description,
     scope: 'KNOWLEDGE',
-    ids: targets,
-    actions: [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, id: securityCoverageResultId }],
-    orderMode: 'asc',
+    actions,
+    filters: JSON.stringify(filterGroup),
+    search,
+    excluded_ids: selection.excluded_ids ?? [],
   });
 };
