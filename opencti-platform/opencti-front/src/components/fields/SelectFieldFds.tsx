@@ -46,12 +46,12 @@ const SelectFieldFds = ({
 
   const handleValueChange = useCallback((next: string) => {
     const committed = (numeric ? Number(next) : next) as string;
-    setFieldValue(name, committed);
     onChange?.(name, committed);
     // MUI reported the committed value on blur; a Radix Select commits on pick
     // and never fires a blur carrying it, so the submit hook moves here.
     onSubmit?.(name, committed);
     setFieldTouched(name, true);
+    setFieldValue(name, committed);
   }, [name, numeric, onChange, onSubmit, setFieldValue, setFieldTouched]);
 
   return (

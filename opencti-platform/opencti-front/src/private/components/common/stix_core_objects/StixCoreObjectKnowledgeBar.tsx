@@ -11,6 +11,7 @@ import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
@@ -124,6 +125,7 @@ const StixCoreObjectKnowledgeBar = ({
   const draftContext = useDraftContext();
   const { bannerSettings, schema } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const {
     relationshipsWithoutRelatedToDistribution,
     relationshipsRelatedDistribution,
@@ -413,7 +415,8 @@ const StixCoreObjectKnowledgeBar = ({
       <Box sx={{ ...theme.mixins.toolbar }} />
       <nav
         style={{
-          marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
+          // Same sum as the top bar: the top banner has to clear too.
+          marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight + topBannerHeight,
           marginBottom: bannerSettings.bannerHeightNumber,
           paddingTop: 4, // the 4px slot inset of the Figma node
         }}

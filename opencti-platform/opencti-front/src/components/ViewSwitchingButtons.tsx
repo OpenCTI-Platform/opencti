@@ -34,7 +34,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
   const { t_i18n } = useFormatter();
   return (
     <ButtonGroup
-      size="sm"
+      size="md"
       value={currentView}
       onValueChange={handleChangeView}
       aria-label={t_i18n('Change view')}

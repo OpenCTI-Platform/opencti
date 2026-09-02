@@ -161,7 +161,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 icon={false}
                 sx={{
                   width: '100%',
-                  marginTop: 20,
+                  marginTop: 2,
                   '& .MuiAlert-message': {
                     width: '100%',
                     overflow: 'hidden',

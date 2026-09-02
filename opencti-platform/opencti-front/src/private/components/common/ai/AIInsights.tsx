@@ -10,12 +10,9 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import FiligranIcon from '@components/common/FiligranIcon';
-import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
-import Box from '@mui/material/Box';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 import DialogActions from '@mui/material/DialogActions';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 
 import Tooltip from '@mui/material/Tooltip';
 import { createStyles } from '@mui/styles';
@@ -120,10 +117,12 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   },
 }));
 
+type AIInsightsTab = 'activity' | 'containers' | 'forecast' | 'history';
+
 interface AIInsightProps {
   id: string;
-  tabs?: Array<'activity' | 'containers' | 'forecast' | 'history'>;
-  defaultTab?: 'activity' | 'containers' | 'forecast' | 'history';
+  tabs?: Array<AIInsightsTab>;
+  defaultTab?: AIInsightsTab;
   floating?: boolean;
   onlyIcon?: boolean;
   isContainer?: boolean;
@@ -245,8 +244,9 @@ const AIInsights = ({
     setLoading(false);
     setDisplay(false);
   };
-  const handleChangeTab = (_: React.SyntheticEvent, newValue: 'activity' | 'containers' | 'forecast' | 'history') => {
-    setCurrentTab(newValue);
+  // Radix types onValueChange as (value: string); only AIInsightsTab triggers are registered.
+  const handleChangeTab = (newValue: string) => {
+    setCurrentTab(newValue as AIInsightsTab);
   };
 
   const initialContainersFilters = isContainer ? {
@@ -379,60 +379,54 @@ const AIInsights = ({
         ) : undefined}
       >
         <div className={classes.container}>
-          <Box sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItem: 'center',
-          }}
-          >
-            <Tabs value={currentTab} onChange={handleChangeTab}>
-              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
-              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
-              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
-              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
-            </Tabs>
-            {loading && (
-              <div style={{ paddingTop: 10 }}>
-                <Loader variant={LoaderVariant.inline} />
-              </div>
-            )}
-          </Box>
-          {currentTab === 'activity' && (
-            <AISummaryActivity
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
-          {currentTab === 'containers' && (
-            <AISummaryContainers
-              busId={containersBusId}
-              isContainer={isContainer}
-              filters={containersFilters}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
-          {currentTab === 'forecast' && (
-            <AISummaryForecast
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
-          {currentTab === 'history' && (
-            <AISummaryHistory
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
+          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+            <TabsList
+              actions={loading && (
+                <div style={{ paddingTop: 10 }}>
+                  <Loader variant={LoaderVariant.inline} />
+                </div>
+              )}
+            >
+              {tabs.includes('activity') && <TabsTrigger value="activity">{t_i18n('Activity')}</TabsTrigger>}
+              {tabs.includes('containers') && <TabsTrigger value="containers">{isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')}</TabsTrigger>}
+              {tabs.includes('forecast') && <TabsTrigger value="forecast">{t_i18n('Forecast')}</TabsTrigger>}
+              {tabs.includes('history') && <TabsTrigger value="history">{t_i18n('Internal history')}</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="activity">
+              <AISummaryActivity
+                id={id}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+            <TabsContent value="containers">
+              <AISummaryContainers
+                busId={containersBusId}
+                isContainer={isContainer}
+                filters={containersFilters}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+            <TabsContent value="forecast">
+              <AISummaryForecast
+                id={id}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+            <TabsContent value="history">
+              <AISummaryHistory
+                id={id}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </Drawer>
     </>

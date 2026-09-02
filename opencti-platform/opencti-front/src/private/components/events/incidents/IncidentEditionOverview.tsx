@@ -296,25 +296,26 @@ const IncidentEditionOverviewComponent: FunctionComponent<
             editContext={context}
             variant="edit"
           />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="x_opencti_score"
-            required={(mandatoryAttributes.includes('x_opencti_score'))}
-            label={t_i18n('Score')}
-            type="number"
-            fullWidth={true}
-            disabled={isInferred}
-            style={{ marginTop: 20 }}
-            onFocus={editor.changeFocus}
-            onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
-            helperText={(
-              <SubscriptionFocus
-                context={context}
-                fieldName="x_opencti_score"
-              />
-            )}
-          />
+          {/* A `style` on the field is unplaceable and sends it back to MUI. */}
+          <div style={{ marginTop: 20 }}>
+            <Field
+              component={TextField}
+              name="x_opencti_score"
+              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              label={t_i18n('Score')}
+              type="number"
+              fullWidth={true}
+              disabled={isInferred}
+              onFocus={editor.changeFocus}
+              onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
+              helperText={(
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_score"
+                />
+              )}
+            />
+          </div>
           <OpenVocabField
             label={t_i18n('Incident type')}
             type="incident-type-ov"

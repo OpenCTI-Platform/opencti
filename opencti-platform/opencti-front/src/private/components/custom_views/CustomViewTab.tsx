@@ -1,85 +1,39 @@
 import { Link } from 'react-router-dom';
-import Tab, { TabProps } from '@mui/material/Tab';
+import { TabsTrigger } from '@filigran/design-system';
 import type { CustomViewDisplayMode } from './useCustomViewTabs';
 import { useCustomViews } from './useCustomViews';
-import { TabWithDropDownMenu, useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
-import { useFormatter } from '../../../components/i18n';
 
-type OtherCustomViewsTabProps = {
+type SingleOtherCustomViewTabProps = {
   displayMode: CustomViewDisplayMode;
   otherCustomViews: ReturnType<typeof useCustomViews>['customViews'];
-  dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   value: string;
-} & TabProps<'a'> & TabProps<'div'>;
+};
 
-export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode, dropDownMenuState, value, ...tabProps }: OtherCustomViewsTabProps) => {
-  const { t_i18n } = useFormatter();
-  if (displayMode.others === 'single') {
-    return (
-      <Tab
-        {...tabProps}
-        component={Link}
-        to={customViews[0].path}
-        value={value}
-        label={customViews[0].name}
-        sx={{
-        // Override the theme/global rule set to have all
-        // tabs in first-letter-capitalized case, to display
-        // exactly what customers want.
-          textTransform: 'none',
-          '&::first-letter': {
-            textTransform: 'none',
-          },
-        }}
-      />
-    );
+/** The "others" views as ONE tab. TabsList detects TabsMenuTrigger by displayName, so the dropdown variant cannot come from a wrapper — it lives in StixDomainObjectTabsBox. */
+export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode, value }: SingleOtherCustomViewTabProps) => {
+  if (displayMode.others !== 'single') {
+    return null;
   }
-
-  if (displayMode.others === 'dropdown') {
-    return (
-      <TabWithDropDownMenu
-        {...tabProps}
-        value={value}
-        label={t_i18n('Custom view')}
-        isOpen={dropDownMenuState.isOpen}
-        onOpen={dropDownMenuState.onOpen}
-      />
-    );
-  }
-
-  return null;
+  return (
+    <TabsTrigger value={value} asChild>
+      <Link to={customViews[0].path}>{customViews[0].name}</Link>
+    </TabsTrigger>
+  );
 };
 
 type DefaultCustomViewTabProps = {
   value: string;
   displayMode: CustomViewDisplayMode;
   defaultCustomView: ReturnType<typeof useCustomViews>['customViews'][number] | undefined;
-} & TabProps<'a'> & TabProps<'div'>;
+};
 
-export const DefaultCustomViewTab = ({ value, displayMode, defaultCustomView, ...tabProps }: DefaultCustomViewTabProps) => {
-  if (!displayMode.default) {
-    return null;
-  }
-  if (!defaultCustomView) {
+export const DefaultCustomViewTab = ({ value, displayMode, defaultCustomView }: DefaultCustomViewTabProps) => {
+  if (!displayMode.default || !defaultCustomView) {
     return null;
   }
   return (
-    <Tab
-      {...tabProps}
-      key="default-custom-view"
-      component={Link}
-      to={defaultCustomView.path}
-      value={value}
-      label={defaultCustomView.name}
-      sx={{
-      // Override the theme/global rule set to have all
-      // tabs in first-letter-capitalized case, to display
-      // exactly what customers want.
-        textTransform: 'none',
-        '&::first-letter': {
-          textTransform: 'none',
-        },
-      }}
-    />
+    <TabsTrigger value={value} asChild>
+      <Link to={defaultCustomView.path}>{defaultCustomView.name}</Link>
+    </TabsTrigger>
   );
 };

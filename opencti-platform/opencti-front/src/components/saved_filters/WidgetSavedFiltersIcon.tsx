@@ -24,7 +24,7 @@ const WidgetSavedFiltersIcon = ({
         <IconButton
           variant="default"
           priority="tertiary"
-          size="sm"
+          size="md"
           aria-label={t_i18n('Use a saved filter')}
           onClick={onClick}
           disabled={disabled}

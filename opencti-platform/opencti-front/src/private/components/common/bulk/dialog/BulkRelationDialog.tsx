@@ -486,7 +486,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
         </DialogTitle>
         <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography sx={{ height: '25px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
+            <Typography sx={{ height: '30px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
             <Box sx={{ display: 'flex' }}>
               <Box id="entityCard" sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
                 <EntityRelationshipCard
@@ -494,7 +494,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
                   entityType={stixDomainObjectType}
                 />
               </Box>
-              <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
+              <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '6px 20px 0', flexDirection: 'column', minWidth: '200px' }}>
                 <Select disabled={isSubmitting} onValueChange={handleChangeSelectedRelationType} value={selectedRelationType}>
                   <SelectTrigger aria-label={t_i18n('Relationship type')}>
                     <SelectValue />
