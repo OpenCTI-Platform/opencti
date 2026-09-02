@@ -14318,6 +14318,22 @@ type VulnerabilityEdge {
   node: Vulnerability!
 }
 
+enum SsvcExploitation {
+  none
+  poc
+  active
+}
+
+enum SsvcAutomatable {
+  no
+  yes
+}
+
+enum SsvcTechnicalImpact {
+  partial
+  total
+}
+
 type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -14409,6 +14425,9 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_v4_availability_impact_v: String
   x_opencti_cvss_v4_availability_impact_s: String
   x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: SsvcExploitation
+  x_opencti_ssvc_automatable: SsvcAutomatable
+  x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
   x_opencti_cwe: [String]
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float
@@ -14480,6 +14499,9 @@ input VulnerabilityAddInput {
   x_opencti_cvss_v4_availability_impact_v: String
   x_opencti_cvss_v4_availability_impact_s: String
   x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: String
+  x_opencti_ssvc_automatable: String
+  x_opencti_ssvc_technical_impact: String
   x_opencti_cwe: [String]
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float

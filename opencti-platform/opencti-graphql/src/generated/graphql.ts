@@ -31083,6 +31083,22 @@ export type SoftwareEdge = {
   node: Software;
 };
 
+export enum SsvcAutomatable {
+  No = 'no',
+  Yes = 'yes'
+}
+
+export enum SsvcExploitation {
+  Active = 'active',
+  None = 'none',
+  Poc = 'poc'
+}
+
+export enum SsvcTechnicalImpact {
+  Partial = 'partial',
+  Total = 'total'
+}
+
 export enum State {
   Complete = 'complete',
   Progress = 'progress',
@@ -37644,6 +37660,9 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_score?: Maybe<Scalars['Int']['output']>;
+  x_opencti_ssvc_automatable?: Maybe<SsvcAutomatable>;
+  x_opencti_ssvc_exploitation?: Maybe<SsvcExploitation>;
+  x_opencti_ssvc_technical_impact?: Maybe<SsvcTechnicalImpact>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
@@ -37890,6 +37909,9 @@ export type VulnerabilityAddInput = {
   x_opencti_first_seen_active?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
+  x_opencti_ssvc_automatable?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_ssvc_exploitation?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_ssvc_technical_impact?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -40789,6 +40811,9 @@ export type ResolversTypes = ResolversObject<{
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
   SoftwareEdge: ResolverTypeWrapper<Omit<SoftwareEdge, 'node'> & { node: ResolversTypes['Software'] }>;
+  SsvcAutomatable: SsvcAutomatable;
+  SsvcExploitation: SsvcExploitation;
+  SsvcTechnicalImpact: SsvcTechnicalImpact;
   State: State;
   StatsOperation: StatsOperation;
   Status: ResolverTypeWrapper<Omit<Status, 'template'> & { template?: Maybe<ResolversTypes['StatusTemplate']> }>;
@@ -53504,6 +53529,9 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  x_opencti_ssvc_automatable?: Resolver<Maybe<ResolversTypes['SsvcAutomatable']>, ParentType, ContextType>;
+  x_opencti_ssvc_exploitation?: Resolver<Maybe<ResolversTypes['SsvcExploitation']>, ParentType, ContextType>;
+  x_opencti_ssvc_technical_impact?: Resolver<Maybe<ResolversTypes['SsvcTechnicalImpact']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
