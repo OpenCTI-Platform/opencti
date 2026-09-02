@@ -13,7 +13,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { isEmptyField } from '../../../../utils/utils';
-import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/SecurityCoverageCreation';
+import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/security_coverage_creation/SecurityCoverageCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/

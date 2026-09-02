@@ -30450,7 +30450,7 @@ export type SecurityCoverageToStixArgs = {
 };
 
 export type SecurityCoverageAddInput = {
-  add_related_entities?: InputMaybe<Scalars['Boolean']['input']>;
+  add_related_entities?: InputMaybe<SecurityCoverageSelectedEntitiesInput>;
   auto_enrichment_disable: Scalars['Boolean']['input'];
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
@@ -30805,6 +30805,13 @@ export enum SecurityCoverageResultOrdering {
   ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at'
 }
+
+export type SecurityCoverageSelectedEntitiesInput = {
+  excluded_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  selected_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+};
 
 export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'SecurityPlatform';
@@ -41265,6 +41272,7 @@ export type ResolversTypes = ResolversObject<{
   SecurityCoverageResultConnection: ResolverTypeWrapper<Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversTypes['SecurityCoverageResultEdge']> }>;
   SecurityCoverageResultEdge: ResolverTypeWrapper<Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversTypes['SecurityCoverageResult'] }>;
   SecurityCoverageResultOrdering: SecurityCoverageResultOrdering;
+  SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: ResolverTypeWrapper<BasicStoreEntitySecurityPlatform>;
   SecurityPlatformAddInput: SecurityPlatformAddInput;
   SecurityPlatformConnection: ResolverTypeWrapper<Omit<SecurityPlatformConnection, 'edges'> & { edges: Array<ResolversTypes['SecurityPlatformEdge']> }>;
@@ -42321,6 +42329,7 @@ export type ResolversParentTypes = ResolversObject<{
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityCoverageResultEdge']> };
   SecurityCoverageResultEdge: Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversParentTypes['SecurityCoverageResult'] };
+  SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: BasicStoreEntitySecurityPlatform;
   SecurityPlatformAddInput: SecurityPlatformAddInput;
   SecurityPlatformConnection: Omit<SecurityPlatformConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityPlatformEdge']> };

@@ -107,9 +107,11 @@ export const splitSecurityCoverageInput = (input: SecurityCoverageAddInput) => {
   };
 
   // We should create a SecurityCoverageResult associated to the SecurityCoverage in two cases:
-  // 1. We explicitly ask for with add_related_entities (manual creation),
+  // 1. We explicitly ask for it with add_related_entities (manual creation),
   // 2. The input contains result data, meaning the input came from OpenAEV.
-  const shouldCreateResult = add_related_entities || !!external_uri || (coverage_information ?? []).length > 0;
+  const shouldCreateResult = !!add_related_entities
+    || !!external_uri
+    || (coverage_information ?? []).length > 0;
 
   return {
     securityCoverageInput,

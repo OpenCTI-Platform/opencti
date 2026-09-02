@@ -121,7 +121,7 @@ export const addSecurityCoverage = async (
         { securityCoverageResultInput, shouldCreateResult },
       );
     } else {
-      await createHasCoveredRelTask(context, user, result.id);
+      await createHasCoveredRelTask(context, user, result.id, add_related_entities);
     }
   }
 
