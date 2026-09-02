@@ -328,17 +328,17 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
             <Tabs value={currentTab} onValueChange={handleChangeTab}>
               <TabsList>
                 <TabsTrigger
-                  id="create-overview"
                   value="overview"
                   badge={Object.keys(errors).length}
                   badgeColor="error"
+                  badgeMax={99}
                   badgeInvisible={Object.keys(errors).length === 0}
                 >
                   {t_i18n('Overview')}
                 </TabsTrigger>
-                <TabsTrigger id="threat-details" value="details">{t_i18n('Details')}</TabsTrigger>
-                <TabsTrigger id="threat-demographics" value="demographics">{t_i18n('Demographics')}</TabsTrigger>
-                <TabsTrigger id="threat-bio" value="biographics">{t_i18n('Biographics')}</TabsTrigger>
+                <TabsTrigger value="details">{t_i18n('Details')}</TabsTrigger>
+                <TabsTrigger value="demographics">{t_i18n('Demographics')}</TabsTrigger>
+                <TabsTrigger value="biographics">{t_i18n('Biographics')}</TabsTrigger>
               </TabsList>
               {/* forceMount: all four panels stay mounted so form state survives a tab switch (matches the previous display:none behaviour) */}
               <TabsContent value="overview" forceMount hidden={currentTab !== 'overview'}>

@@ -114,6 +114,9 @@ const useStyles = makeStyles((theme) => ({
 const inlineStylesHeaders = {
   ttype: {
     float: 'left',
+    // the sort arrow is position:absolute; without this it anchors to a
+    // distant ancestor instead of its own cell, so it drifted per tab
+    position: 'relative',
     width: '18%',
     fontSize: 12,
     fontWeight: '700',
@@ -124,6 +127,9 @@ const inlineStylesHeaders = {
   },
   default_value: {
     float: 'left',
+    // the sort arrow is position:absolute; without this it anchors to a
+    // distant ancestor instead of its own cell, so it drifted per tab
+    position: 'relative',
     width: '30%',
     fontSize: 12,
     fontWeight: '700',
@@ -134,6 +140,9 @@ const inlineStylesHeaders = {
   },
   labels: {
     float: 'left',
+    // the sort arrow is position:absolute; without this it anchors to a
+    // distant ancestor instead of its own cell, so it drifted per tab
+    position: 'relative',
     width: '22%',
     fontSize: 12,
     fontWeight: '700',
@@ -145,6 +154,9 @@ const inlineStylesHeaders = {
   },
   markings: {
     float: 'left',
+    // the sort arrow is position:absolute; without this it anchors to a
+    // distant ancestor instead of its own cell, so it drifted per tab
+    position: 'relative',
     width: '20%',
     fontSize: 12,
     fontWeight: '700',
@@ -155,6 +167,9 @@ const inlineStylesHeaders = {
   },
   in_platform: {
     float: 'left',
+    // the sort arrow is position:absolute; without this it anchors to a
+    // distant ancestor instead of its own cell, so it drifted per tab
+    position: 'relative',
     width: '10%',
     fontSize: 12,
     fontWeight: '700',
@@ -4159,7 +4174,7 @@ const WorkbenchFileContentComponent = ({
       </Stack>
 
       <Tabs value={currentTab} onValueChange={handleChangeTab}>
-        <TabsList>
+        <TabsList className="mb-4">
           <TabsTrigger value="entities" badge={stixDomainObjects.length}>{t_i18n('Entities')}</TabsTrigger>
           <TabsTrigger value="observables" badge={stixCyberObservables.length}>{t_i18n('Observables')}</TabsTrigger>
           <TabsTrigger value="relationships" badge={stixCoreRelationships.length}>{t_i18n('Relationships')}</TabsTrigger>
