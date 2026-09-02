@@ -5,7 +5,7 @@ import type { SecurityCoveragesLines_data$data } from './__generated__/SecurityC
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import SecurityCoverageCreation from './security_coverages/SecurityCoverageCreation';
+import SecurityCoverageCreation from './security_coverages/security_coverage_creation/SecurityCoverageCreation';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
