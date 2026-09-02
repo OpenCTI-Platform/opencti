@@ -5,16 +5,13 @@ import Dialog from '@common/dialog/Dialog';
 import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Select, SelectContent, SelectTrigger, SelectValue } from '@filigran/design-system';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
+import { Checkbox, Select, SelectContent, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Axios from 'axios';
@@ -65,7 +62,6 @@ import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/Sti
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
-import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -322,7 +318,7 @@ const WorkbenchFileContentComponent = ({
   const classes = useStyles();
 
   // region state
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('entities');
 
   const [stixDomainObjects, setStixDomainObjects] = useState([]);
   const [stixCyberObservables, setStixCyberObservables] = useState([]);
@@ -483,15 +479,15 @@ const WorkbenchFileContentComponent = ({
   const connectors = connectorsImport.filter(({ connector_scope }) => connector_scope.includes('application/json'));
   let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
   let elements = [];
-  if (currentTab === 0) {
+  if (currentTab === 'entities') {
     elements = stixDomainObjects;
-  } else if (currentTab === 1) {
+  } else if (currentTab === 'observables') {
     elements = stixCyberObservables;
-  } else if (currentTab === 2) {
+  } else if (currentTab === 'relationships') {
     elements = stixCoreRelationships;
-  } else if (currentTab === 3) {
+  } else if (currentTab === 'sightings') {
     elements = stixSightings;
-  } else if (currentTab === 4) {
+  } else if (currentTab === 'containers') {
     elements = containers;
   }
   if (selectAll) {
@@ -509,7 +505,7 @@ const WorkbenchFileContentComponent = ({
   const handleOpenConvertToDraft = () => setDisplayConvertToDraft(true);
   const handleCloseConvertToDraft = () => setDisplayConvertToDraft(false);
 
-  const handleChangeTab = (_, index) => {
+  const handleChangeTab = (index) => {
     setCurrentTab(index);
     setSelectedElements(null);
     setDeselectedElements(null);
@@ -639,15 +635,15 @@ const WorkbenchFileContentComponent = ({
 
   const handleDeleteObjects = () => {
     let objects = [];
-    if (currentTab === 0) {
+    if (currentTab === 'entities') {
       objects = stixDomainObjects;
-    } else if (currentTab === 1) {
+    } else if (currentTab === 'observables') {
       objects = stixCyberObservables;
-    } else if (currentTab === 2) {
+    } else if (currentTab === 'relationships') {
       objects = stixCoreRelationships;
-    } else if (currentTab === 3) {
+    } else if (currentTab === 'sightings') {
       objects = stixSightings;
-    } else if (currentTab === 4) {
+    } else if (currentTab === 'containers') {
       objects = containers;
     }
     let objectsToBeDeletedIds;
@@ -970,15 +966,15 @@ const WorkbenchFileContentComponent = ({
       }),
     );
     let objects = [];
-    if (currentTab === 0) {
+    if (currentTab === 'entities') {
       objects = stixDomainObjects;
-    } else if (currentTab === 1) {
+    } else if (currentTab === 'observables') {
       objects = stixCyberObservables;
-    } else if (currentTab === 2) {
+    } else if (currentTab === 'relationships') {
       objects = stixCoreRelationships;
-    } else if (currentTab === 3) {
+    } else if (currentTab === 'sightings') {
       objects = stixSightings;
-    } else if (currentTab === 4) {
+    } else if (currentTab === 'containers') {
       objects = containers;
     }
     let objectsToBeProcessed;
@@ -999,7 +995,7 @@ const WorkbenchFileContentComponent = ({
       ]),
     }));
     const finalObjects = filteredObjects.concat(objectsToAdd);
-    if (currentTab === 0) {
+    if (currentTab === 'entities') {
       setStixDomainObjects(
         R.uniqBy(R.prop('id'), [
           ...finalObjects,
@@ -1014,13 +1010,13 @@ const WorkbenchFileContentComponent = ({
         ]),
       );
     }
-    if (currentTab === 1) {
+    if (currentTab === 'observables') {
       setStixCyberObservables(finalObjects);
-    } else if (currentTab === 2) {
+    } else if (currentTab === 'relationships') {
       setStixCoreRelationships(finalObjects);
-    } else if (currentTab === 3) {
+    } else if (currentTab === 'sightings') {
       setStixSightings(finalObjects);
-    } else if (currentTab === 4) {
+    } else if (currentTab === 'containers') {
       setContainers(finalObjects);
     }
     resetForm();
@@ -4162,22 +4158,20 @@ const WorkbenchFileContentComponent = ({
         </Security>
       </Stack>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={currentTab} onChange={handleChangeTab}>
-          <Tab label={`${t_i18n('Entities')} (${stixDomainObjects.length})`} />
-          <Tab label={`${t_i18n('Observables')} (${stixCyberObservables.length})`} />
-          <Tab
-            label={`${t_i18n('Relationships')} (${stixCoreRelationships.length})`}
-          />
-          <Tab label={`${t_i18n('Sightings')} (${stixSightings.length})`} />
-          <Tab label={`${t_i18n('Containers')} (${containers.length})`} />
-        </Tabs>
-      </Box>
-      {currentTab === 0 && renderEntities()}
-      {currentTab === 1 && renderObservables()}
-      {currentTab === 2 && renderRelationships()}
-      {currentTab === 3 && renderSightings()}
-      {currentTab === 4 && renderContainers()}
+      <Tabs value={currentTab} onValueChange={handleChangeTab}>
+        <TabsList>
+          <TabsTrigger value="entities" badge={stixDomainObjects.length}>{t_i18n('Entities')}</TabsTrigger>
+          <TabsTrigger value="observables" badge={stixCyberObservables.length}>{t_i18n('Observables')}</TabsTrigger>
+          <TabsTrigger value="relationships" badge={stixCoreRelationships.length}>{t_i18n('Relationships')}</TabsTrigger>
+          <TabsTrigger value="sightings" badge={stixSightings.length}>{t_i18n('Sightings')}</TabsTrigger>
+          <TabsTrigger value="containers" badge={containers.length}>{t_i18n('Containers')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="entities">{renderEntities()}</TabsContent>
+        <TabsContent value="observables">{renderObservables()}</TabsContent>
+        <TabsContent value="relationships">{renderRelationships()}</TabsContent>
+        <TabsContent value="sightings">{renderSightings()}</TabsContent>
+        <TabsContent value="containers">{renderContainers()}</TabsContent>
+      </Tabs>
       <DeleteDialog
         deletion={deletion}
         submitDelete={() => submitDeleteObject()}

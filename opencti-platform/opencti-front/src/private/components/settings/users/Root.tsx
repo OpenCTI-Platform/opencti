@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
@@ -25,6 +23,7 @@ import UserEdition from './UserEdition';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import UserHistoryTab from './UserHistoryTab';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const userEditionQuery = graphql`
   query RootUserEditionQuery($id: String!) {
@@ -166,30 +165,19 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
           </Stack>
 
           <div className="clearfix" />
-          <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
-          >
-            <Tabs value={location.pathname}>
-              <Tab
-                component={Link}
-                to={`/dashboard/settings/accesses/users/${data.id}`}
-                value={`/dashboard/settings/accesses/users/${data.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/settings/accesses/users/${data.id}/analytics`}
-                value={`/dashboard/settings/accesses/users/${data.id}/analytics`}
-                label={t_i18n('Analytics')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/settings/accesses/users/${data.id}/history`}
-                value={`/dashboard/settings/accesses/users/${data.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+          <Tabs value={location.pathname} panels="external">
+            <TabsList className="mb-6">
+              <TabsTrigger value={`/dashboard/settings/accesses/users/${data.id}`} asChild>
+                <Link to={`/dashboard/settings/accesses/users/${data.id}`}>{t_i18n('Overview')}</Link>
+              </TabsTrigger>
+              <TabsTrigger value={`/dashboard/settings/accesses/users/${data.id}/analytics`} asChild>
+                <Link to={`/dashboard/settings/accesses/users/${data.id}/analytics`}>{t_i18n('Analytics')}</Link>
+              </TabsTrigger>
+              <TabsTrigger value={`/dashboard/settings/accesses/users/${data.id}/history`} asChild>
+                <Link to={`/dashboard/settings/accesses/users/${data.id}/history`}>{t_i18n('History')}</Link>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <Routes>
             <Route
               path="/"

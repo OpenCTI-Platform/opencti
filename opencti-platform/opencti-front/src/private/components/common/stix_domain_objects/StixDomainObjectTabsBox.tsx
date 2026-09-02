@@ -1,14 +1,10 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Stack from '@mui/material/Stack';
+import { MenuItem, Tabs, TabsList, TabsMenuTrigger, TabsTrigger } from '@filigran/design-system';
 import { getCurrentTab } from '../../../../utils/tabUtils';
 import { useFormatter } from '../../../../components/i18n';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import { OtherCustomViewsTab, DefaultCustomViewTab } from '@components/custom_views/CustomViewTab';
-import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
 import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
 
 export type StixDomainObjectTabsBoxTab
@@ -87,6 +83,7 @@ type TabsWithCustomViewsProps = PropsWithChildren<{
   basePath: string;
   entityType: string;
   currentTab: string;
+  extraActions?: ReactNode;
 }>;
 
 const TabsWithCustomViews = ({
@@ -94,41 +91,47 @@ const TabsWithCustomViews = ({
   basePath,
   entityType,
   currentTab,
+  extraActions,
 }: TabsWithCustomViewsProps) => {
+  const { t_i18n } = useFormatter();
   const {
     defaultCustomView,
     otherCustomViews,
     displayMode,
-    dropDownMenuState,
     currentCustomViewTab,
     currentCustomViewMenuItem,
   } = useCustomViewTabs({ basePath, entityType });
 
   return (
-    <>
-      <Tabs value={(currentCustomViewTab ?? currentTab) || false}>
-        {defaultCustomView ? (
-          <DefaultCustomViewTab
-            value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
-            displayMode={displayMode}
-            defaultCustomView={defaultCustomView}
-          />
-        ) : null}
+    <Tabs value={(currentCustomViewTab ?? currentTab) || ''} panels="external">
+      <TabsList actions={extraActions}>
+        <DefaultCustomViewTab
+          value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
+          displayMode={displayMode}
+          defaultCustomView={defaultCustomView}
+        />
         {children}
         <OtherCustomViewsTab
           value={CUSTOM_VIEW_TAB_VALUE}
           displayMode={displayMode}
           otherCustomViews={otherCustomViews}
-          dropDownMenuState={dropDownMenuState}
         />
-      </Tabs>
-      <CustomViewTabDropDownMenu
-        currentCustomViewMenuItem={currentCustomViewMenuItem}
-        otherCustomViews={otherCustomViews}
-        displayMode={displayMode}
-        dropDownMenuState={dropDownMenuState}
-      />
-    </>
+        {/* Authored here, not in a wrapper: TabsList lifts TabsMenuTrigger out
+            of the tablist by displayName, which a wrapper would hide. */}
+        {displayMode.others === 'dropdown' && (
+          <TabsMenuTrigger
+            active={currentCustomViewTab === CUSTOM_VIEW_TAB_VALUE}
+            menu={otherCustomViews.map(({ id, name, path }) => (
+              <MenuItem key={id} selected={currentCustomViewMenuItem === path} asChild>
+                <Link to={path}>{name}</Link>
+              </MenuItem>
+            ))}
+          >
+            {t_i18n('Custom view')}
+          </TabsMenuTrigger>
+        )}
+      </TabsList>
+    </Tabs>
   );
 };
 
@@ -144,40 +147,20 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
 
   const staticTabs = TABS_INFO.map(({ tab, path, label }) =>
     tabs.includes(tab) && (
-      <Tab
-        key={tab}
-        component={Link}
-        to={path}
-        value={path}
-        label={t_i18n(label)}
-      />
+      <TabsTrigger key={tab} value={path} asChild>
+        <Link to={path}>{t_i18n(label)}</Link>
+      </TabsTrigger>
     ));
 
   return (
-    <Box sx={{
-      borderBottom: 1,
-      borderColor: 'divider',
-      marginBottom: 3,
-      display: 'flex',
-      justifyContent: 'space-between',
-      // Without this the row's default `align-items: stretch` made `extraActions` -- the Aperçu
-      // par IA button -- as tall as the tabs strip instead of sitting on its centre line.
-      alignItems: 'center',
-    }}
+    <TabsWithCustomViews
+      basePath={basePath}
+      entityType={entityType}
+      currentTab={currentTab}
+      extraActions={extraActions}
     >
-      <TabsWithCustomViews
-        basePath={basePath}
-        entityType={entityType}
-        currentTab={currentTab}
-      >
-        {staticTabs}
-      </TabsWithCustomViews>
-      {extraActions ? (
-        <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
-          {extraActions}
-        </Stack>
-      ) : null}
-    </Box>
+      {staticTabs}
+    </TabsWithCustomViews>
   );
 };
 

@@ -141,7 +141,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
         scrollbarWidth: 'none',
       }}
       >
-        <Tabs value={currentTab} onValueChange={setTab}>
+        <Tabs value={currentTab} onValueChange={setTab} className="flex flex-col flex-1 min-h-0">
           <TabsList>
             <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
             <TabsTrigger value="roles">{t_i18n('Roles')}</TabsTrigger>
@@ -165,7 +165,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
           <TabsContent value="markings">
             <GroupEditionMarkings group={group} />
           </TabsContent>
-          <TabsContent value="members">
+          <TabsContent value="members" className="flex-1 min-h-0">
             {userQueryRef && (
               <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 <React.Suspense

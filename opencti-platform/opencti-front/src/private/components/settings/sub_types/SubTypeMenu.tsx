@@ -1,4 +1,4 @@
-import { Tab, Tabs } from '@mui/material';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import type { SubTypeTabs } from './SubTypeOutletContext';
@@ -20,56 +20,34 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
   const currentTab = getCurrentTab(location.pathname, `/dashboard/settings/customization/entity_types/${entityType}`);
 
   return (
-    <Tabs
-      value={currentTab || false}
-      sx={{ paddingBottom: 2 }}
-    >
-      {tabs.workflow && (
-        <Tab
-          component={Link}
-          to="workflow"
-          value="workflow"
-          label={t_i18n('Workflow')}
-        />
-      )}
-
-      {
-        tabs.attributes && (
-          <Tab
-            component={Link}
-            to="attributes"
-            value="attributes"
-            label={t_i18n('Attributes')}
-          />
-        )
-      }
-
-      {tabs.templates && (
-        <Tab
-          component={Link}
-          to="templates"
-          value="templates"
-          label={t_i18n('Templates')}
-        />
-      )}
-
-      {tabs['overview-layout'] && (
-        <Tab
-          component={Link}
-          to="overview-layout"
-          value="overview-layout"
-          label={t_i18n('Overview Layout')}
-        />
-      )}
-
-      {tabs['custom-views'] && (
-        <Tab
-          component={Link}
-          to="custom-views"
-          value="custom-views"
-          label={t_i18n('Custom Views')}
-        />
-      )}
+    <Tabs value={currentTab} panels="external">
+      <TabsList className="pb-4">
+        {tabs.workflow && (
+          <TabsTrigger value="workflow" asChild>
+            <Link to="workflow">{t_i18n('Workflow')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs.attributes && (
+          <TabsTrigger value="attributes" asChild>
+            <Link to="attributes">{t_i18n('Attributes')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs.templates && (
+          <TabsTrigger value="templates" asChild>
+            <Link to="templates">{t_i18n('Templates')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs['overview-layout'] && (
+          <TabsTrigger value="overview-layout" asChild>
+            <Link to="overview-layout">{t_i18n('Overview Layout')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs['custom-views'] && (
+          <TabsTrigger value="custom-views" asChild>
+            <Link to="custom-views">{t_i18n('Custom Views')}</Link>
+          </TabsTrigger>
+        )}
+      </TabsList>
     </Tabs>
   );
 };

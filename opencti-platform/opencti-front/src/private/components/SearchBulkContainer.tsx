@@ -1,8 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { isEmpty } from 'ramda';
 import { useSearchParams } from 'react-router-dom';
 import SearchBulkUnknownEntities from './SearchBulkUnknownEntities';
@@ -14,7 +11,7 @@ import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithout
 import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 import { splitIntoLines } from '../../utils/String';
-import { Textarea } from '@filigran/design-system';
+import { Tabs, TabsContent, TabsList, TabsTrigger, Textarea } from '@filigran/design-system';
 
 const SearchBulkContainer = () => {
   const { t_i18n } = useFormatter();
@@ -24,7 +21,7 @@ const SearchBulkContainer = () => {
   setTitle(t_i18n('Bulk Search'));
 
   const [textFieldValue, setTextFieldValue] = useState('');
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('known');
   const [values, setValues] = useState<string[]>([]);
   const [numberOfUnknownEntities, setNumberOfUnknownEntities] = useState(0);
   const [numberOfKnownEntities, setNumberOfKnownEntities] = useState(0);
@@ -51,7 +48,7 @@ const SearchBulkContainer = () => {
     }
   }, [searchParams]);
 
-  const handleChangeTab = (value: number) => {
+  const handleChangeTab = (value: string) => {
     setCurrentTab(value);
   };
 
@@ -100,32 +97,32 @@ const SearchBulkContainer = () => {
           />
         </Grid>
         <Grid item xs={10}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3, marginTop: -3 }}>
-            <Tabs
-              value={currentTab}
-              onChange={(_, value) => handleChangeTab(value)}
-            >
-              <Tab label={`${t_i18n('Known entities')} (${numberOfKnownEntities})`} />
-              <Tab label={`${t_i18n('Unknown entities')} (${numberOfUnknownEntities})`} />
-            </Tabs>
-          </Box>
-          {currentTab === 0 && values.length > 0
-            && (
-              <SearchBulk
-                inputValues={values}
-                dataColumns={dataColumns}
-                setNumberOfEntities={setNumberOfKnownEntities}
+          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+            <TabsList className="mb-6 -mt-3">
+              <TabsTrigger value="known" badge={numberOfKnownEntities}>{t_i18n('Known entities')}</TabsTrigger>
+              <TabsTrigger value="unknown" badge={numberOfUnknownEntities}>{t_i18n('Unknown entities')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="known">
+              {values.length > 0 && (
+                <SearchBulk
+                  inputValues={values}
+                  dataColumns={dataColumns}
+                  setNumberOfEntities={setNumberOfKnownEntities}
+                />
+              )}
+              {isEmpty(textFieldValue)
+                && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />}
+            </TabsContent>
+            {/* forceMount: this panel's query feeds the tab-label count, so it
+                must stay mounted while inactive; isDisplayed gates the table. */}
+            <TabsContent value="unknown" forceMount>
+              <SearchBulkUnknownEntities
+                values={values}
+                setNumberOfEntities={setNumberOfUnknownEntities}
+                isDisplayed={currentTab === 'unknown'}
               />
-            )
-          }
-          {currentTab === 0 && isEmpty(textFieldValue)
-            && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />
-          }
-          <SearchBulkUnknownEntities
-            values={values}
-            setNumberOfEntities={setNumberOfUnknownEntities}
-            isDisplayed={currentTab === 1}
-          />
+            </TabsContent>
+          </Tabs>
         </Grid>
       </Grid>
     </>

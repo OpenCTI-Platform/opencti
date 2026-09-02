@@ -1,13 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Link } from 'react-router-dom';
-import MenuItem from '@mui/material/MenuItem';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import { MenuItem, Tabs, TabsList, TabsMenuTrigger, TabsTrigger } from '@filigran/design-system';
 import { screen } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import useCustomViewTabs from './useCustomViewTabs';
 import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from './useCustomViews';
-import { DropDownMenu, TabWithDropDownMenu } from '../../../components/TabWithDropDownMenu';
 import { useCustomViewsData } from './useCustomViewsData';
 
 vi.mock('./useCustomViewsData', () => ({
@@ -27,76 +24,36 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
     defaultCustomView,
     otherCustomViews,
     displayMode,
-    dropDownMenuState,
     currentCustomViewTab,
   } = useCustomViewTabs({ entityType, basePath });
 
-  const { anchorEl, onOpen, onClose, isOpen } = dropDownMenuState;
-
-  const renderMenuItems = () => otherCustomViews.map(({ id, name, path }) => (
-    <MenuItem
-      key={id}
-      role="link"
-      component={Link}
-      to={`${basePath}/${path}`}
-      selected={currentCustomViewTab === path}
-    >
-      {name}
-    </MenuItem>
-  ));
-
-  const renderDefaultCustomViewTab = () => {
-    return defaultCustomView ? (
-      <Tab
-        component={Link}
-        to={defaultCustomView.path}
-        value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
-        label={defaultCustomView.name}
-      />
-    ) : null;
-  };
-
-  const renderOtherCustomViewsTab = () => {
-    if (displayMode.others === 'single') {
-      return (
-        <Tab
-          component={Link}
-          to={otherCustomViews[0].path}
-          value={CUSTOM_VIEW_TAB_VALUE}
-          label={otherCustomViews[0].name}
-        />
-      );
-    }
-
-    if (displayMode.others === 'dropdown') {
-      return (
-        <TabWithDropDownMenu
-          value={CUSTOM_VIEW_TAB_VALUE}
-          label="Custom view"
-          isOpen={isOpen}
-          onOpen={onOpen}
-        />
-      );
-    }
-
-    return null;
-  };
-
   return (
-    <>
-      <Tabs value={currentCustomViewTab || false}>
-        {renderDefaultCustomViewTab()}
-        {renderOtherCustomViewsTab()}
-      </Tabs>
-      {displayMode.others === 'dropdown' && (
-        <DropDownMenu
-          anchorEl={anchorEl}
-          isOpen={isOpen}
-          onClose={onClose}
-          renderMenuItems={renderMenuItems}
-        />
-      )}
-    </>
+    <Tabs value={currentCustomViewTab || ''} panels="external">
+      <TabsList>
+        {defaultCustomView ? (
+          <TabsTrigger value={DEFAULT_CUSTOM_VIEW_TAB_VALUE} asChild>
+            <Link to={defaultCustomView.path}>{defaultCustomView.name}</Link>
+          </TabsTrigger>
+        ) : null}
+        {displayMode.others === 'single' && (
+          <TabsTrigger value={CUSTOM_VIEW_TAB_VALUE} asChild>
+            <Link to={otherCustomViews[0].path}>{otherCustomViews[0].name}</Link>
+          </TabsTrigger>
+        )}
+        {displayMode.others === 'dropdown' && (
+          <TabsMenuTrigger
+            active={currentCustomViewTab === CUSTOM_VIEW_TAB_VALUE}
+            menu={otherCustomViews.map(({ id, name, path }) => (
+              <MenuItem key={id} selected={currentCustomViewTab === path} asChild>
+                <Link to={`${basePath}/${path}`}>{name}</Link>
+              </MenuItem>
+            ))}
+          >
+            Custom view
+          </TabsMenuTrigger>
+        )}
+      </TabsList>
+    </Tabs>
   );
 };
 
@@ -144,15 +101,15 @@ describe('useCustomViewTabs', () => {
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const { user } = testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
-    const tabElem = screen.getByRole('tab', { name: /Custom view/i });
-    expect(tabElem).toBeInTheDocument();
+    const tabElem = screen.getByRole('button', { name: /Custom view/i });
+    expect(tabElem).toHaveAttribute('aria-haspopup', 'menu');
     await user.click(tabElem);
-    const firstLinkElem = screen.getByRole('link', { name: /My first custom view/i });
+    const firstLinkElem = await screen.findByRole('menuitem', { name: /My first custom view/i });
     expect(firstLinkElem).toHaveAttribute(
       'href',
       expect.stringMatching(/some-path$/),
     );
-    const secondLinkElem = screen.getByRole('link', { name: /My second custom view/i });
+    const secondLinkElem = screen.getByRole('menuitem', { name: /My second custom view/i });
     expect(secondLinkElem).toHaveAttribute(
       'href',
       expect.stringMatching(/some-other-path$/),
@@ -207,15 +164,17 @@ describe('useCustomViewTabs', () => {
     const { user } = testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
     const defaultTabElem = screen.getByRole('tab', { name: /My default custom view/i });
     expect(defaultTabElem).toBeInTheDocument();
-    const othersTabElem = screen.getByRole('tab', { name: /^Custom view$/i });
-    expect(othersTabElem).toBeInTheDocument();
+    // The custom-view control opens a menu, so it is a menu button and not a
+    // role="tab" (a tab must own a panel).
+    const othersTabElem = screen.getByRole('button', { name: /^Custom view$/i });
+    expect(othersTabElem).toHaveAttribute('aria-haspopup', 'menu');
     await user.click(othersTabElem);
-    const firstLinkElem = screen.getByRole('link', { name: /My first custom view/i });
+    const firstLinkElem = await screen.findByRole('menuitem', { name: /My first custom view/i });
     expect(firstLinkElem).toHaveAttribute(
       'href',
       expect.stringMatching(/some-path$/),
     );
-    const secondLinkElem = screen.getByRole('link', { name: /My second custom view/i });
+    const secondLinkElem = screen.getByRole('menuitem', { name: /My second custom view/i });
     expect(secondLinkElem).toHaveAttribute(
       'href',
       expect.stringMatching(/some-other-path$/),

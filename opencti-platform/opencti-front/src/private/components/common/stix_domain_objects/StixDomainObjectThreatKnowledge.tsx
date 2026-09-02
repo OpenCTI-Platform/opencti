@@ -4,12 +4,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import IconButton from '@common/button/IconButton';
 import Popover from '@mui/material/Popover';
 import FormControl from '@mui/material/FormControl';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
@@ -247,6 +245,44 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   if (viewType === 'killchain') {
     exportName = `${stixDomainObjectName ? `${stixDomainObjectName} - ${t_i18n('Global kill chain')}` : t_i18n('Global kill chain')}`;
   }
+  // Timeline and kill chain share one relationships query; each is its own
+  // panel, so the view is chosen by argument instead of by reading viewType
+  // inside the render callback.
+  const renderRelationshipsView = (kind: 'timeline' | 'killchain') => (
+    <QueryRenderer
+      query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
+      variables={{ first: 500, ...queryPaginationOptions }}
+      render={({
+        props,
+      }: {
+        props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data;
+      }) => {
+        if (props) {
+          if (kind === 'killchain') {
+            return (
+              <StixDomainObjectGlobalKillChain
+                data={props}
+                entityLink={link}
+                paginationOptions={queryPaginationOptions}
+                stixDomainObjectId={stixDomainObjectId}
+              />
+            );
+          }
+          return (
+            <StixDomainObjectTimeline
+              data={props}
+              entityLink={link}
+              paginationOptions={queryPaginationOptions}
+              stixDomainObjectId={stixDomainObjectId}
+              timeField={timeField}
+            />
+          );
+        }
+        return <Loader variant={LoaderVariant.inElement} />;
+      }}
+    />
+  );
+
   return (
     <>
       <Grid container={true} spacing={3} sx={{ marginBottom: 3 }}>
@@ -398,155 +434,120 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         field="created-by.internal_id"
         title={t_i18n('Distribution of reports')}
       />
-      <Tabs
-        value={viewType}
-        indicatorColor="primary"
-        textColor="primary"
-        onChange={(_, value) => handleChangeViewType(value)}
-        style={{ float: 'left' }}
-      >
-        <Tab label={t_i18n('Diamond')} value="diamond" />
-        <Tab label={t_i18n('Timeline')} value="timeline" />
-        <Tab label={t_i18n('Global kill chain')} value="killchain" />
-      </Tabs>
-      {viewType !== 'diamond' && (
-        <div className={classes.filters}>
-          <Filters
-            helpers={helpers}
-            availableFilterKeys={[
-              'elementWithTargetTypes',
-              'objectMarking',
-              'createdBy',
-              'objectLabel',
-              'created',
-              'toId',
-            ]}
-            handleAddFilter={helpers.handleAddFilter}
-            searchContext={{ entityTypes: ['stix-core-relationship'] }}
-          />
-          <IconButton
-            aria-label={t_i18n('Open time field')}
-            color="primary"
-            onClick={handleOpenTimeField}
-            size="small"
-          >
-            <SettingsOutlined fontSize="small" />
-          </IconButton>
-          <Popover
-            classes={{ paper: classes.container }}
-            open={openTimeField}
-            anchorEl={anchorEl}
-            onClose={handleCloseTimeField}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'center',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'center',
-            }}
-            elevation={1}
-          >
-            <FormControl style={{ width: '100%' }}>
-              <Select
-                value={timeField === null ? '' : timeField}
-                onValueChange={handleChangeTimeField}
-              >
-                <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent aria-label={t_i18n('Date reference')}>
-                  <SelectItem value="technical">{t_i18n('Technical date')}</SelectItem>
-                  <SelectItem value="functional">{t_i18n('Functional date')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormControlLabel
-              style={{ marginTop: 20 }}
-              control={(
-                <Switch
-                  checked={nestedRelationships}
-                  onChange={handleChangeNestedRelationships}
-                  name="nested-relationships"
-                  color="primary"
-                />
-              )}
-              label={t_i18n('Display nested relationships')}
+      <Tabs value={viewType} onValueChange={handleChangeViewType}>
+        <TabsList className="float-left">
+          <TabsTrigger value="diamond">{t_i18n('Diamond')}</TabsTrigger>
+          <TabsTrigger value="timeline">{t_i18n('Timeline')}</TabsTrigger>
+          <TabsTrigger value="killchain">{t_i18n('Global kill chain')}</TabsTrigger>
+        </TabsList>
+        {viewType !== 'diamond' && (
+          <div className={classes.filters}>
+            <Filters
+              helpers={helpers}
+              availableFilterKeys={[
+                'elementWithTargetTypes',
+                'objectMarking',
+                'createdBy',
+                'objectLabel',
+                'created',
+                'toId',
+              ]}
+              handleAddFilter={helpers.handleAddFilter}
+              searchContext={{ entityTypes: ['stix-core-relationship'] }}
             />
-          </Popover>
-        </div>
-      )}
-      <div className={classes.export}>
-        <ExportButtons domElementId="container" name={exportName} />
-      </div>
-      <div className="clearfix" />
-      {viewType !== 'diamond' && (
-        <Box sx={{
-          marginTop: theme.spacing(1),
-        }}
-        >
-          <FilterIconButton
-            helpers={helpers}
-            filters={filters}
-            handleRemoveFilter={helpers.handleRemoveFilter}
-            handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-            handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-            entityTypes={['stix-core-relationship']}
-          />
-        </Box>
-      )}
-      {viewType === 'diamond' ? (
-        <QueryRenderer
-          query={stixDomainObjectThreatDiamondQuery}
-          variables={{ id: stixDomainObjectId }}
-          render={({
-            props,
-          }: {
-            props: StixDomainObjectThreatDiamondQuery$data;
-          }) => {
-            if (props) {
-              return (
-                <StixDomainObjectDiamond data={props} entityLink={link} />
-              );
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      ) : (
-        <QueryRenderer
-          query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
-          variables={{ first: 500, ...queryPaginationOptions }}
-          render={({
-            props,
-          }: {
-            props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data;
-          }) => {
-            if (props) {
-              if (viewType === 'killchain') {
-                return (
-                  <StixDomainObjectGlobalKillChain
-                    data={props}
-                    entityLink={link}
-                    paginationOptions={queryPaginationOptions}
-                    stixDomainObjectId={stixDomainObjectId}
+            <IconButton
+              aria-label={t_i18n('Open time field')}
+              color="primary"
+              onClick={handleOpenTimeField}
+              size="small"
+            >
+              <SettingsOutlined fontSize="small" />
+            </IconButton>
+            <Popover
+              classes={{ paper: classes.container }}
+              open={openTimeField}
+              anchorEl={anchorEl}
+              onClose={handleCloseTimeField}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+              elevation={1}
+            >
+              <FormControl style={{ width: '100%' }}>
+                <Select
+                  value={timeField === null ? '' : timeField}
+                  onValueChange={handleChangeTimeField}
+                >
+                  <SelectLabel>{t_i18n('Date reference')}</SelectLabel>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Date reference')}>
+                    <SelectItem value="technical">{t_i18n('Technical date')}</SelectItem>
+                    <SelectItem value="functional">{t_i18n('Functional date')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormControlLabel
+                style={{ marginTop: 20 }}
+                control={(
+                  <Switch
+                    checked={nestedRelationships}
+                    onChange={handleChangeNestedRelationships}
+                    name="nested-relationships"
+                    color="primary"
                   />
+                )}
+                label={t_i18n('Display nested relationships')}
+              />
+            </Popover>
+          </div>
+        )}
+        <div className={classes.export}>
+          <ExportButtons domElementId="container" name={exportName} />
+        </div>
+        <div className="clearfix" />
+        {viewType !== 'diamond' && (
+          <Box sx={{
+            marginTop: theme.spacing(1),
+          }}
+          >
+            <FilterIconButton
+              helpers={helpers}
+              filters={filters}
+              handleRemoveFilter={helpers.handleRemoveFilter}
+              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+              entityTypes={['stix-core-relationship']}
+            />
+          </Box>
+        )}
+        <TabsContent value="diamond">
+          <QueryRenderer
+            query={stixDomainObjectThreatDiamondQuery}
+            variables={{ id: stixDomainObjectId }}
+            render={({
+              props,
+            }: {
+              props: StixDomainObjectThreatDiamondQuery$data;
+            }) => {
+              if (props) {
+                return (
+                  <StixDomainObjectDiamond data={props} entityLink={link} />
                 );
               }
-              return (
-                <StixDomainObjectTimeline
-                  data={props}
-                  entityLink={link}
-                  paginationOptions={queryPaginationOptions}
-                  stixDomainObjectId={stixDomainObjectId}
-                  timeField={timeField}
-                />
-              );
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      )}
+              return <Loader variant={LoaderVariant.inElement} />;
+            }}
+          />
+        </TabsContent>
+        <TabsContent value="timeline">{renderRelationshipsView('timeline')}</TabsContent>
+        <TabsContent value="killchain">{renderRelationshipsView('killchain')}</TabsContent>
+      </Tabs>
     </>
   );
 };

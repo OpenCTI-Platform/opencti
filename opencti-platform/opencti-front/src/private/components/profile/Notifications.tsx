@@ -1,6 +1,3 @@
-import { Badge } from '@mui/material';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
 import { Navigate, Outlet, useMatch, useNavigate } from 'react-router-dom';
@@ -12,6 +9,7 @@ import { requestSubscription } from '../../../relay/environment';
 import type { NotificationsUnreadNewsFeedsCountQuery } from './__generated__/NotificationsUnreadNewsFeedsCountQuery.graphql';
 import { NotificationsNotificationNumberSubscription$data } from '@components/profile/__generated__/NotificationsNotificationNumberSubscription.graphql';
 import { NotificationsNewsFeedNumberSubscription$data } from './__generated__/NotificationsNewsFeedNumberSubscription.graphql';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const notificationsUnreadNewsFeedsCountQuery = graphql`
   query NotificationsUnreadNewsFeedsCountQuery($skipNewsFeedsCount: Boolean!) {
@@ -88,7 +86,7 @@ const Notifications: FunctionComponent = () => {
 
   const activeTab = useMatch('/dashboard/profile/notifications/news-feed') ? 'news-feed' : 'alerts';
 
-  const handleTabChange = (_: React.SyntheticEvent, value: string) => {
+  const handleTabChange = (value: string) => {
     navigate(value);
   };
 
@@ -105,25 +103,27 @@ const Notifications: FunctionComponent = () => {
   return (
     <div>
       <Breadcrumbs elements={[{ label: t_i18n('Notifications'), current: true }]} />
-      <Tabs value={activeTab} onChange={handleTabChange}>
-        <Tab
-          value="alerts"
-          sx={{ textTransform: 'none' }}
-          label={(
-            <Badge color="error" badgeContent={unreadNotificationsCount} max={99} invisible={unreadNotificationsCount === 0}>
-              {t_i18n('Alerts')}
-            </Badge>
-          )}
-        />
-        <Tab
-          value="news-feed"
-          sx={{ textTransform: 'none' }}
-          label={(
-            <Badge color="error" badgeContent={unreadNewsFeedsCount} max={99} invisible={unreadNewsFeedsCount === 0}>
-              {t_i18n('XTM Hub News Feed')}
-            </Badge>
-          )}
-        />
+      <Tabs value={activeTab} onValueChange={handleTabChange} panels="external">
+        <TabsList>
+          <TabsTrigger
+            value="alerts"
+            badge={unreadNotificationsCount}
+            badgeColor="error"
+            badgeMax={99}
+            badgeInvisible={unreadNotificationsCount === 0}
+          >
+            {t_i18n('Alerts')}
+          </TabsTrigger>
+          <TabsTrigger
+            value="news-feed"
+            badge={unreadNewsFeedsCount}
+            badgeColor="error"
+            badgeMax={99}
+            badgeInvisible={unreadNewsFeedsCount === 0}
+          >
+            {t_i18n('XTM Hub News Feed')}
+          </TabsTrigger>
+        </TabsList>
       </Tabs>
       <div style={{ marginTop: 20 }}>
         <Outlet />

@@ -1,8 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
@@ -11,7 +9,7 @@ import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
-import { Paper } from '@filigran/design-system';
+import { Paper, Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
@@ -231,69 +229,36 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
         <Tabs
           id="tabs-container"
           value={getCurrentTab(location.pathname, basePath)}
+          panels="external"
         >
-          <Tab
-            component={Link}
-            to="overview"
-            value="overview"
-            label={
-              <span>{t_i18n('Overview')}</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="entities"
-            value="entities"
-            label={
-              <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="observables"
-            value="observables"
-            label={
-              <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="relationships"
-            value="relationships"
-            label={
-              <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="sightings"
-            value="sightings"
-            label={
-              <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="containers"
-            value="containers"
-            label={
-              <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
-            }
-          />
-          {!isDraftReadOnly && canAskImportKnowledge && (
-            <Tab
-              component={Link}
-              to="files"
-              value="files"
-              label={t_i18n('Files')}
-            />
-          )}
-          <Tab
-            component={Link}
-            to="review"
-            value="review"
-            label={<span>{t_i18n('Review')} ({objectsCount.reviewsCount})</span>}
-          />
+          <TabsList>
+            <TabsTrigger value="overview" asChild>
+              <Link to="overview">{t_i18n('Overview')}</Link>
+            </TabsTrigger>
+            <TabsTrigger value="entities" asChild>
+              <Link to="entities">{t_i18n('Entities')} ({objectsCount.entitiesCount})</Link>
+            </TabsTrigger>
+            <TabsTrigger value="observables" asChild>
+              <Link to="observables">{t_i18n('Observables')} ({objectsCount.observablesCount})</Link>
+            </TabsTrigger>
+            <TabsTrigger value="relationships" asChild>
+              <Link to="relationships">{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</Link>
+            </TabsTrigger>
+            <TabsTrigger value="sightings" asChild>
+              <Link to="sightings">{t_i18n('Sightings')} ({objectsCount.sightingsCount})</Link>
+            </TabsTrigger>
+            <TabsTrigger value="containers" asChild>
+              <Link to="containers">{t_i18n('Containers')} ({objectsCount.containersCount})</Link>
+            </TabsTrigger>
+            {!isDraftReadOnly && canAskImportKnowledge && (
+              <TabsTrigger value="files" asChild>
+                <Link to="files">{t_i18n('Files')}</Link>
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="review" asChild>
+              <Link to="review">{t_i18n('Review')} ({objectsCount.reviewsCount})</Link>
+            </TabsTrigger>
+          </TabsList>
         </Tabs>
       </Box>
       <Routes>

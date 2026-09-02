@@ -1,7 +1,5 @@
 import React, { FunctionComponent, ReactNode, Suspense, useEffect } from 'react';
 import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
@@ -15,6 +13,7 @@ import { SearchContainerQueryFilesCountQuery } from './__generated__/SearchConta
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import type { Theme } from '../../../components/Theme';
 import Loader from '../../../components/Loader';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const searchContainerQueryFilesCountQuery = graphql`
   query SearchContainerQueryFilesCountQuery($search: String) {
@@ -48,28 +47,25 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
           marginTop: theme.spacing(-1),
         }}
       >
-        <Tabs id="tabs-container" value={searchType}>
-          <Tab
-            component={Link}
-            to={`/dashboard/search/knowledge/${encodedKeyword ?? ''}`}
-            value="knowledge"
-            label={t_i18n('Knowledge search')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/search/files/${encodedKeyword ?? ''}`}
-            value="files"
-            label={(
-              <Badge badgeContent={filesCount} color="primary">
-                <div
-                  style={{ padding: '0px 12px', display: 'flex', textTransform: 'none' }}
-                >
-                  {t_i18n('Files search')}
-                  <EEChip clickable={false} />
-                </div>
-              </Badge>
-            )}
-          />
+        <Tabs id="tabs-container" value={searchType} panels="external">
+          <TabsList>
+            <TabsTrigger value="knowledge" asChild>
+              <Link to={`/dashboard/search/knowledge/${encodedKeyword ?? ''}`}>
+                {t_i18n('Knowledge search')}
+              </Link>
+            </TabsTrigger>
+            {/* asChild ignores the lib badge, so the count and the EE chip are composed inside the link */}
+            <TabsTrigger value="files" asChild>
+              <Link to={`/dashboard/search/files/${encodedKeyword ?? ''}`}>
+                <Badge badgeContent={filesCount} color="primary">
+                  <div style={{ padding: '0px 12px', display: 'flex' }}>
+                    {t_i18n('Files search')}
+                    <EEChip clickable={false} />
+                  </div>
+                </Badge>
+              </Link>
+            </TabsTrigger>
+          </TabsList>
         </Tabs>
       </Box>
       <Suspense fallback={<Loader />}>
