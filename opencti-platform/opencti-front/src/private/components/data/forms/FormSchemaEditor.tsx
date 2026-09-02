@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import { Add, AddCircleOutlined, ArrowDownward, ArrowUpward, DeleteOutlined, ExpandMore } from '@mui/icons-material';
+// fds:keep-mui Switch/TextField predate this PR; the line is rewritten only to drop MUI Tab/Tabs — converting them is the form-fields migration.
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
 import { IconButton, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
