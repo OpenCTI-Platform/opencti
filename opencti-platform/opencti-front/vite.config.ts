@@ -9,6 +9,12 @@ const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typ
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const configuredFrontEndPort = env.FRONT_END_PORT?.trim();
+  const frontEndPort = configuredFrontEndPort ? Number(configuredFrontEndPort) : 3000;
+
+  if (!Number.isInteger(frontEndPort) || frontEndPort < 1 || frontEndPort > 65535) {
+    throw new Error(`FRONT_END_PORT must be an integer between 1 and 65535, got "${env.FRONT_END_PORT}"`);
+  }
 
   // Support APP__BASE_PATH from .env* files (via loadEnv) or from process.env (e.g. set by test scripts).
   // Normalize: ensure leading slash, strip trailing slash.
@@ -66,7 +72,7 @@ export default defineConfig(({ mode, command }) => {
     ],
 
     server: {
-      port: 3000,
+      port: frontEndPort,
       proxy: {
         [`${basePath}/logout`]: backProxy(),
         [`${basePath}/stream`]: backProxy(),
