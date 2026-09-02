@@ -105,10 +105,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   sortIcon: {
-    // In flow, not absolute: the header cells are floats with no positioned
-    // ancestor, so an absolute arrow anchored far up the tree and landed in a
-    // different spot on each tab. Anchoring it to the cell instead is not an
-    // option — the cell clips with overflow:hidden for its ellipsis.
+    // In flow: the header cells have no positioned ancestor, and the cell itself clips with overflow:hidden.
     verticalAlign: 'middle',
     margin: '0 0 0 5px',
     padding: 0,

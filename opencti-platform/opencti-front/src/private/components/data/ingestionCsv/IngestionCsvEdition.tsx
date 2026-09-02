@@ -473,7 +473,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
               <TabsTrigger value="mapper" disabled={values.csv_mapper_type}>{t_i18n('Inline csv mapper')}</TabsTrigger>
             </TabsList>
-            {/* forceMount: both panels stay mounted so in-progress form state survives a tab switch (matches the previous display:none behaviour) */}
+            {/* forceMount keeps form state across tab switches; hidden is explicit because forceMount pins Radix's own hidden to false. */}
             <TabsContent value="mapper" forceMount hidden={currentTab !== 'mapper'}>
               <IngestionCsvInlineWrapper>
                 <IngestionCsvInlineMapperForm

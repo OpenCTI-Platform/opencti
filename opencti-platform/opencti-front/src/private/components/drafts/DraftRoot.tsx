@@ -228,19 +228,19 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
             <Link to="overview">{t_i18n('Overview')}</Link>
           </TabsTrigger>
           <TabsTrigger value="entities" asChild>
-            <Link to="entities">{t_i18n('Entities')} ({objectsCount.entitiesCount})</Link>
+            <Link to="entities">{`${t_i18n('Entities')} (${objectsCount.entitiesCount})`}</Link>
           </TabsTrigger>
           <TabsTrigger value="observables" asChild>
-            <Link to="observables">{t_i18n('Observables')} ({objectsCount.observablesCount})</Link>
+            <Link to="observables">{`${t_i18n('Observables')} (${objectsCount.observablesCount})`}</Link>
           </TabsTrigger>
           <TabsTrigger value="relationships" asChild>
-            <Link to="relationships">{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</Link>
+            <Link to="relationships">{`${t_i18n('Relationships')} (${objectsCount.relationshipsCount})`}</Link>
           </TabsTrigger>
           <TabsTrigger value="sightings" asChild>
-            <Link to="sightings">{t_i18n('Sightings')} ({objectsCount.sightingsCount})</Link>
+            <Link to="sightings">{`${t_i18n('Sightings')} (${objectsCount.sightingsCount})`}</Link>
           </TabsTrigger>
           <TabsTrigger value="containers" asChild>
-            <Link to="containers">{t_i18n('Containers')} ({objectsCount.containersCount})</Link>
+            <Link to="containers">{`${t_i18n('Containers')} (${objectsCount.containersCount})`}</Link>
           </TabsTrigger>
           {!isDraftReadOnly && canAskImportKnowledge && (
             <TabsTrigger value="files" asChild>
@@ -248,7 +248,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
             </TabsTrigger>
           )}
           <TabsTrigger value="review" asChild>
-            <Link to="review">{t_i18n('Review')} ({objectsCount.reviewsCount})</Link>
+            <Link to="review">{`${t_i18n('Review')} (${objectsCount.reviewsCount})`}</Link>
           </TabsTrigger>
         </TabsList>
       </Tabs>

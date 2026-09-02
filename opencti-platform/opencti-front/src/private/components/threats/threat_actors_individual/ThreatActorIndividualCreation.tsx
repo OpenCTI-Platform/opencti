@@ -341,7 +341,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 <TabsTrigger value="demographics">{t_i18n('Demographics')}</TabsTrigger>
                 <TabsTrigger value="biographics">{t_i18n('Biographics')}</TabsTrigger>
               </TabsList>
-              {/* forceMount: all four panels stay mounted so form state survives a tab switch (matches the previous display:none behaviour) */}
+              {/* forceMount keeps form state across tab switches; hidden is explicit because forceMount pins Radix's own hidden to false. */}
               <TabsContent value="overview" forceMount hidden={currentTab !== 'overview'}>
                 <BulkTextModal
                   open={bulkModalOpen}

@@ -9,11 +9,7 @@ type SingleOtherCustomViewTabProps = {
   value: string;
 };
 
-/**
- * The "others" custom views as ONE tab. The dropdown variant is authored
- * directly in StixDomainObjectTabsBox: TabsList detects TabsMenuTrigger by
- * displayName, so it cannot be returned from a wrapper like this one.
- */
+/** TabsList detects TabsMenuTrigger by displayName, so the dropdown variant cannot live in a wrapper — it is authored in StixDomainObjectTabsBox. */
 export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode, value }: SingleOtherCustomViewTabProps) => {
   if (displayMode.others !== 'single') {
     return null;

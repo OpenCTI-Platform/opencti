@@ -164,8 +164,6 @@ describe('useCustomViewTabs', () => {
     const { user } = testRender(<TestWrapper entityType="Intrusion-Set" basePath="" />);
     const defaultTabElem = screen.getByRole('tab', { name: /My default custom view/i });
     expect(defaultTabElem).toBeInTheDocument();
-    // The custom-view control opens a menu, so it is a menu button and not a
-    // role="tab" (a tab must own a panel).
     const othersTabElem = screen.getByRole('button', { name: /^Custom view$/i });
     expect(othersTabElem).toHaveAttribute('aria-haspopup', 'menu');
     await user.click(othersTabElem);

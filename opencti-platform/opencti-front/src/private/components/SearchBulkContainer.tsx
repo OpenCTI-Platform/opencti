@@ -116,8 +116,7 @@ const SearchBulkContainer = () => {
               {isEmpty(textFieldValue)
                 && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />}
             </TabsContent>
-            {/* forceMount: this panel's query feeds the tab-label count, so it
-                must stay mounted while inactive; isDisplayed gates the table. */}
+            {/* Mounted while inactive: its query feeds its own tab-label count; hidden is explicit because forceMount pins Radix's own hidden to false. */}
             <TabsContent value="unknown" forceMount hidden={currentTab !== 'unknown'}>
               <SearchBulkUnknownEntities
                 values={values}

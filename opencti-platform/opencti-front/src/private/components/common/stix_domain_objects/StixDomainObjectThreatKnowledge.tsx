@@ -245,9 +245,6 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   if (viewType === 'killchain') {
     exportName = `${stixDomainObjectName ? `${stixDomainObjectName} - ${t_i18n('Global kill chain')}` : t_i18n('Global kill chain')}`;
   }
-  // Timeline and kill chain share one relationships query; each is its own
-  // panel, so the view is chosen by argument instead of by reading viewType
-  // inside the render callback.
   const renderRelationshipsView = (kind: 'timeline' | 'killchain') => (
     <QueryRenderer
       query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
@@ -435,11 +432,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         title={t_i18n('Distribution of reports')}
       />
       <Tabs value={viewType} onValueChange={handleChangeViewType}>
-        {/* Only the strip floats, as the MUI bar did: the export block floats
-            right beside it and the clearfix below clears both. Floating the
-            Tabs root instead would drag the filters and all three panels into
-            the float, and the clearfix — a child of that root — could never
-            clear its own ancestor. */}
+        {/* Only the strip floats: floating the Tabs root would trap the clearfix inside its own ancestor. */}
         <div style={{ float: 'left' }}>
           <TabsList>
             <TabsTrigger value="diamond">{t_i18n('Diamond')}</TabsTrigger>
