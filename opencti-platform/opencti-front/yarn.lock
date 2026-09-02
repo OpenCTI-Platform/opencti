@@ -958,9 +958,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@XTM-Foundation/filigran-design-system#commit=2e384c892e9e872ecf2de92f41f6b19a8e18a363":
+"@filigran/design-system@XTM-Foundation/filigran-design-system#commit=3a544728f122d333ff1d88a9c0ddc6401946bc31":
   version: 1.0.0
-  resolution: "@filigran/design-system@https://github.com/XTM-Foundation/filigran-design-system.git#commit=2e384c892e9e872ecf2de92f41f6b19a8e18a363"
+  resolution: "@filigran/design-system@https://github.com/XTM-Foundation/filigran-design-system.git#commit=3a544728f122d333ff1d88a9c0ddc6401946bc31"
   dependencies:
     "@radix-ui/react-accordion": "npm:^1.2.20"
     "@radix-ui/react-checkbox": "npm:^1.3.11"
@@ -981,7 +981,7 @@ __metadata:
   peerDependencies:
     react: ^19.0.0
     react-dom: ^19.0.0
-  checksum: 10c0/a59731969675477e66ac9f765016d1c90b68031243e0074d984776416fe740ab41c78caeb694d57f1d22e84656a1151bc8fb73d11cd47c05e7cd3d7f5b2492da
+  checksum: 10c0/97e11e03ba3af58e43792919837e22943ada3fdcd913fc72339c0689656d16c9e7a8c930c39b09daa6ccd722c2980331fcfc5638ce77b96a592e37604124329c
   languageName: node
   linkType: hard
 
@@ -12189,7 +12189,7 @@ __metadata:
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:3.9.1"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=2e384c892e9e872ecf2de92f41f6b19a8e18a363"
+    "@filigran/design-system": "XTM-Foundation/filigran-design-system#commit=3a544728f122d333ff1d88a9c0ddc6401946bc31"
     "@filigran/rich-text-editor": "npm:1.2.0"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"

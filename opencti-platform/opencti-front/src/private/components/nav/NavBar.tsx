@@ -87,16 +87,15 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
     navStyle['--color-filigran-brand-primary-transparency-55'] = `color-mix(in srgb, ${accentColor} 55%, transparent)`;
   }
 
-  // FDS-WORKAROUND #2: submenu icons composed product-side — remove when a slotted child keeps icon handling — see fds-migration/LIBRARY-FEEDBACK.md #2
   const renderSubItem = (sub: NavSubItem) => (
-    <NavbarSubmenuItem key={sub.link} asChild>
-      <Link
-        to={sub.link}
-        aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
-      >
-        {submenuShowIcons && sub.icon}
-        <span>{sub.label}</span>
-      </Link>
+    <NavbarSubmenuItem
+      key={sub.link}
+      to={sub.link}
+      linkComponent={Link}
+      icon={sub.icon}
+      aria-current={isRouteSelected(pathname, sub.link, sub.exact) ? 'page' : undefined}
+    >
+      {sub.label}
     </NavbarSubmenuItem>
   );
 
