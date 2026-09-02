@@ -1,5 +1,4 @@
 import List from '@mui/material/List';
-import ListItemText from '@mui/material/ListItemText';
 import Popover from '@mui/material/Popover';
 import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
