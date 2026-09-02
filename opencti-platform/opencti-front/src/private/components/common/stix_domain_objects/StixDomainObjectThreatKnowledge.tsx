@@ -58,16 +58,12 @@ const useStyles = makeStyles<Theme>(() => ({
     width: 300,
     padding: 20,
   },
-  export: {
-    float: 'right',
-  },
   filters: {
-    float: 'left',
     display: 'flex',
     alignItems: 'center',
     gap: 5,
     flexWrap: 'wrap',
-    margin: '5px 0 0 5px',
+    marginBottom: 5,
   },
 }));
 
@@ -432,14 +428,14 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         title={t_i18n('Distribution of reports')}
       />
       <Tabs value={viewType} onValueChange={handleChangeViewType}>
-        {/* Only the strip floats: floating the Tabs root would trap the clearfix inside its own ancestor. */}
-        <div style={{ float: 'left' }}>
-          <TabsList>
-            <TabsTrigger value="diamond">{t_i18n('Diamond')}</TabsTrigger>
-            <TabsTrigger value="timeline">{t_i18n('Timeline')}</TabsTrigger>
-            <TabsTrigger value="killchain">{t_i18n('Global kill chain')}</TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList
+          className="mb-6"
+          actions={<ExportButtons domElementId="container" name={exportName} />}
+        >
+          <TabsTrigger value="diamond">{t_i18n('Diamond')}</TabsTrigger>
+          <TabsTrigger value="timeline">{t_i18n('Timeline')}</TabsTrigger>
+          <TabsTrigger value="killchain">{t_i18n('Global kill chain')}</TabsTrigger>
+        </TabsList>
         {viewType !== 'diamond' && (
           <div className={classes.filters}>
             <Filters
@@ -508,10 +504,6 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             </Popover>
           </div>
         )}
-        <div className={classes.export}>
-          <ExportButtons domElementId="container" name={exportName} />
-        </div>
-        <div className="clearfix" />
         {viewType !== 'diamond' && (
           <Box sx={{
             marginTop: theme.spacing(1),

@@ -31,7 +31,7 @@ const DecayRuleTabs = () => {
       />
       <Box>
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          {/* Inline, not a utility: the right nav is a fixed 200px drawer and the product ships no Tailwind build. */}
+          {/* Inline: 200px is an arbitrary value, and the product compiles no Tailwind. */}
           <div style={{ marginRight: 200 }}>
             <TabsList className="mb-6">
               <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>

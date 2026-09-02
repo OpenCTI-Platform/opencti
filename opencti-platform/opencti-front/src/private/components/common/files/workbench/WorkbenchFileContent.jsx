@@ -105,7 +105,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   sortIcon: {
-    // In flow: the header cells have no positioned ancestor, and the cell itself clips with overflow:hidden.
+    // In flow, not absolute: the header cells have no positioned ancestor, and the cell clips with overflow:hidden.
     verticalAlign: 'middle',
     margin: '0 0 0 5px',
     padding: 0,

@@ -141,9 +141,13 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
         scrollbarWidth: 'none',
       }}
       >
-        <Tabs value={currentTab} onValueChange={setTab} className="flex flex-col flex-1 min-h-0">
-          {/* shrink-0: the strip must not compress against the filling panel,
-              as the MUI wrapper's flexShrink:0 used to guarantee. */}
+        {/* The fill context exists only for Members, whose list must scroll inside
+            the drawer; the other four panels stay in normal flow, as before. */}
+        <Tabs
+          value={currentTab}
+          onValueChange={setTab}
+          className={currentTab === 'members' ? 'flex flex-col flex-1 min-h-0' : undefined}
+        >
           <TabsList className="shrink-0">
             <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
             <TabsTrigger value="roles">{t_i18n('Roles')}</TabsTrigger>
