@@ -33,7 +33,6 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import { truncate } from '../../../../utils/String';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -419,13 +418,30 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                           <ListItemButton
                             component={Link}
                             to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                            sx={{
+                              '&.MuiListItemButton-root': {
+                                paddingRight: `${BUTTON_CONTAINER_WIDTH}px`,
+                              },
+                            }}
                           >
                             <ListItemIcon>
                               <ItemIcon type="External-Reference" />
                             </ListItemIcon>
                             <ListItemText
                               primary={`${externalReference.source_name} ${externalReferenceId}`}
-                              secondary={truncate(externalReference.description, 120)}
+                              secondary={externalReference.description}
+                              slotProps={{
+                                primary: {
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                },
+                                secondary: {
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                },
+                              }}
                             />
                           </ListItemButton>
                         </ListItem>
