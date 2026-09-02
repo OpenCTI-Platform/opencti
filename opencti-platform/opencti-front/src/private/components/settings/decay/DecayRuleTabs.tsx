@@ -31,7 +31,7 @@ const DecayRuleTabs = () => {
       />
       <Box>
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList>
+          <TabsList className="mb-6">
             <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>
             <TabsTrigger value="exclusions">{t_i18n('Decay exclusion rules')}</TabsTrigger>
           </TabsList>

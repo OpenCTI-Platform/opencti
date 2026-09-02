@@ -56,7 +56,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
         <>
           <Alert severity="info">{t_i18n('This page lists the most recent works and tasks of the current draft')}</Alert>
           <Tabs value={tabValue} onValueChange={setTabValue}>
-            <TabsList className="pb-2.5">
+            <TabsList className="mb-6">
               <TabsTrigger value="Works">{t_i18n('Works')}</TabsTrigger>
               <TabsTrigger value="Tasks">{t_i18n('Tasks')}</TabsTrigger>
             </TabsList>

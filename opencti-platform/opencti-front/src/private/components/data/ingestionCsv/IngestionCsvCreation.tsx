@@ -319,7 +319,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
         <>
           <Tabs value={currentTab} onValueChange={handleChangeTab}>
-            <TabsList className="mb-4">
+            <TabsList className="mb-6">
               <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
               <TabsTrigger value="mapper" disabled={values.csv_mapper_type}>{t_i18n('Inline csv mapper')}</TabsTrigger>
             </TabsList>

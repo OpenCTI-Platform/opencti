@@ -21,7 +21,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
 
   return (
     <Tabs value={currentTab} panels="external">
-      <TabsList className="pb-4">
+      <TabsList className="mb-6">
         {tabs.workflow && (
           <TabsTrigger value="workflow" asChild>
             <Link to="workflow">{t_i18n('Workflow')}</Link>

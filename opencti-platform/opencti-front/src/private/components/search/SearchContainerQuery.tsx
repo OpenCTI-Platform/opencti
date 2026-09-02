@@ -39,16 +39,9 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
   return (
     <ExportContextProvider>
       <Breadcrumbs elements={[{ label: t_i18n('Search') }, { label: t_i18n('Advanced search'), current: true }]} />
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-          marginTop: theme.spacing(-1),
-        }}
-      >
+      <Box sx={{ marginTop: theme.spacing(-1) }}>
         <Tabs id="tabs-container" value={searchType} panels="external">
-          <TabsList>
+          <TabsList className="mb-6">
             <TabsTrigger value="knowledge" asChild>
               <Link to={`/dashboard/search/knowledge/${encodedKeyword ?? ''}`}>
                 {t_i18n('Knowledge search')}

@@ -1,6 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import Box from '@mui/material/Box';
 import DraftEntities from '@components/drafts/DraftEntities';
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
@@ -219,48 +218,40 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           )}
         </>
       )}
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-        }}
+      <Tabs
+        id="tabs-container"
+        value={getCurrentTab(location.pathname, basePath)}
+        panels="external"
       >
-        <Tabs
-          id="tabs-container"
-          value={getCurrentTab(location.pathname, basePath)}
-          panels="external"
-        >
-          <TabsList>
-            <TabsTrigger value="overview" asChild>
-              <Link to="overview">{t_i18n('Overview')}</Link>
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview" asChild>
+            <Link to="overview">{t_i18n('Overview')}</Link>
+          </TabsTrigger>
+          <TabsTrigger value="entities" asChild>
+            <Link to="entities">{t_i18n('Entities')} ({objectsCount.entitiesCount})</Link>
+          </TabsTrigger>
+          <TabsTrigger value="observables" asChild>
+            <Link to="observables">{t_i18n('Observables')} ({objectsCount.observablesCount})</Link>
+          </TabsTrigger>
+          <TabsTrigger value="relationships" asChild>
+            <Link to="relationships">{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</Link>
+          </TabsTrigger>
+          <TabsTrigger value="sightings" asChild>
+            <Link to="sightings">{t_i18n('Sightings')} ({objectsCount.sightingsCount})</Link>
+          </TabsTrigger>
+          <TabsTrigger value="containers" asChild>
+            <Link to="containers">{t_i18n('Containers')} ({objectsCount.containersCount})</Link>
+          </TabsTrigger>
+          {!isDraftReadOnly && canAskImportKnowledge && (
+            <TabsTrigger value="files" asChild>
+              <Link to="files">{t_i18n('Files')}</Link>
             </TabsTrigger>
-            <TabsTrigger value="entities" asChild>
-              <Link to="entities">{t_i18n('Entities')} ({objectsCount.entitiesCount})</Link>
-            </TabsTrigger>
-            <TabsTrigger value="observables" asChild>
-              <Link to="observables">{t_i18n('Observables')} ({objectsCount.observablesCount})</Link>
-            </TabsTrigger>
-            <TabsTrigger value="relationships" asChild>
-              <Link to="relationships">{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</Link>
-            </TabsTrigger>
-            <TabsTrigger value="sightings" asChild>
-              <Link to="sightings">{t_i18n('Sightings')} ({objectsCount.sightingsCount})</Link>
-            </TabsTrigger>
-            <TabsTrigger value="containers" asChild>
-              <Link to="containers">{t_i18n('Containers')} ({objectsCount.containersCount})</Link>
-            </TabsTrigger>
-            {!isDraftReadOnly && canAskImportKnowledge && (
-              <TabsTrigger value="files" asChild>
-                <Link to="files">{t_i18n('Files')}</Link>
-              </TabsTrigger>
-            )}
-            <TabsTrigger value="review" asChild>
-              <Link to="review">{t_i18n('Review')} ({objectsCount.reviewsCount})</Link>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </Box>
+          )}
+          <TabsTrigger value="review" asChild>
+            <Link to="review">{t_i18n('Review')} ({objectsCount.reviewsCount})</Link>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
       <Routes>
         <Route
           path="/"

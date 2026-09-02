@@ -9,7 +9,7 @@ const ImportMenu = () => {
 
   return (
     <Tabs value={location.pathname} panels="external">
-      <TabsList className="pb-6">
+      <TabsList className="mb-6">
         <TabsTrigger value="/dashboard/data/import/file" asChild>
           <Link to="/dashboard/data/import/file">{t_i18n('Global files')}</Link>
         </TabsTrigger>
