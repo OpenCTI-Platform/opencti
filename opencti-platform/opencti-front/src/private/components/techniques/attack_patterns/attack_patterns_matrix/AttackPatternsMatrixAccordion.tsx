@@ -16,10 +16,11 @@ import {
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
 import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
-import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '../../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
@@ -27,7 +28,7 @@ interface AccordionAttackPatternProps {
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
+  coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
 }
 

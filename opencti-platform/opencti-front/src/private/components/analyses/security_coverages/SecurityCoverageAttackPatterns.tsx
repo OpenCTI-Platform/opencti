@@ -12,7 +12,7 @@ import { Box, IconButton, ListItemButton, Stack, Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { useTheme } from '@mui/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
