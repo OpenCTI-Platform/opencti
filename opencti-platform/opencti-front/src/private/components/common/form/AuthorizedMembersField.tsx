@@ -464,7 +464,7 @@ const AuthorizedMembersField = ({
                       name="newAccessRight"
                       component={SelectField}
                       label={t_i18n('Access right')}
-                      style={{ marginTop: 22, minWidth: 120 }}
+                      style={{ marginTop: 25, minWidth: 120 }}
                       size="small"
                       disabled={!values.applyAccesses}
                     >
@@ -486,7 +486,7 @@ const AuthorizedMembersField = ({
                         || doesNewMemberAlreadyExist(values)
                         || !values.applyAccesses
                       }
-                      style={{ marginTop: 22 }}
+                      style={{ marginTop: 25 }}
                     >
                       {t_i18n('Add')}
                     </Button>

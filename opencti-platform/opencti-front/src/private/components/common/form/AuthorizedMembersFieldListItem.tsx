@@ -145,7 +145,7 @@ const AuthorizedMembersFieldListItem = ({
               <Delete fontSize="small" />
             </IconButton>
           )
-        : <div style={{ width: 36 }}></div>
+        : <div style={{ width: 24 }}></div>
       }
     </ListItem>
   );
