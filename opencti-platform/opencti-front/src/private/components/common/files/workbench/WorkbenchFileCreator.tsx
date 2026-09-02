@@ -16,7 +16,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { fetchQuery } from '../../../../../relay/environment';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
@@ -216,7 +216,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
             <ObjectMarkingField
               name="fileMarkings"
               label={t_i18n('File marking definition levels')}
-              style={fieldSpacingContainerStyle}
+              style={{ marginTop: 24, width: '100%' }}
               setFieldValue={setFieldValue}
               required={false}
             />

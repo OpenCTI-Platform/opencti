@@ -1,4 +1,5 @@
 import Button from '@common/button/Button';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
@@ -1942,26 +1943,24 @@ const WorkbenchFileContentComponent = ({
                       values={values.externalReferences}
                       dryrun
                     />
-                    <div className={classes.buttons}>
+                    <FormButtonContainer>
                       <Button
+                        variant="secondary"
                         onClick={handleReset}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
                       >
                         {t_i18n('Cancel')}
                       </Button>
                       <Button
                         startIcon={<DoubleArrow />}
-                        // color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
                       >
                         {entityId
                           ? t_i18n('Update and complete')
                           : t_i18n('Add and complete')}
                       </Button>
-                    </div>
+                    </FormButtonContainer>
                   </Form>
                 )}
               </Formik>
@@ -2213,23 +2212,21 @@ const WorkbenchFileContentComponent = ({
                 style={{ marginTop: 20 }}
               />
             )}
-            <div className={classes.buttons}>
+            <FormButtonContainer>
               <Button
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={() => submitForm(false)}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Add context')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         )}
       </Formik>
