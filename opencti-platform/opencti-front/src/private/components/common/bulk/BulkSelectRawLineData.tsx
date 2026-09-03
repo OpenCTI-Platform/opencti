@@ -86,6 +86,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   return (
     <Box sx={{
       display: 'flex',
+      alignItems: 'center',
       gap: '15px',
       paddingBottom: '5px',
       paddingLeft: '5px',
