@@ -640,6 +640,8 @@ export const retryElOperations = async (operation: () => Promise<any>): Promise<
 };
 
 export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
+  // POC sequencer (plan 0010 step 1): denominator for the caller-labeled search decomposition
+  sequencerMetrics.searchCaller('_all');
   // Add default signal to prevent unwanted warning
   // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
   const requestAbortSignal = context?.requestAbortSignal ?? new AbortController().signal;
@@ -1929,6 +1931,9 @@ export type ElFindByIdsOpts = {
   relCount?: boolean | null;
   includeDeletedInDraft?: boolean | null;
   historyFiltering?: boolean;
+  // POC sequencer (plan 0010 step 1): caller label for the search decomposition; only searches
+  // actually issued to ES are counted (identity-map-served calls never reach the counter)
+  searchCaller?: string;
 };
 
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
@@ -2052,6 +2057,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
       query.docvalue_fields = REL_DEFAULT_FETCH;
     }
     logApp.debug('[SEARCH] elInternalLoadById', { query });
+    sequencerMetrics.searchCaller(opts.searchCaller ?? 'unlabeled');
     const searchType = `${ids} (${types ? (types as string[]).join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
       throw wrapEngineError('Find direct ids fail', err, { query, searchType });

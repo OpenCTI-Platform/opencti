@@ -103,6 +103,7 @@ import {
 import { isSequencerEligible, sequencerScopedContext, stripMemberRefMarks } from './sequencer/sequencer-eligibility';
 import { registerSequencerLoaders, submitIntent } from './sequencer/sequencer-loop';
 import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
+import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -162,7 +163,7 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
@@ -1091,6 +1092,7 @@ export const inputResolveRefs = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
+  searchCaller = 'resolve_other', // POC plan 0010 step 1: caller label for the search decomposition
 ): Promise<Record<string, any>> => {
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
@@ -1173,7 +1175,7 @@ export const inputResolveRefs = async (
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
     const idsToFetch = Array.from(fetchingIdsMap.keys());
-    const simpleResolutionsPromise = internalFindByIds(context, user, idsToFetch);
+    const simpleResolutionsPromise = internalFindByIds(context, user, idsToFetch, { searchCaller });
     let embeddedFromPromise;
     if (embeddedFromResolution) {
       fetchingIdsMap.set(embeddedFromResolution, [{ id: embeddedFromResolution, destKey: 'from', multiple: false }]);
@@ -3448,6 +3450,9 @@ export const getExistingRelations = async (
       }],
     };
     // inputIds
+    // POC plan 0010 step 1: this windowed list query goes through elPaginate, not elFindByIds,
+    // so the caller label is counted at the site (one list call = one ES search)
+    sequencerMetrics.searchCaller('relation_dedup');
     const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
     const manualRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
     pushAll(existingRelationships, manualRelationships);
@@ -3487,7 +3492,7 @@ export const createRelationRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, relationshipType) as BasicStoreEntityEntitySetting;
 
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting, 'resolve1_rel');
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -3561,7 +3566,7 @@ export const createRelationRaw = async (
     if (!existingRelationship) {
       // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
-      resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting, 'resolve2_rel');
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
 
@@ -3774,7 +3779,7 @@ export const getExistingEntities = async (
   type: string,
 ) => {
   const participantIds = getInputIds(type, input);
-  const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type }) as Promise<BasicStoreBase[]>;
+  const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type, searchCaller: 'finder_existing' }) as Promise<BasicStoreBase[]>;
   let existingByHashedPromise;
   if (isStixCyberObservableHashedObservable(type)) {
     existingByHashedPromise = listEntitiesByHashes(context, user, type, input.hashes);
@@ -3847,7 +3852,7 @@ const internalCreateEntityRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, type) as BasicStoreEntityEntitySetting;
   const { fromRule } = opts;
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting);
+  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting, isStixMetaObject(type) ? 'resolve1_meta' : 'resolve1_ent');
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const participantIds = getInputIds(type, resolvedInput, fromRule);
@@ -3861,7 +3866,7 @@ const internalCreateEntityRaw = async (
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
     const existingEntities: BasicStoreObject[] = [];
     const finderIds = [...participantIds, ...(context.previousStandard ? [context.previousStandard] : [])];
-    const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, finderIds, { type }) as Promise<BasicStoreObject[]>;
+    const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, finderIds, { type, searchCaller: isStixMetaObject(type) ? 'finder_meta' : 'finder_ent' }) as Promise<BasicStoreObject[]>;
     // Hash are per definition keys.
     // When creating a hash, we can check all hashes to update or merge the result
     // Generating multiple standard ids could be a solution but to complex to implements
@@ -3887,7 +3892,7 @@ const internalCreateEntityRaw = async (
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
-      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting, isStixMetaObject(type) ? 'resolve2_meta' : 'resolve2_ent');
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
     // endregion

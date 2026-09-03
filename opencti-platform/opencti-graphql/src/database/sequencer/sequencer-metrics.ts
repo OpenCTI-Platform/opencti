@@ -42,6 +42,8 @@ class SequencerMetrics {
 
   private rootFailures: Counter | null = null;
 
+  private searchCallers: Counter | null = null;
+
   register() {
     const meter = meterManager.meterProvider.getMeter('opencti-sequencer');
     this.intents = meter.createCounter('opencti_sequencer_intents_total', {
@@ -112,6 +114,10 @@ class SequencerMetrics {
       valueType: ValueType.INT,
       description: 'Apply failures with NO failed in-batch producer (cascade roots), by error code (s9.9.3)',
     });
+    this.searchCallers = meter.createCounter('opencti_sequencer_search_callers_total', {
+      valueType: ValueType.INT,
+      description: 'ES searches by caller site (plan 0010 step 1); _all counts every elRawSearch (denominator), unlabeled = elFindByIds calls without a caller hint',
+    });
   }
 
   intent(outcome: IntentOutcome, kind?: 'entity' | 'relation') {
@@ -173,6 +179,10 @@ class SequencerMetrics {
 
   rootFailure(code: string) {
     this.rootFailures?.add(1, { code });
+  }
+
+  searchCaller(caller: string, count = 1) {
+    this.searchCallers?.add(count, { caller });
   }
 }
 

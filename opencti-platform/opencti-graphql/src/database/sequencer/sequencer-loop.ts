@@ -87,12 +87,12 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   });
   const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
   if (typedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes) }) as any[];
+    const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as any[];
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
   }
   if (untypedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses) as any[];
+    const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses, { searchCaller: 'sequencer_preresolve' }) as any[];
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
   }
