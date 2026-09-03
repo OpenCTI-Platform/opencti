@@ -1,10 +1,8 @@
 import Typography from '@mui/material/Typography';
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ToggleButton from '@mui/material/ToggleButton';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
-import FormControl from '@mui/material/FormControl';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import Tooltip from '@mui/material/Tooltip';
+import { ButtonGroup, ButtonGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React, { useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
@@ -78,6 +76,9 @@ interface SecurityCoverageAttackPatternsProps {
   dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
 }
 
+// The library item declares a 16x16 glyph.
+const GLYPH = { fontSize: 16 };
+
 const SecurityCoverageAttackPatterns = ({
   data,
   dataKillChains,
@@ -131,7 +132,7 @@ const SecurityCoverageAttackPatterns = ({
     <Card
       title={t_i18n('Attack patterns coverage')}
       action={(
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <StixCoreRelationshipCreationFromEntity
             entityId={securityCoverage.id}
             objectId={securityCoverage.id}
@@ -146,39 +147,38 @@ const SecurityCoverageAttackPatterns = ({
             isCoverage={true}
             variant="inLine"
           />
-          <ToggleButtonGroup
-            size="small"
+          <ButtonGroup
+            size="sm"
             value={viewMode}
-            exclusive
-            onChange={(event, value) => value && setViewMode(value)}
-            aria-label="view mode"
-            style={{ height: 30 }}
-            sx={{
-              '& .MuiToggleButton-root': {
-                padding: '5px 10px',
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'primary.contrastText',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                  },
-                },
-                '&:not(.Mui-selected)': {
-                  backgroundColor: 'background.paper',
-                  color: 'text.primary',
-                },
-              },
-            }}
+            onValueChange={(value) => value && setViewMode(value as 'matrix' | 'lines')}
+            aria-label={t_i18n('Change view')}
           >
-            <ToggleButton value="matrix" aria-label="matrix view">
-              <ViewModuleOutlined fontSize="small" />
-            </ToggleButton>
-            <ToggleButton value="lines" aria-label="lines view">
-              <ViewListOutlined fontSize="small" />
-            </ToggleButton>
-          </ToggleButtonGroup>
-          {showKillChainSelector && viewMode === 'matrix' && (
-            <FormControl size="small" style={{ width: 194, height: 30 }}>
+            <Tooltip title={t_i18n('Matrix view')}>
+              <ButtonGroupItem
+                value="matrix"
+                aria-label="matrix view"
+                icon={<ViewModuleOutlined sx={GLYPH} />}
+              />
+            </Tooltip>
+            <Tooltip title={t_i18n('Lines view')}>
+              <ButtonGroupItem
+                value="lines"
+                aria-label="lines view"
+                icon={<ViewListOutlined sx={GLYPH} />}
+              />
+            </Tooltip>
+          </ButtonGroup>
+          <SearchInput
+            variant="thin"
+            onSubmit={setSearchTerm}
+          />
+        </Stack>
+      )}
+    >
+      {viewMode === 'matrix' ? (
+        <>
+          {showKillChainSelector && (
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 1 }}>
               <Select
                 value={selectedKillChain}
                 onValueChange={handleKillChainChange}
@@ -199,21 +199,14 @@ const SecurityCoverageAttackPatterns = ({
                   ))}
                 </SelectContent>
               </Select>
-            </FormControl>
+            </Box>
           )}
-          <SearchInput
-            variant="thin"
-            onSubmit={setSearchTerm}
+          <SecurityCoverageAttackPatternsMatrix
+            securityCoverage={securityCoverage}
+            searchTerm={searchTerm}
+            selectedKillChain={selectedKillChain}
           />
-        </Stack>
-      )}
-    >
-      {viewMode === 'matrix' ? (
-        <SecurityCoverageAttackPatternsMatrix
-          securityCoverage={securityCoverage}
-          searchTerm={searchTerm}
-          selectedKillChain={selectedKillChain}
-        />
+        </>
       ) : (
         <>
           <div className="clearfix" />
