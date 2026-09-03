@@ -64,6 +64,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  // `palette.text.secondary` is wired to the primary ink theme-wide, so MUI's own colour is the wrong one here.
+  fileMeta: {
+    color: 'var(--text-default-secondary)',
+  },
 }));
 
 export const FileLineDeleteMutation = graphql`
@@ -434,7 +438,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               classes={{
                 root: classes.itemText,
                 primary: classes.fileName,
-                secondary: classes.fileName,
+                secondary: `${classes.fileName} ${classes.fileMeta}`,
               }}
               primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
               secondary={(
