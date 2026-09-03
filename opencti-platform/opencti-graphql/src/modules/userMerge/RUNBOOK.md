@@ -35,6 +35,7 @@ The **User Merge** capability reassigns data ownership, entity associations, col
 * **Two-Pass Execution**: Every merge runs an in-memory computation (`dryRun: true`) producing a full report before any write occurs. In a real pass (`dryRun: false`), the engine verifies that the platform state has not drifted before committing any update.
 * **Platform at Rest**: The merge engine relies on the platform being at rest. Ingestions, connectors, and background workers must be stopped to avoid state divergence during execution.
 * **Non-Destructive Merge, Gated Deletion**: The merge operation itself **disables** the source account (`account_status: Expired`) and closes its access. Deleting the source account is a separate, explicitly gated operation requiring full coverage and zero pending references.
+* **Never Delete the Source Account via Settings → Users**: Merging an account disables it and marks it with `merged_into`. Deleting it through the standard web UI is rejected by the platform to avoid running cascades that destroy transferred dashboards and triggers. Source account deletion must be conducted exclusively through the dedicated, gated `userMergeDeleteSource` mutation.
 * **Strict Idempotency**: All merge handlers are strictly idempotent. If an execution is interrupted, re-running the merge on the same pair is a safe no-op on already applied data.
 
 ---
@@ -264,7 +265,7 @@ Before initiating a merge batch, verify and fulfill every requirement in this ch
 The platform must experience zero concurrent writes during the merge window.
 
 1. **Stop all ingestion connectors**: Stop all connector containers/processes feeding data into the platform.
-2. **Drain and stop background workers**: Ensure Celery/RabbitMQ queues are empty and stop the OpenCTI workers:
+2. **Drain and stop background workers**: Ensure RabbitMQ queues are empty and stop the OpenCTI workers:
    ```bash
    docker compose stop worker connector-*
    ```
@@ -292,7 +293,7 @@ Verify that the GraphQL schema exposes the `userMerge` mutation and queries.
 > Merges write partial documents across live Elasticsearch indices. A snapshot is your only recovery path in the event of an unrecoverable operational mistake.
 
 Create a restorable snapshot of:
-1. **Elasticsearch / OpenSearch cluster indices** (all indices, including `.internal_objects`, `.history`, `.deleted_objects`).
+1. **Elasticsearch / OpenSearch cluster indices** (all indices, including `opencti_internal_objects`, `opencti_history`, `opencti_deleted_objects`).
 2. **Redis key-value store**.
 
 Verify that the snapshot completed successfully before launching the first merge.
@@ -358,12 +359,13 @@ mutation UserMergeDryRun($sourceId: ID!, $targetId: ID!) {
 Inspect the returned `report.handlers`:
 
 1. **Verify Handlers & Counts**:
-   * `source-account-disable`: Count should be `1` (or `0` if source was already expired).
+   * `source-deactivation`: Count is `1` (or `0` if the source was already disabled and carrying `merged_into === targetId`). Note that an account manually expired before the merge will still count as `1` because `merged_into` must be written.
    * `scalar-user-references`: Documents where the source was `creator_id`, `user_id`, etc.
    * `filter-user-references`: Number of saved filters, triggers, or feeds containing the source user UUID.
    * `blob-user-references`: Dashboards, playbooks, and draft update patches rewritten.
    * `history-attribution` & `history-context-data-payload`: Past events and audit logs being re-attributed.
-   * `stix-operational-relations`: Assignee/Participant links being re-pointed or deduplicated.
+   * `operational-relations`: Assignee/Participant links being re-pointed or deduplicated.
+   * `residual-references`: Runs last. Best-effort sweep across all platform indices detecting unindexed or serialized references still naming the source UUID. Reports findings by `entity_type` in `detail` (e.g. `Incident (2)`). It writes nothing (`updated: 0`) and never raises blocking alerts; it provides visibility to the operator.
 2. **Inspect RBAC Differences & Rights Strategy**:
    * **STRICT (Default & Recommended)**: The target user retains strictly their own groups, roles, and markings. Source memberships are dropped.
    * **UNION**: Source groups, organizations, and capabilities are added to the target. Use only when the target must inherit existing source clearances.
@@ -407,7 +409,6 @@ query UserMergeJournalCheck($mergeId: ID!) {
     id
     handler
     status
-    updated_count
     message
     started_at
     completed_at
@@ -441,7 +442,7 @@ query UserMergeCheckReadiness($sourceId: ID!, $targetId: ID!) {
 #### Gate Criteria
 
 The deletion gate enforces three mandatory conditions:
-1. `coverage_complete === true`: All 99 register rows are covered by handlers.
+1. `coverage_complete === true`: All gating register rows are claimed by handlers (`gating_uncovered_count === 0`). Retained and out-of-scope rows remain unclaimed by design, so total covered count will report ~82 / 99.
 2. `pending_change_count === 0`: A live dry-run confirms that zero references still point to the source user.
 3. `merged_into === <targetId>`: The source carries the mark a real merge into **this** target wrote on it.
 
@@ -510,13 +511,12 @@ Between steps 2 and 3 the account is deletable by anyone with the rights, and th
        merge_id
        handler
        status
-       updated_count
        started_at
      }
    }
    ```
 2. Identify the active `merge_id` for your pair.
-3. Poll `userMergeJournal(mergeId: "<merge_id>")` until the last handler (`source-runtime-invalidation`) has completed.
+3. Poll `userMergeJournal(mergeId: "<merge_id>")` until the last handler (`residual-references`) has completed.
 4. If all handlers succeeded, the merge is complete. Do not re-run.
 
 ### 6.2 Incident 2: Node Crash or Restart Mid-Merge
