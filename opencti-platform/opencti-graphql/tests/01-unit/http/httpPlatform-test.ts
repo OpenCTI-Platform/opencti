@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import nconf from 'nconf';
 import createApp, { decodeStoragePath, sanitizeReferer, shouldIncludeHealthDetails } from '../../../src/http/httpPlatform';
-import * as engineModule from '../../../src/database/engine';
-import * as storageModule from '../../../src/database/raw-file-storage';
-import * as rabbitMQModule from '../../../src/database/rabbitmq';
-import * as redisModule from '../../../src/database/redis';
+import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMetrics';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
@@ -178,17 +175,27 @@ describe('httpPlatform: /health details behavior', () => {
       }
       return undefined;
     });
-    vi.spyOn(engineModule, 'isEngineAlive').mockResolvedValue(undefined as any);
-    vi.spyOn(storageModule, 'isStorageAlive').mockResolvedValue(undefined as any);
-    vi.spyOn(rabbitMQModule, 'rabbitMQIsAlive').mockResolvedValue(undefined as any);
-    vi.spyOn(redisModule, 'redisIsAlive').mockResolvedValue(undefined as any);
-    vi.spyOn(rabbitMQModule, 'getIngestionUnits').mockResolvedValue(5 as any);
+    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({ initialized: true, isHealthy: true, failures: [] });
+    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: 10, s3_used_size: 20, ingestion_units: 5 });
   });
 
-  it('should return null detailed metrics on per-metric failures when details=true', async () => {
-    vi.spyOn(engineModule, 'getEngineUsedSize').mockRejectedValue(new Error('es unavailable'));
-    vi.spyOn(storageModule, 'getStorageUsedSize').mockRejectedValue(new Error('storage unavailable'));
-    vi.spyOn(rabbitMQModule, 'getIngestionUnits').mockRejectedValue(new Error('rmq unavailable'));
+  it('should return collected detailed metrics when details=true', async () => {
+    const healthHandler = await setupHealthHandler();
+    const res = buildResponse();
+
+    await healthHandler?.({ query: { health_access_key: 'secret', details: 'true' } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith({
+      status: 'success',
+      es_used_size: 10,
+      s3_used_size: 20,
+      ingestion_units: 5,
+    });
+  });
+
+  it('should return null detailed metrics when collection is unavailable', async () => {
+    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: null, s3_used_size: null, ingestion_units: null });
     const healthHandler = await setupHealthHandler();
     const res = buildResponse();
 
@@ -203,6 +210,32 @@ describe('httpPlatform: /health details behavior', () => {
     });
   });
 
+  it('should return 503 with failing dependencies without probing them', async () => {
+    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({
+      initialized: true,
+      isHealthy: false,
+      failures: ['redis: Redis seems down'],
+    });
+    const healthHandler = await setupHealthHandler();
+    const res = buildResponse();
+
+    await healthHandler?.({ query: { health_access_key: 'secret' } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'redis: Redis seems down' });
+  });
+
+  it('should return 503 while the health monitor has not collected any state yet', async () => {
+    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({ initialized: false, isHealthy: false, failures: [] });
+    const healthHandler = await setupHealthHandler();
+    const res = buildResponse();
+
+    await healthHandler?.({ query: { health_access_key: 'secret' } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Health monitoring not initialized yet' });
+  });
+
   it('should ignore details=true when health access is public', async () => {
     vi.spyOn(nconf, 'get').mockImplementation((key?: string) => {
       if (key === 'app:health_access_key') {
@@ -210,8 +243,7 @@ describe('httpPlatform: /health details behavior', () => {
       }
       return undefined;
     });
-    const getEngineUsedSizeSpy = vi.spyOn(engineModule, 'getEngineUsedSize').mockResolvedValue(10);
-    const getStorageUsedSizeSpy = vi.spyOn(storageModule, 'getStorageUsedSize').mockResolvedValue(20);
+    const usageMetricsSpy = vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics');
     const healthHandler = await setupHealthHandler();
     const res = buildResponse();
 
@@ -219,7 +251,6 @@ describe('httpPlatform: /health details behavior', () => {
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith({ status: 'success' });
-    expect(getEngineUsedSizeSpy).not.toHaveBeenCalled();
-    expect(getStorageUsedSizeSpy).not.toHaveBeenCalled();
+    expect(usageMetricsSpy).not.toHaveBeenCalled();
   });
 });
