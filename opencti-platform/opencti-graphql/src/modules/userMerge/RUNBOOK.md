@@ -365,7 +365,7 @@ Inspect the returned `report.handlers`:
    * `blob-user-references`: Dashboards, playbooks, and draft update patches rewritten.
    * `history-attribution` & `history-context-data-payload`: Past events and audit logs being re-attributed.
    * `operational-relations`: Assignee/Participant links being re-pointed or deduplicated.
-   * `residual-references`: Runs last. Best-effort sweep across all platform indices detecting unindexed or serialized references still naming the source UUID. Reports findings by `entity_type` in `detail` (e.g. `Incident (2)`). It writes nothing (`updated: 0`) and never raises blocking alerts; it provides visibility to the operator.
+   * `residual-references`: Runs last. Best-effort sweep across all platform indices detecting unindexed or serialized references still naming the source UUID. Reports findings by `entity_type` in `detail` (e.g. `best-effort sweep, nothing rewritten: Incident (2)`). It writes nothing (`updated: 0`) and never raises blocking alerts. **Operator action**: Do **not** stop or abort if findings are reported here; this is purely informational visibility for post-merge audit and does not block execution or source account deletion.
 2. **Inspect RBAC Differences & Rights Strategy**:
    * **STRICT (Default & Recommended)**: The target user retains strictly their own groups, roles, and markings. Source memberships are dropped.
    * **UNION**: Source groups, organizations, and capabilities are added to the target. Use only when the target must inherit existing source clearances.
@@ -442,7 +442,7 @@ query UserMergeCheckReadiness($sourceId: ID!, $targetId: ID!) {
 #### Gate Criteria
 
 The deletion gate enforces three mandatory conditions:
-1. `coverage_complete === true`: All gating register rows are claimed by handlers (`gating_uncovered_count === 0`). Retained and out-of-scope rows remain unclaimed by design, so total covered count will report ~82 / 99.
+1. `coverage_complete === true`: Every gating register row (transfer and conditional, 62 of the 99) is claimed by a handler — this is `gating_uncovered_count === 0`. `covered_count` is expected to stay below 99 and is not what the gate reads: invalidate, retain, and out-of-scope rows are outside the gate.
 2. `pending_change_count === 0`: A live dry-run confirms that zero references still point to the source user.
 3. `merged_into === <targetId>`: The source carries the mark a real merge into **this** target wrote on it.
 
