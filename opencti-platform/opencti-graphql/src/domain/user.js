@@ -40,7 +40,7 @@ import {
   storeLoadById,
 } from '../database/middleware-loader';
 import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../database/redis';
-import { findUserSessions, killSessions, killUserSessions } from '../database/session';
+import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -1308,14 +1308,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
   // If password was expired, kill all other sessions of this user (force change scenario)
   const hasPasswordInput = inputs.some((i) => i.key === 'password');
   if (hasPasswordInput && isPasswordExpired(user)) {
-    const currentSessionId = context.req?.session?.id;
-    const userSessions = await findUserSessions(userId);
-    const otherSessionIds = userSessions
-      .filter((s) => currentSessionId && !s.id.endsWith(currentSessionId))
-      .map((s) => s.id);
-    if (otherSessionIds.length > 0) {
-      await killSessions(otherSessionIds);
-    }
+    await killOtherUserSessions(userId, context.req?.session?.id);
   }
   return userEditField(context, user, userId, inputs);
 };
@@ -2181,27 +2174,6 @@ const validateUser = (user, settings, { skipForcePasswordCheck = false } = {}) =
   }
 };
 
-export const enforceSessionLimit = async (user, settings) => {
-  if (settings.platform_session_max_concurrent && settings.platform_session_max_concurrent > 0) {
-    const sessions = await findUserSessions(user.id);
-    if (sessions.length >= settings.platform_session_max_concurrent) {
-      const sortedSessions = sessions.sort((a, b) => {
-        if (a.created < b.created) {
-          return -1;
-        }
-        if (a.created > b.created) {
-          return 1;
-        }
-        return 0;
-      });
-      const sessionsToKill = sortedSessions.slice(0, sessions.length - settings.platform_session_max_concurrent + 1);
-      await killSessions(sessionsToKill.map((s) => s.id));
-      return sessionsToKill.length;
-    }
-  }
-  return 0;
-};
-
 export const sessionAuthenticateUser = async (context, req, user, provider) => {
   let platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   let logged = platformUsers.get(user.internal_id);
@@ -2216,8 +2188,8 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged, settings, { skipForcePasswordCheck: true });
+  const numberOfKilledSessions = await killUserSessionsOverLimit(logged.id, settings.platform_session_max_concurrent);
   const withOrigin = userWithOrigin(req, logged);
-  const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session
   req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged.password_valid_until ?? null };
   req.session.session_provider = provider;

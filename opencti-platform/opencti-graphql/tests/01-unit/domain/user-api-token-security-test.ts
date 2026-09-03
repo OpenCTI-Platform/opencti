@@ -42,8 +42,9 @@ vi.mock('../../../src/domain/group', () => ({
 }));
 
 vi.mock('../../../src/database/session', () => ({
-  findUserSessions: vi.fn().mockResolvedValue([]),
-  killSessions: vi.fn().mockResolvedValue({}),
+  killOtherUserSessions: vi.fn().mockResolvedValue([]),
+  killUserSessions: vi.fn().mockResolvedValue([]),
+  killUserSessionsOverLimit: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('passport', () => ({

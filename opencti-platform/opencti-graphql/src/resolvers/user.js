@@ -1,7 +1,7 @@
 import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../config/conf';
 import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext } from '../database/redis';
-import { applicationSession, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
+import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { addRole } from '../domain/grant';
 import {
   addBookmark,
@@ -146,9 +146,7 @@ const userResolvers = {
     token: async (_, { input }, context) => sessionLogin(context, input),
     connectorJWT: () => issueConnectorJWT(),
     sessionKill: async (_, { id }, context) => {
-      const { store } = applicationSession;
-      const userSessionId = id.split(store.prefix)[1]; // Prefix must be removed on this case
-      const kill = await killSession(userSessionId);
+      const kill = await killSession(id);
       const { user } = kill.session;
       const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email;
       await publishUserAction({
