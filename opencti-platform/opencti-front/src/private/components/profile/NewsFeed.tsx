@@ -1,11 +1,10 @@
 import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFeedLine_node.graphql';
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
-import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
+import { IconButton, Stack, Tooltip } from '@mui/material';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
-import { Link } from 'react-router-dom';
 import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -270,12 +269,6 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
 
   return (
     <div>
-      <Alert severity="info" style={{ marginBottom: 16, backgroundColor: 'transparent', border: '1px solid #1976d2' }}>
-        {t_i18n('Want to control which news appear here?')}{' '}
-        <strong>{t_i18n('Manage your News Feed preferences')}</strong>{' '}
-        {t_i18n('in your')}{' '}
-        <Link to="/dashboard/profile/me">{t_i18n('profile settings')}</Link>.
-      </Alert>
       <DataTable
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={newsFeedInitialValues}
