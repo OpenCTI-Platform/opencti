@@ -19,7 +19,7 @@ test('Init data', async ({ request }) => {
     { name: 'MO MANAGER REVIEW', color: '#ff9800' },
     { name: 'ORGC ANALYST REVIEW', color: '#ff9800' },
     { name: 'ORGC MANAGER REVIEW', color: '#f44336' },
-    { name: 'READY for Validation', color: '#2196f3' },
+    { name: 'READY FOR VALIDATION', color: '#2196f3' },
     { name: 'ZZZ_THROWAWAY_DELETE_ME', color: '#9e9e9e' },
   ]);
   await addRoles(request, [
