@@ -28,7 +28,7 @@ const inlineStyles = {
   },
   type: {
     fontSize: 13,
-    width: '30%',
+    width: '36%',
     minWidth: 0,
     flexShrink: 0,
   },
