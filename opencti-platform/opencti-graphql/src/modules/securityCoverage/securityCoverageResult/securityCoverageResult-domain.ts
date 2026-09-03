@@ -13,6 +13,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../securityCoverage-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
 import { internalCreateSecurityCoverageResult } from './securityCoverageResult-utils';
+import { isFromConnectorWork } from '../../../utils/connector-work';
 
 /**
  * Find a security coverage results by its ID.
@@ -85,7 +86,8 @@ export const addSecurityCoverageResult = async (
   if (!securityCoverageResultInput.name) {
     input.name = `Result of ${securityCoverage.name}`;
   }
-  const result = await internalCreateSecurityCoverageResult(context, user, input);
+  const noEnrich = await isFromConnectorWork(context, user);
+  const result = await internalCreateSecurityCoverageResult(context, user, input, noEnrich);
   return notify(
     BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].ADDED_TOPIC,
     result,
