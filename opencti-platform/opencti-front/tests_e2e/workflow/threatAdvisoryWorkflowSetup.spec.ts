@@ -155,6 +155,9 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@gr
 
   await test.step('Publish the workflow', async () => {
     await workflowEditor.publish();
+    // Assert on the notification first: a rejected publish reports why in a toast that auto-hides
+    // after 8s, so the button assertion alone would time out long after the reason disappeared.
+    await expect(page.locator('.MuiSnackbar-root')).toHaveText(/Workflow successfully published/);
     await expect(workflowEditor.getPublishButton()).toHaveText('Published');
   });
 
