@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect } from 'react';
+import { ChangeEvent, FunctionComponent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import MuiAutocomplete from '@mui/material/Autocomplete';
@@ -52,8 +52,11 @@ export const CustomFieldsLoader: FunctionComponent<{
   const data = useLazyLoadQuery<CustomFieldsInputQuery>(customFieldDefinitionsForEntityTypeQuery, { entityType });
   const definitions = (data.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
   const definitionsKey = JSON.stringify(definitions);
+  const onLoadedRef = useRef(onLoaded);
+  onLoadedRef.current = onLoaded;
+
   useEffect(() => {
-    onLoaded(definitions);
+    onLoadedRef.current(definitions);
   }, [definitionsKey]);
   return null;
 };
@@ -108,8 +111,10 @@ export const buildCustomFieldValueEntry = (
 ): CustomFieldStoredValue => {
   const base = { field_id: definition.id, field_name: definition.name };
   switch (definition.field_type) {
-    case 'integer':
-      return { ...base, int_value: parseInt(String(rawValue), 10) };
+    case 'integer': {
+      const parsed = parseInt(String(rawValue), 10);
+      return { ...base, int_value: Number.isNaN(parsed) ? undefined : parsed };
+    }
     case 'boolean':
       return { ...base, boolean_value: rawValue === true };
     case 'date':
@@ -130,15 +135,73 @@ export const isCustomFieldValueSet = (rawValue: string | boolean | string[]): bo
   return (rawValue ?? '') !== '';
 };
 
-// Fully controlled (Formik-less) input for a custom field definition; value/onChange are wired
-// to whichever form state manages the caller (Formik initial-submit for creation, per-field
-// blur-submit for edition).
-export const CustomFieldInput: FunctionComponent<{
+interface CustomFieldInputProps {
   definition: CustomFieldDef;
   mandatory: boolean;
   value: string | boolean | string[];
-  onChange: (val: string | boolean | string[]) => void;
-}> = ({ definition, mandatory, value, onChange }) => {
+  onChange?: (val: string | boolean | string[]) => void;
+  onSubmit?: (val: string | boolean | string[]) => void;
+}
+
+const TextInputCustomField: FunctionComponent<{
+  definition: CustomFieldDef;
+  label: string;
+  value: string | boolean | string[];
+  onChange?: (val: string | boolean | string[]) => void;
+  onSubmit?: (val: string | boolean | string[]) => void;
+}> = ({ definition, label, value, onChange, onSubmit }) => {
+  const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+    onChange?.(e.target.value);
+  };
+
+  const handleBlur = () => {
+    if (onSubmit && localValue !== value) {
+      onSubmit(localValue);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && onSubmit && localValue !== value) {
+      onSubmit(localValue);
+    }
+  };
+
+  return (
+    <MuiTextField
+      fullWidth
+      variant="standard"
+      label={label}
+      value={localValue}
+      type={definition.field_type === 'integer' ? 'number' : 'text'}
+      inputProps={
+        definition.field_type === 'integer'
+          ? { min: definition.min_value ?? undefined, max: definition.max_value ?? undefined }
+          : undefined
+      }
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      style={fieldSpacingContainerStyle}
+    />
+  );
+};
+
+// Fully controlled input for a custom field definition; value/onChange/onSubmit are wired
+// to whichever form state manages the caller (Formik for creation, per-field blur-submit for edition).
+export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
+  definition,
+  mandatory,
+  value,
+  onChange,
+  onSubmit,
+}) => {
   const { t_i18n } = useFormatter();
   const label = `${definition.label}${mandatory ? ' *' : ''}`;
 
@@ -149,7 +212,10 @@ export const CustomFieldInput: FunctionComponent<{
         control={(
           <Switch
             checked={value === true}
-            onChange={(_, checked) => onChange(checked)}
+            onChange={(_, checked) => {
+              onChange?.(checked);
+              onSubmit?.(checked);
+            }}
           />
         )}
         label={label}
@@ -160,7 +226,11 @@ export const CustomFieldInput: FunctionComponent<{
     return (
       <DateTimePicker
         value={value ? new Date(String(value)) : null}
-        onChange={(date) => onChange(date ? date.toISOString() : '')}
+        onChange={(date) => {
+          const nextVal = date ? date.toISOString() : '';
+          onChange?.(nextVal);
+          onSubmit?.(nextVal);
+        }}
         label={label}
         slotProps={{ textField: { variant: 'standard', fullWidth: true, style: fieldSpacingContainerStyle } }}
       />
@@ -174,7 +244,10 @@ export const CustomFieldInput: FunctionComponent<{
         variant="standard"
         label={label}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          onChange?.(e.target.value);
+          onSubmit?.(e.target.value);
+        }}
         style={fieldSpacingContainerStyle}
       >
         <MenuItem value=""><em>{t_i18n('None')}</em></MenuItem>
@@ -191,7 +264,10 @@ export const CustomFieldInput: FunctionComponent<{
         multiple
         options={definition.select_options}
         value={selected}
-        onChange={(_, newValue) => onChange(newValue)}
+        onChange={(_, newValue) => {
+          onChange?.(newValue);
+          onSubmit?.(newValue);
+        }}
         renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
           <Chip label={option} {...getTagProps({ index })} key={option} />
         ))}
@@ -213,26 +289,20 @@ export const CustomFieldInput: FunctionComponent<{
         label={label}
         required={mandatory}
         value={typeof value === 'string' ? value : ''}
-        onValueChange={(nextValue) => onChange(nextValue)}
+        onValueChange={(nextValue) => onChange?.(nextValue)}
+        onSubmit={(_, submitValue) => onSubmit?.(submitValue)}
         style={fieldSpacingContainerStyle}
         height={200}
       />
     );
   }
   return (
-    <MuiTextField
-      fullWidth
-      variant="standard"
+    <TextInputCustomField
+      definition={definition}
       label={label}
       value={value}
-      type={definition.field_type === 'integer' ? 'number' : 'text'}
-      inputProps={
-        definition.field_type === 'integer'
-          ? { min: definition.min_value ?? undefined, max: definition.max_value ?? undefined }
-          : undefined
-      }
-      onChange={(e) => onChange(e.target.value)}
-      style={fieldSpacingContainerStyle}
+      onChange={onChange}
+      onSubmit={onSubmit}
     />
   );
 };

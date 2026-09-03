@@ -11,7 +11,7 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { fetchQuery, handleErrorInForm } from 'src/relay/environment';
+import { fetchQuery, handleError, handleErrorInForm } from 'src/relay/environment';
 import * as Yup from 'yup';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -44,7 +44,14 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
 import type { CustomFieldsInputQuery$data } from '../../common/custom_fields/__generated__/CustomFieldsInputQuery.graphql';
-import { CustomFieldInput, customFieldDefinitionsForEntityTypeQuery, CustomFieldDef, getCustomFieldSetting } from '../../common/custom_fields/CustomFieldsInput';
+import {
+  buildCustomFieldValueEntry,
+  CustomFieldDef,
+  customFieldDefinitionsForEntityTypeQuery,
+  CustomFieldInput,
+  getCustomFieldSetting,
+  isCustomFieldValueSet,
+} from '../../common/custom_fields/CustomFieldsInput';
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -163,29 +170,14 @@ const CaseIncidentCreationFormContent: FunctionComponent<IncidentFormProps & { c
     { setSubmitting, setErrors, resetForm },
   ) => {
     const customFieldValues = customFieldDefs
-      .filter((def) => {
-        const v = values.customFields[def.id];
-        if (def.field_type === 'boolean') return true;
-        if (Array.isArray(v)) return v.length > 0;
-        return (v ?? '') !== '';
-      })
-      .map((def) => {
-        const raw = values.customFields[def.id];
-        const base = { field_id: def.id, field_name: def.name };
-        switch (def.field_type) {
-          case 'integer':
-            return { ...base, int_value: parseInt(String(raw), 10) };
-          case 'boolean':
-            return { ...base, boolean_value: raw === true };
-          case 'date':
-            return { ...base, date_value: String(raw) };
-          case 'select':
-            return { ...base, select_value: String(raw) };
-          case 'multi_select':
-            return { ...base, select_values: Array.isArray(raw) ? raw : [] };
-          default:
-            return { ...base, string_value: String(raw) };
+      .map((def) => buildCustomFieldValueEntry(def, values.customFields[def.id]))
+      .filter((entry) => {
+        const raw = values.customFields[entry.field_id];
+        const def = customFieldDefs.find((d) => d.id === entry.field_id);
+        if (def?.field_type === 'integer') {
+          return entry.int_value !== undefined;
         }
+        return isCustomFieldValueSet(raw);
       });
     const input: CaseIncidentAddInput = {
       ...buildCreationFilesInput(values.file ? [values.file] : []),
@@ -484,14 +476,23 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = (p
   const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
 
   useEffect(() => {
-    if (!isFeatureEnable('CUSTOM_FIELDS')) return;
+    let isMounted = true;
+    if (!isFeatureEnable('CUSTOM_FIELDS')) return undefined;
     fetchQuery(customFieldDefinitionsForEntityTypeQuery, { entityType: CASE_INCIDENT_TYPE })
       .toPromise()
       .then((data) => {
-        const defs = ((data as CustomFieldsInputQuery$data)?.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
-        setCustomFieldDefs(defs as CustomFieldDef[]);
+        if (isMounted) {
+          const defs = ((data as CustomFieldsInputQuery$data)?.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
+          setCustomFieldDefs(defs as CustomFieldDef[]);
+        }
+      })
+      .catch((error) => {
+        handleError(error);
       });
-  }, []);
+    return () => {
+      isMounted = false;
+    };
+  }, [isFeatureEnable]);
 
   return <CaseIncidentCreationFormContent {...props} customFieldDefs={customFieldDefs} />;
 };

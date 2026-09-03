@@ -248,8 +248,12 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     const definition = customFieldDefs.find((def) => def.id === definitionId);
     if (!definition) return;
     const withoutField = currentCustomFieldValues.filter((v) => v.field_id !== definitionId);
-    const nextValues = isCustomFieldValueSet(rawValue)
-      ? [...withoutField, buildCustomFieldValueEntry(definition, rawValue)]
+    const entry = buildCustomFieldValueEntry(definition, rawValue);
+    const isValidValue = definition.field_type === 'integer'
+      ? entry.int_value !== undefined
+      : isCustomFieldValueSet(rawValue);
+    const nextValues = isValidValue
+      ? [...withoutField, entry]
       : withoutField;
     editor.fieldPatch({
       variables: {
@@ -494,7 +498,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
                   definition={def}
                   mandatory={getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false}
                   value={getCustomFieldCurrentValue(def, currentCustomFieldValues)}
-                  onChange={(val) => handleSubmitCustomField(def.id, val)}
+                  onSubmit={(val) => handleSubmitCustomField(def.id, val)}
                 />
               ))}
             </>
