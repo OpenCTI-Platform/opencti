@@ -1088,7 +1088,7 @@ class DataTableToolBar extends Component {
     return (
       <Select
         disabled={disabled}
-        value={actionsInputs[i]?.type ?? ''}
+        value={actionsInputs[i]?.field ?? ''}
         onValueChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
         <SelectLabel>{t('Field')}</SelectLabel>
@@ -1700,9 +1700,8 @@ class DataTableToolBar extends Component {
             disabled={disabled}
             selectOnFocus={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.state.identities}
-            inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
               if (meta.cause === 'type') (this.searchIdentities.bind(this, i))(newValue);
             }}
@@ -1735,9 +1734,8 @@ class DataTableToolBar extends Component {
             disabled={disabled}
             selectOnFocus={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.state.statuses}
-            inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
               if (meta.cause === 'type') (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
             }}
@@ -1902,7 +1900,6 @@ class DataTableToolBar extends Component {
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || null}
             options={this.state.vocabularies[selectedField] || []}
-            inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
               if (meta.cause === 'type') (this.searchVocabulary.bind(this, i, selectedField))(newValue);
             }}
@@ -1969,9 +1966,8 @@ class DataTableToolBar extends Component {
             disabled={disabled}
             selectOnFocus={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.state.users}
-            inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
               if (meta.cause === 'type') (this.searchUsers.bind(this, i))(newValue);
             }}
@@ -2146,9 +2142,8 @@ class DataTableToolBar extends Component {
             disabled={disabled}
             selectOnFocus={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.constructor.getUserStatusOptionList(userStatuses)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
             onInputChange={(newValue, meta) => {
               if (meta.cause === 'type') (this.searchAccountStatus.bind(this, i))(newValue);
             }}
