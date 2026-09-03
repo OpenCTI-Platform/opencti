@@ -539,8 +539,8 @@ const createApp = async (app, schema) => {
           } else if (!isHealthy) {
             res.status(503).send({ status: 'error', error: failures.join(', ') });
           } else if (shouldIncludeHealthDetails(configAccessKey, req.query?.details)) {
-            const { es_used_size, s3_used_size, ingestion_units } = getPlatformUsageMetrics();
-            res.status(200).send({ status: 'success', es_used_size, s3_used_size, ingestion_units });
+            const { es_used_size, s3_used_size, queue_consumers } = getPlatformUsageMetrics();
+            res.status(200).send({ status: 'success', es_used_size, s3_used_size, queue_consumers });
           } else {
             res.status(200).send({ status: 'success' });
           }

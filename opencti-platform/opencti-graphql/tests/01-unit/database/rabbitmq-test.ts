@@ -66,7 +66,7 @@ vi.mock('lru-cache', () => {
   return { LRUCache: FakeLRUCache };
 });
 
-import { getConnectorQueueSize, metrics } from '../../../src/database/rabbitmq';
+import { getConnectorQueueSize, getQueueConsumersByType, metrics } from '../../../src/database/rabbitmq';
 
 describe('rabbitmq: metrics', () => {
   const context = {};
@@ -257,5 +257,98 @@ describe('rabbitmq: getConnectorQueueSize', () => {
 
     const result = await getConnectorQueueSize(context, user, 'connector-abc');
     expect(result).toBe(15);
+  });
+});
+
+describe('rabbitmq: getQueueConsumersByType', () => {
+  const context = {};
+  const user = {};
+
+  const mockQueues = (queues: unknown[]) => {
+    mockHttpClient.get.mockImplementation((url: string) => {
+      if (url === '/api/overview') {
+        return Promise.resolve({ data: { rabbitmq_version: '3.12.0' } });
+      }
+      if (url.includes('/api/queues')) {
+        return Promise.resolve({ data: queues });
+      }
+      return Promise.resolve({ data: {} });
+    });
+  };
+
+  const pushQueue = (id: string, type: string | undefined, consumers: number) => ({
+    name: `opencti_push_${id}`,
+    consumers,
+    arguments: type === undefined ? {} : { config: { id, type } },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should sum consumers per connector type', async () => {
+    mockQueues([
+      pushQueue('a', 'EXTERNAL_IMPORT', 2),
+      pushQueue('b', 'EXTERNAL_IMPORT', 3),
+      pushQueue('c', 'INTERNAL_ENRICHMENT', 1),
+    ]);
+
+    const result = await getQueueConsumersByType(context, user);
+
+    expect(result).toEqual({ EXTERNAL_IMPORT: 5, INTERNAL_ENRICHMENT: 1 });
+  });
+
+  it('should report every connector type, including those without consumer', async () => {
+    mockQueues([
+      pushQueue('a', 'EXTERNAL_IMPORT', 2),
+      pushQueue('b', 'INTERNAL_EXPORT_FILE', 0),
+    ]);
+
+    const result = await getQueueConsumersByType(context, user);
+
+    expect(result).toEqual({ EXTERNAL_IMPORT: 2, INTERNAL_EXPORT_FILE: 0 });
+  });
+
+  it('should ignore listen queues and non platform queues', async () => {
+    mockQueues([
+      pushQueue('a', 'EXTERNAL_IMPORT', 2),
+      { name: 'opencti_listen_a', consumers: 7, arguments: { config: { type: 'EXTERNAL_IMPORT' } } },
+      { name: 'other_push_queue', consumers: 9, arguments: { config: { type: 'EXTERNAL_IMPORT' } } },
+    ]);
+
+    const result = await getQueueConsumersByType(context, user);
+
+    expect(result).toEqual({ EXTERNAL_IMPORT: 2 });
+  });
+
+  it('should group queues without declared type under UNKNOWN', async () => {
+    mockQueues([
+      pushQueue('a', undefined, 4),
+      pushQueue('b', 'EXTERNAL_IMPORT', 1),
+    ]);
+
+    const result = await getQueueConsumersByType(context, user);
+
+    expect(result).toEqual({ UNKNOWN: 4, EXTERNAL_IMPORT: 1 });
+  });
+
+  it('should default a missing consumer count to 0', async () => {
+    mockQueues([{ name: 'opencti_push_a', arguments: { config: { type: 'EXTERNAL_IMPORT' } } }]);
+
+    const result = await getQueueConsumersByType(context, user);
+
+    expect(result).toEqual({ EXTERNAL_IMPORT: 0 });
+  });
+
+  it('should return an empty record when no push queue exists', async () => {
+    mockQueues([{ name: 'opencti_listen_a', consumers: 3 }]);
+
+    const result = await getQueueConsumersByType(context, user);
+
+    expect(result).toEqual({});
   });
 });

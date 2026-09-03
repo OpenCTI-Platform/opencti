@@ -25,7 +25,7 @@ The following metrics are exposed by the OpenCTI API.
 | `opencti_dependency_up` | Gauge | Reports the connectivity state of a platform dependency: `1` when the dependency answers, `0` when it fails. | Boolean |
 | `opencti_elasticsearch_used_size_bytes` | Gauge | Reports the total ElasticSearch/OpenSearch primary store size, replicas excluded. | Bytes |
 | `opencti_storage_used_size_bytes` | Gauge | Reports the total size of the objects stored in the S3/MinIO bucket. | Bytes |
-| `opencti_ingestion_units` | Gauge | Reports the number of active consumers on the ingestion connector queues (external import, file import, enrichment). | Count |
+| `opencti_queue_consumers` | Gauge | Reports the number of active consumers on the push queues, per connector type. | Count |
 
 ## Platform Health Metrics
 
@@ -33,12 +33,21 @@ A background monitor refreshes the health metrics periodically, so scraping them
 
 A usage metric that cannot be collected is not exported, instead of being exported as `0`.
 
+The platform reports raw consumer counts per connector type and does not aggregate them into an ingestion capacity value. Consumers of the metric decide how to combine the types that are relevant to them.
+
 ### Dependency Metrics Attributes
 Applies to: `opencti_dependency_up`
 
 | Attribute | Description | Example |
 |:---|:---|:---|
 | `dependency` | The monitored platform dependency. | `elasticsearch`, `storage`, `rabbitmq`, `redis` |
+
+### Queue Consumers Metrics Attributes
+Applies to: `opencti_queue_consumers`
+
+| Attribute | Description | Example |
+|:---|:---|:---|
+| `connector_type` | The connector type declared on the push queue. Queues without a declared type are reported as `UNKNOWN`. | `EXTERNAL_IMPORT`, `INTERNAL_ENRICHMENT`, `INTERNAL_IMPORT_FILE`, `INTERNAL_EXPORT_FILE` |
 
 ## Metric Attributes
 

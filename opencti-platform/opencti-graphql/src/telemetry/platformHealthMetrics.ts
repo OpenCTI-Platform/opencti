@@ -3,7 +3,7 @@ import conf, { logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { getEngineUsedSize, isEngineAlive } from '../database/engine';
 import { getStorageUsedSize, isStorageAlive } from '../database/raw-file-storage';
-import { getIngestionUnits, rabbitMQIsAlive } from '../database/rabbitmq';
+import { getQueueConsumersByType, rabbitMQIsAlive } from '../database/rabbitmq';
 import { redisIsAlive } from '../database/redis';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
@@ -19,7 +19,7 @@ export interface DependencyStatus {
 export interface PlatformUsageMetrics {
   es_used_size: number | null;
   s3_used_size: number | null;
-  ingestion_units: number | null;
+  queue_consumers: Record<string, number> | null;
 }
 
 export interface PlatformHealthStatus {
@@ -38,8 +38,10 @@ const buildInitialStatuses = (): Record<HealthDependency, DependencyStatus> => {
   }, {} as Record<HealthDependency, DependencyStatus>);
 };
 
+const buildInitialUsageMetrics = (): PlatformUsageMetrics => ({ es_used_size: null, s3_used_size: null, queue_consumers: null });
+
 let dependencyStatuses = buildInitialStatuses();
-let usageMetrics: PlatformUsageMetrics = { es_used_size: null, s3_used_size: null, ingestion_units: null };
+let usageMetrics: PlatformUsageMetrics = buildInitialUsageMetrics();
 let connectivityInterval: NodeJS.Timeout | null = null;
 let usageMetricsInterval: NodeJS.Timeout | null = null;
 let gaugesRegistered = false;
@@ -87,7 +89,10 @@ export const refreshConnectivityMetrics = async (): Promise<void> => {
 
 // A failed collection resets the metric to null so neither Prometheus nor the
 // health endpoint reports a stale value as if it were freshly measured.
-const collectUsageMetric = async (name: keyof PlatformUsageMetrics, collect: () => Promise<number>): Promise<void> => {
+const collectUsageMetric = async <K extends keyof PlatformUsageMetrics>(
+  name: K,
+  collect: () => Promise<NonNullable<PlatformUsageMetrics[K]>>,
+): Promise<void> => {
   try {
     usageMetrics[name] = await withTimeout(collect(), `Timeout collecting ${name}`);
   } catch (error) {
@@ -101,7 +106,7 @@ export const refreshUsageMetrics = async (): Promise<void> => {
   await Promise.all([
     collectUsageMetric('es_used_size', () => getEngineUsedSize()),
     collectUsageMetric('s3_used_size', () => getStorageUsedSize()),
-    collectUsageMetric('ingestion_units', () => getIngestionUnits(context, SYSTEM_USER)),
+    collectUsageMetric('queue_consumers', () => getQueueConsumersByType(context, SYSTEM_USER)),
   ]);
 };
 
@@ -139,14 +144,14 @@ const registerHealthGauges = () => {
       result.observe(usageMetrics.s3_used_size);
     }
   });
-  const ingestionUnitsGauge = meter.createObservableGauge('opencti_ingestion_units', {
+  const queueConsumersGauge = meter.createObservableGauge('opencti_queue_consumers', {
     valueType: ValueType.INT,
-    description: 'Number of active consumers on ingestion connector queues',
+    description: 'Number of active consumers on the push queues, per connector type',
   });
-  ingestionUnitsGauge.addCallback((result) => {
-    if (usageMetrics.ingestion_units !== null) {
-      result.observe(usageMetrics.ingestion_units);
-    }
+  queueConsumersGauge.addCallback((result) => {
+    Object.entries(usageMetrics.queue_consumers ?? {}).forEach(([connectorType, consumers]) => {
+      result.observe(consumers, { connector_type: connectorType });
+    });
   });
   gaugesRegistered = true;
 };
@@ -158,7 +163,8 @@ export const getPlatformHealthStatus = (): PlatformHealthStatus => {
 };
 
 export const getPlatformUsageMetrics = (): PlatformUsageMetrics => {
-  return { ...usageMetrics };
+  const { queue_consumers } = usageMetrics;
+  return { ...usageMetrics, queue_consumers: queue_consumers === null ? null : { ...queue_consumers } };
 };
 
 export const startPlatformHealthMonitor = async (): Promise<void> => {
@@ -199,6 +205,6 @@ export const stopPlatformHealthMonitor = (): void => {
     usageMetricsInterval = null;
   }
   dependencyStatuses = buildInitialStatuses();
-  usageMetrics = { es_used_size: null, s3_used_size: null, ingestion_units: null };
+  usageMetrics = buildInitialUsageMetrics();
   logApp.info('[HEALTH] Platform health monitoring stopped');
 };

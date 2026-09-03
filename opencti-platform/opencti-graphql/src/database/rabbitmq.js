@@ -11,8 +11,6 @@ import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
-import { ConnectorType } from '../generated/graphql';
 import { s3ConnectionConfig } from './raw-file-storage';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
@@ -512,30 +510,22 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
   return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
 
-// Connector types whose active queue consumers represent parallel ingestion flows.
-// Uses the shared schema constants (and the ConnectorType enum for external import)
-// to avoid drifting from the canonical connector type definitions.
-const INGESTION_CONNECTOR_TYPES = new Set([
-  ConnectorType.ExternalImport, // external feeds ingestion
-  CONNECTOR_INTERNAL_IMPORT_FILE, // file import ingestion
-  CONNECTOR_INTERNAL_ENRICHMENT, // enrichment flows
-]);
+export const UNKNOWN_CONNECTOR_TYPE = 'UNKNOWN';
 
-export const getIngestionUnits = async (context, user) => {
+// Consumers are reported per connector type rather than aggregated, so callers own
+// the capacity model they derive from them (ingestion units, saturation ratios...).
+export const getQueueConsumersByType = async (context, user) => {
   let stats = metricsCache.get('cached_metrics');
   if (!stats) {
     stats = await metrics(context, user);
     metricsCache.set('cached_metrics', stats);
   }
-  const ingestionPushQueues = stats.queues.filter((queue) => {
-    const queueName = queue?.name ?? '';
-    if (!queueName.startsWith(`${RABBIT_QUEUE_PREFIX}push_`)) {
-      return false;
-    }
-    const connectorType = queue?.arguments?.config?.type;
-    return INGESTION_CONNECTOR_TYPES.has(connectorType);
-  });
-  return ingestionPushQueues.reduce((sum, queue) => sum + (queue?.consumers ?? 0), 0);
+  return stats.queues
+    .filter((queue) => (queue?.name ?? '').startsWith(`${RABBIT_QUEUE_PREFIX}push_`))
+    .reduce((consumersByType, queue) => {
+      const connectorType = queue?.arguments?.config?.type ?? UNKNOWN_CONNECTOR_TYPE;
+      return { ...consumersByType, [connectorType]: (consumersByType[connectorType] ?? 0) + (queue?.consumers ?? 0) };
+    }, {});
 };
 
 export const getBestBackgroundConnectorId = async (context, user) => {
