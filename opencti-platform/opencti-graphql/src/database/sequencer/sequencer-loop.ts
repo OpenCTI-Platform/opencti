@@ -17,7 +17,10 @@
 import { logApp } from '../../config/conf';
 import { MissingReferenceFinalError } from '../../config/errors';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
-import { getInstanceIds } from '../../schema/identifier';
+import { generateStandardId, getInstanceIds } from '../../schema/identifier';
+import { idLabel } from '../../schema/schema-labels';
+import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elFindByIds, elFlushSequencerWrites } from '../engine';
 import { flushSequencerEvents } from '../stream/stream-handler';
 import { lockResources } from '../../lock/master-lock';
@@ -47,33 +50,95 @@ export const isSequencerLoopAlive = () => loopStarted && !loopDead;
 // storeLoadByIdsWithRefs lives in middleware.ts, which imports this module: the loader is
 // registered by middleware at module init instead of imported (no cycle).
 type WithRefsLoader = (context: AuthContext, user: AuthUser, ids: string[]) => Promise<any[]>;
+type DedupLoader = (context: AuthContext, input: Record<string, any>, inputIds: string[]) => Promise<any[]>;
 let withRefsLoader: WithRefsLoader | null = null;
-export const registerSequencerLoaders = (loaders: { storeLoadByIdsWithRefs: WithRefsLoader }) => {
+let dedupLoader: DedupLoader | null = null;
+export const registerSequencerLoaders = (loaders: { storeLoadByIdsWithRefs: WithRefsLoader; searchExistingRelations?: DedupLoader }) => {
   withRefsLoader = loaders.storeLoadByIdsWithRefs;
+  dedupLoader = loaders.searchExistingRelations ?? null;
+};
+
+// s10.3 rung 1: relation-dedup prefetch. At pre-resolve, every relation intent whose
+// endpoints are already resolvable runs its dedup query CONCURRENTLY (the same filters as
+// getExistingRelations, through the registered loader); a relation whose endpoint is
+// known-absent at batch start cannot have a pre-existing duplicate, so it is served [] with
+// no query at all. Apply-time getExistingRelations consumes the entry through
+// takeSequencerDedupPrefetch and only trusts it if its own input ids are a subset of the
+// prefetched ones (rename-at-resolution safety). Cleared at every batch boundary.
+const dedupPrefetch = new Map<string, { inputIds: Set<string>; existing: any[] }>();
+const DEDUP_PREFETCH_CONCURRENCY = 8;
+
+export const sequencerDedupPrefetchKey = (fromInternalId: string, toInternalId: string, input: Record<string, any>, createdByInternalId?: string | null): string => {
+  const dates = ['start_time', 'stop_time', 'first_seen', 'last_seen'].map((k) => String(input[k] ?? '')).join('|');
+  return `${fromInternalId}|${toInternalId}|${input.relationship_type}|${dates}|${createdByInternalId ?? ''}`;
+};
+
+export const takeSequencerDedupPrefetch = (key: string, applyInputIds: string[]): any[] | null => {
+  const entry = dedupPrefetch.get(key);
+  if (!entry) return null;
+  if (!applyInputIds.every((id) => entry.inputIds.has(id))) return null;
+  return entry.existing;
+};
+
+// s10.3: nested meta objects (external references, kill chain phases, labels) are
+// auto-created INSIDE the parent's apply; their ids are derivable from the raw input, so
+// probing them at pre-resolve feeds the map (present -> the nested existence check is
+// served positive) or the negative cache (absent -> the guaranteed-negative ES search is
+// skipped). Measured before this existed: finder_meta = 86,981 searches/run, the single
+// largest channel (plan 0010 step 1).
+const deriveNestedMetaIds = (input: Record<string, any>): { type: string; id: string }[] => {
+  const out: { type: string; id: string }[] = [];
+  const labels = input[INPUT_LABELS];
+  if (Array.isArray(labels)) {
+    labels.forEach((label: any) => {
+      if (typeof label === 'string') out.push({ type: ENTITY_TYPE_LABEL, id: idLabel(label) });
+    });
+  }
+  const derive = (entries: any, type: string) => {
+    if (!Array.isArray(entries)) return;
+    entries.forEach((entry: any) => {
+      try {
+        if (typeof entry === 'string') out.push({ type, id: entry });
+        else if (entry && typeof entry === 'object') out.push({ type, id: generateStandardId(type, entry) });
+      } catch {
+        // underspecified nested input: it will fail identically at apply, nothing to probe
+      }
+    });
+  };
+  derive(input[INPUT_EXTERNAL_REFS], ENTITY_TYPE_EXTERNAL_REFERENCE);
+  derive(input[INPUT_KILLCHAIN], ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return out;
 };
 
 // C2 pre-resolution: two steps, both as SYSTEM_USER under a sequencer-owned context.
 const preResolveBatch = async (batch: SequencerIntent[]) => {
   const t0 = Date.now();
   const context = executionContext('sequencer', SYSTEM_USER);
+  // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
+  sequencerIdentityMap.clearAbsent();
+  dedupPrefetch.clear();
   const typedIds = new Map<string, Set<string>>();
   const untypedIds = new Set<string>();
   const entityCandidateIds = new Set<string>();
+  const addTyped = (type: string, id: string) => {
+    let group = typedIds.get(type);
+    if (!group) {
+      group = new Set<string>();
+      typedIds.set(type, group);
+    }
+    group.add(id);
+  };
   batch.forEach((intent) => {
     if (intent.kind === 'entity') {
-      let group = typedIds.get(intent.type);
-      if (!group) {
-        group = new Set<string>();
-        typedIds.set(intent.type, group);
-      }
       intent.candidateIds.forEach((id) => {
-        group?.add(id);
+        addTyped(intent.type, id);
         entityCandidateIds.add(id);
       });
     } else {
       intent.candidateIds.forEach((id) => untypedIds.add(id));
     }
     intent.referencedIds.forEach((id) => untypedIds.add(id));
+    deriveNestedMetaIds(intent.input).forEach(({ type, id }) => addTyped(type, id));
   });
   const typedMisses: string[] = [];
   const typedTypes = new Set<string>();
@@ -90,11 +155,16 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
     const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as any[];
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
+    // s10.3: probed under the type union and not found = known absent for any query whose
+    // type filter is a subset of that union (see sequencer-identity-map)
+    sequencerIdentityMap.markAbsent(typedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), Array.from(typedTypes));
   }
   if (untypedMisses.length > 0) {
     const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses, { searchCaller: 'sequencer_preresolve' }) as any[];
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
+    // probed with no type filter = unconditionally absent
+    sequencerIdentityMap.markAbsent(untypedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), null);
   }
   // step 2: upsert targets = entity candidate ids now resolved; load their diff basis once
   if (withRefsLoader) {
@@ -106,6 +176,51 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       const loaded = await withRefsLoader(context, SYSTEM_USER, Array.from(targetIds));
       loaded.forEach((element) => sequencerIdentityMap.ingestWithRefs(element));
       sequencerMetrics.esOp('search', 3); // element + meta rels + their targets
+    }
+  }
+  // step 3 (s10.3 rung 1): dedup prefetch for the batch's relation intents (see header note)
+  if (dedupLoader) {
+    const jobs: { key: string; inputIds: string[]; run: () => Promise<any[]> }[] = [];
+    batch.forEach((intent) => {
+      if (intent.kind !== 'relation') return;
+      const { fromId, toId, createdBy } = intent.input;
+      if (typeof fromId !== 'string' || typeof toId !== 'string') return;
+      const fromElement = sequencerIdentityMap.peekBare(fromId);
+      const toElement = sequencerIdentityMap.peekBare(toId);
+      const createdByKey = typeof createdBy === 'string'
+        ? (sequencerIdentityMap.resolveInternalId(createdBy) ?? createdBy)
+        : (createdBy?.internal_id ?? null);
+      const key = sequencerDedupPrefetchKey(
+        fromElement?.internal_id ?? fromId,
+        toElement?.internal_id ?? toId,
+        intent.input,
+        createdByKey,
+      );
+      if (dedupPrefetch.has(key)) return;
+      const endpointAbsent = (!fromElement && sequencerIdentityMap.isKnownAbsent(fromId, null))
+        || (!toElement && sequencerIdentityMap.isKnownAbsent(toId, null));
+      if (endpointAbsent) {
+        // an endpoint absent at batch start cannot carry a pre-existing duplicate
+        dedupPrefetch.set(key, { inputIds: new Set(intent.candidateIds), existing: [] });
+        return;
+      }
+      if (!fromElement || !toElement) return; // endpoint not resolved yet: live query at apply
+      const dedupInput = { ...intent.input, from: fromElement, to: toElement };
+      jobs.push({ key, inputIds: intent.candidateIds, run: () => (dedupLoader as DedupLoader)(context, dedupInput, intent.candidateIds) });
+    });
+    for (let i = 0; i < jobs.length; i += DEDUP_PREFETCH_CONCURRENCY) {
+      const slice = jobs.slice(i, i + DEDUP_PREFETCH_CONCURRENCY);
+      // eslint-disable-next-line no-await-in-loop
+      const results = await Promise.all(slice.map(async (job) => {
+        try {
+          return await job.run();
+        } catch {
+          return null; // prefetch is an optimization: the live query at apply remains
+        }
+      }));
+      results.forEach((existing, j) => {
+        if (existing) dedupPrefetch.set(slice[j].key, { inputIds: new Set(slice[j].inputIds), existing });
+      });
     }
   }
   sequencerMetrics.phase('resolve', (Date.now() - t0) / 1000);
@@ -468,6 +583,9 @@ const runBatchLoop = async () => {
       setCurrentWriteBuffer(null);
       setCurrentBatchLock(null);
       if (writtenIds.length > 0) sequencerIdentityMap.evict(writtenIds, 'write');
+      // s10.3: absence and prefetches are only valid while this batch's lock is held
+      sequencerIdentityMap.clearAbsent();
+      dedupPrefetch.clear();
       await lock.unlock();
     }
     // record the REAL assembly size (before the batchEwp-a diagnosis this recorded the

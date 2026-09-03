@@ -7,7 +7,7 @@ import { meterManager } from '../../config/tracing';
 
 export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred';
 export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events';
-export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate';
+export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent';
 
 class SequencerMetrics {
   private intents: Counter | null = null;
@@ -66,7 +66,7 @@ class SequencerMetrics {
     });
     this.identityMap = meter.createCounter('opencti_sequencer_identity_map', {
       valueType: ValueType.INT,
-      description: 'Identity map events (hit, miss, evict, invalidate)',
+      description: 'Identity map events (hit, miss, evict, invalidate; absent = served known-absent from the s10.3 batch negative cache, one avoided ES search each)',
     });
     this.parkSeconds = meter.createHistogram('opencti_sequencer_park_seconds', {
       valueType: ValueType.DOUBLE,

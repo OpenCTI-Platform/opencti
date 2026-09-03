@@ -43,6 +43,20 @@ export class SequencerIdentityMap {
 
   private idIndex = new Map<string, string>();
 
+  // s10.3 rung 1: per-BATCH negative cache. Ids probed against ES at pre-resolve and not
+  // found are KNOWN ABSENT for the batch lifetime: the batch lock is the single writer for
+  // those keys, so the apply-time existence checks can be answered from memory instead of
+  // paying a guaranteed-negative ES search per creation. absentGlobal = probed with no type
+  // filter (absence is unconditional); absentTyped = probed under a type-union filter, and
+  // servable only to a query whose own type filter is a SUBSET of that union (a broader
+  // probe returning nothing implies any narrower query returns nothing; the converse does
+  // not hold). Cleared at every batch boundary; any ingest of an element removes its keys.
+  // CAVEAT (recorded in plan 0010): valid under the single-sequencer topology; a
+  // multi-replica deployment would need the probe to run under the batch lock.
+  private absentGlobal = new Set<string>();
+
+  private absentTyped = new Map<string, string[]>();
+
   size() {
     return this.byInternalId.size;
   }
@@ -91,7 +105,12 @@ export class SequencerIdentityMap {
       keys,
     };
     this.byInternalId.set(internalId, entry);
-    keys.forEach((k) => this.idIndex.set(k, internalId));
+    keys.forEach((k) => {
+      this.idIndex.set(k, internalId);
+      // an ingested element is no longer absent under any of its keys
+      this.absentGlobal.delete(k);
+      this.absentTyped.delete(k);
+    });
     while (this.byInternalId.size > SEQUENCER_CONFIG.identityMapSize) {
       const oldest = this.byInternalId.keys().next().value as string;
       this.removeEntry(oldest);
@@ -123,6 +142,28 @@ export class SequencerIdentityMap {
     return this.lookup(id) !== undefined;
   }
 
+  markAbsent(ids: string[], probedTypes: string[] | null) {
+    ids.forEach((id) => {
+      if (this.lookup(id)) return; // presence always wins
+      if (!probedTypes || probedTypes.length === 0) this.absentGlobal.add(id);
+      else if (!this.absentGlobal.has(id)) this.absentTyped.set(id, probedTypes);
+    });
+  }
+
+  isKnownAbsent(id: string, types: string[] | null): boolean {
+    if (this.absentGlobal.has(id)) return true;
+    const probed = this.absentTyped.get(id);
+    if (!probed) return false;
+    // a typed probe only proves absence for queries at least as narrow as the probe
+    if (!types || types.length === 0) return false;
+    return types.every((t) => probed.includes(t));
+  }
+
+  clearAbsent() {
+    this.absentGlobal.clear();
+    this.absentTyped.clear();
+  }
+
   // P2 chaining (plan 0009 s9.7): the loop re-ingests an applied result with-refs only when
   // a with-refs basis already existed (the element predates the batch), so the next chain
   // step diffs against it; a creation result is never a valid basis.
@@ -146,6 +187,7 @@ export class SequencerIdentityMap {
     const count = this.byInternalId.size;
     this.byInternalId.clear();
     this.idIndex.clear();
+    this.clearAbsent();
     if (count > 0) sequencerMetrics.mapEvent('invalidate', count);
   }
 
@@ -170,6 +212,9 @@ export class SequencerIdentityMap {
       if (entry && typeMatches(entry.element, types)) {
         sequencerMetrics.mapEvent('hit');
         servedByInternalId.set(entry.element.internal_id, entry.element);
+      } else if (this.isKnownAbsent(id, types)) {
+        // s10.3: known absent under the batch lock: no hit, and NOT sent to ES either
+        sequencerMetrics.mapEvent('absent');
       } else {
         sequencerMetrics.mapEvent('miss');
         misses.push(id);

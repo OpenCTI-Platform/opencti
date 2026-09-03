@@ -115,4 +115,51 @@ describe('sequencer identity map (plan 0009 C3/C5)', () => {
     expect(after?.hits.length).toBe(1);
     expect(after?.hits[0].objectMarking?.[0]?.internal_id).toBe('m1');
   });
+
+  // s10.3 rung 1: per-batch negative cache
+  it('serves known-absent ids as neither hit nor miss (no ES trip)', async () => {
+    const map = new SequencerIdentityMap();
+    map.markAbsent(['malware--gone'], null);
+    const ctx = executionContext('test');
+    const served = await map.serveBare(ctx, bypassUser, ['malware--gone'], { type: 'Malware' });
+    expect(served?.hits).toEqual([]);
+    expect(served?.misses).toEqual([]);
+  });
+
+  it('typed absence only answers queries narrower than the probe', async () => {
+    const map = new SequencerIdentityMap();
+    map.markAbsent(['ref--gone'], ['External-Reference', 'Label']);
+    const ctx = executionContext('test');
+    const subset = await map.serveBare(ctx, bypassUser, ['ref--gone'], { type: 'External-Reference' });
+    expect(subset?.misses).toEqual([]);
+    const outside = await map.serveBare(ctx, bypassUser, ['ref--gone'], { type: 'Tool' });
+    expect(outside?.misses).toEqual(['ref--gone']);
+    const untypedQuery = await map.serveBare(ctx, bypassUser, ['ref--gone'], {});
+    expect(untypedQuery?.misses).toEqual(['ref--gone']);
+  });
+
+  it('presence always wins over absence, and ingest revokes it', async () => {
+    const map = new SequencerIdentityMap();
+    map.ingestBare([element('int1', 'malware--aaa')]);
+    map.markAbsent(['malware--aaa'], null); // no-op: the element is present
+    const ctx = executionContext('test');
+    const served = await map.serveBare(ctx, bypassUser, ['malware--aaa'], {});
+    expect(served?.hits.map((h) => h.internal_id)).toEqual(['int1']);
+    // absent first, then created within the batch (apply result ingested)
+    map.markAbsent(['malware--new'], null);
+    expect(map.isKnownAbsent('malware--new', null)).toBe(true);
+    map.ingestBare([element('int2', 'malware--new')]);
+    expect(map.isKnownAbsent('malware--new', null)).toBe(false);
+    const after = await map.serveBare(ctx, bypassUser, ['malware--new'], {});
+    expect(after?.hits.map((h) => h.internal_id)).toEqual(['int2']);
+  });
+
+  it('clearAbsent restores the miss behavior at batch boundaries', async () => {
+    const map = new SequencerIdentityMap();
+    map.markAbsent(['malware--gone'], null);
+    map.clearAbsent();
+    const ctx = executionContext('test');
+    const served = await map.serveBare(ctx, bypassUser, ['malware--gone'], {});
+    expect(served?.misses).toEqual(['malware--gone']);
+  });
 });

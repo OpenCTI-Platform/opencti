@@ -101,7 +101,7 @@ import {
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { isSequencerEligible, sequencerScopedContext, stripMemberRefMarks } from './sequencer/sequencer-eligibility';
-import { registerSequencerLoaders, submitIntent } from './sequencer/sequencer-loop';
+import { registerSequencerLoaders, sequencerDedupPrefetchKey, submitIntent, takeSequencerDedupPrefetch } from './sequencer/sequencer-loop';
 import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
@@ -624,6 +624,8 @@ export const storeLoadByIdsWithRefs = async <T extends StoreObject> (context: Au
 // this loader without importing middleware (no import cycle)
 registerSequencerLoaders({
   storeLoadByIdsWithRefs: (context, user, ids) => storeLoadByIdsWithRefs(context, user, ids),
+  // s10.3 rung 1: the batch pre-resolve runs the SAME dedup query as getExistingRelations
+  searchExistingRelations: (context, input, inputIds) => searchExistingRelations(context, input, inputIds, 'relation_dedup_prefetch'),
 });
 export const storeLoadByIdWithRefs = async <T extends StoreObject>(
   context: AuthContext,
@@ -3399,6 +3401,52 @@ const upsertElement = async (
   return { element: resolvedElement, event: null, isCreation: false };
 };
 
+// s10.3 rung 1: the direct dedup search, extracted so the sequencer batch pre-resolve can
+// run the SAME query concurrently per batch (registered as a loader, no import cycle).
+// inputIds is passed in so prefetch (plan-time candidate ids) and apply (post-resolution
+// ids) stay comparable through takeSequencerDedupPrefetch's subset check.
+export const searchExistingRelations = async (
+  context: AuthContext,
+  input: Record<string, any>,
+  inputIds: string[],
+  searchCallerLabel = 'relation_dedup',
+) => {
+  const { from, to, relationship_type: relationshipType } = input;
+  const deduplicationFilters = buildRelationDeduplicationFilters(input);
+  const searchFilters = {
+    mode: FilterMode.Or,
+    filters: [{ key: ['ids'], values: inputIds }],
+    filterGroups: [{
+      mode: FilterMode.And,
+      filters: [
+        {
+          key: ['connections'],
+          nested: [
+            { key: 'internal_id', values: [from.internal_id] },
+            { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+          ],
+          values: [],
+        },
+        {
+          key: ['connections'],
+          nested: [
+            { key: 'internal_id', values: [to.internal_id] },
+            { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+          ],
+          values: [],
+        },
+        ...deduplicationFilters,
+      ],
+      filterGroups: [],
+    }],
+  };
+  // this windowed list query goes through elPaginate, not elFindByIds, so the caller label
+  // is counted at the site (one list call = one ES search), plan 0010 step 1
+  sequencerMetrics.searchCaller(searchCallerLabel);
+  const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
+  return topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
+};
+
 export const getExistingRelations = async (
   context: AuthContext,
   user: AuthUser,
@@ -3421,40 +3469,21 @@ export const getExistingRelations = async (
   } else {
     // In case of direct relation, try to find the relation with time filters
     // Only in standard indices.
-    const deduplicationFilters = buildRelationDeduplicationFilters(input);
-    const searchFilters = {
-      mode: FilterMode.Or,
-      filters: [{ key: ['ids'], values: getInputIds(relationshipType, input, false) }],
-      filterGroups: [{
-        mode: FilterMode.And,
-        filters: [
-          {
-            key: ['connections'],
-            nested: [
-              { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
-            ],
-            values: [],
-          },
-          {
-            key: ['connections'],
-            nested: [
-              { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
-            ],
-            values: [],
-          },
-          ...deduplicationFilters,
-        ],
-        filterGroups: [],
-      }],
-    };
-    // inputIds
-    // POC plan 0010 step 1: this windowed list query goes through elPaginate, not elFindByIds,
-    // so the caller label is counted at the site (one list call = one ES search)
-    sequencerMetrics.searchCaller('relation_dedup');
-    const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
-    const manualRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
+    const inputIds = getInputIds(relationshipType, input, false);
+    // s10.3 rung 1: under a sequencer apply, the batch pre-resolve may have prefetched this
+    // exact dedup query (or proven it empty: an endpoint absent at batch start cannot carry
+    // a pre-existing duplicate). Trusted only when the apply-time ids are covered by the
+    // prefetched ones (rename-at-resolution safety); otherwise the live query runs as today.
+    if (context.sequencer) {
+      const key = sequencerDedupPrefetchKey(from.internal_id, to.internal_id, input, input.createdBy?.internal_id ?? null);
+      const prefetched = takeSequencerDedupPrefetch(key, inputIds);
+      if (prefetched) {
+        sequencerMetrics.searchCaller('relation_dedup_served');
+        pushAll(existingRelationships, prefetched as StoreProxyRelation[]);
+        return existingRelationships;
+      }
+    }
+    const manualRelationships = await searchExistingRelations(context, input, inputIds);
     pushAll(existingRelationships, manualRelationships);
   }
   return existingRelationships;
