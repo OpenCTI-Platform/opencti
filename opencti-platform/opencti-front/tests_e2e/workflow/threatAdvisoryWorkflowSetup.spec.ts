@@ -68,7 +68,7 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@gr
     await onEnter.addMember('OrgC', 'can view');
     await onEnter.addMember('OrgC', 'can edit', ['OrgC Analyst group']);
     await drawer.clickSubmit();
-    await expect(workflowEditor.getNodeByLabel('OrgC analyst review')).toBeVisible();
+    await expect(workflowEditor.getNodeByLabel('Orgc analyst review')).toBeVisible();
 
     await workflowEditor.clickNewTransitionNode();
     await drawer.setTransitionName('Send to OrgC for review');
@@ -87,7 +87,7 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@gr
     await onEnter.addMember('OrgC', 'can view');
     await onEnter.addMember('OrgC', 'can edit', ['OrgC Manager group']);
     await drawer.clickSubmit();
-    await expect(workflowEditor.getNodeByLabel('OrgC manager review')).toBeVisible();
+    await expect(workflowEditor.getNodeByLabel('Orgc manager review')).toBeVisible();
 
     await workflowEditor.clickNewTransitionNode();
     await drawer.setTransitionName('SEND TO ORGC MANAGER');
@@ -96,7 +96,7 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@gr
     await drawer.clickSubmit();
   });
 
-  await test.step('Add status READY for Validation + transition "SHARE TO ORG"', async () => {
+  await test.step('Add status READY FOR VALIDATION + transition "SHARE TO ORG"', async () => {
     await workflowEditor.clickPlaceholder();
     await drawer.selectOrCreateStatusTemplate('READY FOR VALIDATION', '#2196f3');
     await drawer.clickSubmit();
@@ -137,8 +137,8 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@gr
   // Each "Reject" transition is only triggerable by whoever can edit at that source status.
   const rejectSources: { label: string; org: string; group: string }[] = [
     { label: 'Mo manager review', org: 'OrgA', group: 'Manager group' },
-    { label: 'OrgC analyst review', org: 'OrgC', group: 'OrgC Analyst group' },
-    { label: 'OrgC manager review', org: 'OrgC', group: 'OrgC Manager group' },
+    { label: 'Orgc analyst review', org: 'OrgC', group: 'OrgC Analyst group' },
+    { label: 'Orgc manager review', org: 'OrgC', group: 'OrgC Manager group' },
   ];
   for (const { label, org, group } of rejectSources) {
     await test.step(`Add "Reject" transition from ${label} to New`, async () => {
