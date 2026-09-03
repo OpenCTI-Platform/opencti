@@ -14,10 +14,10 @@
 // passes (then they apply through the unchanged path, which behaves exactly as today).
 // Errors are caught per intent and rejected on its promise: the GraphQL error contract is
 // unchanged. Fail-open watchdog: a dead loop sends every later submit direct and logs.
-import { logApp } from '../../config/conf';
+import conf, { logApp } from '../../config/conf';
 import { MissingReferenceFinalError } from '../../config/errors';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
-import { generateStandardId, getInstanceIds } from '../../schema/identifier';
+import { generateStandardId, getInputIds, getInstanceIds } from '../../schema/identifier';
 import { idLabel } from '../../schema/schema-labels';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
@@ -70,13 +70,29 @@ const DEDUP_PREFETCH_CONCURRENCY = 8;
 
 export const sequencerDedupPrefetchKey = (fromInternalId: string, toInternalId: string, input: Record<string, any>, createdByInternalId?: string | null): string => {
   const dates = ['start_time', 'stop_time', 'first_seen', 'last_seen'].map((k) => String(input[k] ?? '')).join('|');
-  return `${fromInternalId}|${toInternalId}|${input.relationship_type}|${dates}|${createdByInternalId ?? ''}`;
+  // createdBy discriminates the dedup query ONLY when the deduplication config is
+  // created_by_based for this relation type (default false). Including it
+  // unconditionally broke almost every prefetch consumption: the creator identity is
+  // typically created IN the same batch, unresolvable at pre-resolve (raw id in the
+  // key) but resolved at apply (internal id in the key). Measured on rung1/rung1.1:
+  // 8.8k served of 40k prefetched, unchanged by the id-subset fix (s10.3.2).
+  const dedupConfig = conf.get('relations_deduplication') ?? { created_by_based: false, types_overrides: {} };
+  const config = dedupConfig.types_overrides?.[input.relationship_type] ?? dedupConfig;
+  const createdByPart = config.created_by_based ? (createdByInternalId ?? '') : '';
+  return `${fromInternalId}|${toInternalId}|${input.relationship_type}|${dates}|${createdByPart}`;
 };
 
 export const takeSequencerDedupPrefetch = (key: string, applyInputIds: string[]): any[] | null => {
   const entry = dedupPrefetch.get(key);
-  if (!entry) return null;
-  if (!applyInputIds.every((id) => entry.inputIds.has(id))) return null;
+  if (!entry) {
+    // s10.3.2 diagnosis: distinguish a key miss from a subset rejection
+    if (dedupPrefetch.size > 0) sequencerMetrics.searchCaller('relation_dedup_miss_key');
+    return null;
+  }
+  if (!applyInputIds.every((id) => entry.inputIds.has(id))) {
+    sequencerMetrics.searchCaller('relation_dedup_miss_subset');
+    return null;
+  }
   return entry.existing;
 };
 
@@ -205,8 +221,22 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
         return;
       }
       if (!fromElement || !toElement) return; // endpoint not resolved yet: live query at apply
-      const dedupInput = { ...intent.input, from: fromElement, to: toElement };
-      jobs.push({ key, inputIds: intent.candidateIds, run: () => (dedupLoader as DedupLoader)(context, dedupInput, intent.candidateIds) });
+      // entity_type is REQUIRED: without it getInputIds throws in generateAliasesId and the
+      // catch below silently keeps candidateIds, defeating the whole union (s10.3.3 diagnosis:
+      // 50/50 sampled subset rejections were missing ONLY the regenerated relationship
+      // standard id). Same trap as the entity intake candidateIds (see middleware.ts).
+      const dedupInput = { ...intent.input, entity_type: intent.input.relationship_type, from: fromElement, to: toElement };
+      // s10.3.1: the apply-time ids include the POST-RESOLUTION standard id, which the
+      // plan-time candidateIds do not carry. With endpoints resolved it is computable
+      // here with the SAME function apply uses; without it the subset check rejected
+      // almost every prefetch (measured on rung1-a: 8,830 served of 40,409 prefetched).
+      let inputIds = intent.candidateIds;
+      try {
+        inputIds = Array.from(new Set([...intent.candidateIds, ...getInputIds(intent.input.relationship_type, dedupInput, false)]));
+      } catch {
+        // underspecified input: keep candidateIds; the subset check will fall back live
+      }
+      jobs.push({ key, inputIds, run: () => (dedupLoader as DedupLoader)(context, dedupInput, inputIds) });
     });
     for (let i = 0; i < jobs.length; i += DEDUP_PREFETCH_CONCURRENCY) {
       const slice = jobs.slice(i, i + DEDUP_PREFETCH_CONCURRENCY);
