@@ -18,7 +18,7 @@ import { GraphLink, GraphNode, isGraphLink, isGraphNode } from '../graph.types';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import Label from '../../../components/common/label/Label';
-import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,14 +37,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     zIndex: 900,
     borderRadius: 4,
     border: 'none',
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: 'var(--bg-elevation-default)',
     boxShadow: theme.palette.mode === 'light' ? '0 0px 8px 0px rgba(7, 13, 25, .2)' : `0 0px 8px 0px ${theme.palette.background.default}`,
     gap: '8px',
   },
   external: {
-    marginTop: 32,
-    paddingLeft: 10,
-    paddingRight: 10,
+    display: 'flex',
+    flexShrink: 0,
   },
 }));
 
@@ -118,7 +117,7 @@ const EntitiesDetailsRightsBar = () => {
       open={true}
       variant="permanent"
       anchor="right"
-      slotProps={{ paper: { className: fdsLayerClass(RIGHT_BAR_LAYER), sx: { ...layerInputVars } } }}
+      slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
       classes={{ paper: classes.drawerPaper }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
@@ -130,8 +129,10 @@ const EntitiesDetailsRightsBar = () => {
           },
         })}
       </Label>
-      <div style={{ display: 'flex' }}>
-        <div style={{ flex: 'grow', width: '100%' }}>
+      {/* The paper declares no right padding, so the row carries that gutter itself. */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingRight: 20 }}>
+        {/* Without `minWidth: 0` the selected value widens the field and pushes the button around. */}
+        <div style={{ flex: '1 1 auto', minWidth: 0 }} className={fdsLayerClass(3)}>
           <Select
             value={detailsPreviewSelected.id}
             onValueChange={handleSelectEntity}
@@ -143,7 +144,8 @@ const EntitiesDetailsRightsBar = () => {
             <SelectContent aria-label={t_i18n('Object')}>
               {uniqSelectedEntities.map((entity) => (
                 <SelectItem key={entity.id} value={entity.id}>
-                  {entity.label}
+                  {/* `label` is cut to 20 characters for the canvas; `name` trails the tooltip's date on a second line. */}
+                  {entity.name.split('\n')[0]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -156,6 +158,7 @@ const EntitiesDetailsRightsBar = () => {
               <IconButton
                 aria-label={t_i18n('Open the entity overview in a separated tab')}
                 id="open-entity-in-tab-icon-button"
+                size="default"
                 component={Link}
                 target="_blank"
                 to={entityUrl}
