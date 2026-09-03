@@ -176,7 +176,11 @@ describe('httpPlatform: /health details behavior', () => {
       return undefined;
     });
     vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({ initialized: true, isHealthy: true, failures: [] });
-    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: 10, s3_used_size: 20, ingestion_units: 5 });
+    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({
+      es_used_size: 10,
+      s3_used_size: 20,
+      queue_consumers: { EXTERNAL_IMPORT: 3, INTERNAL_ENRICHMENT: 2 },
+    });
   });
 
   it('should return collected detailed metrics when details=true', async () => {
@@ -190,12 +194,12 @@ describe('httpPlatform: /health details behavior', () => {
       status: 'success',
       es_used_size: 10,
       s3_used_size: 20,
-      ingestion_units: 5,
+      queue_consumers: { EXTERNAL_IMPORT: 3, INTERNAL_ENRICHMENT: 2 },
     });
   });
 
   it('should return null detailed metrics when collection is unavailable', async () => {
-    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: null, s3_used_size: null, ingestion_units: null });
+    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: null, s3_used_size: null, queue_consumers: null });
     const healthHandler = await setupHealthHandler();
     const res = buildResponse();
 
@@ -206,7 +210,7 @@ describe('httpPlatform: /health details behavior', () => {
       status: 'success',
       es_used_size: null,
       s3_used_size: null,
-      ingestion_units: null,
+      queue_consumers: null,
     });
   });
 
