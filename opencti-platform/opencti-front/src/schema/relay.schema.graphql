@@ -9007,6 +9007,7 @@ type Query {
   workflowDefinitionPublished(entityType: String!): Boolean
   workflowStatuses(entityType: String!): [Status!]!
   workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]!
+  workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
@@ -10277,6 +10278,32 @@ type WorkflowValidationError {
 type WorkflowEntityRef {
   id: String!
   entity_type: String!
+}
+
+type WorkflowMigrationDiagnostic {
+  type: String!
+  message: String!
+  statusId: String
+}
+
+type WorkflowMigrationState {
+  statusId: String!
+  order: Int!
+}
+
+type WorkflowMigrationScopeResult {
+  scope: StatusScope!
+  initialState: String!
+  published: Boolean!
+  hasPublishedVersion: Boolean!
+  states: [WorkflowMigrationState!]!
+  transitions: [WorkflowSerializedTransition!]!
+  diagnostics: [WorkflowMigrationDiagnostic!]!
+}
+
+type WorkflowMigrationPreview {
+  entityType: String!
+  results: [WorkflowMigrationScopeResult!]!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
