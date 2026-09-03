@@ -502,7 +502,8 @@ export const stixCoreObjectsDistributionByEntity = async (context, user, args) =
   // The regardingOf filter relies on per-relationship-type denormalized fields (rel_<type>.*),
   // so it must be given concrete relationship types (e.g. 'uses', 'indicates') and not an
   // abstract type like ABSTRACT_STIX_CORE_RELATIONSHIP, which would match nothing.
-  const relationshipTypes = relationship_type && relationship_type.length > 0 ? relationship_type : [];
+  // relationship_type is a GraphQL [String] (nullable items), so drop null/empty entries.
+  const relationshipTypes = (relationship_type ?? []).filter((type) => isNotEmptyField(type));
   const regardingOfValues = [
     { key: ID_SUBFILTER, values: objectIds },
     ...(relationshipTypes.length > 0 ? [{ key: RELATION_TYPE_SUBFILTER, values: relationshipTypes }] : []),
