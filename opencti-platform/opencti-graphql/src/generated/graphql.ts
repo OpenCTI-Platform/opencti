@@ -25856,6 +25856,7 @@ export type Query = {
   workflowDefinitionPublished?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   workflowMassTransitions: Array<WorkflowTransition>;
+  workflowMigrationPreview?: Maybe<WorkflowMigrationPreview>;
   workflowStatuses: Array<Status>;
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
@@ -29214,6 +29215,11 @@ export type QueryWorkflowMassTransitionsArgs = {
   excludedIds?: InputMaybe<Array<Scalars['String']['input']>>;
   filters?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryWorkflowMigrationPreviewArgs = {
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -40188,6 +40194,36 @@ export type WorkflowLastHistoryEntry = {
   user_id: Scalars['String']['output'];
 };
 
+export type WorkflowMigrationDiagnostic = {
+  __typename?: 'WorkflowMigrationDiagnostic';
+  message: Scalars['String']['output'];
+  statusId?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
+};
+
+export type WorkflowMigrationPreview = {
+  __typename?: 'WorkflowMigrationPreview';
+  entityType: Scalars['String']['output'];
+  results: Array<WorkflowMigrationScopeResult>;
+};
+
+export type WorkflowMigrationScopeResult = {
+  __typename?: 'WorkflowMigrationScopeResult';
+  diagnostics: Array<WorkflowMigrationDiagnostic>;
+  hasPublishedVersion: Scalars['Boolean']['output'];
+  initialState: Scalars['String']['output'];
+  published: Scalars['Boolean']['output'];
+  scope: StatusScope;
+  states: Array<WorkflowMigrationState>;
+  transitions: Array<WorkflowSerializedTransition>;
+};
+
+export type WorkflowMigrationState = {
+  __typename?: 'WorkflowMigrationState';
+  order: Scalars['Int']['output'];
+  statusId: Scalars['String']['output'];
+};
+
 export type WorkflowPendingAsyncAction = {
   __typename?: 'WorkflowPendingAsyncAction';
   errors?: Maybe<Array<WorkflowActionError>>;
@@ -42760,6 +42796,10 @@ export type ResolversTypes = ResolversObject<{
   WorkflowExecutionStatus: WorkflowExecutionStatus;
   WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
+  WorkflowMigrationDiagnostic: ResolverTypeWrapper<WorkflowMigrationDiagnostic>;
+  WorkflowMigrationPreview: ResolverTypeWrapper<WorkflowMigrationPreview>;
+  WorkflowMigrationScopeResult: ResolverTypeWrapper<WorkflowMigrationScopeResult>;
+  WorkflowMigrationState: ResolverTypeWrapper<WorkflowMigrationState>;
   WorkflowPendingAsyncAction: ResolverTypeWrapper<WorkflowPendingAsyncAction>;
   WorkflowPendingTransition: ResolverTypeWrapper<WorkflowPendingTransition>;
   WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
@@ -43820,6 +43860,10 @@ export type ResolversParentTypes = ResolversObject<{
   WorkflowEntityRef: WorkflowEntityRef;
   WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
   WorkflowLastHistoryEntry: WorkflowLastHistoryEntry;
+  WorkflowMigrationDiagnostic: WorkflowMigrationDiagnostic;
+  WorkflowMigrationPreview: WorkflowMigrationPreview;
+  WorkflowMigrationScopeResult: WorkflowMigrationScopeResult;
+  WorkflowMigrationState: WorkflowMigrationState;
   WorkflowPendingAsyncAction: WorkflowPendingAsyncAction;
   WorkflowPendingTransition: WorkflowPendingTransition;
   WorkflowSchema: WorkflowSchema;
@@ -52482,6 +52526,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   workflowDefinitionPublished?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionPublishedArgs, 'entityType'>>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
   workflowMassTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType, RequireFields<QueryWorkflowMassTransitionsArgs, 'entityType'>>;
+  workflowMigrationPreview?: Resolver<Maybe<ResolversTypes['WorkflowMigrationPreview']>, ParentType, ContextType, RequireFields<QueryWorkflowMigrationPreviewArgs, 'entityType'>>;
   workflowStatuses?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryWorkflowStatusesArgs, 'entityType'>>;
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
@@ -56181,6 +56226,32 @@ export type WorkflowLastHistoryEntryResolvers<ContextType = any, ParentType exte
   user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type WorkflowMigrationDiagnosticResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationDiagnostic'] = ResolversParentTypes['WorkflowMigrationDiagnostic']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  statusId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowMigrationPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationPreview'] = ResolversParentTypes['WorkflowMigrationPreview']> = ResolversObject<{
+  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  results?: Resolver<Array<ResolversTypes['WorkflowMigrationScopeResult']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowMigrationScopeResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationScopeResult'] = ResolversParentTypes['WorkflowMigrationScopeResult']> = ResolversObject<{
+  diagnostics?: Resolver<Array<ResolversTypes['WorkflowMigrationDiagnostic']>, ParentType, ContextType>;
+  hasPublishedVersion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  initialState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  published?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  scope?: Resolver<ResolversTypes['StatusScope'], ParentType, ContextType>;
+  states?: Resolver<Array<ResolversTypes['WorkflowMigrationState']>, ParentType, ContextType>;
+  transitions?: Resolver<Array<ResolversTypes['WorkflowSerializedTransition']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowMigrationStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationState'] = ResolversParentTypes['WorkflowMigrationState']> = ResolversObject<{
+  order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type WorkflowPendingAsyncActionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowPendingAsyncAction'] = ResolversParentTypes['WorkflowPendingAsyncAction']> = ResolversObject<{
   errors?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionError']>>, ParentType, ContextType>;
   expectedCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -57150,6 +57221,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkflowEntityRef?: WorkflowEntityRefResolvers<ContextType>;
   WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;
   WorkflowLastHistoryEntry?: WorkflowLastHistoryEntryResolvers<ContextType>;
+  WorkflowMigrationDiagnostic?: WorkflowMigrationDiagnosticResolvers<ContextType>;
+  WorkflowMigrationPreview?: WorkflowMigrationPreviewResolvers<ContextType>;
+  WorkflowMigrationScopeResult?: WorkflowMigrationScopeResultResolvers<ContextType>;
+  WorkflowMigrationState?: WorkflowMigrationStateResolvers<ContextType>;
   WorkflowPendingAsyncAction?: WorkflowPendingAsyncActionResolvers<ContextType>;
   WorkflowPendingTransition?: WorkflowPendingTransitionResolvers<ContextType>;
   WorkflowSchema?: WorkflowSchemaResolvers<ContextType>;
