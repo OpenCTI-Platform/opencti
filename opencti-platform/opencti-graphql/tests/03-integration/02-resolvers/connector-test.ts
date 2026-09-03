@@ -94,6 +94,8 @@ const CREATE_CONNECTOR_QUERY = gql`
       id
       connector_state
       name
+      version
+      slug
     }
   }
 `;
@@ -262,6 +264,40 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connector.connector_queue_details).toBeDefined();
     expect(queryResult.data.connector.connector_queue_details.messages_number).toBe(0);
     expect(queryResult.data.connector.connector_queue_details.messages_size).toBe(0);
+  });
+
+  it('should register connector with a valid version and slug', async () => {
+    const CONNECTOR_TO_CREATE = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: '1.2.3',
+        slug: 'test-connector',
+      },
+    };
+    const connector = await queryAsUserWithSuccess(USER_CONNECTOR, { query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
+    expect(connector.data.registerConnector.version).toEqual('1.2.3');
+    expect(connector.data.registerConnector.slug).toEqual('test-connector');
+  });
+
+  it('should reject connector registration with an invalid semver version', async () => {
+    const CONNECTOR_TO_CREATE = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: 'not-a-version',
+      },
+    };
+    const queryResult = await queryAsAdmin({ query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
+    expect(queryResult.errors).toBeDefined();
   });
 
   it('should legacy ping still works (without connector_info)', async () => {
