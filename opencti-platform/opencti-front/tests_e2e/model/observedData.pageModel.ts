@@ -16,7 +16,7 @@ export default class ObservedDataPage {
   async navigateFromMenu() {
     const leftBarPage = new LeftBarPage(this.page);
     await leftBarPage.open();
-    await leftBarPage.clickOnMenu('Events', 'Observed data');
+    await leftBarPage.clickOnMenu('Events', 'Observed datas');
   }
 
   getPage() {

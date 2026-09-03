@@ -13,19 +13,40 @@ export default class LeftBarPage {
   }
 
   async clickOnMenu(menuName: string, subMenuItem?: string) {
-    // Fix the following issue: if the menu to open is already open, and you
-    // click on it then you are closing it and by so you do not have access
-    // to the submenus anymore.
-    // Here to be sure we are opening the menu instead of closing it, we open
-    // an other one before, as we can have only one menu open at a time.
-    const otherMenu = menuName === 'Threats' ? 'Arsenal' : 'Threats';
-    await this.page.getByRole('menuitem', { name: otherMenu, exact: true }).click();
-
-    await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
-    if (subMenuItem) {
-      expect(await this.page.getByRole('menuitem', { name: subMenuItem }).isVisible());
-      await this.page.getByRole('menuitem', { name: subMenuItem }).click();
+    if (!subMenuItem) {
+      // Fix the following issue: if the menu to open is already open, and you
+      // click on it then you are closing it and by so you do not have access
+      // to the submenus anymore.
+      // Here to be sure we are opening the menu instead of closing it, we open
+      // an other one before, as we can have only one menu open at a time.
+      const otherMenu = menuName === 'Threats' ? 'Arsenal' : 'Threats';
+      await this.page.getByRole('menuitem', { name: otherMenu, exact: true }).click();
+      await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
+      return;
     }
+
+    // Only expand the parent menu when the sub menu item is not displayed yet. Toggling
+    // menus back and forth animates two collapses at once, which makes the navigation
+    // container overflow, scroll, then snap back when the animation ends: the sub menu
+    // items move between the actionability check and the click, so the click silently
+    // lands on another row.
+    const subMenuItemLocator = this.page.getByRole('menuitem', { name: subMenuItem, exact: true });
+    if (!(await subMenuItemLocator.isVisible())) {
+      await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
+      await expect(subMenuItemLocator).toBeVisible();
+    }
+
+    // The collapse is animated, so a click can still be delivered while the menu is
+    // moving. Assert that the navigation did happen and click again if it did not,
+    // instead of carrying on and failing much later on an unrelated page locator.
+    const link = await subMenuItemLocator.getAttribute('href');
+    expect(link, `The "${subMenuItem}" menu item should be a link`).not.toBeNull();
+    await expect(async () => {
+      await subMenuItemLocator.click();
+      const { pathname } = new URL(this.page.url());
+      const hasNavigated = pathname === link || pathname.startsWith(`${link}/`);
+      expect(hasNavigated, `Expected to navigate to "${link}" but current path is "${pathname}"`).toBeTruthy();
+    }).toPass({ timeout: 30_000 });
   }
 
   async getSubItem(subMenuItem: string) {
