@@ -4,7 +4,8 @@ import * as cache from '../../../../src/database/cache';
 import { addIncident } from '../../../../src/domain/incident';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
-import { addUser, userDelete } from '../../../../src/domain/user';
+import { addUser } from '../../../../src/domain/user';
+import { deleteMergeableUser } from './userMerge-testFixtures';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { elRawSearch } from '../../../../src/database/engine';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
@@ -110,8 +111,8 @@ describe('userMerge operational relations handler', () => {
     for (let i = 0; i < createdDrafts.length; i += 1) {
       await deleteDraftWorkspace(testContext, ADMIN_USER, createdDrafts[i]);
     }
-    await userDelete(testContext, ADMIN_USER, sourceId);
-    await userDelete(testContext, ADMIN_USER, targetId);
+    await deleteMergeableUser(sourceId);
+    await deleteMergeableUser(targetId);
   });
 
   it('should re-point an assignee the target does not hold', async () => {

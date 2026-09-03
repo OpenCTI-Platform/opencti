@@ -3,12 +3,14 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../../src/database/cache';
-import { addUser, userDelete } from '../../../../src/domain/user';
+import { addUser, userDelete, userEditField } from '../../../../src/domain/user';
+import { deleteMergeableUser } from './userMerge-testFixtures';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED } from '../../../../src/config/conf';
 import { registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 import { USER_MERGE_SOURCE_DISABLE_HANDLER } from '../../../../src/modules/userMerge/userMerge-handler';
+import { USER_MERGED_INTO_FIELD } from '../../../../src/modules/userMerge/userMerge-types';
 
 /**
  * Handlers that write on the source account itself rather than on what it owns. A chunk adding
@@ -142,8 +144,8 @@ describe('User merge resolvers', () => {
   });
 
   afterAll(async () => {
-    await userDelete(testContext, ADMIN_USER, mergeSourceId);
-    await userDelete(testContext, ADMIN_USER, mergeTargetId);
+    await deleteMergeableUser(mergeSourceId);
+    await deleteMergeableUser(mergeTargetId);
   });
 
   describe('Access control - BYPASS capability required', () => {
@@ -264,6 +266,32 @@ describe('User merge resolvers', () => {
       // a before/after check by doing nothing at all.
       expect((await readUser(mergeSourceId)).account_status).toEqual(ACCOUNT_STATUS_EXPIRED);
       expect((await readUser(mergeTargetId)).account_status).toEqual(ACCOUNT_STATUS_ACTIVE);
+    });
+
+    // The dedicated deletion path is what an operator is meant to use, but nothing removes the
+    // ordinary delete button from the user administration screen. That button runs cascades which
+    // select by a reference to the account being deleted, so on a merged source a reference the
+    // merge missed gets its Trigger or its Workspace deleted rather than skipped — and those now
+    // belong to the target. This asserts the ordinary path stops, and that it can be re-opened.
+    it('should refuse the ordinary deletion of a merged source until its mark is cleared', async () => {
+      // Its own source: this case ends by deleting it, and the shared one is still needed after.
+      const disposable = await addUser(testContext, SYSTEM_USER, {
+        name: `${SUFFIX}-disposable`,
+        password: SUFFIX,
+        user_email: `${SUFFIX}-disposable@opencti.invalid`,
+        prevent_default_groups: true,
+      });
+      resetCacheForEntity(ENTITY_TYPE_USER);
+      await queryAsAdminWithSuccess({
+        query: USER_MERGE_MUTATION,
+        variables: { sourceId: disposable.id, targetId: mergeTargetId, options: { dryRun: false } },
+      });
+
+      await expect(userDelete(testContext, ADMIN_USER, disposable.id)).rejects.toThrow();
+      expect((await readUser(disposable.id)).id).toEqual(disposable.id);
+
+      await userEditField(testContext, ADMIN_USER, disposable.id, [{ key: USER_MERGED_INTO_FIELD, value: [null] }]);
+      await expect(userDelete(testContext, ADMIN_USER, disposable.id)).resolves.toBeDefined();
     });
   });
 
