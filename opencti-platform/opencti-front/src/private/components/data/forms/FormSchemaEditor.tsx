@@ -1,7 +1,8 @@
 import Button from '@common/button/Button';
 import { Add, AddCircleOutlined, ArrowDownward, ArrowUpward, DeleteOutlined, ExpandMore } from '@mui/icons-material';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, FormControlLabel, Stack, Switch, Tab, Tabs, TextField, Typography } from '@mui/material';
-import { IconButton, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+// fds:keep-mui Switch/TextField predate this PR; this line only drops MUI Tab/Tabs.
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
+import { IconButton, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Formik, useFormikContext } from 'formik';
 import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -182,7 +183,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('main');
 
   const entityTypes = useMemo(() => {
     if (!schema || !entitySettings) {
@@ -1620,665 +1621,669 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
   return (
     <div className={classes.container}>
-      <Tabs sx={{ mb: 2 }} value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-        <Tab label={t_i18n('Main Entity')} />
-        <Tab label={t_i18n('Additional Entities')} />
-        {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
-      </Tabs>
+      <Tabs value={currentTab} onValueChange={setCurrentTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="main">{t_i18n('Main Entity')}</TabsTrigger>
+          <TabsTrigger value="additional">{t_i18n('Additional Entities')}</TabsTrigger>
+          {hasAdditionalEntities && <TabsTrigger value="relationships">{t_i18n('Relationships')}</TabsTrigger>}
+        </TabsList>
 
-      {currentTab === 0 && (
-        <Stack gap={2}>
-          <Select
-            value={formData.mainEntityType}
-            onValueChange={(value) => handleMainEntityTypeChange(value)}
-          >
-            <div>
-              <SelectLabel>{t_i18n('Main Entity Type')}</SelectLabel>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent aria-label={t_i18n('Main Entity Type')}>
-                {entityTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </div>
-          </Select>
-
+        <TabsContent value="main">
           <Stack gap={2}>
-            <FormControlLabel
-              control={(
-                <Switch
-                  checked={formData.mainEntityMultiple}
-                  onChange={(e) => handleFieldChange('mainEntityMultiple', e.target.checked)}
-                />
-              )}
-              label={t_i18n('Allow multiple instances of main entity')}
-            />
+            <Select
+              value={formData.mainEntityType}
+              onValueChange={(value) => handleMainEntityTypeChange(value)}
+            >
+              <div>
+                <SelectLabel>{t_i18n('Main Entity Type')}</SelectLabel>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent aria-label={t_i18n('Main Entity Type')}>
+                  {entityTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </div>
+            </Select>
 
-            <FormControlLabel
-              control={(
-                <Switch
-                  checked={formData.mainEntityLookup}
-                  onChange={(e) => handleFieldChange('mainEntityLookup', e.target.checked)}
-                />
-              )}
-              label={t_i18n('Entity lookup (select existing entities)')}
-            />
-
-            {formData.mainEntityLookup && (
+            <Stack gap={2}>
               <FormControlLabel
                 control={(
                   <Switch
-                    checked={formData.mainEntityDisableCreation || false}
-                    onChange={(e) => handleFieldChange('mainEntityDisableCreation', e.target.checked)}
+                    checked={formData.mainEntityMultiple}
+                    onChange={(e) => handleFieldChange('mainEntityMultiple', e.target.checked)}
                   />
                 )}
-                label={t_i18n('Disable on-the-fly entity creation')}
-                style={{ marginLeft: 20, display: 'block' }}
+                label={t_i18n('Allow multiple instances of main entity')}
               />
-            )}
 
-            {isContainer && (
               <FormControlLabel
                 control={(
                   <Switch
-                    checked={formData.includeInContainer}
-                    onChange={(e) => handleFieldChange('includeInContainer', e.target.checked)}
+                    checked={formData.mainEntityLookup}
+                    onChange={(e) => handleFieldChange('mainEntityLookup', e.target.checked)}
                   />
                 )}
-                label={t_i18n('Include entities in container')}
+                label={t_i18n('Entity lookup (select existing entities)')}
               />
-            )}
 
-            <FormControlLabel
-              control={(
-                <Switch
-                  checked={formData.isDraftByDefault}
-                  onChange={(e) => handleFieldChange('isDraftByDefault', e.target.checked)}
-                />
-              )}
-              label={t_i18n('Create as draft by default')}
-            />
-
-            {formData.isDraftByDefault && (
-              <FormControlLabel
-                control={(
-                  <Switch
-                    checked={formData.allowDraftOverride}
-                    onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
-                  />
-                )}
-                label={t_i18n('Allow users to uncheck draft mode')}
-              />
-            )}
-          </Stack>
-
-          <Accordion variant="outlined">
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              {/* Draft Name Section */}
-              <Typography variant="h6" gutterBottom>{t_i18n('Draft Name')}</Typography>
-              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+              {formData.mainEntityLookup && (
                 <FormControlLabel
                   control={(
                     <Switch
-                      checked={formData.draftDefaults?.name?.isEditable || false}
-                      onChange={(e) => handleFieldChange('draftDefaults.name.isEditable', e.target.checked)}
+                      checked={formData.mainEntityDisableCreation || false}
+                      onChange={(e) => handleFieldChange('mainEntityDisableCreation', e.target.checked)}
                     />
                   )}
-                  label={t_i18n('Editable by end user')}
-                  style={{ display: 'block' }}
+                  label={t_i18n('Disable on-the-fly entity creation')}
+                  style={{ marginLeft: 20, display: 'block' }}
                 />
-                {formData.draftDefaults?.name?.isEditable && (
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.draftDefaults?.name?.isRequired || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.name.isRequired', e.target.checked)}
-                      />
-                    )}
-                    label={t_i18n('Required')}
-                    style={{ display: 'block' }}
-                  />
-                )}
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  label={t_i18n('Default name')}
-                  value={formData.draftDefaults?.name?.defaultValue || ''}
-                  onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
-                  className="mb-5"
-                />
-              </Box>
+              )}
 
-              {/* Draft Description Section */}
-              <Typography variant="h6" gutterBottom>{t_i18n('Draft Description')}</Typography>
-              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+              {isContainer && (
                 <FormControlLabel
                   control={(
                     <Switch
-                      checked={formData.draftDefaults?.description?.isEditable || false}
-                      onChange={(e) => handleFieldChange('draftDefaults.description.isEditable', e.target.checked)}
+                      checked={formData.includeInContainer}
+                      onChange={(e) => handleFieldChange('includeInContainer', e.target.checked)}
                     />
                   )}
-                  label={t_i18n('Editable by end user')}
-                  style={{ display: 'block' }}
+                  label={t_i18n('Include entities in container')}
                 />
-                {formData.draftDefaults?.description?.isEditable && (
+              )}
+
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={formData.isDraftByDefault}
+                    onChange={(e) => handleFieldChange('isDraftByDefault', e.target.checked)}
+                  />
+                )}
+                label={t_i18n('Create as draft by default')}
+              />
+
+              {formData.isDraftByDefault && (
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={formData.allowDraftOverride}
+                      onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
+                    />
+                  )}
+                  label={t_i18n('Allow users to uncheck draft mode')}
+                />
+              )}
+            </Stack>
+
+            <Accordion variant="outlined">
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {/* Draft Name Section */}
+                <Typography variant="h6" gutterBottom>{t_i18n('Draft Name')}</Typography>
+                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
                   <FormControlLabel
                     control={(
                       <Switch
-                        checked={formData.draftDefaults?.description?.isRequired || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.description.isRequired', e.target.checked)}
+                        checked={formData.draftDefaults?.name?.isEditable || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.name.isEditable', e.target.checked)}
                       />
                     )}
-                    label={t_i18n('Required')}
+                    label={t_i18n('Editable by end user')}
                     style={{ display: 'block' }}
                   />
-                )}
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  label={t_i18n('Default description')}
-                  multiline
-                  rows={3}
-                  value={formData.draftDefaults?.description?.defaultValue || ''}
-                  onChange={(e) => handleFieldChange('draftDefaults.description.defaultValue', e.target.value)}
-                  style={{ marginBottom: 20 }}
-                />
-              </Box>
-
-              <Formik
-                initialValues={{
-                  objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
-                  objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
-                  authorDefaultIdentity: (formData.draftDefaults?.author?.type === 'static' && formData.draftDefaults.author.defaultValue)
-                    ? {
-                        value: formData.draftDefaults.author.defaultValue,
-                        label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
-                        type: formData.draftDefaults.author.defaultValueType,
-                      }
-                    : null,
-                }}
-                onSubmit={() => {}}
-                enableReinitialize
-              >
-                {({ setFieldValue }) => (
-                  <>
-                    {/* Draft Assignees Section */}
-                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
-                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                      <FormControlLabel
-                        control={(
-                          <Switch
-                            checked={formData.draftDefaults?.objectAssignee?.isEditable || false}
-                            onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isEditable', e.target.checked)}
-                          />
-                        )}
-                        label={t_i18n('Editable by end user')}
-                        style={{ display: 'block' }}
-                      />
-                      {formData.draftDefaults?.objectAssignee?.isEditable && (
-                        <FormControlLabel
-                          control={(
-                            <Switch
-                              checked={formData.draftDefaults?.objectAssignee?.isRequired || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isRequired', e.target.checked)}
-                            />
-                          )}
-                          label={t_i18n('Required')}
-                          style={{ display: 'block' }}
-                        />
-                      )}
-                      <ObjectAssigneeField
-                        name="objectAssignee"
-                        label={t_i18n('Default assignee(s)')}
-                        style={{ marginBottom: 20 }}
-                      />
-                    </Box>
-
-                    {/* Draft Participants Section */}
-                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
-                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                      <FormControlLabel
-                        control={(
-                          <Switch
-                            checked={formData.draftDefaults?.objectParticipant?.isEditable || false}
-                            onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isEditable', e.target.checked)}
-                          />
-                        )}
-                        label={t_i18n('Editable by end user')}
-                        style={{ display: 'block' }}
-                      />
-                      {formData.draftDefaults?.objectParticipant?.isEditable && (
-                        <FormControlLabel
-                          control={(
-                            <Switch
-                              checked={formData.draftDefaults?.objectParticipant?.isRequired || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isRequired', e.target.checked)}
-                            />
-                          )}
-                          label={t_i18n('Required')}
-                          style={{ display: 'block' }}
-                        />
-                      )}
-                      <ObjectParticipantField
-                        name="objectParticipant"
-                        label={t_i18n('Default participants')}
-                        style={{ marginBottom: 20 }}
-                      />
-                    </Box>
-
-                    {/* Draft Author Section */}
-                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
-                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                      <FormControlLabel
-                        control={(
-                          <Switch
-                            checked={formData.draftDefaults?.author?.isEditable || false}
-                            onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
-                          />
-                        )}
-                        label={t_i18n('Editable by end user')}
-                        style={{ display: 'block' }}
-                      />
-                      {formData.draftDefaults?.author?.isEditable && (
-                        <FormControlLabel
-                          control={(
-                            <Switch
-                              checked={formData.draftDefaults?.author?.isRequired || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
-                            />
-                          )}
-                          label={t_i18n('Required')}
-                          style={{ display: 'block' }}
-                        />
-                      )}
-                      <Box
-                        style={formData.draftDefaults?.author?.type === 'static'
-                          ? {
-                              border: '1px solid rgba(255, 255, 255, 0.12)',
-                              borderRadius: 4,
-                              padding: '12px',
-                              marginBottom: 20,
-                            }
-                          : { marginBottom: 20 }}
-                      >
-                        <Select
-                          value={formData.draftDefaults?.author?.type || 'none'}
-                          onValueChange={(value) => {
-                            const currentAuthorDefaults = formData.draftDefaults?.author;
-                            handleFieldChange('draftDefaults.author', {
-                              type: value,
-                              isEditable: currentAuthorDefaults?.isEditable ?? false,
-                              isRequired: currentAuthorDefaults?.isRequired ?? false,
-                            });
-                          }}
-                        >
-                          <SelectLabel>{t_i18n('Default author source')}</SelectLabel>
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent aria-label={t_i18n('Default author source')}>
-                            <SelectItem value="none">{t_i18n('None (no author specified)')}</SelectItem>
-                            <SelectItem value="main_entity_author">{t_i18n('Main entity author (reuse the same author)')}</SelectItem>
-                            <SelectItem value="static">{t_i18n('Specific Author')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {formData.draftDefaults?.author?.type === 'static' && (
-                          <CreatedByField
-                            name="authorDefaultIdentity"
-                            label={t_i18n('Default author')}
-                            style={{ width: '100%', marginBottom: 0 }}
-                            setFieldValue={setFieldValue}
-                            onChange={(_name: string, value: { value: string; label: string; type?: string } | null) => {
-                              if (value) {
-                                handleFieldChange('draftDefaults.author.defaultValue', value.value);
-                                handleFieldChange('draftDefaults.author.defaultValueLabel', value.label);
-                                handleFieldChange('draftDefaults.author.defaultValueType', value.type);
-                              } else {
-                                handleFieldChange('draftDefaults.author.defaultValue', undefined);
-                                handleFieldChange('draftDefaults.author.defaultValueLabel', undefined);
-                                handleFieldChange('draftDefaults.author.defaultValueType', undefined);
-                              }
-                            }}
-                          />
-                        )}
-                      </Box>
-                    </Box>
-
-                    {/* Authorized Members Section */}
-                    <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
+                  {formData.draftDefaults?.name?.isEditable && (
                     <FormControlLabel
                       control={(
                         <Switch
-                          checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
-                          onChange={(e) => {
-                            const enabled = e.target.checked;
-                            handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
-                            if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
-                              handleFieldChange('draftDefaults.authorizedMembers.defaults', [{
-                                label: t_i18n('Creators'),
-                                value: 'CREATORS',
-                                type: t_i18n('Dynamic options'),
-                                accessRight: 'admin',
-                                groupsRestriction: [],
-                              }]);
-                            }
-                          }}
+                          checked={formData.draftDefaults?.name?.isRequired || false}
+                          onChange={(e) => handleFieldChange('draftDefaults.name.isRequired', e.target.checked)}
                         />
                       )}
-                      label={t_i18n('Activate access restriction')}
+                      label={t_i18n('Required')}
                       style={{ display: 'block' }}
                     />
+                  )}
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label={t_i18n('Default name')}
+                    value={formData.draftDefaults?.name?.defaultValue || ''}
+                    onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
+                    className="mb-5"
+                  />
+                </Box>
 
-                    {formData.draftDefaults?.authorizedMembers?.enabled && (
+                {/* Draft Description Section */}
+                <Typography variant="h6" gutterBottom>{t_i18n('Draft Description')}</Typography>
+                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                  <FormControlLabel
+                    control={(
+                      <Switch
+                        checked={formData.draftDefaults?.description?.isEditable || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.description.isEditable', e.target.checked)}
+                      />
+                    )}
+                    label={t_i18n('Editable by end user')}
+                    style={{ display: 'block' }}
+                  />
+                  {formData.draftDefaults?.description?.isEditable && (
+                    <FormControlLabel
+                      control={(
+                        <Switch
+                          checked={formData.draftDefaults?.description?.isRequired || false}
+                          onChange={(e) => handleFieldChange('draftDefaults.description.isRequired', e.target.checked)}
+                        />
+                      )}
+                      label={t_i18n('Required')}
+                      style={{ display: 'block' }}
+                    />
+                  )}
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    label={t_i18n('Default description')}
+                    multiline
+                    rows={3}
+                    value={formData.draftDefaults?.description?.defaultValue || ''}
+                    onChange={(e) => handleFieldChange('draftDefaults.description.defaultValue', e.target.value)}
+                    style={{ marginBottom: 20 }}
+                  />
+                </Box>
+
+                <Formik
+                  initialValues={{
+                    objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
+                    objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
+                    authorDefaultIdentity: (formData.draftDefaults?.author?.type === 'static' && formData.draftDefaults.author.defaultValue)
+                      ? {
+                          value: formData.draftDefaults.author.defaultValue,
+                          label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
+                          type: formData.draftDefaults.author.defaultValueType,
+                        }
+                      : null,
+                  }}
+                  onSubmit={() => {}}
+                  enableReinitialize
+                >
+                  {({ setFieldValue }) => (
+                    <>
+                      {/* Draft Assignees Section */}
+                      <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
                       <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
                         <FormControlLabel
                           control={(
                             <Switch
-                              checked={formData.draftDefaults?.authorizedMembers?.isEditable || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isEditable', e.target.checked)}
+                              checked={formData.draftDefaults?.objectAssignee?.isEditable || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isEditable', e.target.checked)}
                             />
                           )}
                           label={t_i18n('Editable by end user')}
-                          style={{ display: 'block', marginBottom: 15 }}
+                          style={{ display: 'block' }}
                         />
-                        <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Default authorized members')}</Typography>
-                        <Formik
-                          initialValues={{
-                            authorized_members: normalizeDraftAuthorizedMembersDefaults(
-                              formData.draftDefaults?.authorizedMembers?.defaults || [],
-                              {
-                                creatorsLabel: t_i18n('Creators'),
-                                authorOrgLabel: t_i18n('Draft author (org)'),
-                                dynamicOptionsLabel: t_i18n('Dynamic from draft'),
-                              },
-                            ),
-                          }}
-                          onSubmit={() => {}}
-                        >
-                          {() => (
-                            <>
-                              <Field
-                                name="authorized_members"
-                                component={AuthorizedMembersField}
-                                withDynamicKeys={true}
-                                allowDynamicGroupsRestriction={true}
-                                dynamicContextTypeLabel="Dynamic from draft"
-                                dynamicAuthorOrgLabel="Draft author (org)"
-                                includeBundleOrganizationDynamicOption={false}
-                                dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
+                        {formData.draftDefaults?.objectAssignee?.isEditable && (
+                          <FormControlLabel
+                            control={(
+                              <Switch
+                                checked={formData.draftDefaults?.objectAssignee?.isRequired || false}
+                                onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isRequired', e.target.checked)}
                               />
-                              <AuthorizedMembersSync
-                                onChange={(vals) => {
-                                  if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
-                                    handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
-                                  }
-                                }}
-                              />
-                            </>
-                          )}
-                        </Formik>
+                            )}
+                            label={t_i18n('Required')}
+                            style={{ display: 'block' }}
+                          />
+                        )}
+                        <ObjectAssigneeField
+                          name="objectAssignee"
+                          label={t_i18n('Default assignee(s)')}
+                          style={{ marginBottom: 20 }}
+                        />
                       </Box>
-                    )}
 
-                    <DraftAdvancedDefaultsSync
-                      onChange={(vals) => {
-                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals.objectAssignee)) {
-                          handleFieldChange('draftDefaults.objectAssignee.defaults', vals.objectAssignee);
+                      {/* Draft Participants Section */}
+                      <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
+                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.objectParticipant?.isEditable || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isEditable', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Editable by end user')}
+                          style={{ display: 'block' }}
+                        />
+                        {formData.draftDefaults?.objectParticipant?.isEditable && (
+                          <FormControlLabel
+                            control={(
+                              <Switch
+                                checked={formData.draftDefaults?.objectParticipant?.isRequired || false}
+                                onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isRequired', e.target.checked)}
+                              />
+                            )}
+                            label={t_i18n('Required')}
+                            style={{ display: 'block' }}
+                          />
+                        )}
+                        <ObjectParticipantField
+                          name="objectParticipant"
+                          label={t_i18n('Default participants')}
+                          style={{ marginBottom: 20 }}
+                        />
+                      </Box>
+
+                      {/* Draft Author Section */}
+                      <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
+                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.author?.isEditable || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Editable by end user')}
+                          style={{ display: 'block' }}
+                        />
+                        {formData.draftDefaults?.author?.isEditable && (
+                          <FormControlLabel
+                            control={(
+                              <Switch
+                                checked={formData.draftDefaults?.author?.isRequired || false}
+                                onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                              />
+                            )}
+                            label={t_i18n('Required')}
+                            style={{ display: 'block' }}
+                          />
+                        )}
+                        <Box
+                          style={formData.draftDefaults?.author?.type === 'static'
+                            ? {
+                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                                borderRadius: 4,
+                                padding: '12px',
+                                marginBottom: 20,
+                              }
+                            : { marginBottom: 20 }}
+                        >
+                          <Select
+                            value={formData.draftDefaults?.author?.type || 'none'}
+                            onValueChange={(value) => {
+                              const currentAuthorDefaults = formData.draftDefaults?.author;
+                              handleFieldChange('draftDefaults.author', {
+                                type: value,
+                                isEditable: currentAuthorDefaults?.isEditable ?? false,
+                                isRequired: currentAuthorDefaults?.isRequired ?? false,
+                              });
+                            }}
+                          >
+                            <SelectLabel>{t_i18n('Default author source')}</SelectLabel>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent aria-label={t_i18n('Default author source')}>
+                              <SelectItem value="none">{t_i18n('None (no author specified)')}</SelectItem>
+                              <SelectItem value="main_entity_author">{t_i18n('Main entity author (reuse the same author)')}</SelectItem>
+                              <SelectItem value="static">{t_i18n('Specific Author')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {formData.draftDefaults?.author?.type === 'static' && (
+                            <CreatedByField
+                              name="authorDefaultIdentity"
+                              label={t_i18n('Default author')}
+                              style={{ width: '100%', marginBottom: 0 }}
+                              setFieldValue={setFieldValue}
+                              onChange={(_name: string, value: { value: string; label: string; type?: string } | null) => {
+                                if (value) {
+                                  handleFieldChange('draftDefaults.author.defaultValue', value.value);
+                                  handleFieldChange('draftDefaults.author.defaultValueLabel', value.label);
+                                  handleFieldChange('draftDefaults.author.defaultValueType', value.type);
+                                } else {
+                                  handleFieldChange('draftDefaults.author.defaultValue', undefined);
+                                  handleFieldChange('draftDefaults.author.defaultValueLabel', undefined);
+                                  handleFieldChange('draftDefaults.author.defaultValueType', undefined);
+                                }
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
+
+                      {/* Authorized Members Section */}
+                      <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
+                            onChange={(e) => {
+                              const enabled = e.target.checked;
+                              handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
+                              if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
+                                handleFieldChange('draftDefaults.authorizedMembers.defaults', [{
+                                  label: t_i18n('Creators'),
+                                  value: 'CREATORS',
+                                  type: t_i18n('Dynamic options'),
+                                  accessRight: 'admin',
+                                  groupsRestriction: [],
+                                }]);
+                              }
+                            }}
+                          />
+                        )}
+                        label={t_i18n('Activate access restriction')}
+                        style={{ display: 'block' }}
+                      />
+
+                      {formData.draftDefaults?.authorizedMembers?.enabled && (
+                        <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                          <FormControlLabel
+                            control={(
+                              <Switch
+                                checked={formData.draftDefaults?.authorizedMembers?.isEditable || false}
+                                onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isEditable', e.target.checked)}
+                              />
+                            )}
+                            label={t_i18n('Editable by end user')}
+                            style={{ display: 'block', marginBottom: 15 }}
+                          />
+                          <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Default authorized members')}</Typography>
+                          <Formik
+                            initialValues={{
+                              authorized_members: normalizeDraftAuthorizedMembersDefaults(
+                                formData.draftDefaults?.authorizedMembers?.defaults || [],
+                                {
+                                  creatorsLabel: t_i18n('Creators'),
+                                  authorOrgLabel: t_i18n('Draft author (org)'),
+                                  dynamicOptionsLabel: t_i18n('Dynamic from draft'),
+                                },
+                              ),
+                            }}
+                            onSubmit={() => {}}
+                          >
+                            {() => (
+                              <>
+                                <Field
+                                  name="authorized_members"
+                                  component={AuthorizedMembersField}
+                                  withDynamicKeys={true}
+                                  allowDynamicGroupsRestriction={true}
+                                  dynamicContextTypeLabel="Dynamic from draft"
+                                  dynamicAuthorOrgLabel="Draft author (org)"
+                                  includeBundleOrganizationDynamicOption={false}
+                                  dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
+                                />
+                                <AuthorizedMembersSync
+                                  onChange={(vals) => {
+                                    if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
+                                      handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
+                                    }
+                                  }}
+                                />
+                              </>
+                            )}
+                          </Formik>
+                        </Box>
+                      )}
+
+                      <DraftAdvancedDefaultsSync
+                        onChange={(vals) => {
+                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals.objectAssignee)) {
+                            handleFieldChange('draftDefaults.objectAssignee.defaults', vals.objectAssignee);
+                          }
+                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
+                            handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
+                          }
+                        }}
+                      />
+                    </>
+                  )}
+                </Formik>
+              </AccordionDetails>
+            </Accordion>
+
+            {formData.mainEntityMultiple && !formData.mainEntityLookup && (
+              <Select
+                value={formData.mainEntityFieldMode}
+                onValueChange={(value) => handleFieldChange('mainEntityFieldMode', value)}
+              >
+                <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent aria-label={t_i18n('Multiple Mode')}>
+                  <SelectItem value="multiple">{t_i18n('Multiple fields')}</SelectItem>
+                  <SelectItem value="parsed">{t_i18n('Parsed values')}</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+
+            {formData.mainEntityMultiple && formData.mainEntityFieldMode === 'parsed' && !formData.mainEntityLookup && (
+              <>
+                <Select
+                  value={formData.mainEntityParseField}
+                  onValueChange={(value) => handleFieldChange('mainEntityParseField', value)}
+                >
+                  <SelectLabel>{t_i18n('Parse Field Type')}</SelectLabel>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Parse Field Type')}>
+                    <SelectItem value="text">{t_i18n('Text')}</SelectItem>
+                    <SelectItem value="textarea">{t_i18n('Text Area')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={formData.mainEntityParseMode}
+                  onValueChange={(value) => handleFieldChange('mainEntityParseMode', value)}
+                >
+                  <SelectLabel>{t_i18n('Parse Mode')}</SelectLabel>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Parse Mode')}>
+                    <SelectItem value="comma">{t_i18n('Comma-separated')}</SelectItem>
+                    {formData.mainEntityParseField === 'textarea' && (
+                      <SelectItem value="line">{t_i18n('One per line')}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={formData.mainEntityParseFieldMapping || ''}
+                  onValueChange={(value) => {
+                    const newMapping = value;
+                    updateFormData((prev) => {
+                      const wasFirstSelection = !prev.mainEntityParseFieldMapping;
+                      let updatedFields = prev.fields;
+
+                      if (newMapping) {
+                        if (wasFirstSelection) {
+                        // First time selecting: remove ALL pre-provisioned fields for main entity
+                          updatedFields = prev.fields.filter((f) => f.attributeMapping.entity !== 'main_entity');
+                        } else {
+                        // Changing selection: remove any field that maps to the newly selected attribute
+                          updatedFields = prev.fields.filter((f) => !(f.attributeMapping.entity === 'main_entity' && f.attributeMapping.attributeName === newMapping));
                         }
-                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
-                          handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
-                        }
-                      }}
+                      }
+
+                      return {
+                        ...prev,
+                        mainEntityParseFieldMapping: newMapping,
+                        fields: updatedFields,
+                      };
+                    });
+                  }}
+                >
+                  <SelectLabel>{t_i18n('Map parsed values to attribute')}</SelectLabel>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Map parsed values to attribute')}>
+                    {(() => {
+                      const { mainEntityType } = formData;
+                      const entityTypeSettings = entitySettings?.edges.find((e) => e.node.target_type === mainEntityType);
+                      const availableAttributes = entityTypeSettings?.node.attributesDefinitions
+                        ?.filter((attr) => attr.type === 'string' && attr.upsert === true)
+                        .map((attr) => ({
+                          value: attr.name,
+                          label: attr.label || attr.name,
+                        })) || [];
+                      return availableAttributes.map((attr) => (
+                        <SelectItem key={attr.value} value={attr.value}>
+                          {attr.label}
+                        </SelectItem>
+                      ));
+                    })()}
+                  </SelectContent>
+                </Select>
+
+                {/* Show auto-convert to STIX pattern toggle for Indicator type */}
+                {formData.mainEntityType === 'Indicator' && (
+                  <>
+                    <FormControlLabel
+                      control={(
+                        <Switch
+                          checked={formData.mainEntityAutoConvertToStixPattern || false}
+                          onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                        />
+                      )}
+                      label={t_i18n('Automatically convert to STIX patterns')}
+                      style={{ marginTop: 20 }}
+                    />
+                    <FormControlLabel
+                      control={(
+                        <Switch
+                          checked={formData.autoCreateObservableFromIndicator || false}
+                          onChange={() => handleFieldChange('autoCreateObservableFromIndicator', !formData.autoCreateObservableFromIndicator)}
+                        />
+                      )}
+                      label={t_i18n('Automatically create observables from indicators')}
+                      style={{ marginTop: 10 }}
                     />
                   </>
                 )}
-              </Formik>
-            </AccordionDetails>
-          </Accordion>
 
-          {formData.mainEntityMultiple && !formData.mainEntityLookup && (
-            <Select
-              value={formData.mainEntityFieldMode}
-              onValueChange={(value) => handleFieldChange('mainEntityFieldMode', value)}
-            >
-              <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent aria-label={t_i18n('Multiple Mode')}>
-                <SelectItem value="multiple">{t_i18n('Multiple fields')}</SelectItem>
-                <SelectItem value="parsed">{t_i18n('Parsed values')}</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-
-          {formData.mainEntityMultiple && formData.mainEntityFieldMode === 'parsed' && !formData.mainEntityLookup && (
-            <>
-              <Select
-                value={formData.mainEntityParseField}
-                onValueChange={(value) => handleFieldChange('mainEntityParseField', value)}
-              >
-                <SelectLabel>{t_i18n('Parse Field Type')}</SelectLabel>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent aria-label={t_i18n('Parse Field Type')}>
-                  <SelectItem value="text">{t_i18n('Text')}</SelectItem>
-                  <SelectItem value="textarea">{t_i18n('Text Area')}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={formData.mainEntityParseMode}
-                onValueChange={(value) => handleFieldChange('mainEntityParseMode', value)}
-              >
-                <SelectLabel>{t_i18n('Parse Mode')}</SelectLabel>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent aria-label={t_i18n('Parse Mode')}>
-                  <SelectItem value="comma">{t_i18n('Comma-separated')}</SelectItem>
-                  {formData.mainEntityParseField === 'textarea' && (
-                    <SelectItem value="line">{t_i18n('One per line')}</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-              <Select
-                value={formData.mainEntityParseFieldMapping || ''}
-                onValueChange={(value) => {
-                  const newMapping = value;
-                  updateFormData((prev) => {
-                    const wasFirstSelection = !prev.mainEntityParseFieldMapping;
-                    let updatedFields = prev.fields;
-
-                    if (newMapping) {
-                      if (wasFirstSelection) {
-                        // First time selecting: remove ALL pre-provisioned fields for main entity
-                        updatedFields = prev.fields.filter((f) => f.attributeMapping.entity !== 'main_entity');
-                      } else {
-                        // Changing selection: remove any field that maps to the newly selected attribute
-                        updatedFields = prev.fields.filter((f) => !(f.attributeMapping.entity === 'main_entity' && f.attributeMapping.attributeName === newMapping));
-                      }
-                    }
-
-                    return {
-                      ...prev,
-                      mainEntityParseFieldMapping: newMapping,
-                      fields: updatedFields,
-                    };
-                  });
-                }}
-              >
-                <SelectLabel>{t_i18n('Map parsed values to attribute')}</SelectLabel>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent aria-label={t_i18n('Map parsed values to attribute')}>
-                  {(() => {
-                    const { mainEntityType } = formData;
-                    const entityTypeSettings = entitySettings?.edges.find((e) => e.node.target_type === mainEntityType);
-                    const availableAttributes = entityTypeSettings?.node.attributesDefinitions
-                      ?.filter((attr) => attr.type === 'string' && attr.upsert === true)
-                      .map((attr) => ({
-                        value: attr.name,
-                        label: attr.label || attr.name,
-                      })) || [];
-                    return availableAttributes.map((attr) => (
-                      <SelectItem key={attr.value} value={attr.value}>
-                        {attr.label}
-                      </SelectItem>
-                    ));
-                  })()}
-                </SelectContent>
-              </Select>
-
-              {/* Show auto-convert to STIX pattern toggle for Indicator type */}
-              {formData.mainEntityType === 'Indicator' && (
-                <>
+                {/* Show auto-create indicator toggle for Observable types */}
+                {['Artifact', 'Autonomous-System', 'Directory', 'Domain-Name', 'Email-Addr', 'Email-Message',
+                  'Email-Mime-Part-Type', 'File', 'IPv4-Addr', 'IPv6-Addr', 'Mac-Addr', 'Mutex', 'Network-Traffic',
+                  'Process', 'Software', 'Url', 'User-Account', 'Windows-Registry-Key', 'Windows-Registry-Value-Type',
+                  'X509-Certificate', 'Cryptocurrency-Wallet', 'Hostname', 'Text', 'User-Agent', 'Bank-Account',
+                  'Phone-Number', 'Payment-Card', 'Media-Content',
+                ].includes(formData.mainEntityType) && (
                   <FormControlLabel
                     control={(
                       <Switch
-                        checked={formData.mainEntityAutoConvertToStixPattern || false}
-                        onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                        checked={formData.autoCreateIndicatorFromObservable || false}
+                        onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
                       />
                     )}
-                    label={t_i18n('Automatically convert to STIX patterns')}
-                    style={{ marginTop: 20 }}
+                    label={t_i18n('Automatically create indicators from observables')}
                   />
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.autoCreateObservableFromIndicator || false}
-                        onChange={() => handleFieldChange('autoCreateObservableFromIndicator', !formData.autoCreateObservableFromIndicator)}
-                      />
-                    )}
-                    label={t_i18n('Automatically create observables from indicators')}
-                    style={{ marginTop: 10 }}
-                  />
-                </>
-              )}
+                )}
+              </>
+            )}
 
-              {/* Show auto-create indicator toggle for Observable types */}
-              {['Artifact', 'Autonomous-System', 'Directory', 'Domain-Name', 'Email-Addr', 'Email-Message',
-                'Email-Mime-Part-Type', 'File', 'IPv4-Addr', 'IPv6-Addr', 'Mac-Addr', 'Mutex', 'Network-Traffic',
-                'Process', 'Software', 'Url', 'User-Account', 'Windows-Registry-Key', 'Windows-Registry-Value-Type',
-                'X509-Certificate', 'Cryptocurrency-Wallet', 'Hostname', 'Text', 'User-Agent', 'Bank-Account',
-                'Phone-Number', 'Payment-Card', 'Media-Content',
-              ].includes(formData.mainEntityType) && (
-                <FormControlLabel
-                  control={(
-                    <Switch
-                      checked={formData.autoCreateIndicatorFromObservable || false}
-                      onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
-                    />
-                  )}
-                  label={t_i18n('Automatically create indicators from observables')}
-                />
-              )}
-            </>
-          )}
-
-          {(() => {
-            if (formData.mainEntityLookup) {
-              return (
-                <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
-                  {t_i18n('Entity lookup enabled. Users will select existing entities of this type.')}
-                </Alert>
-              );
-            }
-            if (formData.mainEntityFieldMode === 'parsed' && formData.mainEntityMultiple) {
-              return (
-                <>
+            {(() => {
+              if (formData.mainEntityLookup) {
+                return (
                   <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
-                    {t_i18n('Parsed mode enabled. Users can enter multiple values in a single field. Additional fields can be defined that will apply to all created entities.')}
+                    {t_i18n('Entity lookup enabled. Users will select existing entities of this type.')}
                   </Alert>
-                  {formData.mainEntityParseFieldMapping && (
-                    <div style={{ marginTop: 20 }}>
-                      <Typography variant="h6" gutterBottom>
-                        {t_i18n('Additional Fields (will be applied to all created entities)')}
-                      </Typography>
-                      {(() => {
-                        const mainEntityParsedFields = (fieldsByEntity.main_entity || [])
-                          .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping);
-                        return mainEntityParsedFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityParsedFields));
-                      })()}
-                      <Button
-                        variant="secondary"
-                        startIcon={<Add />}
-                        onClick={() => handleAddField('main_entity', formData.mainEntityType)}
-                        className={classes.addButton}
-                      >
-                        {t_i18n('Add field')}
-                      </Button>
-                    </div>
-                  )}
-                </>
+                );
+              }
+              if (formData.mainEntityFieldMode === 'parsed' && formData.mainEntityMultiple) {
+                return (
+                  <>
+                    <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
+                      {t_i18n('Parsed mode enabled. Users can enter multiple values in a single field. Additional fields can be defined that will apply to all created entities.')}
+                    </Alert>
+                    {formData.mainEntityParseFieldMapping && (
+                      <div style={{ marginTop: 20 }}>
+                        <Typography variant="h6" gutterBottom>
+                          {t_i18n('Additional Fields (will be applied to all created entities)')}
+                        </Typography>
+                        {(() => {
+                          const mainEntityParsedFields = (fieldsByEntity.main_entity || [])
+                            .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping);
+                          return mainEntityParsedFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityParsedFields));
+                        })()}
+                        <Button
+                          variant="secondary"
+                          startIcon={<Add />}
+                          onClick={() => handleAddField('main_entity', formData.mainEntityType)}
+                          className={classes.addButton}
+                        >
+                          {t_i18n('Add field')}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                );
+              }
+              const mainEntityFields = fieldsByEntity.main_entity || [];
+              return (
+                <Stack gap={2} sx={{ mt: 1 }}>
+                  <Typography variant="h6">
+                    {t_i18n('Main Entity Fields')}
+                  </Typography>
+                  {mainEntityFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityFields))}
+                  <div>
+                    <Button
+                      variant="secondary"
+                      startIcon={<Add />}
+                      onClick={() => handleAddField('main_entity', formData.mainEntityType)}
+                    >
+                      {t_i18n('Add field')}
+                    </Button>
+                  </div>
+                </Stack>
               );
-            }
-            const mainEntityFields = fieldsByEntity.main_entity || [];
-            return (
-              <Stack gap={2} sx={{ mt: 1 }}>
-                <Typography variant="h6">
-                  {t_i18n('Main Entity Fields')}
-                </Typography>
-                {mainEntityFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityFields))}
-                <div>
-                  <Button
-                    variant="secondary"
-                    startIcon={<Add />}
-                    onClick={() => handleAddField('main_entity', formData.mainEntityType)}
-                  >
-                    {t_i18n('Add field')}
-                  </Button>
-                </div>
-              </Stack>
-            );
-          })()}
-        </Stack>
-      )}
-
-      {currentTab === 1 && (
-        <div className={classes.tabPanel}>
-          <Stack gap={1}>
-            {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
-            <div>
-              <Button
-                variant="secondary"
-                startIcon={<AddCircleOutlined />}
-                onClick={handleAddAdditionalEntity}
-                className={classes.addButton}
-              >
-                {t_i18n('Add additional entity')}
-              </Button>
-            </div>
+            })()}
           </Stack>
-        </div>
-      )}
+        </TabsContent>
 
-      {currentTab === 2 && hasAdditionalEntities && (
-        <Stack className={classes.tabPanel} gap={2}>
-          <Typography variant="h6" gutterBottom>
-            {t_i18n('Relationships')}
-          </Typography>
-          {formData.relationships.map((relationship, idx) => renderRelationship(relationship, idx))}
-          <div>
-            <Button
-              variant="secondary"
-              startIcon={<Add />}
-              onClick={handleAddRelationship}
-            >
-              {t_i18n('Add relationship')}
-            </Button>
+        <TabsContent value="additional">
+          <div className={classes.tabPanel}>
+            <Stack gap={1}>
+              {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
+              <div>
+                <Button
+                  variant="secondary"
+                  startIcon={<AddCircleOutlined />}
+                  onClick={handleAddAdditionalEntity}
+                  className={classes.addButton}
+                >
+                  {t_i18n('Add additional entity')}
+                </Button>
+              </div>
+            </Stack>
           </div>
-        </Stack>
-      )}
+        </TabsContent>
+
+        <TabsContent value="relationships">
+          {hasAdditionalEntities && (
+            <Stack className={classes.tabPanel} gap={2}>
+              <Typography variant="h6" gutterBottom>
+                {t_i18n('Relationships')}
+              </Typography>
+              {formData.relationships.map((relationship, idx) => renderRelationship(relationship, idx))}
+              <div>
+                <Button
+                  variant="secondary"
+                  startIcon={<Add />}
+                  onClick={handleAddRelationship}
+                >
+                  {t_i18n('Add relationship')}
+                </Button>
+              </div>
+            </Stack>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

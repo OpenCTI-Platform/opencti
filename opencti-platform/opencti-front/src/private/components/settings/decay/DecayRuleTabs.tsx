@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { useFormatter } from 'src/components/i18n';
 import useConnectedDocumentModifier from 'src/utils/hooks/useConnectedDocumentModifier';
 import DecayRules from '@components/settings/decay/DecayRules';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import DecayExclusionRules from './DecayExclusionRules';
 import { useLocation } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const DecayRuleTabs = () => {
   const { t_i18n } = useFormatter();
@@ -15,13 +14,11 @@ const DecayRuleTabs = () => {
   const location = useLocation();
   setTitle(t_i18n('Decay Rules | Customization | Settings'));
 
-  const [currentTab, setCurrentTab] = useState<number>(0);
+  const [currentTab, setCurrentTab] = useState('rules');
 
   useEffect(() => {
-    if (location.state?.decayTab === 'decayExclusionRule') setCurrentTab(1);
+    if (location.state?.decayTab === 'decayExclusionRule') setCurrentTab('exclusions');
   }, []);
-
-  const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
 
   return (
     <>
@@ -33,16 +30,22 @@ const DecayRuleTabs = () => {
         ]}
       />
       <Box>
-        <Tabs
-          value={currentTab}
-          onChange={handleChangeTab}
-          style={{ marginBottom: '20px' }}
-        >
-          <Tab label={t_i18n('Decay rules')} />
-          <Tab label={t_i18n('Decay exclusion rules')} />
+        <Tabs value={currentTab} onValueChange={setCurrentTab}>
+          {/* Inline: 200px is an arbitrary value, and the product compiles no Tailwind. */}
+          <div style={{ marginRight: 200 }}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>
+              <TabsTrigger value="exclusions">{t_i18n('Decay exclusion rules')}</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="rules">
+            <DecayRules />
+          </TabsContent>
+          <TabsContent value="exclusions">
+            <DecayExclusionRules />
+          </TabsContent>
         </Tabs>
-        {currentTab === 0 && <DecayRules />}
-        {currentTab === 1 && <DecayExclusionRules />}
       </Box>
     </>
   );
