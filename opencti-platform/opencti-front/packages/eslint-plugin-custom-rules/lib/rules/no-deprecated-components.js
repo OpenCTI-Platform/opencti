@@ -1,40 +1,13 @@
 import path from 'node:path';
 
-// Deprecated components: the MUI / legacy `@filigran/ui` identifiers whose
-// Filigran Design System replacement is already finished AND in service in
-// OpenCTI. Only those are enforced — importing them from MUI / `@filigran/ui`
-// is now a regression. Source of truth is the `enforced` map in
-// fds-migration/mui-regression-policy.generated.json (a GENERATED file); keep
-// this list in sync with it. Components whose replacement is not ready yet
-// (`held` / `notGatable` in that policy) are intentionally excluded.
+// Deprecated components: the MUI / legacy `@filigran/ui` identifiers that have
+// an equivalent already built in the Filigran Design System — i.e. every row
+// marked `Lib status = done` in fds-migration/COMPONENT-MAPPING.md that has a
+// MUI/legacy counterpart. Importing any of them from MUI / `@filigran/ui` is a
+// regression; use the design-system component instead. Identifiers are grouped
+// by their DS replacement. Keep in sync with COMPONENT-MAPPING.md (GENERATED).
 const DEPRECATED_COMPONENTS = {
-  Button: 'Button',
-  LoadingButton: 'Button',
-  buttonVariants: 'Button',
-  Tooltip: 'Tooltip',
-  TooltipContent: 'Tooltip',
-  TooltipTrigger: 'Tooltip',
-  TooltipProvider: 'Tooltip',
-  IconButton: 'IconButton',
-  Badge: 'Badge',
-  TextField: 'Input',
-  Input: 'Input',
-  InputAdornment: 'Input',
-  Textarea: 'Textarea',
-  Switch: 'Switch',
-  Select: 'Select',
-  SelectContent: 'Select',
-  SelectItem: 'Select',
-  SelectTrigger: 'Select',
-  SelectValue: 'Select',
-  Checkbox: 'Checkbox',
-  Radio: 'Radio',
-  RadioGroup: 'Radio',
-  Autocomplete: 'Combobox',
-  Combobox: 'Combobox',
-  MultiSelectFormField: 'Combobox',
-  Chip: 'Chip',
-  Paper: 'Paper',
+  Typography: 'Typography',
   Menu: 'Menu',
   MenuItem: 'Menu',
   MenuList: 'Menu',
@@ -44,12 +17,52 @@ const DEPRECATED_COMPONENTS = {
   DropdownMenuLabel: 'Menu',
   DropdownMenuSeparator: 'Menu',
   DropdownMenuTrigger: 'Menu',
-  ButtonGroup: 'ButtonGroup',
-  ToggleButton: 'ButtonGroup',
-  ToggleButtonGroup: 'ButtonGroup',
+  Tooltip: 'Tooltip',
+  TooltipContent: 'Tooltip',
+  TooltipTrigger: 'Tooltip',
+  TooltipProvider: 'Tooltip',
+  IconButton: 'IconButton',
+  Dialog: 'Dialog',
+  DialogTitle: 'Dialog',
+  DialogContent: 'Dialog',
+  DialogContentText: 'Dialog',
+  DialogActions: 'Dialog',
+  AlertDialog: 'Dialog',
+  AlertDialogAction: 'Dialog',
+  AlertDialogCancel: 'Dialog',
+  AlertDialogContent: 'Dialog',
+  AlertDialogDescription: 'Dialog',
+  AlertDialogFooter: 'Dialog',
+  AlertDialogHeader: 'Dialog',
+  AlertDialogTitle: 'Dialog',
+  Select: 'Select',
+  SelectContent: 'Select',
+  SelectItem: 'Select',
+  SelectTrigger: 'Select',
+  SelectValue: 'Select',
+  Switch: 'Switch',
+  TextField: 'Input',
+  Input: 'Input',
+  InputAdornment: 'Input',
+  Tabs: 'Tabs',
+  Tab: 'Tabs',
+  TabContext: 'Tabs',
+  TabList: 'Tabs',
+  TabPanel: 'Tabs',
+  TabsList: 'Tabs',
+  TabsTrigger: 'Tabs',
+  Autocomplete: 'Combobox',
+  Combobox: 'Combobox',
+  MultiSelectFormField: 'Combobox',
+  Radio: 'Radio',
+  RadioGroup: 'Radio',
+  Checkbox: 'Checkbox',
   AppBar: 'Header',
   Toolbar: 'Header',
-  CircularProgress: 'Spinner',
+  Button: 'Button',
+  LoadingButton: 'Button',
+  buttonVariants: 'Button',
+  Slider: 'Slider',
 };
 
 // Same import sources the MUI regression gate watches
