@@ -57,6 +57,12 @@ const styles = (theme) => ({
     height: 50,
   },
   bodyItem: bodyItemStyle,
+  // `text-overflow` never reaches bare text in a flex container; it only ellipsises a real child.
+  truncate: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
@@ -78,18 +84,25 @@ const styles = (theme) => ({
 
 const inlineStyles = {
   name: {
-    width: '35%',
+    width: '28%',
   },
   creator_name: {
-    width: '20%',
+    width: '15%',
   },
   labels: {
-    width: '15%',
+    width: '12%',
     display: 'flex',
     alignItems: 'center',
   },
+  // A track too short for "PAP:AMBER" squeezes the chip instead of shortening it.
+  markings: {
+    width: '24%',
+    display: 'flex',
+    alignItems: 'center',
+    paddingRight: 16,
+  },
   lastModified: {
-    width: '10%',
+    width: '16%',
   },
 };
 
@@ -204,11 +217,11 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
             primary={(
               <>
                 <div className={classes.bodyItem} style={inlineStyles.name}>
-                  {file.name.replace('.json', '')}
+                  <span className={classes.truncate}>{file.name.replace('.json', '')}</span>
                 </div>
                 <FieldOrEmpty source={file.metaData.creator?.name}>
                   <div className={classes.bodyItem} style={inlineStyles.creator_name}>
-                    {file.metaData.creator?.name}
+                    <span className={classes.truncate}>{file.metaData.creator?.name}</span>
                   </div>
                 </FieldOrEmpty>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
@@ -220,11 +233,11 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                     />
                   )) : null}
                 </div>
-                <div className={classes.bodyItem} style={inlineStyles.labels}>
+                <div className={classes.bodyItem} style={inlineStyles.markings}>
                   <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.lastModified}>
-                  {nsdt(file.lastModified)}
+                  <span className={classes.truncate}>{nsdt(file.lastModified)}</span>
                 </div>
               </>
             )}
