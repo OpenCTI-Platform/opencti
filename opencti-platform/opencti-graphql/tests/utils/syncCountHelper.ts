@@ -62,7 +62,7 @@ testCreatedCounter['threat-actor'] = 25;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
-testCreatedCounter.vulnerability = 9;
+testCreatedCounter.vulnerability = 10;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -98,7 +98,7 @@ testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 5;
 testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
-testUpdatedCounter.vulnerability = 3;
+testUpdatedCounter.vulnerability = 4;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
