@@ -105,7 +105,7 @@ const NewsFeedPage: FunctionComponent = () => {
 
   return (
     <div>
-      <Breadcrumbs elements={[{ label: t_i18n('XTM Hub news feed'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('XTM Hub News Feed'), current: true }]} />
       <Typography variant="h2" sx={{ mt: 3, mb: 3 }}>
         {t_i18n('XTM Hub News Feed')}
       </Typography>
