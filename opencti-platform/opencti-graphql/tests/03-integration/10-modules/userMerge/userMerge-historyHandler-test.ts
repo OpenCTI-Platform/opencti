@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { elIndex, elRawDeleteByQuery, elRawGet } from '../../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { addUser, userDelete } from '../../../../src/domain/user';
+import { addUser } from '../../../../src/domain/user';
+import { deleteMergeableUser } from './userMerge-testFixtures';
 import { INDEX_HISTORY, INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../../../src/database/utils';
 import { executeUserMerge } from '../../../../src/modules/userMerge/userMerge-engine';
 import { registerUserMergeHandler, resetUserMergeHandlers, userMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
@@ -108,8 +109,8 @@ describe('userMerge history handler', () => {
       refresh: true,
       body: { query: { ids: { values: INTERNAL_DOCUMENT_IDS } } },
     });
-    await userDelete(testContext, ADMIN_USER, SOURCE_ID);
-    await userDelete(testContext, ADMIN_USER, TARGET_ID);
+    await deleteMergeableUser(SOURCE_ID);
+    await deleteMergeableUser(TARGET_ID);
   });
 
   it('should count what it would rewrite without writing anything', async () => {
