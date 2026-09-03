@@ -4052,7 +4052,7 @@ export const createEntity = async (
   user: AuthUser,
   input: Record<string, any>,
   type: string,
-  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+  opts: { complete?: boolean; noEnrich?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
@@ -4063,7 +4063,7 @@ export const createEntity = async (
     if (isFeatureEnabled('ENTITIES_WORKFLOW')) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null) { // upsert
+  } else if (data.event !== null && !opts.noEnrich) { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;

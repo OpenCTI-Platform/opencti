@@ -36,7 +36,7 @@ testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 3;
 testCreatedCounter.indicator = 56;
 testCreatedCounter.infrastructure = 1;
-testCreatedCounter['intrusion-set'] = 4;
+testCreatedCounter['intrusion-set'] = 6;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -63,8 +63,8 @@ testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 10;
-testCreatedCounter['security-coverage'] = 18;
-testCreatedCounter['security-coverage-result'] = 17;
+testCreatedCounter['security-coverage'] = 20;
+testCreatedCounter['security-coverage-result'] = 18;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -104,6 +104,7 @@ testUpdatedCounter.vulnerability = 3;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
+testUpdatedCounter['security-coverage'] = 1;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 1;
@@ -135,7 +136,7 @@ testDeletedCounter.incident = 2;
 testDeletedCounter.report = 37;
 testDeletedCounter.indicator = 28;
 testDeletedCounter.infrastructure = 1;
-testDeletedCounter['intrusion-set'] = 3;
+testDeletedCounter['intrusion-set'] = 5;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
@@ -161,8 +162,8 @@ testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
-testDeletedCounter['security-coverage'] = 16;
-testDeletedCounter['security-coverage-result'] = 15;
+testDeletedCounter['security-coverage'] = 18;
+testDeletedCounter['security-coverage-result'] = 16;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);

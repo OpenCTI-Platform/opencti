@@ -59,17 +59,20 @@ export const getMostRecentLastCoverageResult = async (results: StoreEntitySecuri
  * @param context
  * @param user user making the request.
  * @param securityCoverageResultInput Input to create the security coverage result.
+ * @param noEnrich skips the auto enrichment trigger on upsert (connector write-back).
  */
 export const internalCreateSecurityCoverageResult = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverageResultInput: SecurityCoverageResultAddInput,
+  noEnrich = false,
 ) => {
   const result: BasicStoreEntitySecurityCoverageResult = await createEntity(
     context,
     user,
     securityCoverageResultInput,
     ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
+    { noEnrich },
   );
   logApp.info(`[SECURITY-COVERAGE-RESULT][${securityCoverageResultInput.resultOf}] SCR created: ${result.standard_id}`);
   return result;
