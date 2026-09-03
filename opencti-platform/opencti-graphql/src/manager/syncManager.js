@@ -39,7 +39,10 @@ const waitLoopTimer = new InterruptibleTimer();
 const isStringTooLongError = (error) => {
   const errorMessage = error?.message ?? '';
   return error?.code === 'ERR_STRING_TOO_LONG'
-    || errorMessage.includes('Cannot create a string longer than');
+    || errorMessage.includes('Cannot create a string longer than')
+    // JSON.stringify throws a plain RangeError with this message (no error code) when the
+    // resulting string would exceed Node's max string length.
+    || (error instanceof RangeError && errorMessage.includes('Invalid string length'));
 };
 
 const dropAttachedFilesData = (syncData) => {
