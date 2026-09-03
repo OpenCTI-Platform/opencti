@@ -1760,7 +1760,7 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Events', 'Incidents');
   await leftBarPage.clickOnMenu('Events', 'Sightings');
   await leftBarPage.expectBreadcrumb('Events', 'Sightings');
-  await leftBarPage.clickOnMenu('Events', 'Observed datas');
+  await leftBarPage.clickOnMenu('Events', 'Observed data');
   await leftBarPage.expectBreadcrumb('Events', 'Observed data');
 
   // Checking Observations menu
@@ -1784,7 +1784,7 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Threats', 'Campaigns');
 
   // Checking Arsenal menu
-  await leftBarPage.clickOnMenu('Arsenal', 'Malwares');
+  await leftBarPage.clickOnMenu('Arsenal', 'Malware');
   await leftBarPage.expectBreadcrumb('Arsenal', 'Malware');
   await leftBarPage.clickOnMenu('Arsenal', 'Channels');
   await leftBarPage.expectBreadcrumb('Arsenal', 'Channels');
