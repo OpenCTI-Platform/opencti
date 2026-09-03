@@ -147,8 +147,10 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
 
   const debouncedSearchStatuses = useDebounceCallback(searchStatuses, 1500);
 
+  const isWorkflowUiEnabled = !!type && isWorkflowUiEnabledForType(type, isFeatureEnable);
+
   useEffect(() => {
-    if (!type || !isWorkflowUiEnabledForType(type, isFeatureEnable)) {
+    if (!type || !isWorkflowUiEnabled) {
       setHasPublishedWorkflowDefinition(false);
       return;
     }
@@ -158,7 +160,7 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
         const queryData = data as StatusFieldWorkflowDefinitionPublishedQuery$data;
         setHasPublishedWorkflowDefinition(!!queryData?.workflowDefinitionPublished);
       });
-  }, [type, isFeatureEnable]);
+  }, [type, isWorkflowUiEnabled]);
 
   const isWorkflowManaged = hasPublishedWorkflowDefinition;
 
