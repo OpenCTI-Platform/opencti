@@ -131,6 +131,7 @@ import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
 import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
 import { hashSHA256 } from '../utils/hash';
+import { normalizeEmail } from '../utils/email';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -878,13 +879,19 @@ export const addUser = async (context, user, newUser) => {
   let userEmail;
   const userServiceAccount = newUser.user_service_account;
   if (newUser.user_email && !userServiceAccount) {
-    userEmail = newUser.user_email.toLowerCase();
+    userEmail = normalizeEmail(newUser.user_email);
     const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
     if (existingUser) {
       throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
     }
   } else if (userServiceAccount) {
-    userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
+    userEmail = newUser.user_email ? normalizeEmail(newUser.user_email) : `automatic+${uuid()}@opencti.invalid`;
+    if (newUser.user_email) {
+      const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+      if (existingUser) {
+        throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+      }
+    }
   } else {
     throw FunctionalError('User cannot be created without email');
   }
@@ -1075,7 +1082,7 @@ export const validateAndNormalizeEmailInput = async (context, userId, input) => 
     if (!Array.isArray(input.value) || input.value.length !== 1 || typeof input.value[0] !== 'string') {
       throw FunctionalError('The email you have provided is not valid');
     }
-    const newEmail = input.value[0].toLowerCase().trim();
+    const newEmail = normalizeEmail(input.value[0]);
     if (isEmptyField(newEmail)) {
       throw FunctionalError('The email you have provided is not valid');
     }
@@ -1589,7 +1596,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   if (isEmptyField(email)) {
     throw ForbiddenAccess('User email not provided');
   }
-  const userEmail = email.toLowerCase();
+  const userEmail = normalizeEmail(email);
   const name = isEmptyField(providedName) ? userEmail : providedName;
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
@@ -1654,7 +1661,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
 
 export const getUserByEmail = async (email) => {
   const context = executionContext('login');
-  return await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
+  return await elLoadBy(context, SYSTEM_USER, 'user_email', normalizeEmail(email), ENTITY_TYPE_USER);
 };
 
 export const login = async (email, password) => {
@@ -2298,7 +2305,7 @@ const initAdmin = async (context, email, password, tokenValue) => {
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
-      user_email: email,
+      user_email: normalizeEmail(email),
       password: bcrypt.hashSync(password.toString()),
       account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       external: true,
@@ -2309,7 +2316,7 @@ const initAdmin = async (context, email, password, tokenValue) => {
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
       external: true,
-      user_email: email.toLowerCase(),
+      user_email: normalizeEmail(email),
       account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       name: 'admin',
       firstname: 'Admin',
