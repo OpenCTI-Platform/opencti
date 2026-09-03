@@ -178,7 +178,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       fontFamily: 'Consolas, monaco, monospace',
       textTransform: 'inherit',
       ...(tooltip && {
-        height: '100%',
+        // The library Button carries its own 14px type in an 11px tooltip, so the pill outgrew every word beside it.
+        fontSize: 'inherit',
+        lineHeight: 'inherit',
+        height: 'auto',
         pointerEvents: 'none',
       }),
       ...(isLocalModeSwitchable && {
