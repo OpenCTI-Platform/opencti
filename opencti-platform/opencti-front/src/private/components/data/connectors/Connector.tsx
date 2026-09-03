@@ -134,7 +134,7 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} className="mb-5">
       <QueryRenderer
         key="connector-works-in-progress"
         query={connectorWorksQuery}
