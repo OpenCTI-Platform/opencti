@@ -26,7 +26,6 @@ import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundErr
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   buildRefRelationKey,
   CONNECTOR_INTERNAL_ANALYSIS,
@@ -79,7 +78,13 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import {
+  BULK_SEARCH_KEYWORDS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER_KEYS,
+  ID_SUBFILTER,
+  INSTANCE_REGARDING_OF,
+  RELATION_TYPE_SUBFILTER,
+} from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { connectorsForAnalysis } from '../database/repository';
@@ -490,28 +495,34 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
-  const { objectId, types, filters = emptyFilterGroup } = args;
+  const { objectId, types, relationship_type, filters = emptyFilterGroup } = args;
   let finalFilters = filters;
   const objectIds = Array.isArray(objectId) ? objectId : [objectId];
-  // Here, we need to force regardingOf ID = objectID
-  // Check if filter is already present and replace id
+  // Only restrict by relationship_type when explicitly requested.
+  // The regardingOf filter relies on per-relationship-type denormalized fields (rel_<type>.*),
+  // so it must be given concrete relationship types (e.g. 'uses', 'indicates') and not an
+  // abstract type like ABSTRACT_STIX_CORE_RELATIONSHIP, which would match nothing.
+  const relationshipTypes = relationship_type && relationship_type.length > 0 ? relationship_type : [];
+  const regardingOfValues = [
+    { key: ID_SUBFILTER, values: objectIds },
+    ...(relationshipTypes.length > 0 ? [{ key: RELATION_TYPE_SUBFILTER, values: relationshipTypes }] : []),
+  ];
+  // Here, we need to force regardingOf ID = objectID and, if provided, relationship_type = relationshipTypes
+  // Check if filter is already present and replace id / relationship_type
   if (findFiltersFromKey(filters.filters ?? [], INSTANCE_REGARDING_OF).length > 0) {
     finalFilters = {
       ...filters,
       filters: finalFilters.filters.map((n) => (n.key === INSTANCE_REGARDING_OF ? {
         ...n,
         values: [
-          ...n.values.filter((i) => i.key !== 'id'),
-          { key: 'id', values: objectIds },
+          ...n.values.filter((i) => i.key !== ID_SUBFILTER && (relationshipTypes.length === 0 || i.key !== RELATION_TYPE_SUBFILTER)),
+          ...regardingOfValues,
         ],
       } : n)),
     };
   // If not present, adding it
   } else {
-    finalFilters = addFilter(filters, INSTANCE_REGARDING_OF, [
-      { key: 'id', values: objectIds },
-      { key: 'type', values: [ABSTRACT_STIX_CORE_RELATIONSHIP] },
-    ]);
+    finalFilters = addFilter(filters, INSTANCE_REGARDING_OF, regardingOfValues);
   }
   return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters: finalFilters });
 };

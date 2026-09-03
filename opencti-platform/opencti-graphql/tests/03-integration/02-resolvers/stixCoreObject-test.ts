@@ -83,4 +83,29 @@ describe('stixCoreObjectsDistributionByEntity', () => {
     expect(distribution).toBeDefined();
     expect(distribution.length).toEqual(1);
   });
+
+  it('should filter distribution by relationship_type (#15882)', async () => {
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    expect(malware).toBeDefined();
+    // Malware is related to Attack-Patterns and Intrusion-Set only through 'uses' relationships
+    const usesDistribution = await stixCoreObjectsDistributionByEntity(testContext, ADMIN_USER, {
+      objectId: malware!.internal_id,
+      field: 'entity_type',
+      operation: 'count',
+      relationship_type: ['uses'],
+    });
+    const usesMap = new Map(usesDistribution.map((i: { label: string; value: number }) => [i.label, i.value]));
+    expect(usesMap.get('Attack-Pattern')).toEqual(2);
+    expect(usesMap.get('Intrusion-Set')).toEqual(1);
+    // Filtering on a relationship_type that does not connect this malware to those entities must exclude them
+    const relatedToDistribution = await stixCoreObjectsDistributionByEntity(testContext, ADMIN_USER, {
+      objectId: malware!.internal_id,
+      field: 'entity_type',
+      operation: 'count',
+      relationship_type: ['related-to'],
+    });
+    const relatedToMap = new Map(relatedToDistribution.map((i: { label: string; value: number }) => [i.label, i.value]));
+    expect(relatedToMap.get('Attack-Pattern')).toBeUndefined();
+    expect(relatedToMap.get('Intrusion-Set')).toBeUndefined();
+  });
 });
