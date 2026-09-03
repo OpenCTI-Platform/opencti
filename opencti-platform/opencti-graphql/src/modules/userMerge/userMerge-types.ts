@@ -10,6 +10,19 @@ import type { UserMergeHandlerOutcome } from './userMerge-handler';
 
 export const MERGE_USERS_MODULE_NAME = 'userMerge';
 
+/**
+ * Field naming the account a source was merged into, written on the source by the merge.
+ *
+ * It states a fact about identity, not a verdict about references: "this account was merged
+ * into that one" stays true forever, whereas "its references are clean" is a claim about the
+ * present that only a dry-run can make. The deletion gate keeps asking the dry-run; this field
+ * exists so that the *ordinary* deletion path can recognise a merged source and refuse it.
+ *
+ * Declared here rather than in a handler file because `domain/user` reads it, and this module
+ * imports `domain/user`: any other home would close an import cycle.
+ */
+export const USER_MERGED_INTO_FIELD = 'merged_into';
+
 export enum UserMergeRightsStrategy {
   Strict = 'STRICT',
   Union = 'UNION',
