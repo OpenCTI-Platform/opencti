@@ -2002,6 +2002,8 @@ input RegisterConnectorInput {
   playbook_compatible: Boolean
   listen_callback_uri: String
   xtm_one_intent: String
+  version: String
+  slug: String
 }
 
 input EditManagedConnectorInput {
@@ -2259,6 +2261,8 @@ type Connector implements BasicObject & InternalObject {
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
   xtm_one_intent: String
+  version: String
+  slug: String
   jwks: String!
 }
 
