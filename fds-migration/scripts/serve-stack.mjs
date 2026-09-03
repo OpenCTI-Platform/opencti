@@ -29,7 +29,17 @@ http.createServer((req, res) => {
   // static, with SPA fallback
   const rel = normalize(decodeURIComponent(url.pathname)).replace(/^(\.\.[/\\])+/, '');
   let file = join(DIST, rel);
-  if (!existsSync(file) || statSync(file).isDirectory()) file = join(DIST, 'index.html');
+  if (!existsSync(file) || statSync(file).isDirectory()) {
+    // A hashed asset that no longer exists means a tab is running a previous
+    // build; falling back to index.html would hand it HTML where it expects a
+    // module, and the app reports only "An unknown error occurred".
+    if (/^\/assets\//.test(url.pathname)) {
+      res.writeHead(404, { 'content-type': 'text/plain' });
+      res.end('stale asset: reload the page to pick up the current build');
+      return;
+    }
+    file = join(DIST, 'index.html');
+  }
   // index.html ships with placeholders the BACKEND normally substitutes when it
   // serves the front (opencti-graphql/src/http/httpPlatform.js). Serving the raw
   // file leaves `%APP_TITLE%` and friends in place and the app never boots — so
