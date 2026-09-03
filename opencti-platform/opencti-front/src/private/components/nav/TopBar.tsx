@@ -1,6 +1,6 @@
 import IconButton from '@common/button/IconButton';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
-import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
 import { alpha, Badge, Divider, Stack } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
@@ -129,7 +129,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     ? (newsFeedsNumberFromSub !== null ? newsFeedsNumberFromSub : (data.myUnreadNewsFeedsCount ?? 0))
     : 0;
   const isNewNewsFeed = newsFeedCount > 0;
-  const hasUnread = isNewNotification || isNewNewsFeed;
   const subConfig = useMemo(
     () => ({
       subscription: topBarNotificationNumberSubscription,
@@ -303,20 +302,37 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       <AlarmOnOutlined fontSize="medium" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={t_i18n('Notifications')}>
+                  <Tooltip title={t_i18n('Alerts')}>
                     <IconButton
                       aria-haspopup="true"
                       size="default"
                       component={Link}
-                      to="/dashboard/profile/notifications/alerts"
-                      selected={location.pathname.startsWith('/dashboard/profile/notifications')}
+                      to="/dashboard/profile/notifications"
+                      selected={location.pathname === '/dashboard/profile/notifications'}
                     >
                       <Badge
                         color="secondary"
                         variant="dot"
-                        invisible={!hasUnread}
+                        invisible={!isNewNotification}
                       >
                         <NotificationsOutlined fontSize="medium" />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t_i18n('News Feed')}>
+                    <IconButton
+                      aria-haspopup="true"
+                      size="default"
+                      component={Link}
+                      to="/dashboard/news-feed"
+                      selected={location.pathname.startsWith('/dashboard/news-feed')}
+                    >
+                      <Badge
+                        color="secondary"
+                        variant="dot"
+                        invisible={!isNewNewsFeed}
+                      >
+                        <CampaignOutlined fontSize="medium" />
                       </Badge>
                     </IconButton>
                   </Tooltip>
