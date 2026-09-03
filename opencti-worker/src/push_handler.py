@@ -2,15 +2,36 @@ import base64
 import datetime
 import itertools
 import json
+import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
+
+# POC (plan 0009 s9.11): ONE request-thread pool per worker process, shared by every
+# queue handler. The wave of any in-flight bundle draws its threads from this common
+# budget, so a slow tail in one wave frees capacity that immediately serves the other
+# queues' waves, instead of idling inside a per-handler silo. Sized by the FIRST
+# handler constructed (all handlers of a process share one worker config).
+_shared_bundle_executor: Optional[ThreadPoolExecutor] = None
+_shared_bundle_executor_lock = threading.Lock()
+
+
+def get_shared_bundle_executor(budget: int) -> ThreadPoolExecutor:
+    global _shared_bundle_executor  # pylint: disable=global-statement
+    if _shared_bundle_executor is None:
+        with _shared_bundle_executor_lock:
+            if _shared_bundle_executor is None:
+                _shared_bundle_executor = ThreadPoolExecutor(
+                    max_workers=max(1, budget),
+                    thread_name_prefix="bundle-shared",
+                )
+    return _shared_bundle_executor
 
 
 @dataclass(unsafe_hash=True)
@@ -52,6 +73,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     # message (no_split from the connector, or unflagged) is imported in place by waves
     # instead of being imported sequentially / split and requeued.
     bundle_inline: bool = False
+    # POC (plan 0009 s9.11): wave (chunk) size DECOUPLED from the thread budget.
+    # 0 = follow bundle_parallelism (compatibility with every pre-s9.11 run manifest).
+    bundle_wave_width: int = 0
+    # POC (plan 0009 s9.11): size of the process-wide shared request pool. 0 = derive
+    # 4x the wave width (roughly today's aggregate capacity, but un-siloed).
+    bundle_executor_budget: int = 0
 
     def __post_init__(self) -> None:
         self.api = OpenCTIApiClient(
@@ -62,10 +89,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             ssl_verify=self.ssl_verify,
             provider="worker/" + __version__,
         )
-        self.bundle_executor = ThreadPoolExecutor(
-            max_workers=max(1, self.bundle_parallelism),
-            thread_name_prefix="bundle-inline",
-        )
+        # s9.11: the wave width is a pure shaping choice; the thread budget is a
+        # process-wide resource shared across handlers (see get_shared_bundle_executor).
+        self.wave_width = max(1, self.bundle_wave_width or self.bundle_parallelism)
+        budget = self.bundle_executor_budget or self.wave_width * 4
+        self.bundle_executor = get_shared_bundle_executor(budget)
 
     def send_bundle_to_specific_queue(
         self,
@@ -173,8 +201,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         """
         if self.bundle_wave_policy == "chunks":
             # POC (plan 0009 §9.6.9): fixed-size waves in dependency order. Size is a
-            # choice (bundle_parallelism), not a property of the bundle's shape.
-            size = max(1, self.bundle_parallelism)
+            # choice (wave_width since s9.11, bundle_parallelism before), not a
+            # property of the bundle's shape.
+            size = self.wave_width
             return [bundles[i : i + size] for i in range(0, len(bundles), size)]
         keyed = sorted(
             ((self.wave_key(b), b) for b in bundles), key=lambda pair: pair[0]
@@ -259,12 +288,19 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 "waves": len(waves),
                 "widths": [len(w) for w in waves][:12],
                 "policy": self.bundle_wave_policy,
+                # s9.11: prove the runtime shape, not just the config file
+                "wave_width": self.wave_width,
+                "executor_budget": self.bundle_executor._max_workers,  # pylint: disable=protected-access
             },
         )
         # Per-object isolation (s9.8.4): pycti reports and drops failed objects internally
         # (import_item), so a future raising here is an ESCAPED error (transport, bundle
         # format). It must never abort the remaining waves nor discard the bundle message:
         # log, report the expectation for that object, and continue.
+        # s9.11: results collect per OBJECT as they land (as_completed), not in
+        # submission order: each object frees its slot and memory the moment IT is done,
+        # the wave barrier only blocks on the LAST one, and the shared pool's freed
+        # threads immediately serve other bundles' waves.
         for level_bundles in waves:
             futures = [
                 self.bundle_executor.submit(
@@ -277,7 +313,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 )
                 for mini_bundle in level_bundles
             ]
-            for future in futures:
+            for future in as_completed(futures):
                 try:
                     items, too_large = future.result()
                     imported_items.extend(items)

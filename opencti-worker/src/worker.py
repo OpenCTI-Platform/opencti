@@ -118,6 +118,24 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             default=8,
         )
+        # POC (plan 0009 s9.11): wave (chunk) size decoupled from the thread budget.
+        # 0 = follow bundle_parallelism (pre-s9.11 behavior).
+        self.bundle_wave_width = get_config_variable(
+            "WORKER_BUNDLE_WAVE_WIDTH",
+            ["worker", "bundle_wave_width"],
+            config,
+            True,
+            default=0,
+        )
+        # POC (plan 0009 s9.11): size of the process-wide SHARED request pool (replaces
+        # the per-handler private executors). 0 = derive 4x the wave width.
+        self.bundle_executor_budget = get_config_variable(
+            "WORKER_BUNDLE_EXECUTOR_BUDGET",
+            ["worker", "bundle_executor_budget"],
+            config,
+            True,
+            default=0,
+        )
         # POC (plan 0009 §9.6.7): import ANY multi-object bundle inline (external
         # connectors publish straight to RabbitMQ, so the platform marker never reaches
         # them). Off = historic behavior.
@@ -335,6 +353,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundle_parallelism=self.bundle_parallelism,
                             bundle_wave_policy=self.bundle_wave_policy,
                             bundle_inline=self.bundle_inline,
+                            bundle_wave_width=self.bundle_wave_width,
+                            bundle_executor_budget=self.bundle_executor_budget,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]
