@@ -140,16 +140,18 @@ describe('Workflow Validation', () => {
     expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
   });
 
-  it('should return error if transition to is null', async () => {
-    const invalid = {
+  it('should not flag a transition as unlinked when only to is null (terminal transition)', async () => {
+    const terminal = {
       initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+      ],
       transitions: [
-        { from: 'a', to: null, event: 'test' },
+        { from: 'existing-state', to: null, event: 'test' },
       ],
     };
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(terminal), 'Incident');
+    expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(false);
   });
 
   it('should return error if filter operator is invalid', async () => {

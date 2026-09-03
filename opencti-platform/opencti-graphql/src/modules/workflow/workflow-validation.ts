@@ -171,7 +171,10 @@ export const validateWorkflowDefinitionData = async (
   const statesWithIncomingTransition = new Set<string>();
 
   for (const transition of transitions) {
-    if (transition.from === null || transition.to === null) {
+    // A null `to` is a terminal transition (the engine keeps the instance in its current state,
+    // see `targetTransitionForSync?.to ?? instance.getCurrentState()`), so only a null `from`
+    // leaves the transition unreachable.
+    if (transition.from === null) {
       errors.push({
         type: 'UNLINKED_TRANSITION',
         message: `Transition ${transition.event} should be linked to at least one status`,
