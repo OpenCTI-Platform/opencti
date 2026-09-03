@@ -22,6 +22,23 @@ The following metrics are exposed by the OpenCTI API.
 | `opencti_api_latency` | Histogram | Measures the latency of API query execution. | Milliseconds |
 | `opencti_api_direct_bulk` | Gauge | Measures the size of bulks for direct ingestion (fast path). | Count |
 | `opencti_api_side_bulk` | Gauge | Measures the size of bulks for absorption impacts (worker path). | Count |
+| `opencti_dependency_up` | Gauge | Reports the connectivity state of a platform dependency: `1` when the dependency answers, `0` when it fails. | Boolean |
+| `opencti_elasticsearch_used_size_bytes` | Gauge | Reports the total ElasticSearch/OpenSearch primary store size, replicas excluded. | Bytes |
+| `opencti_storage_used_size_bytes` | Gauge | Reports the total size of the objects stored in the S3/MinIO bucket. | Bytes |
+| `opencti_ingestion_units` | Gauge | Reports the number of active consumers on the ingestion connector queues (external import, file import, enrichment). | Count |
+
+## Platform Health Metrics
+
+A background monitor refreshes the health metrics periodically, so scraping them never triggers a request to a dependency. The same collected state answers the `/health` endpoint, which therefore never probes ElasticSearch, S3, RabbitMQ or Redis per request. Configure both refresh intervals with `app:health_monitoring:connectivity_interval` and `app:health_monitoring:usage_metrics_interval` (see [Configuration](configuration.md)).
+
+A usage metric that cannot be collected is not exported, instead of being exported as `0`.
+
+### Dependency Metrics Attributes
+Applies to: `opencti_dependency_up`
+
+| Attribute | Description | Example |
+|:---|:---|:---|
+| `dependency` | The monitored platform dependency. | `elasticsearch`, `storage`, `rabbitmq`, `redis` |
 
 ## Metric Attributes
 

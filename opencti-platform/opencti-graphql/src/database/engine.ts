@@ -5110,12 +5110,6 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
   return retryElOperations(statsOperation);
 };
 
-const ENGINE_USED_SIZE_CACHE_INTERVAL_MS = 300_000;
-let engineUsedSizeCacheInBytes = 0;
-let engineUsedSizeCacheDate = 0;
-let engineUsedSizeFailureCacheDate = 0;
-let engineUsedSizeCachePromise: Promise<number> | null = null;
-
 const fetchEngineUsedSize = async (): Promise<number> => {
   if (engine instanceof ElkClient) {
     const engineIndicesStats = await engine.indices.stats({ index: '*', metric: ['store'], expand_wildcards: 'all' as any });
@@ -5126,38 +5120,7 @@ const fetchEngineUsedSize = async (): Promise<number> => {
 };
 
 export const getEngineUsedSize = async (): Promise<number> => {
-  const now = Date.now();
-  if (engineUsedSizeCacheDate > 0 && now - engineUsedSizeCacheDate < ENGINE_USED_SIZE_CACHE_INTERVAL_MS) {
-    return engineUsedSizeCacheInBytes;
-  }
-  if (engineUsedSizeCacheDate === 0
-    && engineUsedSizeFailureCacheDate > 0
-    && now - engineUsedSizeFailureCacheDate < ENGINE_USED_SIZE_CACHE_INTERVAL_MS) {
-    throw Error('Engine used size currently unavailable');
-  }
-  if (engineUsedSizeCachePromise) {
-    return engineUsedSizeCachePromise;
-  }
-  engineUsedSizeCachePromise = retryElOperations(fetchEngineUsedSize)
-    .then((sizeInBytes) => {
-      engineUsedSizeCacheInBytes = sizeInBytes;
-      engineUsedSizeCacheDate = Date.now();
-      engineUsedSizeFailureCacheDate = 0;
-      return sizeInBytes;
-    })
-    .catch((error) => {
-      logApp.warn('[SEARCH] Unable to fetch used size for health endpoint, returning stale cache or propagating failure', { cause: error });
-      if (engineUsedSizeCacheDate > 0) {
-        engineUsedSizeCacheDate = Date.now();
-        return engineUsedSizeCacheInBytes;
-      }
-      engineUsedSizeFailureCacheDate = Date.now();
-      throw error;
-    })
-    .finally(() => {
-      engineUsedSizeCachePromise = null;
-    });
-  return engineUsedSizeCachePromise;
+  return retryElOperations(fetchEngineUsedSize);
 };
 
 export const isEngineAlive = async () => {

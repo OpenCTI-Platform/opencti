@@ -15,7 +15,7 @@ import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSI
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
-import { downloadFile, getFileContent, getStorageUsedSize, isStorageAlive } from '../database/raw-file-storage';
+import { downloadFile, getFileContent } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -23,9 +23,8 @@ import { getEntityFromCache } from '../database/cache';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
-import { delUserContext, redisIsAlive } from '../database/redis';
-import { getIngestionUnits, rabbitMQIsAlive } from '../database/rabbitmq';
-import { getEngineUsedSize, isEngineAlive } from '../database/engine';
+import { delUserContext } from '../database/redis';
+import { getPlatformHealthStatus, getPlatformUsageMetrics } from '../telemetry/platformHealthMetrics';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
@@ -524,12 +523,6 @@ const createApp = async (app, schema) => {
   });
 
   // -- Healthcheck
-  const healthCheckTimeout = async (promise, message) => {
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(message)), 15000); // 15 seconds timeout
-    });
-    return Promise.race([promise, timeoutPromise]);
-  };
   app.get(`${basePath}/health`, async (req, res) => {
     try {
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -539,23 +532,15 @@ const createApp = async (app, schema) => {
       } else {
         const { health_access_key: access_key } = req.query;
         if (configAccessKey === 'public' || configAccessKey === access_key) {
-          const engineAlive = healthCheckTimeout(isEngineAlive(), 'Timeout checking elastic/opensearch health');
-          const storageAlive = healthCheckTimeout(isStorageAlive(), 'Timeout checking storage health');
-          const rabbitMQAlive = healthCheckTimeout(rabbitMQIsAlive(), 'Timeout checking rabbitmq health');
-          const redisAlive = healthCheckTimeout(redisIsAlive(), 'Timeout checking redis health');
-          await Promise.all([engineAlive, storageAlive, rabbitMQAlive, redisAlive]);
-          const withDetails = shouldIncludeHealthDetails(configAccessKey, req.query?.details);
-          if (withDetails) {
-            const engineUsedSize = healthCheckTimeout(getEngineUsedSize(), 'Timeout checking elastic/opensearch used size').catch(() => null);
-            const storageUsedSize = healthCheckTimeout(getStorageUsedSize(), 'Timeout checking storage used size').catch(() => null);
-            const ingestionUnits = healthCheckTimeout(getIngestionUnits(executionContext('healthcheck'), SYSTEM_USER), 'Timeout checking ingestion units').catch(() => null);
-            const [esUsedSize, s3UsedSize, parallelIngestionUnits] = await Promise.all([engineUsedSize, storageUsedSize, ingestionUnits]);
-            res.status(200).send({
-              status: 'success',
-              es_used_size: esUsedSize,
-              s3_used_size: s3UsedSize,
-              ingestion_units: parallelIngestionUnits,
-            });
+          // State is refreshed by the platform health monitor, never probed per request.
+          const { initialized, isHealthy, failures } = getPlatformHealthStatus();
+          if (!initialized) {
+            res.status(503).send({ status: 'error', error: 'Health monitoring not initialized yet' });
+          } else if (!isHealthy) {
+            res.status(503).send({ status: 'error', error: failures.join(', ') });
+          } else if (shouldIncludeHealthDetails(configAccessKey, req.query?.details)) {
+            const { es_used_size, s3_used_size, ingestion_units } = getPlatformUsageMetrics();
+            res.status(200).send({ status: 'success', es_used_size, s3_used_size, ingestion_units });
           } else {
             res.status(200).send({ status: 'success' });
           }
