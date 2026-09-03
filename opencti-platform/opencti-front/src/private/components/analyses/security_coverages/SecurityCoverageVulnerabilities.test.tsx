@@ -8,7 +8,7 @@ import type { SecurityCoverageVulnerabilities_securityCoverage$key } from './__g
 vi.mock('../../common/stix_core_relationships/StixCoreRelationshipPopover', () => ({
   default: () => (<></>),
 }));
-vi.mock('./SecurityCoverageScores', () => ({
+vi.mock('./security_coverage_scores/SecurityCoverageScores', () => ({
   default: () => (<></>),
 }));
 // jsdom reports zero size, so react-virtualized's AutoSizer would render no rows.
