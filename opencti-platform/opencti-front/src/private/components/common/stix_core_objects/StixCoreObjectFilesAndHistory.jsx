@@ -20,6 +20,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
@@ -524,7 +525,7 @@ const StixCoreObjectFilesAndHistory = ({
                 )}
               >
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="outlined"
                   name="format"
                   label={t_i18n('Export format')}
@@ -532,29 +533,29 @@ const StixCoreObjectFilesAndHistory = ({
                   containerstyle={{ width: '100%' }}
                 >
                   {exportScopes.map((value, i) => (
-                    <MenuItem
+                    <SelectItem
                       key={i}
                       value={value}
                       disabled={!isExportActive(value)}
                     >
                       {value}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
                 </Field>
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   variant="outlined"
                   name="type"
                   label={t_i18n('Export type')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
-                  <MenuItem value="simple">
+                  <SelectItem value="simple">
                     {t_i18n('Simple export (just the entity)')}
-                  </MenuItem>
-                  <MenuItem value="full">
+                  </SelectItem>
+                  <SelectItem value="full">
                     {t_i18n('Full export (entity and first neighbours)')}
-                  </MenuItem>
+                  </SelectItem>
                 </Field>
                 <ObjectMarkingField
                   name="contentMaxMarkings"
