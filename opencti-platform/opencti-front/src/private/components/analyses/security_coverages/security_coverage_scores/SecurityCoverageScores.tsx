@@ -134,7 +134,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
         <div className={classes.chartContainer} style={{ width: size, height: size }}>
           <div className={classes.chart}>
             <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
-            <Tooltip title="Pending" placement="bottom">
+            <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')} placement="bottom">
               <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
                 <span style={{ color: theme.palette.text?.primary }}><HourglassEmpty style={{ fontSize: iconSize }} /></span>
               </Avatar>
@@ -173,7 +173,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
           <div className={classes.chartContainer}>
             <div className={classes.chart}>
               <Chart options={options} series={series} type="donut" width={70} height={70} />
-              <Tooltip title="Pending" placement="top">
+              <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')} placement="top">
                 <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }} style={{ top: 24, left: 23 }}>
                   <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}><HourglassEmpty style={{ fontSize: 23 }} /></span>
                 </Avatar>
