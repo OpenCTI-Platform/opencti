@@ -358,7 +358,7 @@ describe('Workflow Validation', () => {
     ]);
   });
 
-  it('should reject a declared state that is not reachable from initialState, and not also flag it with a misleading MISSING_MANUAL_ORDER', async () => {
+  it('should reject a declared state that is not reachable from initialState', async () => {
     const invalid = {
       initialState: 'existing-state',
       states: [
@@ -374,15 +374,13 @@ describe('Workflow Validation', () => {
       ],
     };
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
-    // The definition is otherwise acyclic: 'orphan-state' must get only STATE_UNREACHABLE, not the
-    // additional MISSING_MANUAL_ORDER (whose hardcoded "contains a cycle" message would be wrong here).
     expect(errors).toEqual([
       { type: 'STATE_UNREACHABLE', message: expect.stringContaining('orphan-state') },
     ]);
   });
 
-  it('should require a manual order on every state when the workflow graph contains a cycle', async () => {
-    const invalid = {
+  it('should accept a cyclic workflow graph without requiring a manual order on any state', async () => {
+    const valid = {
       initialState: 'existing-state',
       states: [
         { statusId: 'existing-state' },
@@ -393,14 +391,11 @@ describe('Workflow Validation', () => {
         { from: 'in-progress', to: 'existing-state', event: 'reopen' },
       ],
     };
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
-    expect(errors).toEqual([
-      { type: 'MISSING_MANUAL_ORDER', message: expect.stringContaining('existing-state') },
-      { type: 'MISSING_MANUAL_ORDER', message: expect.stringContaining('in-progress') },
-    ]);
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
+    expect(errors).toEqual([]);
   });
 
-  it('should accept a cyclic workflow graph once every state carries a manual order', async () => {
+  it('should accept a cyclic workflow graph when states carry a retrocompatible manual order (legacy definitions)', async () => {
     const valid = {
       initialState: 'existing-state',
       states: [
@@ -416,7 +411,7 @@ describe('Workflow Validation', () => {
     expect(errors).toEqual([]);
   });
 
-  it('should auto-order a state that is not entangled in any cycle even when the workflow graph has a cycle elsewhere', async () => {
+  it('should not require a manual order for a state that is not entangled in any cycle even when the workflow graph has a cycle elsewhere', async () => {
     const invalid = {
       initialState: 'existing-state',
       states: [
@@ -431,28 +426,7 @@ describe('Workflow Validation', () => {
       ],
     };
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
-    expect(errors.some((e) => e.type === 'MISSING_MANUAL_ORDER' && e.message.includes('closed'))).toBe(false);
-  });
-
-  it('should still flag a cycle-entangled state as needing a manual order even when the definition also has unrelated acyclic states', async () => {
-    const invalid = {
-      initialState: 'existing-state',
-      states: [
-        { statusId: 'existing-state' },
-        { statusId: 'in-progress' },
-        { statusId: 'closed' },
-      ],
-      transitions: [
-        { from: 'existing-state', to: 'in-progress', event: 'start' },
-        { from: 'in-progress', to: 'existing-state', event: 'reopen' },
-        { from: 'existing-state', to: 'closed', event: 'close' },
-      ],
-    };
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
-    expect(errors).toEqual([
-      { type: 'MISSING_MANUAL_ORDER', message: expect.stringContaining('existing-state') },
-      { type: 'MISSING_MANUAL_ORDER', message: expect.stringContaining('in-progress') },
-    ]);
+    expect(errors).toEqual([]);
   });
 
   it('should handle wildcard transitions', async () => {

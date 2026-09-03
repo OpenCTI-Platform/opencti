@@ -7,7 +7,7 @@ import { isBasicObject } from '../../schema/stixCoreObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
-import { computeStateOrder, findUnreachableStates } from './domain/workflow-ordering';
+import { findUnreachableStates } from './domain/workflow-ordering';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
@@ -374,12 +374,11 @@ export const validateWorkflowDefinitionData = async (
   });
 
   // Reachability: every declared/referenced state must be reachable from initialState via some
-  // transition path. An unreachable state is a definition bug (it can never be entered), not
-  // something a manual order value could fix, so it is always a hard error.
+  // transition path. An unreachable state is a definition bug (it can never be entered), so it is
+  // always a hard error.
   if (initialState !== '*') {
     const allStateIds = [...extractCanonicalStateIds(validationResult.data)];
     const unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
-    const unreachableStateIds = new Set(unreachableStates);
     unreachableStates.forEach((stateId) => {
       errors.push({
         type: 'STATE_UNREACHABLE',
@@ -387,22 +386,8 @@ export const validateWorkflowDefinitionData = async (
       });
     });
 
-    // Ordering: prefer the longest-simple-path order derived from the transition graph. States
-    // entangled in a cycle (or unresolved due to the DFS step cap) come back `null` and must
-    // instead carry a manually supplied `order` value. Unreachable states are excluded since they
-    // already get STATE_UNREACHABLE above.
-    const computedOrder = computeStateOrder(initialState, transitions);
-    states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
-      if (!state.statusId) return;
-      if (unreachableStateIds.has(state.statusId)) return;
-      const stateOrder = computedOrder.get(state.statusId);
-      if ((stateOrder === null || stateOrder === undefined) && state.order === undefined) {
-        errors.push({
-          type: 'MISSING_MANUAL_ORDER',
-          message: `State '${state.name || state.statusId}' must have a manual 'order' value: automatic ordering could not be determined (the workflow graph may contain a cycle, or the ordering computation hit its step limit)`,
-        });
-      }
-    });
+    // Ordering is derived automatically from the transition graph (longest-simple-path) and is
+    // never required for validation.
   }
 
   if (existingWorkflowId) {
