@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export default class AutocompleteFieldPageModel {
   private readonly inputLocator: Locator;
@@ -18,7 +18,19 @@ export default class AutocompleteFieldPageModel {
     await this.inputLocator.click();
     await this.inputLocator.fill(option);
     const list = this.page.getByRole('listbox', { name: this.label });
-    return list.getByText(option, { exact: true }).click();
+    const target = list.getByText(option, { exact: true });
+    try {
+      await target.waitFor({ state: 'visible', timeout: 15000 });
+    } catch {
+      // Options are refreshed by a single fire-and-forget search per input change, so a response
+      // that came back without the option (data not indexed yet) is never re-issued on its own.
+      await expect(async () => {
+        await this.inputLocator.fill('');
+        await this.inputLocator.fill(option);
+        await expect(target).toBeVisible({ timeout: 5000 });
+      }).toPass({ timeout: 60000, intervals: [1000] });
+    }
+    return target.click();
   }
 
   getOption(option: string) {
