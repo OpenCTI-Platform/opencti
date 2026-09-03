@@ -263,6 +263,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                                 multiple
                                 labelPosition="none"
                                 className="w-full"
+                                clearable={false}
                                 options={(connectorsForImport ?? []).map((c) => c?.id as string)}
                                 value={(connectors ?? []).map((c) => c?.id as string)}
                                 getOptionLabel={(id) => {
