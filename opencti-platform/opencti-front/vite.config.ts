@@ -10,9 +10,9 @@ const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typ
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const configuredFrontEndPort = env.FRONT_END_PORT?.trim();
-  const frontEndPort = configuredFrontEndPort ? Number(configuredFrontEndPort) : 3000;
+  const frontEndPort = configuredFrontEndPort ? Number.parseInt(configuredFrontEndPort, 10) : 3000;
 
-  if (!Number.isInteger(frontEndPort) || frontEndPort < 1 || frontEndPort > 65535) {
+  if (configuredFrontEndPort && (!/^\d+$/.test(configuredFrontEndPort) || frontEndPort < 1 || frontEndPort > 65535)) {
     throw new Error(`FRONT_END_PORT must be an integer between 1 and 65535, got "${env.FRONT_END_PORT}"`);
   }
 
