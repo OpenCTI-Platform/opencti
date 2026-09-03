@@ -1,5 +1,6 @@
+import { alpha } from '@mui/material';
 import { describe, it, expect } from 'vitest';
-import { hexToRGB, isHexColor } from './Colors';
+import { CSS_NAMED_COLORS, hexToRGB, normalizeLabelColor } from './Colors';
 
 describe('Function: hexToRGB', () => {
   it('should return matching rgb color', () => {
@@ -11,33 +12,64 @@ describe('Function: hexToRGB', () => {
   });
 });
 
-describe('Function: isHexColor', () => {
-  it('should accept six digit hex colors', () => {
-    expect(isHexColor('#70D907')).toBe(true);
-    expect(isHexColor('#ffffff')).toBe(true);
-    expect(isHexColor('#ABCDEF')).toBe(true);
+describe('Function: normalizeLabelColor', () => {
+  it('should keep six digit hex colors untouched', () => {
+    expect(normalizeLabelColor('#70D907')).toEqual('#70D907');
+    expect(normalizeLabelColor('#ffffff')).toEqual('#ffffff');
   });
 
-  it('should accept three digit shorthand hex colors', () => {
-    expect(isHexColor('#f00')).toBe(true);
-    expect(isHexColor('#FFF')).toBe(true);
+  it('should expand three digit shorthand hex colors', () => {
+    expect(normalizeLabelColor('#f00')).toEqual('#FF0000');
+    expect(normalizeLabelColor('#FFF')).toEqual('#FFFFFF');
   });
 
-  it('should reject CSS color names, which MUI alpha() cannot parse', () => {
-    expect(isHexColor('red')).toBe(false);
-    expect(isHexColor('rebeccapurple')).toBe(false);
+  it('should expand four digit shorthand hex colors with alpha', () => {
+    expect(normalizeLabelColor('#f008')).toEqual('#FF000088');
   });
 
-  it('should reject malformed hex values', () => {
-    expect(isHexColor('#12345')).toBe(false);
-    expect(isHexColor('#GGGGGG')).toBe(false);
-    expect(isHexColor('70D907')).toBe(false);
-    expect(isHexColor('#70D907 ')).toBe(false);
+  it('should keep eight digit hex colors untouched', () => {
+    expect(normalizeLabelColor('#70D90780')).toEqual('#70D90780');
+  });
+
+  it('should resolve CSS colour names to hex', () => {
+    expect(normalizeLabelColor('red')).toEqual('#ff0000');
+    expect(normalizeLabelColor('rebeccapurple')).toEqual('#663399');
+    expect(normalizeLabelColor('LightBlue')).toEqual('#add8e6');
+  });
+
+  it('should pass functional rgb/hsl notations through', () => {
+    expect(normalizeLabelColor('rgb(112, 217, 7)')).toEqual('rgb(112, 217, 7)');
+    expect(normalizeLabelColor('hsl(120, 50%, 50%)')).toEqual('hsl(120, 50%, 50%)');
+    expect(normalizeLabelColor('rgba(112, 217, 7, 0.5)')).toEqual('rgba(112, 217, 7, 0.5)');
+  });
+
+  it('should trim surrounding whitespace', () => {
+    expect(normalizeLabelColor('  #70D907  ')).toEqual('#70D907');
+    expect(normalizeLabelColor(' red ')).toEqual('#ff0000');
+  });
+
+  it('should reject malformed or unknown values', () => {
+    expect(normalizeLabelColor('#12345')).toBeNull();
+    expect(normalizeLabelColor('#GGGGGG')).toBeNull();
+    expect(normalizeLabelColor('70D907')).toBeNull();
+    expect(normalizeLabelColor('notacolor')).toBeNull();
+    expect(normalizeLabelColor('rgb(112, 217)')).toBeNull();
   });
 
   it('should reject empty values', () => {
-    expect(isHexColor('')).toBe(false);
-    expect(isHexColor(null)).toBe(false);
-    expect(isHexColor(undefined)).toBe(false);
+    expect(normalizeLabelColor('')).toBeNull();
+    expect(normalizeLabelColor('   ')).toBeNull();
+    expect(normalizeLabelColor(null)).toBeNull();
+    expect(normalizeLabelColor(undefined)).toBeNull();
+  });
+
+  it('should cover the full CSS named colour list', () => {
+    expect(Object.keys(CSS_NAMED_COLORS)).toHaveLength(148);
+  });
+
+  it('should produce values MUI alpha() can parse, the actual bug of #17238', () => {
+    expect(alpha(normalizeLabelColor('red') as string, 0.2)).toEqual('rgba(255, 0, 0, 0.2)');
+    expect(alpha(normalizeLabelColor('#f00') as string, 0.2)).toEqual('rgba(255, 0, 0, 0.2)');
+    expect(() => alpha('red', 0.2)).toThrow();
   });
 });

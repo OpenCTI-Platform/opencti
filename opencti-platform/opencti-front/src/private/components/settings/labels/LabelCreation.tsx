@@ -16,7 +16,6 @@ import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../
 import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
-import { HEX_COLOR_REGEX } from '../../../../utils/Colors';
 
 const labelMutation = graphql`
   mutation LabelCreationMutation($input: LabelAddInput!) {
@@ -71,12 +70,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   const { t_i18n } = useFormatter();
   const labelValidation = Yup.object().shape({
     value: Yup.string().required(t_i18n('This field is required')),
-    color: Yup.string()
-      .required(t_i18n('This field is required'))
-      .matches(HEX_COLOR_REGEX, {
-        message: t_i18n('Invalid hexa color code'),
-        excludeEmptyString: true,
-      }),
+    color: Yup.string().required(t_i18n('This field is required')),
   });
   const initialValues: LabelAddInput = {
     value: contextual ? inputValueContextual : '',
