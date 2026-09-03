@@ -39,8 +39,12 @@ export default class LeftBarPage {
     // The collapse is animated, so a click can still be delivered while the menu is
     // moving. Assert that the navigation did happen and click again if it did not,
     // instead of carrying on and failing much later on an unrelated page locator.
-    const link = await subMenuItemLocator.getAttribute('href');
-    expect(link, `The "${subMenuItem}" menu item should be a link`).not.toBeNull();
+    const href = await subMenuItemLocator.getAttribute('href');
+    if (!href) {
+      throw new Error(`The "${subMenuItem}" menu item is expected to be a link`);
+    }
+    // Resolved against the current location so an absolute href is compared on equal terms.
+    const link = new URL(href, this.page.url()).pathname;
     await expect(async () => {
       await subMenuItemLocator.click();
       const { pathname } = new URL(this.page.url());
