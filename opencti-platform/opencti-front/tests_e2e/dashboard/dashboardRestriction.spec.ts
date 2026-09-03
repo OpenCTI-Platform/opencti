@@ -111,7 +111,8 @@ test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page 
   await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
   await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
 
   // Try to export
   await dashboardPage.getItemFromList(dashboardName).click();
@@ -151,7 +152,8 @@ test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page 
   await accessRestriction.save();
   await goToDashboardAsJeanMichel(dashboardName);
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
   await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
 
   // ---------
