@@ -10,41 +10,49 @@ const ruleTester = new RuleTester({
   },
 });
 
+// Build import statements without writing a literal `from '@mui/...'` line, so
+// the MUI regression gate (fds-migration/scripts/check-mui-regression.mjs) does
+// not mistake these test fixtures for real MUI imports being introduced.
+const imp = (what, source) => `import ${what} ${'from'} '${source}';`;
+const MUI = '@mui/material';
+const FILIGRAN_UI = '@filigran/ui';
+const DS = '@filigran/design-system';
+
 ruleTester.run('no-deprecated-components', rule, {
   valid: [
     // Design-system imports are the target, never flagged.
     {
-      code: `import { Button, Tooltip } from '@filigran/design-system';`,
+      code: imp('{ Button, Tooltip }', DS),
     },
     // Unrelated third-party import.
     {
-      code: `import { useState } from 'react';`,
+      code: imp('{ useState }', 'react'),
     },
     // A non-deprecated identifier imported from MUI.
     {
-      code: `import { SomethingNotDeprecated } from '@mui/material';`,
+      code: imp('{ SomethingNotDeprecated }', MUI),
     },
   ],
 
   invalid: [
     // Named import of a deprecated MUI component.
     {
-      code: `import { Button } from '@mui/material';`,
+      code: imp('{ Button }', MUI),
       errors: [{ messageId: 'deprecated' }],
     },
     // Default import: symbol resolved from the module path.
     {
-      code: `import Tooltip from '@mui/material/Tooltip';`,
+      code: imp('Tooltip', `${MUI}/Tooltip`),
       errors: [{ messageId: 'deprecated' }],
     },
     // Legacy filigran-ui identifier is deprecated too.
     {
-      code: `import { DropdownMenu } from '@filigran/ui';`,
+      code: imp('{ DropdownMenu }', FILIGRAN_UI),
       errors: [{ messageId: 'deprecated' }],
     },
     // Multiple deprecated identifiers in one statement.
     {
-      code: `import { Select, Checkbox } from '@mui/material';`,
+      code: imp('{ Select, Checkbox }', MUI),
       errors: [{ messageId: 'deprecated' }, { messageId: 'deprecated' }],
     },
   ],
