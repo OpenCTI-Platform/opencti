@@ -34,9 +34,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
 }));
 
 const workbenchFileCreatorMutation = graphql`
@@ -194,25 +191,26 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
               label={t_i18n('Name')}
               fullWidth
             />
-            <Field
-              component={AutocompleteFreeSoloField}
-              style={{ marginTop: 20 }}
-              name="labels"
-              multiple
-              textfieldprops={{
-                variant: 'outlined',
-                label: t_i18n('Labels'),
-              }}
-              options={[]}
-              renderOption={(option: FieldOption) => (
-                <>
-                  <div className={classes.icon}>
-                    <ItemIcon type="Label" />
-                  </div>
-                  <div className={classes.text}>{option.label}</div>
-                </>
-              )}
-            />
+            <div style={{ marginTop: 24 }}>
+              <Field
+                component={AutocompleteFreeSoloField}
+                name="labels"
+                multiple
+                textfieldprops={{
+                  variant: 'outlined',
+                  label: t_i18n('Labels'),
+                }}
+                options={[]}
+                renderOption={(option: FieldOption) => (
+                  <>
+                    <div className={classes.icon}>
+                      <ItemIcon type="Label" />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </>
+                )}
+              />
+            </div>
             <ObjectMarkingField
               name="fileMarkings"
               label={t_i18n('File marking definition levels')}
