@@ -18,12 +18,16 @@ const useStyles = makeStyles((theme: Theme) => ({
   alert: {
     width: '100%',
     marginTop: 20,
-    paddingBottom: 0,
+    padding: 16,
+    border: 'none',
+    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--bg-elevation-default)',
   },
+  // The alert's own message slot leads with 8px, which stacked on the padding above.
   message: {
     width: '100%',
     overflow: 'visible',
-    paddingBottom: 0,
+    padding: 0,
     color: theme.palette.text?.secondary,
   },
 }));
@@ -76,6 +80,8 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
       severity="info"
       icon={false}
       variant="outlined"
+      // The alias ladder is anchored by the host panel; the block sits one step above it.
+      className="layer-3"
       sx={{ position: 'relative' }}
     >
       { user && !!user.effective_confidence_level && (
