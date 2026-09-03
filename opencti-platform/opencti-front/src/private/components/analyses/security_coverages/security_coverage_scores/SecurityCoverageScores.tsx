@@ -5,11 +5,28 @@ import { Avatar, Tooltip } from '@mui/material';
 import { BugReportOutlined, HourglassEmpty, Person, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
-import { useFormatter } from '../../../../components/i18n';
-import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
-import { donutChartOptions } from '../../../../utils/Charts';
-import type { Theme } from '../../../../components/Theme';
-import { capitalizeFirstLetter } from '../../../../utils/String';
+import { useFormatter } from '../../../../../components/i18n';
+import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
+import { donutChartOptions } from '../../../../../utils/Charts';
+import type { Theme } from '../../../../../components/Theme';
+import { capitalizeFirstLetter } from '../../../../../utils/String';
+import { CoverageInformation } from '../SecurityCoverage-types';
+import { SecurityCoverageScoresVocabulariesOrderQuery } from './__generated__/SecurityCoverageScoresVocabulariesOrderQuery.graphql';
+import { coverageVocabulariesOrder } from './SecurityCoverageScores-utils';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+
+const coverageVocabulariesOrderQuery = graphql`
+  query SecurityCoverageScoresVocabulariesOrderQuery {
+    vocabularies(category: coverage_ov) {
+      edges {
+        node {
+          order
+          name
+        }
+      }
+    }
+  }
+`;
 
 const useStyles = makeStyles((theme: Theme) => ({
   charts: {
@@ -53,10 +70,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface SecurityCoverageScoresProps {
-  coverage_information: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  coverage_information?: ReadonlyArray<CoverageInformation> | null;
   variant?: 'header' | 'details' | 'matrix';
 }
 
@@ -103,13 +117,18 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
       : <HourglassEmpty style={{ fontSize: iconSize }} />;
   };
 
+  // Order the coverage information with the stored order for coverage vocabulary
+  const { vocabularies } = useLazyLoadQuery<SecurityCoverageScoresVocabulariesOrderQuery>(coverageVocabulariesOrderQuery, {});
+  const orderedCoverageInformation = coverageVocabulariesOrder(coverage_information, vocabularies);
+
   // Original variant for header or matrix (compact)
   if (variant === 'header' || variant === 'matrix') {
     const size = variant === 'matrix' ? 28 : 40;
     const chartSize = variant === 'matrix' ? 38 : 50;
     const iconSize = variant === 'matrix' ? 12 : 18;
     const iconPosition = variant === 'matrix' ? 13 : 17;
-    if (isEmptyField(coverage_information)) {
+
+    if (isEmptyField(orderedCoverageInformation)) {
       const { options, series } = genOpts(null);
       return (
         <div className={classes.chartContainer} style={{ width: size, height: size }}>
@@ -126,7 +145,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
     }
     return (
       <div style={{ display: 'flex' }}>
-        {(coverage_information ?? []).map((coverageResult) => {
+        {(orderedCoverageInformation ?? []).map((coverageResult) => {
           const { options, series } = genOpts(coverageResult.coverage_score);
           return (
             <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
@@ -146,7 +165,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
   }
 
   // Details variant with scores
-  if (isEmptyField(coverage_information)) {
+  if (isEmptyField(orderedCoverageInformation)) {
     const { options, series } = genOpts(null);
     return (
       <div className={classes.charts}>
@@ -169,7 +188,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
   }
   return (
     <div className={classes.charts}>
-      {(coverage_information ?? []).map((coverageResult) => {
+      {(orderedCoverageInformation ?? []).map((coverageResult) => {
         const { options, series } = genOpts(coverageResult.coverage_score);
         const warningColor = (theme.palette as { warning?: { main: string } }).warning?.main;
         let scoreColor;

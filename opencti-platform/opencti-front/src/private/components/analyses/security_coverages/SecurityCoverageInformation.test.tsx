@@ -5,7 +5,7 @@ import { screen } from '@testing-library/react';
 
 describe('Component: SecurityCoverageInformation', () => {
   beforeAll(() => {
-    vi.mock('./SecurityCoverageScores', () => ({
+    vi.mock('./security_coverage_scores/SecurityCoverageScores', () => ({
       default: () => (<></>),
     }));
   });

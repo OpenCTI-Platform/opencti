@@ -16,7 +16,7 @@ import withTheme from '@mui/styles/withTheme';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';

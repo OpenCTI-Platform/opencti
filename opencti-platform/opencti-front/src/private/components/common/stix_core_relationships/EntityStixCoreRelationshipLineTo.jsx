@@ -23,7 +23,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
-import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 const styles = (theme) => ({
