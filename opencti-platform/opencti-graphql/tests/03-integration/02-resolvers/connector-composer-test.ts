@@ -1,4 +1,4 @@
-import { expect, it, describe, afterAll, beforeAll } from 'vitest';
+import { expect, it, describe, afterAll, beforeAll, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +9,7 @@ import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
 import { resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
+import * as UserActionListener from '../../../src/listener/UserActionListener';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -1265,6 +1266,8 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should edit managed connector', async () => {
+      const publishUserActionSpy = vi.spyOn(UserActionListener, 'publishUserAction');
+
       const input = {
         id: managedConnectorId,
         name: 'Updated IpInfo Connector',
@@ -1289,6 +1292,9 @@ describe('Connector Composer and Managed Connectors', () => {
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');
       expect(autoConfig.value).toEqual('false');
+
+      expect(publishUserActionSpy).toHaveBeenCalled();
+      publishUserActionSpy.mockRestore();
     });
 
     it('should prevent creating managed connector with duplicate name', async () => {

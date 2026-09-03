@@ -228,7 +228,26 @@ export const managedConnectorEdit = async (
     connector_user_id: input.connector_user_id,
     manager_contract_configuration: contractConfigurations,
   };
+
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `creates ${ENTITY_TYPE_CONNECTOR} \`${input.name}\``,
+    context_data: {
+      entity_type: ENTITY_TYPE_CONNECTOR, id: input.id, input: {
+        id: input.id,
+        name: input.name,
+        title: input.title,
+        connector_user_id: input.connector_user_id,
+      },
+    },
+  });
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return element;
 };
 
