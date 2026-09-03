@@ -8,7 +8,7 @@ import {
   SecurityCoverageResultLinesPaginationQuery$variables,
 } from '@components/analyses/security_coverages/__generated__/SecurityCoverageResultLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { SecurityCoverageResultLines_data$data } from '@components/analyses/security_coverages/__generated__/SecurityCoverageResultLines_data.graphql';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -258,6 +258,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
   };
 
   const {
+    viewStorage: { filters },
     paginationOptions,
     helpers: storageHelpers,
   } = usePaginationLocalStorage<SecurityCoverageResultLinesPaginationQuery$variables>(
@@ -268,15 +269,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
     },
   );
 
-  const queryPaginationOptions = {
-    ...paginationOptions,
-  } as unknown as SecurityCoverageResultLinesPaginationQuery$variables;
-
-  const queryRef = useQueryLoading<SecurityCoverageResultLinesPaginationQuery>(
-    securityCoverageResultLinesQuery,
-    queryPaginationOptions,
-  );
-
+  const userFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
   const contextFilters = {
     mode: 'and',
     filters: [
@@ -287,8 +280,18 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
         mode: 'or',
       },
     ],
-    filterGroups: [],
+    filterGroups: [userFilters],
   };
+
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as SecurityCoverageResultLinesPaginationQuery$variables;
+
+  const queryRef = useQueryLoading<SecurityCoverageResultLinesPaginationQuery>(
+    securityCoverageResultLinesQuery,
+    queryPaginationOptions,
+  );
 
   const dataColumns: DataTableProps['dataColumns'] = {
     to_entity_type: {
