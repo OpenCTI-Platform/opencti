@@ -980,7 +980,7 @@ describe('User has no settings capability and is organization admin query behavi
         groups: [amberGroupId],
       },
     };
-    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE_WRONG_ORG,
     });
@@ -996,7 +996,7 @@ describe('User has no settings capability and is organization admin query behavi
         groups: [notGrantableGroupId],
       },
     };
-    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE_WRONG_GROUP,
     });
