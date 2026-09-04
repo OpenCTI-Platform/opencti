@@ -57,41 +57,41 @@ jobs:
               '
 
       - name: Accessible names of converted design-system fields
-      # A converted Select or Combobox with no accessible name is a WCAG 4.1.2
-      # failure that no other check here can see: eslint-plugin-jsx-a11y does not
-      # know the library's compound components, and axe only runs on markup a
-      # test author wrote.
-      run: |
-        docker run  \
-          --name frontend-accessible-names \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux
-            cd /home/workspace
-            node fds-migration/scripts/check-accessible-names.mjs
-            '
+        # A converted Select or Combobox with no accessible name is a WCAG 4.1.2
+        # failure that no other check here can see: eslint-plugin-jsx-a11y does not
+        # know the library's compound components, and axe only runs on markup a
+        # test author wrote.
+        run: |
+          docker run  \
+            --name frontend-accessible-names \
+            -v ${{ github.workspace }}:/home/workspace \
+            node:22-alpine3.23 \
+            sh -c 'set -eux
+              cd /home/workspace
+              node fds-migration/scripts/check-accessible-names.mjs
+              '
 
-    - name: Frontend utility class check
-      # Reported independently of the lint step above: a dead utility class is
-      # its own class of defect, and knowing whether it passed is useful even on
-      # a run that failed earlier — the same reason the test step below does it.
-      if: '!cancelled()'
-      # Every utility class in product code must exist in the CSS the app loads.
-      # The front end ships no Tailwind of its own, so a class the design system
-      # does not deliver renders nothing at all — silently, with no build error
-      # and no runtime error. Runs after the install step, which is what puts
-      # that CSS on the shared volume.
-      run: |
-        docker run  \
-          --name frontend-utility-classes \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux
-            cd /home/workspace/opencti-platform/opencti-front
-            node script/check-utility-classes.js
-            '
+      - name: Frontend utility class check
+        # Reported independently of the lint step above: a dead utility class is
+        # its own class of defect, and knowing whether it passed is useful even on
+        # a run that failed earlier — the same reason the test step below does it.
+        if: '!cancelled()'
+        # Every utility class in product code must exist in the CSS the app loads.
+        # The front end ships no Tailwind of its own, so a class the design system
+        # does not deliver renders nothing at all — silently, with no build error
+        # and no runtime error. Runs after the install step, which is what puts
+        # that CSS on the shared volume.
+        run: |
+          docker run  \
+            --name frontend-utility-classes \
+            -v ${{ github.workspace }}:/home/workspace \
+            node:22-alpine3.23 \
+            sh -c 'set -eux
+              cd /home/workspace/opencti-platform/opencti-front
+              node script/check-utility-classes.js
+              '
 
-    - name: Frontend tests
+      - name: Frontend tests
         if: '!cancelled()'
         run: |
           docker run  \
