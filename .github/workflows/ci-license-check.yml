@@ -37,18 +37,14 @@ jobs:
               '
 
       - name: Frontend verify license
-
         run: |
           docker run  \
             --name frontend-verify-licenses \
             -v ${{ github.workspace }}:/home/workspace \
-            
             node:22-alpine3.23 \
             sh -c 'set -eux;
-               
                npm install -g corepack
                cd /home/workspace/opencti-platform/opencti-front
-               
                yarn install --mode=skip-build
                yarn verify-licenses
               '
