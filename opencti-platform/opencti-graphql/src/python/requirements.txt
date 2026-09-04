@@ -1,4 +1,4 @@
-pycti==7.260902.0
+pycti==7.260904.0
 parsuricata==0.4.1
 yara-python==4.5.4
 pysigma==1.5.0
