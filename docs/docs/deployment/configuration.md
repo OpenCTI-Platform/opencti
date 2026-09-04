@@ -193,6 +193,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | redis:namespace            | REDIS__NAMESPACE            |               | Namespace (to use as prefix)                                                          |
 | redis:hostname             | REDIS__HOSTNAME             | localhost     | Hostname of the Redis Server                                                          |
 | redis:hostnames            | REDIS__HOSTNAMES            |               | Hostnames definition for Redis cluster or sentinel mode: a list of host:port objects. |
+| redis:tls_servername       | REDIS__TLS_SERVERNAME       |               | Optional shared server name used for TLS SNI and certificate validation. In cluster mode, leave empty to validate each node individually. |
 | redis:port                 | REDIS__PORT                 | 6379          | Port of the Redis Server                                                              |
 | redis:sentinel_master_name | REDIS__SENTINEL_MASTER_NAME |               | Name of your Redis Sentinel Master (mandatory in sentinel mode)                       |
 | redis:sentinel_username    | REDIS__SENTINEL_USERNAME    |               | Username to authenticate on Redis Sentinel                                            |

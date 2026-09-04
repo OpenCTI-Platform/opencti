@@ -1,4 +1,42 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Cluster, Redis } from 'ioredis';
+
+const redisConfig = vi.hoisted(() => ({
+  mode: 'cluster',
+  hostname: 'redis.example.test',
+  hostnames: ['node-1.example.test:6379', 'node-2.example.test:6379'],
+  tlsServername: undefined,
+}));
+
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal();
+  const redisOverrides = () => ({
+    'redis:mode': redisConfig.mode,
+    'redis:hostname': redisConfig.hostname,
+    'redis:hostnames': redisConfig.hostnames,
+    'redis:tls_servername': redisConfig.tlsServername,
+    'redis:ca': [],
+    'redis:database': 0,
+    'redis:port': 6379,
+    'redis:nat_map': [],
+  });
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      get: (key) => {
+        const overrides = redisOverrides();
+        return key in overrides ? overrides[key] : actual.default.get(key);
+      },
+    },
+    booleanConf: (key, fallback) => (key === 'redis:use_ssl' ? true : actual.booleanConf(key, fallback)),
+    configureCA: vi.fn(() => ({ ca: ['test-ca'] })),
+  };
+});
+
+vi.mock('../../../src/config/credentials', () => ({
+  enrichWithRemoteCredentials: vi.fn(async (_service, auth) => auth),
+}));
 
 vi.mock('../../../src/schema/schema-relationsRef', () => ({
   schemaRelationsRefDefinition: {
@@ -6,31 +44,79 @@ vi.mock('../../../src/schema/schema-relationsRef', () => ({
   },
 }));
 
-import { removeResolvedRefs } from '../../../src/database/redis';
-import { generateClusterNodes, generateNatMap } from '../../../src/database/redis';
+import { createRedisClient, generateClusterNodes, generateNatMap, removeResolvedRefs } from '../../../src/database/redis';
 
-describe('redis', () => {
+describe('Redis client creation', () => {
+  let client;
+
+  beforeEach(() => {
+    redisConfig.mode = 'cluster';
+    redisConfig.hostname = 'redis.example.test';
+    redisConfig.hostnames = ['node-1.example.test:6379', 'node-2.example.test:6379'];
+    redisConfig.tlsServername = undefined;
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    client?.disconnect();
+  });
+
+  it('should not pin the TLS servername in cluster mode', async () => {
+    client = await createRedisClient('test');
+
+    expect(client).toBeInstanceOf(Cluster);
+    expect(client.options.redisOptions.tls).toMatchObject({ ca: ['test-ca'] });
+    expect(client.options.redisOptions.tls).not.toHaveProperty('servername');
+  });
+
+  it('should use the configured hostname as TLS servername in single mode', async () => {
+    redisConfig.mode = 'single';
+
+    client = await createRedisClient('test');
+
+    expect(client).toBeInstanceOf(Redis);
+    expect(client.options.tls).toMatchObject({ ca: ['test-ca'], servername: 'redis.example.test' });
+  });
+
+  it('should use an explicit TLS servername for every cluster node', async () => {
+    redisConfig.tlsServername = 'redis-cluster.example.test';
+
+    client = await createRedisClient('test');
+
+    expect(client).toBeInstanceOf(Cluster);
+    expect(client.options.redisOptions.tls).toMatchObject({
+      ca: ['test-ca'],
+      servername: 'redis-cluster.example.test',
+    });
+  });
+
+  it('should override the hostname with an explicit TLS servername in single mode', async () => {
+    redisConfig.mode = 'single';
+    redisConfig.tlsServername = 'redis-service.example.test';
+
+    client = await createRedisClient('test');
+
+    expect(client).toBeInstanceOf(Redis);
+    expect(client.options.tls).toMatchObject({
+      ca: ['test-ca'],
+      servername: 'redis-service.example.test',
+    });
+  });
+});
+
+describe('Redis cluster configuration', () => {
   it('should cluster node configuration correctly generated', () => {
-    const nodes = generateClusterNodes(['localhost:7000', 'localhost:7001']);
-    expect(nodes.length).toBe(2);
-    expect(nodes.at(0).host).toBe('localhost');
-    expect(nodes.at(0).port).toBe(7000);
-    expect(nodes.at(1).host).toBe('localhost');
-    expect(nodes.at(1).port).toBe(7001);
+    expect(generateClusterNodes(['localhost:7000', 'localhost:7001'])).toEqual([
+      { host: 'localhost', port: 7000 },
+      { host: 'localhost', port: 7001 },
+    ]);
   });
 
   it('should cluster nat map configuration correctly generated', () => {
-    const nat = generateNatMap(['10.0.1.230:30001>203.0.113.73:30001', '10.0.1.231:30001>203.0.113.73:30002']);
-    const entries = Object.entries(nat);
-    expect(entries.length).toBe(2);
-    const first = entries.at(0);
-    expect(first.at(0)).toBe('10.0.1.230:30001');
-    expect(first.at(1).host).toBe('203.0.113.73');
-    expect(first.at(1).port).toBe(30001);
-    const second = entries.at(1);
-    expect(second.at(0)).toBe('10.0.1.231:30001');
-    expect(second.at(1).host).toBe('203.0.113.73');
-    expect(second.at(1).port).toBe(30002);
+    expect(generateNatMap(['10.0.1.230:30001>203.0.113.73:30001', '10.0.1.231:30001>203.0.113.73:30002'])).toEqual({
+      '10.0.1.230:30001': { host: '203.0.113.73', port: 30001 },
+      '10.0.1.231:30001': { host: '203.0.113.73', port: 30002 },
+    });
   });
 });
 

@@ -376,6 +376,7 @@
     "mode": "single",
     "namespace": "",
     "hostname": "localhost",
+    "tls_servername": "",
     "use_ssl": false,
     "ca": [],
     "port": 6379,
