@@ -1,0 +1,34 @@
+# Root of the uv workspace: nothing is built or installed at this level, the
+# members are listed below and share this lockfile and virtual environment.
+[project]
+name = "opencti"
+version = "0.0.0"
+requires-python = ">=3.10"
+classifiers = ["Private :: Do Not Upload"]
+
+# tooling of the MkDocs documentation site (docs/)
+[dependency-groups]
+docs = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocs-git-authors-plugin",
+  "mkdocs-git-committers-plugin-2",
+  "mkdocs-git-revision-date-localized-plugin",
+  "mkdocs-glightbox",
+  "mike @ git+https://github.com/jimporter/mike",
+  "lxml",
+]
+
+[tool.uv]
+package = false
+# fail fast when an incompatible uv is used; also read by setup-uv in CI
+required-version = ">=0.12"
+# security: packages released less than 3 days ago are not considered for installation
+exclude-newer = "3 days"
+
+[tool.uv.workspace]
+members = [
+  "client-python",
+  "opencti-worker",
+  "opencti-platform/opencti-graphql/src/python",
+]
