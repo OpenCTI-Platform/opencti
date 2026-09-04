@@ -6,7 +6,7 @@ import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { addNotification, addTrigger, myNotificationsFind, triggerGet } from '../../../src/modules/notification/notification-domain';
 import type { MemberAccessInput, TriggerLiveAddInput, UserAddInput, WorkspaceAddInput } from '../../../src/generated/graphql';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
-import { addUser, assignGroupToUser, findById, findById as findUserById, isUserTheLastAdmin, userAddRelation, userDelete } from '../../../src/domain/user';
+import { addUser, assignGroupToUser, findById, findById as findUserById, isUserTheLastAdmin, loginFromProvider, userAddRelation, userDelete } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
@@ -301,6 +301,14 @@ describe('Service account with platform organization coverage', async () => {
     expect(userCreated.password).toBeUndefined();
 
     await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
+  });
+});
+
+describe('loginFromProvider coverage', () => {
+  it('should ThrowError if provider user has no email', async () => {
+    await expect(async () => {
+      await loginFromProvider({ email: '', name: 'No Email Provider User' });
+    }).rejects.toThrowError('User email not provided');
   });
 });
 
