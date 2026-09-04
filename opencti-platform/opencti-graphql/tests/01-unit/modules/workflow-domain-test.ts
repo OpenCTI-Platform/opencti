@@ -6,7 +6,6 @@ import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/
 import { createStatus } from '../../../src/domain/status';
 import { resolveUserById } from '../../../src/domain/user';
 import * as ee from '../../../src/enterprise-edition/ee';
-import { StatusScope } from '../../../src/generated/graphql';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
@@ -21,17 +20,18 @@ import {
   isStatusTemplateUsedInWorkflows,
   publishWorkflowDefinition,
   hasPublishedWorkflowDefinition,
+  getWorkflowMigrationPreview,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
   cleanupEntityWorkflow,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
-import { FilterMode } from '../../../src/generated/graphql';
+import { FilterMode, StatusScope } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
-import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
@@ -2551,5 +2551,44 @@ describe('cleanupEntityWorkflow', () => {
     await cleanupEntityWorkflow(mockContext, mockUser, entity);
 
     expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
+  });
+});
+
+describe('getWorkflowMigrationPreview', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('groups legacy Status data by scope and delegates to the pure converter', async () => {
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
+      if (types.includes(ENTITY_TYPE_STATUS)) {
+        return Promise.resolve([
+          { id: 's1', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 1 },
+          { id: 's2', template_id: 't2', type: 'Incident', scope: StatusScope.RequestAccess, order: 1 },
+        ]);
+      }
+      if (types.includes(ENTITY_TYPE_STATUS_TEMPLATE)) {
+        return Promise.resolve([
+          { id: 't1', name: 'New' },
+          { id: 't2', name: 'Pending Approval' },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const { byScope } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    expect(byScope[StatusScope.Global]?.definition.states.map((s) => s.statusId)).toEqual(['t1']);
+    expect(byScope[StatusScope.RequestAccess]?.definition.states.map((s) => s.statusId)).toEqual(['t2']);
+  });
+
+  it('filters Status lookup by entity type only, so both scopes are included', async () => {
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    const statusCall = (fullEntitiesList as any).mock.calls.find(([, , types]: [any, any, string[]]) => types.includes(ENTITY_TYPE_STATUS));
+    const [, , , args] = statusCall;
+    expect(args.filters.filters).toEqual([{ key: ['type'], values: ['Incident'] }]);
   });
 });
