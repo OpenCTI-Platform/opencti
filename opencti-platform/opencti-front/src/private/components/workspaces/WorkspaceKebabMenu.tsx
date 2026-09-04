@@ -42,7 +42,7 @@ const useDuplicate = (isGranted = false, onDuplicate = noop) => {
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
   const [duplicating, setDuplicating] = useState(false);
-  const handleDashboardDuplication = isGranted ? () => {
+  const handleDuplication = isGranted ? () => {
     onDuplicate();
     setDisplayDuplicate(true);
   } : noop;
@@ -53,7 +53,7 @@ const useDuplicate = (isGranted = false, onDuplicate = noop) => {
     handleCloseDuplicate,
     duplicating,
     setDuplicating,
-    handleDashboardDuplication,
+    handleDuplication,
   };
 };
 
@@ -105,14 +105,16 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
   };
   const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
   const isGrantedToUpdateDashboard = useGranted([EXPLORE_EXUPDATE]);
+  const isGrantedToUpdateInvestigation = useGranted([INVESTIGATION_INUPDATE]);
+  const isGrantedToDuplicate = variant === 'investigation' ? isGrantedToUpdateInvestigation : isGrantedToUpdateDashboard;
 
   const {
     displayDuplicate,
     duplicating,
     setDuplicating,
-    handleDashboardDuplication,
+    handleDuplication,
     handleCloseDuplicate,
-  } = useDuplicate(isGrantedToUpdateDashboard, handleClose);
+  } = useDuplicate(isGrantedToDuplicate, handleClose);
   const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } = useManageAccess(handleClose);
   const { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer } = useAddToContainer(handleClose);
   const { openDelete, handleOpenDeletion, handleCloseDeletion } = useDelete(handleClose);
@@ -182,14 +184,19 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
           <MenuItem onClick={handleOpenManageAccess}>{t_i18n('Manage access restriction')}</MenuItem>
         </Security>
         {variant === 'investigation' && (
-          <Security needs={[INVESTIGATION_INUPDATE]}>
-            <MenuItem onClick={handleOpenTurnToReportOrCaseContainer}>{t_i18n('Add to a container')}</MenuItem>
-          </Security>
+          <>
+            <Security needs={[INVESTIGATION_INUPDATE]}>
+              <MenuItem onClick={handleOpenTurnToReportOrCaseContainer}>{t_i18n('Add to a container')}</MenuItem>
+            </Security>
+            <Security needs={[INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
+              <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate')}</MenuItem>
+            </Security>
+          </>
         )}
         {variant === 'dashboard' && (
           <>
             <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
-              <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate the dashboard')}</MenuItem>
+              <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate the dashboard')}</MenuItem>
             </Security>
             <MenuItem onClick={goToPublicDashboards}>
               {t_i18n('View associated public dashboards')}
@@ -222,15 +229,6 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
           workspace={workspace}
           open={isAddToContainerDialogOpen}
           handleClose={handleCloseTurnToReportOrCaseContainer}
-        />
-      )}
-      {variant === 'dashboard' && (
-        <WorkspaceDuplicationDialog
-          data={workspace}
-          displayDuplicate={displayDuplicate}
-          handleCloseDuplicate={handleCloseDuplicate}
-          duplicating={duplicating}
-          setDuplicating={setDuplicating}
         />
       )}
       <Drawer
