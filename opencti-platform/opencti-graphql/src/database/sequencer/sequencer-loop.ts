@@ -418,6 +418,11 @@ const runBatchLoop = async () => {
     });
     sequencerMetrics.phase('order', (Date.now() - t0) / 1000);
     if (plan.chainedSteps > 0) sequencerMetrics.chainSteps(plan.chainedSteps);
+    // s9.12.1 relatedness instrumentation: in-batch dependsOn edges (dependents co-batched
+    // with their producers) and distinct sources (bundle proxy at prefetch=1) per batch.
+    const inBatchEdges = plan.order.reduce((n, g) => n + (g.dependsOn?.length ?? 0), 0);
+    const distinctSources = new Set(batch.map((intent) => intent.source)).size;
+    sequencerMetrics.batchRelatedness(inBatchEdges, distinctSources);
     // s9.8.2 "member dead": the ref was declared in-bundle and its producer never showed
     // up within the bounded wait: it failed its own creation, no retry can help. Reject
     // NOW with the FINAL error code (distinct from MISSING_REFERENCE_ERROR on purpose):

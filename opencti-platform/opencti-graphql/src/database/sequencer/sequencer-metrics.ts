@@ -44,6 +44,10 @@ class SequencerMetrics {
 
   private searchCallers: Counter | null = null;
 
+  private batchDependsOnEdges: Histogram | null = null;
+
+  private batchDistinctSources: Histogram | null = null;
+
   register() {
     const meter = meterManager.meterProvider.getMeter('opencti-sequencer');
     this.intents = meter.createCounter('opencti_sequencer_intents_total', {
@@ -118,6 +122,16 @@ class SequencerMetrics {
       valueType: ValueType.INT,
       description: 'ES searches by caller site (plan 0010 step 1); _all counts every elRawSearch (denominator), unlabeled = elFindByIds calls without a caller hint',
     });
+    this.batchDependsOnEdges = meter.createHistogram('opencti_sequencer_batch_dependson_edges', {
+      valueType: ValueType.INT,
+      description: 'In-batch dependsOn edges per batch plan: dependents co-batched with their producers (the relatedness metric, plan 0009 s9.12.1)',
+      advice: { explicitBucketBoundaries: [0, 1, 2, 4, 8, 16, 32, 64] },
+    });
+    this.batchDistinctSources = meter.createHistogram('opencti_sequencer_batch_distinct_sources', {
+      valueType: ValueType.INT,
+      description: 'Distinct intent sources (applicant ids) per batch: proxy for distinct bundles per batch while RabbitMQ prefetch=1 (one in-flight bundle per connector)',
+      advice: { explicitBucketBoundaries: [1, 2, 3, 4, 6, 8, 12, 16] },
+    });
   }
 
   intent(outcome: IntentOutcome, kind?: 'entity' | 'relation') {
@@ -183,6 +197,11 @@ class SequencerMetrics {
 
   searchCaller(caller: string, count = 1) {
     this.searchCallers?.add(count, { caller });
+  }
+
+  batchRelatedness(dependsOnEdges: number, distinctSources: number) {
+    this.batchDependsOnEdges?.record(dependsOnEdges);
+    this.batchDistinctSources?.record(distinctSources);
   }
 }
 
