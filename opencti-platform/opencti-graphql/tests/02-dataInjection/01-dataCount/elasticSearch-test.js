@@ -229,11 +229,14 @@ describe('Elasticsearch computation', () => {
       READ_INDEX_STIX_DOMAIN_OBJECTS,
       { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'day', startDate: '2019-09-29T00:00:00.000Z', endDate: new Date().toISOString() },
     );
-    expect(data.length).toEqual(1);
+    // created_at is the insertion date, so the dataset lands on the day of the run - split
+    // over two days when the run crosses midnight UTC. Assert the total over the buckets
+    // instead of reading the count from a single one.
+    expect(data.length).toBeGreaterThanOrEqual(1);
     // noinspection JSUnresolvedVariable
-    const storedFormat = moment(R.head(data).date)._f;
-    expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(R.head(data).value).toEqual(34 + TESTING_ORGS.length);
+    data.forEach((bucket) => expect(moment(bucket.date)._f).toEqual('YYYY-MM-DD'));
+    const total = data.reduce((acc, bucket) => acc + bucket.value, 0);
+    expect(total).toEqual(34 + TESTING_ORGS.length);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
