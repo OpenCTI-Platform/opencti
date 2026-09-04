@@ -17122,7 +17122,7 @@ type UserMergeExecutionReport {
 
 type UserMergeCoverageRow {
   row_id: String!
-  entity: String!
+  label: String!
   path: String!
   disposition: UserMergeDisposition!
   covered: Boolean!
@@ -17133,6 +17133,7 @@ type UserMergeCoverage {
   total: Int!
   covered_count: Int!
   uncovered_count: Int!
+  gating_uncovered_count: Int!
   is_complete: Boolean!
   rows: [UserMergeCoverageRow!]!
 }

@@ -37350,8 +37350,8 @@ export type UserMergeCoverageRow = {
   __typename?: 'UserMergeCoverageRow';
   covered: Scalars['Boolean']['output'];
   disposition: UserMergeDisposition;
-  entity: Scalars['String']['output'];
   handler?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
   path: Scalars['String']['output'];
   row_id: Scalars['String']['output'];
 };
@@ -53456,8 +53456,8 @@ export type UserMergeCoverageResolvers<ContextType = any, ParentType extends Res
 export type UserMergeCoverageRowResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeCoverageRow'] = ResolversParentTypes['UserMergeCoverageRow']> = ResolversObject<{
   covered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   disposition?: Resolver<ResolversTypes['UserMergeDisposition'], ParentType, ContextType>;
-  entity?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   handler?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   row_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
