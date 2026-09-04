@@ -104,6 +104,7 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
       ) : (
         <ToggleButton
           aria-label={t_i18n('Open menu')}
+          aria-haspopup="true"
           value="popover"
           size="small"
           onClick={handleOpen}
