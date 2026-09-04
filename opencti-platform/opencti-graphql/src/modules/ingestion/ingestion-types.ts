@@ -108,6 +108,7 @@ export interface StixIngestionTaxii extends StixObject {
 export const ENTITY_TYPE_INGESTION_CSV = 'IngestionCsv';
 
 export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
+  kind: 'csv';
   current_state_hash: string;
   name: string;
   description: string;
@@ -121,6 +122,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   user_id: string | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   markings?: string[];
   ssl_verify?: boolean;
 }
