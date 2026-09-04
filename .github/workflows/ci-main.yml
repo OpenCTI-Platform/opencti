@@ -23,7 +23,6 @@ jobs:
         with:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
           client_python_local: true
-          fds_git_token: ${{ secrets.FDS_GIT_TOKEN }}
 
   wf-build-worker-image:
     name: Build opencti:worker image
@@ -63,7 +62,7 @@ jobs:
       checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-CI-SECRET
+
 
   wf-frontend-test:
     name: Frontend e2e
@@ -72,8 +71,7 @@ jobs:
     with:
       checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       run-id: ${{ github.run_id }}
-    secrets:
-      FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-CI-SECRET
+
 
 
   wf-client-python-test:
@@ -90,5 +88,4 @@ jobs:
     uses: ./.github/workflows/ci-license-check.yml
     with:
       checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-    secrets:
-      FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-CI-SECRET
+
