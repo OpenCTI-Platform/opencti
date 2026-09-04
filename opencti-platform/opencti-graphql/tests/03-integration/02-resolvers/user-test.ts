@@ -969,6 +969,38 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data.userAdd.name).toEqual('User');
     userInternalId = user.data.userAdd.id;
   });
+  it('should not create user in an organization the org admin does not administrate', async () => {
+    const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+    const USER_TO_CREATE_WRONG_ORG = {
+      input: {
+        name: 'User wrong org',
+        password: 'user',
+        user_email: 'user.wrongorg@mail.com',
+        objectOrganization: [notAdministratedOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_ORG,
+    });
+  });
+  it('should not create user with a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    const USER_TO_CREATE_WRONG_GROUP = {
+      input: {
+        name: 'User wrong group',
+        password: 'user',
+        user_email: 'user.wronggroup@mail.com',
+        objectOrganization: [testOrganizationId],
+        groups: [notGrantableGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_GROUP,
+    });
+  });
   it('should list users from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: LIST_QUERY,
