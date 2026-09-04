@@ -113,6 +113,8 @@ export default defineConfig([
       '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
       'custom-rules/classes-rule': 1,
+      'custom-rules/no-deprecated-components': 'warn',
+      'custom-rules/no-replaced-components': 'error',
       'no-restricted-syntax': 0,
       'react/no-unused-prop-types': 0,
       'react/prop-types': 0,
