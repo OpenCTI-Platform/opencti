@@ -2007,7 +2007,22 @@ export const mergeEntities = async (
       throw FunctionalError('Cannot access initial instance', { targetEntityId });
     }
     const target = { ...initialInstance } as BasicStoreEntity;
-    const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    const loadedSources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    // storeLoadByIdsWithRefs relies on an unsorted elastic query, so re-align the sources on the requested
+    // ids order: for single meta refs (created-by, ...) the first source wins, the order must be deterministic.
+    const sourcesByIds = new Map<string, StoreObject>();
+    // Sources are indexed in internal_id order with a first-write-wins rule to keep the mapping
+    // deterministic even if several sources share a secondary id (duplicated standard_id, stix ids or aliases).
+    const orderedLoadedSources = R.sortBy((s) => s.internal_id, loadedSources);
+    orderedLoadedSources.forEach((source) => {
+      const sourceIds = [source.internal_id, source.standard_id, ...(source.x_opencti_stix_ids ?? []), ...(source.i_aliases_ids ?? [])];
+      sourceIds.forEach((id) => {
+        if (!sourcesByIds.has(id)) {
+          sourcesByIds.set(id, source);
+        }
+      });
+    });
+    const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
