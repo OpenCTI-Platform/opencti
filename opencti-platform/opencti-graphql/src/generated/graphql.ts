@@ -37909,9 +37909,9 @@ export type VulnerabilityAddInput = {
   x_opencti_first_seen_active?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
-  x_opencti_ssvc_automatable?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_ssvc_exploitation?: InputMaybe<Scalars['String']['input']>;
-  x_opencti_ssvc_technical_impact?: InputMaybe<Scalars['String']['input']>;
+  x_opencti_ssvc_automatable?: InputMaybe<SsvcAutomatable>;
+  x_opencti_ssvc_exploitation?: InputMaybe<SsvcExploitation>;
+  x_opencti_ssvc_technical_impact?: InputMaybe<SsvcTechnicalImpact>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
