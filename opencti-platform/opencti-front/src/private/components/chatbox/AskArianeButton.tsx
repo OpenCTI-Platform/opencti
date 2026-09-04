@@ -97,7 +97,8 @@ const AskArianeButton = () => {
           variant="ia"
           priority="tertiary"
           onClick={toggleChatbot}
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+          // The `ia` variant gradients the LABEL only; the icon keeps `currentColor`, near-black in light.
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" style={{ color: 'var(--color-filigran-ia-primary)' }} />}
           endIcon={isEnterpriseEdition
             ? undefined
             : <EEChip clickable={false} style={{ marginInlineStart: 0 }} />}
