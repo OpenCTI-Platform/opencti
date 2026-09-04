@@ -19,10 +19,10 @@ from pycti.connector.opencti_connector_helper import (
     get_config_variable,
 )
 
-from listen_handler import ListenHandler
-from message_queue_consumer import MessageQueueConsumer
-from push_handler import PushHandler
-from thread_pool_selector import ThreadPoolSelector
+from opencti_worker.listen_handler import ListenHandler
+from opencti_worker.message_queue_consumer import MessageQueueConsumer
+from opencti_worker.push_handler import PushHandler
+from opencti_worker.thread_pool_selector import ThreadPoolSelector
 
 # Telemetry variables definition
 meter = metrics.get_meter(__name__)
@@ -343,7 +343,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.worker_logger.info("Thread for worker terminated")
 
 
-if __name__ == "__main__":
+def main() -> None:
     worker: Worker = Worker()
 
     def exit_handler(_signum, _frame):
@@ -353,3 +353,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, exit_handler)
 
     worker.start()
+
+
+if __name__ == "__main__":
+    main()

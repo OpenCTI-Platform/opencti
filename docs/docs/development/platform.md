@@ -44,13 +44,11 @@ As it's an "all-in-one" installation, the python environment will be installed i
 
 ```bash
 cd ~/opencti/opencti-platform/opencti-graphql
-python3 -m venv .venv --prompt "graphql"
-source .venv/bin/activate
-pip install --upgrade pip wheel setuptools
 yarn install
-yarn install:python 
-deactivate
+yarn install:python
 ```
+
+`yarn install:python` runs `uv sync` on the [uv](https://docs.astral.sh/uv/) workspace of the repository: the Python dependencies of the platform, of the worker and of the client are locked in `uv.lock` at the repository root and installed in `~/opencti/.venv`. Install uv with its [standalone installer](https://docs.astral.sh/uv/getting-started/installation/) first.
 
 ### Development configuration
 
@@ -229,20 +227,15 @@ Running a worker is required when you want to develop on the ingestion or import
 ### Python virtual env
 
 ```bash
-cd ~/opencti/opencti-worker/src
-python3 -m venv .venv --prompt "worker"
-source .venv/bin/activate
-pip3 install --upgrade pip wheel setuptools
-pip3 install -r requirements.txt
-deactivate
+cd ~/opencti
+uv sync --package opencti-worker
 ```
 
 ### Install / start
 
 ```bash
-cd ~/opencti/opencti-worker/src
-source .venv/bin/activate
-python worker.py
+cd ~/opencti
+uv run --package opencti-worker opencti-worker
 ```
 
 ## Connectors

@@ -1,0 +1,46 @@
+# Build context of every image is the repository root (uv workspace).
+# Only what the Dockerfiles copy is kept in the context.
+*
+
+# uv workspace
+!pyproject.toml
+!uv.lock
+!client-python/pyproject.toml
+!client-python/README.md
+!client-python/src
+!opencti-worker/pyproject.toml
+!opencti-worker/src
+!opencti-worker/config.yml.sample
+!opencti-platform/opencti-graphql/src/python/pyproject.toml
+
+# platform
+!opencti-platform/.yarnrc.yml
+!opencti-platform/opencti-graphql
+!opencti-platform/opencti-front
+
+# never sent to the daemon, whatever the whitelist above
+**/node_modules
+**/dist
+**/coverage
+**/.idea
+**/.env
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/__generated__*
+**/__pycache__
+**/*.py[cod]
+**/.venv
+**/.ruff_cache
+**/.mypy_cache
+**/.pytest_cache
+opencti-platform/opencti-front/config/development.json
+opencti-platform/opencti-front/.DS_Store
+opencti-platform/opencti-front/.env.local
+opencti-platform/opencti-front/.env.development.local
+opencti-platform/opencti-front/.env.test.local
+opencti-platform/opencti-front/.env.production.local
+opencti-platform/opencti-graphql/config/development.json
+opencti-platform/opencti-graphql/config/production.json
+opencti-platform/opencti-graphql/config/local.json
+opencti-platform/opencti-graphql/logs

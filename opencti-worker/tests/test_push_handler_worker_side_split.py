@@ -10,7 +10,7 @@ import json
 from contextlib import contextmanager
 from unittest.mock import MagicMock, patch
 
-from push_handler import PushHandler
+from opencti_worker.push_handler import PushHandler
 
 
 def make_push_handler() -> PushHandler:
@@ -61,7 +61,7 @@ class TestWorkerSideSplitWarning:
         }
         handler.api.work.add_expectations.return_value = True
 
-        with patch("push_handler.pika.BlockingConnection", fake_blocking_connection):
+        with patch("opencti_worker.push_handler.pika.BlockingConnection", fake_blocking_connection):
             result = handler.handle_message(
                 encode_message(bundle, work_id="work-1")
             )

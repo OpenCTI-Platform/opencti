@@ -28,3 +28,12 @@ venv
 
 # Copilot
 thoughts/
+
+# Python
+__pycache__/
+*.py[cod]
+dist/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.coverage

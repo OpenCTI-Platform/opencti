@@ -8,7 +8,7 @@ self.logger, self.handle_message and self.pika_connection.add_callback_threadsaf
 
 from unittest.mock import MagicMock
 
-from message_queue_consumer import MessageQueueConsumer
+from opencti_worker.message_queue_consumer import MessageQueueConsumer
 
 
 def make_consumer(handle_message) -> MessageQueueConsumer:

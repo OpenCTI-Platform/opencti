@@ -1,3 +1,30 @@
+[project]
+name = "opencti-worker"
+version = "0.0.0"
+description = "OpenCTI worker, consumes the RabbitMQ queues and pushes the bundles to the platform."
+requires-python = ">=3.10"
+# never published on PyPI: PyPI rejects this classifier
+classifiers = ["Private :: Do Not Upload"]
+dependencies = [
+  # pycti of the same commit, provided by the uv workspace
+  "pycti",
+  "opentelemetry-api~=1.35.0",
+  "opentelemetry-sdk~=1.35.0",
+  "opentelemetry-exporter-prometheus==0.56b0",
+  # Fix transitive dependencies from pycti ranges
+  "starlette==1.3.1",
+]
+
+[project.scripts]
+opencti-worker = "opencti_worker.worker:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+pycti = { workspace = true }
+
 [tool.isort]
 profile = "black"
 

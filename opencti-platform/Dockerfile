@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.26
+# Built from the repository root: docker build -f opencti-platform/Dockerfile .
 FROM node:22-alpine3.23 AS base
 
 
@@ -13,12 +14,13 @@ RUN <<EOT
   set -euxo pipefail
 
   apk --no-cache add make g++ python3 python3-dev
-  rm -f /usr/lib/python*/EXTERNALLY-MANAGED
-  python3 -m ensurepip
   npm install -g corepack
 EOT
 
-COPY .yarnrc.yml /opt/opencti/
+COPY opencti-platform/.yarnrc.yml /opt/opencti/
+
+# uv static binary, pinned; renovate keeps it up to date. Used by `yarn install:python`
+COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /bin/uv
 
 
 ##############################
@@ -34,13 +36,13 @@ ENV TAG_VERSION="${TAG_VERSION}"
 WORKDIR /opt/opencti/opencti-graphql
 
 # Copy sources necessary for install (preserve cache if no dependency changes)
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-COPY opencti-graphql/patch/ ./patch/
+COPY opencti-platform/opencti-graphql/package.json opencti-platform/opencti-graphql/yarn.lock ./
+COPY opencti-platform/opencti-graphql/patch/ ./patch/
 
 RUN yarn install --immutable
 
 # Copy all remaining sources
-COPY opencti-graphql/ ./
+COPY opencti-platform/opencti-graphql/ ./
 RUN yarn build:prod
 
 ##############################
@@ -51,15 +53,55 @@ FROM builder AS builder-front
 WORKDIR /opt/opencti/opencti-front
 
 # Copy sources necessary for install (preserve cache if no dependency changes)
-COPY opencti-front/package.json opencti-front/yarn.lock ./
-COPY opencti-front/packages/ ./packages/
-COPY opencti-front/patch/ ./patch/
+COPY opencti-platform/opencti-front/package.json opencti-platform/opencti-front/yarn.lock ./
+COPY opencti-platform/opencti-front/packages/ ./packages/
+COPY opencti-platform/opencti-front/patch/ ./patch/
 
 RUN yarn install --immutable
 
 # Copy all remaining sources and build
-COPY opencti-front/ ./
+COPY opencti-platform/opencti-front/ ./
 RUN yarn build
+
+##############################
+### Build Python runtime
+##############################
+
+FROM base AS builder-python
+
+RUN apk --no-cache add python3
+
+# uv static binary, pinned; renovate keeps it up to date
+COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /bin/uv
+
+# faster startup, cache mount compatibility, use the image's Python
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=0
+
+WORKDIR /opt/opencti
+
+# dependency layer: only invalidated when the workspace metadata or uv.lock change
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=client-python/pyproject.toml,target=client-python/pyproject.toml \
+    --mount=type=bind,source=opencti-worker/pyproject.toml,target=opencti-worker/pyproject.toml \
+    --mount=type=bind,source=opencti-platform/opencti-graphql/src/python/pyproject.toml,target=opencti-platform/opencti-graphql/src/python/pyproject.toml \
+    uv sync --locked --no-dev --no-editable --no-install-workspace --package opencti-platform-python
+
+# project layer: pycti of the same commit
+COPY pyproject.toml uv.lock ./
+COPY client-python/ ./client-python/
+COPY opencti-worker/pyproject.toml ./opencti-worker/pyproject.toml
+COPY opencti-platform/opencti-graphql/src/python/pyproject.toml ./opencti-platform/opencti-graphql/src/python/pyproject.toml
+RUN --mount=type=cache,target=/root/.cache/uv <<EOT
+  set -euxo pipefail
+
+  uv sync --locked --no-dev --no-editable --package opencti-platform-python
+  # stable path to the site-packages, whatever the Python version of the image
+  ln -s "$(.venv/bin/python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')" .venv/site-packages
+EOT
 
 ##############################
 ### Build production image
@@ -72,17 +114,6 @@ RUN <<EOT
 
   apk --no-cache add tini python3 python3-dev
   rm /var/log/apk.log
-  rm -f /usr/lib/python*/EXTERNALLY-MANAGED
-  python3 -m ensurepip
-EOT
-
-RUN --mount=type=bind,source=opencti-graphql/src/python/requirements.txt,target=/opt/opencti/src/python/requirements.txt <<EOT
-  set -euxo pipefail
-
-  apk --no-cache add -t .pip_deps git
-  pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
-  apk del .pip_deps
-  rm /var/log/apk.log
 EOT
 
 WORKDIR /opt/opencti
@@ -92,7 +123,11 @@ COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
 COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
 COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
 COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
+# Python runtime dependencies: virtual environment only, no uv, no pip
+COPY --from=builder-python /opt/opencti/.venv/ ./.venv/
 
+ENV PATH="/opt/opencti/.venv/bin:$PATH"
+ENV APP__PYTHON_EXECUTION_VENV="/opt/opencti/.venv/site-packages"
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
 ENV NODE_ENV="production"

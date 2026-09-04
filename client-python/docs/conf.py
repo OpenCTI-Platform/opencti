@@ -14,11 +14,12 @@ import os
 import re
 import sys
 
-# Add the client-python directory to the path for pycti module discovery
+# Add the client-python source directory to the path for pycti module discovery
 # This works both when building from client-python/ locally and from repo root via ReadTheDocs
 docs_dir = os.path.dirname(os.path.abspath(__file__))
 client_python_dir = os.path.dirname(docs_dir)
-sys.path.insert(0, client_python_dir)
+client_python_src_dir = os.path.join(client_python_dir, "src")
+sys.path.insert(0, client_python_src_dir)
 
 
 # -- Project information -----------------------------------------------------
@@ -29,9 +30,9 @@ author = "OpenCTI Project"
 
 
 # The full version, including alpha/beta/rc tags
-# Read version from pycti/__init__.py without importing (avoids dependency issues)
+# Read version from src/pycti/__init__.py without importing (avoids dependency issues)
 def get_version():
-    init_path = os.path.join(client_python_dir, "pycti", "__init__.py")
+    init_path = os.path.join(client_python_src_dir, "pycti", "__init__.py")
     with open(init_path, "r") as f:
         content = f.read()
     match = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
@@ -92,7 +93,7 @@ napoleon_type_aliases = None
 
 # AutoAPI configuration for sphinx-autoapi
 autoapi_type = "python"
-autoapi_dirs = [os.path.join(client_python_dir, "pycti")]
+autoapi_dirs = [os.path.join(client_python_src_dir, "pycti")]
 autoapi_options = [
     "members",
     "undoc-members",
