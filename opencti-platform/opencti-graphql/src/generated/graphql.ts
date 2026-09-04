@@ -37296,7 +37296,7 @@ export type UserMergeCoverage = {
   covered_count: Scalars['Int']['output'];
   gating_uncovered_count: Scalars['Int']['output'];
   is_complete: Scalars['Boolean']['output'];
-  registry_version: Scalars['String']['output'];
+  register_version: Scalars['String']['output'];
   rows: Array<UserMergeCoverageRow>;
   total: Scalars['Int']['output'];
   uncovered_count: Scalars['Int']['output'];
@@ -37306,8 +37306,8 @@ export type UserMergeCoverageRow = {
   __typename?: 'UserMergeCoverageRow';
   covered: Scalars['Boolean']['output'];
   disposition: UserMergeDisposition;
-  entity: Scalars['String']['output'];
   handler?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
   path: Scalars['String']['output'];
   row_id: Scalars['String']['output'];
 };
@@ -37325,7 +37325,7 @@ export type UserMergeExecutionReport = {
   coverage: UserMergeCoverage;
   handlers: Array<UserMergeHandlerOutcome>;
   merge_id: Scalars['ID']['output'];
-  registry_version: Scalars['String']['output'];
+  register_version: Scalars['String']['output'];
   total_updated: Scalars['Int']['output'];
 };
 
@@ -53390,7 +53390,7 @@ export type UserMergeCoverageResolvers<ContextType = any, ParentType extends Res
   covered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   gating_uncovered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   is_complete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  registry_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  register_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   rows?: Resolver<Array<ResolversTypes['UserMergeCoverageRow']>, ParentType, ContextType>;
   total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   uncovered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -53399,8 +53399,8 @@ export type UserMergeCoverageResolvers<ContextType = any, ParentType extends Res
 export type UserMergeCoverageRowResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeCoverageRow'] = ResolversParentTypes['UserMergeCoverageRow']> = ResolversObject<{
   covered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   disposition?: Resolver<ResolversTypes['UserMergeDisposition'], ParentType, ContextType>;
-  entity?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   handler?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   row_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -53409,7 +53409,7 @@ export type UserMergeExecutionReportResolvers<ContextType = any, ParentType exte
   coverage?: Resolver<ResolversTypes['UserMergeCoverage'], ParentType, ContextType>;
   handlers?: Resolver<Array<ResolversTypes['UserMergeHandlerOutcome']>, ParentType, ContextType>;
   merge_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  registry_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  register_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   total_updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 

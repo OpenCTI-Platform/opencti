@@ -51,7 +51,7 @@ type UserMergeHandlerOutcome {
 
 type UserMergeExecutionReport {
     merge_id: ID!
-    registry_version: String!
+    register_version: String!
     handlers: [UserMergeHandlerOutcome!]!
     total_updated: Int!
     coverage: UserMergeCoverage!
@@ -59,7 +59,7 @@ type UserMergeExecutionReport {
 
 type UserMergeCoverageRow {
     row_id: String!
-    entity: String!
+    label: String!
     path: String!
     disposition: UserMergeDisposition!
     covered: Boolean!
@@ -67,7 +67,7 @@ type UserMergeCoverageRow {
 }
 
 type UserMergeCoverage {
-    registry_version: String!
+    register_version: String!
     total: Int!
     covered_count: Int!
     uncovered_count: Int!

@@ -5,7 +5,7 @@ import type { AuthContext } from '../../types/user';
 import { handlerDryRun, planDivergence, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
 import { readJournalEntries, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
-import { USER_MERGE_REGISTRY_VERSION } from './userMerge-register';
+import { USER_MERGE_REGISTER_VERSION } from './userMerge-register';
 import { assertHandlersAreDisjoint, userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
 
@@ -13,7 +13,7 @@ const LOG_PREFIX = '[MERGE_USERS]';
 
 export interface UserMergeExecutionReport {
   merge_id: string;
-  registry_version: string;
+  register_version: string;
   handlers: UserMergeHandlerOutcome[];
   total_updated: number;
   /**
@@ -26,7 +26,7 @@ export interface UserMergeExecutionReport {
 /** Coverage is built from the handlers that actually ran, not from the registry read again. */
 const buildReport = (mergeId: string, handlers: UserMergeHandler[], outcomes: UserMergeHandlerOutcome[]): UserMergeExecutionReport => ({
   merge_id: mergeId,
-  registry_version: USER_MERGE_REGISTRY_VERSION,
+  register_version: USER_MERGE_REGISTER_VERSION,
   handlers: outcomes,
   total_updated: outcomes.reduce((total, outcome) => total + outcome.updated, 0),
   coverage: buildApiUserMergeCoverage(handlers),

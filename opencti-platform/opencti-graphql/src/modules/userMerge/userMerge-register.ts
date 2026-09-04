@@ -10,12 +10,12 @@
  * it, a report can only show what is done and never what is missing: the blind spots go
  * invisible exactly when they are most numerous.
  *
- * Only what the engine needs at runtime is transcribed here — id, disposition, entity type,
- * path, short label. The per-row analysis stays in the specification, which is the record of
- * the reasoning that produced the list, not a document to keep in sync at runtime.
+ * Only what the engine needs at runtime is transcribed here — id, disposition, label, path.
+ * The per-row analysis stays in the specification, which is the record of the reasoning that
+ * produced the list, not a document to keep in sync at runtime.
  */
 
-export const USER_MERGE_REGISTRY_VERSION = 'v3';
+export const USER_MERGE_REGISTER_VERSION = 'v3';
 
 export enum UserMergeDisposition {
   /** The reference must be re-pointed from the source to the target. */
@@ -34,13 +34,13 @@ export interface UserMergeRegisterRow {
   /** Stable identifier a handler declares coverage against. Never reused, never renumbered. */
   id: string;
   disposition: UserMergeDisposition;
-  /** Entity or store the reference lives on. */
-  entity: string;
+  /** Human-readable name of the entity or store the reference lives on. */
+  label: string;
   /** Field path carrying the user id. */
   path: string;
 }
 
-const row = (id: string, disposition: UserMergeDisposition, entity: string, path: string): UserMergeRegisterRow => ({ id, disposition, entity, path });
+const row = (id: string, disposition: UserMergeDisposition, label: string, path: string): UserMergeRegisterRow => ({ id, disposition, label, path });
 
 const TRANSFER = UserMergeDisposition.Transfer;
 const INVALIDATE = UserMergeDisposition.Invalidate;
@@ -150,7 +150,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('user.personal-notifiers', RETAIN, 'User', 'personal_notifiers'),
   row('user.merged-into-id', RETAIN, 'User (field to introduce)', 'merged_into_id'),
   row('user-account.user-id', RETAIN, 'User-Account', 'user_id'),
-  row('user-merge-audit-record.fields', RETAIN, 'UserMerge audit record', 'source_user_id / target_user_id / registry_version / outcome'),
+  row('user-merge-audit-record.fields', RETAIN, 'UserMerge audit record', 'source_user_id / target_user_id / register_version / outcome'),
 
   // --- out-of-scope (6) ------------------------------------------------------------------
   row('background-task-queue.message', OUT_OF_SCOPE, 'Background task queue message', 'background-task queues: initiator / actions context'),

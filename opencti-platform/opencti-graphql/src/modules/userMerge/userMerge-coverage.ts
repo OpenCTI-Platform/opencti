@@ -1,11 +1,11 @@
 import { UnsupportedError } from '../../config/errors';
-import { USER_MERGE_REGISTER, USER_MERGE_REGISTRY_VERSION, UserMergeDisposition, type UserMergeRegisterRow } from './userMerge-register';
+import { USER_MERGE_REGISTER, USER_MERGE_REGISTER_VERSION, UserMergeDisposition, type UserMergeRegisterRow } from './userMerge-register';
 import type { UserMergeHandler } from './userMerge-handler';
 import { userMergeHandlers } from './userMerge-registry';
 
 export interface UserMergeCoverageRow {
   row_id: string;
-  entity: string;
+  label: string;
   path: string;
   disposition: UserMergeDisposition;
   covered: boolean;
@@ -14,7 +14,7 @@ export interface UserMergeCoverageRow {
 }
 
 export interface UserMergeCoverage {
-  registry_version: string;
+  register_version: string;
   total: number;
   covered_count: number;
   uncovered_count: number;
@@ -33,16 +33,22 @@ export interface UserMergeCoverage {
 /**
  * Dispositions that a handler has to answer for.
  *
- * `retain` and `out-of-scope` are excluded by construction, not by tolerance: a retained row
- * is one the merge deliberately does not rewrite, an out-of-scope one is unreachable. No
- * handler will ever claim them, so counting them in would leave the deletion gate shut for
- * good — including once every remaining transfer is implemented.
+ * The other three are excluded by construction, not by tolerance: no handler will ever claim
+ * them, so counting them in would leave the deletion gate shut for good — including once
+ * every remaining transfer is implemented. A retained row is one the merge deliberately does
+ * not rewrite, an out-of-scope one is unreachable, and an invalidated one carries a reference
+ * that dies with the source account: sessions, tokens, OTP secrets, cached rights, edit
+ * contexts, all removed when the account is deleted.
+ *
+ * `organization.authorized-authorities` is the exception that proves the rule — an id list
+ * held by the organization, which outlives the account. It is answered for by a handler
+ * rather than left to this reasoning.
  */
 const GATING_DISPOSITIONS = [UserMergeDisposition.Transfer, UserMergeDisposition.Conditional];
 
 const coverageRow = (row: UserMergeRegisterRow, handler?: string): UserMergeCoverageRow => ({
   row_id: row.id,
-  entity: row.entity,
+  label: row.label,
   path: row.path,
   disposition: row.disposition,
   covered: handler !== undefined,
@@ -77,7 +83,7 @@ export const buildUserMergeCoverage = (
   const gatingUncovered = allRows.filter((row) => GATING_DISPOSITIONS.includes(row.disposition) && !row.covered);
   const rows = disposition ? allRows.filter((row) => row.disposition === disposition) : allRows;
   return {
-    registry_version: USER_MERGE_REGISTRY_VERSION,
+    register_version: USER_MERGE_REGISTER_VERSION,
     total: allRows.length,
     covered_count: coveredCount,
     uncovered_count: allRows.length - coveredCount,
