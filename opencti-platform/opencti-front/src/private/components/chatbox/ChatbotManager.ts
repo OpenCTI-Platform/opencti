@@ -43,7 +43,7 @@ class ChatbotManager {
 
   private getCustomCSS(): string {
     // Bar height read from the Header's own custom property — one source of truth.
-    const totalOffset = `calc(${TOP_BAR_HEIGHT} + ${this.bannerHeight}px)`;
+    const totalOffset = `${TOP_BAR_HEIGHT} + ${this.bannerHeight}px`;
     return `
       * {
         font-family: "IBM Plex Sans" !important;
