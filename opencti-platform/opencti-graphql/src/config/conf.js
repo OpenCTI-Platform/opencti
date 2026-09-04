@@ -541,6 +541,7 @@ export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', fals
 export const ENABLED_METRICS = booleanConf('app:telemetry:metrics:enabled', false);
 export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
 export const ENABLED_PUBLISHER_MANAGER = booleanConf('publisher_manager:enabled', true);
+export const ENABLED_CATALOG_MANAGER = booleanConf('catalog_manager:enabled', true);
 export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
 export const ENABLED_FILE_INDEX_MANAGER = booleanConf('file_index_manager:enabled', true);
 

@@ -22,8 +22,8 @@ export const depsKeysRegister = {
 
 const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
 const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
-const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
-  return schemaDef.type === 'object' && schemaDef.format !== 'flat';
+const isObjectAttributeWithMappings = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
+  return schemaDef.type === 'object' && (schemaDef.format === 'standard' || schemaDef.format === 'nested');
 };
 
 /**
@@ -35,7 +35,7 @@ const getAttributeMappingFromPath = (path: string, schemaDef: AttributeDefinitio
   if (pathTokens.length === 1) {
     return schemaDef;
   }
-  if (!isNonFlatObjectAttributeDefinition(schemaDef)) {
+  if (!isObjectAttributeWithMappings(schemaDef)) {
     throw FunctionalError(`Cannot resolve path [${path}], [${schemaDef.name}] is not an object`);
   }
   const mapping = schemaDef.mappings.find((m) => m.name === pathTokens[1]);
@@ -145,7 +145,7 @@ export const schemaAttributesDefinition = {
         });
       }
       // Check sortBy on object
-      if (attribute.type === 'object' && attribute.format !== 'flat' && attribute.sortBy) {
+      if (attribute.type === 'object' && attribute.format !== 'flat' && attribute.format !== 'raw' && attribute.sortBy) {
         const correspondingMapping = getAttributeMappingFromPath(attribute.sortBy.path, attribute);
         if (correspondingMapping.type !== attribute.sortBy.type) {
           throw UnsupportedError('You can\'t define a sortBy with path and type that do not match the corresponding mapping', {
@@ -155,7 +155,7 @@ export const schemaAttributesDefinition = {
         }
       }
       let registeredAttribute: AttributeDefinition = { ...attribute };
-      if (registeredAttribute.type === 'object' && registeredAttribute.format !== 'flat' && registeredAttribute.mappings.length > 0) {
+      if (registeredAttribute.type === 'object' && registeredAttribute.format !== 'flat' && registeredAttribute.format !== 'raw' && registeredAttribute.mappings.length > 0) {
         registeredAttribute = {
           ...registeredAttribute,
           // filter feature flagged attributes
@@ -294,7 +294,11 @@ export const isObjectFlatAttribute = (k: string): boolean => {
   if (!definition) return false;
   return definition.type === 'object' && definition.format === 'flat';
 };
-
+export const isObjectRawAttribute = (k: string): boolean => {
+  const definition = schemaAttributesDefinition.getAttributeByName(k.split('.')[0]);
+  if (!definition) return false;
+  return definition.type === 'object' && definition.format === 'raw';
+};
 // -- MULTIPLE --
 
 export const isMultipleAttribute = (entityType: string, k: string): boolean => (
@@ -320,7 +324,7 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     }
   }
 
-  if (isNonFlatObjectAttributeDefinition(schemaDef)) {
+  if (isObjectAttributeWithMappings(schemaDef)) {
     if (!isMandatory && R.isNil(input)) {
       return; // nothing to check (happens on 'remove' operation for instance
     }

@@ -2,24 +2,60 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
+import {
+  type BasicStoreEntityCatalogContract,
+  type BasicStoreEntityCatalog,
+  type CatalogContract,
+  type CatalogContractEntityFields,
+  type GraphqlCatalog,
+  type GraphqlCatalogContract,
+} from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
-import { idGenFromData } from '../../schema/identifier';
-import filigranCatalog from '../../__generated__/opencti-manifest.json';
-import conf, { logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
-import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
+import { findCatalogByCatalogId, findCatalogs, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
+import { logApp } from '../../config/conf';
 
 const validatorCache = new Map<string, ValidateFunction>();
+const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+
+const normalizeContractConfigSchema = (
+  configSchema: CatalogContract['config_schema'] | null | undefined,
+): CatalogContract['config_schema'] => {
+  const schema = (configSchema && typeof configSchema === 'object') ? configSchema : {} as CatalogContract['config_schema'];
+  const properties = (schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties))
+    ? schema.properties
+    : {};
+  const required = Array.isArray(schema.required) ? schema.required.filter((property) => typeof property === 'string') : [];
+  return {
+    $schema: typeof schema.$schema === 'string' ? schema.$schema : 'https://json-schema.org/draft/2020-12/schema',
+    $id: typeof schema.$id === 'string' ? schema.$id : '',
+    type: typeof schema.type === 'string' ? schema.type : 'object',
+    properties,
+    required,
+    additionalProperties: typeof schema.additionalProperties === 'boolean' ? schema.additionalProperties : true,
+  };
+};
+
+const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
+  const normalizedConfigSchema = normalizeContractConfigSchema(configSchema);
+  const filteredProperties = Object.fromEntries(
+    Object.entries(normalizedConfigSchema.properties).filter(([property]) => !EXCLUDED_CONFIG_VARS.includes(property)),
+  );
+  return {
+    ...normalizedConfigSchema,
+    properties: filteredProperties,
+    required: normalizedConfigSchema.required.filter((property) => !EXCLUDED_CONFIG_VARS.includes(property)),
+  };
+};
 
 /**
  * Compiles (or retrieves from cache) an AJV validator for a given schema.
  * The cacheKey must accurately reflect the exact shape of the schema (properties + required)
  * to avoid cache false positives.
  */
-const getOrCompileValidator = (cacheKey: string, jsonValidation: object): ValidateFunction => {
+export const getOrCompileValidator = (cacheKey: string, jsonValidation: object): ValidateFunction => {
   let validate = validatorCache.get(cacheKey);
   if (!validate) {
     validate = ajv.compile(jsonValidation);
@@ -28,110 +64,8 @@ const getOrCompileValidator = (cacheKey: string, jsonValidation: object): Valida
   return validate;
 };
 
-const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
 addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
-
-// Cache of catalog to read on disk and parse only once
-let catalogMap: Promise<Record<string, CatalogType>> | undefined;
-// cache for contracts by image map
-let contractsByImageCache: Promise<Map<string, CatalogContract>> | undefined;
-
-// Build catalog map from files
-const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
-  const newCatalogMap: Record<string, CatalogType> = {};
-  const catalogs = [];
-  catalogs.push(JSON.stringify(filigranCatalog));
-  // Add custom catalogs
-  for (let index = 0; index < CUSTOM_CATALOGS.length; index += 1) {
-    const customCatalog = CUSTOM_CATALOGS[index];
-    const catalog = await readFile(customCatalog, { encoding: 'utf8', flag: 'r' });
-    catalogs.push(catalog);
-  }
-  // Prepare catalogs map
-  for (let index = 0; index < catalogs.length; index += 1) {
-    const catalogRaw = catalogs[index];
-    const catalog = JSON.parse(catalogRaw) as CatalogDefinition;
-    // Validate each contract
-    for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
-      const contract = catalog.contracts[contractIndex];
-      if (contract.manager_supported) {
-        if (!contract.config_schema) {
-          logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
-        } else {
-          if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
-          }
-          if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
-          }
-
-          if (contract.config_schema) {
-            const jsonValidation = {
-              type: contract.config_schema.type,
-              properties: contract.config_schema.properties,
-              required: contract.config_schema.required,
-              additionalProperties: contract.config_schema.additionalProperties,
-            };
-            try {
-              getOrCompileValidator(`catalog-contract:${catalog.id}:${contract.slug}`, jsonValidation);
-            } catch (err) {
-              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
-            }
-          }
-        }
-      }
-    }
-    newCatalogMap[catalog.id] = {
-      definition: catalog,
-      graphql: {
-        id: catalog.id,
-        entity_type: 'Catalog',
-        parent_types: ['Internal'],
-        standard_id: idGenFromData('catalog', { id: catalog.id }),
-        name: catalog.name,
-        description: catalog.description,
-        contracts: catalog.contracts.map((c) => {
-          const finalContract = c;
-          if (finalContract.manager_supported) {
-            if (!finalContract.config_schema) {
-              logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: finalContract.title });
-            } else {
-              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
-              EXCLUDED_CONFIG_VARS.forEach((property) => {
-                delete finalContract.config_schema.properties[property];
-              });
-              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
-            }
-          }
-          return JSON.stringify(finalContract);
-        }),
-      },
-    };
-  }
-  return newCatalogMap;
-};
-
-// Enable custom catalogs - clears cache and enables live catalog loading
-export const resetCatalogs = () => {
-  catalogMap = undefined;
-  contractsByImageCache = undefined;
-  validatorCache.clear();
-};
-
-const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
-  if (!catalogMap) {
-    // We memoize the Promise immediately (not after it resolves) so that
-    // all concurrent calls share the same in-flight execution.
-    catalogMap = buildCatalogMap().catch((err) => {
-      // On failure, we reset the cache to allow a retry on the next call,
-      // rather than staying stuck with a rejected Promise cached forever.
-      catalogMap = undefined;
-      throw err;
-    });
-  }
-  return catalogMap;
-};
 
 const aesEncrypt = (text: string, key: Buffer, aesIv: Buffer) => {
   const cipher = crypto.createCipheriv('aes-256-gcm', key, aesIv);
@@ -319,9 +253,9 @@ const formatValidationErrors = (errors: any[] | null | undefined, contractTitle:
 
 export const validateContractConfigurations = (
   contractConfigurations: ConnectorContractConfiguration[],
-  targetContract: CatalogContract,
+  targetContract: Pick<CatalogContract, 'config_schema' | 'slug' | 'title'>,
 ) => {
-  const targetConfig = targetContract.config_schema;
+  const targetConfig = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
 
   // Build validation object from configurations
   // For AJV validation, arrays need to be actual arrays, not comma-separated strings
@@ -376,9 +310,25 @@ export const validateContractConfigurations = (
   ].join('|');
 
   const validate = getOrCompileValidator(cacheKey, jsonValidation);
+  logApp.debug('[OPENCTI-MODULE] Validating connector contract configuration', {
+    module: 'catalog',
+    contractSlug: targetContract.slug,
+    contractTitle: targetContract.title,
+    requiredCount: filteredRequired.length,
+    providedCount: contractConfigurations.length,
+    validatedFieldsCount: Object.keys(validationProperties).length,
+  });
   const validContractObject = validate(contractObject);
 
   if (!validContractObject) {
+    logApp.warn('[OPENCTI-MODULE] Invalid connector contract configuration', {
+      module: 'catalog',
+      contractSlug: targetContract.slug,
+      contractTitle: targetContract.title,
+      requiredCount: filteredRequired.length,
+      providedCount: contractConfigurations.length,
+      errorsCount: validate.errors?.length ?? 0,
+    });
     const formattedError = formatValidationErrors(validate.errors, targetContract.title);
     throw UnsupportedError(formattedError, { errors: validate.errors });
   }
@@ -386,11 +336,14 @@ export const validateContractConfigurations = (
 
 export const computeConnectorTargetContract = (
   configurations: ContractConfigInput[],
-  targetContract: CatalogContract,
+  targetContract: Pick<CatalogContract, 'config_schema' | 'slug' | 'title'>,
   publicKey: string,
   currentManagerContractConfiguration?: ConnectorContractConfiguration[],
 ): ConnectorContractConfiguration[] => {
-  const targetConfig = targetContract.config_schema;
+  const targetConfig = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
+  let passwordCount = 0;
+  let defaultedCount = 0;
+  let reusedCount = 0;
 
   // Create maps for efficient lookups
   const configMap = new Map(configurations.map((c) => [c.key, c]));
@@ -404,6 +357,7 @@ export const computeConnectorTargetContract = (
   Object.entries(targetConfig.properties).forEach(([propKey, propSchema]) => {
     const inputConfig = configMap.get(propKey);
     const existingConfig = currentConfigMap.get(propKey);
+    const isPassword = propSchema.format === 'password';
 
     // Only process fields that are:
     // 1. Required (will use default if available)
@@ -423,6 +377,16 @@ export const computeConnectorTargetContract = (
       return; // Skip this field entirely
     }
 
+    if (!hasInput && !hasExisting && (propSchema.default !== undefined && propSchema.default !== null)) {
+      defaultedCount += 1;
+    }
+    if (hasExisting && !hasInput) {
+      reusedCount += 1;
+    }
+    if (isPassword && hasInput && inputConfig?.value !== existingConfig?.value) {
+      passwordCount += 1;
+    }
+
     const finalConfig = resolveConfigurationValue(
       propKey,
       propSchema,
@@ -438,58 +402,219 @@ export const computeConnectorTargetContract = (
 
   // Validate the configurations
   validateContractConfigurations(contractConfigurations, targetContract);
+  logApp.debug('[OPENCTI-MODULE] Computed connector contract configuration', {
+    module: 'catalog',
+    contractSlug: targetContract.slug,
+    contractTitle: targetContract.title,
+    inputCount: configurations.length,
+    resolvedCount: contractConfigurations.length,
+    passwordCount,
+    defaultedCount,
+    reusedCount,
+  });
 
   return contractConfigurations;
 };
 
-export const getSupportedContractsByImage = async (): Promise<Map<string, CatalogContract>> => {
-  if (!contractsByImageCache) {
-    contractsByImageCache = (async () => {
-      const catalogDefinitions = await getCatalogs();
-      const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
-      return new Map(contracts.map((contract) => [contract.container_image, contract]));
-    })().catch((err) => {
-      contractsByImageCache = undefined;
-      throw err;
+const mapCatalogToGraphqlCatalog = (
+  catalog: BasicStoreEntityCatalog,
+  contracts: BasicStoreEntityCatalogContract[],
+): GraphqlCatalog => {
+  return {
+    id: catalog.catalog_id,
+    name: catalog.name,
+    description: catalog.description,
+    entity_type: catalog.entity_type,
+    parent_types: catalog.parent_types,
+    standard_id: catalog.standard_id,
+    contracts: contracts.map((c) =>
+      JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(c, { excludeRuntimeConfigVars: true })),
+    ),
+  };
+};
+
+export const queryCatalogById = async (context: AuthContext, user: AuthUser, catalogId: string) => {
+  const catalog = await findCatalogByCatalogId(context, user, catalogId);
+  if (!catalog) {
+    logApp.debug('[OPENCTI-MODULE] Catalog query by id returned no catalog', {
+      module: 'catalog',
+      catalogId,
     });
-  }
-  return contractsByImageCache;
-};
-
-export const findById = async (_context: AuthContext, _user: AuthUser, catalogId: string) => {
-  const catalogDefinitions = await getCatalogs();
-  return catalogDefinitions[catalogId].graphql;
-};
-
-export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
-  const catalogDefinitions = await getCatalogs();
-  return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
-};
-
-const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
-  const catalogDefinitions = await getCatalogs();
-  if (!catalogDefinitions) {
     return null;
   }
-
-  const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
-  const foundContract = catalogs
-    .map((catalog) => {
-      const contract = catalog.contracts.find((contractStr: string) => {
-        const parsedContract = JSON.parse(contractStr);
-        return predicate(parsedContract);
-      });
-      return contract ? { catalog_id: catalog.id, contract } : null;
-    })
-    .find((contract) => contract !== null);
-
-  return foundContract || null;
+  const contracts = await findLatestCompatibleCatalogContractsByCatalogId(context, user, catalogId);
+  logApp.debug('[OPENCTI-MODULE] Catalog query by id resolved', {
+    module: 'catalog',
+    catalogId,
+    contractsCount: contracts.size,
+  });
+  return mapCatalogToGraphqlCatalog(catalog, [...contracts.values()]);
 };
 
-export const findContractBySlug = (context: AuthContext, user: AuthUser, contractSlug: string) => {
-  return findContract(context, user, (contract) => contract.slug === contractSlug);
+export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
+  const catalogs = await findCatalogs(context, user);
+  const contracts = await Promise.all(catalogs.map((catalog) => findLatestCompatibleCatalogContractsByCatalogId(context, user, catalog.catalog_id)));
+  const contractsTotalCount = contracts.reduce((total, contractsByCatalog) => total + contractsByCatalog.size, 0);
+  logApp.debug('[OPENCTI-MODULE] Catalogs query resolved', {
+    module: 'catalog',
+    catalogsCount: catalogs.length,
+    contractsTotalCount,
+  });
+  const ret = catalogs.map((catalog, idx) => {
+    return mapCatalogToGraphqlCatalog(catalog, [...contracts[idx].values()]);
+  });
+  return ret;
 };
 
-export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
-  return findContract(context, user, (contract) => contract.container_image === containerImage);
+export const queryContractBySlug = async (context: AuthContext, user: AuthUser, contractSlug: string) => {
+  const contract = await findLatestCompatibleCatalogContractBySlug(context, user, contractSlug);
+  if (!contract) {
+    logApp.debug('[OPENCTI-MODULE] Contract query by slug returned no contract', {
+      module: 'catalog',
+      contractSlug,
+    });
+    return null;
+  }
+  logApp.debug('[OPENCTI-MODULE] Contract query by slug resolved', {
+    module: 'catalog',
+    contractSlug,
+    catalogId: contract.catalog_id,
+    contractVersion: contract.contract_version,
+  });
+  return {
+    catalog_id: contract.catalog_id,
+    contract: JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(contract, { excludeRuntimeConfigVars: true })),
+  };
+};
+
+export const mapContractDtoV0ToContractEntityFields = (params: {
+  catalogId: string;
+  contractDto: CatalogContract;
+  contractContentHash: string;
+  logoUri: string | null;
+}): CatalogContractEntityFields => {
+  const { catalogId, contractDto, contractContentHash, logoUri } = params;
+  const supportVersionValue = contractDto.support_version
+    ? contractDto.support_version.replace(/^\s*>=\s*/, '').trim()
+    : null;
+  const normalizedSupportVersion = supportVersionValue && supportVersionValue.length > 0
+    ? supportVersionValue
+    : null;
+  return {
+    catalog_id: catalogId,
+    contract_id: `${contractDto.slug}-${contractDto.container_version}`,
+    content_hash: contractContentHash,
+    title: contractDto.title,
+    slug: contractDto.slug,
+    description: contractDto.description,
+    short_description: contractDto.short_description,
+    logo_uri: logoUri ?? undefined,
+    use_cases: contractDto.use_cases,
+    verified: contractDto.verified,
+    last_verified_date: contractDto.last_verified_date ?? undefined,
+    playbook_supported: contractDto.playbook_supported,
+    max_confidence_level: contractDto.max_confidence_level,
+    support_version: normalizedSupportVersion ?? undefined,
+    subscription_link: contractDto.subscription_link ?? undefined,
+    source_code: contractDto.source_code ?? undefined,
+    manager_supported: contractDto.manager_supported,
+    contract_version: contractDto.container_version,
+    image: contractDto.container_image,
+    connector_type: contractDto.container_type,
+    config_schema: contractDto.config_schema,
+    license_type: contractDto.license_type ?? undefined,
+    solution_categories: contractDto.solution_categories ?? undefined,
+    contact: contractDto.contact ?? undefined,
+  };
+};
+
+export const mapContractEntityFieldsToGraphqlCatalogContract = (
+  contract: CatalogContractEntityFields,
+  options: { excludeRuntimeConfigVars?: boolean } = {},
+): GraphqlCatalogContract => {
+  const { excludeRuntimeConfigVars = false } = options;
+  const normalizedConfigSchema = normalizeContractConfigSchema(contract.config_schema);
+  const configSchema = excludeRuntimeConfigVars
+    ? getContractConfigSchemaWithoutExcludedRuntimeVars(normalizedConfigSchema)
+    : normalizedConfigSchema;
+  return {
+    title: contract.title,
+    slug: contract.slug,
+    description: contract.description,
+    short_description: contract.short_description,
+    logo: contract.logo_uri ?? null,
+    use_cases: contract.use_cases ?? [],
+    verified: contract.verified,
+    last_verified_date: contract.last_verified_date ?? '',
+    playbook_supported: contract.playbook_supported,
+    max_confidence_level: contract.max_confidence_level,
+    support_version: contract.support_version ?? null,
+    subscription_link: contract.subscription_link ?? null,
+    source_code: contract.source_code ?? '',
+    manager_supported: contract.manager_supported,
+    container_version: contract.contract_version,
+    container_image: contract.image,
+    container_type: contract.connector_type,
+    config_schema: configSchema,
+    license_type: contract.license_type ?? null,
+    solution_categories: contract.solution_categories ?? [],
+    contact: contract.contact ?? null,
+  };
+};
+
+export const mapContractEntityFieldsToEmbeddedConnectorManagerContract = (
+  contract: CatalogContractEntityFields,
+): CatalogContractEntityFields => {
+  const {
+    catalog_id,
+    contract_id,
+    content_hash,
+    title,
+    slug,
+    description,
+    short_description,
+    logo_uri,
+    use_cases,
+    verified,
+    last_verified_date,
+    playbook_supported,
+    max_confidence_level,
+    support_version,
+    subscription_link,
+    source_code,
+    manager_supported,
+    contract_version,
+    image,
+    connector_type,
+    config_schema,
+    license_type,
+    solution_categories,
+    contact,
+  } = contract;
+  return {
+    catalog_id,
+    contract_id,
+    content_hash,
+    title,
+    slug,
+    description,
+    short_description,
+    logo_uri,
+    use_cases,
+    verified,
+    last_verified_date,
+    playbook_supported,
+    max_confidence_level,
+    support_version,
+    subscription_link,
+    source_code,
+    manager_supported,
+    contract_version,
+    image,
+    connector_type,
+    config_schema,
+    license_type,
+    solution_categories,
+    contact,
+  };
 };

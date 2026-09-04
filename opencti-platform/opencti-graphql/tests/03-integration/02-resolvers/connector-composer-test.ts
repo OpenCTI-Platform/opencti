@@ -1,14 +1,15 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
-import { fileURLToPath } from 'node:url';
+import { FEATURE_FLAG_ALL, ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { queryAsAdminWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, USER_CONNECTOR, USER_EDITOR, testContext } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
-import { resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
+import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
+import conf from '../../../src/config/conf';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -95,6 +96,16 @@ const DELETE_CONNECTOR_MUTATION = gql`
     }
 `;
 
+const CREATE_CONNECTOR_MUTATION = gql`
+  mutation RegisterConnector($input: RegisterConnectorInput) {
+    registerConnector(input: $input) {
+      id
+      name
+      connector_type
+    }
+  }
+`;
+
 // Queries
 const CONNECTOR_MANAGER_QUERY = gql`
     query ConnectorManager($managerId: ID!) {
@@ -165,6 +176,65 @@ const GET_CONNECTOR_EXCERPT_QUERY = gql`
   }
 `;
 
+const GET_CONNECTOR_MANAGER_CONTRACT_ENDPOINTS_QUERY = gql`
+  query GetConnectorManagerContractEndpoints($id: String!) {
+    connector(id: $id) {
+      id
+      manager_contract_image
+      manager_contract_hash
+      manager_contract_configuration {
+        key
+        value
+      }
+      manager_contract_definition
+      manager_contract_excerpt {
+        title
+        slug
+        logo
+      }
+    }
+  }
+`;
+
+const CONNECTOR_MIGRATION_ASSESSMENT_QUERY = gql`
+  query ConnectorMigrationAssessment($connectorId: ID!, $containerImage: String!, $configuration: [ContractConfigInput!]) {
+    connectorMigrationAssessment(connectorId: $connectorId, containerImage: $containerImage, configuration: $configuration) {
+      connector_id
+      connector_name
+      contract_image
+      summary {
+        total_source_keys
+        mapped_keys
+        ignored_keys
+        missing_mandatory_keys
+        can_migrate
+        assessment_date
+      }
+      mapped {
+        key
+        sourceKey
+        value
+        type
+        required
+      }
+      ignored {
+        key
+        value
+        reason
+      }
+      missing {
+        key
+        type
+        description
+        format
+        enum
+        default
+        required
+      }
+    }
+  }
+`;
+
 // Variables
 const ipinfoProperties = {
   CONNECTOR_LISTEN_PROTOCOL_API_PORT: 0,
@@ -180,15 +250,21 @@ describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
   const createdConnectorIds = new Set<string>();
   let xtmComposer: XTMComposerMock;
+  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
+  const previousCustomCatalogRefreshEndpoint = conf.get('catalog_manager:custom_catalog_refresh_endpoint_uri');
+  const previousCustomCatalogs = conf.get('app:custom_catalogs');
 
   // Initialize XTM Composer mock
   beforeAll(async () => {
-    // Set up test catalog path in environment
-    const testCatalogUrl = new URL('../../utils/opencti-manifest.json', import.meta.url);
-    process.env.APP__CUSTOM_CATALOGS = JSON.stringify([fileURLToPath(testCatalogUrl)]);
-
-    // Reset catalogs to ensure test catalog is loaded
-    resetCatalogs();
+    const testCatalogUri = new URL('../../utils/opencti-manifest.json', import.meta.url).toString();
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    ENABLED_FEATURE_FLAGS.push(...previousEnabledFeatureFlags.filter((flag) => flag !== FEATURE_FLAG_ALL));
+    if (!ENABLED_FEATURE_FLAGS.includes('DECOUPLING_VERSIONS')) {
+      ENABLED_FEATURE_FLAGS.push('DECOUPLING_VERSIONS');
+    }
+    conf.set('app:custom_catalogs', []);
+    conf.set('catalog_manager:custom_catalog_refresh_endpoint_uri', testCatalogUri);
+    await synchronizeCatalogs(testContext, ADMIN_USER);
 
     // Validate that we're using the test catalog
     catalogHelper.validateTestCatalog();
@@ -1192,6 +1268,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
   describe('Managed Connector operations', () => {
     let managedConnectorId: string;
+    let standaloneConnectorId: string;
 
     it('should fail to add managed connector with invalid image', async () => {
       const catalogId = catalogHelper.getCatalogId();
@@ -1250,7 +1327,70 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(managedConnectorAdd.manager_contract_configuration.length).toBeGreaterThan(0);
     });
 
+    it('should return stable manager contract endpoint output formats', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const result = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_MANAGER_CONTRACT_ENDPOINTS_QUERY,
+        variables: { id: managedConnectorId },
+      });
+
+      const connectorData = result.data?.connector;
+      expect(connectorData).toBeDefined();
+      expect(typeof connectorData.manager_contract_image).toBe('string');
+      expect(connectorData.manager_contract_image).toEqual(`${testConnector.container_image}:${testConnector.container_version}`);
+      expect(typeof connectorData.manager_contract_hash).toBe('string');
+      expect(connectorData.manager_contract_hash.length).toBeGreaterThan(0);
+      expect(Array.isArray(connectorData.manager_contract_configuration)).toBeTruthy();
+      expect(connectorData.manager_contract_configuration.length).toBeGreaterThan(0);
+      connectorData.manager_contract_configuration.forEach((entry: { key: string; value: string }) => {
+        expect(typeof entry.key).toBe('string');
+        expect(typeof entry.value).toBe('string');
+      });
+
+      const definitionRaw = connectorData.manager_contract_definition;
+      expect(typeof definitionRaw).toBe('string');
+      const definition = JSON.parse(definitionRaw);
+      expect(definition).toMatchObject({
+        title: expect.any(String),
+        slug: expect.any(String),
+        description: expect.any(String),
+        short_description: expect.any(String),
+        use_cases: expect.any(Array),
+        verified: expect.any(Boolean),
+        last_verified_date: expect.any(String),
+        playbook_supported: expect.any(Boolean),
+        max_confidence_level: expect.any(Number),
+        support_version: expect.any(String),
+        subscription_link: expect.any(String),
+        source_code: expect.any(String),
+        manager_supported: expect.any(Boolean),
+        container_version: expect.any(String),
+        container_image: expect.any(String),
+        container_type: expect.any(String),
+      });
+      expect(definition.logo === null || typeof definition.logo === 'string').toBeTruthy();
+      expect(definition.config_schema).toBeDefined();
+      expect(definition.config_schema.properties).toBeDefined();
+      const runtimeKeys = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+      runtimeKeys.forEach((runtimeKey) => {
+        expect(definition.config_schema.properties[runtimeKey]).toBeUndefined();
+      });
+      expect(Array.isArray(definition.config_schema.required)).toBeTruthy();
+      runtimeKeys.forEach((runtimeKey) => {
+        expect(definition.config_schema.required).not.toContain(runtimeKey);
+      });
+
+      const excerpt = connectorData.manager_contract_excerpt;
+      expect(excerpt).toBeDefined();
+      expect(excerpt).toMatchObject({
+        title: expect.any(String),
+        slug: expect.any(String),
+        logo: expect.anything(),
+      });
+    });
+
     it('should retrieve the manager contract excerpt for a managed connector', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
       const result = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_EXCERPT_QUERY,
         variables: { id: managedConnectorId },
@@ -1259,9 +1399,80 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data).toBeDefined();
       const excerpt = result.data?.connector?.manager_contract_excerpt;
       expect(excerpt).toBeDefined();
-      expect(excerpt.title).toEqual('IPinfo');
-      expect(excerpt.slug).toEqual('ipinfo');
-      expect(excerpt.logo).toMatch(/^data:image\/.+;base64,[A-Za-z0-9+/]+=*$/);
+      expect(excerpt.title).toEqual(testConnector.title);
+      expect(excerpt.slug).toEqual(testConnector.slug);
+      expect(excerpt.logo === null || typeof excerpt.logo === 'string').toBeTruthy();
+    });
+
+    it('should return connectorMigrationAssessment with stable output format', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const registerResult = await queryAsAdminWithSuccess({
+        query: CREATE_CONNECTOR_MUTATION,
+        variables: {
+          input: {
+            id: uuidv4(),
+            name: 'Assessment standalone connector',
+            type: testConnector.container_type,
+            scope: ['IPv4-Addr'],
+            auto: true,
+            only_contextual: false,
+          },
+        },
+      });
+      standaloneConnectorId = registerResult.data?.registerConnector?.id;
+      createdConnectorIds.add(standaloneConnectorId);
+
+      const assessmentResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_MIGRATION_ASSESSMENT_QUERY,
+        variables: {
+          connectorId: standaloneConnectorId,
+          containerImage: testConnector.container_image,
+          configuration: catalogHelper.getMinimalConfig(testConnector, {
+            IPINFO_TOKEN: 'assessment-token',
+            ...ipinfoProperties,
+          }),
+        },
+      });
+
+      const assessment = assessmentResult.data?.connectorMigrationAssessment;
+      expect(assessment).toBeDefined();
+      expect(assessment.connector_id).toEqual(standaloneConnectorId);
+      expect(assessment.connector_name).toEqual('Assessment standalone connector');
+      expect(assessment.contract_image).toEqual(testConnector.container_image);
+      expect(assessment.summary).toMatchObject({
+        total_source_keys: expect.any(Number),
+        mapped_keys: expect.any(Number),
+        ignored_keys: expect.any(Number),
+        missing_mandatory_keys: expect.any(Number),
+        can_migrate: expect.any(Boolean),
+      });
+      expect(assessment.summary.assessment_date).toBeDefined();
+      expect(new Date(assessment.summary.assessment_date).toString()).not.toEqual('Invalid Date');
+      expect(Array.isArray(assessment.mapped)).toBeTruthy();
+      expect(Array.isArray(assessment.ignored)).toBeTruthy();
+      expect(Array.isArray(assessment.missing)).toBeTruthy();
+      assessment.mapped.forEach((entry: { key: string; sourceKey: string; value: string; type: string; required: boolean }) => {
+        expect(entry).toMatchObject({
+          key: expect.any(String),
+          sourceKey: expect.any(String),
+          value: expect.any(String),
+          type: expect.any(String),
+          required: expect.any(Boolean),
+        });
+      });
+      assessment.ignored.forEach((entry: { key: string; value: string; reason: string }) => {
+        expect(entry).toMatchObject({
+          key: expect.any(String),
+          value: expect.any(String),
+          reason: expect.any(String),
+        });
+      });
+      assessment.missing.forEach((entry: { key: string; type: string; description: string; required: boolean }) => {
+        expect(entry.key).toEqual(expect.any(String));
+        expect(entry.type).toEqual(expect.any(String));
+        expect(entry.description).toEqual(expect.any(String));
+        expect(entry.required).toEqual(expect.any(Boolean));
+      });
     });
 
     it('should edit managed connector', async () => {
@@ -1286,6 +1497,16 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data).toBeDefined();
       expect(result.data?.managedConnectorEdit.name).toEqual('Updated IpInfo Connector');
       expect(result.data?.managedConnectorEdit.manager_contract_configuration).toBeDefined();
+      const runtimeKeys = ['OPENCTI_URL', 'CONNECTOR_RUN_AND_TERMINATE'];
+      runtimeKeys.forEach((runtimeKey) => {
+        const found = result.data?.managedConnectorEdit.manager_contract_configuration
+          .find((c: any) => c.key === runtimeKey);
+        expect(found).toBeUndefined();
+      });
+      const openctiTokenConfig = result.data?.managedConnectorEdit.manager_contract_configuration
+        .find((c: any) => c.key === 'OPENCTI_TOKEN');
+      expect(openctiTokenConfig).toBeDefined();
+      expect(openctiTokenConfig.value).not.toEqual('updated-token-456');
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');
       expect(autoConfig.value).toEqual('false');
@@ -1627,5 +1848,9 @@ describe('Connector Composer and Managed Connectors', () => {
         }
       }),
     );
+
+    conf.set('catalog_manager:custom_catalog_refresh_endpoint_uri', previousCustomCatalogRefreshEndpoint);
+    conf.set('app:custom_catalogs', previousCustomCatalogs);
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
   });
 });

@@ -9,7 +9,7 @@
       "slug": "test-external",
       "description": "This is a dummy external connector for testing purposes. It simulates an external data import connector with various configuration options.",
       "short_description": "A test external connector for importing dummy threat intelligence data",
-      "logo": "https://example.com/logos/test-external.png",
+      "logo": null,
       "use_cases": [
         "Test Import",
         "Dummy Data"
@@ -120,7 +120,7 @@
       "slug": "test-email",
       "description": "A dummy email connector that simulates importing threat intelligence from email sources. This connector demonstrates complex configuration with arrays and optional fields.",
       "short_description": "Test connector for email-based threat intelligence import",
-      "logo": "https://example.com/logos/test-email.png",
+      "logo": null,
       "use_cases": [
         "Email Import",
         "Test Processing"
@@ -246,7 +246,7 @@
       "slug": "test-enrichment",
       "description": "Dummy enrichment connector for testing IP address and domain enrichment functionality",
       "short_description": "Test IP and domain enrichment service",
-      "logo": "https://example.com/logos/test-enrichment.png",
+      "logo": null,
       "use_cases": [
         "Test Enrichment",
         "IP Analysis"
@@ -361,7 +361,7 @@
       "slug": "test-stream",
       "description": "A dummy stream connector that simulates exporting OpenCTI data to external systems. Used for testing stream connector functionality.",
       "short_description": "Test connector for streaming data to external systems",
-      "logo": "https://example.com/logos/test-stream.png",
+      "logo": null,
       "use_cases": [
         "Data Export",
         "Stream Testing"

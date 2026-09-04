@@ -1,0 +1,54 @@
+{
+  "id": "integration-catalog-v1",
+  "name": "Integration Catalog V1",
+  "description": "Small V1 catalog fixture for resolver integration tests",
+  "manifest_schema_version": "1",
+  "manifest_version": "2026.08.19",
+  "product_version": "7.2.0",
+  "contracts": [
+    {
+      "id": "integration-v1-connector-1.0.0",
+      "title": "Integration V1 Connector",
+      "slug": "integration-v1-connector",
+      "description": "V1 contract fixture",
+      "short_description": "v1 fixture",
+      "logo": null,
+      "use_cases": [],
+      "verified": true,
+      "last_verified_date": "2026-01-01",
+      "subscription_link": null,
+      "source_code": null,
+      "manager_supported": true,
+      "support_version": "7.0.0",
+      "license_type": null,
+      "contact": null,
+      "solution_categories": [],
+      "version": "1.0.0",
+      "image_name": "opencti/connector-integration-v1",
+      "image_type": "EXTERNAL_IMPORT",
+      "additional_properties": {
+        "playbook_supported": false,
+        "max_confidence_level": 75
+      },
+      "config_schema": {
+        "type": "object",
+        "properties": {
+          "INTEGRATION_API_KEY": {
+            "type": "string",
+            "description": "fixture key"
+          },
+          "OPENCTI_TOKEN": {
+            "type": "string",
+            "format": "password",
+            "description": "runtime key to strip"
+          }
+        },
+        "required": [
+          "INTEGRATION_API_KEY",
+          "OPENCTI_TOKEN"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { registerConnector } from '../../../src/domain/connector';
 import { ConnectorType } from '../../../src/generated/graphql';
-import * as catalogDomain from '../../../src/modules/catalog/catalog-domain';
+import * as catalogRepository from '../../../src/modules/catalog/catalog-repository';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
@@ -188,30 +188,22 @@ describe('Check connector migration', () => {
           },
         });
 
-        const contractFound = await catalogDomain.findContractByContainerImage(testContext, ADMIN_USER, 'opencti/connector-cve');
-        if (!contractFound?.contract) {
+        const contractFound = await catalogRepository.findLatestCompatibleCatalogContractByImageName(testContext, ADMIN_USER, 'opencti/connector-cve');
+        if (!contractFound) {
           throw new Error('Connector nist-nvd-cve container-image not found in catalog');
-        }
-
-        let contractParsed;
-        try {
-          contractParsed = JSON.parse(contractFound?.contract);
-        } catch {
-          throw new Error('Cannot parse nist-nvd-cve catalog');
-        }
-
-        if (!contractParsed) {
-          throw new Error('Contract nist-nvd-cve catalog is undefined');
         }
 
         // same values excluded from catalog-domain
         const RUNTIME_KEYS = ['OPENCTI_TOKEN', 'CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
         const managedConnector = managedConnectorResult.data.connectorMigrateToManaged;
         const rawConfig = managedConnector.manager_contract_configuration;
-        rawConfig.filter((c: any) => !RUNTIME_KEYS.includes(c.key));
 
         const actualConfig = rawConfig.filter((c: { key: string }) => !RUNTIME_KEYS.includes(c.key));
-        const schemaProperties = contractParsed.config_schema.properties;
+        RUNTIME_KEYS.forEach((runtimeKey) => {
+          const found = rawConfig.find((c: { key: string }) => c.key === runtimeKey);
+          expect(found).toBeUndefined();
+        });
+        const schemaProperties = contractFound.config_schema.properties;
 
         const expectedKeys = Object.keys(schemaProperties);
         const actualKeys = actualConfig.map((c: { key: string }) => c.key);
