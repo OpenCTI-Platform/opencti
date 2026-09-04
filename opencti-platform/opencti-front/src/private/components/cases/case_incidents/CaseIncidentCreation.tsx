@@ -4,13 +4,14 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { handleErrorInForm } from 'src/relay/environment';
+import { fetchQuery, handleError, handleErrorInForm } from 'src/relay/environment';
 import * as Yup from 'yup';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -26,9 +27,11 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
+import { resolveCustomFieldDefaultValue } from '../../../../utils/customFieldDefaults';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -40,6 +43,15 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import type { CustomFieldsInputQuery$data } from '../../common/custom_fields/__generated__/CustomFieldsInputQuery.graphql';
+import {
+  buildCustomFieldValueEntry,
+  CustomFieldDef,
+  customFieldDefinitionsForEntityTypeQuery,
+  CustomFieldInput,
+  getCustomFieldSetting,
+  isCustomFieldValueSet,
+} from '../../common/custom_fields/CustomFieldsInput';
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -84,6 +96,8 @@ interface FormikCaseIncidentAddInput {
       value: string;
       type: string;
     }[]; }[] | undefined;
+  // custom field values, keyed by definition id
+  customFields: Record<string, string | boolean | string[]>;
 }
 
 interface IncidentFormProps {
@@ -101,13 +115,16 @@ interface IncidentFormProps {
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
 
-export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
+// Inner form: receives the resolved custom field definitions as a prop so that Formik's
+// initialValues (default values) are computed synchronously with the definitions available.
+const CaseIncidentCreationFormContent: FunctionComponent<IncidentFormProps & { customFieldDefs: CustomFieldDef[] }> = ({
   updater,
   onClose,
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
   inputValue,
+  customFieldDefs,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -122,6 +139,21 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
     authorized_members: Yup.array().nullable(),
+    // Enforce mandatory custom fields client-side (backend enforces them too)
+    customFields: Yup.object().shape(
+      Object.fromEntries(
+        customFieldDefs.map((def) => {
+          const isMandatory = getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false;
+          if (def.field_type === 'multi_select') {
+            return [def.id, isMandatory ? Yup.array().min(1, t_i18n('This field is required')) : Yup.array().nullable()];
+          }
+          if (def.field_type === 'boolean') {
+            return [def.id, Yup.boolean().nullable()];
+          }
+          return [def.id, isMandatory ? Yup.string().required(t_i18n('This field is required')) : Yup.string().nullable()];
+        }),
+      ),
+    ),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
@@ -137,6 +169,16 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    const customFieldValues = customFieldDefs
+      .map((def) => buildCustomFieldValueEntry(def, values.customFields[def.id]))
+      .filter((entry) => {
+        const raw = values.customFields[entry.field_id];
+        const def = customFieldDefs.find((d) => d.id === entry.field_id);
+        if (def?.field_type === 'integer') {
+          return entry.int_value !== undefined;
+        }
+        return isCustomFieldValueSet(raw);
+      });
     const input: CaseIncidentAddInput = {
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
@@ -154,6 +196,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      customFieldValues: customFieldValues.length > 0 ? customFieldValues : undefined,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
@@ -210,6 +253,19 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: [],
       file: undefined,
       authorized_members: undefined,
+      customFields: Object.fromEntries(
+        customFieldDefs.map((def) => {
+          const rawDefaultValue = getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.default_value ?? null;
+          const defaultValue = def.field_type === 'date' ? resolveCustomFieldDefaultValue(rawDefaultValue) : rawDefaultValue;
+          if (def.field_type === 'boolean') {
+            return [def.id, defaultValue === 'true'];
+          }
+          if (def.field_type === 'multi_select') {
+            return [def.id, defaultValue ? [defaultValue] : []];
+          }
+          return [def.id, defaultValue ?? ''];
+        }),
+      ),
     },
   );
   if (!canEditAuthorizedMembers) {
@@ -345,6 +401,20 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {customFieldDefs.length > 0 && (
+            <>
+              <Divider style={{ marginTop: 20 }} />
+              {customFieldDefs.map((def) => (
+                <CustomFieldInput
+                  key={def.id}
+                  definition={def}
+                  mandatory={getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false}
+                  value={values.customFields[def.id]}
+                  onChange={(val) => setFieldValue(`customFields.${def.id}`, val)}
+                />
+              ))}
+            </>
+          )}
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
@@ -399,6 +469,32 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       )}
     </Formik>
   );
+};
+
+export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = (props) => {
+  const { isFeatureEnable } = useHelper();
+  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!isFeatureEnable('CUSTOM_FIELDS')) return undefined;
+    fetchQuery(customFieldDefinitionsForEntityTypeQuery, { entityType: CASE_INCIDENT_TYPE })
+      .toPromise()
+      .then((data) => {
+        if (isMounted) {
+          const defs = ((data as CustomFieldsInputQuery$data)?.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
+          setCustomFieldDefs(defs as CustomFieldDef[]);
+        }
+      })
+      .catch((error) => {
+        handleError(error);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [isFeatureEnable]);
+
+  return <CaseIncidentCreationFormContent {...props} customFieldDefs={customFieldDefs} />;
 };
 
 const CaseIncidentCreation = ({
