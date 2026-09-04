@@ -24,6 +24,8 @@ type IngestionCsv implements InternalObject & BasicObject {
     current_state_hash: String
     current_state_date: DateTime
     last_execution_date: DateTime
+    last_execution_status: String
+    ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
     markings: [String!]
     toConfigurationExport: String!
     duplicateCsvMapper: CsvMapper!
@@ -83,6 +85,7 @@ type Query {
     ): CSVFeedAddInputFromImport! @auth(for: [INGESTION, CSVMAPPERS])
     defaultIngestionGroupCount: Int @auth(for: [INGESTION])
     userAlreadyExists(name: String!): Boolean @auth(for: [INGESTION])
+    ingestionCsvLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
 }
 
 # Mutations

@@ -587,7 +587,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   try {
     logApp.info(`[OPENCTI-MODULE] Executing CSV ingestion for ${ingestion.name}`);
     const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion, { timeout: FEED_REQUEST_TIMEOUT });
-    await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
+    return await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
   } catch (e: any) {
     throw UnknownError(e, { ingestionName: ingestion.name, ingestionId: ingestion.id });
   }
@@ -609,6 +609,8 @@ export const csvExecutor = async (context: AuthContext) => {
       // If ingestion have remaining messages in the queue dont fetch any new data
       if (messages_number > 0) {
         logApp.info(`[OPENCTI-MODULE] INGESTION Csv, skipping ${ingestion.name} - queue already filled with messages (${messages_number})`);
+        const ingestionLogger = createIngestionLogger(ingestion.internal_id, ingestion.name, 'csv');
+        ingestionLogger.info('Feed is buffering, waiting for queue to drain', { messages_number, messages_size });
         const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
         ingestionPromises.push(ingestionPromise);
         // If last execution was done before CSV_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
@@ -618,12 +620,26 @@ export const csvExecutor = async (context: AuthContext) => {
         ingestionPromises.push(ingestionPromise);
         // If no message in queue and last execution is old enough, fetch new data
       } else {
+        const ingestionLogger = createIngestionLogger(ingestion.internal_id, ingestion.name, 'csv');
+        ingestionLogger.info('Feed execution started', { uri: ingestion.uri });
         const ingestionPromise = csvDataHandler(context, ingestion)
-          .catch((e) => {
+          .then(async ({ objectsInBundleCount }) => {
+            try {
+              await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_status: 'success', last_execution_date: now() });
+            } catch (patchErr) {
+              logApp.warn('[OPENCTI-MODULE] Failed to patch csv ingestion success status', { cause: patchErr });
+            }
+            await ingestionLogger.success('Feed fetched successfully', { objects_count: objectsInBundleCount, uri: ingestion.uri });
+          })
+          .catch(async (e) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e, name: ingestion.name });
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-            patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() })
-              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Csv, Error on updating ingestion status in database', { cause: reason }));
+            try {
+              await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' });
+            } catch (reason) {
+              logApp.error('[OPENCTI-MODULE] INGESTION Csv, Error on updating ingestion status in database', { cause: reason });
+            }
+            await ingestionLogger.error('Feed fetch failed', buildIngestionErrorMeta(e));
           });
         ingestionPromises.push(ingestionPromise);
       }
