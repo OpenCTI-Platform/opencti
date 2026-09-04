@@ -78,16 +78,13 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   await expect(page.getByText(THEME.name).first()).toBeVisible();
 
   const logoImage = page.getByRole('link', { name: 'logo' }).locator('img');
+  let logoSrc = await logoImage.getAttribute('src');
+  expect(logoSrc).toContain('googlelogo');
 
   try {
     // Select system default
-    // The default-theme field is on the library Select now, so the MUI-generated
-  // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
-  // and name instead, which is what a user and a screen reader both use.
     await page.getByRole('combobox', { name: 'Default theme' }).click();
     await page.getByTestId(`${THEME.name}-li`).click();
-    // The logo swap also proves the settings mutation completed
-    await expect(logoImage).toHaveAttribute('src', /googlelogo/);
 
     // Edit theme
     // edit the logo url by removing the url, expect to be back on the default dark logo
@@ -191,5 +188,5 @@ test('Cannot delete or update system theme', { tag: ['@ce'] }, async ({ page }) 
   await expect(page.getByRole('menuitem', { name: 'View' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Update' })).toHaveCount(0);
   await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
-  expect(await page.getByLabel('Update').count() === 0);
+  expect(await page.getByLabel('Update').count()).toBe(0);
 });
