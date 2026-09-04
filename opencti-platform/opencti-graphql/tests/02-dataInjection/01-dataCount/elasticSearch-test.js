@@ -233,8 +233,7 @@ describe('Elasticsearch computation', () => {
     // over two days when the run crosses midnight UTC. Assert the total over the buckets
     // instead of reading the count from a single one.
     expect(data.length).toBeGreaterThanOrEqual(1);
-    // noinspection JSUnresolvedVariable
-    data.forEach((bucket) => expect(moment(bucket.date)._f).toEqual('YYYY-MM-DD'));
+    data.forEach((bucket) => expect(moment(bucket.date, 'YYYY-MM-DD', true).isValid(), `Unexpected bucket date "${bucket.date}"`).toBe(true));
     const total = data.reduce((acc, bucket) => acc + bucket.value, 0);
     expect(total).toEqual(34 + TESTING_ORGS.length);
   });
