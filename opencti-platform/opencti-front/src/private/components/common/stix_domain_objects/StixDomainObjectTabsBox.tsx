@@ -147,7 +147,7 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       <Tab
         key={tab}
         component={Link}
-        to={`${basePath}/${path}`}
+        to={path}
         value={path}
         label={t_i18n(label)}
       />
