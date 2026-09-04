@@ -15,7 +15,7 @@ import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { useTasksDataColumns } from '../tasks/useTasksDataColumns';
+import { tasksDataColumns } from '../tasks/tasksDataColumns';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -30,7 +30,6 @@ interface CaseIncidentProps {
 
 const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableReferences }) => {
   const { t_i18n } = useFormatter();
-  const tasksDataColumns = useTasksDataColumns();
   const ref = useRef(null);
   const caseIncident = useFragment(caseFragment, caseIncidentData);
 

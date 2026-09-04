@@ -345,21 +345,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       <ItemOperations draftOperation={draftVersion?.draft_operation} />
     ),
   },
-  workflowInstance: {
-    id: 'workflowInstance',
-    label: 'Workflow status',
-    percentWidth: 8,
-    isSortable: false,
-    render: ({ status, workflowInstance }) => {
-      // A workflowInstance id prefixed with 'initial-' means it has not been migrated
-      // yet (no real WorkflowInstance entity exists) so fall back to the legacy status.
-      const isNotMigrated = (workflowInstance?.id ?? '').startsWith('initial-');
-      const currentStatus = isNotMigrated ? (status ?? null) : (workflowInstance?.currentStatus ?? null);
-      return (
-        <ItemStatus status={currentStatus} disabled={!currentStatus} />
-      );
-    },
-  },
   draft_status: {
     id: 'draft_status',
     label: 'Processing status',

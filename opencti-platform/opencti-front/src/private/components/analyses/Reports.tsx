@@ -61,16 +61,6 @@ const reportLineFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     created_at
   }
@@ -153,7 +143,7 @@ const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Reports | Analyses'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable } } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -191,7 +181,6 @@ const Reports: FunctionComponent = () => {
   } as UsePreloadedPaginationFragment<ReportsLinesPaginationQuery>;
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       percentWidth: 25,
@@ -208,7 +197,7 @@ const Reports: FunctionComponent = () => {
     },
     objectLabel: { percentWidth: 15 },
     published: {},
-    ...(isWorkflowInstanceEnabled ? { workflowInstance: { percentWidth: 8 } } : { x_opencti_workflow_id: { percentWidth: 8 } }),
+    x_opencti_workflow_id: { percentWidth: 8 },
     objectMarking: {
       isSortable: isRuntimeSort,
       percentWidth: 8,

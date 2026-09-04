@@ -372,6 +372,23 @@ export const getWorkflowDefinition = async (
 };
 
 /**
+ * Lightweight, non-admin-gated check for whether an entity type currently has a *published*
+ * WorkflowDefinition. Used by the frontend's `StatusField` shared guard to decide whether the
+ * legacy free-choice Status dropdown must become read-only for that type — deliberately exposed
+ * at a lower auth level than `workflowDefinition` (which is `SETTINGS_SETCUSTOMIZATION`-gated and
+ * returns the full definition content), since knowledge editors need this boolean on every entity
+ * edition form, not just settings admins.
+ */
+export const hasPublishedWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<boolean> => {
+  const definitionData = await getWorkflowDefinition(context, user, entityType, false);
+  return !!definitionData;
+};
+
+/**
  * Returns the ID of the published version for the given entity setting's workflow, or null if not published.
  */
 export const getWorkflowPublishedVersionId = async (

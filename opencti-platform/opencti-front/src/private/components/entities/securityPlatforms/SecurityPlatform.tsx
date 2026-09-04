@@ -61,16 +61,6 @@ export const securityPlatformFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     ...SecurityPlatformDetails_securityPlatform
   }

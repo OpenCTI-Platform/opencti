@@ -68,16 +68,6 @@ const caseIncidentFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
   }
 `;
@@ -143,7 +133,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incident Responses | Cases'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable } } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -172,7 +162,6 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   );
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
   const dataColumns: DataTableProps['dataColumns'] = {
     name: { percentWidth: 20 },
     priority: {},
@@ -188,7 +177,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     },
     objectLabel: { percentWidth: 10 },
     created: { percentWidth: 10 },
-    ...(isWorkflowInstanceEnabled ? { workflowInstance: {} } : { x_opencti_workflow_id: {} }),
+    x_opencti_workflow_id: {},
     objectMarking: {
       isSortable: isRuntimeSort,
     },

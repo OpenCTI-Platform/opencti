@@ -48,16 +48,6 @@ const pirAnalysesContainerFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     representative {
       main
     }
@@ -222,10 +212,9 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
   );
 
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
 
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: { percentWidth: 10 },
@@ -298,7 +287,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
     created: {
       percentWidth: 13,
     },
-    ...(isWorkflowInstanceEnabled ? { workflowInstance: {} } : { x_opencti_workflow_id: {} }),
+    x_opencti_workflow_id: {},
     objectMarking: {
       isSortable: isRuntimeSort,
       percentWidth: 10,

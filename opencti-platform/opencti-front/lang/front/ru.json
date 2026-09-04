@@ -4791,6 +4791,7 @@
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This decision could not be sent. Reload the chat and try again.": "Это решение не удалось отправить. Обновите чат и попробуйте ещё раз.",
   "This entity has several key fields, which is incompatible with bulk creation": "Эта сущность имеет несколько ключевых полей, что несовместимо с массовым созданием",
+  "This entity type is managed by a workflow, status is read-only here": "Этот тип сущности управляется рабочим процессом; статус здесь доступен только для чтения",
   "This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement": "Это перечисление отражает степень согласия с информацией, содержащейся в объекте STIX. Это упорядоченное перечисление, в котором ранние термины представляют несогласие, средний термин - нейтральность, а поздние термины - согласие",
   "This exclusion list is too large to be displayed": "Этот список исключений слишком велик для отображения",
   "This external reference is linked to a file. If you delete it, the file will be deleted as well.": "Эта внешняя ссылка связана с файлом. Если вы удалите ее, файл также будет удален.",

@@ -206,16 +206,6 @@ export const caseFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     ...CaseIncidentDetails_case
     ...FeedbackDetails_case

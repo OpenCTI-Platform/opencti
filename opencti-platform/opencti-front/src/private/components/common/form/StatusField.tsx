@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Avatar from '@mui/material/Avatar';
@@ -10,7 +10,10 @@ import { hexToRGB } from '../../../../utils/Colors';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 import { FieldOption } from '../../../../utils/field';
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 import type { StatusFieldStatusesSearchQuery$data } from './__generated__/StatusFieldStatusesSearchQuery.graphql';
+import type { StatusFieldWorkflowDefinitionPublishedQuery$data } from './__generated__/StatusFieldWorkflowDefinitionPublishedQuery.graphql';
 
 interface StatusOption extends FieldOption {
   order: number;
@@ -70,6 +73,12 @@ export const statusFieldStatusesSearchQuery = graphql`
   }
 `;
 
+export const statusFieldWorkflowDefinitionPublishedQuery = graphql`
+  query StatusFieldWorkflowDefinitionPublishedQuery($entityType: String!) {
+    workflowDefinitionPublished(entityType: $entityType)
+  }
+`;
+
 const StatusField: FunctionComponent<StatusFieldProps> = ({
   name,
   type,
@@ -82,7 +91,9 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const [keyword, setKeyword] = useState<string>('');
+  const [hasPublishedWorkflowDefinition, setHasPublishedWorkflowDefinition] = useState<boolean>(false);
   const [statuses, setStatuses] = useState<StatusOption[]>(
     defaultStatus
       ? [{
@@ -136,6 +147,23 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
 
   const debouncedSearchStatuses = useDebounceCallback(searchStatuses, 1500);
 
+  const isWorkflowUiEnabled = !!type && isWorkflowUiEnabledForType(type, isFeatureEnable);
+
+  useEffect(() => {
+    if (!type || !isWorkflowUiEnabled) {
+      setHasPublishedWorkflowDefinition(false);
+      return;
+    }
+    fetchQuery(statusFieldWorkflowDefinitionPublishedQuery, { entityType: type })
+      .toPromise()
+      .then((data) => {
+        const queryData = data as StatusFieldWorkflowDefinitionPublishedQuery$data;
+        setHasPublishedWorkflowDefinition(!!queryData?.workflowDefinitionPublished);
+      });
+  }, [type, isWorkflowUiEnabled]);
+
+  const isWorkflowManaged = hasPublishedWorkflowDefinition;
+
   const handleSearch = useCallback((_event: React.SyntheticEvent, value: string) => {
     if (value) {
       setKeyword(value);
@@ -153,11 +181,13 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
       style={style}
       name={name}
       required={required}
-      disabled={disabled}
+      disabled={disabled || isWorkflowManaged}
       textfieldprops={{
         variant: 'standard',
         label: t_i18n('Status'),
-        helperText: helpertext,
+        helperText: isWorkflowManaged
+          ? t_i18n('This entity type is managed by a workflow, status is read-only here')
+          : helpertext,
         onFocus: handleFocus,
       }}
       noOptionsText={t_i18n('No available options')}

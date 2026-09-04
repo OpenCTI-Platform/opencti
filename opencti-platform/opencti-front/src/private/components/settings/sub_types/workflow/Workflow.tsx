@@ -137,10 +137,12 @@ const Workflow = ({
   queryRef,
   depsQueryRef,
   onRefetch,
+  entityType,
 }: {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
   depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery>;
   onRefetch: () => void;
+  entityType: string;
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -242,7 +244,7 @@ const Workflow = ({
     previousSchemaRef.current = schemaString;
 
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: schemaString },
+      variables: { entityType, definition: schemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -262,7 +264,7 @@ const Workflow = ({
         }
       },
     });
-  }, [nodes, edges]);
+  }, [nodes, edges, entityType]);
 
   // Handle reset action — clears the draft to an empty schema without touching the published version
   const handleReset = () => {
@@ -273,7 +275,7 @@ const Workflow = ({
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
     previousSchemaRef.current = emptySchemaString;
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: emptySchemaString },
+      variables: { entityType, definition: emptySchemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -305,7 +307,7 @@ const Workflow = ({
       return;
     }
     commitPublish({
-      variables: { entityType: 'DraftWorkspace' },
+      variables: { entityType },
       onCompleted: () => {
         MESSAGING$.notifySuccess(t_i18n('Workflow successfully published'));
         setWorkflowDefinitionStatus({
@@ -333,7 +335,7 @@ const Workflow = ({
   // Handle restore action — reloads the published version into the draft
   const handleRestore = () => {
     restoreWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace' },
+      variables: { entityType },
       onCompleted: () => {
         // Directly reset local state to `initialNodes`/`initialEdges`.
         // The Relay store already holds the published states (only full queries update
@@ -472,6 +474,7 @@ const Workflow = ({
       <WorkflowEditionDrawer
         open={open}
         selectedElement={selectedElement}
+        entityType={entityType}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);

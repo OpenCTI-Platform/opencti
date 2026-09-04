@@ -6,11 +6,16 @@ import WorkflowTransitions from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // ---------------------------------------------------------------------------
 // Relay mocks
 // ---------------------------------------------------------------------------
 const mockCommit = vi.fn();
+
+vi.mock('../../../../utils/hooks/useHelper', () => ({
+  default: vi.fn(),
+}));
 
 vi.mock('react-relay', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-relay')>();
@@ -79,6 +84,10 @@ const makeTransition = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+beforeEach(() => {
+  vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => false } as unknown as ReturnType<typeof useHelper>);
+});
+
 // ---------------------------------------------------------------------------
 // WorkflowStatus (display component)
 // ---------------------------------------------------------------------------
@@ -142,6 +151,20 @@ describe('WorkflowStatus', () => {
     // Press Escape to close (clicking document.body doesn't trigger MUI backdrop in jsdom)
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByText('Looks good')).toBeNull());
+  });
+
+  it('renders null for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is off', () => {
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => false } as unknown as ReturnType<typeof useHelper>);
+    const { container } = testRender(
+      <WorkflowStatus data={makeDraft()} entityType="Incident" />,
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is on', () => {
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
+    testRender(<WorkflowStatus data={makeDraft()} entityType="Incident" />);
+    expect(screen.getByText('In review')).not.toBeNull();
   });
 });
 
@@ -360,5 +383,35 @@ describe('WorkflowTransitions', () => {
     await user.click(cancelButton as HTMLElement);
     await waitFor(() => expect(screen.queryByText('Confirm')).toBeNull());
     expect(mockCommit).not.toHaveBeenCalled();
+  });
+
+  it('renders null for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is off', () => {
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => false } as unknown as ReturnType<typeof useHelper>);
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve' })],
+      },
+    });
+    const { container } = testRender(<WorkflowTransitions data={draft} entityType="Incident" />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders for a non-DraftWorkspace entityType when the ENTITIES_WORKFLOW flag is on', () => {
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve' })],
+      },
+    });
+    testRender(<WorkflowTransitions data={draft} entityType="Incident" />);
+    expect(screen.getByText('approve')).not.toBeNull();
   });
 });
