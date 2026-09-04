@@ -3,39 +3,42 @@ import { FilterMode, FilterOperator } from '../generated/graphql';
 import { fieldPatchTheme, findThemePaginated } from '../modules/theme/theme-domain';
 import { DARK_DEFAULTS, LIGHT_DEFAULTS } from '../modules/theme/theme-constants';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { FunctionalError } from '../config/errors';
 
 const message = '[MIGRATION] Align Filigran built-in theme with the WCAG defaults';
 
-export const SUPERSEDED = {
-  Dark: {
-    theme_background: ['#070d19'],
-    theme_paper: ['#09101e'],
-    theme_nav: ['#070d19'],
-    theme_primary: ['#0fbcff'],
-    theme_secondary: ['#00f18d'],
-    theme_accent: ['#0f1e38'],
-    theme_text_color: ['#F2F2F3'],
-  },
-  Light: {
-    theme_background: ['#ececf2'],
-    theme_nav: ['#ffffff'],
-    theme_secondary: ['#00BD94', '#00f0bc'],
-    theme_accent: ['#dfdfdf'],
-    theme_text_color: ['#18191B'],
-  },
-} as const;
+type ThemeDefaultField = keyof typeof DARK_DEFAULTS;
+type BuiltInThemeName = 'Filigran Dark' | 'Filigran Light';
 
-export type BuiltInThemeName = keyof typeof SUPERSEDED;
+const MODIFIED_DEFAULT_THEME_FIELDS: Record<BuiltInThemeName, ThemeDefaultField[]> = {
+  'Filigran Dark': [
+    'theme_background',
+    'theme_paper',
+    'theme_nav',
+    'theme_primary',
+    'theme_secondary',
+    'theme_accent',
+    'theme_text_color',
+  ],
+  'Filigran Light': [
+    'theme_background',
+    'theme_nav',
+    'theme_secondary',
+    'theme_accent',
+    'theme_text_color',
+  ],
+};
 
-const CURRENT = { Dark: DARK_DEFAULTS, Light: LIGHT_DEFAULTS } as const;
+const CURRENT_DEFAULT_THEME_FIELDS: Record<BuiltInThemeName, Record<ThemeDefaultField, string>> = {
+  'Filigran Dark': DARK_DEFAULTS,
+  'Filigran Light': LIGHT_DEFAULTS,
+};
 
-export const patchesForTheme = (
+const patchesForTheme = (
   themeName: BuiltInThemeName,
-  row: Record<string, string | undefined>,
 ): { key: string; value: string[] }[] => {
-  return Object.keys(SUPERSEDED[themeName])
-    .map((key) => ({ key, value: [CURRENT[themeName][key as keyof typeof DARK_DEFAULTS]] }))
-    .filter(({ key, value }) => row[key] !== value[0]);
+  return MODIFIED_DEFAULT_THEME_FIELDS[themeName]
+    .map((key) => ({ key, value: [CURRENT_DEFAULT_THEME_FIELDS[themeName][key]] }));
 };
 
 export const up = async (next: () => void) => {
@@ -47,13 +50,21 @@ export const up = async (next: () => void) => {
     filterGroups: [],
   };
   const themes = await findThemePaginated(context, SYSTEM_USER, { filters });
-  for (const edge of themes.edges) {
-    const filigranTheme = edge.node as unknown as Record<string, string>;
-    const name = filigranTheme.name as BuiltInThemeName;
-    const id = filigranTheme.id;
-    const inputs = patchesForTheme(name, filigranTheme);
-    await fieldPatchTheme(context, SYSTEM_USER, id, inputs);
-    logMigration.info(`${message} > ${name} theme updated`);
+  const themesList = themes.edges.map((e) => e.node);
+  const darkTheme = themesList.find((theme) => theme.name === 'Filigran Dark');
+  const lightTheme = themesList.find((theme) => theme.name === 'Filigran Light');
+  if (!darkTheme) {
+    throw FunctionalError('Missing Filigran Dark default theme');
+  }
+  if (!lightTheme) {
+    throw FunctionalError('Missing Filigran Light default theme');
+  }
+  for (const filigranTheme of [darkTheme, lightTheme]) {
+    const themeName = filigranTheme.name as BuiltInThemeName;
+    const themeId = filigranTheme.id;
+    const inputs = patchesForTheme(themeName);
+    await fieldPatchTheme(context, SYSTEM_USER, themeId, inputs);
+    logMigration.info(`${message} > ${themeName} theme updated`);
   }
   logMigration.info(`${message} > done`);
   next();
