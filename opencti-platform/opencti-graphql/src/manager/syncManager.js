@@ -1,6 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
-import conf, { booleanConf, isFeatureEnabled, logApp, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
