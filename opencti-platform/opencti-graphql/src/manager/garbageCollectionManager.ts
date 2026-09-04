@@ -28,7 +28,7 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
     if (!allRedisLargeEventFiles || !allRedisLargeEventFiles.KeyCount || !allRedisLargeEventFiles.Contents) {
       return;
     }
-    const allFileContents = allRedisLargeEventFiles.Contents.sort();
+    const allFileContents = allRedisLargeEventFiles.Contents.sort((a, b) => (a.Key ?? '').localeCompare(b.Key ?? ''));
     let deletedCount = 0;
     for (let i = 0; i < allFileContents.length; i += 1) {
       const file = allFileContents[i];
