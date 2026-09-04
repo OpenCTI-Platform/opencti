@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { ADMIN_USER } from '../../../utils/testQuery';
 import { createUploadFromTestDataFile, queryAsAdmin, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
 import { IngestionAuthType } from '../../../../src/generated/graphql';
+import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../../src/database/redis';
 
 // Minimal JSON mapper representations - creates a Domain-Name entity from a path
 const MINIMAL_REPRESENTATIONS = JSON.stringify([
@@ -263,6 +264,7 @@ describe('JSON ingestion resolver — configuration export / import', () => {
         },
       },
     });
+
     exportMapperId = mapperResult.data?.jsonMapperAdd?.id;
     expect(exportMapperId).toBeDefined();
 
@@ -404,6 +406,168 @@ describe('JSON ingestion resolver — configuration export / import', () => {
     expect(result.errors).toBeDefined();
     if (result.errors) {
       expect(result.errors[0].message).toContain('missing embedded JSON mapper');
+    }
+  });
+});
+
+describe('JSON ingestion resolver — ingestion logs', () => {
+  let jsonLogsMapperId: string;
+  let jsonLogsIngestionId: string;
+  const jsonLogsIngestionName = 'Json logs resolver test';
+
+  beforeAll(async () => {
+    const mapperResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createJsonMapperForLogsTest($input: JsonMapperAddInput!) {
+          jsonMapperAdd(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: {
+          name: 'JSON mapper for logs test',
+          representations: MINIMAL_REPRESENTATIONS,
+        },
+      },
+    });
+    jsonLogsMapperId = mapperResult.data?.jsonMapperAdd?.id;
+    expect(jsonLogsMapperId).toBeDefined();
+
+    const ingestionResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createJsonIngestionForLogs($input: IngestionJsonAddInput!) {
+          ingestionJsonAdd(input: $input) {
+            id
+            name
+          }
+        }
+      `,
+      variables: {
+        input: {
+          name: jsonLogsIngestionName,
+          uri: 'http://jsonserver.invalid/api/logs',
+          authentication_type: IngestionAuthType.None,
+          json_mapper_id: jsonLogsMapperId,
+          user_id: ADMIN_USER.id,
+          scheduling_period: 'PT1H',
+          verb: 'get',
+          ingestion_running: false,
+        },
+      },
+    });
+    jsonLogsIngestionId = ingestionResult.data?.ingestionJsonAdd?.id;
+    expect(jsonLogsIngestionId).toBeDefined();
+  });
+
+  afterAll(async () => {
+    if (jsonLogsIngestionId) {
+      await redisDeleteIngestionLogHistory(jsonLogsIngestionId);
+      await queryAsAdmin({
+        query: gql`mutation deleteJsonIngestionLogsTest($id: ID!) { ingestionJsonDelete(id: $id) }`,
+        variables: { id: jsonLogsIngestionId },
+      });
+    }
+    if (jsonLogsMapperId) {
+      await queryAsAdmin({
+        query: gql`mutation deleteJsonMapperLogsTest($id: ID!) { jsonMapperDelete(id: $id) }`,
+        variables: { id: jsonLogsMapperId },
+      });
+    }
+  });
+
+  it('should resolve logs from ingestionJsonLogs query and ingestionLogs field', async () => {
+    await redisDeleteIngestionLogHistory(jsonLogsIngestionId);
+    await redisPushIngestionLog(jsonLogsIngestionId, {
+      level: 'info',
+      type: 'json',
+      identifier: jsonLogsIngestionName,
+      message: 'info-log',
+      meta: { step: 1 },
+    });
+    await redisPushIngestionLog(jsonLogsIngestionId, {
+      level: 'success',
+      type: 'json',
+      identifier: jsonLogsIngestionName,
+      message: 'success-log',
+      meta: { step: 2 },
+    });
+    await redisPushIngestionLog(jsonLogsIngestionId, {
+      level: 'warn',
+      type: 'json',
+      identifier: jsonLogsIngestionName,
+      message: 'warn-log',
+      meta: { step: 3 },
+    });
+    await redisPushIngestionLog(jsonLogsIngestionId, {
+      level: 'error',
+      type: 'json',
+      identifier: jsonLogsIngestionName,
+      message: 'error-log',
+      meta: { step: 4 },
+    });
+
+    const queryLogsResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query readJsonLogs($id: String!) {
+          ingestionJsonLogs(id: $id) {
+            level
+            message
+            type
+            identifier
+            meta
+          }
+        }
+      `,
+      variables: { id: jsonLogsIngestionId },
+    });
+    expect(queryLogsResult.data?.ingestionJsonLogs).toHaveLength(4);
+    expect(queryLogsResult.data?.ingestionJsonLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+    expect(queryLogsResult.data?.ingestionJsonLogs[0].message).toBe('error-log');
+
+    const fieldLogsResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query readJsonLogsField($id: String!) {
+          ingestionJson(id: $id) {
+            id
+            ingestionLogs {
+              level
+              message
+            }
+          }
+        }
+      `,
+      variables: { id: jsonLogsIngestionId },
+    });
+    expect(fieldLogsResult.data?.ingestionJson.ingestionLogs).toHaveLength(4);
+    expect(fieldLogsResult.data?.ingestionJson.ingestionLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+  });
+
+  it('should fail when encountering an unknown log level', async () => {
+    await redisDeleteIngestionLogHistory(jsonLogsIngestionId);
+    await getClientBase().lpush(`ingestion-log-${jsonLogsIngestionId}-history`, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'unknown_level',
+      type: 'json',
+      identifier: jsonLogsIngestionName,
+      message: 'bad-level',
+      meta: {},
+    }));
+
+    const result = await queryAsAdmin({
+      query: gql`
+        query readJsonLogsWithBadLevel($id: String!) {
+          ingestionJsonLogs(id: $id) {
+            level
+            message
+          }
+        }
+      `,
+      variables: { id: jsonLogsIngestionId },
+    });
+    expect(result.errors).toBeDefined();
+    if (result.errors) {
+      expect(result.errors[0].message).toContain('Unknown ingestion log level');
     }
   });
 });
