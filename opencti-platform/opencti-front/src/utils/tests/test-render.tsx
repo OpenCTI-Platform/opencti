@@ -83,7 +83,8 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
   const defaultUserContext = userContext ?? createMockUserContext();
 
   return (
-    <BrowserRouter>
+    // Same navigation semantics as app.tsx.
+    <BrowserRouter useTransitions={false}>
       <RelayEnvironmentProvider environment={relayEnv}>
         <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
           <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>

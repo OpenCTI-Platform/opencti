@@ -13,7 +13,7 @@ const href = () => screen.getByText('link').getAttribute('href');
 describe('useSplatLessBasePath', () => {
   it('strips the splat when rendered under a splat route', () => {
     const { unmount } = render(
-      <MemoryRouter initialEntries={['/reports/R1/knowledge/graph']}>
+      <MemoryRouter initialEntries={['/reports/R1/knowledge/graph']} useTransitions={false}>
         <Routes><Route path="/reports/:id/*" element={<Probe />} /></Routes>
       </MemoryRouter>,
     );
@@ -23,7 +23,7 @@ describe('useSplatLessBasePath', () => {
 
   it('uses the parent base when rendered above nested children', () => {
     const { unmount } = render(
-      <MemoryRouter initialEntries={['/reports/R1/content/editor']}>
+      <MemoryRouter initialEntries={['/reports/R1/content/editor']} useTransitions={false}>
         <Routes>
           <Route path="/reports/:id/content" element={<><Probe /><Outlet /></>}>
             <Route path="editor" element={<span>editor</span>} />
@@ -37,7 +37,7 @@ describe('useSplatLessBasePath', () => {
 
   it('uses the full match on an exact route', () => {
     const { unmount } = render(
-      <MemoryRouter initialEntries={['/reports/R1/content']}>
+      <MemoryRouter initialEntries={['/reports/R1/content']} useTransitions={false}>
         <Routes><Route path="/reports/:id/content" element={<Probe />} /></Routes>
       </MemoryRouter>,
     );
@@ -50,7 +50,7 @@ describe('useSplatLessBasePath', () => {
       <Routes><Route path="/nested/*" element={<Probe />} /></Routes>
     );
     const { unmount } = render(
-      <MemoryRouter initialEntries={['/reports/R1/nested/deep/leaf']}>
+      <MemoryRouter initialEntries={['/reports/R1/nested/deep/leaf']} useTransitions={false}>
         <Routes><Route path="/reports/:id/*" element={<Inner />} /></Routes>
       </MemoryRouter>,
     );
