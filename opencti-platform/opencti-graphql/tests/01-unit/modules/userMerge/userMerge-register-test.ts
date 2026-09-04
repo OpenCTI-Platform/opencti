@@ -35,7 +35,7 @@ describe('User merge register', () => {
   it('should describe every row: id, entity and path are all filled', () => {
     USER_MERGE_REGISTER.forEach((entry) => {
       expect(entry.id.length, `row ${entry.id} has an empty id`).toBeGreaterThan(0);
-      expect(entry.entity.length, `row ${entry.id} has an empty entity`).toBeGreaterThan(0);
+      expect(entry.label.length, `row ${entry.id} has an empty label`).toBeGreaterThan(0);
       expect(entry.path.length, `row ${entry.id} has an empty path`).toBeGreaterThan(0);
     });
   });
