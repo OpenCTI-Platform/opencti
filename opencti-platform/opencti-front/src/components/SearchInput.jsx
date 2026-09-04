@@ -207,7 +207,8 @@ const SearchInput = (props) => {
     return (
       <SearchField
         name="keyword"
-        aria-label={t_i18n('Search')}
+        // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
+        aria-label={placeholder}
         size={SIZE_BY_VARIANT[variant] ?? 'md'}
         value={searchValue}
         placeholder={placeholder}
@@ -300,7 +301,8 @@ const SearchInput = (props) => {
         {/* ── Search Input Field (left, fills remaining space) ──── */}
         <SearchField
           name="keyword"
-          aria-label={t_i18n('Search')}
+          // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
+          aria-label={getPlaceholder()}
           value={searchValue}
           fullWidth
           placeholder={getPlaceholder()}
