@@ -79,13 +79,16 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   await expect(page.getByText(THEME.name).filter({ visible: true }).first()).toBeVisible();
 
   const logoImage = page.getByRole('link', { name: 'logo' }).locator('img');
-  let logoSrc = await logoImage.getAttribute('src');
-  expect(logoSrc).toContain('googlelogo');
 
   try {
     // Select system default
+    // The default-theme field is on the library Select now, so the MUI-generated
+    // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
+    // and name instead, which is what a user and a screen reader both use.
     await page.getByRole('combobox', { name: 'Default theme' }).click();
     await page.getByTestId(`${THEME.name}-li`).click();
+    // The logo swap also proves the settings mutation completed
+    await expect(logoImage).toHaveAttribute('src', /googlelogo/);
 
     // Edit theme
     // edit the logo url by removing the url, expect to be back on the default dark logo
@@ -124,44 +127,6 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
     await patchSettings(request, settings.id, 'platform_theme', initialThemeId);
   }
 
-  // Set theme logo to the Google logo
-  await editThemeLogo(THEME.name, page, THEME.theme_logo);
-  const isLogoChanged = async () => {
-    await page.reload();
-    const logoSrcChangedToGoogle = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-    if (logoSrcChangedToGoogle) {
-      return logoSrcChangedToGoogle.includes('googlelogo');
-    }
-    return false;
-  };
-  await awaitUntilCondition(isLogoChanged);
-
-  logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-  expect(logoSrc).toContain('googlelogo');
-
-  // Reset logo
-  await editThemeLogo(THEME.name, page, '');
-  await page.waitForTimeout(1000);
-
-  const isLogoBackToDefault = async () => {
-    await page.reload();
-    const logoSrcChangedToDefault = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-    if (logoSrcChangedToDefault) {
-      return logoSrcChangedToDefault.includes('logo_text_dark');
-    }
-    return false;
-  };
-  await awaitUntilCondition(isLogoBackToDefault);
-  logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
-  expect(logoSrc).toContain('logo_text_dark');
-
-  // Select Dark theme again to delete custom theme
-  // The default-theme field is on the library Select now, so the MUI-generated
-  // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
-  // and name instead, which is what a user and a screen reader both use.
-  await page.getByRole('combobox', { name: 'Default theme' }).click();
-  await page.getByTestId('Filigran Dark-li').click();
-  await page.waitForTimeout(1000);
   // Reload so the UI is back on the restored theme before deleting the custom one
   await page.reload();
 
