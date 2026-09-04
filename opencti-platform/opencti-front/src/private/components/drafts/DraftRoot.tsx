@@ -234,7 +234,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
         >
           <Tab
             component={Link}
-            to={`${basePath}/overview`}
+            to="overview"
             value="overview"
             label={
               <span>{t_i18n('Overview')}</span>
@@ -242,7 +242,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           />
           <Tab
             component={Link}
-            to={`${basePath}/entities`}
+            to="entities"
             value="entities"
             label={
               <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
@@ -250,7 +250,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           />
           <Tab
             component={Link}
-            to={`${basePath}/observables`}
+            to="observables"
             value="observables"
             label={
               <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
@@ -258,7 +258,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           />
           <Tab
             component={Link}
-            to={`${basePath}/relationships`}
+            to="relationships"
             value="relationships"
             label={
               <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
@@ -266,7 +266,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           />
           <Tab
             component={Link}
-            to={`${basePath}/sightings`}
+            to="sightings"
             value="sightings"
             label={
               <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
@@ -274,7 +274,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           />
           <Tab
             component={Link}
-            to={`${basePath}/containers`}
+            to="containers"
             value="containers"
             label={
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
@@ -283,14 +283,14 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           {!isDraftReadOnly && canAskImportKnowledge && (
             <Tab
               component={Link}
-              to={`${basePath}/files`}
+              to="files"
               value="files"
               label={t_i18n('Files')}
             />
           )}
           <Tab
             component={Link}
-            to={`${basePath}/review`}
+            to="review"
             value="review"
             label={<span>{t_i18n('Review')} ({objectsCount.reviewsCount})</span>}
           />

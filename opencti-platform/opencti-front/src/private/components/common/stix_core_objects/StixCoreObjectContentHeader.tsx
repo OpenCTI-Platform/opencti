@@ -6,7 +6,6 @@ import { DifferenceOutlined, DriveFileRenameOutlineOutlined, NewspaperOutlined }
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useSplatLessBasePath from '../../../../utils/hooks/useSplatLessBasePath';
 
 interface StixCoreObjectContentHeaderProps {
   currentMode?: string;
@@ -23,7 +22,6 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
 }) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
-  const basePath = useSplatLessBasePath();
 
   return (
     <div style={{
@@ -36,7 +34,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Content view')}>
             <ToggleButton
               component={Link}
-              to={basePath}
+              to=""
               selected={currentMode === 'content'}
               value="content"
             >
@@ -50,7 +48,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Editor view')}>
             <ToggleButton
               component={Link}
-              to={`${basePath}/editor`}
+              to="editor"
               selected={currentMode === 'editor'}
               value="editor"
               disabled={disableEditor}
@@ -65,7 +63,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Content mapping view')}>
             <ToggleButton
               component={Link}
-              to={`${basePath}/mapping`}
+              to="mapping"
               selected={currentMode === 'mapping'}
               value="mapping"
               disabled={disableMapping || !!draftContext}

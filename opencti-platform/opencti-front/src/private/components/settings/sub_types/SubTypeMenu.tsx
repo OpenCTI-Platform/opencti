@@ -17,8 +17,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
 
   if (!hasAtLeastOneEnabledTab) return null;
 
-  const basePath = `/dashboard/settings/customization/entity_types/${entityType}`;
-  const currentTab = getCurrentTab(location.pathname, basePath);
+  const currentTab = getCurrentTab(location.pathname, `/dashboard/settings/customization/entity_types/${entityType}`);
 
   return (
     <Tabs
@@ -28,7 +27,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
       {tabs.workflow && (
         <Tab
           component={Link}
-          to={`${basePath}/workflow`}
+          to="workflow"
           value="workflow"
           label={t_i18n('Workflow')}
         />
@@ -38,7 +37,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
         tabs.attributes && (
           <Tab
             component={Link}
-            to={`${basePath}/attributes`}
+            to="attributes"
             value="attributes"
             label={t_i18n('Attributes')}
           />
@@ -48,7 +47,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
       {tabs.templates && (
         <Tab
           component={Link}
-          to={`${basePath}/templates`}
+          to="templates"
           value="templates"
           label={t_i18n('Templates')}
         />
@@ -57,7 +56,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
       {tabs['overview-layout'] && (
         <Tab
           component={Link}
-          to={`${basePath}/overview-layout`}
+          to="overview-layout"
           value="overview-layout"
           label={t_i18n('Overview Layout')}
         />
@@ -66,7 +65,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
       {tabs['custom-views'] && (
         <Tab
           component={Link}
-          to={`${basePath}/custom-views`}
+          to="custom-views"
           value="custom-views"
           label={t_i18n('Custom Views')}
         />

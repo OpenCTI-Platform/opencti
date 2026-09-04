@@ -12,12 +12,7 @@ const RedirectByPath = lazy(() => import('./private/components/RedirectByPath'))
 
 const App = () => (
   <CookiesProvider>
-    {/* useTransitions={false} restores the v6 navigation behaviour: v7 wraps
-        router updates in React.startTransition by default, which keeps the
-        outgoing page on screen, without any feedback, until the destination
-        (lazy component + suspending queries) is ready. With synchronous
-        updates the suspense fallback shows immediately, as it did on v6. */}
-    <BrowserRouter basename={APP_BASE_PATH} useTransitions={false}>
+    <BrowserRouter basename={APP_BASE_PATH}>
       <AuthBoundaryComponent>
         <RedirectManager>
           <Suspense fallback={<Loader />}>
