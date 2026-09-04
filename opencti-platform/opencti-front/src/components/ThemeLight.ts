@@ -57,7 +57,7 @@ const ThemeLight = (
       text: { primary: FDS.colors.light['--color-feedback-error-tertiary'] },
     },
     success: { main: FDS.colors.light['--color-feedback-success-primary'], dark: FDS.colors.light['--color-feedback-success-tertiary'] },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#6978EE' },
+    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
@@ -109,9 +109,9 @@ const ThemeLight = (
     },
     text: {
       secondary: THEME_LIGHT_DEFAULT_TEXT,
-      tertiary: '#5F5F60',
+      tertiary: '#717172',
       light: '#494A50',
-      disabled: '#5F6B7A',
+      disabled: '#6E7788',
     },
     leftBar: {
       header: {
@@ -544,7 +544,7 @@ const ThemeLight = (
             WebkitTextFillColor: '#000000 !important',
             caretColor: 'transparent !important',
             WebkitBoxShadow:
-                '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
+              '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
             borderTopLeftRadius: 'inherit',
             borderTopRightRadius: 'inherit',
           },
@@ -623,6 +623,9 @@ const ThemeLight = (
           },
           '.react_time_range__handle_marker': {
             backgroundColor: '#00bcd4 !important',
+          },
+          '.leaflet-container': {
+            backgroundColor: `${paper || '#ffffff'} !important`,
           },
           '.react-grid-item .react-resizable-handle::after': {
             borderRight: '2px solid #AFB0B6 !important',
