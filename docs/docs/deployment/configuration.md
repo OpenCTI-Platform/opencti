@@ -117,11 +117,10 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 #### Maps & references
 
-| Parameter                 | Environment variable       | Default value                                                 | Description                                                      |
-|:-------------------------|:--------------------------|:---------------------------|:----------------------------------------|
-| app:map_bundled_file_path | APP__MAP_BUNDLED_FILE_PATH | `./static/maps/world.pmtiles`                                 | Path to the bundled PMTiles file on disk                         |
+| Parameter                 | Environment variable       | Default value                 | Description                                                      |
+|:--------------------------|:---------------------------|:------------------------------|:----------------------------------------|
 | app:map_bundled_file_path | APP__MAP_BUNDLED_FILE_PATH | `./static/maps/world.pmtiles` | Path to the bundled PMTiles file on disk |
-| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                                                       | External reference mandatory attachment                          |
+| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                       | External reference mandatory attachment                          |
 
 #### Functional customization
 

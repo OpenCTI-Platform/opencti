@@ -1,4 +1,4 @@
-import React, { } from 'react';
+import React from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/styles';
