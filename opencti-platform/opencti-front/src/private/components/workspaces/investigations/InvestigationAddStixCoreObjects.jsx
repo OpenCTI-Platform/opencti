@@ -11,6 +11,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
 
 const InvestigationAddStixCoreObjects = (props) => {
   const {
@@ -164,6 +165,24 @@ const InvestigationAddStixCoreObjects = (props) => {
           }
         }}
         title={t_i18n('Add entities')}
+        header={(
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+          >
+            <StixDomainObjectCreation
+              display={true}
+              inputValue={searchTerm}
+              paginationKey="Pagination_stixCoreObjects"
+              paginationOptions={searchPaginationOptions}
+              speeddial={false}
+              controlledDialStyles={{ marginRight: '24px' }}
+              stixDomainObjectTypes={['Stix-Domain-Object']}
+            />
+          </div>
+        )}
         containerRef={containerRef}
       >
         <ListLines
