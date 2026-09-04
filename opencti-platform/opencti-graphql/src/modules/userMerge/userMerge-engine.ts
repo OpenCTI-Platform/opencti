@@ -123,6 +123,23 @@ export const executeUserMerge = async (
   }
 };
 
+/**
+ * Reads back what a handler recorded. Corrupt or truncated payloads are dropped rather than
+ * propagated: the journal is what an operator falls back on when a run went wrong, so it has
+ * to stay readable even when one entry is not.
+ */
+const parseJournalOutcome = (output?: string): UserMergeHandlerOutcome | undefined => {
+  if (!output) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(output) as UserMergeHandlerOutcome;
+  } catch (err) {
+    logApp.warn(`${LOG_PREFIX} unreadable journal outcome`, { cause: err instanceof Error ? err.message : String(err) });
+    return undefined;
+  }
+};
+
 export const readUserMergeJournal = async (
   mergeId?: string,
   first?: number,
@@ -139,5 +156,7 @@ export const readUserMergeJournal = async (
     started_at: new Date(entry.started_at),
     completed_at: entry.completed_at ? new Date(entry.completed_at) : undefined,
     message: entry.message,
+    updated_count: entry.updated_count,
+    outcome: parseJournalOutcome(entry.output),
   }));
 };

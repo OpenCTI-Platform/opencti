@@ -17149,6 +17149,8 @@ type UserMergeJournalEntry {
   started_at: DateTime!
   completed_at: DateTime
   message: String
+  updated_count: Int
+  outcome: UserMergeHandlerOutcome
 }
 
 type CustomFieldValue {

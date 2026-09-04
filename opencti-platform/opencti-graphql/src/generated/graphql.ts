@@ -37345,10 +37345,12 @@ export type UserMergeJournalEntry = {
   id: Scalars['ID']['output'];
   merge_id: Scalars['ID']['output'];
   message?: Maybe<Scalars['String']['output']>;
+  outcome?: Maybe<UserMergeHandlerOutcome>;
   source_id: Scalars['ID']['output'];
   started_at: Scalars['DateTime']['output'];
   status: UserMergeStatus;
   target_id: Scalars['ID']['output'];
+  updated_count?: Maybe<Scalars['Int']['output']>;
 };
 
 export type UserMergeOptions = {
@@ -53427,10 +53429,12 @@ export type UserMergeJournalEntryResolvers<ContextType = any, ParentType extends
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   merge_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  outcome?: Resolver<Maybe<ResolversTypes['UserMergeHandlerOutcome']>, ParentType, ContextType>;
   source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['UserMergeStatus'], ParentType, ContextType>;
   target_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  updated_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
 }>;
 
 export type UserMergePlannedChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergePlannedChange'] = ResolversParentTypes['UserMergePlannedChange']> = ResolversObject<{
