@@ -57,7 +57,7 @@ const levelTagColor = (level: string, theme: Theme) => {
   }
 };
 
-const TIMESTAMP_WIDTH = '11.5rem';
+const TIMESTAMP_WIDTH = '13.5rem';
 const LEVEL_WIDTH = '8rem';
 const DETAILS_PREVIEW_MAX_LEN = 56;
 
