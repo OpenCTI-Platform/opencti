@@ -7,10 +7,6 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
-    secrets:
-      FDS_GIT_TOKEN:
-        description: "Read token for the private @filigran/design-system git dependency"
-        required: false
 
 jobs:
   license-check:
@@ -41,23 +37,18 @@ jobs:
               '
 
       - name: Frontend verify license
-        # See ci-test-frontend-quality.yml for why the token is passed by name and
-        # the sh -c body stays single-quoted. Only the frontend needs it.
-        env:
-          FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }}
+
         run: |
           docker run  \
             --name frontend-verify-licenses \
             -v ${{ github.workspace }}:/home/workspace \
-            -e FDS_GIT_TOKEN \
+            
             node:22-alpine3.23 \
             sh -c 'set -eux;
-               apk --no-cache add git
+               
                npm install -g corepack
                cd /home/workspace/opencti-platform/opencti-front
-               set +x
-               git config --global url."https://x-access-token:${FDS_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
-               set -x
+               
                yarn install --mode=skip-build
                yarn verify-licenses
               '

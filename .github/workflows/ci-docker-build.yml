@@ -29,9 +29,6 @@ on:
       DOCKERHUB_TOKEN:
         description: "Docker Hub access token, required when publish_to_registry is true"
         required: false
-      FDS_GIT_TOKEN:
-        description: "Read token for the private @filigran/design-system git dependency"
-        required: false
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -111,17 +108,7 @@ jobs:
           outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # The `builder-front` stage installs @filigran/design-system, a private
-          # git dependency, behind `RUN --mount=type=secret,id=fds_git_token`.
-          # An unprovided BuildKit secret is not an empty file, it is no file at
-          # all, so the step fails with "can't open /run/secrets/fds_git_token:
-          # No such file or directory" — which reads like a missing secret even
-          # when the secret exists. The `Build (builder)` step above stops at
-          # `target: builder`, before the install, so it needs nothing.
-          # Reusable workflows CAN read the secrets context (composite actions
-          # cannot), but only what the caller passes — see FDS-CI-SECRET in fds-migration/.
-          secrets: |
-            fds_git_token=${{ secrets.FDS_GIT_TOKEN }}
+
 
       - name: Upload opencti docker image artifact
         if: ${{ inputs.publish_to_registry == 'false' }}
