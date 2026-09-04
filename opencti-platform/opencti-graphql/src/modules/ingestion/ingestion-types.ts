@@ -8,6 +8,7 @@ import type { AuthorizedMember } from '../../utils/access';
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
 
 export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
+  kind: 'rss';
   name: string;
   description: string;
   scheduling_period: string;
@@ -19,6 +20,7 @@ export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
   current_state_date: Date | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   ssl_verify?: boolean;
 }
 
