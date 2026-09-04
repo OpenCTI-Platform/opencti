@@ -108,7 +108,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     // Force the creation stream event to be considered "too large" so that it is offloaded to S3.
     // We let rawUpload run for real (real minio) so the offloaded event stays readable by the
     // downstream stream tests (its S3 file must exist to be rebuilt).
-    const isEventTooLargeSpy = vi.spyOn(redisStream, 'isEventTooLarge').mockReturnValue(true);
+    const isEventTooLargeSpy = vi.spyOn(redisStream, 'isEventTooLarge').mockReturnValue({ isTooLarge: true, eventSize: 0 });
     const rawUploadSpy = vi.spyOn(rawFileStorage, 'rawUpload');
     try {
       const CREATE_QUERY = gql`
