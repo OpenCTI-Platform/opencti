@@ -12,9 +12,7 @@ FROM base AS builder
 RUN <<EOT
   set -euxo pipefail
 
-  # git is required to install @filigran/design-system, which is consumed as a
-  # pinned git dependency: node:alpine ships no git at all.
-  apk --no-cache add make g++ python3 python3-dev git
+  apk --no-cache add make g++ python3 python3-dev
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   python3 -m ensurepip
   npm install -g corepack
@@ -57,17 +55,7 @@ COPY opencti-front/package.json opencti-front/yarn.lock ./
 COPY opencti-front/packages/ ./packages/
 COPY opencti-front/patch/ ./patch/
 
-# @filigran/design-system is a private git dependency, so this install needs a
-# GitHub token. The token is passed as a BuildKit secret rather than a build
-# arg: build args are recorded in the image history, secrets are not. The
-# credential is unset in the same layer so it never reaches a committed layer.
-RUN --mount=type=secret,id=fds_git_token \
-    set -eu; \
-    FDS_GIT_TOKEN="$(cat /run/secrets/fds_git_token)"; \
-    [ -n "$FDS_GIT_TOKEN" ] || { echo "ERROR: fds_git_token secret is empty"; exit 1; }; \
-    git config --global url."https://x-access-token:${FDS_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"; \
-    yarn install --immutable; \
-    git config --global --unset-all url."https://x-access-token:${FDS_GIT_TOKEN}@github.com/".insteadOf
+RUN yarn install --immutable
 
 # Copy all remaining sources and build
 COPY opencti-front/ ./
