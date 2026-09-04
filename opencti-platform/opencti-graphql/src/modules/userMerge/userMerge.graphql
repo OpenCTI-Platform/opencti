@@ -58,7 +58,7 @@ type UserMergeExecutionReport {
 
 type UserMergeCoverageRow {
     row_id: String!
-    entity: String!
+    label: String!
     path: String!
     disposition: UserMergeDisposition!
     covered: Boolean!
