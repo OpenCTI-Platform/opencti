@@ -137,7 +137,6 @@ jobs:
             node build/script-insert-dataset.mjs --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
 
       - name: e2e tests
-
         run: |
           docker run --network runner-docker-network \
             --name frontend-e2e-tests \
@@ -145,12 +144,10 @@ jobs:
             -e BACK_END_URL=http://opencti-e2e-start:4100 \
             -e E2E_TEST=true \
             -e NODE_OPTIONS=--max_old_space_size=8192 \
-            
             node:22 \
             sh -c 'set -eux;
                 cd /home/workspace/opencti-platform/opencti-front
                 npm install -g corepack
-                
                 yarn install
                 yarn playwright install --with-deps chromium
                 yarn test:e2e ${{ matrix.grep_args }}
