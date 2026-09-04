@@ -6,7 +6,6 @@ import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/
 import { createStatus } from '../../../src/domain/status';
 import { resolveUserById } from '../../../src/domain/user';
 import * as ee from '../../../src/enterprise-edition/ee';
-import { StatusScope } from '../../../src/generated/graphql';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
@@ -21,7 +20,7 @@ import {
   isStatusTemplateUsedInWorkflows,
   publishWorkflowDefinition,
   hasPublishedWorkflowDefinition,
-  getWorkflowMigrationPreview
+  getWorkflowMigrationPreview,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
@@ -31,7 +30,6 @@ import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/typ
 import { FilterMode, StatusScope } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
-import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 
