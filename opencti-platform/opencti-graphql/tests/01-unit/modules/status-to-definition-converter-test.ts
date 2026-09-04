@@ -174,6 +174,23 @@ describe('convertStatusToDefinition', () => {
     expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't1', event: 'MOVE_TO_T1' }));
   });
 
+  it('falls back to the raw id for the event name when the display name is blank or whitespace-only', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+    ];
+    const templates = [
+      buildTemplate({ id: 't1', name: '' }),
+      buildTemplate({ id: 't2', name: '   ' }),
+    ];
+
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { definition } = byScope[StatusScope.Global]!;
+    expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't1', event: 'MOVE_TO_T1' }));
+    expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't2', event: 'MOVE_TO_T2' }));
+  });
+
   it('returns no transitions for a single-state definition', () => {
     const statuses = [buildStatus({ id: 's1', template_id: 't1', order: 1 })];
     const templates = [buildTemplate({ id: 't1', name: 'New' })];
