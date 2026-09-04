@@ -321,6 +321,14 @@ export class TelemetryMeterManager {
   ingestionObjectsProcessedCount = 0;
   // endregion Product adoption
 
+  // region Stream storage
+  // Current total number of stream events offloaded to file storage (events too large for redis)
+  offloadedStreamEventsCount = 0;
+
+  // Current total number of events held in the redis live stream
+  redisStreamEventsCount = 0;
+  // endregion Stream storage
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -641,6 +649,14 @@ export class TelemetryMeterManager {
     this.ingestionObjectsProcessedCount = n;
   }
 
+  setOffloadedStreamEventsCount(n: number) {
+    this.offloadedStreamEventsCount = n;
+  }
+
+  setRedisStreamEventsCount(n: number) {
+    this.redisStreamEventsCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: {
     unit?: string;
     valueType?: ValueType;
@@ -761,6 +777,10 @@ export class TelemetryMeterManager {
     this.registerDimensionalGauge('notification_sent_count', 'notifications sent broken down by channel (email, webhook, ui)', 'notificationSentItems');
     this.registerGauge('export_generated_count', 'number of export generations requested', 'exportGeneratedCount');
     this.registerGauge('ingestion_objects_processed_count', 'number of objects processed by completed works', 'ingestionObjectsProcessedCount');
+    // endregion
+    // region Stream storage
+    this.registerGauge('offloaded_stream_events_count', 'current total number of stream events offloaded to file storage (too large for redis)', 'offloadedStreamEventsCount');
+    this.registerGauge('redis_stream_events_count', 'current total number of events held in the redis live stream', 'redisStreamEventsCount');
     // endregion
   }
 }
