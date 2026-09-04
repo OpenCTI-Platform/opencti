@@ -15998,6 +15998,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
+  x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
@@ -16197,6 +16198,7 @@ export type MalwareAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
+  x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -16569,6 +16571,7 @@ export enum MalwaresOrdering {
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at',
+  XOpenctiScore = 'x_opencti_score',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -25045,6 +25048,7 @@ export type Query = {
   synchronizer?: Maybe<Synchronizer>;
   synchronizerAddInputFromImport: SynchronizerAddInputFromImport;
   synchronizerFetch?: Maybe<Array<Maybe<RemoteStreamCollection>>>;
+  synchronizerLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   synchronizers?: Maybe<SynchronizerConnection>;
   system?: Maybe<System>;
   systemMembers?: Maybe<MemberConnection>;
@@ -27992,6 +27996,11 @@ export type QuerySynchronizerAddInputFromImportArgs = {
 
 export type QuerySynchronizerFetchArgs = {
   input?: InputMaybe<SynchronizerFetchInput>;
+};
+
+
+export type QuerySynchronizerLogsArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -33752,6 +33761,9 @@ export type Synchronizer = {
   consumer_metrics?: Maybe<StreamCollectionConsumer>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
+  ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
+  last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  last_execution_status?: Maybe<Scalars['String']['output']>;
   listen_deletion: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   no_dependencies: Scalars['Boolean']['output'];
@@ -47566,6 +47578,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -50321,6 +50334,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   synchronizer?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<QuerySynchronizerArgs, 'id'>>;
   synchronizerAddInputFromImport?: Resolver<ResolversTypes['SynchronizerAddInputFromImport'], ParentType, ContextType, RequireFields<QuerySynchronizerAddInputFromImportArgs, 'file'>>;
   synchronizerFetch?: Resolver<Maybe<Array<Maybe<ResolversTypes['RemoteStreamCollection']>>>, ParentType, ContextType, Partial<QuerySynchronizerFetchArgs>>;
+  synchronizerLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QuerySynchronizerLogsArgs, 'id'>>;
   synchronizers?: Resolver<Maybe<ResolversTypes['SynchronizerConnection']>, ParentType, ContextType, Partial<QuerySynchronizersArgs>>;
   system?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, Partial<QuerySystemArgs>>;
   systemMembers?: Resolver<Maybe<ResolversTypes['MemberConnection']>, ParentType, ContextType>;
@@ -52241,6 +52255,9 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   consumer_metrics?: Resolver<Maybe<ResolversTypes['StreamCollectionConsumer']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
+  last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   no_dependencies?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
