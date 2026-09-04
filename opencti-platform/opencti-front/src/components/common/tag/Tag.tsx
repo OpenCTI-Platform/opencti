@@ -1,7 +1,6 @@
 import { Chip } from '@filigran/design-system';
 import { Tooltip } from '@mui/material';
 import React from 'react';
-import { getLuminance } from '@mui/material/styles';
 
 export interface TagProps {
   label?: string | number | null;

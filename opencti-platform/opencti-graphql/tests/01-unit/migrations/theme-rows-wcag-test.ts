@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isRowOnDefaults, patchesForTheme, SUPERSEDED } from '../../../src/migrations/1787800000000-align-builtin-theme-rows-with-wcag-defaults';
+import { isRowOnDefaults, patchesForTheme, SUPERSEDED } from '../../../src/migrations/1787822440159-align-builtin-theme-rows-with-wcag-defaults';
 import { DARK_DEFAULTS, LIGHT_DEFAULTS } from '../../../src/modules/theme/theme-constants';
 
 const CURRENT = { Dark: DARK_DEFAULTS, Light: LIGHT_DEFAULTS } as const;
