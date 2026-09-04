@@ -87,7 +87,6 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
               value={keyword}
               onChange={handleChangeKeyword}
               disabled={disabled}
-              slotProps={{ input: { type: 'search' } }}
             />
           </Grid>
         )}
