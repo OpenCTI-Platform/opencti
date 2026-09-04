@@ -41,7 +41,7 @@ const USER_MERGE_COVERAGE_QUERY = gql`
       is_complete
       rows {
         row_id
-        entity
+        label
         path
         disposition
         covered

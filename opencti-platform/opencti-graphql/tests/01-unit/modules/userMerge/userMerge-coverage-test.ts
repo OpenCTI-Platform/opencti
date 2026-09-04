@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildApiUserMergeCoverage, buildUserMergeCoverage } from '../../../../src/modules/userMerge/userMerge-coverage';
+import { USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 import type { UserMergeHandler } from '../../../../src/modules/userMerge/userMerge-handler';
 
 const mockHandler = (identifier: string, covers: string[]): UserMergeHandler => ({

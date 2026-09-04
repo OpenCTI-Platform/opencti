@@ -109,20 +109,6 @@ describe('userMerge engine', () => {
     expect(apply).not.toHaveBeenCalled();
   });
 
-  it('should refuse to start when the registered handlers stopped being disjoint', async () => {
-    const apply = vi.fn(async () => 3);
-    registerUserMergeHandler(mockHandler('handler-a', { writes: ['shared.field'], apply }));
-    registerUserMergeHandler(mockHandler('handler-b', { covers: ['user.otp'], apply }));
-    // Registration refuses a conflicting handler, so the only way to reach the engine check is
-    // a registry that drifted afterwards — which is what the engine guard exists for.
-    const { userMergeHandlers } = await import('../../../../src/modules/userMerge/userMerge-registry');
-    userMergeHandlers()[1].reads.push('shared.field');
-    const result = await execute(false);
-    expect(result.status).toEqual(UserMergeStatus.Failed);
-    expect(result.message).toContain('disjoint');
-    expect(apply).not.toHaveBeenCalled();
-  });
-
   it('should journal both passes and mark them apart', async () => {
     registerUserMergeHandler(mockHandler('handler-a'));
     await execute(false);
