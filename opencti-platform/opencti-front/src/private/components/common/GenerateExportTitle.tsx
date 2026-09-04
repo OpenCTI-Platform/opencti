@@ -1,5 +1,6 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Stack } from '@mui/material';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
 import Tooltip from '@mui/material/Tooltip';
 import React, { FunctionComponent } from 'react';
 import { useFormatter } from '../../../components/i18n';

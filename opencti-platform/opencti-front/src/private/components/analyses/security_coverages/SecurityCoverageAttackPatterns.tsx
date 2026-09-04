@@ -1,6 +1,7 @@
 import Typography from '@mui/material/Typography';
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
 import Tooltip from '@mui/material/Tooltip';
 import { ButtonGroup, ButtonGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React, { useEffect, useState } from 'react';

@@ -8,9 +8,12 @@
  * Scope is deliberately narrow, and that narrowness is what makes the gate
  * safe to make blocking on day one:
  *
- *   - Only lines ADDED against the merge base are read. Every line that
- *     already exists keeps working and is never reported. The ~1000 files
- *     importing MUI today are untouched by construction.
+ *   - Only symbols a file did NOT already import on the merge base are read,
+ *     compared per file, base version against head version. Every import that
+ *     already exists keeps working and is never reported, even when its line
+ *     is edited. The ~1000 files importing MUI today are untouched by
+ *     construction. Reading added LINES instead re-reported every symbol that
+ *     merely survived an edit — including lines that removed MUI imports.
  *   - Only the 14 components the library has actually finished AND that are
  *     already rendering in this product are enforced. The list is generated,
  *     not typed here: fds-migration/mui-regression-policy.generated.json,
@@ -77,37 +80,58 @@ function mergeBase(base) {
   }
 }
 
-/** Added lines per file, with their new-file line numbers. */
-function addedLines(from) {
-  const diff = git(["diff", "--unified=0", "--no-color", `${from}...HEAD`]);
+/** Watched-source symbols a file imports, mapped to the line each sits on. */
+function importsIn(source) {
+  const found = new Map();
+  const lines = source.split("\n");
+  for (let i = 0; i < lines.length; i += 1) {
+    for (const symbol of importedSymbols(lines[i])) {
+      if (!found.has(symbol)) found.set(symbol, i + 1);
+    }
+  }
+  return found;
+}
+
+/**
+ * Code files touched against the base, each with the path it had there.
+ * `-M` so a renamed file is compared to its old path instead of counting as
+ * new, which would report every import it carries over.
+ */
+function changedFiles(from) {
   const out = [];
-  let file = null;
-  let lineNo = 0;
-  for (const raw of diff.split("\n")) {
-    if (raw.startsWith("+++ b/")) {
-      file = raw.slice(6);
-      continue;
-    }
-    const hunk = raw.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
-    if (hunk) {
-      lineNo = Number(hunk[1]);
-      continue;
-    }
-    if (raw.startsWith("+") && !raw.startsWith("+++")) {
-      if (file && CODE_EXT.has(path.extname(file))) {
-        out.push({ file, line: lineNo, text: raw.slice(1) });
+  const raw = git(["diff", "-M", "--name-status", "-z", `${from}...HEAD`]).split("\0");
+  for (let i = 0; i < raw.length; i += 1) {
+    const status = raw[i];
+    if (!status) continue;
+    if (status.startsWith("R")) {
+      const [before, after] = [raw[i + 1], raw[i + 2]];
+      i += 2;
+      if (CODE_EXT.has(path.extname(after ?? ""))) out.push({ file: after, basePath: before });
+    } else if (status.startsWith("D")) {
+      i += 1;
+    } else {
+      const file = raw[i + 1];
+      i += 1;
+      if (CODE_EXT.has(path.extname(file ?? ""))) {
+        out.push({ file, basePath: status.startsWith("A") ? null : file });
       }
-      lineNo += 1;
     }
   }
   return out;
 }
 
-function heldOnLine(file, lineNo, text) {
+function fileAt(ref, file) {
+  try {
+    return git(["show", `${ref}:${file}`]);
+  } catch {
+    return null;
+  }
+}
+
+function heldOnLine(lines, lineNo) {
+  const text = lines[lineNo - 1] ?? "";
   if (text.includes(KEEP_MARKER)) return text.slice(text.indexOf(KEEP_MARKER)).trim();
-  const abs = path.join(REPO_ROOT, file);
-  if (!fs.existsSync(abs)) return null;
-  const above = fs.readFileSync(abs, "utf8").split("\n")[lineNo - 2] ?? "";
+  const above = lines[lineNo - 2] ?? "";
   return above.includes(KEEP_MARKER) ? above.slice(above.indexOf(KEEP_MARKER)).trim() : null;
 }
 
@@ -148,11 +172,20 @@ function main() {
 
   const findings = [];
   let held = 0;
-  for (const { file, line, text } of addedLines(from)) {
-    for (const symbol of importedSymbols(text)) {
+  for (const { file, basePath } of changedFiles(from)) {
+    // The working tree first, so a `fds:keep-mui` added but not yet committed
+    // is honoured locally; CI checks out HEAD, where the two are the same.
+    const onDisk = path.join(REPO_ROOT, file);
+    const headSource = fs.existsSync(onDisk) ? fs.readFileSync(onDisk, "utf8") : fileAt("HEAD", file);
+    if (headSource === null) continue;
+    const baseSource = basePath ? fileAt(from, basePath) : null;
+    const alreadyThere = baseSource === null ? new Set() : new Set(importsIn(baseSource).keys());
+    const lines = headSource.split("\n");
+    for (const [symbol, line] of importsIn(headSource)) {
+      if (alreadyThere.has(symbol)) continue;
       const replacement = policy.enforced[symbol];
       if (!replacement) continue;
-      const hold = heldOnLine(file, line, text);
+      const hold = heldOnLine(lines, line);
       if (hold) {
         held += 1;
         continue;
@@ -160,6 +193,7 @@ function main() {
       findings.push({ file, line, symbol, replacement });
     }
   }
+  findings.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
 
   const scope = `${from.slice(0, 9)}...HEAD`;
   if (findings.length === 0) {
