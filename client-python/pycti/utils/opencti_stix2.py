@@ -1157,6 +1157,7 @@ class OpenCTIStix2:
             "Vocabulary": self.opencti.vocabulary.read,
             "Vulnerability": self.opencti.vulnerability.read,
             "Security-Coverage": self.opencti.security_coverage.read,
+            "Security-Coverage-Result": self.opencti.security_coverage_result.read,
         }
 
     def get_reader(self, entity_type: str):
@@ -1235,6 +1236,7 @@ class OpenCTIStix2:
             "task": self.opencti.task,
             "x-opencti-task": self.opencti.task,
             "security-coverage": self.opencti.security_coverage,
+            "security-coverage-result": self.opencti.security_coverage_result,
             "vocabulary": self.opencti.vocabulary,
             # relationships
             "relationship": self.opencti.stix_core_relationship,
@@ -2205,6 +2207,19 @@ class OpenCTIStix2:
             del entity["dataSource"]
             del entity["dataSourceId"]
 
+        security_coverage_results = []
+        security_coverage_result_of = None
+        if entity["type"] == "security-coverage":
+            security_coverage_results = entity.get("results") or []
+            if "results" in entity:
+                del entity["results"]
+            if "objectCovered" in entity:
+                del entity["objectCovered"]
+        if entity["type"] == "security-coverage-result":
+            security_coverage_result_of = entity.get("resultOf")
+            if "resultOf" in entity:
+                del entity["resultOf"]
+
         # Dates
         if "first_seen" in entity and entity["first_seen"].startswith("1970"):
             del entity["first_seen"]
@@ -2518,6 +2533,25 @@ class OpenCTIStix2:
             uuids = [entity["id"]]
             for y in result:
                 uuids.append(y["id"])
+            # Get security coverage neighbours, with their explicit type so the right reader is
+            # used. Declared before the generic refs loop, which would resolve the coverage as a
+            # plain Stix-Domain-Object and win the deduplication.
+            for security_coverage_result in security_coverage_results:
+                objects_to_get.append(
+                    {
+                        "id": security_coverage_result["id"],
+                        "entity_type": "Security-Coverage-Result",
+                        "parent_types": ["Stix-Domain-Object"],
+                    }
+                )
+            if security_coverage_result_of is not None:
+                objects_to_get.append(
+                    {
+                        "id": security_coverage_result_of["id"],
+                        "entity_type": "Security-Coverage",
+                        "parent_types": ["Stix-Domain-Object"],
+                    }
+                )
             # Get extra refs
             for key in entity.keys():
                 if key.endswith("_ref"):
@@ -3301,6 +3335,8 @@ class OpenCTIStix2:
             self.opencti.external_reference.delete(item["id"])
         elif item["type"] == "sighting":
             self.opencti.stix_sighting_relationship.delete(id=item["id"])
+        elif item["type"] == "security-coverage":
+            self.opencti.security_coverage.delete(id=item["id"])
         elif item["type"] in STIX_META_OBJECTS:
             self.opencti.stix.delete(id=item["id"], force_delete=force_delete)
         elif item["type"] in list(STIX_CYBER_OBSERVABLE_MAPPING.keys()):
@@ -3381,6 +3417,15 @@ class OpenCTIStix2:
         elif operation == "clear_access_restriction":
             self.opencti.stix_core_object.clear_access_restriction(
                 element_id=item["id"]
+            )
+        elif operation == "add_related_covered_entities":
+            security_coverage_result_id = self.opencti.get_attribute_in_extension(
+                "security_coverage_result_id", item
+            )
+            self.opencti.stix_core_relationship.create(
+                fromId=security_coverage_result_id,
+                toId=item["id"],
+                relationship_type="has-covered",
             )
         elif operation == "enrichment":
             connector_ids = self.opencti.get_attribute_in_extension(

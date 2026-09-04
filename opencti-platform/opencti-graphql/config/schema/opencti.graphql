@@ -951,6 +951,7 @@ enum BackgroundTaskActionType {
   REMOVE_GROUPS
   SEND_EMAIL
   ENROLL_PLAYBOOK
+  ADD_RELATED_COVERED_ENTITIES
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -13757,6 +13758,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Organization
   | SecurityPlatform
   | SecurityCoverage
+  | SecurityCoverageResult
   | Sector
   | System
   | Indicator
@@ -13926,6 +13928,7 @@ union StixObjectOrStixRelationship =
   | PublicDashboard
   | Pir
   | SecurityCoverage
+  | SecurityCoverageResult
   | CustomView
   | IMEI
   | ICCID
@@ -14236,6 +14239,7 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
   # Technical
   clientMutationId: String

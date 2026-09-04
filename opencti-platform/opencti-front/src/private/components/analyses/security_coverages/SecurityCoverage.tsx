@@ -132,7 +132,7 @@ const SecurityCoverageComponent = ({
 
       <Grid size={12}>
         <SecurityCoverageAttackPatterns
-          data={securityCoverage}
+          securityCoverage={securityCoverage}
           dataKillChains={dataKillChains}
         />
       </Grid>

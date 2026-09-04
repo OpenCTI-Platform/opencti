@@ -4480,7 +4480,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:^15.7.12, @types/prop-types@npm:^15.7.14, @types/prop-types@npm:^15.7.15":
+"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.12, @types/prop-types@npm:^15.7.14, @types/prop-types@npm:^15.7.15":
   version: 15.7.15
   resolution: "@types/prop-types@npm:15.7.15"
   checksum: 10c0/b59aad1ad19bf1733cf524fd4e618196c6c7690f48ee70a327eb450a42aab8e8a063fbe59ca0a5701aebe2d92d582292c0fb845ea57474f6a15f6994b0e260b2
@@ -4549,6 +4549,16 @@ __metadata:
   peerDependencies:
     "@types/react": "*"
   checksum: 10c0/0441b8b47c69312c89ec0760ba477ba1a0808a10ceef8dc1c64b1013ed78517332c30f18681b0ec0b53542731f1ed015169fed1d127cc91222638ed955478ec7
+  languageName: node
+  linkType: hard
+
+"@types/react-virtualized@npm:9.22.3":
+  version: 9.22.3
+  resolution: "@types/react-virtualized@npm:9.22.3"
+  dependencies:
+    "@types/prop-types": "npm:*"
+    "@types/react": "npm:*"
+  checksum: 10c0/75dc74be860ed09d2dc502ff73450dec4ed7f6771034b12bb8875df2a316c6481102413e877d8b078d2a1cd3ea30f94fb39b88b4f0956041b4b9b30ba510a8bb
   languageName: node
   linkType: hard
 
@@ -11605,6 +11615,7 @@ __metadata:
     "@types/react-dom": "npm:19.2.5"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-transition-group": "npm:4.4.12"
+    "@types/react-virtualized": "npm:9.22.3"
     "@vitejs/plugin-react": "npm:6.1.0"
     "@vitest/coverage-v8": "npm:4.1.11"
     analytics: "npm:0.8.19"
