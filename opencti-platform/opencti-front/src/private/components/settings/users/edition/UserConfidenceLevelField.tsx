@@ -10,6 +10,7 @@ import InputSliderField from '../../../../../components/InputSliderField';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';
+import { layerInputVars } from '../../../../../utils/fdsLayer';
 import UserConfidenceLevel from '../UserConfidenceLevel';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -22,6 +23,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     border: 'none',
     borderRadius: 'var(--radius-sm)',
     backgroundColor: 'var(--bg-elevation-default)',
+    // `--bg-input-default` resolves where it is DECLARED, on `:root`, so the layer class alone misses it.
+    ...layerInputVars,
   },
   // The alert's own message slot leads with 8px, which stacked on the padding above.
   message: {
