@@ -392,6 +392,7 @@ const useNavMenu = (): NavGroup[] => {
             { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
             { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
             { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
+            { granted: isGrantedToManage, link: '/dashboard/settings/indexmetrics', label: t_i18n('Index metrics') },
             { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
           ],
         },

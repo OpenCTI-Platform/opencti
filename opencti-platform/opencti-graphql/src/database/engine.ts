@@ -4968,6 +4968,33 @@ export const elUpdateElement = async (context: AuthContext, user: AuthUser, inst
   return Promise.all([replacePromise, connectionPromise]);
 };
 
+export const getIndexStats = () => {
+  const statsOperation = async () => {
+    const indexStats = [];
+    let engineIndicesStats;
+    if (engine instanceof ElkClient) {
+      engineIndicesStats = await engine.indices.stats();
+    } else {
+      engineIndicesStats = await engine.indices.stats();
+    }
+    const rawStats = oebp(engineIndicesStats).indices;
+    // convert object to array of index stats
+    for (const key of Object.keys(rawStats)) {
+      const index = rawStats[key];
+      indexStats.push(
+        { name: key,
+          uuid: index.uuid,
+          health: index.health,
+          status: index.status,
+          primaries: index.primaries,
+          total: index.total,
+        });
+    }
+    return { indexes: indexStats };
+  };
+  return retryElOperations(statsOperation);
+};
+
 export const getStats = (indices = READ_PLATFORM_INDICES) => {
   const statsOperation = async () => {
     if (engine instanceof ElkClient) {
