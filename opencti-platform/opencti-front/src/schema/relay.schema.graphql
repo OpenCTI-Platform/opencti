@@ -3675,6 +3675,19 @@ enum DataComponentsOrdering {
   x_opencti_workflow_id
 }
 
+type DataIndex {
+  name: String
+  uuid: String
+  health: String
+  status: String
+  primaries: IndexStats
+  total: IndexStats
+}
+
+type DataIndexMetrics {
+  indexes: [DataIndex]
+}
+
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
 }
@@ -4191,6 +4204,7 @@ type Distribution {
 
 type DocsMetrics {
   count: String
+  total_size_in_bytes: Float
 }
 
 type DomainName implements BasicObject & StixCoreObject & StixCyberObservable & StixObject {
@@ -6599,6 +6613,10 @@ type IndexedFileEdge {
 type IndexingMetrics {
   delete_total: String
   index_total: String
+}
+
+type IndexStats {
+  docs: DocsMetrics
 }
 
 type Indicator implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -11953,6 +11971,7 @@ type Query {
   customViewsSettings(entityType: String!): CustomViewsSettings!
   dataComponent(id: String!): DataComponent
   dataComponents(after: ID, filters: FilterGroup, first: Int, orderBy: DataComponentsOrdering, orderMode: OrderingMode, search: String): DataComponentConnection
+  dataIndexMetrics: DataIndexMetrics
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
   dataSanityOperations: [DataSanityOperation!]!

@@ -31,6 +31,7 @@ const RootAccesses = lazy(() => import('./accesses/Root'));
 const RootActivity = lazy(() => import('./activity/Root'));
 const RootCustomization = lazy(() => import('./customization/Root'));
 const RootVocabularies = lazy(() => import('./vocabularies/Root'));
+const IndexMetrics = lazy(() => import('./index_metrics/IndexMetrics'));
 
 const ExperienceUnauthorizedRedirect = ({ fallbackUrl }: { fallbackUrl: string }) => {
   const location = useLocation();
@@ -128,6 +129,17 @@ const Root = () => {
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootVocabularies />
+              </Security>
+            )}
+          />
+          <Route
+            path="/indexmetrics/*"
+            element={(
+              <Security
+                needs={[SETTINGS_SUPPORT]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
+                <IndexMetrics />
               </Security>
             )}
           />
