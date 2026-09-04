@@ -75,7 +75,8 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   await page.getByRole('button', { name: 'Create' }).click();
 
   // Assert exists on screen
-  await expect(page.getByText(THEME.name).first()).toBeVisible();
+  // The library Select mirrors every theme name into a hidden native <option>, which comes first in the DOM.
+  await expect(page.getByText(THEME.name).filter({ visible: true }).first()).toBeVisible();
 
   const logoImage = page.getByRole('link', { name: 'logo' }).locator('img');
   let logoSrc = await logoImage.getAttribute('src');
