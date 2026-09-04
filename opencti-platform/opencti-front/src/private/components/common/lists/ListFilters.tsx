@@ -243,17 +243,20 @@ const ListFilters = ({
               setCurrentSavedFilter={setCurrentSavedFilter}
             />
           )}
-          <ClearFiltersIcon
-            disabled={disabled}
-            color={color}
-            onClear={handleClearFilters}
-          />
-          {!hideSavedFilters && isDatatable && variant === 'default' && (
-            <SavedFilterButton
-              currentSavedFilter={currentSavedFilter}
-              setCurrentSavedFilter={setCurrentSavedFilter}
+          {/* The row runs at 8px; the two tertiary icons read as one control and sit closer. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <ClearFiltersIcon
+              disabled={disabled}
+              color={color}
+              onClear={handleClearFilters}
             />
-          )}
+            {!hideSavedFilters && isDatatable && variant === 'default' && (
+              <SavedFilterButton
+                currentSavedFilter={currentSavedFilter}
+                setCurrentSavedFilter={setCurrentSavedFilter}
+              />
+            )}
+          </div>
         </>
       )}
       <Popover
