@@ -295,7 +295,7 @@ export const sendEventWithFilteredObjectRefs = async (
   let objectsRefs = eventToSend.eventData.data.object_refs;
   if (objectsRefs?.length > 0) {
     const objectsRefsNotFoundInCache = objectsRefs.filter((ref) => !cache.has(ref));
-    const objectRefsNotFoundInCacheAccessible = objectsRefsNotFoundInCache?.length > 0
+    const objectRefsAccessibleNotFoundInCache = objectsRefsNotFoundInCache?.length > 0
       ? (await elFindByIds(
           context,
           user,
@@ -303,7 +303,7 @@ export const sendEventWithFilteredObjectRefs = async (
           { baseFields: ['internal_id', 'standard_id'], indices: READ_STIX_INDICES, toMap: true, mapWithAllIds: true })
         )
       : {};
-    objectsRefs = objectsRefs.filter((ref) => cache.has(ref) || objectRefsNotFoundInCacheAccessible[ref] !== undefined);
+    objectsRefs = objectsRefs.filter((ref) => cache.has(ref) || objectRefsAccessibleNotFoundInCache[ref] !== undefined);
     eventToSend.eventData.data.object_refs = objectsRefs;
   }
   return client.sendEvent(eventToSend.eventId, eventToSend.eventType, eventToSend.eventData);
