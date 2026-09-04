@@ -28,6 +28,7 @@ import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
+import { filterUnwantedEntitiesOut } from '../../domain/container';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
@@ -343,10 +344,39 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
 };
 
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
+  let sourceFields: Pick<WorkspaceDuplicateInput, 'type' | 'manifest' | 'tags' | 'description'> & { investigated_entities_ids?: Array<string> } = input;
+  if (input.id) {
+    const source = await findById(context, user, input.id);
+    if (!source) {
+      throw ForbiddenAccess();
+    }
+    let investigatedEntitiesIds;
+    if (source.type === 'investigation') {
+      // mirror investigationAddFromContainer: never copy references the duplicating user can't access
+      investigatedEntitiesIds = await filterUnwantedEntitiesOut({ context, user, ids: source.investigated_entities_ids ?? [] });
+    }
+    sourceFields = {
+      type: source.type,
+      manifest: source.manifest,
+      tags: source.tags,
+      description: source.description,
+      ...(source.type === 'investigation' ? { investigated_entities_ids: investigatedEntitiesIds } : {}),
+    };
+  }
+  // check capabilities according to workspace type
+  let hasCapa;
+  if (sourceFields.type === 'investigation') {
+    hasCapa = isUserHasCapability(user, 'INVESTIGATION_INUPDATE');
+  } else if (sourceFields.type === 'dashboard') {
+    hasCapa = isUserHasCapability(user, 'EXPLORE_EXUPDATE');
+  }
+  if (!hasCapa) {
+    throw ForbiddenAccess();
+  }
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
+  const workspaceToCreate = { ...sourceFields, name: input.name, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
-  const sanitizeElement = { ...input, manifest: undefined };
+  const sanitizeElement = { ...workspaceToCreate, manifest: undefined };
   await publishUserAction({
     user,
     event_type: 'mutation',

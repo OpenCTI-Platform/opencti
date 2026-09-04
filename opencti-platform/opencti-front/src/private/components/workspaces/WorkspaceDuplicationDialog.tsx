@@ -19,10 +19,12 @@ import { WorkspacesLinesPaginationQuery$variables } from './__generated__/Worksp
 
 const workspaceDuplicationFragment = graphql`
   fragment WorkspaceDuplicationDialogFragment on Workspace {
+    id
     name
     type
     description
     manifest
+    investigated_entities_ids
   }
 `;
 
@@ -61,6 +63,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
 }) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceDuplicationFragment, data);
+  const isInvestigation = workspace.type === 'investigation';
 
   const duplicatedDashboardInitialName = useMemo(
     () => `${workspace.name} - ${t_i18n('copy')}`,
@@ -78,10 +81,9 @@ const WorkspaceDuplicationDialog: FunctionComponent<
     commitDuplicatedWorkspaceCreation({
       variables: {
         input: {
+          id: submittedWorkspace.id,
           name: submittedWorkspace.name,
           type: submittedWorkspace.type ?? '',
-          description: submittedWorkspace.description ?? '',
-          manifest: submittedWorkspace.manifest ?? '',
         },
       },
       updater: (store) => updater && updater(store),
@@ -92,11 +94,14 @@ const WorkspaceDuplicationDialog: FunctionComponent<
         handleCloseDuplicate();
         const isDashboardView = !paginationOptions;
         if (isDashboardView) {
+          const workspaceType = isInvestigation ? 'investigations' : 'dashboards';
           MESSAGING$.notifySuccess(
             <span>
-              {t_i18n('The dashboard has been duplicated. You can manage it')}{' '}
+              {isInvestigation
+                ? t_i18n('The investigation has been duplicated. You can manage it')
+                : t_i18n('The dashboard has been duplicated. You can manage it')}{' '}
               <Link
-                to={`/dashboard/workspaces/dashboards/${result.workspaceDuplicate?.id}`}
+                to={`/dashboard/workspaces/${workspaceType}/${result.workspaceDuplicate?.id}`}
               >
                 {t_i18n('here')}
               </Link>
@@ -118,7 +123,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
       open={displayDuplicate}
       onClose={handleCloseDuplicate}
       fullWidth={true}
-      title={t_i18n('Duplicate the dashboard')}
+      title={isInvestigation ? t_i18n('Duplicate the investigation') : t_i18n('Duplicate the dashboard')}
     >
       <TextField
         error={!newName}
