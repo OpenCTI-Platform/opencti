@@ -7,8 +7,13 @@ import {
   type UserMergeHandlerContext,
   USER_MERGE_TARGET_INDICES,
 } from '../../../../src/modules/userMerge/userMerge-handler';
-import { assertHandlersAreDisjoint, registerUserMergeHandler, resetUserMergeHandlers, userMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
-import { USER_MERGE_REGISTRY_VERSION } from '../../../../src/modules/userMerge/userMerge-register';
+import {
+  assertHandlersAreDisjoint,
+  assertUserMergeHandlersAreValid,
+  registerUserMergeHandler,
+  resetUserMergeHandlers,
+  userMergeHandlers,
+} from '../../../../src/modules/userMerge/userMerge-registry';
 import { UserMergeRightsStrategy } from '../../../../src/modules/userMerge/userMerge-types';
 import { INDEX_DELETED_OBJECTS, READ_INDEX_DRAFT_OBJECTS } from '../../../../src/database/utils';
 
@@ -22,7 +27,6 @@ const handlerContext = {
 const mockHandler = (overrides: Partial<UserMergeHandler> = {}): UserMergeHandler => ({
   identifier: 'mock',
   covers: ['activity.user-id'],
-  registryVersion: USER_MERGE_REGISTRY_VERSION,
   reads: ['activity.user_id'],
   writes: ['activity.user_id'],
   compute: async () => ({ handler: 'mock', changes: [], alerts: [] }),
@@ -104,23 +108,26 @@ describe('Handler registry', () => {
   });
 
   it('should reject coverage on a register row that does not exist', () => {
-    expect(() => registerUserMergeHandler(mockHandler({ covers: ['no-such-row'] }))).toThrow('register rows that do not exist');
-  });
-
-  it('should reject a handler written against an older register version', () => {
-    expect(() => registerUserMergeHandler(mockHandler({ registryVersion: 'v1' }))).toThrow('outdated register version');
+    registerUserMergeHandler(mockHandler({ covers: ['no-such-row'] }));
+    expect(() => assertUserMergeHandlersAreValid(userMergeHandlers())).toThrow('register rows that do not exist');
   });
 
   it('should reject two handlers claiming the same register row', () => {
     registerUserMergeHandler(mockHandler());
-    const other = mockHandler({ identifier: 'other', reads: ['other.field'], writes: ['other.field'] });
-    expect(() => registerUserMergeHandler(other)).toThrow('claim the same register row');
+    registerUserMergeHandler(mockHandler({ identifier: 'other', reads: ['other.field'], writes: ['other.field'] }));
+    expect(() => assertUserMergeHandlersAreValid(userMergeHandlers())).toThrow('claim the same register row');
   });
 
   it('should reject a handler reading a field another handler writes', () => {
     registerUserMergeHandler(mockHandler({ identifier: 'writer', writes: ['shared.field'], reads: [] }));
-    const reader = mockHandler({ identifier: 'reader', covers: ['history.user-id'], reads: ['shared.field'], writes: [] });
-    expect(() => registerUserMergeHandler(reader)).toThrow('not read/write disjoint');
+    registerUserMergeHandler(mockHandler({ identifier: 'reader', covers: ['history.user-id'], reads: ['shared.field'], writes: [] }));
+    expect(() => assertUserMergeHandlersAreValid(userMergeHandlers())).toThrow('not read/write disjoint');
+  });
+
+  it('should accept a well formed set', () => {
+    registerUserMergeHandler(mockHandler());
+    registerUserMergeHandler(mockHandler({ identifier: 'other', covers: ['history.user-id'], reads: ['other.field'], writes: ['other.field'] }));
+    expect(() => assertUserMergeHandlersAreValid(userMergeHandlers())).not.toThrow();
   });
 
   it('should not treat a handler reading what it writes as a conflict', () => {
@@ -129,7 +136,7 @@ describe('Handler registry', () => {
 
   it('should leave the registry untouched when a registration is refused', () => {
     registerUserMergeHandler(mockHandler());
-    expect(() => registerUserMergeHandler(mockHandler({ identifier: 'bad', covers: ['no-such-row'] }))).toThrow();
+    expect(() => registerUserMergeHandler(mockHandler())).toThrow();
     expect(userMergeHandlers()).toHaveLength(1);
   });
 });

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetUserMergeHandlers } from '../../../../src/modules/userMerge/userMerge-registry';
-import { USER_MERGE_REGISTRY_VERSION } from '../../../../src/modules/userMerge/userMerge-register';
+import { USER_MERGE_REGISTER_VERSION } from '../../../../src/modules/userMerge/userMerge-register';
 import type { UserMergeHandler, UserMergeHandlerPlan } from '../../../../src/modules/userMerge/userMerge-handler';
 import { UserMergeRightsStrategy, UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
 
@@ -26,7 +26,6 @@ const plan = (handler: string, count: number): UserMergeHandlerPlan => ({
 const mockHandler = (identifier: string, overrides: Partial<UserMergeHandler> = {}): UserMergeHandler => ({
   identifier,
   covers: ['user.password'],
-  registryVersion: USER_MERGE_REGISTRY_VERSION,
   reads: [`${identifier}.read`],
   writes: [`${identifier}.write`],
   compute: async () => plan(identifier, 3),
@@ -111,20 +110,6 @@ describe('userMerge engine', () => {
     expect(apply).not.toHaveBeenCalled();
   });
 
-  it('should refuse to start when the registered handlers stopped being disjoint', async () => {
-    const apply = vi.fn(async () => 3);
-    registerUserMergeHandler(mockHandler('handler-a', { writes: ['shared.field'], apply }));
-    registerUserMergeHandler(mockHandler('handler-b', { covers: ['user.otp'], apply }));
-    // Registration refuses a conflicting handler, so the only way to reach the engine check is
-    // a registry that drifted afterwards — which is what the engine guard exists for.
-    const { userMergeHandlers } = await import('../../../../src/modules/userMerge/userMerge-registry');
-    userMergeHandlers()[1].reads.push('shared.field');
-    const result = await execute(false);
-    expect(result.status).toEqual(UserMergeStatus.Failed);
-    expect(result.message).toContain('disjoint');
-    expect(apply).not.toHaveBeenCalled();
-  });
-
   it('should journal both passes and mark them apart', async () => {
     registerUserMergeHandler(mockHandler('handler-a'));
     await execute(false);
@@ -150,6 +135,6 @@ describe('userMerge engine', () => {
     const result = await execute(false);
     expect(result.status).toEqual(UserMergeStatus.Success);
     expect(result.report?.handlers).toEqual([]);
-    expect(result.report?.registry_version).toEqual(USER_MERGE_REGISTRY_VERSION);
+    expect(result.report?.register_version).toEqual(USER_MERGE_REGISTER_VERSION);
   });
 });

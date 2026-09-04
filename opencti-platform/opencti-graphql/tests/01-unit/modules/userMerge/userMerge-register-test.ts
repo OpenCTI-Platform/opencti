@@ -3,7 +3,7 @@ import {
   findRegisterRow,
   registerRowsByDisposition,
   USER_MERGE_REGISTER,
-  USER_MERGE_REGISTRY_VERSION,
+  USER_MERGE_REGISTER_VERSION,
   UserMergeDisposition,
 } from '../../../../src/modules/userMerge/userMerge-register';
 
@@ -22,7 +22,7 @@ const V3_DISTRIBUTION: Record<UserMergeDisposition, number> = {
 
 describe('User merge register', () => {
   it('should be pinned to the v3 registry version', () => {
-    expect(USER_MERGE_REGISTRY_VERSION).toBe('v3');
+    expect(USER_MERGE_REGISTER_VERSION).toBe('v3');
   });
 
   it('should match the v3 distribution, disposition by disposition', () => {
@@ -45,7 +45,7 @@ describe('User merge register', () => {
   it('should describe every row: id, entity and path are all filled', () => {
     USER_MERGE_REGISTER.forEach((entry) => {
       expect(entry.id.length, `row ${entry.id} has an empty id`).toBeGreaterThan(0);
-      expect(entry.entity.length, `row ${entry.id} has an empty entity`).toBeGreaterThan(0);
+      expect(entry.label.length, `row ${entry.id} has an empty label`).toBeGreaterThan(0);
       expect(entry.path.length, `row ${entry.id} has an empty path`).toBeGreaterThan(0);
     });
   });

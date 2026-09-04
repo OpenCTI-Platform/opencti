@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { buildApiUserMergeCoverage, buildUserMergeCoverage } from '../../../../src/modules/userMerge/userMerge-coverage';
-import { USER_MERGE_REGISTER, USER_MERGE_REGISTRY_VERSION, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
+import { USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 import type { UserMergeHandler } from '../../../../src/modules/userMerge/userMerge-handler';
 
 const mockHandler = (identifier: string, covers: string[]): UserMergeHandler => ({
   identifier,
   covers,
-  registryVersion: USER_MERGE_REGISTRY_VERSION,
   reads: [],
   writes: [],
   compute: async () => ({ handler: identifier, changes: [], alerts: [] }),

@@ -17,7 +17,7 @@ const USER_MERGE_MUTATION = gql`
       message
       report {
         merge_id
-        registry_version
+        register_version
         total_updated
         handlers {
           handler
@@ -36,14 +36,14 @@ const USER_MERGE_MUTATION = gql`
 const USER_MERGE_COVERAGE_QUERY = gql`
   query UserMergeCoverage($disposition: UserMergeDisposition) {
     userMergeCoverage(disposition: $disposition) {
-      registry_version
+      register_version
       total
       covered_count
       uncovered_count
       is_complete
       rows {
         row_id
-        entity
+        label
         path
         disposition
         covered
