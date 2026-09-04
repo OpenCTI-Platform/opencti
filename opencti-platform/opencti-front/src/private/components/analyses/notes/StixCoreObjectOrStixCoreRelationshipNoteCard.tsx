@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid2';
 import IconButton from '@common/button/IconButton';
 import { useTheme } from '@mui/styles';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
 import { Stack, Box, Tooltip } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import NotePopover from './NotePopover';
