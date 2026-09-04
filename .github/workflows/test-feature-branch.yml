@@ -25,15 +25,16 @@ on:
 
 jobs:
   wf-build-image:
-      name: Build image
-      uses: ./.github/workflows/ci-docker-build.yml
-      with:
-        image_tag: ${{ github.ref_name }}
-        client_python_local: ${{ inputs.client_python_local }}
-        publish_to_registry: true
-      secrets:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    name: Build image
+    uses: ./.github/workflows/ci-docker-build.yml
+    with:
+      image_tag: ${{ github.ref_name }}
+      client_python_local: ${{ inputs.client_python_local }}
+      publish_to_registry: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      FDS_GIT_TOKEN: ${{ secrets.FDS_GIT_TOKEN }} # FDS-WORKAROUND #1
 
   deploy:
     name: deploy
