@@ -254,8 +254,14 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   await expect(author).toBeVisible();
 
   await reportDetailsPage.getEditButton().click();
+  // Each selection commits its own relation mutation, and every response carries a full
+  // snapshot of the report. Chaining them lets the response of the first land after the
+  // second and overwrite it, so the added marking never reaches the overview panel.
+  // Wait for each change to be reflected before triggering the next one.
   await reportForm.markingsAutocomplete.selectOption('PAP:CLEAR');
+  await expect(reportForm.markingsAutocomplete.getOption('PAP:CLEAR')).toBeHidden();
   await reportForm.markingsAutocomplete.selectOption('PAP:GREEN');
+  await expect(reportForm.markingsAutocomplete.getOption('PAP:GREEN')).toBeVisible();
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
   markingClear = reportDetailsPage.getTextForHeading('Marking', 'PAP:CLEAR');
