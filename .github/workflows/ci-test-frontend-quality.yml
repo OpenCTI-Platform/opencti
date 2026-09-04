@@ -17,130 +17,125 @@ jobs:
     name: Frontend quality checks (build, lint, unit tests)
     runs-on: ubuntu-latest
     steps:
-      - name: OpenCTI checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.checkout_ref }}
+    - name: OpenCTI checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
-      - name: Runner information
-        continue-on-error: true
-        run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-      - name: Frontend install and build
+    - name: Frontend install and build
+      run: |
+        docker run  \
+          --name frontend-build \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            yarn install
+            yarn build
+            '
 
-        run: |
-          docker run  \
-            --name frontend-build \
-            -v ${{ github.workspace }}:/home/workspace \
-            
-            node:22-alpine3.23 \
-            sh -c 'set -eux
-              
-              npm install -g corepack
-              cd /home/workspace/opencti-platform/opencti-front
-              
-              yarn install
-              yarn build
-              '
+    - name: Frontend type checking and linting
+      run: |
+        docker run  \
+          --name frontend-lint \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            yarn check-ts
+            yarn lint
+            '
 
-      - name: Frontend type checking and linting
-        run: |
-          docker run  \
-            --name frontend-lint \
-            -v ${{ github.workspace }}:/home/workspace \
-            node:22-alpine3.23 \
-            sh -c 'set -eux
-              npm install -g corepack
-              cd /home/workspace/opencti-platform/opencti-front
-              yarn check-ts
-              yarn lint
-              '
+    - name: Accessible names of converted design-system fields
+      # A converted Select or Combobox with no accessible name is a WCAG 4.1.2
+      # failure that no other check here can see: eslint-plugin-jsx-a11y does not
+      # know the library's compound components, and axe only runs on markup a
+      # test author wrote.
+      run: |
+        docker run  \
+          --name frontend-accessible-names \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            cd /home/workspace
+            node fds-migration/scripts/check-accessible-names.mjs
+            '
 
-      - name: Accessible names of converted design-system fields
-        # A converted Select or Combobox with no accessible name is a WCAG 4.1.2
-        # failure that no other check here can see: eslint-plugin-jsx-a11y does not
-        # know the library's compound components, and axe only runs on markup a
-        # test author wrote.
-        run: |
-          docker run  \
-            --name frontend-accessible-names \
-            -v ${{ github.workspace }}:/home/workspace \
-            node:22-alpine3.23 \
-            sh -c 'set -eux
-              cd /home/workspace
-              node fds-migration/scripts/check-accessible-names.mjs
-              '
+    - name: Frontend utility class check
+      # Reported independently of the lint step above: a dead utility class is
+      # its own class of defect, and knowing whether it passed is useful even on
+      # a run that failed earlier — the same reason the test step below does it.
+      if: '!cancelled()'
+      # Every utility class in product code must exist in the CSS the app loads.
+      # The front end ships no Tailwind of its own, so a class the design system
+      # does not deliver renders nothing at all — silently, with no build error
+      # and no runtime error. Runs after the install step, which is what puts
+      # that CSS on the shared volume.
+      run: |
+        docker run  \
+          --name frontend-utility-classes \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-front
+            node script/check-utility-classes.js
+            '
 
-      - name: Frontend utility class check
-        # Reported independently of the lint step above: a dead utility class is
-        # its own class of defect, and knowing whether it passed is useful even on
-        # a run that failed earlier — the same reason the test step below does it.
-        if: '!cancelled()'
-        # Every utility class in product code must exist in the CSS the app loads.
-        # The front end ships no Tailwind of its own, so a class the design system
-        # does not deliver renders nothing at all — silently, with no build error
-        # and no runtime error. Runs after the install step, which is what puts
-        # that CSS on the shared volume.
-        run: |
-          docker run  \
-            --name frontend-utility-classes \
-            -v ${{ github.workspace }}:/home/workspace \
-            node:22-alpine3.23 \
-            sh -c 'set -eux
-              cd /home/workspace/opencti-platform/opencti-front
-              node script/check-utility-classes.js
-              '
+    - name: Frontend tests
+      if: '!cancelled()'
+      run: |
+        docker run  \
+          --name frontend-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
+            '
 
-      - name: Frontend tests
-        if: '!cancelled()'
-        run: |
-          docker run  \
-            --name frontend-tests \
-            -v ${{ github.workspace }}:/home/workspace \
-            node:22-alpine3.23 \
-            sh -c 'set -eux
-              npm install -g corepack
-              cd /home/workspace/opencti-platform/opencti-front
-              NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
-              '
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f #v7.0.0
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
+        flags: opencti-front
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f #v7.0.0
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
-          flags: opencti-front
-          fail_ci_if_error: false
-          override_branch: ${{ github.head_ref || github.ref_name }}
-          override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
-
-      - name: Print resources stats
-        if: always()
-        continue-on-error: true
-        run: cat runner_resource_stat.log
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
 
 
   opencti-frontend-verify-translation:
     name: Verify translation
     runs-on: ubuntu-latest
     steps:
-      - name: OpenCTI checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.checkout_ref }}
+    - name: OpenCTI checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
-      - name: Runner information
-        continue-on-error: true
-        run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-      - name: Frontend verify translation
-        run: |
-          docker run  \
-            --name frontend-verify-translation \
-            -v ${{ github.workspace }}:/home/workspace \
-            node:22-alpine3.23 \
-            sh -c 'set -eux
-              cd /home/workspace/opencti-platform/opencti-front
-              node script/verify-translation.js
-              '
-
+    - name: Frontend verify translation
+      run: |
+        docker run  \
+          --name frontend-verify-translation \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-front
+            node script/verify-translation.js
+            '
