@@ -12,10 +12,9 @@
   <a href="https://hub.docker.com/u/opencti" alt="Docker pulls"><img src="https://img.shields.io/docker/pulls/opencti/platform" /></a>
 </p>
 
-> [!NOTE]
-> **THREAD 2026 — 15 October, Paris.** Our community conference for threat
+> **Note:** **THREAD 2026 — 15 October, Paris.** Our community conference for threat
 > intelligence and cyber defense practitioners. Talks, labs, workshops, and an
-> evening social. [Join us →](https://thread.filigran.io/?utm_medium=outbound&utm_source=slack&utm_campaign=2026-10_EUROPE_THREAD)
+> evening social. [Join us →](https://thread.filigran.io/?utm_medium=outbound&utm_source=github&utm_campaign=2026-10_EUROPE_THREAD)
 
 ## Introduction
 
