@@ -64,6 +64,27 @@ export const closeJournalEntry = async (
 };
 
 /**
+ * Closes an entry without letting the journal decide the fate of the merge.
+ *
+ * The journal is diagnostic: a Redis write that fails must not turn a handler that succeeded
+ * — and already wrote to the platform — into a FAILED entry, nor abort the run over a trace
+ * nobody has read yet. The failure is logged, and the entry stays RUNNING, which reads as
+ * what it is: an execution whose end was not recorded.
+ */
+const closeJournalEntrySafely = async (
+  entryId: string,
+  mergeId: string,
+  result: { status: UserMergeStatus; message?: string; outcome?: UserMergeHandlerOutcome },
+): Promise<void> => {
+  try {
+    await closeJournalEntry(entryId, mergeId, result);
+  } catch (err) {
+    const cause = err instanceof Error ? err.message : String(err);
+    logApp.error('[MERGE_USERS] journal entry not closed', { entry_id: entryId, merge_id: mergeId, cause });
+  }
+};
+
+/**
  * Runs a handler pass under the journal: opens an entry, records the outcome, and records
  * the failure too. A handler that throws must leave a FAILED entry, not an entry stuck in
  * RUNNING that is indistinguishable from a node that died.
@@ -73,16 +94,17 @@ export const withJournalEntry = async <T extends UserMergeHandlerOutcome>(
   execute: () => Promise<T>,
 ): Promise<T> => {
   const entryId = await openJournalEntry(input);
+  let outcome: T;
   try {
-    const outcome = await execute();
-    await closeJournalEntry(entryId, input.mergeId, { status: UserMergeStatus.Success, outcome });
-    return outcome;
+    outcome = await execute();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    await closeJournalEntry(entryId, input.mergeId, { status: UserMergeStatus.Failed, message });
     logApp.error('[MERGE_USERS] handler failed', { handler: input.handler, merge_id: input.mergeId, cause: message });
+    await closeJournalEntrySafely(entryId, input.mergeId, { status: UserMergeStatus.Failed, message });
     throw err;
   }
+  await closeJournalEntrySafely(entryId, input.mergeId, { status: UserMergeStatus.Success, outcome });
+  return outcome;
 };
 
 export const readJournalEntries = async (mergeId?: string, first?: number): Promise<UserMergeJournalRecord[]> => {
