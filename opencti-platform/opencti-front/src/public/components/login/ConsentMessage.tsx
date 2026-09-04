@@ -54,6 +54,7 @@ const ConsentMessage = ({
           aria-label={t_i18n('I accept the terms')}
           checked={value}
           onCheckedChange={() => onToggle()}
+          onClick={(event) => event.stopPropagation()}
         />
         <LoginMarkdown>
           {consentConfirmText}
