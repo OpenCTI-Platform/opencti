@@ -6,6 +6,8 @@
  * shape returned in dry mode and in real mode is deliberately identical.
  */
 
+import type { UserMergeHandlerOutcome } from './userMerge-handler';
+
 export const MERGE_USERS_MODULE_NAME = 'userMerge';
 
 export enum UserMergeRightsStrategy {
@@ -66,4 +68,6 @@ export interface UserMergeJournalEntry {
   started_at: Date;
   completed_at?: Date;
   message?: string;
+  updated_count?: number;
+  outcome?: UserMergeHandlerOutcome;
 }
