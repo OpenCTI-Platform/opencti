@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, MenuItem, InputLabel } from '@mui/material';
-import { useTheme } from '@mui/styles';
 import { Field, FieldProps } from 'formik';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { isEmptyField } from '../../utils/utils';
 import { Input } from '@filigran/design-system';
-import type { Theme } from '../Theme';
 
 interface PeriodicityFieldProps {
   name: string;
@@ -50,7 +48,6 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
   handleOnChange,
   setFieldValue,
 }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
