@@ -1,4 +1,5 @@
 import { v5 as uuidv5 } from 'uuid';
+import semver from 'semver';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -323,6 +324,10 @@ export const registerConnector = async (
 ) => {
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null, xtm_one_intent = null } = connectorData;
+  const { version = null, slug = null } = connectorData;
+  if (!isEmptyField(version) && !semver.valid(version)) {
+    throw ValidationError('Connector version is not a valid semantic version', 'version', { version });
+  }
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -340,6 +345,8 @@ export const registerConnector = async (
       playbook_compatible,
       listen_callback_uri,
       xtm_one_intent,
+      version,
+      slug,
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false,
     };
@@ -364,6 +371,8 @@ export const registerConnector = async (
     playbook_compatible,
     listen_callback_uri,
     xtm_one_intent,
+    version,
+    slug,
     connector_user_id: opts.connector_user_id ?? user.id,
     connector_state_timestamp: now(),
     built_in: opts.built_in ?? false,
