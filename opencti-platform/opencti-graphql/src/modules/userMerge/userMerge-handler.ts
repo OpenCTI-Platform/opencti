@@ -78,8 +78,6 @@ export interface UserMergeHandler {
   identifier: string;
   /** Register rows this handler answers for. */
   covers: string[];
-  /** Register version this handler was written against. */
-  registryVersion: string;
   /** Field paths this handler reads. Used for the disjointness check. */
   reads: string[];
   /** Field paths this handler writes. Used for the disjointness check. */

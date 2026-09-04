@@ -174,3 +174,9 @@ import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
 // endregion
+
+// The handlers derive part of their targets from the schema, so they can only be registered
+// once every module above has declared its attributes.
+import { registerUserMergeHandlers } from './userMerge/userMerge-handlers';
+
+registerUserMergeHandlers();
