@@ -44,7 +44,6 @@ import { extractAllStatesFromDefinition, validateWorkflowDefinitionData } from '
 import { computeStateOrder } from './workflow-ordering';
 import { type ConvertStatusToDefinitionResult, convertStatusToDefinition } from '../migration/status-to-definition-converter';
 
-
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
 const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>(['updateAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
