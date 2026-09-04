@@ -208,4 +208,89 @@ describe('StixDomainObjectTabsBox', () => {
       expect.stringMatching(/second-custom-view-e9a6f2f9-354a-4a7b-9749-84f852e3d6d7$/),
     );
   });
+
+  describe('when rendered under a sub-route of the entity', () => {
+    const basePath = '/dashboard/analyses/reports/2be14335-fb6b-4733-bc4a-81d4127fcc0c';
+    const defaultCustomView = {
+      id: '20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
+      name: 'Default custom view',
+      path: 'default-custom-view-20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
+      targetEntityType: 'Report',
+      default: true,
+    };
+    const otherCustomViews = [{
+      id: '1ca64ae0-0523-4cb4-9d36-78972e9acd62',
+      name: 'First custom view',
+      path: 'first-custom-view-1ca64ae0-0523-4cb4-9d36-78972e9acd62',
+      targetEntityType: 'Report',
+      default: false,
+    }, {
+      id: 'e9a6f2f9-354a-4a7b-9749-84f852e3d6d7',
+      name: 'Second custom view',
+      path: 'second-custom-view-e9a6f2f9-354a-4a7b-9749-84f852e3d6d7',
+      targetEntityType: 'Report',
+      default: false,
+    }];
+    const dropDownMenuState = {
+      anchorEl: document.body,
+      onOpen: vi.fn(),
+      onClose: vi.fn(),
+      close: vi.fn(),
+      isOpen: true,
+    };
+
+    it('targets the default custom view and the dropdown items from the entity base path', () => {
+      mockUseCustomViewTabs.mockReturnValue({
+        defaultCustomView,
+        otherCustomViews,
+        displayMode: { default: true, others: 'dropdown' },
+        dropDownMenuState,
+        currentCustomViewTab: undefined,
+        currentCustomViewMenuItem: undefined,
+      });
+
+      testRender(
+        <StixDomainObjectTabsBox
+          entityType="Report"
+          tabs={['overview', 'files']}
+          basePath={basePath}
+        />,
+        { route: `${basePath}/files` },
+      );
+
+      // The open dropdown menu is modal: tabs behind it are hidden from the
+      // accessibility tree, so reach them through their text.
+      expect(screen.getByText(/default custom view/i).closest('a'))
+        .toHaveAttribute('href', `${basePath}/${defaultCustomView.path}`);
+      expect(screen.getByRole('link', { name: /first custom view/i }))
+        .toHaveAttribute('href', `${basePath}/${otherCustomViews[0].path}`);
+      expect(screen.getByRole('link', { name: /second custom view/i }))
+        .toHaveAttribute('href', `${basePath}/${otherCustomViews[1].path}`);
+      expect(screen.getByText(/^data$/i).closest('a'))
+        .toHaveAttribute('href', `${basePath}/files`);
+    });
+
+    it('targets a single custom view from the entity base path', () => {
+      mockUseCustomViewTabs.mockReturnValue({
+        defaultCustomView: undefined,
+        otherCustomViews: [otherCustomViews[0]],
+        displayMode: { default: false, others: 'single' },
+        dropDownMenuState: { ...dropDownMenuState, anchorEl: null, isOpen: false },
+        currentCustomViewTab: undefined,
+        currentCustomViewMenuItem: undefined,
+      });
+
+      testRender(
+        <StixDomainObjectTabsBox
+          entityType="Report"
+          tabs={['overview', 'files']}
+          basePath={basePath}
+        />,
+        { route: `${basePath}/files` },
+      );
+
+      expect(screen.getByRole('tab', { name: /first custom view/i }))
+        .toHaveAttribute('href', `${basePath}/${otherCustomViews[0].path}`);
+    });
+  });
 });
