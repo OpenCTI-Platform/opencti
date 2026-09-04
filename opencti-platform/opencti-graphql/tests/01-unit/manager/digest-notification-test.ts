@@ -27,6 +27,7 @@ import { collectDigestContent, DEFAULT_MAX_DIGEST_CONTENT_SIZE, handleDigestNoti
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
+import { ACCOUNT_STATUS_ACTIVE } from '../../../src/config/conf';
 
 let objSeq = 0;
 const liveEvent = (notificationId: string, userId = 'user-1'): KnowledgeNotificationEvent => {
@@ -148,6 +149,7 @@ describe('handleDigestNotifications', () => {
     groups: [],
     organizations: [],
     personal_notifiers: [],
+    account_status: ACCOUNT_STATUS_ACTIVE,
   } as unknown as AuthUser;
 
   // Feed getDigestNotifications: triggers list resolves the digest, users list resolves its member.
