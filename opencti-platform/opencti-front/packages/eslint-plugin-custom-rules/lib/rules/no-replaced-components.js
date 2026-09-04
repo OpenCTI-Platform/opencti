@@ -7,7 +7,6 @@ import path from 'node:path';
 // MUI counterpart in COMPONENT-MAPPING.md; they are kept here so that any legacy
 // `@filigran/ui` import of them is still caught.
 const REPLACED_COMPONENTS = {
-  Paper: 'Paper',
   Breadcrumbs: 'Breadcrumbs',
   Breadcrumb: 'Breadcrumbs',
   BreadcrumbItem: 'Breadcrumbs',

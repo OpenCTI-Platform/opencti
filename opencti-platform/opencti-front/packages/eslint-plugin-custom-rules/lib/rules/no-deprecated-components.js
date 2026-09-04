@@ -63,6 +63,7 @@ const DEPRECATED_COMPONENTS = {
   LoadingButton: 'Button',
   buttonVariants: 'Button',
   Slider: 'Slider',
+  Paper: 'Paper',
 };
 
 // Same import sources the MUI regression gate watches
