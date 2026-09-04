@@ -66,6 +66,8 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
 
           <FormControlLabel
             required
+            // MUI's `-11px` offsets its own Checkbox padding, which the library's has not.
+            sx={{ alignSelf: 'flex-start', margin: 0, gap: 1 }}
             control={(
               <Checkbox
                 checked={isChecked}
