@@ -273,7 +273,7 @@ themes.
 
 ## builtin-theme-migration-order
 
-`opencti-graphql/src/migrations/1787800000000-align-builtin-theme-rows-with-wcag-defaults.ts`
+`opencti-graphql/src/migrations/1787822440159-align-builtin-theme-rows-with-wcag-defaults.ts`
 — why it runs before `1787822440159-add-filigran-built-in-themes`.
 
 That migration compares each built-in row against the constants field by field
