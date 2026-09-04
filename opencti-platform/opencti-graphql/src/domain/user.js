@@ -876,24 +876,19 @@ export const sendEmailToUser = async (context, user, input) => {
 };
 
 export const addUser = async (context, user, newUser) => {
-  let userEmail;
   const userServiceAccount = newUser.user_service_account;
-  if (newUser.user_email && !userServiceAccount) {
-    userEmail = normalizeEmail(newUser.user_email);
+  if (!newUser.user_email && !userServiceAccount) {
+    throw FunctionalError('User cannot be created without email');
+  }
+  const userEmail = newUser.user_email ? normalizeEmail(newUser.user_email) : `automatic+${uuid()}@opencti.invalid`;
+  if (isEmptyField(userEmail)) {
+    throw FunctionalError('The email you have provided is not valid');
+  }
+  if (newUser.user_email) {
     const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
     if (existingUser) {
       throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
     }
-  } else if (userServiceAccount) {
-    userEmail = newUser.user_email ? normalizeEmail(newUser.user_email) : `automatic+${uuid()}@opencti.invalid`;
-    if (newUser.user_email) {
-      const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
-      if (existingUser) {
-        throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
-      }
-    }
-  } else {
-    throw FunctionalError('User cannot be created without email');
   }
 
   if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
