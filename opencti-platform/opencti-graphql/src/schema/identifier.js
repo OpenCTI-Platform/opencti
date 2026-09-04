@@ -23,6 +23,7 @@ import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationsh
 import { cleanObject } from '../database/stix-converter-utils';
 import nconf from 'nconf';
 import { pushAll } from '../utils/arrayUtil';
+import { normalizeEmail } from '../utils/email';
 
 // region hashes
 const MD5 = 'MD5';
@@ -269,6 +270,9 @@ const stixBaseEntityContribution = {
     },
     objects(data) {
       return data.map((o) => o.standard_id).sort();
+    },
+    user_email(data) {
+      return normalizeEmail(data);
     },
   },
 };
