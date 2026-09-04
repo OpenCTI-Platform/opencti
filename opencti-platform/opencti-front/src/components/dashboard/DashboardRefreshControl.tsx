@@ -1,7 +1,7 @@
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { ButtonGroup, CircularProgress, MenuItem, Select, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner } from '@filigran/design-system';
 import Button from '@common/button/Button';
-import type { SelectChangeEvent } from '@mui/material/Select';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../i18n';
 import { useDashboardRefreshPendingState } from './DashboardRefreshContext';
@@ -34,9 +34,7 @@ const DashboardRefreshControl = ({
   onIntervalChange,
   isRefreshing = false,
 }: DashboardRefreshControlProps) => {
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const primary = theme.palette.primary.main;
   const isQueryPending = useDashboardRefreshPendingState();
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const manualResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -48,8 +46,9 @@ const DashboardRefreshControl = ({
     }
   }, []);
 
-  const handleIntervalChange = (event: SelectChangeEvent<number>) => {
-    onIntervalChange(Number(event.target.value));
+  // Radix keys on strings only, so the numeric interval makes a round trip.
+  const handleIntervalChange = (value: string) => {
+    onIntervalChange(Number(value));
   };
 
   const getIntervalLabel = useCallback((value: number) => {
@@ -89,42 +88,40 @@ const DashboardRefreshControl = ({
   const isRefreshDisabled = isManualRefreshing || isQueryPending;
 
   return (
-    <ButtonGroup id="dashboard-refresh-control" size="small" variant="outlined">
+    // NOT a MUI ButtonGroup any more, and that single swap is both halves of the report.
+    <Box
+      id="dashboard-refresh-control"
+      // One segmented control; the seam is squared in design-system-host.css.
+      sx={{ display: 'flex', alignItems: 'center', gap: 0 }}
+    >
       <Button
-        startIcon={spinning ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />}
+        // The library's Spinner, not MUI's CircularProgress: `md` is the same 20px box, and
+        // `inherit` keeps the button's own colour exactly as `color="inherit"` did.
+        startIcon={spinning
+          ? <Spinner size="md" tone="inherit" />
+          : <RefreshIcon fontSize="small" />}
         onClick={handleRefreshClick}
         variant="secondary"
         disabled={isRefreshDisabled}
       >
         {t_i18n('Refresh')}
       </Button>
-      <Select
-        value={interval}
-        onChange={handleIntervalChange}
-        variant="outlined"
-        size="small"
-        displayEmpty
-        renderValue={(selected) => (Number(selected) === 0
-          ? ''
-          : getIntervalLabel(Number(selected)))}
-        sx={{
-          minWidth: 0,
-          borderRadius: '0 4px 4px 0',
-          border: `1px solid ${primary}20`,
-          '& .MuiSelect-select': {
-            py: '5px',
-            pl: 1,
-            pr: '32px !important',
-            minWidth: interval === 0 ? 0 : 26,
-          },
-          '& .MuiSelect-icon': { right: 8 },
-        }}
-      >
-        {REFRESH_INTERVALS.map(({ value }) => (
-          <MenuItem key={value} value={value}>{getIntervalLabel(value)}</MenuItem>
-        ))}
+      <Select value={String(interval)} onValueChange={handleIntervalChange}>
+        <SelectTrigger
+          aria-label={t_i18n('Refresh interval')}
+          className="h-9 border border-elevation-subtle"
+        >
+          {/* Radix renders these children in place of the selected item, which is
+              how the previous `renderValue` kept the trigger blank when off. */}
+          <SelectValue>{interval === 0 ? '' : getIntervalLabel(interval)}</SelectValue>
+        </SelectTrigger>
+        <SelectContent aria-label={t_i18n('Refresh interval')}>
+          {REFRESH_INTERVALS.map(({ value }) => (
+            <SelectItem key={value} value={String(value)}>{getIntervalLabel(value)}</SelectItem>
+          ))}
+        </SelectContent>
       </Select>
-    </ButtonGroup>
+    </Box>
   );
 };
 

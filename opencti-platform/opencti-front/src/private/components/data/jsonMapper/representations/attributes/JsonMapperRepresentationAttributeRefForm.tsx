@@ -1,7 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import classNames from 'classnames';
-import MuiTextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
@@ -19,6 +17,7 @@ import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../../components/Theme';
+import { Input } from '@filigran/design-system';
 
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
@@ -44,11 +43,6 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
       alignItems: 'center',
       marginTop: '10px',
       gap: '10px',
-    },
-    inputError: {
-      '& fieldset': {
-        borderColor: theme.palette.error.main,
-      },
     },
     redStar: {
       color: theme.palette.designSystem.tertiary.red[400],
@@ -151,7 +145,6 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   }, [errors]);
 
   const handleRepresentationChange = async (
-    event: React.SyntheticEvent,
     value: JsonMapperRepresentationFormData[],
   ) => {
     const selectedIds = value.map((v) => v.id);
@@ -210,28 +203,26 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
         {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
       </div>
       <div>
-        <MUIAutocomplete<JsonMapperRepresentationFormData, true>
+        <Combobox<JsonMapperRepresentationFormData>
           selectOnFocus
           openOnFocus
-          autoSelect={false}
-          autoHighlight
           multiple
           getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
           options={options}
           value={getBasedOnRepresentations(field.value, options) ?? []}
-          onChange={handleRepresentationChange}
-          renderInput={(params) => (
-            <MuiTextField
-              {...params}
-              label={t_i18n('Representation entity')}
-              variant="outlined"
-              size="small"
-            />
-          )}
-          className={classNames({
-            [classes.inputError]: errors,
-          })}
-        />
+          onValueChange={(val) => handleRepresentationChange((val ?? []) as JsonMapperRepresentationFormData[])}
+          error={errors}
+        >
+          <ComboboxLabel>{t_i18n('Representation entity')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxChips aria-label={t_i18n('Representation entity')} />
+            <ComboboxInput />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent listAriaLabel={t_i18n('Representation entity')} />
+        </Combobox>
       </div>
       {schemaAttribute.editDefault ? (
         <JsonMapperRepresentationDialogOption configuration={value}>
@@ -271,10 +262,9 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
                   })}
                 </div>
                 <div>
-                  <MuiTextField
+                  <Input
                     label={t_i18n('JSON Path')}
-                    variant="standard"
-                    style={{ width: '100%' }}
+                    className="w-full"
                     value={identifierValue}
                     onChange={(e) => handleIdentifierChange(rep.id, e.target.value)}
                   />

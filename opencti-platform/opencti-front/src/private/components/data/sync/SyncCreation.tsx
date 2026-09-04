@@ -6,7 +6,6 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
@@ -19,7 +18,7 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { insertNode } from '../../../../utils/store';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
@@ -283,7 +282,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
               <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Name')}
                   fullWidth={true}
@@ -310,12 +309,12 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   </Tooltip>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="uri"
                     label={t_i18n('Remote OpenCTI URL')}
                     fullWidth={true}
                     disabled={streams.length > 0}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
                     name="token"
@@ -324,8 +323,8 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   />
                   {streams.length > 0 && (
                     <Field
-                      component={SelectField}
-                      variant="standard"
+                      component={SelectFieldFds}
+                      variant="outlined"
                       name="stream_id"
                       label={t_i18n('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
@@ -362,9 +361,9 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                               )}
                               placement="bottom-start"
                             >
-                              <MenuItem key={value} value={value}>
+                              <SelectItem key={value} value={value}>
                                 {label}
-                              </MenuItem>
+                              </SelectItem>
                             </EnrichedTooltip>
                           );
                         },
@@ -416,7 +415,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   name="current_state_date"
                   textFieldProps={{
                     label: t_i18n('Starting synchronization (empty = from start)'),
-                    variant: 'standard',
+                    variant: 'outlined',
                     fullWidth: true,
                     style: { marginTop: 20 },
                   }}

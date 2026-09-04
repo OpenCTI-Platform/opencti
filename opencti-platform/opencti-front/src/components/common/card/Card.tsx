@@ -4,7 +4,6 @@ import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mu
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 import { Link } from 'react-router-dom';
-import { hasCustomColor } from '../../../utils/theme';
 
 export interface CardProps extends PropsWithChildren {
   title?: ReactNode;
@@ -65,18 +64,14 @@ const Card = ({
     };
   }
 
-  const isCustomCardColor = hasCustomColor(theme, 'theme_paper');
-  const backgroundColor = isCustomCardColor
-    ? theme.palette.background.paper
-    : theme.palette.background.secondary;
+  const backgroundColor = 'var(--bg-elevation-default-layer-1)';
 
   const containerSx: SxProps = {
     position: 'relative',
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
-    background: variant !== 'outlined'
-      ? backgroundColor
-      : 'transparent',
+    background: backgroundColor,
+    border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };

@@ -1,0 +1,345 @@
+{
+  "__generated": "Skeleton scaffolded once by pnpm generate:fds-migration --product opencti --write-to-product (filigran-design-system repo) — created only if missing, never overwritten on re-run. Fields below are then maintained by agents during the pilot (wiredFiles/forbiddenPatterns as theme files are wired, migratedZones/lastReconciled during the reconciliation loop).",
+  "__gateProvenance": {
+    "__doc": "Where this product's copy of check-fds-conformity.mjs comes from. Recorded here and NOT in the script header: the script is copied verbatim from the library template and says so in its own first line, so a note added to it by hand would be erased by the next generate:fds-migration run — the opposite of reproducible. The generator stamps no provenance of its own; until it does, this is the record.",
+    "script": "fds-migration/scripts/check-fds-conformity.mjs",
+    "scriptSha256": "sha256:5a531b9af59ec4b3318dff7f69664a36bf5d9f34e4bae9e7e909bcc8a56d9a27",
+    "templateCommit": "88a488552b320b6b7df4d6ae842af74355321d1d",
+    "templateCommitSubject": "fix(gates): three silent-failure fixes — bridge freshness, token family ramps, Combobox native reset (#145)",
+    "generatorCommit": "114854de2367e51838c3fc841f808c4ad3ba85de",
+    "runtimePin": "fb8c3cc0fd085db0eab1c59ba32945610e4bc6c7",
+    "note": "2026-08-24 — the divergence this note used to describe is resolved by the re-pin: the sha256 above is byte-identical to the template at the runtime pin, and at every commit between templateCommit and it, so the shipped script and the pin no longer disagree."
+  },
+  "product": "opencti",
+  "frontDir": "opencti-platform/opencti-front",
+  "generatedBridgeFiles": [
+    "src/components/fds-tokens.generated.ts"
+  ],
+  "wiredFiles": [
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "mustImport": "fds-tokens.generated"
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "mustImport": "fds-tokens.generated"
+    }
+  ],
+  "forbiddenPatterns": [
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "007399",
+      "reason": "Old hand-copied designSystem.primary.dark value (pre-FDS). Its presence means the designSystem block wiring — the main point of this pilot — was reverted."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "1565c0",
+      "reason": "Old hand-copied severity.info value (pre-FDS mapping to --color-feedback-info-primary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "1CA55E",
+      "reason": "Old hand-copied success.main value (pre-FDS mapping to --color-feedback-success-primary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "00719E",
+      "reason": "Old hand-copied designSystem.alert.info.primary value (pre-FDS). Its presence means the designSystem block wiring was reverted."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "B2ECFF",
+      "reason": "Old hand-copied palette.primary.light dark-mode fallback (pre-FDS gap, resolved 2026-07-28 to --color-filigran-brand-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "1C253A",
+      "reason": "Old hand-copied designSystem.border.border2 value (pre-FDS gap, resolved 2026-07-28 to --border-elevation-subtle)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "7587FF",
+      "reason": "Old hand-copied palette.primary.light fallback (pre-FDS gap, resolved 2026-07-28 to --color-filigran-brand-secondary — was already an exact bridge match, just not yet expressed as a token reference)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "999797",
+      "reason": "Old hand-copied designSystem.border.border2 value (pre-FDS gap, resolved 2026-07-28 to --border-elevation-subtle)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "0099CC",
+      "reason": "Old hand-copied designSystem.tertiary.blue.500 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "003242",
+      "reason": "Old hand-copied designSystem.tertiary.blue.900 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "0099CC",
+      "reason": "Old hand-copied designSystem.tertiary.blue.500 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "003242",
+      "reason": "Old hand-copied designSystem.tertiary.blue.900 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/Breadcrumbs.tsx",
+      "pattern": "truncate\\(",
+      "reason": "Character truncation reintroduced in the page-path wrapper. The library ellipsizes in CSS and keeps the full label in the DOM and in title; a JS cut (30/50 chars here before the conversion) drops the rest with no way to read it."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/Breadcrumbs.tsx",
+      "pattern": "@mui/",
+      "reason": "MUI drawing the page path again. The wrapper renders the library Breadcrumbs and imports no MUI symbol; a Typography or useTheme coming back means the hand-built path was restored."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/Breadcrumbs.tsx",
+      "pattern": "\\{ href:",
+      "reason": "An entry destination passed as href. react-router's Link spreads rest props before assigning its own href, so the destination is REPLACED by the current location: a valid, focusable link to the page the user is already on. The field is 'to'."
+    }
+  ],
+  "migratedZones": [
+    "palette.error",
+    "palette.warn",
+    "palette.dangerZone",
+    "palette.success",
+    "palette.primary",
+    "palette.secondary",
+    "palette.severity",
+    "palette.designSystem",
+    "palette.background/paper/nav/accent/text (DB-overridable defaults — see caveat below)"
+  ],
+  "notMigrated": [
+    "typography (h1-h6, subtitle1/2, body1/2, caption, button, overline) — see fds-migration/TYPO-MAPPING-TODO.md, arbitration pending with Thibault",
+    "spacing/borderRadius — still hardcoded MUI defaults (borderRadius: 4, theme.spacing(N)), no FDS spacing tokens consumed anywhere in ThemeDark.ts/ThemeLight.ts",
+    "palette.ee / palette.xtmhub — both still hand-copied hex (EE_COLOR pre-existing; xtmhub ('#00f1bd', both modes) arrived via the 2026-07-27 master sync merge, commit b1f6459 / PR #17308-#17309). Deferred as a pair until palette.ee is picked up in a future migration pass — see fds-migration/TOKEN-MAPPING.md section 9."
+  ],
+  "knownCaveats": [
+    "background/paper/nav/primary/secondary/accent/text_color are passed into ThemeDark()/ThemeLight() as function params sourced from the DB's Theme.theme_* fields (AppThemeProvider.tsx), falling back to the FDS-backed constants only when the DB field is null. The built-in Dark/Light Theme rows in every real deployment have these fields explicitly populated with the pre-FDS hex values, so the new FDS values for these 7 properties are invisible until those DB rows are updated separately (proven via GraphQL query + pixel-exact screenshot comparison, see fds-migration/reports/targeted-captures/README.md). error/warn/success/dangerZone/severity are plain FDS constants with no DB override and ARE visually live today.",
+    "check-fds-conformity.mjs's bridge-freshness check reads theme.css from a hardcoded sibling path (../filigran-design-system relative to the product), so it only means anything when that sibling is actually at the pinned library commit. Check the sibling before believing either verdict: a STALE against a sibling that is behind the pin says nothing, and — the trap that cost this pilot three weeks — an OK against a sibling that happens to match a stale bridge says nothing either. The 2026-08-11 pass replaced an earlier version of this note which asserted the STALE was a false positive; it was not. theme.css was byte-identical at origin/main, at the pin and in the sibling checkout, and none of the three matched the hash recorded in the bridge: the bridge really had been generated from the 2026-07-16 theme.css and was 12 library commits behind. Verify by hashing, never by assuming. 2026-08-24 — no longer true: the regenerated script hashes the INSTALLED package and names that source in its verdict.",
+    "palette.background.disabled is still a literal — '#363B46' in ThemeDark.ts and '#DFDFDF' in ThemeLight.ts — and was never rewired onto --bg-elevation-disabled, although TOKEN-MAPPING.md states that mapping as done. It HAS one rendered consumer, contrary to the sweep recorded there: getDisabledSx in components/common/button/Button.utils.ts paints it as the background of a disabled primary Button. Rewire it in the tokens wave, and re-measure that button in both modes rather than assuming the swap is invisible. Note that designSystem.background.disabled, a different key, IS already on the token."
+  ],
+  "lastReconciled": "2025 pilot — colors wired + visually checkpointed (Phase 5) + targeted-capture deep dive; typography intentionally deferred (TYPO-MAPPING-TODO.md); DB theme-row update deferred, coordinated separately by product owner. 2026-07-28 — all 5 documented color gaps rewired: severity.none/default, designSystem.background.bg1-4/disabled, designSystem.border.main/border1/border2, palette.primary.light dark+light fallback (all --> direct guide-proposed tokens), and designSystem.tertiary.blue.{500,900} (--> --color-feedback-info-secondary, the guide's proposed token's opaque sibling — the guide's own -transparency proposal was rejected as a rendering regression for ScaleBar.tsx; deviation flagged to Thibault for review, see TOKEN-MAPPING.md). 2026-08-11 — token pass: pin bumped 486cec92 -> 5960966 and the bridge regenerated from that pin's theme.css. The bridge had been generated from the 2026-07-16 theme.css; 12 library commits of token changes had accumulated behind it (96 values changed, 45 added, 2 removed), of which 17 are consumed by this product's theme. Per-token trace, with the originating library commit and the MUI keys that consume each one, in fds-migration/IMPLEMENTATION-LOG.md. 2026-08-13 — Header pilot, final bump: pin 990810f -> 7e7b4175 (library PRs #114 Badge, #115 Spinner/ProgressBar, #116 gradient-text child fill, #117 HeaderGroup separatorBefore), verified in the installed build rather than from commit titles. The bar's cluster rule is now the library's separator (measured 16px | 16px, 8px inside each cluster), the AI controls are the library Button/IconButton in their `ia` variant, and the NLQ menu spinner is the library Spinner. createTextGradientSx was aligned on the library mechanism (fill-only transparency, no `color: transparent`) so nested children resolve `currentColor` to a real colour. Remaining MUI rendered in the bar: the segmented control (ToggleButtonGroup/ToggleButton and their ButtonBase, LIBRARY-FEEDBACK #24) and MuiSvgIcon glyphs. Navbar: glyphs only. 2026-08-13 (second bump) — pin 7e7b4175 -> 35a47684 (library PRs #118 ProgressBar tones, #119 Spinner xl tier and Badge default tone). The five deliverables were verified on the RENDERED build through a throwaway probe, not from types: Spinner sm/md/lg/xl measured 16/20/24/32px, Badge default red (counter rgb(136,17,6), dot rgb(241,67,55)) against brand rgb(66,202,255), ProgressBar success fill rgb(23,171,31), separatorBefore drawing at 16px|16px, and the gradient child reset present in the served CSS. The NLQ loader moved to the md tier, chosen from the 20px glyph its sibling rows render in the same slot. The bar's unread marker takes the library's new red default. Coverage rule NOT met: the segmented control has no library equivalent, and it also blocks the NLQ dropdown, whose caret lives inside a ToggleButton — see LIBRARY-FEEDBACK #24 for the measured spec. 2026-08-13 (final sweep) — the rendered bar was swept in a browser at the served pin on the three themes: MuiStack- was still there, inside the NLQ toggle, while the guard declared it retired but read only the five files the bar owns. Stack and Box replaced by plain elements at identical geometry, and SearchInput.jsx added to the by-symbol check with the segmented control's symbols as the declared exemption. Rendered bar now carries MuiSvgIcon glyphs plus MuiToggleButtonGroup/MuiToggleButton/MuiButtonBase only. Popover exempted with a date and a retirement condition under LIBRARY-FEEDBACK #24: no product line imports one, MUI draws the exempted menu with it, and the library exports none at pin 35a4768 (checked on the installed dist). 2026-08-14 (R3, computed accessibility) — the Notifications control was re-measured through CDP, not through the DOM: NAME \"Notifications\", DESCRIPTION EMPTY on the three themes, because the Badge wrapped the aria-hidden glyph and its aria-describedby landed outside the accessibility tree. The badge now marks the control; DESCRIPTION reads \"5 unread\". Same pass found the Triggers and Notifications tooltips never opening (props cloned by asChild were dropped) and, once forwarded, the control shrinking to 24x28 from an incoming undefined className. Filed as LIBRARY-FEEDBACK 28 and 29. Badge tone: none set anywhere — the library red default is the decision, on both products. 2026-08-14 (reconciliation) — two parallel review passes merged by arbitration: the encapsulated R3 design ships (badge owned by TopBarIconLink), with two test-only grafts from the other pass — a call-site counter-check on the computed accessible name/description via dom-accessibility-api, and a test that fails if a third kind of exemption is ever added to the guard. The two exemptions are dated 2026-08-14 and retire when the library ships the component. No rendered change, so no re-checkpoint. 2026-08-18 (Paper wave) - pin 35a47684 -> a22b188b -> f86e76e, each bump gated on the INSTALLED build and proved by the SERVED BYTES. 21 of 35 container surfaces adopted the library Paper; the 14 left out are listed with their measured reason. Card surfaces moved off the hardcoded #0C1524 literal onto layer 1 (219 sites), the card border onto --border-elevation-subtle-soft, and 8 chart factories onto the carrying surface. Paper motif added to the conformity gate with two guards, both seen red before being trusted green; MIXED files declared through mixed.allowMuiPaperFor rather than dodged. Full reference, decisions with their rationale, and the measurement lessons: fds-migration/PAPER-GAP-INVENTORY.md. Library-imposed gaps: LIBRARY-FEEDBACK.md entries 30-39. 2026-08-23 (motif migration) — the conformity script was regenerated from the library and the retired `paperPattern` field migrated to `libComponentUsage` in the same change, so no guard ran through the compatibility shim. Reported lines fall 57 -> 38 because the current engine emits one line per file instead of one per (file x guard); the executed assertions are unchanged, proved by replaying 36 mutations (one per declared file x guard) against both engines: 36/36 caught on each, 0 lost, 0 gained. Each mixed file now holds its own entry, which drops the import guard and states the symbol and the reason, in place of the retired `mixed.allowMuiPaperFor`. The 19 declared files also gain a drift assertion the retired field could not express, seen red on a file whose <Paper> was renamed. Same regeneration fixes the freshness guard, which compared the bridge against an arbitrary sibling checkout and reported STALE on an up-to-date bridge (LIBRARY-FEEDBACK #41); it now hashes the installed package and names it.",
+  "__libComponentUsageDoc": "Paper motif — the container surfaces converted to the library Paper. imported-from-library also catches the DEEP default import (@mui/material/Paper), because dodging the regex that way would make the gate report green about something it did not verify (OpenAEV LIBRARY-FEEDBACK #31). A file that legitimately keeps a MUI Paper is declared in its own entry, which drops that one guard and states the symbol and the reason — it never hides behind the import style. Every entry is still checked for drift: a declared file that renders no <Paper> at all is reported, which the retired `paperPattern` field could not see.",
+  "libComponentUsage": [
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "H1-H3, H4-H6, H8 — warm-up lot, padding={0}",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/sso_definitions/AuthProviderGroupsFields.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/sso_definitions/AuthProviderOrganizationsFields.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/sso_definitions/HeaderStrategyForm.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "H7 — warm-up lot, padding={0}, mt 20px",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/sso_definitions/AuthProviderUserInfoFields.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "N8 — pilot lot, padding={16}; height inline, FDS-WORKAROUND #16",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/data/stream/StreamConsumersDrawer.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "N11 — pilot lot, padding={0}; the List keeps its own gutter, full-bleed dividers",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/files/import_files/ImportFilesFormSelector.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "no-hardcoded-padding"
+      ],
+      "reason": "N12, N13 — converted tag + MUI Paper kept for TableContainer component= MUI Paper kept for TableContainer component=: a component handed to MUI via component= receives MUI props (variant, sx) the library Paper does not accept; the <Paper> tag itself is the library one. The import guard is deliberately not applied here.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/profile/api_tokens/TokenList.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/users/UserTokenList.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "H9 — pilot lot, padding={16}; radius dropped, 4px is the library default (measured)",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/sub_types/global_workflow_request_access/RequestAccessSettings.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "N7 — asymmetric 20/20/0/20 converted to a uniform padding={16} arbitrated from the board (16, not the nearest 24, for homogeneity across the three asymmetric sites)",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/stix_domain_objects/StixDomainObjectAuthorKnowledge.jsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "N1+N2, N3 — class 4, 15px -> padding={16}",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/data/connectors/ConnectorWorksErrorLine.tsx",
+        "opencti-platform/opencti-front/src/private/components/drafts/DraftRoot.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "N4 — class 4, 15px -> padding={16}; dead makeStyles rule removed",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/sub_types/scale_configuration/ScaleConfiguration.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "N5, N6 — class 4+5, 20px -> padding={24}, hosts a 2-column grid",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/form/HeaderField.tsx",
+        "opencti-platform/opencti-front/src/private/components/common/form/QueryAttributeField.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "N10 — class 2, gains the border and loses the MUI elevation shadow; height inline, FDS-WORKAROUND #16",
+      "files": [
+        "opencti-platform/opencti-front/src/components/ImageCarousel.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "injected form B — TableContainer wrapped in a library Paper, padding={0}",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/observations/indicators/DecayDialogContent.tsx",
+        "opencti-platform/opencti-front/src/private/components/data/connectors/ConnectorWorkLine.tsx",
+        "opencti-platform/opencti-front/src/private/components/data/tasks/TasksList.jsx"
+      ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/themes/ThemeForm.tsx"
+      ],
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "FDS-WORKAROUND #45 retired: the clear control is the library`s own `clearable` (lib #190), no longer an endAdornment IconButton"
+    },
+    {
+      "component": "Input",
+      "importFrom": "@filigran/design-system",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/sub_types/entity_setting/EntitySettingCustomFields.tsx"
+      ],
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "the integer default-value field carries the designed stepper via `isTypeNumber` (lib #190) instead of the browser`s own spinners"
+    },
+    {
+      "component": "Checkbox",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "night-2 visual pass: the last MUI checkboxes. Two shapes. (a) The list select-all boxes (ListLines, DataTableHeaders) -- the library box is a bare 16px button where MUI's was a self-centring 42px control, so each slot now centres it explicitly; that offset was the reported header misalignment. (b) The form boxes, which drop FormControlLabel for the library's own `label` and move from onChange(event) to onCheckedChange(boolean); each of their three handlers had exactly one call site and was re-typed to a boolean rather than fed a synthetic event. The boxes rendered inside a library Combobox option row take `presentational`: a real control nested in an option is an axe nested-interactive failure that aria-hidden does not clear. ONE site is deliberately excepted -- FilterChipPopover's filter-value row. It is a role=option too, so the same finding applies, but it predates this conversion (the box there was already a real MUI Checkbox) and `presentational` renders an unfocusable span, which removes the checkbox role that tests_e2e/model/filters.pageModel uses to pick a filter value. Clearing that nesting means changing the markup and the page model together; parked rather than half-done here; see fds-migration/MIGRATION-DECISIONS.md#filter-value-checkbox-role.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/list_lines/ListLines.jsx",
+        "opencti-platform/opencti-front/src/components/dataGrid/components/DataTableHeaders.tsx",
+        "opencti-platform/opencti-front/src/components/filters/FilterChipPopover.tsx",
+        "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContainer.tsx",
+        "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
+        "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
+        "opencti-platform/opencti-front/src/private/components/settings/hidden_types/HiddenTypesField.tsx",
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
+      ]
+    },
+    {
+      "component": "ButtonGroup",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "night-2 visual pass: the Techniques/Narratifs view switcher, the one icon group the pass named by screen. Its glyphs were MUI's fontSize=\"small\" (20px) where the library item declares a 16x16 glyph -- that gap IS the \"icones trop grosses\" reported there. Converting also gives the group a real onValueChange; this incidentally revives a dead subEntityLines button. The remaining icon groups are NOT converted here: ContainerHeader and StixCoreObjectContentHeader render their items as router Links (component={Link}), and ButtonGroupItem is a plain button with no asChild/as escape hatch, so converting them would drop href semantics -- logged as a library gap instead of forced. | night-4: the two link-based groups convert on lib #193's `asChild`, which retires LIBRARY-FEEDBACK #56. Each segment stays a real <a href>, so middle-click, open-in-new-tab, the hover target and Ctrl/Cmd-click all survive, and the group takes NO onValueChange because the route is the state. One trade-off the gates cannot see and a human must arbitrate: under asChild the library clones role=\"radio\" onto the anchor, so a screen reader announces \"radio button, checked\" where MUI's ToggleButton left the anchor its native \"link\". The library documents this on the prop itself and leaves it open as ButtonGroup.rfc.md §9 Q9 -- whether a navigating run should instead be a role=\"group\" of links marked aria-current. RULING (designer, night-4): the radio role is ACCEPTED for now and these sites follow the library's CURRENT contract. The link-vs-radio arbitration stays open in ButtonGroup.rfc.md §9 Q9 for a later design pass -- if it lands on links, both sites change again and this note is the pointer.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/ViewSwitchingButtons.tsx",
+        "opencti-platform/opencti-front/src/private/components/common/containers/ContainerHeader.jsx",
+        "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContentHeader.tsx"
+      ]
+    },
+    {
+      "component": "Combobox",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "night-2 visual pass: the `Add filter` picker. It never HOLDS a value -- picking an option adds a filter and the field empties -- so `value` is a literal null and ONLY a keystroke may write the input: in single mode the library answers a pick with setInputValue(getOptionLabel(option), \"select\"), and accepting that programmatic write left the field reading \"Label\" after the filter was added, so filling the same text a second time fired no input event and never reopened the panel. The name rides on `placeholder` + aria-label under `labelPosition=\"none\"`: the library renders labels ABOVE the control, and this one shares a flex row with an unlabelled search field. Covered by ListFilters.picker.test.tsx, which mirrors filters.pageModel's two-pass sequence.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import React, { CSSProperties, ReactNode } from 'react';
-import Chip from '@mui/material/Chip';
+import React, { ReactNode } from 'react';
+import { Chip } from '@filigran/design-system';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
@@ -36,16 +36,7 @@ import { useNavigate } from 'react-router-dom';
 import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
-import { Stack } from '@mui/material';
-
-const chipStyle: CSSProperties = {
-  fontSize: '12px',
-  lineHeight: '12px',
-  height: '20px',
-  marginRight: '7px',
-  borderRadius: '4px',
-  textTransform: 'uppercase',
-};
+import { Box, Stack } from '@mui/material';
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -167,7 +158,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const link = `${resolveLink(entity_type)}/${id}`;
       const linkAnalyses = `${link}/analyses`;
       return (
-        <>
+        <Box
+          component="span"
+          sx={{
+            display: 'inline-flex',
+            '& button:hover::before': {
+              backgroundColor: 'color-mix(in srgb, var(--color-feedback-neutral-secondary) 55%, transparent) !important',
+            },
+          }}
+        >
           {typesWithNoAnalysesTab.includes(entity_type) ? (
             <Tag label={n(analysesNumber)} disableTooltip />
           ) : (
@@ -181,7 +180,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               }}
             />
           )}
-        </>
+        </Box>
       );
     },
   },
@@ -1174,14 +1173,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           title={(
             <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: '4px' }}>
               {tags.map((tag: string) => (
-                <Chip key={tag} label={tag} style={chipStyle} />
+                <Chip key={tag} label={tag} style={{ marginRight: 7 }} />
               ))}
             </div>
           )}
         >
           <div>
-            <Chip label={tags[0]} style={chipStyle} />
-            <Chip label="..." style={chipStyle} />
+            <Chip label={tags[0]} style={{ marginRight: 7 }} />
+            {tags.length > 1 && (
+              <Chip label="..." style={{ marginRight: 7 }} />
+            )}
           </div>
         </Tooltip>
       );
@@ -1584,7 +1585,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           >
             {x_opencti_aliases.map((value: string) => (
-              <Chip key={value} label={value} size="small" />
+              <Chip key={value} label={value} />
             ))}
           </div>
         </Tooltip>

@@ -1,21 +1,17 @@
 import Button from '@common/button/Button';
+import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
+import { Checkbox, Select, SelectContent, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Axios from 'axios';
@@ -32,7 +28,7 @@ import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../../components/fields/RichTextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -109,7 +105,8 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(2),
   },
   sortIcon: {
-    position: 'absolute',
+    // In flow, not absolute: the header cells have no positioned ancestor, and the cell clips with overflow:hidden.
+    verticalAlign: 'middle',
     margin: '0 0 0 5px',
     padding: 0,
   },
@@ -322,7 +319,7 @@ const WorkbenchFileContentComponent = ({
   const classes = useStyles();
 
   // region state
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('entities');
 
   const [stixDomainObjects, setStixDomainObjects] = useState([]);
   const [stixCyberObservables, setStixCyberObservables] = useState([]);
@@ -483,15 +480,15 @@ const WorkbenchFileContentComponent = ({
   const connectors = connectorsImport.filter(({ connector_scope }) => connector_scope.includes('application/json'));
   let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
   let elements = [];
-  if (currentTab === 0) {
+  if (currentTab === 'entities') {
     elements = stixDomainObjects;
-  } else if (currentTab === 1) {
+  } else if (currentTab === 'observables') {
     elements = stixCyberObservables;
-  } else if (currentTab === 2) {
+  } else if (currentTab === 'relationships') {
     elements = stixCoreRelationships;
-  } else if (currentTab === 3) {
+  } else if (currentTab === 'sightings') {
     elements = stixSightings;
-  } else if (currentTab === 4) {
+  } else if (currentTab === 'containers') {
     elements = containers;
   }
   if (selectAll) {
@@ -509,7 +506,7 @@ const WorkbenchFileContentComponent = ({
   const handleOpenConvertToDraft = () => setDisplayConvertToDraft(true);
   const handleCloseConvertToDraft = () => setDisplayConvertToDraft(false);
 
-  const handleChangeTab = (_, index) => {
+  const handleChangeTab = (index) => {
     setCurrentTab(index);
     setSelectedElements(null);
     setDeselectedElements(null);
@@ -639,15 +636,15 @@ const WorkbenchFileContentComponent = ({
 
   const handleDeleteObjects = () => {
     let objects = [];
-    if (currentTab === 0) {
+    if (currentTab === 'entities') {
       objects = stixDomainObjects;
-    } else if (currentTab === 1) {
+    } else if (currentTab === 'observables') {
       objects = stixCyberObservables;
-    } else if (currentTab === 2) {
+    } else if (currentTab === 'relationships') {
       objects = stixCoreRelationships;
-    } else if (currentTab === 3) {
+    } else if (currentTab === 'sightings') {
       objects = stixSightings;
-    } else if (currentTab === 4) {
+    } else if (currentTab === 'containers') {
       objects = containers;
     }
     let objectsToBeDeletedIds;
@@ -767,9 +764,9 @@ const WorkbenchFileContentComponent = ({
     setSelectAll(false);
   };
 
-  const handleChangeObservableType = (id, event) => {
+  const handleChangeObservableType = (id, value) => {
     const observable = R.head(stixCyberObservables.filter((n) => n.id === id)) || {};
-    const stixType = convertToStixType(event.target.value);
+    const stixType = convertToStixType(value);
     let updatedObservable = {
       ...observable,
       id: `${stixType}--${uuid()}`,
@@ -970,15 +967,15 @@ const WorkbenchFileContentComponent = ({
       }),
     );
     let objects = [];
-    if (currentTab === 0) {
+    if (currentTab === 'entities') {
       objects = stixDomainObjects;
-    } else if (currentTab === 1) {
+    } else if (currentTab === 'observables') {
       objects = stixCyberObservables;
-    } else if (currentTab === 2) {
+    } else if (currentTab === 'relationships') {
       objects = stixCoreRelationships;
-    } else if (currentTab === 3) {
+    } else if (currentTab === 'sightings') {
       objects = stixSightings;
-    } else if (currentTab === 4) {
+    } else if (currentTab === 'containers') {
       objects = containers;
     }
     let objectsToBeProcessed;
@@ -999,7 +996,7 @@ const WorkbenchFileContentComponent = ({
       ]),
     }));
     const finalObjects = filteredObjects.concat(objectsToAdd);
-    if (currentTab === 0) {
+    if (currentTab === 'entities') {
       setStixDomainObjects(
         R.uniqBy(R.prop('id'), [
           ...finalObjects,
@@ -1014,13 +1011,13 @@ const WorkbenchFileContentComponent = ({
         ]),
       );
     }
-    if (currentTab === 1) {
+    if (currentTab === 'observables') {
       setStixCyberObservables(finalObjects);
-    } else if (currentTab === 2) {
+    } else if (currentTab === 'relationships') {
       setStixCoreRelationships(finalObjects);
-    } else if (currentTab === 3) {
+    } else if (currentTab === 'sightings') {
       setStixSightings(finalObjects);
-    } else if (currentTab === 4) {
+    } else if (currentTab === 'containers') {
       setContainers(finalObjects);
     }
     resetForm();
@@ -1683,9 +1680,9 @@ const WorkbenchFileContentComponent = ({
   };
   const sortHeader = (field, label, isSortable) => {
     const sortComponent = orderAsc ? (
-      <ArrowDropDown classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropDown classes={{ root: classes.sortIcon }} />
     ) : (
-      <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropUp classes={{ root: classes.sortIcon }} />
     );
     if (isSortable) {
       return (
@@ -1710,9 +1707,9 @@ const WorkbenchFileContentComponent = ({
   };
   const sortHeaderContainer = (field, label, isSortable) => {
     const sortComponent = containerOrderAsc ? (
-      <ArrowDropDown classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropDown classes={{ root: classes.sortIcon }} />
     ) : (
-      <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 7 }} />
+      <ArrowDropUp classes={{ root: classes.sortIcon }} />
     );
     if (isSortable) {
       return (
@@ -1826,7 +1823,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -1837,13 +1834,13 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -1908,12 +1905,12 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -1943,26 +1940,24 @@ const WorkbenchFileContentComponent = ({
                       values={values.externalReferences}
                       dryrun
                     />
-                    <div className={classes.buttons}>
+                    <FormButtonContainer>
                       <Button
+                        variant="secondary"
                         onClick={handleReset}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
                       >
                         {t_i18n('Cancel')}
                       </Button>
                       <Button
                         startIcon={<DoubleArrow />}
-                        // color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
                       >
                         {entityId
                           ? t_i18n('Update and complete')
                           : t_i18n('Add and complete')}
                       </Button>
-                    </div>
+                    </FormButtonContainer>
                   </Form>
                 )}
               </Formik>
@@ -2115,7 +2110,7 @@ const WorkbenchFileContentComponent = ({
             {targetsFrom.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="targets_from"
                 title={t_i18n('relationship_targets')}
                 fullWidth
@@ -2138,7 +2133,7 @@ const WorkbenchFileContentComponent = ({
             {usesFrom.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="uses_from"
                 title={t_i18n('relationship_uses')}
                 fullWidth
@@ -2156,7 +2151,7 @@ const WorkbenchFileContentComponent = ({
             {attributedToFrom.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="attributed-to_from"
                 title={t_i18n('relationship_attributed-to')}
                 fullWidth
@@ -2168,7 +2163,7 @@ const WorkbenchFileContentComponent = ({
             {targetsTo.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="targets_to"
                 title={t_i18n('relationship_targets')}
                 fullWidth
@@ -2187,7 +2182,7 @@ const WorkbenchFileContentComponent = ({
             {attributedToTo.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="attributed-to_to"
                 title={t_i18n('relationship_attributed-to') + t_i18n(' (reversed)')}
                 fullWidth
@@ -2199,7 +2194,7 @@ const WorkbenchFileContentComponent = ({
             {usesTo.includes(type) && (
               <Field
                 component={DynamicResolutionField}
-                variant="standard"
+                variant="outlined"
                 name="uses_to"
                 title={t_i18n('relationship_uses') + t_i18n(' (reversed)')}
                 fullWidth
@@ -2214,23 +2209,21 @@ const WorkbenchFileContentComponent = ({
                 style={{ marginTop: 20 }}
               />
             )}
-            <div className={classes.buttons}>
+            <FormButtonContainer>
               <Button
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={() => submitForm(false)}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
               >
                 {t_i18n('Add context')}
               </Button>
-            </div>
+            </FormButtonContainer>
           </Form>
         )}
       </Formik>
@@ -2297,7 +2290,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds={true}
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -2308,13 +2301,13 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
                               fullWidth={true}
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2360,12 +2353,12 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
                             fullWidth={true}
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2520,7 +2513,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -2532,35 +2525,35 @@ const WorkbenchFileContentComponent = ({
                             <div key={attribute}>
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes.MD5"
                                 label={t_i18n('hash_md5')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes_SHA-1"
                                 label={t_i18n('hash_sha-1')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes_SHA-256"
                                 label={t_i18n('hash_sha-256')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 name="hashes.SHA-512"
                                 label={t_i18n('hash_sha-512')}
                                 fullWidth
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                             </div>
                           );
@@ -2569,13 +2562,13 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2640,12 +2633,12 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2759,7 +2752,7 @@ const WorkbenchFileContentComponent = ({
                               withSeconds
                               textFieldProps={{
                                 label: attribute,
-                                variant: 'standard',
+                                variant: 'outlined',
                                 fullWidth: true,
                                 style: { marginTop: 20 },
                               }}
@@ -2770,13 +2763,13 @@ const WorkbenchFileContentComponent = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute}
                               name={attribute}
                               label={attribute}
                               fullWidth
                               type="number"
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         }
@@ -2844,12 +2837,12 @@ const WorkbenchFileContentComponent = ({
                         return (
                           <Field
                             component={TextField}
-                            variant="standard"
+                            variant="outlined"
                             key={attribute}
                             name={attribute}
                             label={attribute}
                             fullWidth
-                            style={{ marginTop: 20 }}
+                            className="mt-5"
                           />
                         );
                       })}
@@ -2958,9 +2951,7 @@ const WorkbenchFileContentComponent = ({
               onClick={handleToggleContainerSelectAll}
             >
               <Checkbox
-                edge="start"
                 checked={containerSelectAll}
-                disableRipple
               />
             </ListItemIcon>
             <ListItemText
@@ -3008,13 +2999,11 @@ const WorkbenchFileContentComponent = ({
                   style={{ minWidth: 40 }}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (containerSelectAll
                         && !(object.id in (containerDeselectedElements || {})))
                       || object.id in (containerSelectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -3187,7 +3176,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemText
               primary={(
@@ -3249,13 +3240,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -3320,6 +3309,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenEntity(null, null)}
           color="secondary"
           aria-label="Add"
@@ -3376,7 +3368,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3430,13 +3424,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3456,26 +3448,26 @@ const WorkbenchFileContentComponent = ({
                         style={inlineStyles.ttype}
                       >
                         <Select
-                          variant="standard"
-                          labelId="type"
                           value={convertFromStixType(object.type)}
-                          onChange={(event) => handleChangeObservableType(object.id, event)
-                          }
-                          style={{
-                            margin: 0,
-                            width: '80%',
-                            height: '100%',
-                          }}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            event.preventDefault();
-                          }}
+                          onValueChange={(value) => handleChangeObservableType(object.id, value)}
                         >
-                          {translatedOrderedList.map((n) => (
-                            <MenuItem key={n.label} value={n.label}>
-                              {n.tlabel}
-                            </MenuItem>
-                          ))}
+                          {/* The row is clickable; keep the select from activating it. */}
+                          <SelectTrigger
+                            aria-label={t_i18n('Type')}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              event.preventDefault();
+                            }}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent aria-label={t_i18n('Type')}>
+                            {translatedOrderedList.map((n) => (
+                              <SelectItem key={n.label} value={n.label}>
+                                {n.tlabel}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
                       </div>
                       <div
@@ -3562,6 +3554,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenObservable(null, null)}
           color="secondary"
           aria-label="Add"
@@ -3619,7 +3614,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3668,12 +3665,10 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3781,7 +3776,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemIcon>
               <span
@@ -3829,12 +3826,10 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple
                   />
                 </ListItemIcon>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -3956,7 +3951,9 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleSelectAll}
             >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              <Checkbox
+                checked={selectAll}
+              />
             </ListItemIcon>
             <ListItemText
               primary={(
@@ -3996,13 +3993,11 @@ const WorkbenchFileContentComponent = ({
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
-                    edge="start"
                     checked={
                       (selectAll
                         && !(object.id in (deSelectedElements || {})))
                       || object.id in (selectedElements || {})
                     }
-                    disableRipple={true}
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -4108,6 +4103,9 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
+          // FDS-FAB: stays on MUI. The library ships no floating action
+          // button, so this control has nothing to convert to. Owner: the
+          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenContainer(null, null)}
           color="secondary"
           aria-label="Add"
@@ -4161,22 +4159,20 @@ const WorkbenchFileContentComponent = ({
         </Security>
       </Stack>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={currentTab} onChange={handleChangeTab}>
-          <Tab label={`${t_i18n('Entities')} (${stixDomainObjects.length})`} />
-          <Tab label={`${t_i18n('Observables')} (${stixCyberObservables.length})`} />
-          <Tab
-            label={`${t_i18n('Relationships')} (${stixCoreRelationships.length})`}
-          />
-          <Tab label={`${t_i18n('Sightings')} (${stixSightings.length})`} />
-          <Tab label={`${t_i18n('Containers')} (${containers.length})`} />
-        </Tabs>
-      </Box>
-      {currentTab === 0 && renderEntities()}
-      {currentTab === 1 && renderObservables()}
-      {currentTab === 2 && renderRelationships()}
-      {currentTab === 3 && renderSightings()}
-      {currentTab === 4 && renderContainers()}
+      <Tabs value={currentTab} onValueChange={handleChangeTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="entities" badge={stixDomainObjects.length} badgeLabel={`${stixDomainObjects.length} ${t_i18n('items')}`}>{t_i18n('Entities')}</TabsTrigger>
+          <TabsTrigger value="observables" badge={stixCyberObservables.length} badgeLabel={`${stixCyberObservables.length} ${t_i18n('items')}`}>{t_i18n('Observables')}</TabsTrigger>
+          <TabsTrigger value="relationships" badge={stixCoreRelationships.length} badgeLabel={`${stixCoreRelationships.length} ${t_i18n('items')}`}>{t_i18n('Relationships')}</TabsTrigger>
+          <TabsTrigger value="sightings" badge={stixSightings.length} badgeLabel={`${stixSightings.length} ${t_i18n('items')}`}>{t_i18n('Sightings')}</TabsTrigger>
+          <TabsTrigger value="containers" badge={containers.length} badgeLabel={`${containers.length} ${t_i18n('items')}`}>{t_i18n('Containers')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="entities">{renderEntities()}</TabsContent>
+        <TabsContent value="observables">{renderObservables()}</TabsContent>
+        <TabsContent value="relationships">{renderRelationships()}</TabsContent>
+        <TabsContent value="sightings">{renderSightings()}</TabsContent>
+        <TabsContent value="containers">{renderContainers()}</TabsContent>
+      </Tabs>
       <DeleteDialog
         deletion={deletion}
         submitDelete={() => submitDeleteObject()}
@@ -4218,8 +4214,8 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth
@@ -4227,13 +4223,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>
@@ -4287,8 +4283,8 @@ const WorkbenchFileContentComponent = ({
                 </>
               )}
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth
@@ -4296,13 +4292,13 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
+                  <SelectItem
                     key={connector.id}
                     value={connector.id}
                     disabled={!connector.active}
                   >
                     {connector.name}
-                  </MenuItem>
+                  </SelectItem>
                 ))}
               </Field>
               <DialogActions>

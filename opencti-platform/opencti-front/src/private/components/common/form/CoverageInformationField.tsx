@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
 import Button from '@common/button/Button';
-import { IconButton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { DeleteOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
@@ -90,14 +90,16 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     marginTop: index === 0 ? 10 : 20,
                     width: '100%',
                     position: 'relative',
-                    paddingRight: 50,
+                    display: 'flex',
+                    gap: 8,
                   }}
                 >
                   <div
                     style={{
                       display: 'grid',
-                      gap: 20,
+                      gap: 12,
                       gridTemplateColumns: '1fr 1fr',
+                      flex: 1,
                     }}
                   >
                     <OpenVocabField
@@ -114,36 +116,32 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.coverage_score`}
                       label={t_i18n('Coverage score (0-100)')}
                       type="number"
                       fullWidth
                       required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
+                      min={0}
+                      max={100}
                     />
                   </div>
                   <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    style={{ marginTop: 28 }}
                     id={`deleteCoverageInfo_${index}`}
                     aria-label="Delete"
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
+                    icon={<DeleteOutlined />}
+                  />
                 </div>
               ))}
+              {/* Default (md) rather than small: the pass asks for this one at
+                  md, and it is the row's only action. */}
               <Button
-                size="small"
                 aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {
@@ -194,10 +192,17 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                     marginTop: index === 0 ? 10 : 20,
                     width: '100%',
                     position: 'relative',
-                    paddingRight: 50,
+                    display: 'flex',
+                    gap: 8,
                   }}
                 >
-                  <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
+                  <div style={{
+                    display: 'grid',
+                    gap: 12,
+                    gridTemplateColumns: '1fr 1fr',
+                    flex: 1,
+                  }}
+                  >
                     <OpenVocabField
                       label={t_i18n('Coverage name')}
                       type="coverage_ov"
@@ -242,20 +247,14 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.coverage_score`}
                       label={t_i18n('Coverage score (0-100)')}
                       type="number"
                       fullWidth
                       required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
+                      min={0}
+                      max={100}
                       onSubmit={(_: string, score: string) => {
                         if (isNotEmptyField(score)) {
                           commitMutation({
@@ -283,33 +282,19 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                   </div>
                   {(values?.length ?? 0) > 0 && (
                     <IconButton
+                      variant="default"
+                      priority="tertiary"
+                      style={{ marginTop: 28 }}
                       id={`deleteCoverageInfo_${index}`}
                       aria-label="Delete"
-                      onClick={() => {
-                        arrayHelpers.remove(index);
-                        commitMutation({
-                          ...defaultCommitMutation,
-                          mutation: coverageInformationMutation,
-                          variables: {
-                            id,
-                            input: {
-                              key: 'coverage_information',
-                              object_path: `/coverage_information/${index}`,
-                              value: [],
-                              operation: 'remove',
-                            },
-                          },
-                        });
-                      }}
-                      style={{ position: 'absolute', right: -10, top: 5 }}
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
+                      icon={<DeleteOutlined />}
+                    />
                   )}
                 </div>
               ))}
+              {/* Default (md) rather than small: the pass asks for this one at
+                  md, and it is the row's only action. */}
               <Button
-                size="small"
                 aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {

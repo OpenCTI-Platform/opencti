@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
+import { AccordionDetails, Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import { Checkbox, IconButton } from '@filigran/design-system';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
@@ -51,13 +52,13 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                 <ListItem
                   disablePadding
                   key={column.attribute}
-                  sx={{ height: 42 }}
+                  sx={{ height: 42, paddingLeft: theme.spacing(2) }}
                 >
                   <Checkbox
+                    label={t_i18n(formatColumnName(column))}
                     checked={value.some((col) => col.attribute === column.attribute)}
-                    onChange={() => handleToggleColumn(column.attribute)}
+                    onCheckedChange={() => handleToggleColumn(column.attribute)}
                   />
-                  <ListItemText primary={t_i18n(formatColumnName(column))} />
                 </ListItem>
               ))}
             </List>
@@ -91,9 +92,13 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                               height: 42,
                             }}
                             secondaryAction={(
-                              <IconButton aria-label={t_i18n('Close')} onClick={() => handleToggleColumn(column.attribute)}>
-                                <Close />
-                              </IconButton>
+                              <IconButton
+                                variant="default"
+                                priority="tertiary"
+                                aria-label={t_i18n('Close')}
+                                onClick={() => handleToggleColumn(column.attribute)}
+                                icon={<Close />}
+                              />
                             )}
                           >
                             <ListItemIcon {...providedDrag.dragHandleProps}>

@@ -1,15 +1,14 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
+import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { IconButton, Radio, RadioGroup, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { FormikHelpers } from 'formik/dist/types';
-import { SelectChangeEvent } from '@mui/material/Select';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { CsvMapperProvider } from '@components/data/csvMapper/CsvMapperContext';
 import Box from '@mui/material/Box';
 import { csvFeedCsvMapperToFormData } from '@components/data/ingestionCsv/IngestionCSVFeedUtils';
@@ -189,25 +188,13 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   <RadioGroup
                     aria-label="CSV separator"
                     name="separator"
-                    style={{ flexDirection: 'row' }}
+                    orientation="horizontal"
                     value={values.separator}
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                    onValueChange={(value) => setFieldValue('separator', value)}
                   >
-                    <FormControlLabel
-                      value=","
-                      control={<Radio />}
-                      label={t_i18n('Comma')}
-                    />
-                    <FormControlLabel
-                      value=";"
-                      control={<Radio />}
-                      label={t_i18n('Semicolon')}
-                    />
-                    <FormControlLabel
-                      value="|"
-                      control={<Radio />}
-                      label={t_i18n('Pipe')}
-                    />
+                    <Radio value="," label={t_i18n('Comma')} />
+                    <Radio value=";" label={t_i18n('Semicolon')} />
+                    <Radio value="|" label={t_i18n('Pipe')} />
                   </RadioGroup>
                 </Box>
               </Box>
@@ -248,13 +235,13 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </Box>
               <FieldArray
                 name="entity_representations"
@@ -293,13 +280,13 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </Box>
               <FieldArray
                 name="relationship_representations"

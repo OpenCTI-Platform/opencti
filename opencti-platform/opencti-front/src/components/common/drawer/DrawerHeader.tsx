@@ -1,23 +1,24 @@
-import { useTheme } from '@mui/styles';
-import { Theme } from '../../Theme';
 import { Stack, Typography } from '@mui/material';
 import IconButton from '../button/IconButton';
 import { Close } from '@mui/icons-material';
 import React from 'react';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 interface DrawerHeaderProps {
   title: string;
+  layer?: Parameters<typeof fdsLayerClass>[0];
   onClose?: () => void;
   endContent?: React.ReactNode;
 }
 
-const DrawerHeader = ({ title, onClose, endContent }: DrawerHeaderProps) => {
-  const theme = useTheme<Theme>();
+const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: DrawerHeaderProps) => {
   return (
     <Stack
       direction="row"
+      className={fdsLayerClass(layer)}
       sx={{
-        backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
+        ...layerInputVars,
+        backgroundColor: 'var(--bg-elevation-heading)',
         paddingX: 3,
         paddingY: 2,
         alignItems: 'center',

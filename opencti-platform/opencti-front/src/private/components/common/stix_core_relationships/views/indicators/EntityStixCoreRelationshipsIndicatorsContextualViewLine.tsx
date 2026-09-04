@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,6 +11,8 @@ import { UseEntityToggle } from '../../../../../../utils/hooks/useEntityToggle';
 import { resolveLink } from '../../../../../../utils/Entity';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../../components/Theme';
+import { Checkbox } from '@filigran/design-system';
+import { bodyItemStyle } from '../../../../../../components/list_lines/listLineStyles';
 import {
   EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
   EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key,
@@ -27,15 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary?.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,
@@ -120,12 +113,10 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent
         }
       >
         <Checkbox
-          edge="start"
           checked={
             (selectAll && !(stixCoreObject.id in (deSelectedElements || {})))
             || stixCoreObject.id in (selectedElements || {})
           }
-          disableRipple={true}
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>

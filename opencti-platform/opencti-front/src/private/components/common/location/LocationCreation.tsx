@@ -6,7 +6,6 @@ import {
   LocationCreationMutation$data,
   LocationCreationMutation$variables,
 } from '@components/common/location/__generated__/LocationCreationMutation.graphql';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
@@ -16,7 +15,7 @@ import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -133,7 +132,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -149,15 +148,15 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             style={{ marginTop: 20 }}
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="type"
             label={t_i18n('Entity type')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
           >
             {!onlyAuthors && locations.map((location, idx) => (
-              <MenuItem key={idx} value={location}>{t_i18n(location)}</MenuItem>
+              <SelectItem key={idx} value={location}>{t_i18n(location)}</SelectItem>
             ))}
           </Field>
           <FormButtonContainer>

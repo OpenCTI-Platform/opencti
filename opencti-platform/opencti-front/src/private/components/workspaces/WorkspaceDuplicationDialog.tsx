@@ -1,7 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
 import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -16,6 +15,7 @@ import {
 } from './__generated__/WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation.graphql';
 import { WorkspaceDuplicationDialogFragment$data, WorkspaceDuplicationDialogFragment$key } from './__generated__/WorkspaceDuplicationDialogFragment.graphql';
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
+import { Input } from '@filigran/design-system';
 
 const workspaceDuplicationFragment = graphql`
   fragment WorkspaceDuplicationDialogFragment on Workspace {
@@ -120,16 +120,12 @@ const WorkspaceDuplicationDialog: FunctionComponent<
       fullWidth={true}
       title={t_i18n('Duplicate the dashboard')}
     >
-      <TextField
-        error={!newName}
+      <Input
+        error={!newName ? t_i18n('This field is required') : undefined}
         autoFocus
-        margin="dense"
         id="duplicated_dashboard_name"
         label={t_i18n('New name')}
         type="text"
-        fullWidth
-        variant="standard"
-        helperText={!newName ? `${t_i18n('This field is required')}` : ''}
         defaultValue={newName}
         onChange={(event) => {
           event.preventDefault();

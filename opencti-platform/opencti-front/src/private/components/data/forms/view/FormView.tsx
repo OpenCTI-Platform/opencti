@@ -3,7 +3,6 @@ import IconButton from '@common/button/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -38,6 +37,8 @@ import { FormFieldRendererProps } from './FormFieldRenderer';
 import FormFields from './FormFields';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
+import TextareaField from '../../../../../components/TextareaField';
+import { Checkbox } from '@filigran/design-system';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -68,6 +69,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
   draftCheckbox: {
     marginTop: 20,
+    marginLeft: 0,
   },
   fieldGroup: {
     marginBottom: 20,
@@ -630,17 +632,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         <>
                           {schema.mainEntityParseField === 'textarea' ? (
                             <Field
-                              component={TextField}
-                              className={classes.parsedField}
+                              component={TextareaField}
+                              className={`${classes.parsedField} mt-5`}
                               name="mainEntityParsed"
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
                                 : 'Enter values separated by commas')}
                               rows={10}
-                              multiline={true}
-                              fullWidth={true}
-                              variant="standard"
-                              style={{ marginTop: 20 }}
                               helperText={helperText}
                             />
                           ) : (
@@ -651,7 +649,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
                                 : 'Enter values separated by commas')}
-                              variant="standard"
+                              variant="outlined"
                               fullWidth
                               helperText={helperText}
                             />
@@ -795,17 +793,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 <>
                                   {additionalEntity.parseField === 'textarea' ? (
                                     <Field
-                                      component={TextField}
-                                      className={classes.parsedField}
+                                      component={TextareaField}
+                                      className={`${classes.parsedField} mt-5`}
                                       name={fieldName}
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
                                         : 'Enter values separated by commas')}
                                       rows={10}
-                                      multiline={true}
-                                      fullWidth={true}
-                                      variant="standard"
-                                      style={{ marginTop: 20 }}
                                       helperText={helperText}
                                     />
                                   ) : (
@@ -816,7 +810,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
                                         : 'Enter values separated by commas')}
-                                      variant="standard"
+                                      variant="outlined"
                                       fullWidth
                                       helperText={helperText}
                                     />
@@ -978,8 +972,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                   control={(
                     <Checkbox
                       checked={isDraft}
-                      onChange={(e) => setIsDraft(e.target.checked)}
+                      onCheckedChange={(checked) => setIsDraft(checked === true)}
                       disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                      style={{ marginRight: 10 }}
                     />
                   )}
                   label={t_i18n('Create as draft')}

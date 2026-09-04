@@ -207,6 +207,36 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
 
+  // region The date picker itself: calendar, persistence, clear
+  // -----------------------------------------------------------
+  // Exercises DateTimePickerField through its ADORNMENT — the calendar and the
+  // clear control — not just by typing. Both broke the last time this field was
+  // restyled, and the variant sweep reaches it with no diff naming the file, so
+  // a restyle that breaks either turns this red instead of reaching Sandy.
+  // Placed before the update below, which then doubles as the restore.
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.publicationDateField.pickDay('14');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 14, 2023');
+  await expect(publicationDate).toBeVisible();
+
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.publicationDateField.getClearButton().click();
+  // The mask coming back is the proof the field is empty AND still a working
+  // date field; matched as a pattern because the mask follows the locale.
+  await expect(reportForm.publicationDateField.getInput()).toHaveValue(/Y{4}.*M{2}.*D{2}/);
+  // Re-picking on a cleared field: the calendar opens on the frozen clock's
+  // month (April 2024), so this is deterministic and leaves a valid value.
+  await reportForm.publicationDateField.pickDay('25');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'April 25, 2024');
+  await expect(publicationDate).toBeVisible();
+
+  // ---------
+  // endregion
+
   await reportDetailsPage.getEditButton().click();
   await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
   await reportForm.getUpdateTitle().click();
@@ -344,32 +374,49 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   // ------------------------------
 
   // Create author from the report creation form
-  await reportForm.authorAutocomplete.openAddOptionForm();
+  // The AUTHOR dialog IS prefilled: CreatedByField passes `inputValue={keyword}`
+  // to IdentityCreation, so the create row carries the typed text over. Measured
+  // scoped to the dialog — name = "Jeanne Mitchel Report" — so the name can no longer be
+  // empty by this path and only the entity type is still required.
+  //
+  // Do NOT harmonise this with the external-reference block below: that dialog
+  // receives no inputValue and genuinely opens empty. The two differ in the
+  // product code, not by accident.
+  await reportForm.authorAutocomplete.createOption('Jeanne Mitchel Report');
   await authorForm.getCreateButton().click();
-  await expect(authorForm.nameField.getByText('This field is required')).toBeVisible();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
-  await authorForm.nameField.fill('Jeanne Mitchel');
-  await expect(authorForm.nameField.getByText('This field is required')).toBeHidden();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
   await authorForm.getCreateButton().click();
-  await reportForm.authorAutocomplete.selectOption('Jeanne Mitchel');
-  await expect(reportForm.authorAutocomplete.getOption('Jeanne Mitchel')).toBeVisible();
+  await reportForm.authorAutocomplete.selectOption('Jeanne Mitchel Report');
+  await expect(reportForm.authorAutocomplete.getOption('Jeanne Mitchel Report')).toBeVisible();
 
   // Create label from the report creation form
-  await reportForm.labelsAutocomplete.openAddOptionForm();
-  await labelForm.getCreateButton().click();
-  await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
-  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
-  await labelForm.valueField.fill(labelName);
+  // Opened through the library's create row instead of the MUI `+`.
+  //
+  // The two label mounts differ, and this one is `ObjectLabelField`: here the
+  // typed text DOES carry into the creation form, so `value` is never empty and
+  // only the colour can report itself missing. The other mount — the shared
+  // labels view on an entity's details page — opens the same form EMPTY;
+  // measured at the pointer, both inputs '' after clicking `Create ‘…’`. Same
+  // form component, same `inputValueContextual` prop, opposite outcome, and the
+  // reason is not established. Whichever it is, each flow now asserts what its
+  // own mount actually does.
+  await reportForm.labelsAutocomplete.createOption(labelName);
   await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
+  await labelForm.getCreateButton().click();
+  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
   await expect(reportForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
-  await reportForm.externalReferencesAutocomplete.openAddOptionForm();
+  // The create row OPENS the form; it does not prefill it. Measured on the real
+  // incident-response form: after clicking `Create ‘...’` the dialog appears with
+  // input[name="source_name"] empty. An earlier version of this block assumed the
+  // opposite and dropped the fill, which made creation fail validation silently.
+  await reportForm.externalReferencesAutocomplete.createOption('external ref');
   await externalReferenceForm.urlField.fill('bad url');
   await externalReferenceForm.getCreateButton().click();
   await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeVisible();
@@ -392,7 +439,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   // region Control data on report details page
   // ------------------------------------------
 
-  const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
+  const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel Report');
   await expect(author).toBeVisible();
 
   await expect(reportDetailsPage.overview.getLabel(labelName)).toBeVisible();

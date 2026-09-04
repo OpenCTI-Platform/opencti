@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useQueryLoader } from 'react-relay';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
@@ -30,6 +30,8 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
+import { paperBg, paperBorder } from './paperSurface';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
 export type IntegrationsTab = 'deployed' | 'available';
 
@@ -154,8 +156,8 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
         position: 'relative',
         overflow: 'hidden',
         borderRadius: 1,
-        border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${paperBorder(theme)}`,
+        backgroundColor: paperBg(theme),
         padding: 3,
       }}
     >
@@ -246,21 +248,19 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
 
         <IntegrationsHero deployedCount={deployedCount} />
 
-        <Tabs value={tab}>
-          <Tab
-            label={t_i18n('Deployed')}
-            value="deployed"
-            component={Link}
-            to="/dashboard/integrations/deployed"
-            data-testid="integrations-tab-deployed"
-          />
-          <Tab
-            label={t_i18n('Available')}
-            value="available"
-            component={Link}
-            to="/dashboard/integrations/available"
-            data-testid="integrations-tab-available"
-          />
+        <Tabs value={tab} panels="external">
+          <TabsList>
+            <TabsTrigger value="deployed" asChild>
+              <Link to="/dashboard/integrations/deployed" data-testid="integrations-tab-deployed">
+                {t_i18n('Deployed')}
+              </Link>
+            </TabsTrigger>
+            <TabsTrigger value="available" asChild>
+              <Link to="/dashboard/integrations/available" data-testid="integrations-tab-available">
+                {t_i18n('Available')}
+              </Link>
+            </TabsTrigger>
+          </TabsList>
         </Tabs>
 
         {tab === 'deployed' ? (

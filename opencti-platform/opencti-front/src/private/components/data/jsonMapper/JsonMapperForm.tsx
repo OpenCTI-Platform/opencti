@@ -3,7 +3,8 @@ import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { IconButton, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
 import { FormikHelpers } from 'formik/dist/types';
 import JsonMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/jsonMapper/representations/JsonMapperRepresentationForm';
@@ -163,7 +164,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth
@@ -173,12 +174,12 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)}
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </div>
               <FieldArray
                 name="entity_representations"
@@ -210,12 +211,12 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
-                >
-                  <Add fontSize="small" />
-                </IconButton>
+                  icon={<Add fontSize="small" />}
+                />
               </div>
               <FieldArray
                 name="relationship_representations"

@@ -1,8 +1,7 @@
 import React, { Suspense } from 'react';
 import { Field } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../components/i18n';
-import SelectField from '../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import { stixCyberObservablesLinesSubTypesQuery } from './stix_cyber_observables/StixCyberObservablesLines';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -50,8 +49,8 @@ const TypesFieldComponent = ({
     );
     return (
       <Field
-        component={SelectField}
-        variant="standard"
+        component={SelectFieldFds}
+        variant="outlined"
         name={name}
         label={label}
         fullWidth={true}
@@ -59,9 +58,9 @@ const TypesFieldComponent = ({
         containerstyle={containerstyle}
       >
         {translatedOrderedList.map((subType) => (
-          <MenuItem key={subType.id} value={subType.label}>
+          <SelectItem key={subType.id} value={subType.label}>
             {subType.tlabel}
-          </MenuItem>
+          </SelectItem>
         ))}
       </Field>
     );
@@ -79,8 +78,8 @@ const TypesField = (props: TypesFieldProps) => {
   );
   const FallbackSelect = (
     <Field
-      component={SelectField}
-      variant="standard"
+      component={SelectFieldFds}
+      variant="outlined"
       fullWidth
       name={name}
       label={label}

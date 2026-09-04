@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import MuiTextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { Field, FieldProps } from 'formik';
 import { CsvMapperColumnBasedFormData, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import Tooltip from '@mui/material/Tooltip';
@@ -90,76 +89,50 @@ const CsvMapperConditionalEntityMapping: FunctionComponent<
           />
         </Tooltip>
       </div>
-      <MUIAutocomplete
+      <Combobox
         selectOnFocus
         openOnFocus
-        autoSelect={false}
-        autoHighlight
         options={columnOptions}
         disabled={!columnBased?.enabled}
         value={columnBased?.column_reference ?? null}
-        onChange={(_, val) => handleColumnSelect(val)}
-        sx={{ width: '100%' }}
-        renderInput={(params) => (
-          <MuiTextField
-            {...params}
-            label={t_i18n('Column index')}
-            variant="outlined"
-            size="small"
-            slotProps={{
-              input: {
-                ...params.InputProps,
-                sx: {
-                  '& fieldset': {
-                    borderColor: (!columnBased?.column_reference)
-                      ? theme.palette.designSystem.tertiary.red[400]
-                      : '',
-                  },
-                },
-              },
-            }}
-          />
-        )}
-      />
-      <MUIAutocomplete<FieldOption>
+        onValueChange={(val) => handleColumnSelect(val as string | null)}
+        error={!columnBased?.column_reference}
+      >
+        <ComboboxLabel>{t_i18n('Column index')}</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxInput />
+          <ComboboxControls>
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent listAriaLabel={t_i18n('Column index')} />
+      </Combobox>
+      <Combobox<FieldOption>
         selectOnFocus
         openOnFocus
-        autoComplete
-        autoSelect={false}
-        autoHighlight
         options={operatorOptions}
         disabled={!columnBased?.enabled}
         value={operatorOptions.find((opt) => opt.value === columnBased?.operator) ?? null}
-        onChange={(_, val) => handleOperatorSelect(val)}
-        sx={{ width: '100%' }}
-        renderInput={(params) => (
-          <MuiTextField
-            {...params}
-            label={t_i18n('Operator')}
-            variant="outlined"
-            size="small"
-            slotProps={{
-              input: {
-                ...params.InputProps,
-                sx: {
-                  '& fieldset': {
-                    borderColor: (!columnBased?.operator)
-                      ? theme.palette.designSystem.tertiary.red[400]
-                      : '',
-                  },
-                },
-              },
-            }}
-          />
-        )}
-      />
+        onValueChange={(val) => handleOperatorSelect(val as FieldOption | null)}
+        error={!columnBased?.operator}
+        getOptionLabel={(option) => option?.label ?? ''}
+      >
+        <ComboboxLabel>{t_i18n('Operator')}</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxInput />
+          <ComboboxControls>
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent listAriaLabel={t_i18n('Operator')} />
+      </Combobox>
       <div style={{ marginBottom: '10px', marginRight: '10px' }}>
         <Field
           component={TextField}
           label={t_i18n('Value')}
           name={`${representationName}.column_based.value`}
           value={columnBased?.enabled ? columnBased.value : ''}
-          variant="standard"
+          variant="outlined"
           style={{ width: '100%' }}
           disabled={!representation.column_based?.enabled}
           error={!columnBased?.value && columnBased?.enabled}

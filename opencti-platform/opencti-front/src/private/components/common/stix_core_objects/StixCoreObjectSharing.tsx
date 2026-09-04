@@ -3,12 +3,11 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { AccountBalanceOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
 import type { FormikHelpers } from 'formik/dist/types';
 import { BankPlus } from 'mdi-material-ui';
@@ -16,7 +15,6 @@ import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
@@ -39,19 +37,6 @@ interface OrganizationForm {
 }
 
 // endregion
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  organization: {
-    margin: '0 7px 0 0',
-    float: 'left',
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 28,
-    borderRadius: 4,
-  },
-}));
 
 const containerHeaderSharedQuery = graphql`
   query StixCoreObjectSharingQuery($id: String!) {
@@ -106,7 +91,6 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   handleClose,
   inContainer = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
@@ -246,10 +230,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             {edges.map((edge) => (
               <Tooltip key={edge.id} title={edge.name}>
                 <Chip
-                  icon={<AccountBalanceOutlined />}
-                  classes={{ root: classes.organization }}
-                  color="primary"
-                  variant="outlined"
+                  startIcon={<AccountBalanceOutlined />}
+                  severity="info"
                   label={truncate(edge.name, 15)}
                   onDelete={() => removeOrganization(edge.id)}
                   disabled={disabled}

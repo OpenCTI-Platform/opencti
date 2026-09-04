@@ -20,17 +20,16 @@ const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({
   const [dateInput, setDateInput] = useState(filterValues);
   return (
     <>
-      <div style={{ marginTop: 10 }} />
       <RelativeDateInput
         filter={filter}
         filterKey={filterKey}
         helpers={helpers}
         label={t_i18n('From')}
         valueOrder={0}
+        autoFocus
         dateInput={dateInput}
         setDateInput={setDateInput}
       />
-      <div style={{ marginTop: 25 }} />
       <RelativeDateInput
         filter={filter}
         filterKey={filterKey}

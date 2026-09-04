@@ -28,6 +28,7 @@ import { CUSTOM_FIELD_NOW_TOKEN } from '../../../../../utils/customFieldDefaults
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
 import { EntitySettingCustomFieldsQuery, EntitySettingCustomFieldsQuery$data } from './__generated__/EntitySettingCustomFieldsQuery.graphql';
+import { Input } from '@filigran/design-system';
 
 export const entitySettingCustomFieldsQuery = graphql`
   query EntitySettingCustomFieldsQuery {
@@ -166,7 +167,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         return (
           <MuiTextField
             select
-            variant="standard"
+            variant="outlined"
             fullWidth
             label={t_i18n('Default value')}
             value={defaultValue}
@@ -181,14 +182,14 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         );
       case 'integer':
         return (
-          <MuiTextField
-            type="number"
-            variant="standard"
-            fullWidth
+          <Input
+            // `isTypeNumber` (library #190) forces type="number" and suppresses the browser's
+            // own spinners, so the field carries the designed stepper instead of the UA's.
+            isTypeNumber
             label={t_i18n('Default value')}
             value={defaultValue}
             onChange={(event) => setDefaultValue(event.target.value)}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
         );
       case 'date': {
@@ -210,7 +211,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
                 value={defaultValue ? new Date(defaultValue) : null}
                 onChange={(date) => setDefaultValue(date ? date.toISOString() : '')}
                 label={t_i18n('Default value')}
-                slotProps={{ textField: { variant: 'standard', fullWidth: true, style: { marginTop: 20 } } }}
+                slotProps={{ textField: { variant: 'outlined', fullWidth: true, style: { marginTop: 20 } } }}
               />
             )}
           </>
@@ -229,13 +230,11 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         );
       default:
         return (
-          <MuiTextField
-            variant="standard"
-            fullWidth
+          <Input
             label={t_i18n('Default value')}
             value={defaultValue}
             onChange={(event) => setDefaultValue(event.target.value)}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
         );
     }

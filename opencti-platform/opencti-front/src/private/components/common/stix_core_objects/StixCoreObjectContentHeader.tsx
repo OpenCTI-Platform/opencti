@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import Tooltip from '@mui/material/Tooltip';
-import ToggleButton from '@mui/material/ToggleButton';
 import { Link } from 'react-router-dom';
 import { DifferenceOutlined, DriveFileRenameOutlineOutlined, NewspaperOutlined } from '@mui/icons-material';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { ButtonGroup, ButtonGroupItem } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
@@ -13,6 +12,10 @@ interface StixCoreObjectContentHeaderProps {
   disableMapping: boolean;
   disableEditor: boolean;
 }
+
+// The library item fixes its glyph slot at `size-4` (16px) for BOTH group
+// sizes, so this does not follow the group from sm to md.
+const GLYPH = { fontSize: 16 };
 
 const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeaderProps> = ({
   currentMode,
@@ -25,56 +28,59 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
 
   return (
     <div style={{
-      margin: '-70px 0 0 0',
+      // The switcher is pulled up onto the tabs strip.
+      margin: '-67px 0 0 0',
       float: 'right',
     }}
     >
-      <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+      {/* Each segment NAVIGATES, so it stays a real <a href> through `asChild`
+          (lib #193, for LIBRARY-FEEDBACK #56). The group takes no
+          onValueChange: the route IS the state, which is why `value` is the
+          current mode and nothing writes it back. */}
+      <ButtonGroup
+        size="md"
+        value={currentMode}
+        aria-label={t_i18n('Change view')}
+      >
         {modes.includes('content') && (
           <Tooltip title={t_i18n('Content view')}>
-            <ToggleButton
-              component={Link}
-              to=""
-              selected={currentMode === 'content'}
+            <ButtonGroupItem
+              asChild
               value="content"
+              aria-label={t_i18n('Content view')}
+              icon={<NewspaperOutlined sx={GLYPH} />}
             >
-              <NewspaperOutlined
-                fontSize="small"
-              />
-            </ToggleButton>
+              <Link to="" />
+            </ButtonGroupItem>
           </Tooltip>
         )}
         {modes.includes('editor') && (
           <Tooltip title={t_i18n('Editor view')}>
-            <ToggleButton
-              component={Link}
-              to="editor"
-              selected={currentMode === 'editor'}
+            <ButtonGroupItem
+              asChild
               value="editor"
+              aria-label={t_i18n('Editor view')}
+              icon={<DriveFileRenameOutlineOutlined sx={GLYPH} />}
               disabled={disableEditor}
             >
-              <DriveFileRenameOutlineOutlined
-                fontSize="small"
-              />
-            </ToggleButton>
+              <Link to="editor" />
+            </ButtonGroupItem>
           </Tooltip>
         )}
         {modes.includes('mapping') && (
           <Tooltip title={t_i18n('Content mapping view')}>
-            <ToggleButton
-              component={Link}
-              to="mapping"
-              selected={currentMode === 'mapping'}
+            <ButtonGroupItem
+              asChild
               value="mapping"
+              aria-label={t_i18n('Content mapping view')}
+              icon={<DifferenceOutlined sx={GLYPH} />}
               disabled={disableMapping || !!draftContext}
             >
-              <DifferenceOutlined
-                fontSize="small"
-              />
-            </ToggleButton>
+              <Link to="mapping" />
+            </ButtonGroupItem>
           </Tooltip>
         )}
-      </ToggleButtonGroup>
+      </ButtonGroup>
     </div>
   );
 };

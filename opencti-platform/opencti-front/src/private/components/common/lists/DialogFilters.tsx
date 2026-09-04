@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { BiotechOutlined } from '@mui/icons-material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Tooltip from '@mui/material/Tooltip';
@@ -9,6 +10,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { FilterSearchContext } from '../../../../utils/filters/filtersUtils';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 interface DialogFiltersProps {
   handleOpenFilters: (event: React.SyntheticEvent) => void;
@@ -48,15 +50,17 @@ const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
         <IconButton
           onClick={handleOpenFilters}
           disabled={disabled}
+          aria-label={t_i18n('Advanced search')}
         >
           <BiotechOutlined fontSize="medium" />
         </IconButton>
       </Tooltip>
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={open}
         onClose={handleCloseFilters}
-        title={t_i18n('Advanced search')}
       >
+        <DialogTitle>{t_i18n('Advanced search')}</DialogTitle>
         <FilterIconButton
           filters={filters}
           handleRemoveFilter={defaultHandleRemoveFilter}

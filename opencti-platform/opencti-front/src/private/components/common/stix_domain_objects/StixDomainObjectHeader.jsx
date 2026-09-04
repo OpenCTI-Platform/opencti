@@ -7,12 +7,11 @@ import { Add, Close, Delete } from '@mui/icons-material';
 import { Box } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
@@ -481,23 +480,28 @@ const StixDomainObjectHeader = (props) => {
         titleRight={
           typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
-              <InputLabel>
-                {t_i18n('Display as')}
-              </InputLabel>
-              <FormControl variant="outlined">
+              <FormControl
+                variant="outlined"
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 1,
+                  '&& > *': { marginBottom: 0, whiteSpace: 'nowrap', flexShrink: 0 },
+                }}
+              >
                 <Select
-                  size="small"
                   name="view-as"
                   value={viewAs}
-                  onChange={onViewAs}
-                  inputProps={{
-                    name: 'view-as',
-                    id: 'view-as',
-                  }}
-                  variant="outlined"
+                  onValueChange={onViewAs}
                 >
-                  <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
-                  <MenuItem value="author">{t_i18n('Author')}</MenuItem>
+                  <SelectLabel>{t_i18n('Display as')}</SelectLabel>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Display as')}>
+                    <SelectItem value="knowledge">{t_i18n('Knowledge entity')}</SelectItem>
+                    <SelectItem value="author">{t_i18n('Author')}</SelectItem>
+                  </SelectContent>
                 </Select>
               </FormControl>
             </div>
@@ -655,7 +659,7 @@ const StixDomainObjectHeader = (props) => {
                   onClick={handleToggleOpenAliases}
                   size="small"
                   variant="tertiary"
-                  startIcon={openAlias ? <Close fontSize="small" /> : <Add fontSize="small" />}
+                  startIcon={openAlias ? <Close sx={{ fontSize: 16 }} /> : <Add sx={{ fontSize: 16 }} />}
                 >
                   {t_i18n('add alias')}
                 </Button>
@@ -686,7 +690,7 @@ const StixDomainObjectHeader = (props) => {
               <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="new_alias"
                   autoFocus={true}
                   placeholder={t_i18n('New alias')}
@@ -761,7 +765,7 @@ const StixDomainObjectHeader = (props) => {
                 <Form>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="new_alias"
                     autoFocus={true}
                     fullWidth={true}

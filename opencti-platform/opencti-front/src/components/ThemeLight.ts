@@ -4,17 +4,18 @@ import LogoText from '../static/images/logo_text_light.svg';
 import LogoCollapsed from '../static/images/logo_light.svg';
 import { hexToRGB } from '../utils/Colors';
 import { alpha, darken, lighten } from '@mui/material';
+import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00BD94';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
-export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
-export const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
-const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
-const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
-const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
-export const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
-const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
+export const THEME_LIGHT_DEFAULT_BACKGROUND = FDS.colors.light['--bg-elevation-default-layer-0'];
+export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = FDS.colors.light['--bg-elevation-default-layer-0-gradient'];
+export const THEME_LIGHT_DEFAULT_PRIMARY = FDS.colors.light['--color-filigran-brand-primary'];
+const THEME_LIGHT_DEFAULT_SECONDARY = FDS.colors.light['--color-filigran-tonic-primary'];
+const THEME_LIGHT_DEFAULT_ACCENT = FDS.colors.light['--bg-elevation-default-layer-3'];
+const THEME_LIGHT_DEFAULT_TEXT = FDS.colors.light['--text-default-primary'];
+export const THEME_LIGHT_DEFAULT_PAPER = FDS.colors.light['--bg-elevation-default-layer-1'];
+const THEME_LIGHT_DEFAULT_NAV = FDS.colors.light['--bg-elevation-heading-layer-0'];
 export const THEME_LIGHT_DIALOG_BACKGROUND = '#FFFFFF';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
@@ -33,7 +34,7 @@ const ThemeLight = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = THEME_LIGHT_DEFAULT_TEXT,
+  text_color: string = THEME_LIGHT_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || LogoText,
   logo_collapsed: logo_collapsed || LogoCollapsed,
@@ -42,21 +43,21 @@ const ThemeLight = (
     mode: 'light',
     common: { white: '#ffffff', grey: '#494A50', lightGrey: '#AFB0B6' },
     error: {
-      main: '#F14337',
-      dark: '#881106',
+      main: FDS.colors.light['--color-feedback-error-primary'],
+      dark: FDS.colors.light['--color-feedback-error-tertiary'],
     },
     warn: {
-      main: '#E6700F',
+      main: FDS.colors.light['--color-feedback-warning-primary'],
     },
     dangerZone: {
-      main: '#E51E10',
-      light: '#F8958C',
-      dark: '#881106',
+      main: FDS.colors.light['--color-feedback-error-primary'],
+      light: FDS.colors.light['--color-feedback-error-secondary'],
+      dark: FDS.colors.light['--color-feedback-error-tertiary'],
       contrastText: '#000000',
-      text: { primary: '#881106' },
+      text: { primary: FDS.colors.light['--color-feedback-error-tertiary'] },
     },
-    success: { main: '#1CA55E', dark: '#0D7E39' },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#6978EE' },
+    success: { main: FDS.colors.light['--color-feedback-success-primary'], dark: FDS.colors.light['--color-feedback-success-tertiary'] },
+    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : FDS.colors.light['--color-filigran-brand-secondary'] },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
@@ -72,9 +73,9 @@ const ThemeLight = (
     },
     chip: { main: '#000000' },
     ai: {
-      main: '#5E1AD5',
-      light: '#D6C2FA',
-      dark: '#3C108C',
+      main: FDS.colors.light['--color-filigran-ia-primary'],
+      light: FDS.colors.light['--color-filigran-ia-tertiary'],
+      dark: FDS.colors.light['--color-filigran-ia-secondary'],
       contrastText: '#000000',
       background: 'rgba(221, 225, 254, 0.94)',
     },
@@ -84,8 +85,7 @@ const ThemeLight = (
       lightBackground: hexToRGB(EE_COLOR, 0.08),
       contrastText: '#F2F2F3',
     },
-    // Aligned with the OpenAEV xtmhub token so the Filigran Experience
-    // screens share the same accent on both platforms.
+    // Same xtmhub token as OpenAEV, so the Filigran Experience accent matches.
     xtmhub: { main: '#00f1bd' },
     background: {
       default: background || THEME_LIGHT_DEFAULT_BACKGROUND,
@@ -116,118 +116,123 @@ const ThemeLight = (
       header: {
         itemBackground: '#ECECF2',
       },
-      popoverItem: '#ECECF2',
+      popoverItem: THEME_LIGHT_DEFAULT_BACKGROUND,
       hover: '#0015A81A',
       text: '#18191B',
     },
     severity: {
-      critical: '#EE3838',
-      high: '#E6700F',
-      medium: '#E1B823',
-      low: '#16AD34',
-      info: '#1565c0',
-      none: '#424242',
-      default: '#DDE1FE',
+      // Closest FDS feedback token, not 1:1 — see TOKEN-MAPPING.md.
+      critical: FDS.colors.light['--color-feedback-error-primary'],
+      high: FDS.colors.light['--color-feedback-warning-primary'],
+      medium: FDS.colors.light['--color-feedback-alert-primary'],
+      low: FDS.colors.light['--color-feedback-success-primary'],
+      info: FDS.colors.light['--color-feedback-info-primary'],
+      none: FDS.colors.light['--color-feedback-neutral-primary'],
+      default: FDS.colors.light['--color-feedback-neutral-primary'],
     },
     designSystem: {
       primary: {
-        main: '#0015A8',
-        light: '#7587FF',
-        dark: '#000842',
+        main: FDS.colors.light['--color-filigran-brand-primary'],
+        light: FDS.colors.light['--color-filigran-brand-secondary'],
+        dark: FDS.colors.light['--color-filigran-brand-tertiary'],
       },
+      // Only `main` is wired: no FDS match for the light/dark shades.
       secondary: {
-        main: '#00BD94',
+        main: FDS.colors.light['--color-filigran-tonic-primary'],
         light: '#74E9CA',
         dark: '#0A8268',
       },
       destructive: {
-        main: '#E51E10',
-        light: '#F8958C',
-        dark: '#881106',
+        main: FDS.colors.light['--color-feedback-error-primary'],
+        light: FDS.colors.light['--color-feedback-error-secondary'],
+        dark: FDS.colors.light['--color-feedback-error-tertiary'],
       },
       ia: {
-        main: '#5E1AD5',
-        light: '#D6C2FA',
-        dark: '#3C108C',
+        main: FDS.colors.light['--color-filigran-ia-primary'],
+        light: FDS.colors.light['--color-filigran-ia-tertiary'],
+        dark: FDS.colors.light['--color-filigran-ia-secondary'],
       },
       background: {
-        main: '#ECECF2',
-        bg1: '#F7F7F7',
-        bg2: '#FFFFFF',
-        bg3: '#E4E4E4',
-        bg4: '#DDE1FE',
-        disabled: '#DFDFDF',
+        main: THEME_LIGHT_DEFAULT_BACKGROUND,
+        // bg1-bg4 map to the elevation-layer scale (layer-0..3).
+        bg1: FDS.colors.light['--bg-elevation-default-layer-0'],
+        bg2: FDS.colors.light['--bg-elevation-default-layer-1'],
+        bg3: FDS.colors.light['--bg-elevation-default-layer-2'],
+        bg4: FDS.colors.light['--bg-elevation-default-layer-3'],
+        disabled: FDS.colors.light['--bg-elevation-disabled'],
       },
+      // border1/border2 share the subtle elevation border — see TOKEN-MAPPING.md.
       border: {
-        main: '#D2D2D2',
-        border1: '#C2C2C2',
-        border2: '#999797',
+        main: FDS.colors.light['--border-elevation-default'],
+        border1: FDS.colors.light['--border-elevation-subtle'],
+        border2: FDS.colors.light['--border-elevation-subtle'],
       },
       gradient: {
-        background: 'linear-gradient(100.35deg, #ECECF2 0%, #F7F7F7 100%)',
-        ia: 'linear-gradient(90deg, #3C108C 0.67%, #5E1AD5 100.67%)',
-        focus: 'linear-gradient(90deg, #0015A8 -3.68%, #00BD94 106.62%)',
+        background: FDS.gradients.light['--gradient-default'],
+        ia: FDS.gradients.light['--gradient-ia'],
+        focus: FDS.gradients.light['--gradient-focus'],
       },
       alert: {
         info: {
-          primary: '#00719E',
-          secondary: '#2AB3E0',
+          primary: FDS.colors.light['--color-feedback-info-primary'],
+          secondary: FDS.colors.light['--color-feedback-info-secondary'],
         },
         success: {
-          primary: '#1CA55E',
-          secondary: '#4CD990',
-          tertiary: '#0D7E39',
+          primary: FDS.colors.light['--color-feedback-success-primary'],
+          secondary: FDS.colors.light['--color-feedback-success-secondary'],
+          tertiary: FDS.colors.light['--color-feedback-success-tertiary'],
         },
         alert: {
-          primary: '#F2BE3A',
-          secondary: '#F6CE6A',
+          primary: FDS.colors.light['--color-feedback-alert-primary'],
+          secondary: FDS.colors.light['--color-feedback-alert-secondary'],
         },
         warning: {
-          primary: '#E6700F',
-          secondary: '#F8C08C',
+          primary: FDS.colors.light['--color-feedback-warning-primary'],
+          secondary: FDS.colors.light['--color-feedback-warning-secondary'],
         },
         error: {
-          primary: '#F14337',
-          secondary: '#F8958C',
+          primary: FDS.colors.light['--color-feedback-error-primary'],
+          secondary: FDS.colors.light['--color-feedback-error-secondary'],
         },
       },
       tertiary: {
         grey: {
-          400: '#95969D',
-          700: '#494A50',
-          800: '#313235',
+          400: FDS.scalars['--gray-400'],
+          700: FDS.scalars['--gray-700'],
+          800: FDS.scalars['--gray-800'],
         },
+        // Opaque sibling, not the -transparency token: ScaleBar.tsx needs a solid fill.
         blue: {
-          500: '#0099CC',
-          900: '#003242',
+          500: FDS.colors.light['--color-feedback-info-secondary'],
+          900: FDS.colors.light['--color-feedback-info-secondary'],
         },
         darkBlue: {
-          300: '#7587FF',
-          500: '#0F2DFF',
+          300: FDS.scalars['--darkblue-300'],
+          500: FDS.scalars['--darkblue-500'],
         },
         turquoise: {
-          600: '#00BD94',
-          800: '#005744',
+          600: FDS.scalars['--turquoise-600'],
+          800: FDS.scalars['--turquoise-800'],
         },
         green: {
-          400: '#41E149',
-          600: '#17AB1F',
-          800: '#094E0B',
+          400: FDS.scalars['--green-400'],
+          600: FDS.scalars['--green-600'],
+          800: FDS.scalars['--green-800'],
         },
         red: {
-          100: '#FBCBC5',
-          200: '#F8958C',
-          400: '#F14337',
-          500: '#E51E10',
-          600: '#B8180A',
-          700: '#881106',
+          100: FDS.scalars['--red-100'],
+          200: FDS.scalars['--red-200'],
+          400: FDS.scalars['--red-400'],
+          500: FDS.scalars['--red-500'],
+          600: FDS.scalars['--red-600'],
+          700: FDS.scalars['--red-700'],
         },
         orange: {
-          400: '#F2933A',
-          500: '#E6700F',
+          400: FDS.scalars['--orange-400'],
+          500: FDS.scalars['--orange-500'],
         },
         yellow: {
-          400: '#F2BE3A',
+          400: FDS.scalars['--yellow-400'],
         },
       },
     },
@@ -384,9 +389,11 @@ const ThemeLight = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
+          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at
+          // layer 2. A platform-customised paper colour still wins.
           backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-            ? '#FFFFFF'
-            : (paper ?? '#FFFFFF'),
+            ? 'var(--bg-elevation-default)'
+            : (paper ?? 'var(--bg-elevation-default)'),
           borderRadius: 4,
         },
       },
@@ -468,9 +475,62 @@ const ThemeLight = (
         },
       },
     },
+    // Every OUTLINED MUI field sits on the library Input background, so the
+    // unconverted fields read as one family with the converted ones.
+    MuiInputLabel: {
+      styleOverrides: {
+        outlined: {
+          // MUI centres the un-shrunk label for its own 56px box; ours is 36px, so
+          // its 16px put the label on the bottom edge. 8px centres it in 36px.
+          transform: 'translate(12px, 8px) scale(1)',
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          // The custom property, not the static hex: an outlined field inside a
+          // drawer or popover must pick up that surface's own layer.
+          backgroundColor: 'var(--bg-input-default)',
+          // Geometry borrowed from the library `Input`; paint only, no behaviour.
+          borderRadius: 'var(--radius-sm)',
+          minHeight: 36,
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-hover)',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-focus)',
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-error)',
+          },
+          // Transparent with a disabled border, as the library `Input` does —
+          // `--bg-input-disabled` paints a grey slab inside a dark form.
+          '&.Mui-disabled': {
+            backgroundColor: 'transparent',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'var(--border-elevation-disabled)',
+            },
+          },
+        },
+        input: {
+          // 8px lands the single-line row on the library's 36px height; MUI's own
+          // 16.5px makes a 54px row.
+          padding: '8px 8px 8px 12px',
+        },
+      },
+    },
     MuiTextField: {
       defaultProps: {
-        variant: 'standard',
+        // Every remaining MUI field is outlined, so it can carry the library
+        // field background.
+        variant: 'outlined',
       },
       styleOverrides: {
         root: {
@@ -484,7 +544,9 @@ const ThemeLight = (
     },
     MuiSelect: {
       defaultProps: {
-        variant: 'standard',
+        // Every remaining MUI field is outlined, so it can carry the library
+        // field background.
+        variant: 'outlined',
       },
       styleOverrides: {
         root: {
@@ -533,7 +595,7 @@ const ThemeLight = (
             WebkitTextFillColor: '#000000 !important',
             caretColor: 'transparent !important',
             WebkitBoxShadow:
-                '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
+              '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
             borderTopLeftRadius: 'inherit',
             borderTopRightRadius: 'inherit',
           },
@@ -561,15 +623,12 @@ const ThemeLight = (
             border: '0 !important',
           },
           '.error .react-mde textarea': {
-            border: '0 !important',
-            borderBottom: '2px solid #F14337 !important',
+            border: '1px solid var(--border-input-error) !important',
             '&:hover': {
-              border: '0 !important',
-              borderBottom: '2px solid #F14337 !important',
+              border: '1px solid var(--border-input-error) !important',
             },
             '&:focus': {
-              border: '0 !important',
-              borderBottom: '2px solid #F14337 !important',
+              border: '1px solid var(--border-input-error) !important',
             },
           },
           '.mde-header': {
@@ -585,18 +644,22 @@ const ThemeLight = (
             fontFamily: '"IBM Plex Sans", sans-serif',
             color: `${text_color} !important`,
           },
+          // The markdown editor is a textarea, so it takes the field surface;
+          // written in tokens so it follows the layer it sits on.
           '.mde-textarea-wrapper textarea': {
             fontFamily: '"IBM Plex Sans", sans-serif',
             fontSize: 13,
             color: `${text_color} !important`,
-            background: 'transparent',
-            borderBottom: '1px solid rgba(0, 0, 0, 0.87) !important',
-            transition: 'borderBottom .3s',
+            background: 'var(--bg-input-default)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '8px 12px',
+            border: '1px solid transparent !important',
+            transition: 'border-color .3s',
             '&:hover': {
-              borderBottom: '2px solid #000000 !important',
+              border: '1px solid var(--border-input-hover) !important',
             },
             '&:focus': {
-              borderBottom: `2px solid ${primary || THEME_LIGHT_DEFAULT_PRIMARY} !important`,
+              border: '1px solid var(--border-input-focus) !important',
             },
           },
           '.mde-preview .mde-preview-content a': {
@@ -612,6 +675,9 @@ const ThemeLight = (
           },
           '.react_time_range__handle_marker': {
             backgroundColor: '#00bcd4 !important',
+          },
+          '.leaflet-container': {
+            backgroundColor: `${paper || '#ffffff'} !important`,
           },
           '.react-grid-item .react-resizable-handle::after': {
             borderRight: '2px solid #AFB0B6 !important',
@@ -631,9 +697,37 @@ const ThemeLight = (
         },
       },
     },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          // The library's menu surface, written as the alias so a menu opened from
+          // a layered surface follows it.
+          backgroundColor: 'var(--bg-elevation-highlight)',
+          borderRadius: 'var(--radius-sm)',
+        },
+        list: {
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+      },
+    },
     MuiMenuItem: {
       styleOverrides: {
         root: {
+          // Geometry from the library's own menu row; spacing and size only, the
+          // selected and hover tones below are unchanged.
+          minHeight: 32,
+          paddingLeft: 16,
+          paddingRight: 16,
+          gap: 8,
+          fontSize: 12,
+          lineHeight: 1.5,
+          '& .MuiListItemIcon-root': {
+            minWidth: 'auto',
+          },
+          '& .MuiSvgIcon-root': {
+            fontSize: 16,
+          },
           ':hover': {
             backgroundColor: 'rgba(0,0,0,0.04)',
           },
@@ -706,10 +800,10 @@ const ThemeLight = (
             color: '#494A50',
           },
           '& .MuiOutlinedInput-root': {
-            // the only way for now to know if we should apply the paper color or not
+            // Same layer-aware background as every other outlined field.
             backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-              ? '#FFFFFF'
-              : (paper ?? '#FFFFFF'),
+              ? 'var(--bg-input-default)'
+              : (paper ?? 'var(--bg-input-default)'),
             '& fieldset': {
               borderColor: 'transparent',
             },

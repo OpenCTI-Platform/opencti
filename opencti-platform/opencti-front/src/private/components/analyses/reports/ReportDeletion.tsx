@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Alert, AlertTitle, Checkbox, DialogActions, FormControlLabel, FormGroup, Typography } from '@mui/material';
+import { Alert, AlertTitle, DialogActions, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -10,6 +10,7 @@ import type { Theme } from '../../../../components/Theme';
 import { QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { ReportDeletionQuery$data } from './__generated__/ReportDeletionQuery.graphql';
+import { Checkbox } from '@filigran/design-system';
 
 const reportDeletionQuery = graphql`
   query ReportDeletionQuery($id: String) {
@@ -91,27 +92,26 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
               variant="outlined"
               style={{ marginTop: 20 }}
             >
-              <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-              {t_i18n('In this report, ')}&nbsp;
-              <strong style={{ color: theme.palette.error.main }}>
-                {numberOfDeletions}
-              </strong>
+              <Stack spacing={1} pl={1}>
+                <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+
+                <div>
+                  {t_i18n('In this report, ')}&nbsp;
+                  <strong style={{ color: theme.palette.error.main }}>
+                    {numberOfDeletions}
+                  </strong>
                   &nbsp;
-              {t_i18n(
-                'element(s) are not linked to any other reports and will be orphan after the deletion.',
-              )}
-              <FormGroup>
-                <FormControlLabel
-                  control={(
-                    <Checkbox
-                      disableRipple={true}
-                      checked={purgeElements}
-                      onChange={() => setPurgeElements(!purgeElements)}
-                    />
+                  {t_i18n(
+                    'element(s) are not linked to any other reports and will be orphan after the deletion.',
                   )}
+                </div>
+
+                <Checkbox
                   label={t_i18n('Also delete these elements')}
+                  checked={purgeElements}
+                  onCheckedChange={() => setPurgeElements(!purgeElements)}
                 />
-              </FormGroup>
+              </Stack>
             </Alert>
           );
         }}

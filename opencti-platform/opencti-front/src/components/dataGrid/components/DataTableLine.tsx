@@ -1,5 +1,6 @@
 import React, { CSSProperties, useMemo } from 'react';
-import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
+import { Skeleton, Box } from '@mui/material';
+import { Checkbox, IconButton } from '@filigran/design-system';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
@@ -141,8 +142,13 @@ const DataTableLine = ({
     }
   };
 
+  // A row's own action menus mount their drawers and dialogs inside this
+  // subtree but render through a portal, and React bubbles their clicks back
+  // here. Only a click physically inside the row is a row click.
+  const isRowTarget = (event: React.MouseEvent) => event.currentTarget.contains(event.target as Node);
+
   const handleNavigate = (event: React.MouseEvent) => {
-    if (!navigable || !link) return;
+    if (!navigable || !link || !isRowTarget(event)) return;
     event.preventDefault();
     event.stopPropagation();
 
@@ -154,7 +160,7 @@ const DataTableLine = ({
   };
 
   const handleRowClick = (event: React.MouseEvent) => {
-    if (!clickable) return;
+    if (!clickable || !isRowTarget(event)) return;
     event.preventDefault();
     event.stopPropagation();
 
@@ -207,15 +213,9 @@ const DataTableLine = ({
           >
             {startsWithAction && (
               <Checkbox
+                aria-label={t_i18n('Select line')}
                 onClick={handleSelectLine}
-                sx={{
-                  marginRight: 1,
-                  flex: '0 0 auto',
-                  paddingLeft: 0,
-                  '&:hover': {
-                    background: 'transparent',
-                  },
-                }}
+                className="mx-2"
                 checked={
                   (selectAll
                     && !((data.id || 'id') in (deSelectedElements || {})))
@@ -250,9 +250,13 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton aria-label={t_i18n('Open link')} onClick={() => (link ? navigate(link) : undefined)}>
-                <KeyboardArrowRightOutlined />
-              </IconButton>
+              <IconButton
+                variant="default"
+                priority="tertiary"
+                aria-label={t_i18n('Open link')}
+                onClick={() => (link ? navigate(link) : undefined)}
+                icon={<KeyboardArrowRightOutlined />}
+              />
             )}
           </div>
         )}

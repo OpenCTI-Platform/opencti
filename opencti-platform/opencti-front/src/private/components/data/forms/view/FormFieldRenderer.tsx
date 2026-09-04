@@ -1,20 +1,17 @@
 import React, { FunctionComponent } from 'react';
 import { Field, FieldInputProps, FormikProps } from 'formik';
 import Chip from '@mui/material/Chip';
-import Box from '@mui/material/Box';
 import IconButton from '@common/button/IconButton';
 import { CloudUploadOutlined } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 // Custom field components
 import TypesField from '@components/observations/TypesField';
 import TextField from '../../../../../components/TextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import ComboboxField from '../../../../../components/ComboboxField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
@@ -31,6 +28,7 @@ import { getVocabularyMappingByAttribute } from '../../../../../utils/vocabulary
 import { useTheme } from '@mui/styles';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../../utils/hooks/useGranted';
+import { Checkbox, Chip as FdsChip } from '@filigran/design-system';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -190,7 +188,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             fullWidth={true}
             required={field.isMandatory}
             helperText={field.description}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         );
 
@@ -216,7 +214,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             fullWidth={true}
             required={field.isMandatory}
             helperText={field.description}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         );
 
@@ -224,19 +222,20 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         return (
           <Field name={fieldName}>
             {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
-              <FormControlLabel
-                control={(
-                  <Checkbox
-                    {...formikField}
-                    checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
-                    onChange={(e) => {
-                      form.setFieldValue(fieldName, e.target.checked);
-                    }}
-                  />
-                )}
-                label={displayLabel}
-                style={fieldSpacingContainerStyle}
-              />
+              // Only `name` and `onBlur` are taken off the Formik field here: spreading it whole would also hand
+              // the library box Formik's own `value` and `onChange`, which the Radix root reads as form props and
+              // which no longer describe how this control reports a change.
+              <div style={fieldSpacingContainerStyle}>
+                <Checkbox
+                  name={formikField.name}
+                  onBlur={formikField.onBlur}
+                  checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
+                  onCheckedChange={(checked) => {
+                    form.setFieldValue(fieldName, checked === true);
+                  }}
+                  label={displayLabel}
+                />
+              </div>
             )}
           </Field>
         );
@@ -261,22 +260,22 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'select':
         return (
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             name={fieldName}
             label={displayLabel}
             fullWidth={true}
             required={field.isMandatory}
             containerstyle={fieldSpacingContainerStyle}
-            variant="standard"
+            variant="outlined"
             helpertext={field.description}
           >
-            <MenuItem value="">
+            <SelectItem value="">
               <em>{t_i18n('None')}</em>
-            </MenuItem>
+            </SelectItem>
             {field.options?.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
-              </MenuItem>
+              </SelectItem>
             ))}
           </Field>
         );
@@ -284,30 +283,16 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'multiselect':
         return (
           <Field
-            component={SelectField}
+            component={ComboboxField}
             name={fieldName}
             label={displayLabel}
-            fullWidth={true}
-            multiple={true}
+            multiple
             required={field.isMandatory}
-            containerstyle={fieldSpacingContainerStyle}
-            variant="standard"
+            style={fieldSpacingContainerStyle}
             helpertext={field.description}
-            renderValue={(selected: string[]) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {selected.map((value) => {
-                  const option = field.options?.find((o) => o.value === value);
-                  return <Chip key={value} label={option?.label || value} />;
-                })}
-              </Box>
-            )}
-          >
-            {field.options?.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Field>
+            options={(field.options ?? []).map((o) => o.value)}
+            getOptionLabel={(value: string) => field.options?.find((o) => o.value === value)?.label || value}
+          />
         );
 
       case 'date':
@@ -319,7 +304,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             textFieldProps={{
               label: displayLabel,
               required: field.isMandatory,
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: fieldSpacingContainerStyle,
               helperText: field.description,
@@ -336,7 +321,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             textFieldProps={{
               label: displayLabel,
               required: field.isMandatory,
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: fieldSpacingContainerStyle,
               helperText: field.description,
@@ -429,6 +414,8 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         );
 
       case 'files': {
+        // Stays MUI: this value is a base64 payload ({ name, data, mime_type, size }), not a File,
+        // so FileSelect cannot represent it — convert once the library accepts a stored-file value.
         // multiple defaults to false (single file mode)
         // Set multiple=true explicitly to allow multiple files
         const allowMultipleFiles = field.multiple === true;
@@ -490,7 +477,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             fullWidth={true}
             required={field.isMandatory}
             helperText={field.description}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         );
     }
@@ -517,10 +504,8 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   if (field.isReadOnly && isBypass) {
     return renderFieldWithGrid(
       <div style={{ position: 'relative' }}>
-        <Chip
-          size="small"
-          variant="outlined"
-          color="warning"
+        <FdsChip
+          severity="high"
           label={t_i18n('Read-Only')}
           style={{ position: 'absolute', top: -10, right: 0, zIndex: 1, backgroundColor: theme.palette.background.paper }}
         />

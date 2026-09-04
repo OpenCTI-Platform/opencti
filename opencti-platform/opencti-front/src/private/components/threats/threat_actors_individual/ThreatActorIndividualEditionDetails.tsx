@@ -10,7 +10,7 @@ import {
 import { useTheme } from '@mui/styles';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import { isNone, useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
+
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { parse } from '../../../../utils/Time';
@@ -25,6 +25,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
+import TextareaField from '../../../../components/TextareaField';
 
 const threatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionDetailsFieldPatchMutation(
@@ -261,7 +262,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 textFieldProps={{
                   label: t_i18n('First seen'),
                   required: (mandatoryAttributes.includes('first_seen')),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   helperText: (
                     <SubscriptionFocus
@@ -279,7 +280,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 textFieldProps={{
                   label: t_i18n('Last seen'),
                   required: (mandatoryAttributes.includes('last_seen')),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
@@ -369,14 +370,12 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 editContext={context}
               />
               <Field
-                component={TextField}
+                component={TextareaField}
                 name="goals"
                 label={t_i18n('Goals (1 / line)')}
                 required={(mandatoryAttributes.includes('goals'))}
-                fullWidth={true}
-                multiline={true}
                 rows="4"
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitGoals}
                 helperText={

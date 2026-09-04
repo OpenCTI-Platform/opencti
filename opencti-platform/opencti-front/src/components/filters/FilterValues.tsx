@@ -2,7 +2,7 @@ import React, { Fragment, FunctionComponent } from 'react';
 import { last } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
@@ -18,6 +18,14 @@ import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import type { WidgetHost } from '../../utils/widget/widget';
 import Button from '@common/button/Button';
+
+// The prop only ever arrives as 'warning' or 'success' (WidgetFilters, 4 call
+// sites), so it maps to two tones; absent keeps the library default.
+const chipSeverity = (color?: string) => {
+  if (color === 'warning') return 'high' as const;
+  if (color === 'success') return 'low' as const;
+  return undefined;
+};
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -170,7 +178,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       fontFamily: 'Consolas, monaco, monospace',
       textTransform: 'inherit',
       ...(tooltip && {
-        height: '100%',
+        // The library Button carries its own 14px type in an 11px tooltip, so the pill outgrew every word beside it.
+        fontSize: 'inherit',
+        lineHeight: 'inherit',
+        height: 'auto',
         pointerEvents: 'none',
       }),
       ...(isLocalModeSwitchable && {
@@ -287,7 +298,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             {label}
           </strong>
         </Button>{' '}
-        <Box sx={{ display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', overflow: 'hidden' }}>
           {sortedFilterValues
             .map((val) => {
               const subKey = val.key;
@@ -368,7 +379,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         </Button>{' '}
         <Chip
           label={t_i18n('Dynamic filter')}
-          color={chipColor}
+          severity={chipSeverity(chipColor)}
         />
       </>
     );

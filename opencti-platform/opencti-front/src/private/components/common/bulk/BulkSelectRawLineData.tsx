@@ -1,12 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
 import { BulkEntityTypeInfo, entityNameHeaderWidth, entityTypeHeaderWidth, matchHeaderWidth } from '@components/common/bulk/dialog/BulkRelationDialog';
 import { DeleteOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import { Autocomplete } from '@mui/material';
+import { Chip, Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger, type ChipSeverity } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
@@ -47,12 +45,12 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
     return t_i18n('Incompatible');
   };
 
-  const getChipColor = () => {
-    if (!entity.isExisting && isMatchingRelationship) return 'error';
+  const getChipColor = (): ChipSeverity => {
+    if (!entity.isExisting && isMatchingRelationship) return 'critical';
     if (entity.isMatchingEntity && isMatchingRelationship) {
-      return 'success';
+      return 'low';
     }
-    return 'warning';
+    return 'high';
   };
 
   const handleChangeEntityType = (newEntityType: string) => {
@@ -88,34 +86,43 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   return (
     <Box sx={{
       display: 'flex',
+      alignItems: 'center',
       gap: '15px',
       paddingBottom: '5px',
       paddingLeft: '5px',
     }}
     >
-      <Box sx={{ minWidth: `${entityTypeHeaderWidth}px` }}>
-        <Autocomplete
-          autoHighlight
-          disableClearable
-          disabled={isSearchTermEmpty || isSubmitting}
-          noOptionsText={t_i18n('No available options')}
-          disablePortal
+      <Box sx={{ width: `${entityTypeHeaderWidth}px` }}>
+        {/* `disablePortal` has no equivalent here and needs none: the library panel always portals, and it is
+            measured opening over this dialog without closing it. */}
+        <Combobox<autocompleteOptionsType>
+          labelPosition="none"
           options={getAutocompleteOptions()}
-          onChange={(event, selectedOption) => {
-            handleChangeEntityType(selectedOption.value.toEntitytype);
+          value={getAutocompleteValue() ?? null}
+          onValueChange={(selectedOption) => {
+            const picked = selectedOption as autocompleteOptionsType | null;
+            if (picked) handleChangeEntityType(picked.value.toEntitytype);
           }}
-          value={getAutocompleteValue()}
+          disabled={isSearchTermEmpty || isSubmitting}
+          clearable={false}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(a, b) => a.value.toEntitytype === b.value.toEntitytype}
           groupBy={(option) => option.groupLabel}
-          sx={{ borderBottom: 'none' }}
-          renderInput={(params) => (
-            <TextField
-              sx={{ minWidth: '150px' }}
-              {...params}
-            />
-          )}
-        />
+          className="min-w-[150px]"
+        >
+          <ComboboxField>
+            <ComboboxInput aria-label={t_i18n('Entity type')} />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent
+            emptyMessage={t_i18n('No available options')}
+            listAriaLabel={t_i18n('Entity type')}
+          />
+        </Combobox>
       </Box>
-      <Box sx={{ minWidth: `${entityNameHeaderWidth}px` }}>
+      <Box sx={{ width: `${entityNameHeaderWidth}px` }}>
         <Typography
           sx={{
             fontSize: '0.9rem',
@@ -129,11 +136,10 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           {truncate(isSearchTermEmpty ? entity.searchTerm : entity.representative, 20)}
         </Typography>
       </Box>
-      <Box sx={{ minWidth: `${matchHeaderWidth}px` }}>
+      <Box sx={{ width: `${matchHeaderWidth}px` }}>
         <Chip
-          style={{ borderRadius: '4px' }}
           label={getRelationMatchStatus()}
-          color={getChipColor()}
+          severity={getChipColor()}
         />
       </Box>
       <Box>

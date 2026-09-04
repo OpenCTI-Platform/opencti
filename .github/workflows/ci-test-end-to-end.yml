@@ -34,180 +34,180 @@ jobs:
             artifact_suffix: '-group1'
 
     steps:
-    - name: OpenCTI checkout
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-        path: frontend-e2e-test
-        ref: ${{ inputs.checkout_ref }}
+      - name: OpenCTI checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: frontend-e2e-test
+          ref: ${{ inputs.checkout_ref }}
 
-    - name: Runner information
-      continue-on-error: true
-      run: ./frontend-e2e-test/scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+      - name: Runner information
+        continue-on-error: true
+        run: ./frontend-e2e-test/scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Fetch CI EE license
-      run: |
-        echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
+      - name: Fetch CI EE license
+        run: |
+          echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
 
-    - name: Download image platform
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
-      with:
-        name: docker-image-opencti-platform
-        path: /tmp
+      - name: Download image platform
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: docker-image-opencti-platform
+          path: /tmp
 
-    - name: Download image worker
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
-      with:
-        name: docker-image-opencti-worker
-        path: /tmp
+      - name: Download image worker
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: docker-image-opencti-worker
+          path: /tmp
 
-    - name: Load images
-      run: |
-        set -eux
-        docker load --input /tmp/opencti-platform.tar
-        docker load --input /tmp/opencti-worker.tar
-        docker images
+      - name: Load images
+        run: |
+          set -eux
+          docker load --input /tmp/opencti-platform.tar
+          docker load --input /tmp/opencti-worker.tar
+          docker images
 
-    - name: Set up Docker Compose for backends
-      run: |
-         set -ex
-         cd frontend-e2e-test/scripts/ci
-         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"%s\"" "$EE_LICENSE" >> ci-common.env
-         docker network create runner-docker-network
-         docker compose --profile "backend" up -d
+      - name: Set up Docker Compose for backends
+        run: |
+          set -ex
+          cd frontend-e2e-test/scripts/ci
+          printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"%s\"" "$EE_LICENSE" >> ci-common.env
+          docker network create runner-docker-network
+          docker compose --profile "backend" up -d
 
-    - name: Wait for backend infrastructure to be ready
-      run: |
-        set -ex
-        echo "Waiting for ElasticSearch..."
-        until curl -sf http://localhost:9200/_cluster/health > /dev/null 2>&1; do sleep 2; done
-        echo "Waiting for Redis..."
-        until docker exec redis redis-cli ping 2>/dev/null | grep -q PONG; do sleep 2; done
-        echo "Waiting for RabbitMQ..."
-        until curl -sf http://localhost:15672 > /dev/null 2>&1; do sleep 2; done
-        echo "All backend services are ready."
+      - name: Wait for backend infrastructure to be ready
+        run: |
+          set -ex
+          echo "Waiting for ElasticSearch..."
+          until curl -sf http://localhost:9200/_cluster/health > /dev/null 2>&1; do sleep 2; done
+          echo "Waiting for Redis..."
+          until docker exec redis redis-cli ping 2>/dev/null | grep -q PONG; do sleep 2; done
+          echo "Waiting for RabbitMQ..."
+          until curl -sf http://localhost:15672 > /dev/null 2>&1; do sleep 2; done
+          echo "All backend services are ready."
 
-    - name: Start e2e opencti instance
-      run: |
-        set -ex
-        docker run -d --network runner-docker-network \
-          --name opencti-e2e-start \
-          -p 4500:4100 \
-          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/tests:/opt/opencti/tests \
-          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
-          -e APP__PORT=4100 \
-          -e APP__ENABLED_DEV_FEATURES='${{ matrix.dev_features }}' \
-          -e APP__ADMIN__PASSWORD=admin \
-          -e APP__CRYPTO__MASTER_SEED=mMG7tprE8I9atEkYth6jIcAyKUbXMkoKC66VDnLK2Lc= \
-          -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
-          -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
-          -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
-          -e APP__SESSION_TIMEOUT=3600000 \
-          -e APP__HEALTH_ACCESS_KEY=cihealthkey \
-          -e APP__GRAPHQL__ARMOR_PROTECTION__DISABLED=false \
-          -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
-          -e REDIS__HOSTNAME=redis \
-          -e REDIS__NAMESPACE=e2e-start \
-          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
-          -e ELASTICSEARCH__INDEX_PREFIX=e2e-start \
-          -e MINIO__ENDPOINT=minio \
-          -e MINIO__BUCKET_NAME=e2e-start-bucket \
-          -e RABBITMQ__HOSTNAME=rabbitmq \
-          -e RABBITMQ__QUEUE_PREFIX=e2e-start \
-          -e EXPIRATION_SCHEDULER__ENABLED=false \
-          -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
-          -e PUBLISHER_MANAGER__ENABLED=false \
-          -e SMTP__ENABLED=false \
-          filigran/platform:${{ github.sha }}
+      - name: Start e2e opencti instance
+        run: |
+          set -ex
+          docker run -d --network runner-docker-network \
+            --name opencti-e2e-start \
+            -p 4500:4100 \
+            -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/tests:/opt/opencti/tests \
+            -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
+            -e APP__PORT=4100 \
+            -e APP__ENABLED_DEV_FEATURES='${{ matrix.dev_features }}' \
+            -e APP__ADMIN__PASSWORD=admin \
+            -e APP__CRYPTO__MASTER_SEED=mMG7tprE8I9atEkYth6jIcAyKUbXMkoKC66VDnLK2Lc= \
+            -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
+            -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+            -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
+            -e APP__SESSION_TIMEOUT=3600000 \
+            -e APP__HEALTH_ACCESS_KEY=cihealthkey \
+            -e APP__GRAPHQL__ARMOR_PROTECTION__DISABLED=false \
+            -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
+            -e REDIS__HOSTNAME=redis \
+            -e REDIS__NAMESPACE=e2e-start \
+            -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
+            -e ELASTICSEARCH__INDEX_PREFIX=e2e-start \
+            -e MINIO__ENDPOINT=minio \
+            -e MINIO__BUCKET_NAME=e2e-start-bucket \
+            -e RABBITMQ__HOSTNAME=rabbitmq \
+            -e RABBITMQ__QUEUE_PREFIX=e2e-start \
+            -e EXPIRATION_SCHEDULER__ENABLED=false \
+            -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
+            -e PUBLISHER_MANAGER__ENABLED=false \
+            -e SMTP__ENABLED=false \
+            filigran/platform:${{ github.sha }}
 
-    - name: Start e2e worker instance
-      run: |
-        docker run -d --network runner-docker-network \
-          --name opencti-e2e-worker \
-          -e OPENCTI_URL=http://opencti-e2e-start:4100 \
-          -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
-          -e WORKER_LOG_LEVEL=info \
-          filigran/worker:${{ github.sha }}
+      - name: Start e2e worker instance
+        run: |
+          docker run -d --network runner-docker-network \
+            --name opencti-e2e-worker \
+            -e OPENCTI_URL=http://opencti-e2e-start:4100 \
+            -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+            -e WORKER_LOG_LEVEL=info \
+            filigran/worker:${{ github.sha }}
 
-    - name: Wait for OpenCTI e2e backend instances to start
-      run: ./frontend-e2e-test/scripts/ci/wait-for-url-200.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
+      - name: Wait for OpenCTI e2e backend instances to start
+        run: ./frontend-e2e-test/scripts/ci/wait-for-url-200.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
-    - name: Insert test datasets
-      run: |
-        docker exec opencti-e2e-start \
-          node build/script-insert-dataset.mjs --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
+      - name: Insert test datasets
+        run: |
+          docker exec opencti-e2e-start \
+            node build/script-insert-dataset.mjs --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
 
-    - name: e2e tests
-      run: |
-        docker run --network runner-docker-network \
-          --name frontend-e2e-tests \
-          -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
-          -e BACK_END_URL=http://opencti-e2e-start:4100 \
-          -e E2E_TEST=true \
-          -e NODE_OPTIONS=--max_old_space_size=8192 \
-          node:22 \
-          sh -c 'set -eux;
-              cd /home/workspace/opencti-platform/opencti-front
-              npm install -g corepack
-              yarn install
-              yarn playwright install --with-deps chromium
-              yarn test:e2e ${{ matrix.grep_args }}
-            '
+      - name: e2e tests
+        run: |
+          docker run --network runner-docker-network \
+            --name frontend-e2e-tests \
+            -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
+            -e BACK_END_URL=http://opencti-e2e-start:4100 \
+            -e E2E_TEST=true \
+            -e NODE_OPTIONS=--max_old_space_size=8192 \
+            node:22 \
+            sh -c 'set -eux;
+                cd /home/workspace/opencti-platform/opencti-front
+                npm install -g corepack
+                yarn install
+                yarn playwright install --with-deps chromium
+                yarn test:e2e ${{ matrix.grep_args }}
+              '
 
-    - name: Upload front e2e test results
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
-      if: always()
-      continue-on-error: true
-      with:
-        name: frontend-test-results${{ matrix.artifact_suffix }}
-        path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
-        retention-days: 15
+      - name: Upload front e2e test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        if: always()
+        continue-on-error: true
+        with:
+          name: frontend-test-results${{ matrix.artifact_suffix }}
+          path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
+          retention-days: 15
 
 
-    - name: Logs opencti-e2e-start
-      if: always()
-      continue-on-error: true
-      run: docker logs opencti-e2e-start
+      - name: Logs opencti-e2e-start
+        if: always()
+        continue-on-error: true
+        run: docker logs opencti-e2e-start
 
-    - name: Logs opencti-e2e-worker
-      if: always()
-      continue-on-error: true
-      run: docker logs opencti-e2e-worker
+      - name: Logs opencti-e2e-worker
+        if: always()
+        continue-on-error: true
+        run: docker logs opencti-e2e-worker
 
-    # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
-      continue-on-error: true
-      run: |
+      # Output all logs used during the job
+      - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+        continue-on-error: true
+        run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
           echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
           echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
           echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
-    - name: Print resources stats
-      if: always()
-      continue-on-error: true
-      run: cat runner_resource_stat.log
+      - name: Print resources stats
+        if: always()
+        continue-on-error: true
+        run: cat runner_resource_stat.log
 
 
   opencti-frontend-verify-translation:
     name: Verify translation
     runs-on: ubuntu-latest
     steps:
-    - name: OpenCTI checkout
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-        ref: ${{ inputs.checkout_ref }}
+      - name: OpenCTI checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.checkout_ref }}
 
-    - name: Runner information
-      continue-on-error: true
-      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+      - name: Runner information
+        continue-on-error: true
+        run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Frontend verify translation
-      run: |
-        docker run  \
-          --name frontend-verify-translation \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux
-            cd /home/workspace/opencti-platform/opencti-front
-            node script/verify-translation.js
-            '
+      - name: Frontend verify translation
+        run: |
+          docker run  \
+            --name frontend-verify-translation \
+            -v ${{ github.workspace }}:/home/workspace \
+            node:22-alpine3.23 \
+            sh -c 'set -eux
+              cd /home/workspace/opencti-platform/opencti-front
+              node script/verify-translation.js
+              '

@@ -1,7 +1,4 @@
 import React from 'react';
-import Box from '@mui/material/Box';
-import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -9,7 +6,6 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useHelper from '../../../utils/hooks/useHelper';
-import { GARBAGE_COLLECTION_MANAGER } from '../../../utils/platformModulesHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { graphql } from 'react-relay';
@@ -19,6 +15,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { TrashDeleteOperationLine_node$data } from './__generated__/TrashDeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
+import TrashInformation from './TrashInformation';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { TrashDeleteOperationsLinesPaginationQuery, TrashDeleteOperationsLinesPaginationQuery$variables } from './__generated__/TrashDeleteOperationsLinesPaginationQuery.graphql';
 import { TrashDeleteOperationsLines_data$data } from './__generated__/TrashDeleteOperationsLines_data.graphql';
@@ -129,7 +126,7 @@ const Trash: React.FC = () => {
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('DeleteOperation', filters);
 
-  const { isRuntimeFieldEnable, isModuleEnable } = useHelper();
+  const { isRuntimeFieldEnable } = useHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const queryRef = useQueryLoading<TrashDeleteOperationsLinesPaginationQuery>(
@@ -206,29 +203,10 @@ const Trash: React.FC = () => {
   };
   return (
     <ExportContextProvider>
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Breadcrumbs elements={[{ label: t_i18n('Trash'), current: true }]} />
-        <Tooltip
-          sx={{ marginBottom: 2 }}
-          title={(
-            <>
-              {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
-              <br />
-              {t_i18n('Elements deleted by connectors or during platform synchronization are not put into the trash.')}
-              <br />
-              { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
-                t_i18n('An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.')
-              )}
-            </>
-          )}
-        >
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default' }}
-          />
-        </Tooltip>
-      </Box>
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Trash'), current: true }]}
+        adornment={<TrashInformation />}
+      />
       {renderLines()}
     </ExportContextProvider>
   );

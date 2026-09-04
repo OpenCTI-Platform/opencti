@@ -1,9 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { isEmpty } from 'ramda';
 import { useSearchParams } from 'react-router-dom';
 import SearchBulkUnknownEntities from './SearchBulkUnknownEntities';
@@ -15,6 +11,7 @@ import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithout
 import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 import { splitIntoLines } from '../../utils/String';
+import { Tabs, TabsContent, TabsList, TabsTrigger, Textarea } from '@filigran/design-system';
 
 const SearchBulkContainer = () => {
   const { t_i18n } = useFormatter();
@@ -24,7 +21,7 @@ const SearchBulkContainer = () => {
   setTitle(t_i18n('Bulk Search'));
 
   const [textFieldValue, setTextFieldValue] = useState('');
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('known');
   const [values, setValues] = useState<string[]>([]);
   const [numberOfUnknownEntities, setNumberOfUnknownEntities] = useState(0);
   const [numberOfKnownEntities, setNumberOfKnownEntities] = useState(0);
@@ -51,11 +48,11 @@ const SearchBulkContainer = () => {
     }
   }, [searchParams]);
 
-  const handleChangeTab = (value: number) => {
+  const handleChangeTab = (value: string) => {
     setCurrentTab(value);
   };
 
-  const handleChangeTextField = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeTextField = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target;
     const text = splitIntoLines(value);
     setTextFieldValue(text);
@@ -91,43 +88,43 @@ const SearchBulkContainer = () => {
         style={{ marginBottom: 20, marginTop: 0 }}
       >
         <Grid item xs={2} style={{ marginTop: -20 }}>
-          <TextField
+          <Textarea
             onChange={handleChangeTextField}
             value={textFieldValue}
-            multiline={true}
-            fullWidth={true}
             minRows={20}
             placeholder={t_i18n('One keyword by line or separated by commas')}
-            variant="outlined"
+            resize="none"
           />
         </Grid>
         <Grid item xs={10}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3, marginTop: -3 }}>
-            <Tabs
-              value={currentTab}
-              onChange={(_, value) => handleChangeTab(value)}
-            >
-              <Tab label={`${t_i18n('Known entities')} (${numberOfKnownEntities})`} />
-              <Tab label={`${t_i18n('Unknown entities')} (${numberOfUnknownEntities})`} />
-            </Tabs>
-          </Box>
-          {currentTab === 0 && values.length > 0
-            && (
-              <SearchBulk
-                inputValues={values}
-                dataColumns={dataColumns}
-                setNumberOfEntities={setNumberOfKnownEntities}
+          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+            {/* -24px: inline, the negative utility is absent from the shipped CSS */}
+            <div style={{ marginTop: -24 }}>
+              <TabsList className="mb-6">
+                <TabsTrigger value="known" badge={numberOfKnownEntities} badgeLabel={`${numberOfKnownEntities} ${t_i18n('items')}`}>{t_i18n('Known entities')}</TabsTrigger>
+                <TabsTrigger value="unknown" badge={numberOfUnknownEntities} badgeLabel={`${numberOfUnknownEntities} ${t_i18n('items')}`}>{t_i18n('Unknown entities')}</TabsTrigger>
+              </TabsList>
+            </div>
+            <TabsContent value="known">
+              {values.length > 0 && (
+                <SearchBulk
+                  inputValues={values}
+                  dataColumns={dataColumns}
+                  setNumberOfEntities={setNumberOfKnownEntities}
+                />
+              )}
+              {isEmpty(textFieldValue)
+                && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />}
+            </TabsContent>
+            {/* Mounted while inactive: its query feeds its own tab-label count; hidden is explicit because forceMount pins Radix's own hidden to false. */}
+            <TabsContent value="unknown" forceMount hidden={currentTab !== 'unknown'}>
+              <SearchBulkUnknownEntities
+                values={values}
+                setNumberOfEntities={setNumberOfUnknownEntities}
+                isDisplayed={currentTab === 'unknown'}
               />
-            )
-          }
-          {currentTab === 0 && isEmpty(textFieldValue)
-            && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />
-          }
-          <SearchBulkUnknownEntities
-            values={values}
-            setNumberOfEntities={setNumberOfUnknownEntities}
-            isDisplayed={currentTab === 1}
-          />
+            </TabsContent>
+          </Tabs>
         </Grid>
       </Grid>
     </>

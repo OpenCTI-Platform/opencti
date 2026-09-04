@@ -2,17 +2,15 @@ import Button from '@common/button/Button';
 import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
@@ -37,6 +35,7 @@ import { export_max_size } from '../../utils/utils';
 import FilterIconButton from '../FilterIconButton';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 
 const styles = (theme) => ({
   container: {
@@ -71,7 +70,6 @@ const styles = (theme) => ({
     flex: 'auto',
   },
   views: {
-    marginTop: -5,
     display: 'flex',
   },
   linesContainer: {
@@ -256,14 +254,16 @@ class ListLines extends Component {
             )}
             <div className={classes.filler} />
 
-            <div className={classes.views} style={{ display: 'flex', gap: 8 }}>
+            {/* alignItems: the row's own container centres its children, but this inner one did not, so the buttons
+                stretched to the row height instead of sitting on the filters' centre line. */}
+            <div className={classes.views} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
 
               {numberOfElements && (
                 <div
                   style={
                     parametersWithPadding
                       ? { float: 'left', padding: '7px 20px 0 0' }
-                      : { float: 'left', padding: '7px 5px 0 0' }
+                      : { float: 'left', padding: '0px 5px 0 0' }
                   }
                 >
                   <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
@@ -465,15 +465,21 @@ class ListLines extends Component {
                   <ListItemIcon
                     style={{
                       minWidth: handleToggleSelectAll ? 40 : 56,
+                      // The MUI checkbox was a 42px control that carried its own centring; the
+                      // library box is a bare 16px button, so the slot has to do the centring
+                      // itself or the box rides to the top of the header row while the column
+                      // labels stay centred -- the misalignment reported on every list page.
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   >
                     <Checkbox
-                      edge="start"
+                      aria-label={t('Select all')}
                       checked={selectAll}
-                      disableRipple={true}
-                      onChange={
+                      onCheckedChange={
                         typeof handleToggleSelectAll === 'function'
-                        && handleToggleSelectAll.bind(this)
+                          ? handleToggleSelectAll.bind(this)
+                          : undefined
                       }
                       disabled={typeof handleToggleSelectAll !== 'function'}
                     />
@@ -551,30 +557,44 @@ class ListLines extends Component {
           )}
           {handleSwitchRedirectionMode && (
             <Dialog
+              slotProps={{
+                paper: {
+                  className: fdsLayerClass(SURFACE_LAYER),
+                  sx: {
+                    ...layerInputVars,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3,
+                    padding: 3,
+                    '& .MuiDialogTitle-root, & .MuiDialogActions-root': { padding: 0 },
+                  },
+                },
+              }}
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
-              size="small"
-              title={t('List settings')}
             >
+              <DialogTitle>{t('List settings')}</DialogTitle>
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="redirectionMode">
-                  {t('Redirection mode')}
-                </InputLabel>
                 <Select
                   value={redirectionMode}
-                  onChange={(event) => handleSwitchRedirectionMode(event.target.value)
+                  onValueChange={(value) => handleSwitchRedirectionMode(value)
                   }
-                  fullWidth={true}
                 >
-                  <MenuItem value="overview">
-                    {t('Redirecting to the Overview section')}
-                  </MenuItem>
-                  <MenuItem value="knowledge">
-                    {t('Redirecting to the Knowledge section')}
-                  </MenuItem>
-                  <MenuItem value="content">
-                    {t('Redirecting to the Content section')}
-                  </MenuItem>
+                  <SelectLabel>{t('Redirection mode')}</SelectLabel>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t('Redirection mode')}>
+                    <SelectItem value="overview">
+                      {t('Redirecting to the Overview section')}
+                    </SelectItem>
+                    <SelectItem value="knowledge">
+                      {t('Redirecting to the Knowledge section')}
+                    </SelectItem>
+                    <SelectItem value="content">
+                      {t('Redirecting to the Content section')}
+                    </SelectItem>
+                  </SelectContent>
                 </Select>
               </FormControl>
 

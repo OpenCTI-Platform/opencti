@@ -4,6 +4,7 @@ import DrawerMUI from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import { createStyles, useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import classNames from 'classnames';
 import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
@@ -189,6 +190,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
       {variant && (
         <Fab
+          /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
           onClick={() => setOpen(true)}
           color="primary"
           aria-label={update ? 'Edit' : 'Add'}
@@ -222,24 +224,26 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
               }
             }
           : handleClose}
-        onClick={(e) => e.stopPropagation()}
         sx={{
           zIndex: 1202,
         }}
         slotProps={{
           paper: {
             ref,
+            className: fdsLayerClass(SURFACE_LAYER),
             sx: {
+              ...layerInputVars,
               minHeight: '100vh',
               width: getDrawerWidth(size),
               position: 'fixed',
-              overflow: 'auto',
+              overflow: 'hidden',
               transition: theme.transitions.create('width', {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen,
               }),
               paddingTop: `${bannerHeightNumber}px`,
               paddingBottom: `${bannerHeightNumber}px`,
+              backgroundColor: 'var(--bg-elevation-default)',
             },
           },
         }}
@@ -259,7 +263,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           className={classes.container}
           style={{
             ...containerStyle,
-            backgroundColor: theme.palette.background.drawer,
+            backgroundColor: 'var(--bg-elevation-default)',
           }}
         >
           {renderSubHeader()}

@@ -108,18 +108,18 @@ const MarkingDefinitionCreation: FunctionComponent<
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="definition_type"
                 label={t_i18n('Type')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="definition"
                 label={t_i18n('Definition')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={ColorPickerField}
@@ -130,12 +130,12 @@ const MarkingDefinitionCreation: FunctionComponent<
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="x_opencti_order"
                 label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <FormButtonContainer>
                 <Button

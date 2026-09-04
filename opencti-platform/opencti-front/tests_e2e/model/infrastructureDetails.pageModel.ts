@@ -24,7 +24,8 @@ export default class InfrastructureDetailsPageModel {
   }
 
   getCampaignsTab() {
-    return this.page.getByRole('menuitem', { name: 'Campaigns' }).click();
+    // Same as the Victimology entries: the knowledge bar's rows are links now.
+    return this.page.getByRole('link', { name: 'Campaigns' }).click();
   }
 
   getCreateRelationshipButton() {

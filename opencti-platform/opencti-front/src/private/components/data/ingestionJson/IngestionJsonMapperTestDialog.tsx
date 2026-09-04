@@ -111,6 +111,7 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
         <Button
           color={result?.ingestionJsonTester?.nbEntities ? 'primary' : 'secondary'}
           onClick={() => onTest()}
+          keepMui
         >
           {t_i18n('Test')}
         </Button>

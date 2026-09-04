@@ -178,7 +178,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -216,11 +216,11 @@ const SyncEditionContainer = ({ synchronizer }) => {
             </Tooltip>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="uri"
               label={t_i18n('Remote OpenCTI URL')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               disabled={true}
             />
             <PasswordTextField
@@ -231,11 +231,11 @@ const SyncEditionContainer = ({ synchronizer }) => {
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="dd"
               label={t_i18n('Remote OpenCTI stream ID')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               value={
                 streams.find((s) => s.id === initialValues.stream_id)?.label ?? EMPTY_VALUE
               }
@@ -266,7 +266,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Starting synchronization (empty = from start)'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
             }}

@@ -5,10 +5,7 @@ import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Accordion from '@mui/material/Accordion';
@@ -18,7 +15,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Add, Delete, ErrorOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -36,6 +33,7 @@ import type { SamlProviderFormCreateMutation } from './__generated__/SamlProvide
 import type { SamlProviderFormEditMutation } from './__generated__/SamlProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
 import { PaginationOptions } from '../../../../components/list_lines';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 // --- GraphQL Mutations ---
 
@@ -280,7 +278,7 @@ const SamlProviderForm = ({
   const { t_i18n } = useFormatter();
   const { settings } = useAuth();
   const theme = useTheme<Theme>();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('configuration');
   const isEditing = !!data;
   const [overrideIdentifier, setOverrideIdentifier] = useState(!!data?.identifier_override);
   const [overrideCallbackUrl, setOverrideCallbackUrl] = useState(!!data?.configuration?.callback_url);
@@ -447,396 +445,401 @@ const SamlProviderForm = ({
         return (
           <Form>
             <IdentifierSanitizeEffect />
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)}>
-                <Tab label={t_i18n('Configuration')} />
-                <Tab label={t_i18n('Groups')} />
-                <Tab label={t_i18n('Organizations')} />
-              </Tabs>
-            </Box>
-            {currentTab === 0 && (
-              <>
-                {/* Enabled at the very top */}
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="enabled"
-                  label={t_i18n('Enable SAML authentication')}
-                  containerstyle={{ marginTop: 20 }}
-                />
+            <Tabs value={currentTab} onValueChange={setCurrentTab}>
+              <TabsList>
+                <TabsTrigger value="configuration">{t_i18n('Configuration')}</TabsTrigger>
+                <TabsTrigger value="groups">{t_i18n('Groups')}</TabsTrigger>
+                <TabsTrigger value="organizations">{t_i18n('Organizations')}</TabsTrigger>
+              </TabsList>
 
-                {/* Mandatory fields */}
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t_i18n('Configuration name')}
-                  fullWidth
-                  required
-                  style={{ marginTop: 20 }}
-                />
+              <TabsContent value="configuration">
+                <>
+                  {/* Enabled at the very top */}
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="enabled"
+                    label={t_i18n('Enable SAML authentication')}
+                    containerstyle={{ marginTop: 20 }}
+                  />
 
-                {/* Provider routing — right below Configuration name */}
-                <Accordion
-                  variant="outlined"
-                  defaultExpanded={overrideIdentifier || overrideCallbackUrl}
-                  sx={{ mt: 2, borderRadius: 1, overflow: 'hidden', '&:before': { display: 'none' } }}
-                >
-                  <AccordionSummary expandIcon={<ExpandMoreOutlined />} sx={{ px: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', width: '100%' }}>
-                      <Typography variant="caption" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>
-                        {t_i18n('Callback URL')}
-                      </Typography>
-                      {displayedCallbackUrl ? (
-                        <ItemCopy content={displayedCallbackUrl} variant="inLine" />
-                      ) : (
-                        <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
-                          {t_i18n('Enter a configuration name to generate the callback URL.')}
+                  {/* Mandatory fields */}
+                  <Field
+                    component={TextField}
+                    variant="outlined"
+                    name="name"
+                    label={t_i18n('Configuration name')}
+                    fullWidth
+                    required
+                    className="mt-5"
+                  />
+
+                  {/* Provider routing — right below Configuration name */}
+                  <Accordion
+                    variant="outlined"
+                    defaultExpanded={overrideIdentifier || overrideCallbackUrl}
+                    sx={{ mt: 2, borderRadius: 1, overflow: 'hidden', '&:before': { display: 'none' } }}
+                  >
+                    <AccordionSummary expandIcon={<ExpandMoreOutlined />} sx={{ px: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', width: '100%' }}>
+                        <Typography variant="caption" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>
+                          {t_i18n('Callback URL')}
                         </Typography>
-                      )}
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ px: 2, pb: 3 }}>
-                    <Box sx={{
-                      display: 'grid',
-                      gridTemplateColumns: 'auto 1fr',
-                      alignItems: 'end',
-                      columnGap: 2,
-                      rowGap: 2,
-                    }}
-                    >
-                      <FormControlLabel
-                        control={(
-                          <MuiSwitch
-                            checked={overrideIdentifier}
-                            onChange={(_, checked) => handleToggleOverride(checked)}
-                            size="small"
-                          />
+                        {displayedCallbackUrl ? (
+                          <ItemCopy content={displayedCallbackUrl} variant="inLine" />
+                        ) : (
+                          <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                            {t_i18n('Enter a configuration name to generate the callback URL.')}
+                          </Typography>
                         )}
-                        label={t_i18n('Override identifier')}
-                        componentsProps={{ typography: { variant: 'body2' } }}
-                        sx={{ m: 0 }}
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ px: 2, pb: 3 }}>
+                      <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto 1fr',
+                        alignItems: 'end',
+                        columnGap: 2,
+                        rowGap: 2,
+                      }}
+                      >
+                        <FormControlLabel
+                          control={(
+                            <MuiSwitch
+                              checked={overrideIdentifier}
+                              onChange={(_, checked) => handleToggleOverride(checked)}
+                              size="small"
+                            />
+                          )}
+                          label={t_i18n('Override identifier')}
+                          componentsProps={{ typography: { variant: 'body2' } }}
+                          sx={{ m: 0 }}
+                        />
+                        <Field
+                          component={TextField}
+                          variant="outlined"
+                          name="identifier_override"
+                          label={t_i18n('Provider identifier')}
+                          placeholder={slugifyIdentifier(values.name) || undefined}
+                          InputLabelProps={{ shrink: true }}
+                          fullWidth
+                          size="small"
+                          disabled={!overrideIdentifier}
+                        />
+                        <FormControlLabel
+                          control={(
+                            <MuiSwitch
+                              checked={overrideCallbackUrl}
+                              onChange={(_, checked) => handleToggleCallbackUrl(checked)}
+                              size="small"
+                            />
+                          )}
+                          label={t_i18n('Override callback URL')}
+                          componentsProps={{ typography: { variant: 'body2' } }}
+                          sx={{ m: 0 }}
+                        />
+                        {overrideCallbackUrl ? (
+                          <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                            <Field
+                              component={TextField}
+                              variant="outlined"
+                              name="callback_url"
+                              label={t_i18n('Callback URL override')}
+                              fullWidth
+                              size="small"
+                            />
+                            {callbackUrlMismatch && (
+                              <Tooltip
+                                title={t_i18n('The callback URL does not contain the expected identifier path. The authentication callback will not work unless the URL includes "/auth/{identifier}/callback" where {identifier} matches the provider identifier.')}
+                              >
+                                <ErrorOutlined color="error" sx={{ mb: 0.5, fontSize: 20 }} />
+                              </Tooltip>
+                            )}
+                          </Box>
+                        ) : <span />}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+                  <Field
+                    component={TextField}
+                    variant="outlined"
+                    name="description"
+                    label={t_i18n('Description')}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    style={{ marginTop: 20 }}
+                  />
+
+                  <Field
+                    component={TextField}
+                    variant="outlined"
+                    name="issuer"
+                    label={t_i18n('Issuer')}
+                    fullWidth
+                    required
+                    className="mt-5"
+                  />
+                  <Field
+                    component={TextField}
+                    variant="outlined"
+                    name="entry_point"
+                    label={t_i18n('Entry point')}
+                    fullWidth
+                    required
+                    className="mt-5"
+                  />
+                  <Field
+                    component={TextField}
+                    variant="outlined"
+                    name="idp_certificate"
+                    label={t_i18n('IDP certificate')}
+                    fullWidth
+                    required
+                    multiline
+                    rows={4}
+                    style={{ marginTop: 20 }}
+                  />
+                  <SecretFieldControl
+                    secretInfo={(data?.configuration?.private_key ?? null) as SecretInfo | null}
+                    namePrefix="private_key"
+                    label={t_i18n('Private key')}
+                    isEditing={isEditing}
+                    availableSecrets={availableSecrets}
+                    multiline
+                    style={{ marginTop: 2.5 }}
+                  />
+
+                  <AuthProviderUserInfoFields />
+                  <Field
+                    component={TextField}
+                    variant="outlined"
+                    name="button_label_override"
+                    label={t_i18n('Login button label')}
+                    fullWidth
+                    className="mt-5"
+                  />
+
+                  {/* --- Security & Signing --- */}
+                  <Accordion variant="outlined" style={{ marginTop: 30 }}>
+                    <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                      <Typography>{t_i18n('Security & Signing')}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ display: 'block' }}>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="want_assertions_signed"
+                        label={t_i18n('Want assertion signed')}
+                      />
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="want_authn_response_signed"
+                        label={t_i18n('Want authn response signed')}
+                      />
+                      <Field
+                        component={SelectFieldFds}
+                        variant="outlined"
+                        name="signature_algorithm"
+                        label={t_i18n('Signature algorithm')}
+                        fullWidth
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        <SelectItem value="">{t_i18n('None')}</SelectItem>
+                        <SelectItem value="sha1">sha1</SelectItem>
+                        <SelectItem value="sha256">sha256</SelectItem>
+                        <SelectItem value="sha512">sha512</SelectItem>
+                      </Field>
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="digest_algorithm"
+                        label={t_i18n('Digest algorithm')}
+                        fullWidth
+                        className="mt-5"
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
-                        name="identifier_override"
-                        label={t_i18n('Provider identifier')}
-                        placeholder={slugifyIdentifier(values.name) || undefined}
-                        InputLabelProps={{ shrink: true }}
+                        variant="outlined"
+                        name="identifier_format"
+                        label={t_i18n('Identifier format (NameID)')}
                         fullWidth
-                        size="small"
-                        disabled={!overrideIdentifier}
+                        className="mt-5"
                       />
-                      <FormControlLabel
-                        control={(
-                          <MuiSwitch
-                            checked={overrideCallbackUrl}
-                            onChange={(_, checked) => handleToggleCallbackUrl(checked)}
-                            size="small"
-                          />
-                        )}
-                        label={t_i18n('Override callback URL')}
-                        componentsProps={{ typography: { variant: 'body2' } }}
-                        sx={{ m: 0 }}
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="signing_cert"
+                        label={t_i18n('Signing certificate')}
+                        fullWidth
+                        multiline
+                        rows={4}
+                        style={{ marginTop: 20 }}
                       />
-                      {overrideCallbackUrl ? (
-                        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                          <Field
-                            component={TextField}
-                            variant="standard"
-                            name="callback_url"
-                            label={t_i18n('Callback URL override')}
-                            fullWidth
-                            size="small"
-                          />
-                          {callbackUrlMismatch && (
-                            <Tooltip
-                              title={t_i18n('The callback URL does not contain the expected identifier path. The authentication callback will not work unless the URL includes "/auth/{identifier}/callback" where {identifier} matches the provider identifier.')}
-                            >
-                              <ErrorOutlined color="error" sx={{ mb: 0.5, fontSize: 20 }} />
-                            </Tooltip>
-                          )}
-                        </Box>
-                      ) : <span />}
-                    </Box>
-                  </AccordionDetails>
-                </Accordion>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="description"
-                  label={t_i18n('Description')}
-                  fullWidth
-                  multiline
-                  rows={3}
-                  style={{ marginTop: 20 }}
-                />
+                      <SecretFieldControl
+                        secretInfo={(data?.configuration?.decryption_pvk ?? null) as SecretInfo | null}
+                        namePrefix="decryption_pvk"
+                        label={t_i18n('Decryption private key')}
+                        isEditing={isEditing}
+                        availableSecrets={availableSecrets}
+                        multiline
+                        style={{ marginTop: 2.5 }}
+                      />
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="decryption_cert"
+                        label={t_i18n('Decryption certificate')}
+                        fullWidth
+                        multiline
+                        rows={4}
+                        style={{ marginTop: 20 }}
+                      />
+                    </AccordionDetails>
+                  </Accordion>
 
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="issuer"
-                  label={t_i18n('Issuer')}
-                  fullWidth
-                  required
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="entry_point"
-                  label={t_i18n('Entry point')}
-                  fullWidth
-                  required
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="idp_certificate"
-                  label={t_i18n('IDP certificate')}
-                  fullWidth
-                  required
-                  multiline
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                />
-                <SecretFieldControl
-                  secretInfo={(data?.configuration?.private_key ?? null) as SecretInfo | null}
-                  namePrefix="private_key"
-                  label={t_i18n('Private key')}
-                  isEditing={isEditing}
-                  availableSecrets={availableSecrets}
-                  multiline
-                  style={{ marginTop: 2.5 }}
-                />
+                  {/* --- Request behavior --- */}
+                  <Accordion variant="outlined" style={{ marginTop: 10 }}>
+                    <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                      <Typography>{t_i18n('Request behavior')}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ display: 'block' }}>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="logout_remote"
+                        label={t_i18n('Logout remote')}
+                      />
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="force_reauthentication"
+                        label={t_i18n('Force reauthentication')}
+                      />
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="disable_requested_authn_context"
+                        label={t_i18n('Disable requested authn context')}
+                      />
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="disable_request_acs_url"
+                        label={t_i18n('Disable request ACS URL')}
+                      />
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="skip_request_compression"
+                        label={t_i18n('Skip request compression')}
+                      />
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="authn_context"
+                        label={t_i18n('Authentication context (comma-separated)')}
+                        fullWidth
+                        className="mt-5"
+                      />
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="sso_binding_type"
+                        label={t_i18n('SSO Binding type')}
+                        fullWidth
+                        className="mt-5"
+                      />
+                    </AccordionDetails>
+                  </Accordion>
 
-                <AuthProviderUserInfoFields />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="button_label_override"
-                  label={t_i18n('Login button label')}
-                  fullWidth
-                  style={{ marginTop: 20 }}
-                />
-
-                {/* --- Security & Signing --- */}
-                <Accordion variant="outlined" style={{ marginTop: 30 }}>
-                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                    <Typography>{t_i18n('Security & Signing')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ display: 'block' }}>
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="want_assertions_signed"
-                      label={t_i18n('Want assertion signed')}
-                    />
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="want_authn_response_signed"
-                      label={t_i18n('Want authn response signed')}
-                    />
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="signature_algorithm"
-                      label={t_i18n('Signature algorithm')}
-                      fullWidth
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                    >
-                      <MenuItem value="">{t_i18n('None')}</MenuItem>
-                      <MenuItem value="sha1">sha1</MenuItem>
-                      <MenuItem value="sha256">sha256</MenuItem>
-                      <MenuItem value="sha512">sha512</MenuItem>
-                    </Field>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="digest_algorithm"
-                      label={t_i18n('Digest algorithm')}
-                      fullWidth
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="identifier_format"
-                      label={t_i18n('Identifier format (NameID)')}
-                      fullWidth
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="signing_cert"
-                      label={t_i18n('Signing certificate')}
-                      fullWidth
-                      multiline
-                      rows={4}
-                      style={{ marginTop: 20 }}
-                    />
-                    <SecretFieldControl
-                      secretInfo={(data?.configuration?.decryption_pvk ?? null) as SecretInfo | null}
-                      namePrefix="decryption_pvk"
-                      label={t_i18n('Decryption private key')}
-                      isEditing={isEditing}
-                      availableSecrets={availableSecrets}
-                      multiline
-                      style={{ marginTop: 2.5 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="decryption_cert"
-                      label={t_i18n('Decryption certificate')}
-                      fullWidth
-                      multiline
-                      rows={4}
-                      style={{ marginTop: 20 }}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-
-                {/* --- Request behavior --- */}
-                <Accordion variant="outlined" style={{ marginTop: 10 }}>
-                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                    <Typography>{t_i18n('Request behavior')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ display: 'block' }}>
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="logout_remote"
-                      label={t_i18n('Logout remote')}
-                    />
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="force_reauthentication"
-                      label={t_i18n('Force reauthentication')}
-                    />
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="disable_requested_authn_context"
-                      label={t_i18n('Disable requested authn context')}
-                    />
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="disable_request_acs_url"
-                      label={t_i18n('Disable request ACS URL')}
-                    />
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="skip_request_compression"
-                      label={t_i18n('Skip request compression')}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="authn_context"
-                      label={t_i18n('Authentication context (comma-separated)')}
-                      fullWidth
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="sso_binding_type"
-                      label={t_i18n('SSO Binding type')}
-                      fullWidth
-                      style={{ marginTop: 20 }}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-
-                {/* --- Extra configuration --- */}
-                <Accordion variant="outlined" style={{ marginTop: 10 }}>
-                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                    <Typography>{t_i18n('Extra configuration')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ display: 'block' }}>
-                    <FieldArray name="extra_conf">
-                      {({ push, remove }) => (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
-                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
-                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Add')}
-                              size="default"
-                              onClick={() => push({ type: 'String', key: '', value: '' })}
-                            >
-                              <Add fontSize="small" color="primary" />
-                            </IconButton>
-                          </div>
-                          {values.extra_conf.length === 0 && (
-                            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
-                              {t_i18n('No extra configuration entries. Click + to add one.')}
-                            </Typography>
-                          )}
-                          {values.extra_conf.map((_: ExtraConfEntry, index: number) => (
-                            <div
-                              key={index}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 8,
-                                marginTop: 10,
-                              }}
-                            >
-                              <Field
-                                component={SelectField}
-                                variant="standard"
-                                name={`extra_conf[${index}].type`}
-                                label={t_i18n('Type')}
-                                containerstyle={{ width: '20%' }}
-                              >
-                                <MenuItem value="String">String</MenuItem>
-                                <MenuItem value="Number">Number</MenuItem>
-                                <MenuItem value="Boolean">Boolean</MenuItem>
-                              </Field>
-                              <Field
-                                component={TextField}
-                                variant="standard"
-                                name={`extra_conf[${index}].key`}
-                                label={t_i18n('Key')}
-                                fullWidth
-                              />
-                              <Field
-                                component={TextField}
-                                variant="standard"
-                                name={`extra_conf[${index}].value`}
-                                label={t_i18n('Value')}
-                                fullWidth
-                              />
+                  {/* --- Extra configuration --- */}
+                  <Accordion variant="outlined" style={{ marginTop: 10 }}>
+                    <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                      <Typography>{t_i18n('Extra configuration')}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ display: 'block' }}>
+                      <FieldArray name="extra_conf">
+                        {({ push, remove }) => (
+                          <>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
+                              <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
+                              <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
                               <IconButton
                                 color="primary"
-                                aria-label={t_i18n('Delete')}
-                                onClick={() => remove(index)}
-                                style={{ marginTop: 10 }}
+                                aria-label={t_i18n('Add')}
+                                size="default"
+                                onClick={() => push({ type: 'String', key: '', value: '' })}
                               >
-                                <Delete fontSize="small" />
+                                <Add fontSize="small" color="primary" />
                               </IconButton>
                             </div>
-                          ))}
-                        </>
-                      )}
-                    </FieldArray>
-                  </AccordionDetails>
-                </Accordion>
-              </>
-            )}
-            {currentTab === 1 && <AuthProviderGroupsFields />}
-            {currentTab === 2 && <AuthProviderOrganizationsFields />}
+                            {values.extra_conf.length === 0 && (
+                              <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                                {t_i18n('No extra configuration entries. Click + to add one.')}
+                              </Typography>
+                            )}
+                            {values.extra_conf.map((_: ExtraConfEntry, index: number) => (
+                              <div
+                                key={index}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 8,
+                                  marginTop: 10,
+                                }}
+                              >
+                                <Field
+                                  component={SelectFieldFds}
+                                  variant="outlined"
+                                  name={`extra_conf[${index}].type`}
+                                  label={t_i18n('Type')}
+                                  containerstyle={{ width: '20%' }}
+                                >
+                                  <SelectItem value="String">String</SelectItem>
+                                  <SelectItem value="Number">Number</SelectItem>
+                                  <SelectItem value="Boolean">Boolean</SelectItem>
+                                </Field>
+                                <Field
+                                  component={TextField}
+                                  variant="outlined"
+                                  name={`extra_conf[${index}].key`}
+                                  label={t_i18n('Key')}
+                                  fullWidth
+                                />
+                                <Field
+                                  component={TextField}
+                                  variant="outlined"
+                                  name={`extra_conf[${index}].value`}
+                                  label={t_i18n('Value')}
+                                  fullWidth
+                                />
+                                <IconButton
+                                  color="primary"
+                                  aria-label={t_i18n('Delete')}
+                                  onClick={() => remove(index)}
+                                  style={{ marginTop: 10 }}
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                      </FieldArray>
+                    </AccordionDetails>
+                  </Accordion>
+                </>
+              </TabsContent>
+              <TabsContent value="groups">
+                <AuthProviderGroupsFields />
+              </TabsContent>
+              <TabsContent value="organizations">
+                <AuthProviderOrganizationsFields />
+              </TabsContent>
+            </Tabs>
             <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
                 variant="secondary"

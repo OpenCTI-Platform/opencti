@@ -11,7 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
 import Slide from '@mui/material/Slide';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import { ListItemButton } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
@@ -25,6 +25,7 @@ import ItemMarkings from '../../../../../components/ItemMarkings';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
+import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
 const styles = (theme) => ({
   itemNested: {
@@ -55,14 +56,12 @@ const styles = (theme) => ({
     paddingLeft: 10,
     height: 50,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
+  bodyItem: bodyItemStyle,
+  // `text-overflow` never reaches bare text in a flex container; it only ellipsises a real child.
+  truncate: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    whiteSpace: 'nowrap',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -85,18 +84,25 @@ const styles = (theme) => ({
 
 const inlineStyles = {
   name: {
-    width: '35%',
+    width: '28%',
   },
   creator_name: {
-    width: '20%',
+    width: '15%',
   },
   labels: {
-    width: '15%',
+    width: '12%',
     display: 'flex',
     alignItems: 'center',
   },
+  // A track too short for "PAP:AMBER" squeezes the chip instead of shortening it.
+  markings: {
+    width: '24%',
+    display: 'flex',
+    alignItems: 'center',
+    paddingRight: 16,
+  },
   lastModified: {
-    width: '10%',
+    width: '16%',
   },
 };
 
@@ -162,6 +168,8 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                   aria-haspopup="true"
                   color={nested ? 'inherit' : 'primary'}
                   size="small"
+                  keepMui
+                  aria-label={t_i18n('Download this file')}
                 >
                   <GetAppOutlined fontSize="small" />
                 </IconButton>
@@ -173,6 +181,8 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                 color={nested ? 'inherit' : 'primary'}
                 onClick={handleOpenDelete}
                 size="small"
+                keepMui
+                aria-label={t_i18n('Delete this workbench')}
               >
                 <DeleteOutlined fontSize="small" />
               </IconButton>
@@ -207,29 +217,27 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
             primary={(
               <>
                 <div className={classes.bodyItem} style={inlineStyles.name}>
-                  {file.name.replace('.json', '')}
+                  <span className={classes.truncate}>{file.name.replace('.json', '')}</span>
                 </div>
                 <FieldOrEmpty source={file.metaData.creator?.name}>
                   <div className={classes.bodyItem} style={inlineStyles.creator_name}>
-                    {file.metaData.creator?.name}
+                    <span className={classes.truncate}>{file.metaData.creator?.name}</span>
                   </div>
                 </FieldOrEmpty>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
                   {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
                     <Chip
                       key={index}
-                      classes={{ root: classes.chipInList }}
-                      color="primary"
-                      variant="outlined"
+                      severity="info"
                       label={label.trim()}
                     />
                   )) : null}
                 </div>
-                <div className={classes.bodyItem} style={inlineStyles.labels}>
+                <div className={classes.bodyItem} style={inlineStyles.markings}>
                   <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.lastModified}>
-                  {nsdt(file.lastModified)}
+                  <span className={classes.truncate}>{nsdt(file.lastModified)}</span>
                 </div>
               </>
             )}

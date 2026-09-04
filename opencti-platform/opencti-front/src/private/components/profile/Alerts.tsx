@@ -6,9 +6,8 @@ import { AlertsLines_data$data } from '@components/profile/__generated__/AlertsL
 import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from '@components/profile/__generated__/AlertsLinesPaginationQuery.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
-import { Badge, Tooltip } from '@mui/material';
-import Chip from '@mui/material/Chip';
-import { indigo } from '@mui/material/colors';
+import { Badge, Stack, Tooltip } from '@mui/material';
+import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import { FunctionComponent, Suspense, useState } from 'react';
@@ -19,8 +18,6 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import { chipInListBasicStyle } from '../../../utils/chipStyle';
-import { hexToRGB } from '../../../utils/Colors';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -31,7 +28,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
-import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { getFirstOperation, iconSelector } from './notifications/notificationUtils';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
@@ -133,6 +130,21 @@ interface AlertsLineActionsProps {
   setNotificationToDelete: (notification: AlertsLine_node$data) => void;
 }
 
+// Event type is categorical, so the tone carries the distinction without asserting a level:
+// create -> low, update -> info, delete -> critical, several at once -> medium.
+const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
+  switch (operation) {
+    case 'update':
+      return 'info';
+    case 'delete':
+      return 'critical';
+    case 'multiple':
+      return 'medium';
+    default:
+      return 'low';
+  }
+};
+
 const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   data,
   setNotificationToDelete,
@@ -160,7 +172,7 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   };
 
   return (
-    <div style={{ marginLeft: -40 }}>
+    <Stack direction="row" alignItems="center">
       <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}>
         <IconButton
           disabled={updating}
@@ -171,6 +183,8 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           }}
           size="small"
           color={data.is_read ? 'primary' : 'success'}
+          keepMui
+          aria-label={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}
         >
           {data.is_read
             ? <UnpublishedOutlined fontSize="small" />
@@ -188,11 +202,12 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           }}
           size="small"
           color="primary"
+          aria-label={t_i18n('Delete this notification')}
         >
           <DeleteOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
-    </div>
+    </Stack>
   );
 };
 
@@ -276,23 +291,15 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           none: t_i18n('Unknown'),
         };
         return (
-          <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+          <div style={{ fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
             <Chip
-              style={{ fontSize: 12,
-                height: 20,
-                float: 'left',
-                width: 150,
-                textTransform: 'uppercase',
-                borderRadius: 4,
-                backgroundColor: hexToRGB(colors[firstOperation] ?? indigo[500], 0.08),
-                color: colors[firstOperation] ?? indigo[500],
-                border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
-              }}
+              severity={operationSeverity(firstOperation)}
               label={
                 events.length > 1
                   ? t_i18n('Multiple')
                   : (eventTypes[firstOperation] ?? firstOperation)
               }
+              style={{ float: 'left' }}
             />
           </div>
         );
@@ -336,35 +343,27 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
       isSortable: isRuntimeSort,
       render: ({ notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         return (
+          // `textOverflow` on this box never did anything: it applies to TEXT in the box, not
+          // to a child element, so the Chip simply overflowed and the box hard-clipped it mid-
+          // glyph — the rendering bug reported on this column.
           <div style={{
-            height: 20,
             fontSize: 13,
             float: 'left',
+            maxWidth: '100%',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
             paddingRight: 10,
           }}
           >
-            <Tooltip title={name ?? EMPTY_VALUE}>
-              <Chip
-                style={{
-                  ...chipInListBasicStyle,
-                  width: 100,
-                  marginRight: 10,
-                }}
-                color={notification_type === 'live'
-                  ? 'warning'
-                  : 'secondary'}
-                variant="outlined"
-                label={name ?? EMPTY_VALUE}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleAddFilter('name', name, 'eq');
-                }}
-              />
-            </Tooltip>
+            <Chip
+              severity={notification_type === 'live' ? 'high' : 'info'}
+              label={name ?? EMPTY_VALUE}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddFilter('name', name, 'eq');
+              }}
+            />
           </div>
         );
       },

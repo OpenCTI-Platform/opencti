@@ -5,6 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 import { GenericContext } from '../model/GenericContextModel';
+import { layerInputVars } from '../../../../utils/fdsLayer';
 import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -13,12 +14,18 @@ const useStyles = makeStyles(() => ({
   alert: {
     width: '100%',
     marginTop: 20,
-    paddingBottom: 0,
+    padding: 16,
+    border: 'none',
+    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--bg-elevation-default)',
+    // `--bg-input-default` resolves where it is DECLARED, on `:root`, so the layer class alone misses it.
+    ...layerInputVars,
   },
+  // The alert's own message slot leads with 8px, which stacked on the padding above.
   message: {
     width: '100%',
     overflow: 'visible',
-    paddingBottom: 0,
+    padding: 0,
   },
 }));
 
@@ -82,6 +89,8 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
       severity="info"
       icon={false}
       variant="outlined"
+      // The alias ladder is anchored by the host panel; the block sits one step above it.
+      className="layer-3"
       style={{ position: 'relative' }}
       aria-label={finalLabel}
     >

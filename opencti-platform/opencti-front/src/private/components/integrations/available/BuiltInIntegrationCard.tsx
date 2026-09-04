@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import Card from '../../../../components/common/card/Card';
+import { paperBorder } from '../paperSurface';
 
 export interface BuiltInIntegrationCardProps {
   definition: BuiltInIntegrationDefinition;
@@ -31,7 +32,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
       sx={{
         height: '100%',
         '& .MuiCard-root': {
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+          border: `1px solid ${paperBorder(theme)}`,
           transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {

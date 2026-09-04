@@ -1,9 +1,6 @@
 import { FunctionComponent, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import Alert from '@mui/material/Alert';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import { Box } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import DraftWorks from './DraftWorks';
@@ -11,6 +8,7 @@ import DraftTasks from './DraftTasks';
 import Tag from '../../../components/common/tag/Tag';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../components/Theme';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 interface DraftProcessingStatusProps {
   forceRefetch: () => void;
@@ -41,26 +39,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
       {isCurrentDraftProcessing && (
         <Tag
           color={theme.palette.designSystem.alert.warning.primary}
-          label={(
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <span>{t_i18n('Processes currently running')}</span>
-              <Box
-                component="span"
-                sx={{
-                  backgroundColor: 'background.paper',
-                  borderRadius: '10px',
-                  px: 0.75,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  lineHeight: '16px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                }}
-              >
-                {currentDraftProcessingCount}
-              </Box>
-            </Box>
-          )}
+          label={`${t_i18n('Processes currently running')} ${currentDraftProcessingCount}`}
           onClick={() => {
             forceRefetch();
             setDisplayProcesses(true);
@@ -76,12 +55,14 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
       >
         <>
           <Alert severity="info">{t_i18n('This page lists the most recent works and tasks of the current draft')}</Alert>
-          <Tabs style={{ paddingBottom: 10 }} value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-            <Tab label={t_i18n('Works')} value="Works" />
-            <Tab label={t_i18n('Tasks')} value="Tasks" />
+          <Tabs value={tabValue} onValueChange={setTabValue}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="Works">{t_i18n('Works')}</TabsTrigger>
+              <TabsTrigger value="Tasks">{t_i18n('Tasks')}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="Works"><DraftWorks draftId={currentDraftId} /></TabsContent>
+            <TabsContent value="Tasks"><DraftTasks draftId={currentDraftId} /></TabsContent>
           </Tabs>
-          {tabValue === 'Works' && (<DraftWorks draftId={currentDraftId} />)}
-          {tabValue === 'Tasks' && (<DraftTasks draftId={currentDraftId} />)}
         </>
       </Drawer>
     </div>

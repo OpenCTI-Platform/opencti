@@ -5,7 +5,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItem from '@mui/material/ListItem';
-import { IconButton, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { ContentCopy, OpenInNew } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { environment } from '../../../../relay/environment';
@@ -18,19 +19,12 @@ import { useFormatter } from '../../../../components/i18n';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
 import { copyToClipboard } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles({
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   item: {
     paddingLeft: 10,
     height: 50,
@@ -127,14 +121,24 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
               'Copy uri to clipboard for your OpenCTI synchronizer configuration',
             )}
           >
-            <IconButton onClick={copyClick} color="primary">
-              <ContentCopy />
-            </IconButton>
+            <IconButton
+              onClick={copyClick}
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n(
+                'Copy uri to clipboard for your OpenCTI synchronizer configuration',
+              )}
+              icon={<ContentCopy />}
+            />
           </Tooltip>
           <Tooltip title={t_i18n('Access stream directly in your browser')}>
-            <IconButton onClick={browseClick} color="primary">
-              <OpenInNew />
-            </IconButton>
+            <IconButton
+              onClick={browseClick}
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n('Access stream directly in your browser')}
+              icon={<OpenInNew />}
+            />
           </Tooltip>
         </>
       )}

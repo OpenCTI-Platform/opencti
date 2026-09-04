@@ -3,7 +3,7 @@ import { Field, FieldArray } from 'formik';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
-import Paper from '@mui/material/Paper';
+import { Paper } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 
@@ -30,10 +30,10 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
             <div id="total_headers">
               {values?.map((_, index) => (
                 <Paper
+                  padding={24}
                   className="paper-for-grid"
-                  variant="outlined"
                   key={index}
-                  style={{ marginTop: 20, padding: 20, width: '100%', position: 'relative' }}
+                  style={{ marginTop: 20, width: '100%', position: 'relative' }}
                 >
                   <div
                     style={{
@@ -45,13 +45,13 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
                   >
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.name`}
                       label={t_i18n('Header name')}
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.value`}
                       label={t_i18n('Header value')}
                     />
@@ -70,7 +70,7 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
               ))}
               <Button
                 size="small"
-                startIcon={<AddOutlined />}
+                startIcon={<AddOutlined fontSize="small" />}
                 aria-label="Add"
                 id="addHeader"
                 onClick={() => {

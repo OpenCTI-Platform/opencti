@@ -1,11 +1,9 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import Autocomplete from '@mui/material/Autocomplete';
-import Chip from '@mui/material/Chip';
+import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import MuiTextField from '@mui/material/TextField';
 import { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
@@ -80,28 +78,29 @@ const EntitySettingCustomFieldsAddDialog: FunctionComponent<EntitySettingCustomF
 
   return (
     <Dialog open={open} onClose={handleClose} title={t_i18n('Add a custom field')}>
-      <Autocomplete
+      <Combobox<CustomFieldDefinitionNode>
         multiple
+        closeOnSelect
         options={candidates}
         value={selected}
-        noOptionsText={t_i18n('No available custom field')}
+        onValueChange={(next) => setSelected((next ?? []) as CustomFieldDefinitionNode[])}
         getOptionLabel={(cf) => `${cf.label} (${getCustomFieldTypeLabel(cf.field_type, t_i18n)})`}
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        onChange={(_, newValue) => setSelected(newValue)}
-        renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => {
-          const { key, ...tagProps } = getTagProps({ index });
-          return (
-            <Chip key={key} label={option.label} {...tagProps} />
-          );
-        })}
-        renderInput={(params) => (
-          <MuiTextField
-            {...params}
-            variant="standard"
-            label={t_i18n('Custom fields')}
-          />
-        )}
-      />
+        isOptionEqualToValue={(a, b) => a.id === b.id}
+      >
+        <ComboboxLabel>{t_i18n('Custom fields')}</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxChips />
+          <ComboboxInput />
+          <ComboboxControls>
+            <ComboboxClear />
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent
+          emptyMessage={t_i18n('No available custom field')}
+          listAriaLabel={t_i18n('Custom fields')}
+        />
+      </Combobox>
       <FormControlLabel
         style={{ marginTop: 20, display: 'flex' }}
         control={(

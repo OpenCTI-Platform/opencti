@@ -1,3 +1,15 @@
+import {
+  Checkbox,
+  Combobox,
+  ComboboxChips,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+  type ComboboxChangeMeta,
+} from '@filigran/design-system';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
@@ -7,16 +19,10 @@ import {
   type StixCoreObjectContainerTaskAddMutation,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContainerTaskAddMutation.graphql';
 import { AddOutlined, MoveToInboxOutlined } from '@mui/icons-material';
-import Autocomplete from '@mui/material/Autocomplete';
-import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
-import { ChangeEvent, SyntheticEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
@@ -110,10 +116,12 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
   const handleToggleContainerCreationDrawer = (isOpen: boolean) => () => setIsContainerCreationDrawerOpen(isOpen);
 
   const handleChangeActionInputValues = (values: OptionListType[]) => setSelectedContainers(values);
-  const handleChangeIncludeNeighboursOption = (event: ChangeEvent<HTMLInputElement>) => setIncludeNeighbours(event.target.checked);
+  const handleChangeIncludeNeighboursOption = (checked: boolean | 'indeterminate') => setIncludeNeighbours(checked === true);
 
-  const handleSearch = (_: SyntheticEvent, newValue: string, reason: AutocompleteInputChangeReason) => {
-    if (reason === 'reset') return;
+  // 'reset' was MUI's word for the engine re-syncing the text to the selection;
+  // the library reports that as cause 'reset' too, so the guard is unchanged.
+  const handleSearch = (newValue: string, meta: ComboboxChangeMeta) => {
+    if (meta.cause === 'reset') return;
     setSearchInputValue(newValue);
   };
 
@@ -198,71 +206,55 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           paginationKey={undefined}
           paginationOptions={undefined}
         />
-        <Autocomplete
-          sx={{
-            '.MuiAutocomplete-inputRoot.MuiInput-root': {
-              pr: '50px',
-            },
-          }}
-          size="small"
-          fullWidth
+        <Combobox<OptionListType>
+          className="w-full"
           selectOnFocus
-          autoHighlight
-          filterOptions={(options) => options} // used to block internal filtering of the material-ui component
-          value={selectedContainers}
           multiple
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="standard"
-              label={t_i18n('Values')}
-              fullWidth={true}
-              slotProps={{
-                input: {
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={t_i18n('Create')}
-                          onClick={handleToggleContainerCreationDrawer(true)}
-                          size="small"
-                        >
-                          <AddOutlined />
-                        </IconButton>
-                      </InputAdornment>
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                },
-              }}
-            />
-          )}
-          noOptionsText={t_i18n('No available options')}
+          clearable={false}
+          filterOptions={(options) => options}
+          value={selectedContainers}
           options={optionList}
-          onInputChange={handleSearch}
           inputValue={searchInputValue}
-          onChange={(_, currentSelectedOptions: OptionListType[]) => handleChangeActionInputValues(currentSelectedOptions)}
-          renderOption={(props, option) => (
-            <li {...props} key={option.id}>
+          onInputChange={handleSearch}
+          onValueChange={(next) => handleChangeActionInputValues((next ?? []) as OptionListType[])}
+          renderOption={(option) => (
+            <>
               <div style={{ padding: '4px' }}>
                 <ItemIcon type={option.type} />
               </div>
               <div style={{ marginLeft: 10 }}>{option.label}</div>
-            </li>
+            </>
           )}
-          disableClearable
-        />
-        <FormControlLabel
-          style={{ marginTop: 20 }}
-          control={(
-            <Checkbox
-              checked={includeNeighbours}
-              onChange={handleChangeIncludeNeighboursOption}
-            />
+          getOptionLabel={(option) => option.label}
+        >
+          <ComboboxLabel>{t_i18n('Values')}</ComboboxLabel>
+          {/* #155: the create control is interactive, so it takes the
+              host-owned `adornment` slot. */}
+          <ComboboxField adornment={(
+            <IconButton
+              aria-label={t_i18n('Create')}
+              onClick={handleToggleContainerCreationDrawer(true)}
+              size="small"
+            >
+              <AddOutlined />
+            </IconButton>
           )}
-          label={t_i18n('Also include first neighbours')}
-        />
+          >
+            <ComboboxChips aria-label={t_i18n('Values')} />
+            <ComboboxInput />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Values')} />
+        </Combobox>
+        <div style={{ marginTop: 20 }}>
+          <Checkbox
+            checked={includeNeighbours}
+            onCheckedChange={handleChangeIncludeNeighboursOption}
+            label={t_i18n('Also include first neighbours')}
+          />
+        </div>
         <DialogActions>
           <Button variant="secondary" onClick={handleToggleAddInContainer(false)}>
             {t_i18n('Cancel')}

@@ -177,6 +177,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
       },
       confidence: {
         label: 'Confidence level',
+        width: '15%',
         isSortable: true,
       },
     };
@@ -187,6 +188,8 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}
+          // Lines lead with an icon; without this the header has no matching lead.
+          iconExtension={true}
           handleSort={helpers.handleSort}
           handleSearch={helpers.handleSearch}
           handleAddFilter={helpers.handleAddFilter}

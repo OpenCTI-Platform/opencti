@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { Add, DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -48,6 +49,7 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import UserHistory from './UserHistory';
 import UserTokenList from './UserTokenList';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -746,10 +748,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
       </Grid>
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSession}
         onClose={handleCloseKillSession}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill this session?')}
         </DialogContentText>
@@ -766,10 +769,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </DialogActions>
       </Dialog>
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSessions}
         onClose={handleCloseKillSessions}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill all the sessions of this user?')}
         </DialogContentText>

@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import { ManageSearchOutlined, Search, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
+import { SearchField, Spinner } from '@filigran/design-system';
+import { ManageSearchOutlined, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useNavigate } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -13,9 +11,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from './i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
@@ -30,135 +25,17 @@ import { fetchAgentsForIntent } from '../utils/ai/agentApi';
 import { NLQ_INTENT } from '../private/components/common/ai/AINLQ';
 import { useChatbot } from '../private/components/chatbox/ChatbotContext';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  searchRoot: {
-    borderRadius: 4,
-    padding: '0 10px 0 10px',
-  },
-  searchRootTopBar: {
-    borderRadius: 4,
-    padding: '1px 10px 0 10px',
-    marginRight: 5,
-    width: '100%',
-  },
-  searchRootInDrawer: {
-    borderRadius: 4,
-    width: '100%',
-    minWidth: 100,
-    maxWidth: '255px',
-  },
-  searchRootThin: {
-    borderRadius: 4,
-    padding: '0 10px 0 10px',
-    height: 30,
-  },
-  searchRootNoAnimation: {
-    borderRadius: 4,
-    padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.background.default,
-  },
-  searchInputTopBar: {
-    width: '100%',
-  },
-  searchInputInDrawer: {
-    width: '100%',
-  },
-  searchInput: {
-    transition: theme.transitions.create('width'),
-    width: 200,
-    '&:focus': {
-      width: 350,
-    },
-  },
-  searchInputSmall: {
-    transition: theme.transitions.create('width'),
-    width: 150,
-    '&:focus': {
-      width: 250,
-    },
-  },
-}));
-
-export function GradientBorderTextField({
-  isActive,
-  ...props
-}) {
-  const theme = useTheme();
-
-  return (
-    <TextField
-      {...props}
-      variant="outlined"
-      sx={{
-        '& .MuiInputBase-input::placeholder': {
-          opacity: 1,
-          color: theme.palette.text.light,
-        },
-        '& .MuiOutlinedInput-root': {
-          position: 'relative',
-          borderRadius: 1,
-          borderWidth: '1px',
-          backgroundColor: theme.palette.background.secondary,
-          '& input': {
-            height: '19px', // textfield is computing something to make the search equal to 36px
-            boxSizing: 'content-box',
-          },
-
-          '& fieldset': {
-            // default mode without border color
-            borderColor: 'transparent',
-          },
-
-          '&.Mui-focused:not(:hover) fieldset': {
-            // when focus and not hover, prevent default mui change borderwidth
-            borderWidth: '1px',
-          },
-
-          ...(isActive && {
-            '&.Mui-focused:not(:hover) fieldset': {
-              // prevent showing the default border when ai mode on and mouse out
-              border: `1px solid ${theme.palette.ai.dark}`,
-            },
-
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              inset: 0,
-              borderRadius: 'inherit',
-              padding: '1px',
-              background: `linear-gradient(
-                90deg,
-                ${theme.palette.ai?.light},
-                ${theme.palette.ai?.dark}
-              )`,
-              WebkitMask:
-                'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-              maskComposite: 'exclude',
-              pointerEvents: 'none',
-              opacity: 0.8,
-            },
-
-            '&:hover fieldset': {
-              border: `1px solid ${theme.palette.ai.dark}`,
-            },
-          }),
-        },
-      }}
-    />
-  );
-}
-
-// ── Mode constants ─────────────────────────────────────────────────────────
 const MODE_SEARCH = 'search';
 const MODE_BULK = 'bulk';
 // NLQ modes are dynamic: `nlq:<agentSlug>`
 const isNlqMode = (mode) => typeof mode === 'string' && mode.startsWith('nlq:');
 const nlqSlugFromMode = (mode) => (isNlqMode(mode) ? mode.slice(4) : null);
 
+const SIZE_BY_VARIANT = {
+  thin: 'sm',
+};
+
 const SearchInput = (props) => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured, fullyActive } = useAI();
@@ -205,27 +82,6 @@ const SearchInput = (props) => {
   // Derive selected agent from mode
   const selectedAgentSlug = nlqSlugFromMode(mode);
   const selectedAgent = nlqAgents.find((a) => a.slug === selectedAgentSlug) ?? null;
-
-  let classRoot = classes.searchRoot;
-  if (variant === 'inDrawer') {
-    classRoot = classes.searchRootInDrawer;
-  } else if (variant === 'noAnimation') {
-    classRoot = classes.searchRootNoAnimation;
-  } else if (variant === 'topBar') {
-    classRoot = classes.searchRootTopBar;
-  } else if (variant === 'thin') {
-    classRoot = classes.searchRootThin;
-  }
-  let classInput = classes.searchInput;
-  if (variant === 'small' || variant === 'thin') {
-    classInput = classes.searchInputSmall;
-  } else if (variant === 'topBar') {
-    classInput = classes.searchInputTopBar;
-  } else if (variant === 'noAnimation') {
-    classInput = classes.searchInputNoAnimation;
-  } else if (variant === 'inDrawer') {
-    classInput = classes.searchInputInDrawer;
-  }
 
   // ── Fetch NLQ agents eagerly on mount when AI is available ──────────────
   const fetchNlqAgentsIfNeeded = useCallback(() => {
@@ -349,40 +205,35 @@ const SearchInput = (props) => {
   // ── Non-topBar variant: keep the simple input ──────────────────────────
   if (variant !== 'topBar') {
     return (
-      <>
-        <GradientBorderTextField
-          name="keyword"
-          value={searchValue}
-          variant="outlined"
-          size="small"
-          placeholder={placeholder}
-          onChange={(event) => {
-            const { value } = event.target;
-            setSearchValue(value);
-          }}
-          onKeyDown={(event) => {
-            const { value } = event.target;
-            if (typeof onSubmit === 'function' && event.key === 'Enter') {
-              onSubmit(value);
-            }
-          }}
-          isActive={false}
-          label={t_i18n('Search')}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <Search fontSize="small" sx={{ mr: 0.5 }} />
-              ),
-              classes: {
-                root: classRoot,
-                input: classInput,
-              },
-            },
-          }}
-          {...otherProps}
-          autoComplete="off"
-        />
-      </>
+      <SearchField
+        name="keyword"
+        // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
+        aria-label={placeholder}
+        size={SIZE_BY_VARIANT[variant] ?? 'md'}
+        value={searchValue}
+        placeholder={placeholder}
+        onChange={(event) => {
+          setSearchValue(event.target.value);
+        }}
+        onSubmit={(value) => {
+          if (typeof onSubmit === 'function') {
+            onSubmit(value);
+          }
+        }}
+        // The library renders a clear cross only when it can act on one, and clearing has to
+        // re-run the search: dropping the keyword locally while leaving the list filtered would
+        // be a worse state than before, when there was no cross at all.
+        onClear={() => {
+          setSearchValue('');
+          if (typeof onSubmit === 'function') {
+            onSubmit('');
+          }
+        }}
+        // Spread last, exactly as the MUI field did: the three call sites that pass their own onChange drive the
+        // value themselves and must keep winning over the internal handler above.
+        {...otherProps}
+        autoComplete="off"
+      />
     );
   }
 
@@ -446,18 +297,13 @@ const SearchInput = (props) => {
 
   return (
     <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1}
-        sx={{ minWidth: 550, width: '50%', maxWidth: 680 }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
         {/* ── Search Input Field (left, fills remaining space) ──── */}
-        <GradientBorderTextField
+        <SearchField
           name="keyword"
+          // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
+          aria-label={getPlaceholder()}
           value={searchValue}
-          variant="outlined"
-          size="small"
           fullWidth
           placeholder={getPlaceholder()}
           onChange={(event) => {
@@ -465,33 +311,13 @@ const SearchInput = (props) => {
             setSearchValue(value);
           }}
           onKeyDown={handleKeyDown}
-          isActive={isNLQActivated}
-          label={t_i18n('Search')}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <Search
-                  fontSize="small"
-                  sx={{
-                    color: isNLQActivated ? theme.palette.ai.main : 'inherit',
-                    mr: 0.5,
-                  }}
-                />
-              ),
-              endAdornment: isNLQActivated && isNLQLoading ? (
-                <InputAdornment position="end">
-                  <Loader variant="inline" />
-                </InputAdornment>
-              ) : null,
-              classes: {
-                root: classRoot,
-                input: classInput,
-              },
-            },
-          }}
+          onClear={() => setSearchValue('')}
           {...otherProps}
           autoComplete="off"
+          label={t_i18n('Search')}
         />
+        {/* FDS-WORKAROUND #20: NLQ loading indicator beside the field, SearchField exposes no busy slot — see fds-migration/LIBRARY-FEEDBACK.md #20 */}
+        {isNLQActivated && isNLQLoading && <Loader variant="inline" />}
 
         {/* ── Mode Toggles (right) ────────────────────────────────── */}
         <ToggleButtonGroup
@@ -544,7 +370,9 @@ const SearchInput = (props) => {
                   onClick={handleNlqToggleClick}
                   disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
                 >
-                  <Stack direction="row" alignItems="center" spacing={0}>
+                  {/* Plain elements, not MUI layout: the segmented control is the only MUI left in the bar and its
+                      inside must not add more — see TopBar.libraryOnly.test.ts, RETIRED. */}
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <FiligranIcon
                       icon={LogoXtmOneIcon}
                       size="small"
@@ -552,14 +380,13 @@ const SearchInput = (props) => {
                     />
                     {/* Caret click zone — larger hit area with visual separator */}
                     {useXtmOne && nlqAgents.length > 0 && (
-                      <Box
-                        component="span"
-                        sx={{
+                      <span
+                        style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          ml: 0.5,
-                          pl: 0.5,
+                          marginLeft: 4,
+                          paddingLeft: 4,
                           borderLeft: `1px solid ${isNLQActivated ? theme.palette.ai?.main + '40' : theme.palette.divider}`,
                           cursor: 'pointer',
                         }}
@@ -569,9 +396,9 @@ const SearchInput = (props) => {
                         }}
                       >
                         <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
-                      </Box>
+                      </span>
                     )}
-                  </Stack>
+                  </div>
                 </ToggleButton>
               </span>
             </Tooltip>
@@ -595,7 +422,7 @@ const SearchInput = (props) => {
           {nlqAgentsLoading && (
             <MenuItem disabled>
               <ListItemIcon>
-                <CircularProgress size={18} />
+                <Spinner size="md" label={t_i18n('Loading agents...')} />
               </ListItemIcon>
             </MenuItem>
           )}
@@ -637,7 +464,7 @@ const SearchInput = (props) => {
             </MenuItem>
           ))}
         </Menu>
-      </Stack>
+      </div>
 
       {isAdmin ? (
         <EnterpriseEditionAgreement

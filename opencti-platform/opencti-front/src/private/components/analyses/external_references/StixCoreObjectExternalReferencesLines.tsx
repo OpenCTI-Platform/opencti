@@ -13,7 +13,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
@@ -30,11 +29,10 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import { truncate } from '../../../../utils/String';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -274,6 +272,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                     const externalReferenceId = externalReference.external_id
                       ? `(${externalReference.external_id})`
                       : '';
+                    const externalReferenceName = `${externalReference.source_name} ${externalReferenceId}`;
                     let externalReferenceSecondary: string;
                     if (externalReference.url && externalReference.url.length > 0) {
                       externalReferenceSecondary = externalReference.url;
@@ -300,6 +299,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                       externalReference.url ?? '',
                                     )}
                                     color="primary"
+                                    aria-label={t_i18n('Browse the link')}
                                   >
                                     <OpenInBrowserOutlined />
                                   </IconButton>
@@ -342,8 +342,16 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                 <ItemIcon type="External-Reference" />
                               </ListItemIcon>
                               <ListItemText
-                                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                                secondary={externalReferenceSecondary}
+                                primary={(
+                                  <Tooltip title={externalReferenceName}>
+                                    <span>{externalReferenceName}</span>
+                                  </Tooltip>
+                                )}
+                                secondary={(
+                                  <Tooltip title={externalReferenceSecondary}>
+                                    <span>{externalReferenceSecondary}</span>
+                                  </Tooltip>
+                                )}
                                 slotProps={{
                                   primary: {
                                     overflow: 'hidden',
@@ -419,13 +427,38 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                           <ListItemButton
                             component={Link}
                             to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                            sx={{
+                              '&.MuiListItemButton-root': {
+                                paddingRight: `${BUTTON_CONTAINER_WIDTH}px`,
+                              },
+                            }}
                           >
                             <ListItemIcon>
                               <ItemIcon type="External-Reference" />
                             </ListItemIcon>
                             <ListItemText
-                              primary={`${externalReference.source_name} ${externalReferenceId}`}
-                              secondary={truncate(externalReference.description, 120)}
+                              primary={(
+                                <Tooltip title={externalReferenceName}>
+                                  <span>{externalReferenceName}</span>
+                                </Tooltip>
+                              )}
+                              secondary={(
+                                <Tooltip title={externalReference.description}>
+                                  <span>{externalReference.description}</span>
+                                </Tooltip>
+                              )}
+                              slotProps={{
+                                primary: {
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                },
+                                secondary: {
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                },
+                              }}
                             />
                           </ListItemButton>
                         </ListItem>
@@ -523,7 +556,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
               title={t_i18n('Launch an import')}
             >
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth={true}
@@ -540,21 +573,21 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                         connector.connector_scope,
                       ));
                   return (
-                    <MenuItem
+                    <SelectItem
                       key={i}
-                      value={connector?.id}
+                      value={connector?.id ?? ''}
                       disabled={disabled || !connector?.active}
                     >
                       {connector?.name}
-                    </MenuItem>
+                    </SelectItem>
                   );
                 })}
               </Field>
               {(selectedConnector?.configurations?.length ?? 0) > 0
                 ? (
                     <Field
-                      component={SelectField}
-                      variant="standard"
+                      component={SelectFieldFds}
+                      variant="outlined"
                       name="configuration"
                       label={t_i18n('Configuration')}
                       fullWidth={true}
@@ -563,12 +596,12 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                     >
                       {(selectedConnector?.configurations ?? []).map((config) => {
                         return (
-                          <MenuItem
+                          <SelectItem
                             key={config.id}
                             value={config.configuration}
                           >
                             {config.name}
-                          </MenuItem>
+                          </SelectItem>
                         );
                       })}
                     </Field>

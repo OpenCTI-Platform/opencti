@@ -14,50 +14,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: OpenCTI checkout
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-        ref: ${{ inputs.checkout_ref }}
+      - name: OpenCTI checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.checkout_ref }}
 
-    - name: Runner information
-      continue-on-error: true
-      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+      - name: Runner information
+        continue-on-error: true
+        run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Backend verify license
-      run: |
-        docker run  \
-          --name backend-verify-licenses \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux;
-             npm install -g corepack
-             cd /home/workspace/opencti-platform/opencti-graphql
-             yarn install --mode=skip-build
-             yarn verify-licenses
-            '
+      - name: Backend verify license
+        run: |
+          docker run  \
+            --name backend-verify-licenses \
+            -v ${{ github.workspace }}:/home/workspace \
+            node:22-alpine3.23 \
+            sh -c 'set -eux;
+               npm install -g corepack
+               cd /home/workspace/opencti-platform/opencti-graphql
+               yarn install --mode=skip-build
+               yarn verify-licenses
+              '
 
-    - name: Frontend verify license
-      run: |
-        docker run  \
-          --name frontend-verify-licenses \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux;
-             npm install -g corepack
-             cd /home/workspace/opencti-platform/opencti-front
-             yarn install --mode=skip-build
-             yarn verify-licenses
-            '
+      - name: Frontend verify license
+        run: |
+          docker run  \
+            --name frontend-verify-licenses \
+            -v ${{ github.workspace }}:/home/workspace \
+            node:22-alpine3.23 \
+            sh -c 'set -eux;
+               npm install -g corepack
+               cd /home/workspace/opencti-platform/opencti-front
+               yarn install --mode=skip-build
+               yarn verify-licenses
+              '
 
-    - name: Generate license
-      run: |
-        docker run  \
-          --name generate-licenses \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux;
-             cd /home/workspace
-             chmod 777 scripts/*
-             ./scripts/generate-licenses.sh
-             test -f ./licenses/third-party-licenses.txt
-            '
+      - name: Generate license
+        run: |
+          docker run  \
+            --name generate-licenses \
+            -v ${{ github.workspace }}:/home/workspace \
+            node:22-alpine3.23 \
+            sh -c 'set -eux;
+               cd /home/workspace
+               chmod 777 scripts/*
+               ./scripts/generate-licenses.sh
+               test -f ./licenses/third-party-licenses.txt
+              '

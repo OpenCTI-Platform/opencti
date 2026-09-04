@@ -144,24 +144,24 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Alert
                 icon={false}
                 sx={{
                   width: '100%',
-                  marginTop: 20,
+                  marginTop: 2,
                   '& .MuiAlert-message': {
                     width: '100%',
                     overflow: 'hidden',

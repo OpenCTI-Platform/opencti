@@ -220,6 +220,7 @@ const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
         </UserContext.Consumer>
       </div>
       <Fab
+        /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
         variant="extended"
         size="small"
         color="primary"

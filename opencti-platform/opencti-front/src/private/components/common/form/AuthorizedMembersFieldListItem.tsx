@@ -1,3 +1,6 @@
+// FDS-WORKAROUND #44: kept on MUI Select — converting made
+// `tests_e2e/dashboardRestriction` intermittent, cause unidentified. See
+// fds-migration/LIBRARY-FEEDBACK.md #44 and fds-migration/MIGRATION-DECISIONS.md#authorized-members-select
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -96,7 +99,7 @@ const AuthorizedMembersFieldListItem = ({
                   {' '}({t_i18n('Groups restriction')})
                 </span>
                 <Tooltip title={`Groups restriction: ${groupsLabel}`}>
-                  <IconButton size="small" color="primary">
+                  <IconButton size="small" color="primary" aria-label={t_i18n('Information')}>
                     <InfoOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>
@@ -109,7 +112,8 @@ const AuthorizedMembersFieldListItem = ({
       <Field
         component={SelectField}
         name={name}
-        sx={{ m: 1, minWidth: 120 }}
+        // Above the widest option (`can manage`, 122px), so every row matches.
+        sx={{ m: 1, minWidth: 124 }}
         inputProps={{ 'aria-label': 'Without label' }}
         disabled={
           disabled || authorizedMember.value === me.id || !authorizedMember.label
@@ -142,7 +146,7 @@ const AuthorizedMembersFieldListItem = ({
               <Delete fontSize="small" />
             </IconButton>
           )
-        : <div style={{ width: 36 }}></div>
+        : <div style={{ width: 24 }}></div>
       }
     </ListItem>
   );

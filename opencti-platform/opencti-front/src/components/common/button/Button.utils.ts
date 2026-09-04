@@ -148,18 +148,34 @@ export const createGradientSx = (
   };
 };
 
+/**
+ * `color` and the nested `background` stay optional and unset: the glyphs are hidden through the fill alone, and
+ * `background` does not inherit, so putting it back on the children would erase a nested component's own fill.
+ */
+export interface TextGradientSx {
+  background: string;
+  backgroundClip: string;
+  WebkitBackgroundClip: string;
+  WebkitTextFillColor: string;
+  color?: string;
+  '& > *': { WebkitTextFillColor: string; background?: string };
+  '& svg': { fill: string; color: string };
+}
+
 export const createTextGradientSx = (
   gradientColors: GradientColor,
   gradientAngle: number,
-) => {
+): TextGradientSx => {
   const gradientStr = `linear-gradient(${gradientAngle}deg, ${gradientColors.start} 0%, ${gradientColors.end} 100%)`;
 
   return {
     background: gradientStr,
-    color: 'transparent',
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
+    '& > *': {
+      WebkitTextFillColor: 'currentColor',
+    },
     '& svg': {
       fill: gradientColors.start,
       color: gradientColors.start,

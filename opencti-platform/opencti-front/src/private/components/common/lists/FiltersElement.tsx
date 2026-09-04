@@ -1,5 +1,4 @@
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
@@ -7,6 +6,7 @@ import { FiltersVariant, getFilterDefinitionFromFilterKeysMap, useBuildFilterKey
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { Input } from '@filigran/design-system';
 
 export type FilterElementsInputValue = {
   key: string;
@@ -82,16 +82,11 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
       <Grid container={true} spacing={2}>
         {variant === FiltersVariant.dialog && (
           <Grid item xs={12}>
-            <TextField
-              role="search"
+            <Input
               label={t_i18n('Global keyword')}
-              variant="outlined"
-              size="small"
-              fullWidth={true}
               value={keyword}
               onChange={handleChangeKeyword}
               disabled={disabled}
-              slotProps={{ input: { type: 'search' } }}
             />
           </Grid>
         )}

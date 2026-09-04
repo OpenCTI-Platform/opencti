@@ -2,7 +2,6 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import { Add } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
@@ -11,7 +10,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -173,27 +172,27 @@ const SettingsOrganizationUserCreation = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="user_email"
                 label={t_i18n('Email address')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="firstname"
                 label={t_i18n('Firstname')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="lastname"
                 label={t_i18n('Lastname')}
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <Field
                 component={MarkdownField}
@@ -207,21 +206,21 @@ const SettingsOrganizationUserCreation = ({
               <PasswordPolicies />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="password"
                 label={t_i18n('Password')}
                 type="password"
-                style={{ marginTop: 20 }}
+                className="mt-5"
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="confirmation"
                 label={t_i18n('Confirmation')}
                 type="password"
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <ObjectOrganizationField
                 outlined={false}
@@ -245,8 +244,8 @@ const SettingsOrganizationUserCreation = ({
                 />
               )}
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="account_status"
                 label={t_i18n('Account Status')}
                 fullWidth={true}
@@ -254,9 +253,9 @@ const SettingsOrganizationUserCreation = ({
               >
                 {settings.platform_user_statuses.map((s) => {
                   return (
-                    <MenuItem key={s.status} value={s.status}>
+                    <SelectItem key={s.status} value={s.status}>
                       {t_i18n(s.status)}
-                    </MenuItem>
+                    </SelectItem>
                   );
                 })}
               </Field>
@@ -266,7 +265,7 @@ const SettingsOrganizationUserCreation = ({
                 textFieldProps={{
                   label: t_i18n('Account Expire Date'),
                   style: fieldSpacingContainerStyle,
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                 }}
               />

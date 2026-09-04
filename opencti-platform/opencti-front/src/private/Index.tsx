@@ -7,7 +7,7 @@ import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
 import TopBannersManager from '@components/TopBannersManager';
 import TopBar from './components/nav/TopBar';
-import LeftBar from './components/nav/LeftBar';
+import NavBar from './components/nav/NavBar';
 import Message from '../components/Message';
 import NewsFeedToastManager from './components/nav/NewsFeedToastManager';
 import SystemBanners from '../public/components/SystemBanners';
@@ -21,6 +21,8 @@ import Loader from '../components/Loader';
 import useDraftContext from '../utils/hooks/useDraftContext';
 import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
+import { TooltipProvider } from '@filigran/design-system';
+import { TOOLTIP_DELAY_MS } from './components/nav/topBarConstants';
 import { ChatbotProvider } from './components/chatbox/ChatbotContext';
 import useTopBanner from '../utils/hooks/useTopBanner';
 
@@ -79,89 +81,94 @@ const Index = ({ settings }: IndexProps) => {
     }
   }, [theme]);
 
+  /** The bar is fixed and glassy (94% over a 4px backdrop blur), so the content has to travel UNDER it. */
+  const headerInset = isForcePasswordChangeRoute
+    ? 0
+    : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`;
+
   const mainSx: SxProps = {
     transition: 'margin-right 225ms cubic-bezier(0.4, 0, 0.2, 1)',
     flexGrow: 1,
     overflowY: 'hidden',
     height: '100vh',
-    paddingTop: isForcePasswordChangeRoute
-      ? 0
-      : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
 
   const boxSx: SxProps = {
     px: isForcePasswordChangeRoute ? 0 : 3,
+    paddingTop: headerInset,
     flex: 1,
     overflowY: isForcePasswordChangeRoute ? 'hidden' : 'auto',
     minHeight: 0,
   };
 
   return (
-    <ChatbotProvider>
-      <SystemBanners settings={settings} />
-      <TopBannersManager />
-      {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
-      <SettingsMessagesBanner />
-      <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
-      <Box
-        sx={{
-          display: 'flex',
-          minWidth: isForcePasswordChangeRoute ? 0 : 1400,
-          marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
-          marginBottom: bannerHeight,
-        }}
-      >
-        <CssBaseline />
-        {!isForcePasswordChangeRoute && <TopBar />}
-        {!isForcePasswordChangeRoute && <LeftBar />}
-        <Message />
-        <NewsFeedToastManager />
-        <Stack component="main" sx={mainSx}>
-          <Box sx={boxSx}>
-            <Suspense fallback={<Loader />}>
-              <Routes>
-                <Route
-                  path="/"
-                  element={draftContext?.id
-                    ? (
-                        <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
-                      )
-                    : boundaryWrapper(HomeDashboard)}
-                />
-                {/* Search need to be rework */}
-                <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
-                <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
-                <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
-                <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
-                <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
-                <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
-                <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
-                <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
-                <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
-                {/* Need to refactor below */}
-                <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
-                <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
-                <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
-                <Route path="/data/*" element={boundaryWrapper(RootData)} />
-                <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
-                {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
-                <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
-                <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
-                <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
-                <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
-                <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
-                <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
-                <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
-                <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
-                <Route path="/*" element={<NoMatch />} />
-              </Routes>
-            </Suspense>
-          </Box>
-          {!isForcePasswordChangeRoute && <DraftToolbar />}
-        </Stack>
-      </Box>
-    </ChatbotProvider>
+    // One provider for the whole private app: a library Tooltip throws without one, and bar
+    // controls such as the import button also render on their own screens.
+    <TooltipProvider delayDuration={TOOLTIP_DELAY_MS}>
+      <ChatbotProvider>
+        <SystemBanners settings={settings} />
+        <TopBannersManager />
+        {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
+        <SettingsMessagesBanner />
+        <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
+        <Box
+          sx={{
+            display: 'flex',
+            minWidth: isForcePasswordChangeRoute ? 0 : 1400,
+            marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
+            marginBottom: bannerHeight,
+          }}
+        >
+          <CssBaseline />
+          {!isForcePasswordChangeRoute && <TopBar />}
+          {!isForcePasswordChangeRoute && <NavBar />}
+          <Message />
+          <NewsFeedToastManager />
+          <Stack component="main" sx={mainSx}>
+            <Box sx={boxSx}>
+              <Suspense fallback={<Loader />}>
+                <Routes>
+                  <Route
+                    path="/"
+                    element={draftContext?.id
+                      ? (
+                          <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
+                        )
+                      : boundaryWrapper(HomeDashboard)}
+                  />
+                  <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
+                  <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
+                  <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
+                  <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
+                  <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
+                  <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
+                  <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
+                  <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
+                  <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
+                  <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
+                  <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
+                  <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
+                  <Route path="/data/*" element={boundaryWrapper(RootData)} />
+                  <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
+                  {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
+                  <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
+                  <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
+                  <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
+                  <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
+                  <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
+                  <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
+                  <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
+                  <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
+                  <Route path="/*" element={<NoMatch />} />
+                </Routes>
+              </Suspense>
+            </Box>
+            {!isForcePasswordChangeRoute && <DraftToolbar />}
+          </Stack>
+        </Box>
+      </ChatbotProvider>
+    </TooltipProvider>
   );
 };
 

@@ -2,10 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router-dom';
@@ -21,6 +18,7 @@ import { GraphLink, GraphNode, isGraphLink, isGraphNode } from '../graph.types';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import Label from '../../../components/common/label/Label';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -39,13 +37,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     zIndex: 900,
     borderRadius: 4,
     border: 'none',
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: 'var(--bg-elevation-default)',
     boxShadow: theme.palette.mode === 'light' ? '0 0px 8px 0px rgba(7, 13, 25, .2)' : `0 0px 8px 0px ${theme.palette.background.default}`,
     gap: '8px',
   },
   external: {
-    marginTop: -2,
-    paddingLeft: 10,
+    display: 'flex',
+    flexShrink: 0,
   },
 }));
 
@@ -92,8 +90,7 @@ const EntitiesDetailsRightsBar = () => {
     }
   }, [selectedEntities]);
 
-  const handleSelectEntity = (event: SelectChangeEvent) => {
-    const { value } = event.target;
+  const handleSelectEntity = (value: string) => {
     const entity = selectedEntities.find((el) => el.id === value);
     if (!entity) {
       selectDetailsPreviewObject(uniqSelectedEntities[0]);
@@ -120,6 +117,7 @@ const EntitiesDetailsRightsBar = () => {
       open={true}
       variant="permanent"
       anchor="right"
+      slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
       classes={{ paper: classes.drawerPaper }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
@@ -131,26 +129,28 @@ const EntitiesDetailsRightsBar = () => {
           },
         })}
       </Label>
-      <div style={{ display: 'flex' }}>
-        <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
-          <InputLabel id="label" variant="outlined">
-            {t_i18n('Object')}
-          </InputLabel>
+      {/* The paper declares no right padding, so the row carries that gutter itself. */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingRight: 20 }}>
+        {/* Without `minWidth: 0` the selected value widens the field and pushes the button around. */}
+        <div style={{ flex: '1 1 auto', minWidth: 0 }} className={fdsLayerClass(3)}>
           <Select
-            labelId="label"
-            label={t_i18n('Object')}
-            fullWidth={true}
-            onChange={handleSelectEntity}
             value={detailsPreviewSelected.id}
-            variant="outlined"
+            onValueChange={handleSelectEntity}
           >
-            {uniqSelectedEntities.map((entity) => (
-              <MenuItem key={entity.id} value={entity.id}>
-                {entity.label}
-              </MenuItem>
-            ))}
+            <SelectLabel>{t_i18n('Object')}</SelectLabel>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Object')}>
+              {uniqSelectedEntities.map((entity) => (
+                <SelectItem key={entity.id} value={entity.id}>
+                  {/* `label` is cut to 20 characters for the canvas; `name` trails the tooltip's date on a second line. */}
+                  {entity.name.split('\n')[0]}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
         {/* Need to be handled */}
         {hasOverviewPage && (
           <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
@@ -158,6 +158,7 @@ const EntitiesDetailsRightsBar = () => {
               <IconButton
                 aria-label={t_i18n('Open the entity overview in a separated tab')}
                 id="open-entity-in-tab-icon-button"
+                size="default"
                 component={Link}
                 target="_blank"
                 to={entityUrl}

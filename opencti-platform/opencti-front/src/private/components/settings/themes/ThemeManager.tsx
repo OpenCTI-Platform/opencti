@@ -175,13 +175,14 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
         title={t_i18n('Themes')}
         sx={{ flex: '0 auto' }}
         action={(
-          <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Tooltip title={t_i18n('Create a custom theme')}>
               <IconButton
                 color="primary"
                 onClick={handleOpenCreation}
                 size="small"
                 data-testid="create-theme-btn"
+                aria-label={t_i18n('Create a custom theme')}
               >
                 <Add fontSize="small" />
               </IconButton>

@@ -386,6 +386,7 @@ const ContainerAddStixCoreObjects = (props) => {
             onClick={() => setOpen(true)}
             variant="tertiary"
             size="small"
+            aria-label={t_i18n('Add an entity to this container')}
           >
             <Add />
           </IconButton>
@@ -406,6 +407,7 @@ const ContainerAddStixCoreObjects = (props) => {
     }
     return (
       <Fab
+        /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
         onClick={() => setOpen(true)}
         color="primary"
         aria-label="Add"

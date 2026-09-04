@@ -1,11 +1,9 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason, MenuItem, Select } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
+import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
+import { Checkbox, Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Popover from '@mui/material/Popover';
-import { SelectChangeEvent } from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
@@ -39,6 +37,7 @@ import { FilterRepresentative } from './FiltersModel';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 
 import FilterFiltersInput from './FilterFiltersInput';
+import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../utils/fdsLayer';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -182,9 +181,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     }
   };
 
-  const handleChangeOperator = (event: SelectChangeEvent, fDef?: FilterDefinition) => {
+  const handleChangeOperator = (newOperator: string, fDef?: FilterDefinition) => {
     const filterType = fDef?.type;
-    const newOperator = event.target.value;
     // for date check (date in days, operator) correspond to (timestamp in seconds, operator)
     if (filterType === 'date' && filter && filter.values.length > 0) {
       const formerOperator = filter?.operator;
@@ -327,6 +325,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
     return (
       <Autocomplete
+        // FDS-ORNAMENT: stays on MUI for this round. Its input endAdornment
+        // carries the search-scope selector for STIX object types, which is the
+        // gap #155 closes with `adornment` on ComboboxField. FIFTH ornament site.
+        // See fds-migration/LIBRARY-FEEDBACK.md
         multiple
         key={fKey}
         value={selectedOptions}
@@ -393,14 +395,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  padding: 0,
+                  minHeight: 32,
+                  padding: '0 8px 0 16px',
+                  gap: 8,
                   margin: 0,
                   pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
               >
+                {/* NOT `presentational`, deliberately — see fds-migration/MIGRATION-DECISIONS.md#filter-value-checkbox-role */}
                 <Checkbox checked={checked} disabled={disabledOptions} />
                 <ItemIcon type={option.type} color={option.color} />
-                <span style={{ padding: '0 4px 0 4px' }}>
+                <span>
                   {option.label}
                 </span>
               </li>
@@ -474,20 +479,22 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       <>
         {availableOperators.length > 0 && (
           <Select
-            labelId="change-operator-select-label"
-            id="change-operator-select"
             value={filterOperator}
-            label="Operator"
-            fullWidth={true}
-            onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
-            style={{ marginBottom: 15 }}
+            onValueChange={(value) => handleChangeOperator(value, finalFilterDefinition)}
             disabled={disabled}
           >
-            {availableOperators.map((value) => (
-              <MenuItem key={value} value={value}>
-                {t_i18n(OperatorKeyValues[value])}
-              </MenuItem>
-            ))}
+            {/* The MUI version pointed labelId at a label that does not exist, so
+                the trigger had no accessible name at all. Named here. */}
+            <SelectTrigger id="change-operator-select" aria-label={t_i18n('Operator')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Operator')}>
+              {availableOperators.map((value) => (
+                <SelectItem key={value} value={value}>
+                  {t_i18n(OperatorKeyValues[value])}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         )}
         {isOperatorRequiringValue && isSpecificFilter(finalFilterDefinition) && (
@@ -527,7 +534,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       slotProps={{
         paper: {
           elevation: 1,
-          style: { marginTop: 10 },
+          className: fdsLayerClass(FILTER_POPOVER_LAYER),
+          sx: { ...filterPopoverPaperSx, marginTop: '10px' },
         },
       }}
     >
@@ -535,16 +543,16 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         ? (
             <div
               style={{
-                width: 250,
+                minWidth: 250,
                 padding: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
               }}
             >
               {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
               <Chip
-                style={{
-                  fontFamily: 'Consolas, monaco, monospace',
-                  margin: '10px 10px 15px 0',
-                }}
+                style={{ alignSelf: 'flex-start' }}
                 label={t_i18n('WITH')}
               />
               {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
@@ -554,15 +562,18 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             <div style={{ display: 'inline-flex' }}>
               <div
                 style={{
-                  width: 250,
+                  minWidth: 250,
                   padding: 8,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 16,
                 }}
               >
                 {displayOperatorAndFilter(filterKey)}
               </div>
               {filterOperator === 'within'
                 && (
-                  <div style={{ width: 150, display: 'inline-flex' }}>
+                  <div style={{ display: 'inline-flex', flexShrink: 0, width: 'max-content' }}>
                     <div style={{
                       color: theme.palette.text.disabled,
                       borderLeft: '0.5px solid',
