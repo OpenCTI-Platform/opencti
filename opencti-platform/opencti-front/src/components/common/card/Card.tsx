@@ -70,9 +70,7 @@ const Card = ({
     position: 'relative',
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
-    background: variant !== 'outlined'
-      ? backgroundColor
-      : 'transparent',
+    background: backgroundColor,
     border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
