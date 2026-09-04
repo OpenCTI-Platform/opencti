@@ -35,6 +35,18 @@ describe('Email normalization tests', () => {
     expect(normalizeEmail('user+tag@corp.com')).not.toBe(normalizeEmail('user@corp.com'));
   });
 
+  it('should return an empty string for undefined', () => {
+    expect(normalizeEmail(undefined)).toBe('');
+  });
+
+  it('should return an empty string for null', () => {
+    expect(normalizeEmail(null)).toBe('');
+  });
+
+  it('should return an empty string for an empty string input', () => {
+    expect(normalizeEmail('')).toBe('');
+  });
+
   it('should resolve all space/case variants of the same email to one canonical value', () => {
     const variants = [
       'Admin@Corp.com',
