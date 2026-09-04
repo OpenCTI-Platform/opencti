@@ -59,7 +59,8 @@ const synthesizeFullyConnectedTransitions = (
   const stateIds = states.map((state) => state.statusId);
   if (stateIds.length < 2) return [];
   return stateIds.map((to) => {
-    const name = templatesById.get(to)?.name ?? to;
+    const rawName = templatesById.get(to)?.name;
+    const name = rawName && rawName.trim().length > 0 ? rawName : to;
     return {
       from: stateIds.filter((id) => id !== to),
       to,
