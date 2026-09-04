@@ -47,15 +47,6 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [mockCommit],
 }));
 
-const mockIsFeatureEnable = vi.fn();
-vi.mock('../../../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: mockIsFeatureEnable }),
-}));
-
-vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
-  default: () => [mockCommit],
-}));
-
 vi.mock('./GlobalWorkflowSettings', () => ({
   default: () => <div>global-workflow-settings</div>,
 }));
@@ -77,12 +68,11 @@ const makeSubType = (availableSettings: string[], syncWorkflowStatusByName = fal
 
 describe('GlobalWorkflowSettingsCard', () => {
   beforeEach(() => {
-    mockIsFeatureEnable.mockReturnValue(true);
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
     mockCommit.mockReset();
-    mockIsFeatureEnable.mockReset();
   });
 
   it('renders request access settings when request_access_workflow is available', () => {
@@ -152,18 +142,5 @@ describe('GlobalWorkflowSettingsCard', () => {
         input: { key: 'sync_workflow_status_by_name', value: 'true' },
       },
     });
-  });
-
-  it('does not render the sync workflow status by name switch when the feature flag is disabled', () => {
-    mockIsFeatureEnable.mockReturnValue(false);
-    vi.mocked(useEnterpriseEdition).mockReturnValue(false);
-    vi.mocked(useSubTypeOutletContext).mockReturnValue({
-      subType: makeSubType(['workflow_configuration', 'sync_workflow_status_by_name'], true),
-    } as never);
-
-    renderWithTheme(<GlobalWorkflowSettingsCard />);
-
-    expect(screen.queryByText("Update entities' statuses by name match")).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });
 });
