@@ -52,7 +52,6 @@ vi.mock('../../../../../utils/hooks/useHelper', () => ({
   default: () => ({ isFeatureEnable: mockIsFeatureEnable }),
 }));
 
-const mockCommit = vi.fn();
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [mockCommit],
 }));
