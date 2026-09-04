@@ -7,11 +7,6 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
-      client_python_local:
-        description: "Use client python from the same commit"
-        type: boolean
-        required: false
-        default: true
       run-id:
         required: true
         type: string
@@ -34,12 +29,6 @@ jobs:
     - name: Runner information
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
-
-    - name: Use client-python in OpenCTI from same branch
-      if: ${{ inputs.client_python_local == true }}
-      env:
-        CHECKOUT_REF: ${{ inputs.checkout_ref }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
     - name: Fetch EE license
       run: |
@@ -112,8 +101,8 @@ jobs:
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
             yarn install
-            apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
+            export PATH=/home/workspace/.venv/bin:$PATH
             yarn build
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
@@ -192,12 +181,6 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Use client-python in OpenCTI from same branch
-      if: ${{ inputs.client_python_local == true }}
-      env:
-        CHECKOUT_REF: ${{ inputs.checkout_ref }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
-
     - name: Fetch EE license
       run: |
         echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
@@ -250,8 +233,8 @@ jobs:
               mkdir -p ../../opencti-connectors/external-import/restore-files/src
               wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
               yarn install
-              apk add --no-cache git # required by pip to install pycti from a git reference
               yarn install:python
+              export PATH=/home/workspace/.venv/bin:$PATH
               yarn get-connectors-manifest
               NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
           '
@@ -300,12 +283,6 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Use client-python in OpenCTI from same branch
-      if: ${{ inputs.client_python_local == true }}
-      env:
-        CHECKOUT_REF: ${{ inputs.checkout_ref }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
-
     - name: Download image builder
       continue-on-error: true
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
@@ -329,8 +306,8 @@ jobs:
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-graphql
             yarn install
-            apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
+            export PATH=/home/workspace/.venv/bin:$PATH
             yarn build
         '
 
@@ -357,8 +334,8 @@ jobs:
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-graphql
-            apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
+            export PATH=/home/workspace/.venv/bin:$PATH
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
 
