@@ -5,7 +5,7 @@ import type { AuthContext } from '../../types/user';
 import { handlerDryRun, planDivergence, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
 import { readJournalEntries, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
-import { assertHandlersAreDisjoint, userMergeHandlers } from './userMerge-registry';
+import { userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
 
 const LOG_PREFIX = '[MERGE_USERS]';
@@ -85,7 +85,6 @@ export const executeUserMerge = async (
   };
   try {
     const handlers = userMergeHandlers();
-    assertHandlersAreDisjoint(handlers);
     const handlerContext: UserMergeHandlerContext = { context, sourceId, targetId, options };
     const journalInput = { mergeId, sourceId, targetId };
 

@@ -57,18 +57,28 @@ const assertNoDuplicateClaim = (handlers: UserMergeHandler[]): void => {
 };
 
 /**
- * Registers a handler. Validation is done here, at import time, so that a mistake surfaces
- * when the platform boots rather than when a merge is launched.
+ * Registers a handler. Only what concerns the handler alone is checked here; what concerns
+ * the set is checked once the set is complete, by assertUserMergeHandlersAreValid.
  */
 export const registerUserMergeHandler = (handler: UserMergeHandler): void => {
   if (HANDLERS.some((existing) => existing.identifier === handler.identifier)) {
     throw UnsupportedError('A merge handler with this identifier is already registered', { handler: handler.identifier });
   }
-  assertCoverageIsValid(handler);
-  const candidates = [...HANDLERS, handler];
-  assertNoDuplicateClaim(candidates);
-  assertHandlersAreDisjoint(candidates);
   HANDLERS.push(handler);
+};
+
+/**
+ * Validates the registered set, once it is complete.
+ *
+ * Disjointness and single-claim are properties of the set, not of a handler: checking them on
+ * every insertion re-derives the same answer N times and answers about a set that is not yet
+ * the one the engine will run. Called from the registration function so that a mistake still
+ * surfaces when the platform boots rather than when a merge is launched.
+ */
+export const assertUserMergeHandlersAreValid = (handlers: UserMergeHandler[] = HANDLERS): void => {
+  handlers.forEach(assertCoverageIsValid);
+  assertNoDuplicateClaim(handlers);
+  assertHandlersAreDisjoint(handlers);
 };
 
 export const userMergeHandlers = (): UserMergeHandler[] => [...HANDLERS];
