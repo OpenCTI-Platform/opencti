@@ -5034,6 +5034,7 @@
   "Types of the targets": "Types of the targets",
   "Unable to connect. Please check the configuration.": "Unable to connect. Please check the configuration.",
   "Unable to validate remote OpenCTI URL": "Unable to validate remote OpenCTI URL",
+  "Unable to check XTM Hub connectivity. Please try again later.": "Unable to check XTM Hub connectivity. Please try again later.",
   "Unauthorized action, please refresh your browser": "Unauthorized action, please refresh your browser",
   "Unfix the nodes and re-apply forces": "Unfix the nodes and re-apply forces",
   "Unique identifier": "Unique identifier",
