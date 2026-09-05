@@ -1,14 +1,14 @@
 /**
- * Rewriting of a user reference inside a stored filter.
+ * Rewriting of a user reference inside a JSON payload the platform stores as an opaque blob:
+ * stored filters, dashboard manifests, playbook and workflow definitions, draft patches.
  *
- * Every filter field of the platform is a serialized JSON string, not a structured document, so
- * the remapping happens in memory: parse, walk, rewrite, re-serialize.
+ * None of them is a structured document Elasticsearch can update in place, so the remapping
+ * happens in memory: parse, walk, rewrite, re-serialize.
  *
- * The walk selects by value rather than by filter key. An `internal_id` is a random v4 with no
+ * The walk selects by value rather than by key. An `internal_id` is a random v4 with no
  * derivation anywhere in the schema, so a value equal to the source id is a reference to the
- * source user, whichever key carries it. Selecting by key would need a list of the keys that
- * accept a User, which the platform does not expose, and would miss the composite keys whose
- * values are nested filter objects.
+ * source user, whichever key carries it. Selecting by key would need the list of keys that
+ * accept a User in every one of these payload shapes, which none of them declares.
  */
 
 interface RemappedValue {
@@ -23,10 +23,10 @@ interface RemapCounters {
   deduplicated: number;
 }
 
-export interface FilterRemapResult {
-  filters: string;
+export interface JsonRemapResult {
+  json: string;
   changed: boolean;
-  /** Whether the field could be read back at all. A field that does not parse is left alone. */
+  /** Whether the payload could be read back at all. One that does not parse is left alone. */
   parsed: boolean;
   counters: RemapCounters;
 }
@@ -36,8 +36,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 };
 
 /**
- * A value can be a plain id, a nested filter group, or the `{ key, values }` sub-object the
- * composite keys carry — `regardingOf` and `dynamicFrom` / `dynamicTo`. All three are walked.
+ * A value can be a plain id, a nested group, or the `{ key, values }` sub-object the composite
+ * filter keys carry — `regardingOf` and `dynamicFrom` / `dynamicTo`. All three are walked.
  */
 const remapValue = (value: unknown, sourceId: string, targetId: string, counters: RemapCounters): RemappedValue => {
   if (typeof value === 'string') {
@@ -59,16 +59,16 @@ const remapValue = (value: unknown, sourceId: string, targetId: string, counters
 /**
  * Rewrite, then collapse the repetitions of the target id the rewrite produced.
  *
- * A filter naming both users ends up holding the target id twice. Under `or` the repetition is
- * inert, but the platform is not indifferent to it: `computePirScore` divides by the sum of
- * every criterion weight while counting matches once per distinct filter, so a repetition
- * deflates every score of that PIR, and the filter chips of the UI use the value itself as a
- * React key.
+ * A payload naming both users ends up holding the target id twice, and the platform is not
+ * indifferent to it: `computePirScore` divides by the sum of every criterion weight while
+ * counting matches once per distinct filter, so a repetition deflates every score of that PIR;
+ * the filter chips of the UI use the value itself as a React key; and a draft patch replaying
+ * `added_value` twice would add the same member twice.
  *
  * Only the target id is collapsed — any other value is untouched by the merge. The collapse
  * applies to the whole list once a rewrite happened, so a list that already repeated the target
- * id comes out canonical rather than half-cleaned; a repeated value in an `or` list carries no
- * meaning to preserve.
+ * id comes out canonical rather than half-cleaned; a repeated id in a list of references carries
+ * no meaning to preserve.
  */
 const remapArray = (values: unknown[], sourceId: string, targetId: string, counters: RemapCounters): RemappedValue => {
   let changed = false;
@@ -112,27 +112,28 @@ const remapObject = (
 };
 
 /**
- * Remap a parsed filter group. Exported for the callers that already hold the parsed form.
+ * Remap an already parsed payload. Exported for the callers that hold the parsed form, either
+ * because they decoded it themselves or because the platform stores it as an object.
  */
-export const remapUserInFilterGroup = <T>(
-  filterGroup: T,
+export const remapUserInJsonValue = <T>(
+  payload: T,
   sourceId: string,
   targetId: string,
-): { filterGroup: T; changed: boolean; counters: RemapCounters } => {
+): { payload: T; changed: boolean; counters: RemapCounters } => {
   const counters: RemapCounters = { rewritten: 0, deduplicated: 0 };
-  const result = remapValue(filterGroup, sourceId, targetId, counters);
-  return { filterGroup: result.value as T, changed: result.changed, counters };
+  const result = remapValue(payload, sourceId, targetId, counters);
+  return { payload: result.value as T, changed: result.changed, counters };
 };
 
 /**
- * Remap a serialized filter field.
+ * Remap a serialized payload.
  *
- * Returns the input untouched when the field does not parse, and says so: a filter the platform
- * cannot read is not something to rewrite blindly, and the caller reports it rather than
- * confusing it with a field that parsed but carried no reference.
+ * Returns the input untouched when it does not parse, and says so: a payload the platform cannot
+ * read is not something to rewrite blindly, and the caller reports it rather than confusing it
+ * with one that parsed but carried no reference.
  */
-export const remapUserInSerializedFilters = (raw: string, sourceId: string, targetId: string): FilterRemapResult => {
-  const unchanged: FilterRemapResult = { filters: raw, changed: false, parsed: true, counters: { rewritten: 0, deduplicated: 0 } };
+export const remapUserInJsonString = (raw: string, sourceId: string, targetId: string): JsonRemapResult => {
+  const unchanged: JsonRemapResult = { json: raw, changed: false, parsed: true, counters: { rewritten: 0, deduplicated: 0 } };
   if (!raw.includes(sourceId)) {
     return unchanged;
   }
@@ -142,9 +143,9 @@ export const remapUserInSerializedFilters = (raw: string, sourceId: string, targ
   } catch {
     return { ...unchanged, parsed: false };
   }
-  const { filterGroup, changed, counters } = remapUserInFilterGroup(parsed, sourceId, targetId);
+  const { payload, changed, counters } = remapUserInJsonValue(parsed, sourceId, targetId);
   if (!changed) {
     return unchanged;
   }
-  return { filters: JSON.stringify(filterGroup), changed: true, parsed: true, counters };
+  return { json: JSON.stringify(payload), changed: true, parsed: true, counters };
 };
