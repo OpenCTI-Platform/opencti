@@ -162,6 +162,51 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 {"value": self.bundle_wave_policy},
             )
             self.bundle_wave_policy = "chunks"
+        # Chunked ingest pools (s9.12.1 successor, kb note
+        # opencti-worker-chunked-ingest-pools). 0 pools = OFF (s9.11 wave path).
+        self.ingest_pools = get_config_variable(
+            "WORKER_INGEST_POOLS",
+            ["worker", "ingest_pools"],
+            config,
+            True,
+            default=0,
+        )
+        self.ingest_chunk_size = get_config_variable(
+            "WORKER_INGEST_CHUNK_SIZE",
+            ["worker", "ingest_chunk_size"],
+            config,
+            True,
+            default=16,
+        )
+        self.ingest_pick = get_config_variable(
+            "WORKER_INGEST_PICK",
+            ["worker", "ingest_pick"],
+            config,
+            default="least_full",
+        )
+        if self.ingest_pick not in ("least_full", "round_robin"):
+            self.ingest_pick = "least_full"
+        self.ingest_pool_queue_bound = get_config_variable(
+            "WORKER_INGEST_POOL_QUEUE_BOUND",
+            ["worker", "ingest_pool_queue_bound"],
+            config,
+            True,
+            default=64,
+        )
+        self.ingest_pipelined = get_config_variable(
+            "WORKER_INGEST_PIPELINED",
+            ["worker", "ingest_pipelined"],
+            config,
+            False,
+            default=False,
+        )
+        self.ingest_dep_admission = get_config_variable(
+            "WORKER_INGEST_DEP_ADMISSION",
+            ["worker", "ingest_dep_admission"],
+            config,
+            False,
+            default=True,
+        )
         self.opencti_api_requests_timeout = get_config_variable(
             "OPENCTI_REQUESTS_TIMEOUT",
             ["opencti", "requests_timeout"],
@@ -355,6 +400,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundle_inline=self.bundle_inline,
                             bundle_wave_width=self.bundle_wave_width,
                             bundle_executor_budget=self.bundle_executor_budget,
+                            ingest_pools=self.ingest_pools,
+                            ingest_chunk_size=self.ingest_chunk_size,
+                            ingest_pick=self.ingest_pick,
+                            ingest_pool_queue_bound=self.ingest_pool_queue_bound,
+                            ingest_pipelined=self.ingest_pipelined,
+                            ingest_dep_admission=self.ingest_dep_admission,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]

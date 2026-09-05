@@ -13,6 +13,8 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
+from ingest_pools import ChunkEntry, ChunkJob, get_ingest_pools, pick_pool
+
 # POC (plan 0009 s9.11): ONE request-thread pool per worker process, shared by every
 # queue handler. The wave of any in-flight bundle draws its threads from this common
 # budget, so a slow tail in one wave frees capacity that immediately serves the other
@@ -79,6 +81,26 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     # POC (plan 0009 s9.11): size of the process-wide shared request pool. 0 = derive
     # 4x the wave width (roughly today's aggregate capacity, but un-siloed).
     bundle_executor_budget: int = 0
+    # Chunked ingest pools (s9.12.1 successor, kb note opencti-worker-chunked-ingest-pools).
+    # ingest_pools > 0 switches the inline import to the pool path: the handler splits,
+    # chunks (splitter order, chunks may span levels), routes ALL chunks of the bundle to
+    # ONE pool, and blocks until bundle-terminal (ack semantics unchanged, decision Q1-B).
+    # 0 = OFF (s9.11 wave path, no pool threads created).
+    ingest_pools: int = 0
+    # CS: objects per chunk AND request threads per pool (1 object per thread).
+    ingest_chunk_size: int = 16
+    # Bundle-to-pool pick at bundle start (decision Q3): least_full | round_robin.
+    ingest_pick: str = "least_full"
+    # Per-pool queue bound (chunks); 0 = unbounded. Backpressure insurance only:
+    # ordering never depends on it (affinity + FIFO carry it).
+    ingest_pool_queue_bound: int = 64
+    # V2 pipelined admission (next chunk as request threads free up). Default V1 barrier.
+    ingest_pipelined: bool = False
+    # Dependency-aware admission under V2 (fix of ladder run 4's failure cascades):
+    # an object is held while its in-bundle producers from EARLIER chunks are still
+    # in flight. No effect on V1 (the barrier is stronger) nor on other bundles'
+    # chunks (cross-bundle admission keeps the pool saturated).
+    ingest_dep_admission: bool = True
 
     def __post_init__(self) -> None:
         self.api = OpenCTIApiClient(
@@ -94,6 +116,20 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         self.wave_width = max(1, self.bundle_wave_width or self.bundle_parallelism)
         budget = self.bundle_executor_budget or self.wave_width * 4
         self.bundle_executor = get_shared_bundle_executor(budget)
+        # Chunked ingest pools: created once per process by the first handler; no
+        # pool threads exist at all when the knob is off.
+        self.pools = (
+            get_ingest_pools(
+                self.ingest_pools,
+                self.ingest_chunk_size,
+                self.ingest_pool_queue_bound,
+                self.ingest_pipelined,
+                self.ingest_dep_admission,
+                self.logger,
+            )
+            if self.ingest_pools > 0
+            else None
+        )
 
     def send_bundle_to_specific_queue(
         self,
@@ -170,6 +206,26 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     # field stay pristine); the platform strips the mark at its write boundary, so it can
     # never persist in ES.
     MEMBER_REF_MARK = "||M||"
+
+    def collect_member_refs(self, node: Any, member_ids: set, acc: set) -> None:
+        # Mirror of mark_member_refs' key rules, collecting instead of suffixing:
+        # the object's declared in-bundle dependencies (run BEFORE marking, on
+        # clean ref values). Feeds the V2 dependency-aware admission.
+        if isinstance(node, dict):
+            for key, value in node.items():
+                is_ref_key = key.endswith("_ref") or key.endswith("_refs")
+                if is_ref_key and isinstance(value, str):
+                    if value in member_ids:
+                        acc.add(value)
+                elif is_ref_key and isinstance(value, list):
+                    for item in value:
+                        if isinstance(item, str) and item in member_ids:
+                            acc.add(item)
+                elif isinstance(value, (dict, list)):
+                    self.collect_member_refs(value, member_ids, acc)
+        elif isinstance(node, list):
+            for item in node:
+                self.collect_member_refs(item, member_ids, acc)
 
     def mark_member_refs(self, node: Any, member_ids: set) -> None:
         if isinstance(node, dict):
@@ -334,6 +390,135 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         self.send_too_large_to_dead_letter(data, too_large_items_bundles)
         return imported_items
 
+    def import_bundle_chunked(
+        self,
+        content: Dict[str, Any],
+        data: Dict[str, Any],
+        work_id: Any,
+        types: Any,
+    ) -> List[Any]:
+        # Chunked ingest pools (kb note opencti-worker-chunked-ingest-pools): same split +
+        # member-ref marking as the inline path, then fixed-size chunks in SPLITTER order
+        # (chunks may span dependency levels, decision Q4) all routed to ONE pool
+        # (bundle-to-pool affinity, decision Q3): pool FIFO + the V1 barrier keep producer
+        # chunks strictly ahead of dependent chunks. This handler thread then blocks until
+        # every chunk reported terminal, so the caller's "ack" stays bundle-terminal
+        # (decision Q1-B: at-least-once preserved, crash = RabbitMQ redelivery).
+        update = data.get("update", False)
+        event_version = content.get("x_opencti_event_version")
+        stix2_splitter = OpenCTIStix2Splitter()
+        expectations, _, bundles = stix2_splitter.split_bundle_with_expectations(
+            content, False, event_version
+        )
+        if work_id is not None:
+            work_alive = self.api.work.add_expectations(work_id, expectations)
+            if not work_alive:
+                return []
+        member_ids = {obj["id"] for obj in content.get("objects", []) if "id" in obj}
+        # per-object in-bundle deps, collected BEFORE marking (clean ref values)
+        deps_per_bundle: List[set] = []
+        for mini_bundle in bundles:
+            deps: set = set()
+            for obj in mini_bundle.get("objects", []):
+                self.collect_member_refs(obj, member_ids, deps)
+                deps.discard(obj.get("id"))
+            deps_per_bundle.append(deps)
+            for obj in mini_bundle.get("objects", []):
+                self.mark_member_refs(obj, member_ids)
+        size = max(1, self.ingest_chunk_size)
+        # V2 dependency-aware admission metadata: an entry's blocking deps are its
+        # in-bundle producers sitting in an EARLIER chunk (splitter order puts
+        # producers first, so a dep is never in a later chunk); same-chunk deps fly
+        # together and are ordered platform-side (V1-equivalent semantics).
+        chunk_of: Dict[str, int] = {}
+        for position, mini_bundle in enumerate(bundles):
+            for obj in mini_bundle.get("objects", []):
+                obj_id = obj.get("id")
+                if obj_id is not None and obj_id not in chunk_of:
+                    chunk_of[obj_id] = position // size
+        chunks: List[List[ChunkEntry]] = []
+        for position, mini_bundle in enumerate(bundles):
+            chunk_index = position // size
+            if chunk_index >= len(chunks):
+                chunks.append([])
+            objs = mini_bundle.get("objects", [])
+            raw_id = objs[0].get("id") if objs else None
+            object_id = raw_id.replace(self.MEMBER_REF_MARK, "") if isinstance(raw_id, str) else raw_id
+            blocking = {
+                dep
+                for dep in deps_per_bundle[position]
+                if chunk_of.get(dep, chunk_index) < chunk_index
+            }
+            chunks[chunk_index].append(
+                ChunkEntry(mini_bundle=mini_bundle, object_id=object_id, blocking_deps=blocking)
+            )
+        bundle_terminal: set = set()
+        pool = pick_pool(self.pools, self.ingest_pick)
+        self.logger.info(
+            "Chunked bundle import",
+            {
+                "objects": expectations,
+                "chunks": len(chunks),
+                "chunk_size": size,
+                "pool": pool.index,
+                "pool_depth": pool.depth(),
+                "pick": self.ingest_pick,
+                "pipelined": self.ingest_pipelined,
+                "dep_admission": self.ingest_dep_admission,
+            },
+        )
+        tracker_lock = threading.Lock()
+        bundle_done = threading.Event()
+        remaining = len(chunks)
+        imported_items: List[Any] = []
+        too_large_items_bundles: List[Any] = []
+
+        # Runs on a request thread; closes over this handler's pycti client (one bundle
+        # in flight per handler at prefetch=1: header state is stable). The request
+        # thread owns the object's retry loop through pycti (decision Q2-A).
+        def import_one(mini_bundle: Dict[str, Any]):
+            return self.api.stix2.import_bundle_from_json(
+                json.dumps(mini_bundle), update, types, work_id, self.objects_max_refs
+            )
+
+        def on_object_error(err: Exception) -> None:
+            self.logger.error(
+                "Chunk object import failed, continuing the bundle",
+                {"error": str(err)},
+            )
+            if work_id is not None:
+                try:
+                    self.api.work.report_expectation(
+                        work_id, {"error": str(err), "source": "chunked import"}
+                    )
+                except Exception:  # pylint: disable=broad-except
+                    pass
+
+        def on_chunk_done(items: List[Any], too_large: List[Any]) -> None:
+            nonlocal remaining
+            with tracker_lock:
+                imported_items.extend(items)
+                too_large_items_bundles.extend(too_large)
+                remaining -= 1
+                is_last = remaining == 0
+            if is_last:
+                bundle_done.set()
+
+        for chunk_entries in chunks:
+            pool.submit(
+                ChunkJob(
+                    entries=chunk_entries,
+                    bundle_terminal=bundle_terminal,
+                    import_one=import_one,
+                    on_object_error=on_object_error,
+                    on_chunk_done=on_chunk_done,
+                )
+            )
+        bundle_done.wait()
+        # dead-letter forwarding after completion, from the handler thread (one connection)
+        self.send_too_large_to_dead_letter(data, too_large_items_bundles)
+        return imported_items
+
     def handle_message(
         self,
         body: str,
@@ -382,9 +567,14 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     data.get("bundle_inline", False) or self.bundle_inline
                 )
                 if inline:
-                    imported_items = self.import_bundle_inline(
-                        content, data, work_id, types
-                    )
+                    if self.pools is not None:
+                        imported_items = self.import_bundle_chunked(
+                            content, data, work_id, types
+                        )
+                    else:
+                        imported_items = self.import_bundle_inline(
+                            content, data, work_id, types
+                        )
                 elif objects_count == 1 or data.get("no_split", False):
                     update = data.get("update", False)
                     imported_items, too_large_items_bundles = (
