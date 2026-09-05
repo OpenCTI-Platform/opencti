@@ -127,7 +127,7 @@
     "helmet": "8.3.0",
     "http-proxy-agent": "9.1.0",
     "https-proxy-agent": "9.1.0",
-    "ioredis": "5.8.2",
+    "ioredis": "6.0.0",
     "ipaddr.js": "2.5.0",
     "jose": "6.2.10",
     "js-deep-equals": "2.1.1",
@@ -220,7 +220,7 @@
   "resolutions": {
     "axios": "1.20.0",
     "chokidar": "5.0.0",
-    "ioredis": "5.8.2",
+    "ioredis": "6.0.0",
     "json5": "2.2.3",
     "openid-clientv5/jose": "5.10.0",
     "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
