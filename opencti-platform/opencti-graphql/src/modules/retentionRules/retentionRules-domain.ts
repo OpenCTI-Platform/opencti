@@ -18,6 +18,11 @@ import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
 
+export const RETENTION_RULE_FILES_ID = '2ec36956-62e1-4ea1-b1db-2097fe16a7d3';
+export const RETENTION_RULE_WORKBENCHES_ID = '4f924a05-d167-4705-a52d-2bf52ff23bf0';
+export const RETENTION_RULE_HISTORY_ID = 'ce95e8b8-b44e-4378-bf7e-5f099993b244';
+export const RETENTION_RULE_ACTIVITY_ID = '94a8c352-9bcf-40a4-a2bf-3db0d12fa615';
+
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
   const before = utcDate().subtract(maxDays, unit ?? 'days');
@@ -56,7 +61,7 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
 };
 
 // input { name, filters }
-export const createRetentionRule = async (context: AuthContext, user: AuthUser, input: RetentionRuleAddInput) => {
+export const createRetentionRule = async (context: AuthContext, user: AuthUser, input: RetentionRuleAddInput & { internal_id?: string }) => {
   // filters must be a valid json
   let { filters } = input;
   if (!filters) { // filters is undefined or an empty string
@@ -68,7 +73,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     throw UnsupportedError('Retention rule must have valid filters');
   }
   // create the retention rule
-  const retentionRuleId = generateInternalId();
+  const retentionRuleId = input.internal_id ?? generateInternalId();
   const retentionRule = {
     id: retentionRuleId,
     internal_id: retentionRuleId,

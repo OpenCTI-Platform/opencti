@@ -25,7 +25,13 @@ import { ConfigurationError } from '../config/errors';
 import { initDefaultTheme } from '../modules/theme/theme-domain';
 import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
-import { createRetentionRule } from '../modules/retentionRules/retentionRules-domain';
+import {
+  createRetentionRule,
+  RETENTION_RULE_ACTIVITY_ID,
+  RETENTION_RULE_FILES_ID,
+  RETENTION_RULE_HISTORY_ID,
+  RETENTION_RULE_WORKBENCHES_ID,
+} from '../modules/retentionRules/retentionRules-domain';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -333,6 +339,7 @@ export const createCapabilities = async (context, capabilities, parentName = '')
 export const createDefaultRetentionRules = async (context) => {
   // Create default disabled retention rule for global files (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
+    internal_id: RETENTION_RULE_FILES_ID,
     name: 'Global files retention',
     max_retention: 30,
     retention_unit: 'days',
@@ -341,6 +348,7 @@ export const createDefaultRetentionRules = async (context) => {
   });
   // Create default disabled retention rule for all workbenches (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
+    internal_id: RETENTION_RULE_WORKBENCHES_ID,
     name: 'All workbenches retention',
     max_retention: 30,
     retention_unit: 'days',
@@ -349,6 +357,7 @@ export const createDefaultRetentionRules = async (context) => {
   });
   // Create default disabled retention rule for history (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
+    internal_id: RETENTION_RULE_HISTORY_ID,
     name: 'History retention',
     max_retention: 30,
     retention_unit: 'days',
@@ -357,6 +366,7 @@ export const createDefaultRetentionRules = async (context) => {
   });
   // Create default disabled retention rule for activity (30 days, inactive)
   await createRetentionRule(context, SYSTEM_USER, {
+    internal_id: RETENTION_RULE_ACTIVITY_ID,
     name: 'Activity retention',
     max_retention: 30,
     retention_unit: 'days',
