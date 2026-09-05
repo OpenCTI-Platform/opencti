@@ -69,12 +69,23 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       label
       value
     }
+    # distribution for indicators, restricted to "indicates" relationships to match the Indicators list view (#15882)
+    indicatorsDistribution: stixCoreObjectsDistribution(
+      field: "entity_type",
+      operation: count,
+      types: ["Indicator"],
+      relationship_type: ["indicates"],
+    ) {
+      label
+      value
+    }
   }
 `;
 
 type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
-  | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution']
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['indicatorsDistribution'];
 
 interface StixCoreObjectKnowledgeBarProps {
   stixCoreObjectLink: string;
@@ -134,6 +145,7 @@ const StixCoreObjectKnowledgeBar = ({
     relationshipsWithoutRelatedToDistribution,
     relationshipsRelatedDistribution,
     stixCoreObjectsDistribution,
+    indicatorsDistribution,
   } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
 
   const indexEntities = (distribution: ObjectsDistribution): Record<string, number> => (
@@ -147,6 +159,7 @@ const StixCoreObjectKnowledgeBar = ({
     withoutRelated: indexEntities(relationshipsWithoutRelatedToDistribution),
     related: indexEntities(relationshipsRelatedDistribution),
     coreObjects: indexEntities(stixCoreObjectsDistribution),
+    indicators: indexEntities(indicatorsDistribution),
   };
 
   const sumEntitiesByKeys = (source: Record<string, number>, keys?: string[]) => {
@@ -338,7 +351,7 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Indicators',
           iconType: 'Indicator',
           path: 'indicators',
-          count: distributions.coreObjects.Indicator || 0,
+          count: distributions.indicators.Indicator || 0,
         },
         {
           label: 'Observables',
