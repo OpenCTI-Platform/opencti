@@ -1,8 +1,20 @@
 import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
-import type { AuthContext } from '../../types/user';
-import { handlerDryRun, planDivergence, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
+import { getEntitiesMapFromCache } from '../../database/cache';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { SYSTEM_USER } from '../../utils/access';
+import { userMergeProjectRights, userMergeRightsLabels, userMergeRightsOf } from './userMerge-rights';
+import {
+  handlerDryRun,
+  planDivergence,
+  planFingerprint,
+  type UserMergeHandler,
+  type UserMergeHandlerContext,
+  type UserMergeHandlerOutcome,
+  type UserMergeRightsProjection,
+} from './userMerge-handler';
 import { readJournalEntries, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { USER_MERGE_REGISTER_VERSION } from './userMerge-register';
@@ -76,6 +88,45 @@ const assertBlockingAlertsAcknowledged = (outcomes: UserMergeHandlerOutcome[], o
 };
 
 /**
+ * Both users and the projected rights, read once from the user cache.
+ *
+ * Aborts on a cache miss rather than degrading. Every blocking alert of the feature — public
+ * exposure, authorized member management, individual ownership — is derived from these values,
+ * so a handler coping with a missing projection would skip its security checks while the merge
+ * carried on. The domain layer only proves the users exist in the store; the resolved rights
+ * live in the cache, and a merge that cannot read them has nothing to decide on.
+ */
+const readRightsProjection = async (
+  context: AuthContext,
+  sourceId: string,
+  targetId: string,
+  options: UserMergeOptions,
+): Promise<{ sourceUser: AuthUser; targetUser: AuthUser; rights: UserMergeRightsProjection }> => {
+  const users = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const sourceUser = users.get(sourceId);
+  const targetUser = users.get(targetId);
+  if (!sourceUser || !targetUser) {
+    throw UnsupportedError('Cannot resolve the rights of the users to merge', {
+      source_id: sourceId,
+      target_id: targetId,
+      missing: !sourceUser ? 'source' : 'target',
+    });
+  }
+  const source = userMergeRightsOf(sourceUser);
+  const target = userMergeRightsOf(targetUser);
+  return {
+    sourceUser,
+    targetUser,
+    rights: {
+      source,
+      target,
+      projected: userMergeProjectRights(source, target, options.rightsStrategy),
+      labels: userMergeRightsLabels(sourceUser, targetUser),
+    },
+  };
+};
+
+/**
  * Two full passes, never interleaved.
  *
  * Every handler computes first, the complete report is produced, and only then does any
@@ -107,7 +158,8 @@ export const executeUserMerge = async (
   };
   try {
     const handlers = userMergeHandlers();
-    const handlerContext: UserMergeHandlerContext = { context, sourceId, targetId, options };
+    const projection = await readRightsProjection(context, sourceId, targetId, options);
+    const handlerContext: UserMergeHandlerContext = { context, sourceId, targetId, options, ...projection };
     const journalInput = { mergeId, sourceId, targetId };
 
     const dryOutcomes: UserMergeHandlerOutcome[] = [];
