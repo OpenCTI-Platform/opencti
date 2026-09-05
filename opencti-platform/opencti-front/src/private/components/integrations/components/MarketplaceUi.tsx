@@ -9,6 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import GradientCard from '../../../../components/GradientCard';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../../utils/utils';
+import stopEvent, { shouldOpenInNewTabMouseEvent } from '../../../../utils/domEvent';
 
 export const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
@@ -52,9 +53,15 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
         variant="outlined"
         onClick={to
           ? (event) => {
-            // The chip may live inside a clickable card: do not trigger it.
-              event.stopPropagation();
-              navigate(to);
+            // The chip lives inside a card or line rendered as a link: block
+            // both the bubbling and the anchor navigation, then honor
+            // ctrl/cmd/middle click by opening the deployed tab in a new tab.
+              stopEvent(event);
+              if (shouldOpenInNewTabMouseEvent(event)) {
+                window.open(to, '_blank');
+              } else {
+                navigate(to);
+              }
             }
           : undefined}
         sx={{
