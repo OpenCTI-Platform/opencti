@@ -41,6 +41,22 @@ export const issueConnectorJWT = async () => {
   return await keyPair.signJwt(jwt);
 };
 
+export const isConnectorActive = (connector) => {
+  if (connector.built_in) {
+    return connector.active ?? true;
+  }
+  if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
+    // return false if managed connector is stopped or stopping
+    const connectorStopped = connector.manager_requested_status !== 'stopping'
+      && connector.manager_requested_status !== 'stopped'
+      && connector.manager_current_status !== 'stopped';
+    if (connectorStopped) {
+      return false;
+    }
+  }
+  return sinceNowInMinutes(connector.updated_at) < 5;
+};
+
 export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
@@ -56,7 +72,7 @@ export const completeConnector = (connector) => {
     }
 
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
-    completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
+    completed.active = isConnectorActive(connector);
     return completed;
   }
   return null;
