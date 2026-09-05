@@ -57,6 +57,25 @@ const applyHandler = async (
 };
 
 /**
+ * Gate placed between the two passes, which is where the human decision belongs.
+ *
+ * Blocking on the dry pass would hide the difference from the report the operator needs to
+ * decide with; blocking inside a handler's write would stop the merge after earlier handlers
+ * already wrote.
+ */
+const assertBlockingAlertsAcknowledged = (outcomes: UserMergeHandlerOutcome[], options: UserMergeOptions): void => {
+  if (options.acknowledgeExposureChange) {
+    return;
+  }
+  const blocking = outcomes.flatMap((outcome) => outcome.alerts.filter((alert) => alert.blocking));
+  if (blocking.length > 0) {
+    throw UnsupportedError('Merge blocked by unacknowledged alerts, nothing was written', {
+      alerts: blocking.map((alert) => ({ register_row_id: alert.register_row_id, kind: alert.kind, message: alert.message })),
+    });
+  }
+};
+
+/**
  * Two full passes, never interleaved.
  *
  * Every handler computes first, the complete report is produced, and only then does any
@@ -103,6 +122,7 @@ export const executeUserMerge = async (
     if (options.dryRun) {
       return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, handlers, dryOutcomes) };
     }
+    assertBlockingAlertsAcknowledged(dryOutcomes, options);
 
     const outcomes: UserMergeHandlerOutcome[] = [];
     for (let i = 0; i < handlers.length; i += 1) {

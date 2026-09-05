@@ -17071,6 +17071,7 @@ enum UserMergeStatus {
 input UserMergeOptions {
   dryRun: Boolean = true
   rightsStrategy: UserMergeRightsStrategy = STRICT
+  acknowledgeExposureChange: Boolean = false
 }
 
 enum UserMergeDisposition {
@@ -17093,6 +17094,7 @@ type UserMergeRightsAlert {
   register_row_id: String!
   kind: String!
   message: String!
+  blocking: Boolean
 }
 
 type UserMergeHandlerOutcome {
