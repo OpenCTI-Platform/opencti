@@ -83,6 +83,7 @@ input WorkspaceAddInput {
 }
 
 input WorkspaceDuplicateInput {
+    id: ID
     type: String!
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
