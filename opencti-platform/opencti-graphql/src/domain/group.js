@@ -228,7 +228,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     throw FunctionalError('Cannot delete the relation, Group cannot be found.', { groupId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${input.relationship_type}.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
   let target;
   if (fromId) {
