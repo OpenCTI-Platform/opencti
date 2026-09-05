@@ -2,6 +2,7 @@ import { CloseOutlined } from '@mui/icons-material';
 import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } from '@mui/material';
 import React, { CSSProperties, ReactElement } from 'react';
 import { getLuminance } from '@mui/material/styles';
+import { normalizeLabelColor } from '../../../utils/Colors';
 
 export interface TagProps extends Omit<ChipProps, 'color'> {
   label?: string | number | ReactElement | null;
@@ -36,8 +37,13 @@ const Tag = ({
       return defaultColor;
     }
 
+    const normalized = normalizeLabelColor(color);
+    if (!normalized) {
+      return defaultColor;
+    }
+
     try {
-      return alpha(color, 0.2);
+      return alpha(normalized, 0.2);
     } catch {
       return defaultColor;
     }
