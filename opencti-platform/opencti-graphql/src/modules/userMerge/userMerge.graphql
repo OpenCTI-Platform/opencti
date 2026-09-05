@@ -112,12 +112,24 @@ type UserMergeJournalEntry {
     outcome: UserMergeHandlerOutcome
 }
 
+type UserMergeSourceDeletionReadiness {
+    # True only when coverage is complete and a dry-run on the pair plans nothing.
+    allowed: Boolean!
+    coverage_complete: Boolean!
+    # References to the source a dry-run still plans to move.
+    pending_change_count: Int!
+    blockers: [String!]!
+}
+
 extend type Query {
     # mergeId is optional: an operator who lost the connection also lost the id returned by
     # the mutation, so requiring it would defeat the point of the query.
     userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
     # Counts always cover the whole register; disposition only narrows the returned rows.
     userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
+    # Runs a dry-run on the pair, so it costs what a dry-run costs. Deleting the source is not
+    # exposed yet: it lands once coverage is complete and this gate can actually open.
+    userMergeSourceDeletionReadiness(sourceId: ID!, targetId: ID!): UserMergeSourceDeletionReadiness! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
 }
 
 extend type Mutation {

@@ -3,9 +3,29 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../../src/database/cache';
-import { addUser, userDelete } from '../../../../src/domain/user';
+import { addUser, userDelete, userEditField } from '../../../../src/domain/user';
+import { deleteMergeableUser } from './userMerge-testFixtures';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED } from '../../../../src/config/conf';
+import { registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
+import { USER_MERGE_SOURCE_DISABLE_HANDLER } from '../../../../src/modules/userMerge/userMerge-handler';
+import { USER_MERGED_INTO_FIELD } from '../../../../src/modules/userMerge/userMerge-types';
+
+/**
+ * Handlers that write on the source account itself rather than on what it owns. A chunk adding
+ * one belongs here; a handler appearing here that was not added on purpose is the bug this test
+ * is looking for.
+ */
+const SOURCE_ACCOUNT_HANDLERS: string[] = [USER_MERGE_SOURCE_DISABLE_HANDLER];
+
+/**
+ * Read from the register rather than written down. What these tests state is that the API reports
+ * the register whole and keeps its counts under a filter — not how many rows it holds today. A
+ * transcribed count says nothing more and turns every register edit into a test to fix.
+ */
+const REGISTER_SIZE = USER_MERGE_REGISTER.length;
+const TRANSFER_ROWS = registerRowsByDisposition(UserMergeDisposition.Transfer).length;
 
 const USER_MERGE_MUTATION = gql`
   mutation UserMerge($sourceId: ID!, $targetId: ID!, $options: UserMergeOptions) {
@@ -74,13 +94,27 @@ const USER_MERGE_JOURNAL_QUERY = gql`
   }
 `;
 
+const USER_MERGE_READINESS_QUERY = gql`
+  query UserMergeSourceDeletionReadiness($sourceId: ID!, $targetId: ID!) {
+    userMergeSourceDeletionReadiness(sourceId: $sourceId, targetId: $targetId) {
+      allowed
+      coverage_complete
+      pending_change_count
+      blockers
+    }
+  }
+`;
+
 const readUser = async (userId: string) => {
   const { data } = await queryAsAdminWithSuccess({
-    query: gql`query ReadUser($id: String!) { user(id: $id) { id name user_email } }`,
+    query: gql`query ReadUser($id: String!) { user(id: $id) { id name user_email account_status } }`,
     variables: { id: userId },
   });
   return data.user;
 };
+
+/** The fields a merge never rewrites, isolated from the status, which it does rewrite. */
+const profileOf = (user: { id: string; name: string; user_email: string }) => ({ id: user.id, name: user.name, user_email: user.user_email });
 
 const SUFFIX = 'userMergeResolvers';
 
@@ -110,8 +144,8 @@ describe('User merge resolvers', () => {
   });
 
   afterAll(async () => {
-    await userDelete(testContext, ADMIN_USER, mergeSourceId);
-    await userDelete(testContext, ADMIN_USER, mergeTargetId);
+    await deleteMergeableUser(mergeSourceId);
+    await deleteMergeableUser(mergeTargetId);
   });
 
   describe('Access control - BYPASS capability required', () => {
@@ -175,9 +209,13 @@ describe('User merge resolvers', () => {
       expect(Object.keys(real.data.userMerge).sort()).toEqual(Object.keys(dry.data.userMerge).sort());
       expect(real.data.userMerge.dry_run).toBe(false);
       expect(dry.data.userMerge.dry_run).toBe(true);
-      // The two accounts are created empty by this file, so a real merge that writes anything
-      // is a handler reaching outside what the source actually owns.
-      expect(real.data.userMerge.report.total_updated).toEqual(0);
+      // The two accounts are created empty by this file, so nothing a handler moves on behalf of
+      // the source can be found. What a real merge still writes here is the source account itself,
+      // which is not a handler reaching outside what the source owns — it is the merge closing it.
+      // Asserting a total instead would have to be revised by every chunk that touches the account.
+      const reachedOutside = real.data.userMerge.report.handlers
+        .filter((outcome: { handler: string; updated: number }) => !SOURCE_ACCOUNT_HANDLERS.includes(outcome.handler) && outcome.updated > 0);
+      expect(reachedOutside).toEqual([]);
     });
 
     it('should carry the coverage in the report of every execution', async () => {
@@ -185,12 +223,15 @@ describe('User merge resolvers', () => {
         query: USER_MERGE_MUTATION,
         variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { dryRun: true } },
       });
+      const { data: standalone } = await queryAsAdminWithSuccess({ query: USER_MERGE_COVERAGE_QUERY, variables: {} });
       expect(data.userMerge.report.merge_id).toEqual(data.userMerge.id);
       expect(data.userMerge.report.total_updated).toEqual(0);
-      // Three handlers succeeding reads as a complete merge unless the report also says
-      // what the register still holds.
-      expect(data.userMerge.report.coverage.is_complete).toBe(false);
-      expect(data.userMerge.report.coverage.total).toEqual(101);
+      // Handlers succeeding reads as a complete merge unless the report also says what the
+      // register still holds. Compared with the dedicated query rather than to a written-down
+      // verdict: the point is that a run reports the register, not a summary of itself.
+      expect(data.userMerge.report.coverage.total).toEqual(REGISTER_SIZE);
+      expect(data.userMerge.report.coverage.covered_count).toEqual(standalone.userMergeCoverage.covered_count);
+      expect(data.userMerge.report.coverage.is_complete).toBe(standalone.userMergeCoverage.is_complete);
     });
 
     it('should carry the requested rights strategy', async () => {
@@ -201,37 +242,86 @@ describe('User merge resolvers', () => {
       expect(data.userMerge.rights_strategy).toBe('UNION');
     });
 
-    it('should leave the user entities themselves untouched', async () => {
+    it('should leave the profile of both accounts untouched', async () => {
       const sourceBefore = await readUser(mergeSourceId);
       const targetBefore = await readUser(mergeTargetId);
       await queryAsAdminWithSuccess({
         query: USER_MERGE_MUTATION,
         variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { dryRun: false } },
       });
-      expect(await readUser(mergeSourceId)).toEqual(sourceBefore);
+      // The source is compared on its profile only: a merge closes that account, so comparing the
+      // whole entity would either hide the one write it is supposed to make or contradict it. The
+      // status is asserted by the next case rather than left out of both.
+      expect(profileOf(await readUser(mergeSourceId))).toEqual(profileOf(sourceBefore));
       expect(await readUser(mergeTargetId)).toEqual(targetBefore);
+    });
+
+    it('should close the source account and leave the target open', async () => {
+      await queryAsAdminWithSuccess({
+        query: USER_MERGE_MUTATION,
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId, options: { dryRun: false } },
+      });
+      // Asserted as an end state, not as a transition: earlier cases in this file already run real
+      // merges on the same pair, so a handler that only worked on a still-active source would pass
+      // a before/after check by doing nothing at all.
+      expect((await readUser(mergeSourceId)).account_status).toEqual(ACCOUNT_STATUS_EXPIRED);
+      expect((await readUser(mergeTargetId)).account_status).toEqual(ACCOUNT_STATUS_ACTIVE);
+    });
+
+    // The dedicated deletion path is what an operator is meant to use, but nothing removes the
+    // ordinary delete button from the user administration screen. That button runs cascades which
+    // select by a reference to the account being deleted, so on a merged source a reference the
+    // merge missed gets its Trigger or its Workspace deleted rather than skipped — and those now
+    // belong to the target. This asserts the ordinary path stops, and that it can be re-opened.
+    it('should refuse the ordinary deletion of a merged source until its mark is cleared', async () => {
+      // Its own source: this case ends by deleting it, and the shared one is still needed after.
+      const disposable = await addUser(testContext, SYSTEM_USER, {
+        name: `${SUFFIX}-disposable`,
+        password: SUFFIX,
+        user_email: `${SUFFIX}-disposable@opencti.invalid`,
+        prevent_default_groups: true,
+      });
+      resetCacheForEntity(ENTITY_TYPE_USER);
+      await queryAsAdminWithSuccess({
+        query: USER_MERGE_MUTATION,
+        variables: { sourceId: disposable.id, targetId: mergeTargetId, options: { dryRun: false } },
+      });
+
+      await expect(userDelete(testContext, ADMIN_USER, disposable.id)).rejects.toThrow();
+      expect((await readUser(disposable.id)).id).toEqual(disposable.id);
+
+      await userEditField(testContext, ADMIN_USER, disposable.id, [{ key: USER_MERGED_INTO_FIELD, value: [null] }]);
+      await expect(userDelete(testContext, ADMIN_USER, disposable.id)).resolves.toBeDefined();
     });
   });
 
   describe('Coverage query', () => {
     it('should name what no handler covers', async () => {
       const { data } = await queryAsAdminWithSuccess({ query: USER_MERGE_COVERAGE_QUERY, variables: {} });
-      expect(data.userMergeCoverage.total).toEqual(101);
-      expect(data.userMergeCoverage.rows.length).toEqual(101);
-      // The register is what says the merge is incomplete, whatever the handlers claim.
+      expect(data.userMergeCoverage.total).toEqual(REGISTER_SIZE);
+      expect(data.userMergeCoverage.rows.length).toEqual(REGISTER_SIZE);
+      // The register is what says what is left, whatever the handlers claim. An uncovered row
+      // has to be listed and named as uncovered rather than dropped from the answer.
       expect(data.userMergeCoverage.covered_count).toBeGreaterThan(0);
-      expect(data.userMergeCoverage.uncovered_count).toEqual(101 - data.userMergeCoverage.covered_count);
-      expect(data.userMergeCoverage.is_complete).toBe(false);
+      expect(data.userMergeCoverage.uncovered_count).toEqual(REGISTER_SIZE - data.userMergeCoverage.covered_count);
+      const uncovered = data.userMergeCoverage.rows.filter((row: { covered: boolean }) => !row.covered);
+      expect(uncovered.length).toEqual(data.userMergeCoverage.uncovered_count);
+      uncovered.forEach((row: { handler: string | null }) => expect(row.handler).toBeFalsy());
     });
 
     it('should keep the counts on the whole register when filtering', async () => {
+      const { data: whole } = await queryAsAdminWithSuccess({ query: USER_MERGE_COVERAGE_QUERY, variables: {} });
       const { data } = await queryAsAdminWithSuccess({
         query: USER_MERGE_COVERAGE_QUERY,
         variables: { disposition: 'TRANSFER' },
       });
-      expect(data.userMergeCoverage.rows.length).toEqual(40);
-      expect(data.userMergeCoverage.total).toEqual(101);
-      expect(data.userMergeCoverage.is_complete).toBe(false);
+      expect(data.userMergeCoverage.rows.length).toEqual(TRANSFER_ROWS);
+      expect(data.userMergeCoverage.rows.length).toBeLessThan(REGISTER_SIZE);
+      // Narrowing the question must not be able to narrow the answer: the counts and the
+      // verdict stay those of the whole register.
+      expect(data.userMergeCoverage.total).toEqual(REGISTER_SIZE);
+      expect(data.userMergeCoverage.covered_count).toEqual(whole.userMergeCoverage.covered_count);
+      expect(data.userMergeCoverage.is_complete).toBe(whole.userMergeCoverage.is_complete);
     });
 
     it('should be refused without BYPASS', async () => {
@@ -251,6 +341,36 @@ describe('User merge resolvers', () => {
         variables: { mergeId: 'never-ran-merge-id', first: 10 },
       });
       expect(data.userMergeJournal).toEqual([]);
+    });
+  });
+
+  describe('Source deletion readiness query', () => {
+    it('should refuse the deletion while the register is not covered whole', async () => {
+      const { data: coverage } = await queryAsAdminWithSuccess({ query: USER_MERGE_COVERAGE_QUERY, variables: {} });
+      const { data } = await queryAsAdminWithSuccess({
+        query: USER_MERGE_READINESS_QUERY,
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId },
+      });
+      const readiness = data.userMergeSourceDeletionReadiness;
+      // Compared with the coverage query rather than with a written-down verdict: what this states
+      // is that the gate answers from the register, not how covered the register is today.
+      expect(readiness.coverage_complete).toBe(coverage.userMergeCoverage.is_complete);
+      expect(readiness.allowed).toBe(readiness.coverage_complete && readiness.pending_change_count === 0);
+      expect(readiness.blockers.length === 0).toBe(readiness.allowed);
+    });
+
+    it('should refuse an unknown user before answering', async () => {
+      await queryAsAdminWithError({
+        query: USER_MERGE_READINESS_QUERY,
+        variables: { sourceId: 'unknown-source-id', targetId: mergeTargetId },
+      }, 'Unknown source user');
+    });
+
+    it('should be refused without BYPASS', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+        query: USER_MERGE_READINESS_QUERY,
+        variables: { sourceId: mergeSourceId, targetId: mergeTargetId },
+      });
     });
   });
 });

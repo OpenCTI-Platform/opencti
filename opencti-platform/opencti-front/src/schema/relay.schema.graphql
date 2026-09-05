@@ -9659,6 +9659,7 @@ type Query {
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
   userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]!
   userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage!
+  userMergeSourceDeletionReadiness(sourceId: ID!, targetId: ID!): UserMergeSourceDeletionReadiness!
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
@@ -17157,6 +17158,13 @@ type UserMergeJournalEntry {
   message: String
   updated_count: Int
   outcome: UserMergeHandlerOutcome
+}
+
+type UserMergeSourceDeletionReadiness {
+  allowed: Boolean!
+  coverage_complete: Boolean!
+  pending_change_count: Int!
+  blockers: [String!]!
 }
 
 type CustomFieldValue {

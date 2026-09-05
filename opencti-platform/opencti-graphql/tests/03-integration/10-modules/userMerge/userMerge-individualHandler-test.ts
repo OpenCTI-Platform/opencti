@@ -3,7 +3,8 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import * as cache from '../../../../src/database/cache';
 import { addIndividual } from '../../../../src/domain/individual';
 import { addNote } from '../../../../src/domain/note';
-import { addUser, userDelete } from '../../../../src/domain/user';
+import { addUser } from '../../../../src/domain/user';
+import { deleteMergeableUser } from './userMerge-testFixtures';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../../src/database/utils';
@@ -76,8 +77,8 @@ describe('userMerge individual handler', () => {
     for (let i = 0; i < createdNotes.length; i += 1) {
       await deleteElementById(testContext, ADMIN_USER, createdNotes[i], ENTITY_TYPE_CONTAINER_NOTE);
     }
-    await userDelete(testContext, ADMIN_USER, sourceId);
-    await userDelete(testContext, ADMIN_USER, targetId);
+    await deleteMergeableUser(sourceId);
+    await deleteMergeableUser(targetId);
     for (let i = 0; i < created.length; i += 1) {
       const individual = await storeLoadById(testContext, ADMIN_USER, created[i], ENTITY_TYPE_IDENTITY_INDIVIDUAL);
       if (individual) {
