@@ -13,7 +13,7 @@ import { useFormatter } from 'src/components/i18n';
 import useAuth from 'src/utils/hooks/useAuth';
 import { ArrowRightAlt } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
-import { Select, SelectChangeEvent } from '@mui/material';
+import { Select, SelectChangeEvent, InputLabel, FormControl } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import { StixCoreRelationshipAddInput } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
@@ -495,13 +495,21 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
                 />
               </Box>
               <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
-                <Select disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
-                  {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
-                    <MenuItem key={relation} value={relation}>
-                      {t_i18n(`relationship_${relation}`)}
-                    </MenuItem>
-                  ))}
-                </Select>
+                <FormControl variant="standard" fullWidth>
+                  <InputLabel id="bulk-relation-type-select-label">{t_i18n('Relationship Type')}</InputLabel>
+                  <Select
+                    labelId="bulk-relation-type-select-label"
+                    disabled={isSubmitting}
+                    onChange={handleChangeSelectedRelationType}
+                    value={selectedRelationType}
+                  >
+                    {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
+                      <MenuItem key={relation} value={relation}>
+                        {t_i18n(`relationship_${relation}`)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <ArrowRightAlt sx={{ alignSelf: 'center', margin: '10px' }} fontSize="large" />
               </Box>
             </Box>
