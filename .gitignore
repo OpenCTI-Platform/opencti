@@ -1,6 +1,9 @@
 # MacOS Finder files
 .DS_Store
 
+# mise
+.mise.local.toml
+
 # IntelliJ Platform) | JetBrains
 .idea/
 *.iml
