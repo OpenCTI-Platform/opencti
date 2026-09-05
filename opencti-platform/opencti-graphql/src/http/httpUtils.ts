@@ -5,6 +5,7 @@ import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
 import {
+  getKeepAliveTimeout,
   getPublicAuthorizedDomainsFromConfiguration,
   getRateProtectionIpSkipList,
   getRateProtectionIpSkipRanges,
@@ -17,6 +18,7 @@ import {
 import type { HelmetOptions } from 'helmet';
 import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
+import type { Server } from 'node:http';
 
 export const setCookieError = (res: Response, message: string) => {
   // Map error messages to safe, non-sensitive codes exposed to the client.
@@ -304,4 +306,18 @@ export const buildRateLimiterOptions = (): Options => {
     },
   };
   return rateLimitOptions as Options;
+};
+
+/**
+ * Align the server keep-alive with the idle timeout of the front load balancer / reverse proxy.
+ * The Node.js default of 5s is shorter than the idle timeout of a standard proxy (60s for an AWS
+ * ALB), so the platform closes idle sockets the proxy still considers usable and the clients get
+ * intermittent 502. headersTimeout is left to the Node.js default: it only bounds the reception of
+ * the headers of a request already started and never counts keep-alive idle time, so it does not
+ * have to be kept above keepAliveTimeout.
+ */
+export const applyKeepAliveTimeout = (server: Server) => {
+  const keepAliveTimeout = getKeepAliveTimeout();
+  server.keepAliveTimeout = keepAliveTimeout;
+  return keepAliveTimeout;
 };
