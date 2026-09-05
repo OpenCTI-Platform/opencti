@@ -12,7 +12,7 @@ import FormIntakeBuilderPageModel from '../model/formIntake/formIntakeBuilder.pa
 import PlaybookBuilderPageModel from '../model/playbook/playbookBuilder.pageModel';
 import { restoreAdminSession } from '../restoreAdminSession';
 
-test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@group1'] }, async ({ page }) => {
+test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
   test.setTimeout(300000); // 5 minutes, to allow for slow dev-mode SPA reloads
   const topBar = new TopMenuProfilePage(page);
   const loginForm = new LoginFormPageModel(page);
@@ -69,7 +69,7 @@ test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@g
   await restoreAdminSession(page);
 });
 
-test('Create and activate the Threat Advisory Report access-restrictions playbook', { tag: ['@ee', '@group1'] }, async ({ page }) => {
+test('Create and activate the Threat Advisory Report access-restrictions playbook', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
   test.setTimeout(300000); // 5 minutes, to allow for slow dev-mode SPA reloads
   const topBar = new TopMenuProfilePage(page);
   const loginForm = new LoginFormPageModel(page);
