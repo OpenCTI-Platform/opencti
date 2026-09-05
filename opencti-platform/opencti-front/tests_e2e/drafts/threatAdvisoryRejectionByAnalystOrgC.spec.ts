@@ -7,7 +7,7 @@ import { test } from '../fixtures/baseFixtures';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import { advanceDraftToStatus, createThreatAdvisoryDraft, openDraft, USERS } from './threatAdvisoryDraftHelpers';
 
-test('Threat Advisory - rejection by AnalystOrgC', { tag: ['@ee', '@group1'] }, async ({ page }) => {
+test('Threat Advisory - rejection by AnalystOrgC', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
   test.setTimeout(120000);
 
   const toolbar = new DraftToolbarPageModel(page);

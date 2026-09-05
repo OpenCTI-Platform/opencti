@@ -21,17 +21,25 @@ jobs:
       matrix:
         include:
           - name: "e2e group0 tests"
-            grep_args: '--grep-invert "@group1|@groupff"'
+            grep_args: '--grep-invert "@group1|@groupff|@workflow" --project=chromium'
             dev_features: '[]'
             artifact_suffix: '-group0'
           - name: "e2e ff tests"
-            grep_args: '--grep @groupff'
+            grep_args: '--grep @groupff --project=chromium'
             dev_features: '["*"]'
             artifact_suffix: '-ff'
           - name: "e2e group1 tests"
-            grep_args: '--grep @group1'
+            grep_args: '--grep @group1 --project=chromium'
             dev_features: '[]'
             artifact_suffix: '-group1'
+          - name: "e2e workflow tests"
+            # Dedicated shard for the workflow/form-intake setup chain and everything that depends
+            # on it. Isolated in its own Playwright project ('workflow e2e', see playwright.config.ts)
+            # so this expensive setup doesn't get forced to re-run in the other shards too - Playwright
+            # always fully runs a project's dependencies regardless of --grep/--grep-invert filters.
+            grep_args: '--grep @workflow --project="workflow e2e"'
+            dev_features: '[]'
+            artifact_suffix: '-workflow'
 
     steps:
     - name: OpenCTI checkout

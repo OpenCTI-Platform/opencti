@@ -57,7 +57,7 @@ let reportName: string = process.env.E2E_REPORT_NAME ?? `${REPORT_NAME_PREFIX}${
 let draftId = '';
 
 test.describe.serial('Threat Advisory happy flow', () => {
-  test('Steps 1-18: submission through workflow to Report validation', { tag: ['@ee', '@group1'] }, async ({ page }) => {
+  test('Steps 1-18: submission through workflow to Report validation', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
     test.skip(!!process.env.E2E_REPORT_NAME, 'E2E_REPORT_NAME set - reusing an existing Report, skipping creation');
     test.setTimeout(600000); // ~10 logins/transitions across the full scenario
 
@@ -187,7 +187,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
     await restoreAdminSession(page);
   });
 
-  test('Report access checks (steps 19-24): every persona\'s view of the validated Report', { tag: ['@ee', '@group1'] }, async ({ page, request }) => {
+  test('Report access checks (steps 19-24): every persona\'s view of the validated Report', { tag: ['@ee', '@workflow'] }, async ({ page, request }) => {
     test.setTimeout(180000); // ~6 logins across every persona
 
     // Standalone run: "Steps 1-18" didn't run in this session, find the latest matching Report.

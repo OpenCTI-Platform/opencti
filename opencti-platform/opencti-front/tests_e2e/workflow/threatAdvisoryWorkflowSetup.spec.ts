@@ -6,7 +6,7 @@ import WorkflowEditionDrawerPageModel from '../model/workflow/workflowEditionDra
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import { restoreAdminSession } from '../restoreAdminSession';
 
-test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@group1'] }, async ({ page }) => {
+test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
   test.setTimeout(300000);
 
   const topBar = new TopMenuProfilePage(page);

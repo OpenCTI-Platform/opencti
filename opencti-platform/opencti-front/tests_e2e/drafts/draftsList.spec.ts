@@ -2,7 +2,7 @@ import DraftsPage from 'tests_e2e/model/drafts.pageModel';
 import SearchPageModel from 'tests_e2e/model/search.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 
-test.describe('Drafts list', { tag: ['@ce'] }, () => {
+test.describe('Drafts list', { tag: ['@ce', '@workflow'] }, () => {
   test('should list, search, and delete manually-created drafts', async ({ page }) => {
     const timestamp = Date.now();
     const alphaName = `Drafts List E2E Alpha - ${timestamp}`;

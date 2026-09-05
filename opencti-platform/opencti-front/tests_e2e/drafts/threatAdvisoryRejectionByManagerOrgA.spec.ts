@@ -8,7 +8,7 @@ import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import DraftOverviewPageModel from '../model/drafts/draftOverview.pageModel';
 import { advanceDraftToStatus, createThreatAdvisoryDraft, openDraft, USERS } from './threatAdvisoryDraftHelpers';
 
-test('Threat Advisory - rejection by ManagerOrgA', { tag: ['@ee', '@group1'] }, async ({ page }) => {
+test('Threat Advisory - rejection by ManagerOrgA', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
   test.setTimeout(180000);
 
   const toolbar = new DraftToolbarPageModel(page);
