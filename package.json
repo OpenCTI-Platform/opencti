@@ -23,7 +23,7 @@
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
   "devDependencies": {
-    "nx": "23.1.2"
+    "nx": "23.2.0"
   },
   "resolutions": {
     "axios": "1.20.0"
