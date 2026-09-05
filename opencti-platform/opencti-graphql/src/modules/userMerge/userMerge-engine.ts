@@ -13,6 +13,7 @@ import {
   type UserMergeHandler,
   type UserMergeHandlerContext,
   type UserMergeHandlerOutcome,
+  type UserMergeHandlerPlan,
   type UserMergeRightsProjection,
 } from './userMerge-handler';
 import { readJournalEntries, withJournalEntry } from './userMerge-journal';
@@ -45,25 +46,45 @@ const buildReport = (mergeId: string, handlers: UserMergeHandler[], outcomes: Us
 });
 
 /**
- * Real pass for one handler: recompute, prove the computation still matches what the dry
- * pass reported, then write.
+ * Recomputes every handler and proves each one still matches what the dry pass reported,
+ * before any of them writes.
  *
- * The platform is required to be at rest during a merge, so a divergence here is not a race
- * to be retried — it is the premise of the operation being false. Writing anyway would apply
- * changes the operator never reviewed, which is precisely what the dry-run exists to prevent.
+ * Recomputing a handler just before its own write would compare the platform against a state
+ * the merge itself has already altered: handlers destroy what later handlers count — killing
+ * the source sessions is enough — so a correct merge would be read as a platform that moved.
+ * Recomputing everything first keeps the question the guard is asking: did anything other than
+ * this merge touch the platform since the operator reviewed the report.
+ *
+ * The platform is required to be at rest during a merge, so a divergence is not a race to be
+ * retried — it is the premise of the operation being false. Refusing here rather than in the
+ * middle of the write loop is also what makes the refusal recoverable: nothing is written at
+ * all, instead of leaving the platform half merged by the handlers that already ran.
  */
+const recomputeVerifiedPlans = async (
+  handlers: UserMergeHandler[],
+  handlerContext: UserMergeHandlerContext,
+  dryOutcomes: UserMergeHandlerOutcome[],
+): Promise<UserMergeHandlerPlan[]> => {
+  const plans: UserMergeHandlerPlan[] = [];
+  for (let i = 0; i < handlers.length; i += 1) {
+    const handler = handlers[i];
+    const plan = await handler.compute(handlerContext);
+    if (planFingerprint(plan) !== planFingerprint(dryOutcomes[i])) {
+      throw UnsupportedError('Platform state changed between the dry pass and the real pass, nothing was written', {
+        handler: handler.identifier,
+        ...planDivergence(dryOutcomes[i], plan),
+      });
+    }
+    plans.push(plan);
+  }
+  return plans;
+};
+
 const applyHandler = async (
   handler: UserMergeHandler,
   handlerContext: UserMergeHandlerContext,
-  dryOutcome: UserMergeHandlerOutcome,
+  plan: UserMergeHandlerPlan,
 ): Promise<UserMergeHandlerOutcome> => {
-  const plan = await handler.compute(handlerContext);
-  if (planFingerprint(plan) !== planFingerprint(dryOutcome)) {
-    throw UnsupportedError('Platform state changed between the dry pass and the real pass, nothing was written for this handler', {
-      handler: handler.identifier,
-      ...planDivergence(dryOutcome, plan),
-    });
-  }
   const updated = await handler.apply(handlerContext, plan);
   return { ...plan, updated };
 };
@@ -175,13 +196,14 @@ export const executeUserMerge = async (
       return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, handlers, dryOutcomes) };
     }
     assertBlockingAlertsAcknowledged(dryOutcomes, options);
+    const plans = await recomputeVerifiedPlans(handlers, handlerContext, dryOutcomes);
 
     const outcomes: UserMergeHandlerOutcome[] = [];
     for (let i = 0; i < handlers.length; i += 1) {
       const handler = handlers[i];
       const outcome = await withJournalEntry(
         { ...journalInput, handler: handler.identifier, dryRun: false },
-        () => applyHandler(handler, handlerContext, dryOutcomes[i]),
+        () => applyHandler(handler, handlerContext, plans[i]),
       );
       outcomes.push(outcome);
     }

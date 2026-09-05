@@ -82,6 +82,27 @@ const sendErrorStatus = (_req, res, httpStatus) => {
   }
 };
 
+/**
+ * Stream connections held for a user on this node.
+ *
+ * A connection authenticates once, when it opens, and then serves events for up to a day on that
+ * decision — nothing re-reads the account status afterwards. Disabling or merging the user away
+ * therefore does not interrupt an already open stream.
+ *
+ * `broadcastClients` is process memory, so this only ever sees the connections opened against the
+ * node it runs on. Making it exhaustive across a cluster would need a pub/sub round trip; the
+ * callers that matter run on a platform at rest, where there is no open connection to miss.
+ */
+export const userStreamConnections = (userId) => {
+  return Object.values(broadcastClients).filter((client) => client.userId === userId);
+};
+
+export const closeUserStreamConnections = (userId) => {
+  const clients = userStreamConnections(userId);
+  clients.forEach((client) => client.close());
+  return clients.length;
+};
+
 const createBroadcastClient = (channel) => {
   return {
     id: channel.id,
