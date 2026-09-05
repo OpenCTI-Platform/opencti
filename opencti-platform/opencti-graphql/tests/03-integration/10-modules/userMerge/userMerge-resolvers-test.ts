@@ -360,6 +360,18 @@ describe('User merge resolvers', () => {
       expect(readiness.blockers.length === 0).toBe(readiness.allowed);
     });
 
+    // Reversed on purpose: both accounts exist and one of them is disabled, but no merge ever ran
+    // in this direction. The gate used to read the account status, which says a merge may have run
+    // somewhere, never that it ran on this pair.
+    it('should refuse a pair no merge ever ran on', async () => {
+      const { data } = await queryAsAdminWithSuccess({
+        query: USER_MERGE_READINESS_QUERY,
+        variables: { sourceId: mergeTargetId, targetId: mergeSourceId },
+      });
+      expect(data.userMergeSourceDeletionReadiness.allowed).toBe(false);
+      expect(data.userMergeSourceDeletionReadiness.blockers).toContain('no merge into this target has been recorded on the source account');
+    });
+
     it('should refuse an unknown user before answering', async () => {
       await queryAsAdminWithError({
         query: USER_MERGE_READINESS_QUERY,

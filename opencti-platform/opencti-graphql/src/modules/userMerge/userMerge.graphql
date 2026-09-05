@@ -127,12 +127,14 @@ extend type Query {
     userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
     # Counts always cover the whole register; disposition only narrows the returned rows.
     userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
-    # Runs a dry-run on the pair, so it costs what a dry-run costs. Deleting the source is not
-    # exposed yet: it lands once coverage is complete and this gate can actually open.
+    # Runs a dry-run on the pair, so it costs what a dry-run costs.
     userMergeSourceDeletionReadiness(sourceId: ID!, targetId: ID!): UserMergeSourceDeletionReadiness! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
 }
 
 extend type Mutation {
     # Runs synchronously; follow userMergeJournal to observe a run whose connection was cut.
     userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
+    # Irreversible. Re-checks userMergeSourceDeletionReadiness and refuses unless it allows,
+    # so a readiness read earlier cannot be relied on. Returns the deleted account id.
+    userMergeDeleteSource(sourceId: ID!, targetId: ID!): ID! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
 }

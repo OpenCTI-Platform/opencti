@@ -93,6 +93,20 @@ export interface UserMergeHandlerContext {
    * engine aborts instead, so that shape cannot be written here.
    */
   rights: UserMergeRightsProjection;
+  /**
+   * When the *first* run on this pair began, not when the current one did.
+   *
+   * The merge writes activity traces of its own — the source disablement, and the
+   * "A merged into B" record the requirements ask for. Both name the source by construction, so
+   * a history rewrite that swept indiscriminately would erase the very proof of the operation.
+   * Handlers reading the history index cut on this instead of naming those traces: a structural
+   * boundary covers the ones we have not thought of, and makes a replay a no-op on them.
+   *
+   * Anchoring on the current run would only hide the traces of the run in progress. The deletion
+   * gate runs a fresh dry-run, so the previous merge's own traces would fall back under the cut,
+   * count as references still pending, and the gate could never open.
+   */
+  mergeStartedAt: Date;
 }
 
 export interface UserMergeRightsProjection {
