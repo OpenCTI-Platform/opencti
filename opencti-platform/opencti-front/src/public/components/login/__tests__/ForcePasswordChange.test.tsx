@@ -28,7 +28,7 @@ vi.mock('../../../../relay/environment', async (importOriginal) => {
 const renderWithLoginContext = (ui: React.ReactNode) => {
   const user = userEvent.setup();
   const result = render(
-    <BrowserRouter>
+    <BrowserRouter useTransitions={false}>
       <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
         <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
           <LoginContextProvider>

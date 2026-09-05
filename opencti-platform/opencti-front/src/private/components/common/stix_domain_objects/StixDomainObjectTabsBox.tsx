@@ -109,6 +109,7 @@ const TabsWithCustomViews = ({
       <Tabs value={(currentCustomViewTab ?? currentTab) || false}>
         {defaultCustomView ? (
           <DefaultCustomViewTab
+            basePath={basePath}
             value={DEFAULT_CUSTOM_VIEW_TAB_VALUE}
             displayMode={displayMode}
             defaultCustomView={defaultCustomView}
@@ -116,6 +117,7 @@ const TabsWithCustomViews = ({
         ) : null}
         {children}
         <OtherCustomViewsTab
+          basePath={basePath}
           value={CUSTOM_VIEW_TAB_VALUE}
           displayMode={displayMode}
           otherCustomViews={otherCustomViews}
@@ -123,6 +125,7 @@ const TabsWithCustomViews = ({
         />
       </Tabs>
       <CustomViewTabDropDownMenu
+        basePath={basePath}
         currentCustomViewMenuItem={currentCustomViewMenuItem}
         otherCustomViews={otherCustomViews}
         displayMode={displayMode}
@@ -147,7 +150,7 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       <Tab
         key={tab}
         component={Link}
-        to={path}
+        to={`${basePath}/${path}`}
         value={path}
         label={t_i18n(label)}
       />

@@ -53,7 +53,7 @@ describe('App', () => {
     environment.mock.queuePendingOperation(profileQuery, {});
     const { getByDisplayValue } = render(
       <RelayEnvironmentProvider environment={environment}>
-        <BrowserRouter basename={APP_BASE_PATH}>
+        <BrowserRouter basename={APP_BASE_PATH} useTransitions={false}>
           <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
             <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
               <UserContext.Provider value={UserContextValue}>
