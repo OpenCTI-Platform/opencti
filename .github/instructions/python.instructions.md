@@ -19,45 +19,43 @@ This guide covers:
 - **Linting**: flake8, black, isort
 - **Testing**: pytest
 
-### Project Structure (client-python)
-- `pycti/`: Source code package
-- `examples/`: Sample scripts
-- `tests/`: Pytest suite (requires running OpenCTI instance)
-- `requirements.txt`: Prod dependencies
-- `test-requirements.txt`: Test/Dev dependencies
+### Project Structure
+- The Python projects form a [uv](https://docs.astral.sh/uv/) workspace: `pyproject.toml` and `uv.lock` at the repository root, one `.venv` shared by the members.
+- `client-python/src/pycti/`: source code package, `examples/`: sample scripts, `tests/`: pytest suite (requires a running OpenCTI instance). Dependencies and dependency groups (`test`, `lint`, `doc`) in `client-python/pyproject.toml`.
+- `opencti-worker/src/opencti_worker/`: worker package, entry point `opencti-worker`. Dependencies in `opencti-worker/pyproject.toml`.
+- `opencti-platform/opencti-graphql/src/python/`: Python runtime embedded in the platform, dependencies in its `pyproject.toml`.
 
 ## Setup & Build
 
 ### Prerequisites
-- **Python 3.10+**
-- **pip** and **virtualenv** recommended.
+- **uv** (standalone installer), it downloads the Python version pinned in `.python-version` when needed.
 
 ### Commands
 
 **Client Python (pycti)**:
 ```bash
-cd client-python
-pip3 install -r requirements.txt
-pip3 install -r test-requirements.txt
-pip3 install -e .[dev,doc]     # Editable install
+uv sync --package pycti          # pycti, its dependencies and the dev groups in .venv
 
+cd client-python
 # Quality Checks
-flake8 . --ignore E,W          # Check style
-black .                        # Format code
-isort .                        # Organize imports
+uv run flake8 . --ignore E,W     # Check style
+uv run black .                   # Format code
+uv run isort .                   # Organize imports
 
 # Testing
 # Requires running OpenCTI instance (OPENCTI_URL, OPENCTI_TOKEN env vars)
-python3 -m pytest --cov=pycti --no-header -vv
+uv run pytest --cov=pycti --no-header -vv
 ```
 
 **Worker**:
 ```bash
-cd opencti-worker
-pip3 install -r requirements.txt
+uv sync --package opencti-worker
 # Set ENV: OPENCTI_URL, OPENCTI_TOKEN, WORKER_LOG_LEVEL=INFO
-python3 src/worker.py
+uv run --package opencti-worker opencti-worker
+uv run --package opencti-worker pytest opencti-worker/tests
 ```
+
+Dependencies are added with `uv add --package <member> <dependency>`, never by editing `uv.lock`. CI and Docker install with `uv sync --locked`, so `uv.lock` must be committed with every `pyproject.toml` change.
 
 ## Implementation Patterns
 
@@ -77,6 +75,6 @@ python3 src/worker.py
 - Log meaningful context (Worker ID, Job ID).
 
 ## Common Issues
-- **Import Errors**: Ensure you installed in editable mode (`-e .`) or site-packages.
+- **Import Errors**: Ensure you ran `uv sync` and run commands through `uv run`.
 - **Connection Refused**: Check if OpenCTI API is reachable.
 - **SSL/TLS**: Verify certificate validation settings (`verify=True/False`).

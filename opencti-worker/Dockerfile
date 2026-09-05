@@ -1,17 +1,41 @@
 # syntax=docker/dockerfile:1.26
+# Built from the repository root: docker build -f opencti-worker/Dockerfile .
+FROM python:3.12-alpine AS builder
+
+# uv static binary, pinned; renovate keeps it up to date
+COPY --from=ghcr.io/astral-sh/uv:0.12.9 /uv /bin/uv
+
+# faster startup, cache mount compatibility, use the image's Python
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=0
+
+WORKDIR /opt/opencti
+
+# dependency layer: only invalidated when the workspace metadata or uv.lock change
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=client-python/pyproject.toml,target=client-python/pyproject.toml \
+    --mount=type=bind,source=opencti-worker/pyproject.toml,target=opencti-worker/pyproject.toml \
+    --mount=type=bind,source=opencti-platform/opencti-graphql/src/python/pyproject.toml,target=opencti-platform/opencti-graphql/src/python/pyproject.toml \
+    uv sync --locked --no-dev --no-editable --no-install-workspace --package opencti-worker
+
+# project layer: pycti and the worker of the same commit
+COPY pyproject.toml uv.lock ./
+COPY client-python/ ./client-python/
+COPY opencti-worker/ ./opencti-worker/
+COPY opencti-platform/opencti-graphql/src/python/pyproject.toml ./opencti-platform/opencti-graphql/src/python/pyproject.toml
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev --no-editable --package opencti-worker
+
 FROM python:3.12-alpine
 
-COPY src /opt/opencti-worker
-WORKDIR /opt/opencti-worker
+# security: non-root user, no uv, no build tooling in the runtime image
+RUN addgroup -S opencti && adduser -S -G opencti -h /opt/opencti opencti
+COPY --from=builder --chown=opencti:opencti /opt/opencti/.venv /opt/opencti/.venv
+ENV PATH="/opt/opencti/.venv/bin:$PATH"
+USER opencti
+WORKDIR /opt/opencti
 
-RUN --mount=type=bind,source=requirements.txt,target=requirements.txt <<EOT
-    set -euxo pipefail
-
-    apk --no-cache add -t .pip_deps git
-    pip3 install --no-cache-dir --requirement requirements.txt
-    apk del .pip_deps
-    rm /var/log/apk.log
-EOT
-
-ENTRYPOINT ["python3"]
-CMD ["worker.py"]
+CMD ["opencti-worker"]

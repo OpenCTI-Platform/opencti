@@ -1,6 +1,90 @@
+[project]
+name = "pycti"
+dynamic = ["version"]
+description = "Python API client for OpenCTI."
+readme = "README.md"
+license = "Apache-2.0"
+authors = [{ name = "Filigran", email = "contact@filigran.io" }]
+maintainers = [{ name = "Filigran", email = "contact@filigran.io" }]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "Natural Language :: English",
+  "Natural Language :: French",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  # Filigran
+  "boto3>=1.38.27,<1.44",
+  "datefinder~=0.7.3",
+  "pika~=1.4.4",
+  "pydantic>=2.8.2, <3",
+  "python_json_logger~=4.0.0",
+  "PyYAML~=6.0",
+  "requests>=2.32.0, <2.34.0",
+  "setuptools~=82.0.0",
+  "cachetools~=7.0.1",
+  "prometheus-client~=0.26.0",
+  "opentelemetry-api~=1.35.0",
+  "opentelemetry-sdk~=1.35.0",
+  "deprecation~=2.1.0",
+  "fastapi>=0.129.2,<1",
+  "uvicorn[standard]>=0.41.0,<1",
+  "pyjwt[crypto]>=2.12.0, <3",
+  # OpenCTI
+  "filigran-sseclient>=1.0.2",
+  "stix2~=3.0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/OpenCTI-Platform/opencti/tree/master/client-python"
+Documentation = "https://opencti-python-client.readthedocs.io/"
+Repository = "https://github.com/OpenCTI-Platform/opencti"
+
+# development tooling, never published in the package metadata
+[dependency-groups]
+dev = [
+  { include-group = "test" },
+  { include-group = "lint" },
+  { include-group = "doc" },
+]
+test = [
+  "pytest>=9.0,<9.1",  # pin: pytest 9.1 breaks pytest-cases 3.10.1 (IdMaker signature change); unpin when pytest-cases supports pytest 9.1
+  "pytest-cases~=3.6",
+  "pytest-cov~=7.1.0",
+  "pytest_randomly~=4.0",
+  "types-python-dateutil>=2.8",
+  "types-pytz>=2021.3.5",
+]
+lint = [
+  "black==26.5.1",
+  "isort>=5.10",
+  "flake8",
+  "pre-commit~=4.2",
+]
+doc = [
+  "sphinx-autoapi>=3.0.0",
+  # sphinx 8.2 requires Python 3.11: the documentation is built on 3.12 (see .readthedocs.yaml)
+  "sphinx>=8.2,<9; python_version >= '3.11'",
+  "sphinx-autodoc-typehints>=3.0.0",
+  "sphinx_rtd_theme>=3.0.0",
+]
+
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/pycti/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src/pycti"]
 
 [tool.pytest.ini_options]
 addopts = "--import-mode=importlib"

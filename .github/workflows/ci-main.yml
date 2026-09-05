@@ -22,7 +22,6 @@ jobs:
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-          client_python_local: true
 
   wf-build-worker-image:
     name: Build opencti:worker image
@@ -32,7 +31,6 @@ jobs:
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-          client_python_local: true
 
   wf-build-builder-image:
     name: Build opencti:builder image
@@ -42,7 +40,6 @@ jobs:
       - uses: ./.github/actions/docker-build-builder
         with:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-          client_python_local: true
 
   wf-backend-test:
       name: Backend
@@ -50,7 +47,6 @@ jobs:
       needs:  [wf-build-platform-image,wf-build-worker-image,wf-build-builder-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-        client_python_local: true
         run-id: ${{ github.run_id }}
       secrets:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -27,7 +27,7 @@ docs/
 │   └── usage/
 ├── overrides/        → MkDocs Material template overrides
 ├── mkdocs.yml        → MkDocs configuration and nav tree
-└── requirements.txt  → Python dependencies
+└── (dependencies in the `docs` group of the root `pyproject.toml`, locked in `uv.lock`)
 ```
 
 ## Docs Commands
@@ -35,14 +35,14 @@ docs/
 Run commands from `docs/` at repository root.
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies (from the repository root)
+uv sync --only-group docs
 
 # Run docs locally
-mkdocs serve
+uv run mkdocs serve
 
 # Build static site
-mkdocs build
+uv run mkdocs build
 
 # Deploy a version
 mike deploy --push <version>

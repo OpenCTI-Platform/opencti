@@ -17,11 +17,6 @@ on:
         type: boolean
         required: false
         default: false
-      client_python_local:
-        description: Use client-python from this branch instead of the released pycti
-        type: boolean
-        required: false
-        default: false
 
 jobs:
   wf-build-image:
@@ -29,7 +24,6 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         image_tag: ${{ github.ref_name }}
-        client_python_local: ${{ inputs.client_python_local }}
         publish_to_registry: true
       secrets:
         DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}

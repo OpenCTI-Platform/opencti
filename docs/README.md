@@ -16,16 +16,16 @@ git clone git@github.com:OpenCTI-Platform/opencti.git
 cd docs
 ```
 
-Install dependencies
+Install dependencies (with [uv](https://docs.astral.sh/uv/), they are locked in the `uv.lock` of the repository)
 
 ```sh
-pip install -r requirements.txt
+uv sync --only-group docs
 ```
 
 Run local server with hot-reload:
 
 ```sh
-mkdocs serve
+uv run mkdocs serve
 ```
 
 It should display the following output in the terminal:
@@ -36,7 +36,7 @@ It should display the following output in the terminal:
 ⚠️ Make sure to always build the documentation locally before submitting a pull request, and check for errors and warnings in the terminal output,as they can indicate issues with the formatting of the documentation.
 
 ```sh
-mkdocs build
+uv run mkdocs build
 ```
 
 

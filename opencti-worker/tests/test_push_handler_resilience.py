@@ -11,7 +11,7 @@ import base64
 import json
 from unittest.mock import MagicMock
 
-from push_handler import PushHandler
+from opencti_worker.push_handler import PushHandler
 
 
 def make_push_handler(

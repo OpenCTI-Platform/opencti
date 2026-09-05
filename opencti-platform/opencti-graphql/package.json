@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "check-ts": "tsc --noEmit",
-    "install:python": "pip3 install -r src/python/requirements.txt",
+    "install:python": "uv sync --locked --package opencti-platform-python",
     "script:exec": "echo \"Building ${0}...\" && node builder/builder.js --script script/${0}.js && echo \"Executing ${0}...\" && node build/${0}.mjs ${1:-} ${2:-} ${3:-} ${4:-} ${5:-} && echo \"${0} done!\"",
     "build:types": "graphql-codegen --config graphql-codegen.yml",
     "build:schema": "run build:types && run script:exec script-generate-schema",
