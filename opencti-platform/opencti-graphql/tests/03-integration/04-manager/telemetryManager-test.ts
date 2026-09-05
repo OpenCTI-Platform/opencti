@@ -256,13 +256,7 @@ describe('Telemetry manager test coverage', () => {
       const exportValue = await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED);
       return nlqValue === 1 && exportValue === 2;
     };
-    let countersUpdated = await allCountersUpdated();
-    let pollCurrent = 0;
-    while (!countersUpdated && pollCurrent < 3) {
-      await waitInSec(1);
-      countersUpdated = await allCountersUpdated();
-      pollCurrent += 1;
-    }
+    await awaitUntilCondition(allCountersUpdated, 1000, 60, true, 'Ask AI and export telemetry counters were not updated in time');
     for (let featureIndex = 0; featureIndex < ASK_AI_FEATURES.length; featureIndex += 1) {
       const feature = ASK_AI_FEATURES[featureIndex];
       expect(await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`), `feature ${feature} should be counted once`).toBe(1);
