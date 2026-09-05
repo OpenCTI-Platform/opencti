@@ -60,6 +60,7 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfigurati
 import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
+import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
@@ -691,6 +692,22 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIsFileIndexingEnabled(fileIndexConfiguration?.manager_running === true ? 1 : 0);
     const indexedFilesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_FILES, {});
     manager.setIndexedFilesCount(indexedFilesCount);
+    // endregion
+
+    try {
+      const streamInfo = await rawFetchStreamInfo();
+      manager.setRedisStreamEventsCount(streamInfo.streamSize ?? 0);
+    } catch (streamErr) {
+      logApp.debug('[TELEMETRY] Could not fetch redis stream info, skipping redis stream events count', { cause: streamErr });
+      manager.setRedisStreamEventsCount(-1);
+    }
+    try {
+      const offloadedStreamEventsCount = await countOffloadedStreamEvents();
+      manager.setOffloadedStreamEventsCount(offloadedStreamEventsCount);
+    } catch (offloadErr) {
+      logApp.debug('[TELEMETRY] Could not count offloaded stream events, skipping offloaded stream events count', { cause: offloadErr });
+      manager.setOffloadedStreamEventsCount(-1);
+    }
     // endregion
 
     // region Telemetry user events

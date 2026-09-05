@@ -28,7 +28,8 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
     if (!allRedisLargeEventFiles || !allRedisLargeEventFiles.KeyCount || !allRedisLargeEventFiles.Contents) {
       return;
     }
-    const allFileContents = allRedisLargeEventFiles.Contents.sort();
+    const allFileContents = allRedisLargeEventFiles.Contents.sort((a, b) => (a.Key ?? '').localeCompare(b.Key ?? ''));
+    let deletedCount = 0;
     for (let i = 0; i < allFileContents.length; i += 1) {
       const file = allFileContents[i];
       if (!file.Key) {
@@ -37,9 +38,20 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
       const currentTimestamp = file.Key.slice(STREAM_FILE_DIRECTORY.length).split('-')[0];
       if (currentTimestamp < timestamp) {
         await deleteFileFromStorage(file.Key);
+        deletedCount += 1;
+        logApp.info('[OPENCTI-MODULE] Garbage collection: cleaned up offloaded redis stream event file from storage', {
+          manager: 'GARBAGE_MANAGER',
+          filePath: file.Key,
+        });
       } else {
         break;
       }
+    }
+    if (deletedCount > 0) {
+      logApp.info('[OPENCTI-MODULE] Garbage collection: redis stream event files cleanup complete', {
+        manager: 'GARBAGE_MANAGER',
+        deletedCount,
+      });
     }
   }
 };
