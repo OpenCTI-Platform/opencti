@@ -28,3 +28,7 @@ venv
 
 # Copilot
 thoughts/
+
+# Env local files
+.env.local
+.env.development.local
