@@ -13,6 +13,45 @@ import { RELATIONSHIP_WIDGETS_TYPES } from '../../../widget/widgetUtils';
 
 type ListItem = object & { id: string };
 
+const resolveWorkflowPath = (attribute?: string | null) => {
+  if (attribute === 'x_opencti_workflow_id') {
+    return 'status.template.name';
+  }
+  return attribute ?? '';
+};
+
+const hasDisplayableValue = (value: unknown) => {
+  if (Array.isArray(value)) return value.length > 0;
+  return value !== '' && value !== null && value !== undefined;
+};
+
+const normalizeObjectForDisplay = (value: unknown): unknown => {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => {
+        const normalizedItem = normalizeObjectForDisplay(item);
+        return Array.isArray(normalizedItem) ? normalizedItem : [normalizedItem];
+      })
+      .filter(hasDisplayableValue);
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    const preferredKeys = ['name', 'value', 'definition', 'main', 'label'];
+    for (const key of preferredKeys) {
+      const normalized = normalizeObjectForDisplay(record[key]);
+      if (hasDisplayableValue(normalized)) return normalized;
+    }
+    for (const nestedValue of Object.values(record)) {
+      const normalized = normalizeObjectForDisplay(nestedValue);
+      if (hasDisplayableValue(normalized)) return normalized;
+    }
+    return '';
+  }
+
+  return value ?? '';
+};
+
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -51,7 +90,7 @@ const useBuildListOutcome = () => {
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.attribute}>{col.label}</th>
+              <th key={col.attribute}>{col.label ?? t_i18n(col.attribute ?? '')}</th>
             ))}
           </tr>
         </thead>
@@ -60,12 +99,14 @@ const useBuildListOutcome = () => {
             <tr key={n.id}>
               {columns.map((col) => {
                 let property;
+                const attributePath = resolveWorkflowPath(col.attribute);
                 try {
-                  property = getObjectPropertyWithoutEmptyValues(n, col.attribute ?? '');
+                  property = getObjectPropertyWithoutEmptyValues(n, attributePath);
                 } catch (_e) {
                   property = '';
                 }
-                const readableAttribute = buildReadableAttribute(property, col, true);
+                const normalizedProperty = normalizeObjectForDisplay(property);
+                const readableAttribute = buildReadableAttribute(normalizedProperty, col, true);
                 return <td key={`${n.id}-${col.attribute}`}>{readableAttribute}</td>;
               })}
             </tr>
