@@ -86,11 +86,16 @@ const useBuildListOutcome = () => {
     ];
 
     return renderToString(
-      <table>
+      <table style={{ width: '100%', tableLayout: 'fixed' }}>
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.attribute}>{col.label ?? t_i18n(col.attribute ?? '')}</th>
+              <th
+                key={col.attribute}
+                style={{ whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+              >
+                {col.label ?? t_i18n(col.attribute ?? '')}
+              </th>
             ))}
           </tr>
         </thead>
@@ -107,7 +112,14 @@ const useBuildListOutcome = () => {
                 }
                 const normalizedProperty = normalizeObjectForDisplay(property);
                 const readableAttribute = buildReadableAttribute(normalizedProperty, col, true);
-                return <td key={`${n.id}-${col.attribute}`}>{readableAttribute}</td>;
+                return (
+                  <td
+                    key={`${n.id}-${col.attribute}`}
+                    style={{ whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+                  >
+                    {readableAttribute}
+                  </td>
+                );
               })}
             </tr>
           ))}
