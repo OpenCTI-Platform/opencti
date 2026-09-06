@@ -49,19 +49,27 @@ export const createThreatAdvisoryDraft = async (page: Page, reportName: string):
 
 export type DraftStatus = 'MO MANAGER REVIEW' | 'ORGC ANALYST REVIEW' | 'ORGC MANAGER REVIEW';
 
-/** Fast-forwards a fresh NEW-status draft to the given target status, using the correct persona for each hop (mirrors happy-flow steps 5/8/11). */
+/**
+ * Fast-forwards a fresh NEW-status draft to the given target status, using the correct persona
+ * for each hop (mirrors happy-flow steps 5/8/11). Each transition completes asynchronously, so
+ * the resulting status is awaited before switching personas - otherwise the next persona can
+ * load the draft before it applies, and see stale transitions for the previous status instead.
+ */
 export const advanceDraftToStatus = async (page: Page, draftId: string, targetStatus: DraftStatus) => {
   const toolbar = new DraftToolbarPageModel(page);
 
   await openDraft(page, draftId, USERS.analystOrgA);
   await toolbar.openTransition('Request MO manager review');
+  await toolbar.assertStatus('MO MANAGER REVIEW');
   if (targetStatus === 'MO MANAGER REVIEW') return;
 
   await openDraft(page, draftId, USERS.managerOrgA);
   await toolbar.openTransition('Send to OrgC for review');
+  await toolbar.assertStatus('ORGC ANALYST REVIEW');
   if (targetStatus === 'ORGC ANALYST REVIEW') return;
 
   await openDraft(page, draftId, USERS.analystOrgC);
   await toolbar.openTransition('SEND TO ORGC MANAGER');
+  await toolbar.assertStatus('ORGC MANAGER REVIEW');
   // targetStatus === 'ORGC MANAGER REVIEW'
 };
