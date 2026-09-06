@@ -78,7 +78,12 @@ export default class DraftToolbarPageModel {
       return this.page.getByRole('button', { name: 'Cancel' }).click();
     }
     if (comment) {
-      await this.page.getByLabel('Comment').fill(comment);
+      // getByRole('textbox', ...) instead of getByLabel: the wizard's Dialog title ("Add a
+      // comment") is wired via aria-labelledby onto the dialog root, so a getByLabel('Comment')
+      // substring match also matches the dialog itself, not just the TextField. Scoping to the
+      // 'textbox' role excludes the dialog. (Not `exact: true` - a required comment's label gets
+      // a trailing " *" from MUI, which a substring match on 'Comment' still needs to catch.)
+      await this.page.getByRole('textbox', { name: 'Comment' }).fill(comment);
     }
     return this.page.getByRole('button', { name: 'Confirm' }).click();
   }
@@ -111,7 +116,19 @@ export default class DraftToolbarPageModel {
   }
 
   async assertLastCommentVisible(text: string) {
-    await this.getToolbar().getByLabel('View last comment').click();
+    // `useDraftCommentPopup` auto-opens a "Last workflow comment" dialog the first time this
+    // browser (localStorage is keyed by draftId only, not per-user) sees a given comment. It can
+    // pop up at any point (e.g. on the toolbar's periodic background refetch) including mid-click,
+    // so this dismisses it in a retrying loop instead of a single point-in-time check, until the
+    // toolbar button click actually goes through.
+    const commentDialog = this.page.getByRole('dialog', { name: 'Last workflow comment' });
+    await expect(async () => {
+      if (await commentDialog.isVisible()) {
+        await commentDialog.getByRole('button', { name: 'Close' }).click();
+        await expect(commentDialog).toBeHidden();
+      }
+      await this.getToolbar().getByLabel('View last comment').click({ timeout: 2000 });
+    }).toPass({ timeout: 30000 });
     await expect(this.page.getByText(text)).toBeVisible();
   }
 

@@ -28,15 +28,18 @@ test('Threat Advisory - rejection by ManagerOrgC', { tag: ['@ee', '@workflow'] }
     await toolbar.assertStatus('ORGC MANAGER REVIEW');
   });
 
-  await test.step('Step 3: "Reject" + comment moves the draft back to NEW', async () => {
+  await test.step('Step 3: "Reject" + comment moves the draft back to NEW, revoking ManagerOrgC\'s own access', async () => {
+    // Moving back to NEW and revoking ManagerOrgC's access happen atomically as part of the
+    // same async transition completion, so ManagerOrgC can never observe the "NEW" status in
+    // their own session (by the time it would appear, they've already lost access to the draft).
     await toolbar.openTransition('Reject');
     await toolbar.fillCommentStep({ comment: 'Rejected by ManagerOrgC E2E test' });
-    await toolbar.assertStatus('NEW');
+    await toolbar.assertNoAccess();
   });
 
   // (step 4 skipped in the source numbering)
 
-  await test.step('Step 6: ManagerOrgC refreshes right after the transition, loses all access', async () => {
+  await test.step('Step 6: ManagerOrgC still has no access after reloading', async () => {
     await page.reload({ waitUntil: 'domcontentloaded' });
     await toolbar.assertNoAccess();
   });
