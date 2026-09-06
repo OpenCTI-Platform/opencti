@@ -20,6 +20,11 @@ type WidgetCustomAttributesColumnsInputProps = {
   onChange: (columns: WidgetColumn[]) => void;
   layout?: WidgetColumnsLayout;
   onLayoutChange?: (layout: WidgetColumnsLayout) => void;
+  labels?: {
+    title?: string;
+    available?: string;
+    selected?: string;
+  };
 };
 
 type DraggableColumnItemProps = {
@@ -38,6 +43,7 @@ type ColumnLayoutProps = {
   t_i18n: (key: string) => string;
   theme: Theme;
   listSx: object;
+  selectedLabel: string;
 };
 
 const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
@@ -80,10 +86,11 @@ const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   formatColumnName,
   t_i18n,
   listSx,
+  selectedLabel,
 }) => (
   <Box sx={{ flex: 2 }}>
     <Typography variant="h4">
-      {`${t_i18n('Selected attributes')} (${value.length})`}
+      {`${t_i18n(selectedLabel)} (${value.length})`}
     </Typography>
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="col_1">
@@ -118,6 +125,7 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   formatColumnName,
   t_i18n,
   theme,
+  selectedLabel,
 }) => {
   const col1Items = value.filter((_, i) => i % 2 === 0);
   const col2Items = value.filter((_, i) => i % 2 === 1);
@@ -125,7 +133,7 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   return (
     <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4">
-        {`${t_i18n('Selected attributes')} (${value.length})`}
+        {`${t_i18n(selectedLabel)} (${value.length})`}
       </Typography>
       <DragDropContext onDragEnd={handleDragEnd}>
         <Box sx={{
@@ -179,9 +187,13 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   onChange,
   layout = '1',
   onLayoutChange,
+  labels,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const titleLabel = labels?.title ?? 'Customize attributes';
+  const availableLabel = labels?.available ?? 'Available attributes';
+  const selectedLabel = labels?.selected ?? 'Selected attributes';
 
   const { handleDragEndSingleColumn, handleDragEndDoubleColumns, handleToggleColumn, formatColumnName } = useWidgetColumnsCustomization(
     availableColumns,
@@ -198,7 +210,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   return (
     <Accordion sx={{ width: '100%' }} defaultExpanded>
       <AccordionSummary>
-        <Typography>{t_i18n('Customize attributes')}</Typography>
+        <Typography>{t_i18n(titleLabel)}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
 
@@ -220,7 +232,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4">
-              {`${t_i18n('Available attributes')} (${availableColumns.length})`}
+              {`${t_i18n(availableLabel)} (${availableColumns.length})`}
             </Typography>
             <List sx={{ ...listSx, flex: 1 }}>
               {availableColumns.map((column) => (
@@ -244,6 +256,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
               t_i18n={t_i18n}
               theme={theme}
               listSx={listSx}
+              selectedLabel={selectedLabel}
             />
           ) : (
             <SingleColumnLayout
@@ -254,6 +267,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
               t_i18n={t_i18n}
               theme={theme}
               listSx={listSx}
+              selectedLabel={selectedLabel}
             />
           )}
         </Box>
