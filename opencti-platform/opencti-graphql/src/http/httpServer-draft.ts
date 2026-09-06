@@ -1,5 +1,5 @@
 import type { AuthContext } from '../types/user';
-import { DraftLockedError, FunctionalError } from '../config/errors';
+import { DraftLockedError, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { userEditField } from '../domain/user';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
@@ -36,7 +36,10 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
         const serviceAccountHint = executeContext.user.user_service_account === true
           ? ''
           : ', consider switching the user associated to your connector to a service account (instead of a user)';
-        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found${serviceAccountHint}`);
+        const accessError = ForbiddenAccess(`Draft ${executeContext.draft_context} cannot be found${serviceAccountHint}`);
+        // Context errors bypass httpResponsePlugin; Relay needs HTTP 200 to read the GraphQL error.
+        accessError.extensions.http = { status: 200 };
+        throw accessError;
       }
 
       if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
