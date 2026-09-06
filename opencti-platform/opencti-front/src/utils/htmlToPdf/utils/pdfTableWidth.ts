@@ -1,7 +1,7 @@
 import { CustomTableLayout } from 'pdfmake/interfaces';
 
-const WIDE_TABLE_COLUMN_THRESHOLD = 8;
-const VERY_WIDE_TABLE_COLUMN_THRESHOLD = 12;
+export const WIDE_TABLE_COLUMN_THRESHOLD = 8;
+export const VERY_WIDE_TABLE_COLUMN_THRESHOLD = 12;
 
 const getTableColumnCount = (table: Element) => {
   const header = table.querySelector('thead tr');

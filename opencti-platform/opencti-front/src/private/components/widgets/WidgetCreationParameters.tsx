@@ -351,13 +351,13 @@ const WidgetCreationParameters = () => {
 
     const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filterGroup);
     const hasSingleEntityType = entityTypeFilters.length === 1;
-    const otherFiltersLength = filterGroup.filters?.filter((filter) => filter.key !== 'entity_type')?.length;
+    const otherFiltersLength = filterGroup.filters.filter((filter) => filter.key !== 'entity_type').length;
 
-    if (filterGroup.mode === 'and' && hasSingleEntityType && otherFiltersLength >= 0) {
+    if (hasSingleEntityType && filterGroup.mode === 'and') {
       return entityTypeFilters[0];
     }
 
-    if (filterGroup.mode === 'or' && hasSingleEntityType && otherFiltersLength === 0) {
+    if (hasSingleEntityType && filterGroup.mode === 'or' && otherFiltersLength === 0) {
       return entityTypeFilters[0];
     }
 
