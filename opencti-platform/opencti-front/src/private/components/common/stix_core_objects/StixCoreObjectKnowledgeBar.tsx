@@ -70,11 +70,14 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       value
     }
     # distribution for indicators, restricted to "indicates" relationships to match the Indicators list view (#15882)
-    indicatorsDistribution: stixCoreObjectsDistribution(
+    # Uses stixCoreRelationshipsDistribution (queries relationships directly, like the Indicators list)
+    # rather than stixCoreObjectsDistribution, whose regardingOf filter relies on the rel_indicates
+    # denormalized field that is only populated on the Indicator side, not consistently queryable here.
+    indicatorsDistribution: stixCoreRelationshipsDistribution(
       field: "entity_type",
       operation: count,
-      types: ["Indicator"],
       relationship_type: ["indicates"],
+      fromTypes: ["Indicator"],
     ) {
       label
       value
