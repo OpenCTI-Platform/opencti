@@ -1,5 +1,5 @@
-import {AccountBalanceOutlined} from "@mui/icons-material";
-import Tag from "@common/tag/Tag";
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import Tag from '@common/tag/Tag';
 
 interface ItemOrganizationsProps {
   organizationName: string;
