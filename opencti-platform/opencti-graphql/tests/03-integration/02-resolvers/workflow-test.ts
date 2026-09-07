@@ -819,6 +819,8 @@ describe('Workflow Resolver', () => {
         const beforePatch = await findWorkflowInstance(reportId);
         expect(beforePatch).toBeUndefined();
 
+        resetCacheForEntity(ENTITY_TYPE_STATUS);
+
         await queryAsAdmin({
           query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
           variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
