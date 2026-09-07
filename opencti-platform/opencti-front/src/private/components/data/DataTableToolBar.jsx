@@ -162,6 +162,14 @@ const styles = (theme) => ({
     fontSize: '12px',
     marginBottom: '1px',
   },
+  editButtons: {
+    display: 'flex',
+    alignItems: 'center',
+    '& > span': {
+      display: 'inline-flex',
+      alignItems: 'center',
+    },
+  },
   chipValue: {
     margin: 0,
   },
@@ -2425,7 +2433,7 @@ class DataTableToolBar extends Component {
                   </IconButton>
                 </div>
                 {displayEditButtons && (
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div className={classes.editButtons}>
                     {markAsReadEnabled && (
                       <>
                         <Tooltip title={t('Mark as read')}>
