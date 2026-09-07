@@ -754,6 +754,7 @@ export const buildRestrictedEntity = (resolvedEntity: BasicStoreEntity): BasicSt
   return {
     ...restrictedEntity,
     id: resolvedEntity.internal_id,
+    standard_id: resolvedEntity.standard_id, // keep the real standard_id: it must stay a valid STIX id
     name: 'Restricted',
     entity_type: resolvedEntity.entity_type,
     parent_types: resolvedEntity.parent_types,
