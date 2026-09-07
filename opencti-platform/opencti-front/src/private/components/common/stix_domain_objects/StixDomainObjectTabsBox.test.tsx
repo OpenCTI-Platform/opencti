@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import StixDomainObjectTabsBox from './StixDomainObjectTabsBox';
@@ -213,7 +214,7 @@ describe('StixDomainObjectTabsBox', () => {
       isOpen: true,
     };
 
-    it('targets the default custom view and the dropdown items from the entity base path', () => {
+    it('targets the default custom view and the dropdown items from the entity base path', async () => {
       mockUseCustomViewTabs.mockReturnValue({
         defaultCustomView,
         otherCustomViews,
@@ -232,16 +233,20 @@ describe('StixDomainObjectTabsBox', () => {
         { route: `${basePath}/files` },
       );
 
-      // The open dropdown menu is modal: tabs behind it are hidden from the
-      // accessibility tree, so reach them through their text.
+      // The tabs come first: opening the menu makes it modal, which hides them
+      // from the accessibility tree.
       expect(screen.getByText(/default custom view/i).closest('a'))
         .toHaveAttribute('href', `${basePath}/${defaultCustomView.path}`);
-      expect(screen.getByRole('link', { name: /first custom view/i }))
-        .toHaveAttribute('href', `${basePath}/${otherCustomViews[0].path}`);
-      expect(screen.getByRole('link', { name: /second custom view/i }))
-        .toHaveAttribute('href', `${basePath}/${otherCustomViews[1].path}`);
       expect(screen.getByText(/^data$/i).closest('a'))
         .toHaveAttribute('href', `${basePath}/files`);
+
+      // The trigger owns the menu, so its items only exist once it is opened,
+      // and the library renders them as anchors carrying `menuitem`.
+      await userEvent.click(screen.getByRole('button', { name: /custom view/i }));
+      expect(await screen.findByRole('menuitem', { name: /first custom view/i }))
+        .toHaveAttribute('href', `${basePath}/${otherCustomViews[0].path}`);
+      expect(screen.getByRole('menuitem', { name: /second custom view/i }))
+        .toHaveAttribute('href', `${basePath}/${otherCustomViews[1].path}`);
     });
 
     it('targets a single custom view from the entity base path', () => {
