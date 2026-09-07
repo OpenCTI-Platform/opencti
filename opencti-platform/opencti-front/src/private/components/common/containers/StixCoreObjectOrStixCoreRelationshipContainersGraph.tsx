@@ -5,7 +5,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { stixDomainObjectMutationFieldPatch } from '@components/common/stix_domain_objects/StixDomainObjectEditionOverview';
 import { StixDomainObjectEditionOverviewFieldPatchMutation } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectEditionOverviewFieldPatchMutation.graphql';
 import Alert from '@mui/material/Alert';
-import Tooltip from '@mui/material/Tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { GraphProvider } from '../../../../components/graph/GraphContext';
 import { getObjectsToParse } from '../../../../components/graph/utils/graphUtils';
 import { StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment.graphql';
@@ -321,29 +321,32 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = ({
   const warningMessage = `${t_i18n('Limitations applied, number of fully loaded containers: ')} ${containersObjectsOfObject?.pageInfo.globalCount}. ${t_i18n('Open this entity in an investigation to be able to see all objects.')}`;
 
   const containerGraphWarning = (
-    <Tooltip title={warningMessage}>
-      <Alert
-        severity="warning"
-        sx={{
-          paddingY: 1,
-          paddingX: 2,
-          fontSize: 12,
-          alignItems: 'center',
-          '& .MuiAlert-message': {
-            paddingY: '4px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            whiteSpace: 'normal',
-            lineHeight: 1.2,
-          },
-          '& .MuiAlert-icon': { paddingY: 0, marginRight: 1, fontSize: 20 },
-        }}
-      >
-        {warningMessage}
-      </Alert>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Alert
+          severity="warning"
+          sx={{
+            paddingY: 1,
+            paddingX: 2,
+            fontSize: 12,
+            alignItems: 'center',
+            '& .MuiAlert-message': {
+              paddingY: '4px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              whiteSpace: 'normal',
+              lineHeight: 1.2,
+            },
+            '& .MuiAlert-icon': { paddingY: 0, marginRight: 1, fontSize: 20 },
+          }}
+        >
+          {warningMessage}
+        </Alert>
+      </TooltipTrigger>
+      <TooltipContent>{warningMessage}</TooltipContent>
     </Tooltip>
   );
 
