@@ -401,7 +401,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                           divider={true}
                           disablePadding
                           secondaryAction={(
-                            <>
+                            <Stack direction="row" gap={1}>
                               {!isFileAttached && (
                                 <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                                   <FileUploader
@@ -421,7 +421,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                   variant="inLine"
                                 />
                               </Security>
-                            </>
+                            </Stack>
                           )}
                         >
                           <ListItemButton

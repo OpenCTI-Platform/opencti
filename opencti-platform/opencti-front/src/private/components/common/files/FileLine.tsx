@@ -327,7 +327,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                       }
                     }}
                     aria-haspopup="true"
-                    // color={nested ? 'inherit' : 'primary'}
                     size="small"
                     keepMui
                     aria-label={t_i18n('Download the file')}
