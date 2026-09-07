@@ -22,7 +22,7 @@ import {
   TransformOutlined,
   UnpublishedOutlined,
 } from '@mui/icons-material';
-import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
+import { Box, FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import {
   Checkbox,
@@ -2777,11 +2777,15 @@ class DataTableToolBar extends Component {
                 open={this.state.displayTask}
                 onClose={this.handleCloseTask.bind(this)}
                 data-testid="background-task-popup"
-                title={t('Launch a background task')}
+                title={(
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span>{t('Launch a background task')}</span>
+                    <Typography variant="body1" color="textSecondary">
+                      {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
+                    </Typography>
+                  </Box>
+                )}
               >
-                <DialogContentText>
-                  {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
-                </DialogContentText>
                 {numberOfSelectedElements > 1000 && (
                   <Alert severity="warning">
                     {t(
