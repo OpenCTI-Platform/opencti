@@ -20,6 +20,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
 import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { FormikConfig } from 'formik/dist/types';
@@ -116,16 +117,18 @@ const PlaybookCreation = () => {
 
   const CreatePlaybookControlledDial: DrawerControlledDialType = (props) => (
     <>
-      <ToggleButton
-        value="import"
-        size="small"
-        onClick={() => inputRef.current?.click()}
-        sx={{ marginLeft: theme.spacing(1) }}
-        data-testid="ImporPlaybook"
-        title={t_i18n('Import playbook')}
-      >
-        <FileUploadOutlined fontSize="small" color="primary" />
-      </ToggleButton>
+      <Tooltip title={t_i18n('Import playbook')}>
+        <ToggleButton
+          value="import"
+          size="small"
+          onClick={() => inputRef.current?.click()}
+          sx={{ marginLeft: theme.spacing(1) }}
+          data-testid="ImporPlaybook"
+          aria-label={t_i18n('Import playbook')}
+        >
+          <FileUploadOutlined fontSize="small" color="primary" />
+        </ToggleButton>
+      </Tooltip>
       {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
         <Button
           gradient
