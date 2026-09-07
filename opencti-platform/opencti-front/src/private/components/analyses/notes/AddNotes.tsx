@@ -161,6 +161,7 @@ const AddNotes: FunctionComponent<AddNotesProps> = ({
           inputValue={search}
           updater={updater}
           onClose={handleDialogClose}
+          marginTop
         />
       </Dialog>
     </>

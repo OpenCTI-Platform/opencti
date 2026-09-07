@@ -105,6 +105,7 @@ interface NoteFormProps {
   defaultCreatedBy?: FieldOption;
   defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
+  marginTop?: boolean;
 }
 
 export const NOTE_TYPE = 'Note';
@@ -116,6 +117,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  marginTop,
 }) => {
   const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -227,6 +229,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
               fullWidth: true,
               required: mandatoryAttributes.includes('created'),
             }}
+            sx={marginTop ? { marginTop: 2 } : undefined}
           />
           <Field
             component={TextField}
@@ -372,6 +375,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
             inputValue={inputValue}
             updater={updater}
             onClose={() => setOpen(false)}
+            marginTop
           />
         </Dialog>
       </div>
