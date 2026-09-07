@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.26
-FROM filigran/python-fips:latest
+FROM filigran/alpine-python-fips:python3.12
 
 COPY src /opt/opencti-worker
 WORKDIR /opt/opencti-worker
