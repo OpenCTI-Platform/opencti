@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
-    transition: theme.transitions.create('right', {
+    transition: theme.transitions.create(['right', 'bottom'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -494,6 +494,10 @@ const WorkbenchFileContentComponent = ({
   if (selectAll) {
     numberOfSelectedElements = elements.length - Object.keys(deSelectedElements || {}).length;
   }
+  const shouldRaiseCreateButton = numberOfSelectedElements >= 1;
+  const createButtonStyle = {
+    bottom: shouldRaiseCreateButton ? 84 : 30,
+  };
 
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete } = deletion;
@@ -2394,7 +2398,6 @@ const WorkbenchFileContentComponent = ({
                         {t_i18n('Cancel')}
                       </Button>
                       <Button
-                        // color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -3313,9 +3316,10 @@ const WorkbenchFileContentComponent = ({
           // button, so this control has nothing to convert to. Owner: the
           // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
           onClick={() => handleOpenEntity(null, null)}
-          color="secondary"
+          color="primary"
           aria-label="Add"
           className={classes.createButton}
+          style={createButtonStyle}
         >
           <Add />
         </Fab>
@@ -3561,6 +3565,7 @@ const WorkbenchFileContentComponent = ({
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
+          style={createButtonStyle}
         >
           <Add />
         </Fab>
@@ -4110,6 +4115,7 @@ const WorkbenchFileContentComponent = ({
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
+          style={createButtonStyle}
         >
           <Add />
         </Fab>
@@ -4306,7 +4312,6 @@ const WorkbenchFileContentComponent = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  // color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting || connectors.filter((n) => n.active).length === 0}
                 >
