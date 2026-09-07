@@ -19,12 +19,15 @@ import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 
-export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
+export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps & {
+  warning?: React.ReactNode;
+};
 
 const GraphToolbar = ({
   onInvestigationExpand,
   onInvestigationRollback,
   onUnfixNodes,
+  warning,
   ...props
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
@@ -98,6 +101,12 @@ const GraphToolbar = ({
 
         <GraphToolbarFilterTools />
         <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+
+        {warning && (
+          <div style={{ flexShrink: 1, minWidth: 0, marginRight: theme.spacing(1) }}>
+            {warning}
+          </div>
+        )}
 
         {context === 'correlation' && (
           <>

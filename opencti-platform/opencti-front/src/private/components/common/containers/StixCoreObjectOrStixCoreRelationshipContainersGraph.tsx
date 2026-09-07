@@ -5,6 +5,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { stixDomainObjectMutationFieldPatch } from '@components/common/stix_domain_objects/StixDomainObjectEditionOverview';
 import { StixDomainObjectEditionOverviewFieldPatchMutation } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectEditionOverviewFieldPatchMutation.graphql';
 import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 import { GraphProvider } from '../../../../components/graph/GraphContext';
 import { getObjectsToParse } from '../../../../components/graph/utils/graphUtils';
 import { StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment.graphql';
@@ -247,10 +248,12 @@ const containersObjectsFragment = graphql`
 
 interface StixCoreObjectOrStixCoreRelationshipContainersGraphComponentProps {
   id: string;
+  warning?: React.ReactNode;
 }
 
 const StixCoreObjectOrStixCoreRelationshipContainersGraphComponent = ({
   id,
+  warning,
 }: StixCoreObjectOrStixCoreRelationshipContainersGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
@@ -288,7 +291,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraphComponent = ({
   return (
     <div style={graphContainerStyle} ref={ref}>
       <Graph parentRef={ref} onPositionsChanged={savePositions}>
-        <GraphToolbar onUnfixNodes={() => savePositions({})} />
+        <GraphToolbar onUnfixNodes={() => savePositions({})} warning={warning} />
       </Graph>
     </div>
   );
@@ -315,6 +318,35 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = ({
       : [];
   }, [containersObjectsOfObject]);
 
+  const warningMessage = `${t_i18n('Limitations applied, number of fully loaded containers: ')} ${containersObjectsOfObject?.pageInfo.globalCount}. ${t_i18n('Open this entity in an investigation to be able to see all objects.')}`;
+
+  const containerGraphWarning = (
+    <Tooltip title={warningMessage}>
+      <Alert
+        severity="warning"
+        sx={{
+          paddingY: 0.5,
+          paddingX: 1.5,
+          fontSize: 12,
+          alignItems: 'center',
+          '& .MuiAlert-message': {
+            paddingY: '4px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            whiteSpace: 'normal',
+            lineHeight: 1.2,
+          },
+          '& .MuiAlert-icon': { paddingY: 0, marginRight: 1, fontSize: 20 },
+        }}
+      >
+        {warningMessage}
+      </Alert>
+    </Tooltip>
+  );
+
   return (
     <GraphProvider
       localStorageKey={localStorageKey}
@@ -322,19 +354,9 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = ({
       positions={positions}
       context="analyses"
     >
-      <Alert
-        sx={{
-          position: 'absolute',
-          bottom: 4,
-          zIndex: 99,
-          right: 4,
-        }}
-        severity="warning"
-      >
-        {`${t_i18n('Limitations applied, number of fully loaded containers: ')} ${containersObjectsOfObject?.pageInfo.globalCount}. ${t_i18n('Open this entity in an investigation to be able to see all objects.')}`}
-      </Alert>
       <StixCoreObjectOrStixCoreRelationshipContainersGraphComponent
         id={id}
+        warning={containerGraphWarning}
       />
     </GraphProvider>
   );
