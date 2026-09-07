@@ -90,7 +90,7 @@ export const addSecurityCoverage = async (
     shouldCreateResult,
   } = splitSecurityCoverageInput(input);
 
-  const noEnrich = await isFromConnectorWork(context, user);
+  const noEnrichOnUpdate = await isFromConnectorWork(context, user);
 
   // 1. Create the SecurityCoverage entity.
   const createdSecurityCoverage: BasicStoreEntitySecurityCoverage = await createEntity(
@@ -98,7 +98,7 @@ export const addSecurityCoverage = async (
     user,
     securityCoverageInput,
     ENTITY_TYPE_SECURITY_COVERAGE,
-    { noEnrich },
+    { noEnrichOnUpdate },
   );
 
   // 2. Create an associated SecurityCoverageResult if we also
@@ -110,7 +110,7 @@ export const addSecurityCoverage = async (
       // Add extra attributes based on created SecurityCoverage
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       name: `${securityCoverageResultInput.name ?? ''} Result of ${createdSecurityCoverage.name}`.trim(),
-    }, noEnrich);
+    }, noEnrichOnUpdate);
     // Manually add the ref here to be able to resolve dynamic attributes in GraphQL response
     createdSecurityCoverage[RELATION_RESULT_OF] = [result.id];
   }

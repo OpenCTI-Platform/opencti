@@ -86,8 +86,8 @@ export const addSecurityCoverageResult = async (
   if (!securityCoverageResultInput.name) {
     input.name = `Result of ${securityCoverage.name}`;
   }
-  const noEnrich = await isFromConnectorWork(context, user);
-  const result = await internalCreateSecurityCoverageResult(context, user, input, noEnrich);
+  const noEnrichOnUpdate = await isFromConnectorWork(context, user);
+  const result = await internalCreateSecurityCoverageResult(context, user, input, noEnrichOnUpdate);
   return notify(
     BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].ADDED_TOPIC,
     result,
