@@ -214,4 +214,63 @@ describe('sendToDisseminationList', () => {
     const completeContextDataArgs = vi.mocked(UserActionListener.completeContextDataForEntity).mock.calls[0][0] as any;
     expect(completeContextDataArgs.input.files).toHaveLength(1);
   });
+
+  it('builds the email body from the html body file when html_to_body_file_id is provided', async () => {
+    vi.mocked(FileStorage.loadFile).mockResolvedValue({ id: 'body-file-1', name: 'body.html', metaData: { mimetype: 'text/html' } } as any);
+    vi.mocked(RawFileStorage.getFileContent).mockResolvedValue('<p>Hello from file</p>');
+
+    await sendToDisseminationList(mockContext, mockUser, 'dissemination-list-id', makeInput({ html_to_body_file_id: 'body-file-1' }));
+
+    expect(FileStorage.loadFile).toHaveBeenCalledWith(mockContext, mockUser, 'body-file-1');
+    expect(RawFileStorage.getFileContent).toHaveBeenCalledWith('body-file-1');
+    expect(SafeEjs.safeRender).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body: expect.stringContaining('Hello from file') }));
+    const completeContextDataArgs = vi.mocked(UserActionListener.completeContextDataForEntity).mock.calls[0][0] as any;
+    expect(completeContextDataArgs.input.files).toStrictEqual([{ id: 'body-file-1', name: 'body.html', metaData: { mimetype: 'text/html' } }]);
+  });
+
+  it('ignores the plain text body when a valid html body file is provided', async () => {
+    vi.mocked(FileStorage.loadFile).mockResolvedValue({ id: 'body-file-1', name: 'body.html', metaData: { mimetype: 'text/html' } } as any);
+    vi.mocked(RawFileStorage.getFileContent).mockResolvedValue('<p>From file</p>');
+
+    await sendToDisseminationList(mockContext, mockUser, 'dissemination-list-id', makeInput({ email_body: 'ignored body', html_to_body_file_id: 'body-file-1' }));
+
+    expect(SafeEjs.safeRender).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body: expect.not.stringContaining('ignored body') }));
+  });
+
+  it('throws an UnsupportedError when the html body file has a disallowed mimetype', async () => {
+    vi.mocked(FileStorage.loadFile).mockResolvedValue({ id: 'body-file-2', name: 'body.pdf', metaData: { mimetype: 'application/pdf' } } as any);
+
+    await expect(sendToDisseminationList(mockContext, mockUser, 'dissemination-list-id', makeInput({ html_to_body_file_id: 'body-file-2' })))
+      .rejects.toThrow(/File type in the body must be/);
+    expect(Smtp.sendMail).not.toHaveBeenCalled();
+  });
+
+  it('throws an UnsupportedError when the html body file cannot be found', async () => {
+    vi.mocked(FileStorage.loadFile).mockResolvedValue(undefined as any);
+
+    await expect(sendToDisseminationList(mockContext, mockUser, 'dissemination-list-id', makeInput({ html_to_body_file_id: 'missing-file' })))
+      .rejects.toThrow(/File type in the body must be/);
+    expect(Smtp.sendMail).not.toHaveBeenCalled();
+  });
+
+  it('validates attachments and the html body file independently using their own allowed mimetypes', async () => {
+    vi.mocked(FileStorage.loadFile).mockImplementation(async (_context: unknown, _user: unknown, fileId: string) => {
+      if (fileId === 'attachment-1') return { id: 'attachment-1', name: 'report.pdf', metaData: { mimetype: 'application/pdf' } } as any;
+      if (fileId === 'body-file-1') return { id: 'body-file-1', name: 'body.html', metaData: { mimetype: 'text/html' } } as any;
+      return undefined as any;
+    });
+    vi.mocked(RawFileStorage.downloadFile).mockResolvedValue('file-stream' as any);
+    vi.mocked(RawFileStorage.getFileContent).mockResolvedValue('<p>Body from file</p>');
+
+    await sendToDisseminationList(mockContext, mockUser, 'dissemination-list-id', makeInput({
+      email_attachment_ids: ['attachment-1'],
+      html_to_body_file_id: 'body-file-1',
+    }));
+
+    const sendMailArgs = vi.mocked(Smtp.sendMail).mock.calls[0][0];
+    expect(sendMailArgs.attachments).toStrictEqual([{ filename: 'report.pdf', content: 'file-stream' }]);
+    expect(SafeEjs.safeRender).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body: expect.stringContaining('Body from file') }));
+    const completeContextDataArgs = vi.mocked(UserActionListener.completeContextDataForEntity).mock.calls[0][0] as any;
+    expect(completeContextDataArgs.input.files).toHaveLength(2);
+  });
 });
