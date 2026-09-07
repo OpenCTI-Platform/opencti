@@ -1469,13 +1469,13 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   // endregion
   if (isDateAttribute(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
     }
   }
   if (dateForLimitsAttributes.includes(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (dateForStartAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [FROM_START_STR];
     }
@@ -2053,18 +2053,14 @@ export const transformPatchToInput = (
   patch: Record<string, any>,
   operations: Record<string, undefined | 'add' | 'remove' | 'replace'> = {},
 ): EditInput[] => {
-  return R.pipe(
-    R.toPairs,
-    R.map((t) => {
-      const val = R.last(t) as any;
-      const key = R.head(t) as string;
-      const operation = operations[key] || UPDATE_OPERATION_REPLACE;
-      if (!R.isNil(val)) {
-        return { key, value: Array.isArray(val) ? val : [val], operation };
-      }
-      return { key, value: null, operation } as any;
-    }),
-  )(patch);
+  return Object.entries(patch).map(([key, val]) => {
+    const operation = (operations[key] || UPDATE_OPERATION_REPLACE) as EditOperation;
+    if (val !== undefined && val !== null) {
+      return { key, value: Array.isArray(val) ? val : [val], operation };
+    }
+    // A nil value means "reset the attribute": kept as null so downstream removes the field from the document.
+    return { key, value: null as unknown as EditInput['value'], operation };
+  });
 };
 const checkAttributeConsistency = (entityType: string, key: string) => {
   if (key.startsWith(RULE_PREFIX)) {
