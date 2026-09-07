@@ -10803,6 +10803,7 @@ type WorkflowInstance {
   pendingStatus: WorkflowExecutionStatus
   pendingError: String
   pendingTransition: WorkflowPendingTransition
+  scope: String
 }
 
 type DraftWorkspace implements InternalObject & BasicObject {
