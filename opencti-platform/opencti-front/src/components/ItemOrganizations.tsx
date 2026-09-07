@@ -20,7 +20,7 @@ const ItemOrganizations = ({
       onDelete={() => removeOrganization(organizationId)}
       disabled={disabled}
       icon={<AccountBalanceOutlined fontSize="small" />}
-      maxWidth={200}
+      maxWidth={150}
     />
   );
 };

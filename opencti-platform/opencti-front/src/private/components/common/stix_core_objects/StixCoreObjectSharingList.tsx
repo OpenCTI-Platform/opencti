@@ -7,7 +7,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCoreObjectSharingListDeleteMutation.graphql';
 import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
 import TagsOverflow from '@common/tag/TagsOverflow';
-import ItemOrganizations from "src/components/ItemOrganizations";
+import ItemOrganizations from 'src/components/ItemOrganizations';
 
 const objectOrganizationFragment = graphql`
   fragment StixCoreObjectSharingListFragment on StixCoreObject {
