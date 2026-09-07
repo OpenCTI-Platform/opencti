@@ -407,6 +407,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           />
         )}
         markAsReadEnabled={true}
+        actionsColumnWidth={64}
       />
       {notificationToDelete && (
         <Dialog
