@@ -48,12 +48,11 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Content view')}>
             <ButtonGroupItem
               asChild
-              to={basePath}
               value="content"
               aria-label={t_i18n('Content view')}
               icon={<NewspaperOutlined sx={GLYPH} />}
             >
-              <Link to="" />
+              <Link to={basePath} />
             </ButtonGroupItem>
           </Tooltip>
         )}
@@ -61,13 +60,12 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Editor view')}>
             <ButtonGroupItem
               asChild
-              to={`${basePath}/editor`}
               value="editor"
               aria-label={t_i18n('Editor view')}
               icon={<DriveFileRenameOutlineOutlined sx={GLYPH} />}
               disabled={disableEditor}
             >
-              <Link to="editor" />
+              <Link to={`${basePath}/editor`} />
             </ButtonGroupItem>
           </Tooltip>
         )}
@@ -75,13 +73,12 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Content mapping view')}>
             <ButtonGroupItem
               asChild
-              to={`${basePath}/mapping`}
               value="mapping"
               aria-label={t_i18n('Content mapping view')}
               icon={<DifferenceOutlined sx={GLYPH} />}
               disabled={disableMapping || !!draftContext}
             >
-              <Link to="mapping" />
+              <Link to={`${basePath}/mapping`} />
             </ButtonGroupItem>
           </Tooltip>
         )}
