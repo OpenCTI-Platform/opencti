@@ -603,7 +603,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         >
           <SelectLabel>{t_i18n('Field Type')}</SelectLabel>
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue placeholder={t_i18n('Select a field type')} />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Field Type')}>
             {availableFieldTypes.map((type) => (
@@ -620,7 +620,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         >
           <SelectLabel>{t_i18n('Map to attribute')}</SelectLabel>
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue placeholder={t_i18n('Select an attribute')} />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Map to attribute')}>
             {availableAttributes.map((attr) => (
@@ -874,7 +874,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <div>
               <SelectLabel>{t_i18n('Map to attribute')}</SelectLabel>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue placeholder={t_i18n('Select an attribute')} />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Map to attribute')}>
                 {allAttributes.map((attr) => (
@@ -896,7 +896,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <div>
               <SelectLabel>{t_i18n('Field Type')}</SelectLabel>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue placeholder={t_i18n('Select a field type')} />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Field Type')}>
                 {availableFieldTypes.map((type) => (
@@ -953,7 +953,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             // Custom options for fields without vocabulary
             return (
               <div>
-                <Typography variant="caption">{t_i18n('Options')}</Typography>
+                <Typography variant="caption" style={{ marginRight: 20 }}>{t_i18n('Options')}</Typography>
                 {field.options?.map((option, optIndex) => (
                   <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
                     <TextField
