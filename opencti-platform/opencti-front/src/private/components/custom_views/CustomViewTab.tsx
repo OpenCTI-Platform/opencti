@@ -11,13 +11,18 @@ type SingleOtherCustomViewTabProps = {
 };
 
 /** The "others" views as ONE tab. TabsList detects TabsMenuTrigger by displayName, so the dropdown variant cannot come from a wrapper — it lives in StixDomainObjectTabsBox. */
-export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode, value }: SingleOtherCustomViewTabProps) => {
+export const OtherCustomViewsTab = ({
+  otherCustomViews: customViews,
+  displayMode,
+  value,
+  basePath,
+}: SingleOtherCustomViewTabProps) => {
   if (displayMode.others !== 'single') {
     return null;
   }
   return (
     <TabsTrigger value={value} asChild>
-      <Link to={customViews[0].path}>{customViews[0].name}</Link>
+      <Link to={`${basePath}/${customViews[0].path}`}>{customViews[0].name}</Link>
     </TabsTrigger>
   );
 };
