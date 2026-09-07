@@ -592,7 +592,7 @@ export const normalizeFilterGroupForFrontend = (
           if (dynamicRegardingOfValue.key === 'dynamic') { // values with 'dynamic' key contains filters
             return {
               ...dynamicRegardingOfValue,
-              values: dynamicRegardingOfValue.values.map((filterValue) => normalizeFilterGroupForFrontend(filterValue)),
+              values: dynamicRegardingOfValue.values.map((filterValue: GqlFilterGroup) => normalizeFilterGroupForFrontend(filterValue)),
             };
           } else {
             return dynamicRegardingOfValue;
