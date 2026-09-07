@@ -17,7 +17,8 @@ const CsvMapperDefaultMarking = ({ name }: CsvMapperDefaultMarkingProps) => {
       <Field
         component={SelectFieldFds}
         name={name}
-        containerstyle={{ width: '100%' }}
+        containerstyle={{ flex: 1 }}
+        fullWidth
         displayEmpty
       >
         <SelectItem value="user-choice">
