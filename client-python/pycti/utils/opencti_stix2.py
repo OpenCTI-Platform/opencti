@@ -33,6 +33,7 @@ from pycti.utils.opencti_stix2_markdown_embedded_file_utils import (
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
+    NOT_PROVIDED,
     OBSERVABLES_VALUE_INT,
     STIX_CORE_OBJECTS,
     STIX_CYBER_OBSERVABLE_MAPPING,
@@ -517,7 +518,7 @@ class OpenCTIStix2:
         """
 
         # Created By Ref
-        created_by_id = None
+        created_by_id = NOT_PROVIDED
         if "created_by_ref" in stix_object:
             created_by_id = stix_object["created_by_ref"]
         elif "x_opencti_created_by_ref" in stix_object:
