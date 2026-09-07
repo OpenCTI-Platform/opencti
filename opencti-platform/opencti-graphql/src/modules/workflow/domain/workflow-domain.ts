@@ -42,6 +42,7 @@ import {
 } from '../types/workflow-types';
 import { extractAllStatesFromDefinition, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder } from './workflow-ordering';
+import { projectWorkflowState } from './workflow-projection';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -204,6 +205,13 @@ interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   pendingError?: string | null;
   pendingTransition?: string | null;
   entity_id: string;
+  /**
+   * Scope tag for this instance — `'standard'` by default, or the `StatusScope` value of the
+   * `Status` the instance was initialized from when the entity was created with an explicit,
+   * resolvable `x_opencti_workflow_id` (e.g. `'REQUEST_ACCESS'`). Missing on rows created before
+   * this field existed — treat as `'standard'`.
+   */
+  scope?: string;
 }
 
 const getWorkflowConfig = async (
@@ -287,28 +295,75 @@ const findWorkflowInstanceEntity = async (
   }) as WorkflowInstanceStoreEntity;
 };
 
+/**
+ * Resolves a caller-supplied `x_opencti_workflow_id` (a `Status` id) to a workflow state at
+ * entity-creation time. Returns `null` if the status doesn't exist or doesn't map to any state
+ * of the published definition — the caller must not treat this as an error, only as "not
+ * resolvable" (case (b) of the three-case creation logic below).
+ */
+const resolveSuppliedStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  definitionData: WorkflowDefinitionResponse,
+  suppliedStatusId: string,
+): Promise<{ stateId: string; scope: string } | null> => {
+  const status = await storeLoadById<BasicWorkflowStatus>(context, user, suppliedStatusId, ENTITY_TYPE_STATUS);
+  if (!status) return null;
+  const matchesState = (definitionData.states ?? []).some((s) => s.statusId === status.template_id);
+  if (!matchesState) return null;
+  return { stateId: status.template_id, scope: status.scope };
+};
+
 const initializeWorkflowInstance = async (
   context: AuthContext,
   user: AuthUser,
-  entity: BasicStoreEntity & { id?: string; internal_id?: string },
+  entity: BasicStoreEntity & { id?: string; internal_id?: string; x_opencti_workflow_id?: string },
   entitySetting: BasicStoreEntityEntitySetting,
   definitionData: WorkflowDefinitionResponse,
 ): Promise<WorkflowInstanceStoreEntity> => {
-  const initialState = definitionData.initialState;
   const entityId = entity.id || entity.internal_id;
-  const instanceInput = {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+
+  // Resolve-then-project: three cases —
+  // (a) explicit status resolves to a valid state: start there, no projection write.
+  // (b) explicit status does not resolve: start at initialState with a pendingError
+  //     diagnostic, no projection write — the caller-supplied field is never overwritten.
+  // (c) no status supplied: start at initialState and project it onto the entity.
+  let currentState = definitionData.initialState;
+  let scope = 'standard';
+  let pendingError: string | undefined;
+  let shouldProject = false;
+
+  const suppliedStatusId = entity.x_opencti_workflow_id;
+  if (suppliedStatusId) {
+    const resolved = await resolveSuppliedStatus(executionContext, executionUser, definitionData, suppliedStatusId);
+    if (resolved) {
+      currentState = resolved.stateId;
+      scope = resolved.scope;
+    } else {
+      pendingError = `Supplied x_opencti_workflow_id "${suppliedStatusId}" does not resolve to any state of the published workflow`;
+    }
+  } else {
+    shouldProject = true;
+  }
+
+  const instanceInput: Record<string, unknown> = {
     entity_id: entityId,
     workflow_id: entitySetting.workflow_id || 'manual',
-    currentState: initialState,
+    currentState,
+    scope,
     history: JSON.stringify([{
-      state: initialState,
+      state: currentState,
       user_id: user.id,
       timestamp: new Date().toISOString(),
       event: 'initialization',
     }]),
   };
-  const executionContext = bypassDraftContext(context);
-  const executionUser = bypassDraftUser(user);
+  if (pendingError) {
+    instanceInput.pendingError = pendingError;
+  }
+
   const instance = await createEntity(executionContext, executionUser, instanceInput, ENTITY_TYPE_WORKFLOW_INSTANCE) as WorkflowInstanceStoreEntity;
 
   await createRelation(executionContext, executionUser, {
@@ -316,6 +371,12 @@ const initializeWorkflowInstance = async (
     toId: instance.id || instance.internal_id,
     relationship_type: RELATION_HAS_WORKFLOW,
   });
+
+  if (shouldProject) {
+    // Only the Global scope is reconciled by the status mapping today; 'standard'
+    // (this function's default when no explicit status was supplied) maps onto it.
+    await projectWorkflowState(executionContext, entity as BasicStoreEntity, currentState, StatusScope.Global);
+  }
 
   return instance;
 };
