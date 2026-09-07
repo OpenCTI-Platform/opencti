@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { logApp } from '../../../src/config/conf';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import { projectWorkflowState } from '../../../src/modules/workflow/domain/workflow-projection';
 import { updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
@@ -23,6 +25,11 @@ vi.mock('../../../src/config/conf', () => ({
 // ActionRegistry is mocked at module level so individual tests can override entries
 vi.mock('../../../src/modules/workflow/registry/workflow-actions', () => ({
   ActionRegistry: {},
+}));
+
+vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
+  projectWorkflowState: vi.fn(),
+  resolveProjectionScope: vi.fn((scope: string | undefined) => (scope && scope !== 'standard' ? scope : 'GLOBAL')),
 }));
 
 // ---------------------------------------------------------------------------
@@ -589,6 +596,49 @@ describe('reportWorkflowAsyncActionResult', () => {
       // The action must see the full entity with RELATION_CREATED_BY so AUTHOR can resolve
       expect(entitySeenByAction).toEqual(fullEntity);
       expect(entitySeenByAction[RELATION_CREATED_BY]).toBe('org-author-id');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Status projection wiring — keeps x_opencti_workflow_id in sync on completion
+  // ---------------------------------------------------------------------------
+
+  describe('status projection on completion', () => {
+    it('projects the completed state onto the full entity after the instance is updated', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const pt = makePendingTransition({ syncActions: [] });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), fullEntity, 'reviewing', 'GLOBAL');
+      // Must happen after the instance's own currentState/history update, not before.
+      const updateAttributeOrder = (updateAttribute as any).mock.invocationCallOrder.at(-1);
+      const projectionOrder = (projectWorkflowState as any).mock.invocationCallOrder[0];
+      expect(projectionOrder).toBeGreaterThan(updateAttributeOrder);
+    });
+
+    it('skips projection and logs a warning when the full entity could not be loaded', async () => {
+      const pt = makePendingTransition({ syncActions: [] });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(null);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).not.toHaveBeenCalled();
+      expect(logApp.warn).toHaveBeenCalledWith(
+        '[workflow-async-completion] Skipping status projection: entity could not be loaded',
+        expect.objectContaining({ entityId: 'entity-id' }),
+      );
     });
   });
 });

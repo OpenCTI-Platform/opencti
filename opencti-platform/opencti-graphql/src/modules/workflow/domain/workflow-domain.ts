@@ -1397,6 +1397,10 @@ export const triggerWorkflowEvent = async (
       { key: 'history', value: [JSON.stringify(history)] },
     ]);
 
+    // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
+    // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
+    await projectWorkflowState(executionContext, entity as BasicStoreEntity, newState, resolveProjectionScope(instanceEntity.scope));
+
     const workflowInstance = await getWorkflowInstance(context, user, entityId);
     // Notify assignees and participants when a non-empty comment was provided
     if (comment?.trim()) {

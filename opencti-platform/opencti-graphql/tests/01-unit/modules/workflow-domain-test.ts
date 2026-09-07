@@ -2829,6 +2829,93 @@ describe('getWorkflowInstance — lazy backfill', () => {
 });
 
 // ===========================================================================
+// triggerWorkflowEvent — status projection on sync transitions
+// ===========================================================================
+describe('triggerWorkflowEvent — status projection', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
+  const workflowContent = {
+    id: 'workflow-1',
+    name: 'Test Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'closed' }],
+    transitions: [{ from: 'open', to: 'closed', event: 'close' }],
+  };
+  const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+  const existingInstance = { id: 'instance-1', internal_id: 'instance-1', currentState: 'open', history: '[]', scope: 'GLOBAL' };
+
+  const setup = () => {
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return entity;
+      if (type === 'WorkflowDefinition') {
+        return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      }
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    // Reset to a plain synchronous success, since other describe blocks in this file
+    // permanently override `getInstance`'s return value via `mockReturnValue`.
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('closed'),
+    });
+  };
+
+  it('calls projectWorkflowState with the entity, new state, and the instance scope right after the instance is updated', async () => {
+    setup();
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    expect(result.success).toBe(true);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, entity, 'closed', StatusScope.Global);
+    // Must happen after the instance's own currentState/history update, not before.
+    const updateAttributeOrder = (updateAttribute as any).mock.invocationCallOrder[0];
+    const projectionOrder = (projectWorkflowState as any).mock.invocationCallOrder[0];
+    expect(projectionOrder).toBeGreaterThan(updateAttributeOrder);
+  });
+
+  it('does not call projectWorkflowState for async/pending transitions', async () => {
+    const asyncWorkflowContent = {
+      id: 'workflow-1',
+      name: 'Test Workflow',
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'closed' }],
+      transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'asyncBulkAction', params: {} }] }],
+    };
+    const asyncVersion = { id: 'v1', content: JSON.stringify(asyncWorkflowContent), validation_errors: [] };
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return entity;
+      if (type === 'WorkflowDefinition') {
+        return { id: 'workflow-id', name: 'Workflow', published_version: asyncVersion, all_versions: [asyncVersion] };
+      }
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({
+        success: true,
+        executionStatus: 'pending',
+        asyncActionSlots: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction' }],
+      }),
+      getCurrentState: vi.fn().mockReturnValue('closed'),
+    });
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
 // getWorkflowInstance — read-repair
 // ===========================================================================
 describe('getWorkflowInstance — read-repair', () => {
