@@ -2425,7 +2425,7 @@ class DataTableToolBar extends Component {
                   </IconButton>
                 </div>
                 {displayEditButtons && (
-                  <div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     {markAsReadEnabled && (
                       <>
                         <Tooltip title={t('Mark as read')}>
@@ -2434,10 +2434,9 @@ class DataTableToolBar extends Component {
                               aria-label={t('Mark as read')}
                               disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchRead.bind(this, true)}
-                              color="success"
                               size="small"
                             >
-                              <CheckCircleOutlined />
+                              <CheckCircleOutlined fontSize="small" color="success" />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -2447,10 +2446,9 @@ class DataTableToolBar extends Component {
                               aria-label={t('Mark as unread')}
                               disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchRead.bind(this, false)}
-                              color="error"
                               size="small"
                             >
-                              <UnpublishedOutlined />
+                              <UnpublishedOutlined fontSize="small" color="error" />
                             </IconButton>
                           </span>
                         </Tooltip>
