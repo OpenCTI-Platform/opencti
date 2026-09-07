@@ -33,6 +33,7 @@ import { FilterMode } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 vi.mock('../../../src/database/middleware', () => ({
@@ -2221,6 +2222,15 @@ describe('getWorkflowInstance', () => {
     expect(result.pendingTransition).toBeNull();
   });
 
+  it('falls back to scope: "standard" when the instance has no scope value (pre-existing rows)', async () => {
+    makeBaseSetup();
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]' }); // no `scope` field
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result.scope).toBe('standard');
+  });
+
   it('returns pendingTransition: null when pendingTransition JSON is malformed', async () => {
     makeBaseSetup();
     (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingTransition: '{ bad json' });
@@ -2742,5 +2752,73 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
     expect(instanceInput.pendingError).toBeUndefined();
     expect(projectWorkflowState).toHaveBeenCalledTimes(1);
     expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, entity, 'draft', StatusScope.Global);
+  });
+});
+
+// ===========================================================================
+// getWorkflowInstance — lazy backfill on first read
+// ===========================================================================
+describe('getWorkflowInstance — lazy backfill', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }],
+    transitions: [],
+  });
+
+  const setupCommon = () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+  };
+
+  it('persists a real WorkflowInstance under the WORKFLOW_MANAGER_USER identity when none exists yet', async () => {
+    setupCommon();
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(createEntity).toHaveBeenCalledWith(
+      expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      WORKFLOW_MANAGER_USER,
+      expect.objectContaining({ currentState: 'draft' }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+    expect(result.id).toBe('backfilled-instance-id');
+  });
+
+  it('falls back to the synthesized instance when the backfill write fails, without failing the read', async () => {
+    setupCommon();
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockRejectedValue(new Error('store unavailable'));
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result).not.toBeNull();
+    expect(result.id).toBe('initial-entity-id');
+  });
+
+  it('calling getWorkflowInstance twice creates exactly one WorkflowInstance (idempotent backfill)', async () => {
+    setupCommon();
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    (loadEntity as any).mockResolvedValueOnce(null); // first call: no instance yet, triggers backfill
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    (loadEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' }); // second call: now found
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(createEntity).toHaveBeenCalledTimes(1);
   });
 });

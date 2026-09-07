@@ -1046,7 +1046,22 @@ export const getWorkflowInstance = async (
   }
 
   const effectiveEntityId = entity.internal_id || entity.id;
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  let instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  if (!instanceEntity) {
+    // Lazy backfill: a pre-existing entity created before this feature has no WorkflowInstance
+    // row yet. Create one now, under the system identity (never the reading caller's), so
+    // future reads/reconciliation have a real instance to work with. A failed backfill write
+    // must not fail this read — fall back to the synthesized in-memory placeholder below.
+    try {
+      // `ensureWorkflowInstance`/`findWorkflowInstanceEntity` derive their execution identity
+      // from `context.user` (via `bypassDraftContext`), not from a separately-passed user
+      // argument — so the WORKFLOW_MANAGER_USER identity must be set on the context itself.
+      const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+      instanceEntity = await ensureWorkflowInstance(executionContext, WORKFLOW_MANAGER_USER, entity, entitySetting, definitionData);
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Failed to lazily backfill WorkflowInstance for entity, falling back to synthesized instance', { cause: error, entityId: effectiveEntityId });
+    }
+  }
   const currentState = instanceEntity?.currentState ?? definitionData.initialState;
 
   // Pass entitySetting and definitionData to avoid redundant lookups in getAllowedTransitions
@@ -1108,6 +1123,7 @@ export const getWorkflowInstance = async (
     pendingStatus: instanceEntity?.pendingStatus ?? null,
     pendingError: instanceEntity?.pendingError ?? null,
     pendingTransition: pendingTransitionData,
+    scope: instanceEntity?.scope ?? 'standard',
   };
 };
 
