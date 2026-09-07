@@ -63,12 +63,12 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
 
           {settingsDefaultValues
             ? (
-                <DialogContentText>
+                <DialogContentText sx={{ width: '100%', mt: '8px' }}>
                   {t_i18n('Settings default values usage...')}
                 </DialogContentText>
               )
             : (
-                <DialogContentText sx={{ width: 450, mt: '8px' }}>
+                <DialogContentText sx={{ width: '100%', mt: '8px' }}>
                   {t_i18n('No default value set in Settings...')}
                 </DialogContentText>
               )

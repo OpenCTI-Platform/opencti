@@ -119,7 +119,7 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
           />
         </Combobox>
       </div>
-      <div>
+      <div style={{ alignSelf: 'end', marginBottom: '0px' }}>
         {
           (schemaAttribute.type === 'date' || schemaAttribute.multiple || schemaAttribute.editDefault)
           && (

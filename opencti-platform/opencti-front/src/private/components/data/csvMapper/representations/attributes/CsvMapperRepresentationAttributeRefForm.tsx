@@ -231,7 +231,7 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
           </Combobox>
         )}
       </div>
-      <div>
+      <div style={{ alignSelf: 'end', marginBottom: '0px' }}>
         {schemaAttribute.editDefault && (
           <CsvMapperRepresentationDialogOption configuration={value}>
             <CsvMapperRepresentationAttributeOptions

@@ -23,7 +23,7 @@ const CsvMapperRepresentationAttributeOption = ({
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginTop: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
         <Input
           className="flex-1"
           type="text"
