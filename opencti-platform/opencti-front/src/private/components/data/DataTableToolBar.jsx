@@ -78,6 +78,7 @@ import {
   BYPASS,
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
+  INVESTIGATION_INUPDATE,
   INVESTIGATION_INUPDATE_INDELETE,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -99,6 +100,8 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
+import InvestigationCreationFromSelection from '../workspaces/investigations/InvestigationCreationFromSelection';
+import { buildInvestigationEntityIds, isInvestigationSelectionEnabled } from '../workspaces/investigations/investigationSelectionUtils';
 import PromoteDrawer from './drawers/PromoteDrawer';
 
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
@@ -2253,6 +2256,7 @@ class DataTableToolBar extends Component {
       warning,
       warningMessage,
       taskScope,
+      knowledgeEntityId,
     } = this.props;
     const {
       actions,
@@ -2346,6 +2350,18 @@ class DataTableToolBar extends Component {
           // endregion
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');
+          const stixCoreRelationshipTypes = schema.scrs.map((relationship) => relationship.id);
+          const stixDomainObjectTypes = schema.sdos.map((sdo) => sdo.id).concat('Stix-Domain-Object');
+          const investigationEntityIds = buildInvestigationEntityIds(selectedElements || {}, knowledgeEntityId);
+          const investigationSelectionEnabled = isInvestigationSelectionEnabled({
+            numberOfSelectedElements,
+            selectAll,
+            selectedTypes: selectedElementsList.map((element) => element.entity_type),
+            stixCyberObservableTypes,
+            stixCoreRelationshipTypes,
+            stixDomainObjectTypes,
+            isInDraft: Boolean(isInDraft || removeFromDraftEnabled),
+          });
           const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
 
           const isOnlyStixCyberObservablesTypes = entityTypeFilterValues.length > 0
@@ -2581,6 +2597,15 @@ class DataTableToolBar extends Component {
                             </IconButton>
                           </span>
                         </Tooltip>
+                      </Security>
+                    )}
+                    {!removeAuthMembersEnabled && !isUserDatatable && (
+                      <Security needs={[INVESTIGATION_INUPDATE]}>
+                        <InvestigationCreationFromSelection
+                          disabled={!investigationSelectionEnabled || this.state.processing}
+                          entityIds={investigationEntityIds}
+                          title={t('Start an investigation')}
+                        />
                       </Security>
                     )}
                     {container && (
@@ -3513,6 +3538,7 @@ DataTableToolBar.propTypes = {
   removeFromDraft: PropTypes.bool,
   markAsReadEnabled: PropTypes.bool,
   taskScope: PropTypes.string,
+  knowledgeEntityId: PropTypes.string,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);

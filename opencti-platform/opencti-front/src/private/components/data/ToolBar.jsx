@@ -62,6 +62,7 @@ const ToolBar = (props) => {
     handleCopy,
     search,
     taskScope,
+    knowledgeEntityId,
   } = props;
   const classes = useStyles();
   const theme = useTheme();
@@ -121,6 +122,7 @@ const ToolBar = (props) => {
             trashOperationsEnabled={trashOperationsEnabled}
             handleCopy={handleCopy}
             taskScope={taskScope}
+            knowledgeEntityId={knowledgeEntityId}
           />
         </Drawer>
       )}
@@ -149,6 +151,7 @@ ToolBar.propTypes = {
   mergeDisable: PropTypes.bool,
   trashOperationsEnabled: PropTypes.bool,
   taskScope: PropTypes.string,
+  knowledgeEntityId: PropTypes.string,
 };
 
 export default ToolBar;
