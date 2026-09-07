@@ -281,7 +281,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           <Stack
             direction="row"
             alignItems="center"
-            gap={1}
+            gap={0.5}
           >
             {!isProgress && !isFail && !isOutdated && (
               <Box sx={{ maxWidth: 150 }}>
@@ -377,6 +377,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                           handleOpenRemove();
                         }}
                         size="small"
+                        keepMui
                         aria-label={t_i18n('Delete the file')}
                       >
                         <DeleteOutlined fontSize="small" color={deleteFileColor} />
@@ -395,6 +396,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                           handleOpenDelete();
                         }}
                         size="small"
+                        keepMui
                         aria-label={t_i18n('Delete the file')}
                       >
                         <DeleteOutlined fontSize="small" color={deleteFileColor} />
