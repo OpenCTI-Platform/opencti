@@ -102,7 +102,7 @@ const ExternalReferencePopover: FunctionComponent<
           size="small"
           variant="tertiary"
         >
-          <MoreVertOutlined />
+          <MoreVertOutlined fontSize="small" />
         </IconButton>
       ) : (
         <ToggleButton
