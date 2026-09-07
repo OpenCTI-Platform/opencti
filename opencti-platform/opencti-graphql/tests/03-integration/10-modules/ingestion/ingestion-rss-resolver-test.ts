@@ -268,7 +268,7 @@ describe('RSS ingestion resolver standard behavior', () => {
         input: [{ key: 'current_state_date', value: ['2024-01-01T00:00:00.000Z'] }],
       },
     });
-    expect(setStateResult.data?.ingestionRssFieldPatch.current_state_date).toBe('2024-01-01T00:00:00.000Z');
+    expect(new Date(setStateResult.data?.ingestionRssFieldPatch.current_state_date).toISOString()).toBe('2024-01-01T00:00:00.000Z');
 
     const resetResult = await queryAsAdminWithSuccess({
       query: gql`
