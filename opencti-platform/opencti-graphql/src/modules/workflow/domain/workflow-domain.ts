@@ -768,7 +768,7 @@ export const publishWorkflowDefinition = async (
   // Re-validate at publish time rather than trusting the draft's stored `validation_errors`,
   // which were computed at save time and can be stale (e.g. new validation rules added since, or
   // DB state — like status templates — changed after the draft was last saved). Publishing an
-  // invalid definition (e.g. missing statusId / missing manual order) must be blocked here.
+  // invalid definition (e.g. missing statusId, unreachable state) must be blocked here.
   const freshValidationErrors = await validateWorkflowDefinitionData(
     executionContext,
     executionUser,
