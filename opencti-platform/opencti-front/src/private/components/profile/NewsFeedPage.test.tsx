@@ -154,6 +154,23 @@ describe('NewsFeedPage', () => {
     expect(getBadge()).toHaveClass('MuiBadge-invisible');
   });
 
+  it('hides the disconnected banner when the platform is registered', () => {
+    renderPage();
+    expect(screen.queryByText('XTM Hub is disconnected')).not.toBeInTheDocument();
+  });
+
+  it('displays the disconnected banner when the platform is not registered', () => {
+    renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_registration_status: 'not_registered' } });
+    expect(screen.getByText('XTM Hub is disconnected')).toBeInTheDocument();
+  });
+
+  it('displays the unreachable banner when XTM Hub backend is not reachable', () => {
+    renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_backend_is_reachable: false } });
+    expect(screen.getByText('XTM Hub is disconnected')).toBeInTheDocument();
+    expect(screen.getByText("XTM Hub is unreachable and connection can't be established")).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Connect product to XTM Hub' })).not.toBeInTheDocument();
+  });
+
   it('hides the badge when the user unsubscribed from all news feed types', () => {
     renderPage({ me: { id: 'user-1', unsubscribed_news_feed_types: ['*'] }, unreadCount: 4 });
     expect(getBadge()).toHaveClass('MuiBadge-invisible');

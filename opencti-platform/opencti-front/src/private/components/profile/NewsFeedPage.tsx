@@ -1,7 +1,6 @@
 import Card from '@common/card/Card';
 import { Badge, Stack } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import DynamicFeedOutlinedIcon from '@mui/icons-material/DynamicFeedOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -18,6 +17,8 @@ import { NewsFeedPageFieldPatchMutation$variables } from './__generated__/NewsFe
 import type { NewsFeedPageQuery } from './__generated__/NewsFeedPageQuery.graphql';
 import NewsFeed from './NewsFeed';
 import NewsFeedSettings from './NewsFeedSettings';
+import XtmHubDisconnectedBanner from '../xtm_hub/XtmHubDisconnectedBanner';
+import { CampaignOutlined } from '@mui/icons-material';
 
 const newsFeedPageFieldPatch = graphql`
   mutation NewsFeedPageFieldPatchMutation(
@@ -60,6 +61,7 @@ const NewsFeedPage: FunctionComponent = () => {
   const { setTitle } = useConnectedDocumentModifier();
   const { settings, me } = useAuth();
   const isXTMHubRegistered = settings.xtm_hub_registration_status === 'registered';
+  const isXTMHubUnreachable = settings.xtm_hub_backend_is_reachable === false;
 
   setTitle(t_i18n('News Feed'));
 
@@ -109,6 +111,15 @@ const NewsFeedPage: FunctionComponent = () => {
       <Typography variant="h2" sx={{ mt: 3, mb: 3 }}>
         {t_i18n('XTM Hub News Feed')}
       </Typography>
+      {isXTMHubUnreachable ? (
+        <div style={{ marginBottom: 20 }}>
+          <XtmHubDisconnectedBanner unreachable />
+        </div>
+      ) : !isXTMHubRegistered && (
+        <div style={{ marginBottom: 20 }}>
+          <XtmHubDisconnectedBanner />
+        </div>
+      )}
       <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)}>
         <Tab
           value="news-feed"
@@ -116,7 +127,7 @@ const NewsFeedPage: FunctionComponent = () => {
           label={(
             <Badge color="error" badgeContent={unreadNewsFeedsCount} max={99} invisible={unreadNewsFeedsCount === 0}>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <DynamicFeedOutlinedIcon fontSize="small" />
+                <CampaignOutlined fontSize="small" />
                 <span>{t_i18n('News feed')}</span>
               </Stack>
             </Badge>
