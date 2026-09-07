@@ -147,7 +147,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
                 </>
               )}
               <Button
-                size="small"
+                size="default"
                 onClick={onClickCreate}
                 sx={{ marginLeft: 1 }}
               >

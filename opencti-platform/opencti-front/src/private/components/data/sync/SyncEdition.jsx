@@ -191,29 +191,25 @@ const SyncEditionContainer = ({ synchronizer }) => {
             variant="outlined"
             style={{ position: 'relative' }}
           >
-            <AlertTitle>
-              &nbsp;&nbsp;{t_i18n('Remote OpenCTI configuration')}{' '}
+            <AlertTitle sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {isStreamAccessible ? (
                 <CheckCircleOutlined
-                  style={{ fontSize: 22, color: theme.palette.success.main, float: 'left' }}
+                  style={{ fontSize: 22, color: theme.palette.success.main }}
                 />
               ) : (
                 <WarningOutlined
-                  style={{ fontSize: 22, color: theme.palette.error.main, float: 'left' }}
+                  style={{ fontSize: 22, color: theme.palette.error.main }}
                 />
               )}
+              {t_i18n('Remote OpenCTI configuration')}
+              <Tooltip
+                title={t_i18n(
+                  'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
+                )}
+              >
+                <InformationOutline fontSize="small" color="primary" />
+              </Tooltip>
             </AlertTitle>
-            <Tooltip
-              title={t_i18n(
-                'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
-              )}
-            >
-              <InformationOutline
-                fontSize="small"
-                color="primary"
-                style={{ position: 'absolute', top: 10, right: 18 }}
-              />
-            </Tooltip>
             <Field
               component={TextField}
               variant="outlined"
@@ -224,6 +220,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               disabled={true}
             />
             <PasswordTextField
+              className="mt-4"
               name="token"
               label={t_i18n('token')}
               disabled={true}
@@ -310,7 +307,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 onChange={handleSubmitField}
               />
               <div>{t_i18n('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
-              <hr style={{ marginTop: 20, marginBottom: 20 }} />
+              <hr style={{ marginTop: 20, marginBottom: 20, border: 'none', borderTop: '1px solid var(--border-elevation-subtle)' }} />
               <Field
                 component={SwitchField}
                 type="checkbox"

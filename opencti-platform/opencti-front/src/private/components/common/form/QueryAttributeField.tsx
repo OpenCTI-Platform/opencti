@@ -43,7 +43,14 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                   padding={24}
                   className="paper-for-grid"
                   key={index}
-                  style={{ marginTop: 20, width: '100%', position: 'relative' }}
+                  style={{
+                    marginTop: 20,
+                    width: '100%',
+                    position: 'relative',
+                    backgroundColor: 'transparent',
+                    border: '1px solid var(--border-elevation-subtle)',
+                    borderRadius: 4,
+                  }}
                 >
                   <div
                     style={{
@@ -126,10 +133,11 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                   <IconButton
                     id="deleteHeader"
                     aria-label="Delete"
+                    color="error"
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    style={{ position: 'absolute', right: 0, top: 5 }}
+                    style={{ position: 'absolute', right: 8, top: 8 }}
                   >
                     <DeleteOutlined />
                   </IconButton>

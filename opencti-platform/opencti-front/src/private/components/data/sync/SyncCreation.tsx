@@ -295,18 +295,16 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                     marginTop: 20, width: '100%',
                     overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                 >
-                  <AlertTitle>{t_i18n('Remote OpenCTI configuration')}</AlertTitle>
-                  <Tooltip
-                    title={t_i18n(
-                      'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
-                    )}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ position: 'absolute', top: 10, right: 18 }}
-                    />
-                  </Tooltip>
+                  <AlertTitle sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {t_i18n('Remote OpenCTI configuration')}
+                    <Tooltip
+                      title={t_i18n(
+                        'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
+                      )}
+                    >
+                      <InformationOutline fontSize="small" color="primary" />
+                    </Tooltip>
+                  </AlertTitle>
                   <Field
                     component={TextField}
                     variant="outlined"
@@ -317,6 +315,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                     className="mt-5"
                   />
                   <PasswordTextField
+                    className="mt-4"
                     name="token"
                     label={t_i18n('Remote OpenCTI token')}
                     disabled={streams.length > 0}
@@ -463,7 +462,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                         'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)',
                       )}
                     </div>
-                    <hr style={{ marginTop: 20, marginBottom: 20 }} />
+                    <hr style={{ marginTop: 20, marginBottom: 20, border: 'none', borderTop: '1px solid var(--border-elevation-subtle)' }} />
                     <Field
                       component={SwitchField}
                       type="checkbox"

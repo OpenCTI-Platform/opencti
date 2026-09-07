@@ -6,6 +6,8 @@ import { ExternalReferencesValues } from '@components/common/form/ExternalRefere
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import { InfoOutlined } from '@mui/icons-material';
+import { fdsLayerClass } from '../../../../utils/fdsLayer';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import JsonMapperField, { JsonMapperFieldOption, jsonMapperQuery } from '@components/common/form/JsonMapperField';
@@ -383,10 +385,28 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             setFieldValue={setFieldValue}
           />
 
-          <Alert severity="info" variant="standard" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
-            <div>
+          <Alert
+            severity="info"
+            variant="standard"
+            // The icon rides inside the message, so the controls below line up with
+            // it rather than with the sentence it introduces.
+            icon={false}
+            className={fdsLayerClass(3)}
+            sx={{
+              position: 'relative',
+              marginTop: 2.5,
+              marginBottom: 2.5,
+              padding: 2,
+              backgroundColor: 'var(--bg-elevation-default)',
+              // MUI scrolls its message; the focus ring of the fields inside was
+              // being clipped by that overflow.
+              '& .MuiAlert-message': { padding: 0, width: '100%', overflow: 'visible' },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <InfoOutlined fontSize="small" color="info" />
               {t_i18n('For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases')}
-            </div>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
                 control={<Switch defaultChecked={!!values.pagination_with_sub_page} />}

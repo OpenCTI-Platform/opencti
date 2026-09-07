@@ -292,7 +292,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                             divider={true}
                             disablePadding
                             secondaryAction={(
-                              <Stack direction="row" gap={1}>
+                              <Stack direction="row" gap={0.5}>
                                 <Tooltip title={t_i18n('Browse the link')}>
                                   <IconButton
                                     onClick={() => handleOpenExternalLink(
@@ -401,7 +401,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                           divider={true}
                           disablePadding
                           secondaryAction={(
-                            <Stack direction="row" gap={1}>
+                            <Stack direction="row" gap={0.5}>
                               {!isFileAttached && (
                                 <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                                   <FileUploader

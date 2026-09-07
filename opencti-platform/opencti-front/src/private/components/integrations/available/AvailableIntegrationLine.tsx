@@ -254,7 +254,7 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
                   <BuiltInIntegrationHubButton kind={item.builtIn.kind} />
                 </>
               )}
-              <Button size="small" onClick={onClickCreate} sx={{ marginLeft: 1 }}>
+              <Button size="default" onClick={onClickCreate} sx={{ marginLeft: 1 }}>
                 {t_i18n('Create')}
               </Button>
             </Stack>

@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import { Add, AddCircleOutlined, ArrowDownward, ArrowUpward, DeleteOutlined, ExpandMore } from '@mui/icons-material';
 // fds:keep-mui Switch/TextField predate this PR; this line only drops MUI Tab/Tabs.
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
-import { IconButton, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+import { IconButton, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Formik, useFormikContext } from 'formik';
 import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -106,7 +106,7 @@ const areAuthorizedMembersEqual = (left: AuthorizedMemberOption[], right: Author
   });
 };
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     marginTop: 20,
   },
@@ -115,7 +115,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   entitySection: {
     padding: 20,
-    border: `1px solid ${theme.palette.divider}`,
+    border: '1px solid var(--border-elevation-subtle)',
     borderRadius: 4,
   },
   entityHeader: {
@@ -124,9 +124,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   fieldGroup: {
     padding: 15,
-    backgroundColor: theme.palette.background.paper,
     borderRadius: 4,
-    border: `1px solid ${theme.palette.divider}`,
+    border: '1px solid var(--border-elevation-subtle)',
   },
   fieldHeader: {
     display: 'flex',
@@ -139,8 +138,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   relationshipGroup: {
     padding: 15,
-    backgroundColor: theme.palette.background.paper,
     borderRadius: 4,
+    border: '1px solid var(--border-elevation-subtle)',
   },
   addButton: {
     marginTop: 10,
@@ -565,7 +564,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {field.label || t_i18n('New Field')}
           </Typography>
           <IconButton
-            variant="default"
+            variant="destructive"
             priority="tertiary"
             aria-label={t_i18n('Delete')}
             size="sm"
@@ -787,7 +786,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             />
             {(!field.isMandatory || isInParsedMode) && (
               <IconButton
-                variant="default"
+                variant="destructive"
                 priority="tertiary"
                 aria-label={t_i18n('Delete')}
                 size="sm"
@@ -979,7 +978,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       style={{ flex: 1, marginRight: 10 }}
                     />
                     <IconButton
-                      variant="default"
+                      variant="destructive"
                       priority="tertiary"
                       aria-label={t_i18n('Delete')}
                       size="sm"
@@ -1134,7 +1133,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {displayLabel}
           </Typography>
           <IconButton
-            variant="default"
+            variant="destructive"
             priority="tertiary"
             aria-label={t_i18n('Remove')}
             size="sm"
@@ -1232,17 +1231,15 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         />
 
         {entity.multiple ? (
-          <TextField
-            variant="outlined"
+          <Input
             label={t_i18n('Minimum amount (0 for optional)')}
             type="number"
-            fullWidth
-            value={entity.minAmount || 0}
+            min={0}
+            value={String(entity.minAmount ?? 0)}
             onChange={(e) => {
               const value = parseInt(e.target.value, 10) || 0;
               handleFieldChange(`additionalEntities.${entityIndex}.minAmount`, value);
             }}
-            inputProps={{ min: 0 }}
             helperText={t_i18n('Minimum number of instances required (0 means optional)')}
           />
         ) : (() => {
@@ -1480,7 +1477,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Relationship')} {index + 1}
           </Typography>
           <IconButton
-            variant="default"
+            variant="destructive"
             priority="tertiary"
             aria-label={t_i18n('Remove')}
             size="sm"
@@ -1718,14 +1715,22 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               )}
             </Stack>
 
-            <Accordion variant="outlined">
+            <Accordion
+              variant="outlined"
+              disableGutters
+              sx={{
+                backgroundColor: 'transparent',
+                border: '1px solid var(--border-elevation-subtle)',
+                borderRadius: '4px',
+              }}
+            >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 {/* Draft Name Section */}
                 <Typography variant="h6" gutterBottom>{t_i18n('Draft Name')}</Typography>
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <Box style={{ paddingTop: 10 }}>
                   <FormControlLabel
                     control={(
                       <Switch
@@ -1760,7 +1765,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
                 {/* Draft Description Section */}
                 <Typography variant="h6" gutterBottom>{t_i18n('Draft Description')}</Typography>
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <Box style={{ paddingTop: 10 }}>
                   <FormControlLabel
                     control={(
                       <Switch
@@ -1814,7 +1819,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                     <>
                       {/* Draft Assignees Section */}
                       <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
-                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <Box style={{ paddingTop: 10 }}>
                         <FormControlLabel
                           control={(
                             <Switch
@@ -1846,7 +1851,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
                       {/* Draft Participants Section */}
                       <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
-                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <Box style={{ paddingTop: 10 }}>
                         <FormControlLabel
                           control={(
                             <Switch
@@ -1878,7 +1883,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
                       {/* Draft Author Section */}
                       <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
-                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <Box style={{ paddingTop: 10 }}>
                         <FormControlLabel
                           control={(
                             <Switch
@@ -1904,7 +1909,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                         <Box
                           style={formData.draftDefaults?.author?.type === 'static'
                             ? {
-                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                                border: '1px solid var(--border-elevation-subtle)',
                                 borderRadius: 4,
                                 padding: '12px',
                                 marginBottom: 20,
@@ -1980,7 +1985,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       />
 
                       {formData.draftDefaults?.authorizedMembers?.enabled && (
-                        <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                        <Box style={{ paddingTop: 10 }}>
                           <FormControlLabel
                             control={(
                               <Switch
@@ -2190,7 +2195,15 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {(() => {
               if (formData.mainEntityLookup) {
                 return (
-                  <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
+                  <Alert
+                    severity="info"
+                    className={classes.alert}
+                    sx={{
+                      marginTop: 2.5,
+                      backgroundColor: 'transparent',
+                      border: '1px solid var(--color-filigran-brand-primary)',
+                    }}
+                  >
                     {t_i18n('Entity lookup enabled. Users will select existing entities of this type.')}
                   </Alert>
                 );

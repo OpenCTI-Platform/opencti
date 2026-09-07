@@ -105,7 +105,9 @@ const IndicatorAddObservablesLinesContainer = (props) => {
     if (alreadyAdded) {
       commitRelationDelete({
         variables: { ...input },
-        updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 25 }),
+        // The fragment reads `observables(first: 100)`; any other argument set
+        // addresses a record that does not exist, so the removal never showed.
+        updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 100 }),
       });
       // Add with references
     } else if (enableReferences || !stixCoreRelationshipValidator.isValidSync(input)) {
@@ -202,7 +204,10 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                       key={type}
                       expanded={expanded}
                       onChange={() => handleChangePanel(type, expanded)}
-                      elevation={3}
+                      // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+                      elevation={0}
+                      disableGutters
+                      sx={{ backgroundColor: 'var(--bg-input-default)' }}
                     >
                       <AccordionSummary expandIcon={<ExpandMore />}>
                         <Typography className={classes.heading}>

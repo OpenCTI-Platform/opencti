@@ -10,7 +10,6 @@ import Typography from '@mui/material/Typography';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import classNames from 'classnames';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
-import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import CsvMapperConditionalEntityMapping from '@components/data/csvMapper/representations/CsvMapperConditionalEntityMapping';
@@ -35,8 +34,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginLeft: 10,
   },
   container: {
-    display: 'inline-flex',
+    display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   red: {
     borderColor: theme.palette.designSystem.tertiary.red[400],
@@ -128,6 +129,11 @@ const CsvMapperRepresentationForm: FunctionComponent<
         expanded={open}
         variant="outlined"
         style={{ width: '100%' }}
+        sx={{
+          backgroundColor: 'transparent',
+          border: '1px solid var(--border-elevation-subtle)',
+          borderRadius: '4px',
+        }}
         className={classNames({
           [classes.red]: hasError,
         })}
@@ -200,14 +206,6 @@ const CsvMapperRepresentationForm: FunctionComponent<
                 representation={value}
                 representationName={name}
               />
-            </div>
-            <div style={{ textAlign: 'right', marginTop: '20px' }}>
-              <Button
-                color="error"
-                onClick={handleOpenDelete}
-              >
-                {t_i18n('Delete')}
-              </Button>
             </div>
           </>
         </AccordionDetails>

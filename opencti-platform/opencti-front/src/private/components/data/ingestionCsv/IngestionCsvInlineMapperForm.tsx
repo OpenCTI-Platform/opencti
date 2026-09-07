@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
+import { Icon, IconButton, Radio, RadioGroup, Tooltip as FdsTooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { Typography } from '@mui/material';
@@ -153,7 +153,10 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
             <Form>
               <Box sx={{
                 display: 'flex',
-                alignItems: 'center',
+                // The switch is taller than its label, so centring on the row would
+                // drop the icon below the text it belongs to.
+                alignItems: 'flex-start',
+                gap: '4px',
                 marginTop: 2.5,
               }}
               >
@@ -183,6 +186,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                 <Box sx={{
                   display: 'flex',
                   alignItems: 'center',
+                  marginTop: 1,
                 }}
                 >
                   <RadioGroup
@@ -198,31 +202,30 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   </RadioGroup>
                 </Box>
               </Box>
-              <Box
-                sx={{
-                  marginTop: 2.5,
-                  display: 'flex',
-                  alignItems: 'end',
-                  gap: '8px',
-
-                }}
-              >
+              <Box sx={{ marginTop: 2.5 }}>
                 <Field
                   component={TextField}
                   name="skip_line_char"
                   label={t_i18n('Char to escape line')}
-                />
-                <Tooltip
-                  title={t_i18n(
-                    'Every line that begins with this character will be skipped during parsing (for example: #).',
+                  infoTooltip={(
+                    <FdsTooltip>
+                      <TooltipTrigger asChild>
+                        <IconButton
+                          icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
+                          aria-label={t_i18n('More information')}
+                          variant="default"
+                          priority="tertiary"
+                          size="sm"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t_i18n(
+                          'Every line that begins with this character will be skipped during parsing (for example: #).',
+                        )}
+                      </TooltipContent>
+                    </FdsTooltip>
                   )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
-                  />
-                </Tooltip>
+                />
               </Box>
 
               <Box sx={{
