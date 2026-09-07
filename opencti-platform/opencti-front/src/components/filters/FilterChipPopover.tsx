@@ -357,6 +357,16 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         onChange={handleAutocompleteChange}
         disableCloseOnSelect
         isOptionEqualToValue={(option, val) => option.value === val.value}
+        sx={{
+          '& .MuiAutocomplete-tag': {
+            maxWidth: 200,
+          },
+          '& .MuiAutocomplete-tag .MuiChip-label': {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          },
+        }}
         renderInput={(paramsInput) => (
           <TextField
             role="search"
