@@ -14,6 +14,7 @@ import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/d
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowDefinition: vi.fn(),
+  hasPublishedWorkflowDefinition: vi.fn(),
   getWorkflowInstance: vi.fn(),
   getAllowedTransitions: vi.fn(),
   setWorkflowDefinition: vi.fn(),
@@ -341,6 +342,25 @@ describe('workflow-resolvers', () => {
           'entity-123',
         );
         expect(result).toBe(mockInstance);
+      });
+    });
+
+    describe('workflowDefinitionPublished', () => {
+      it('should call hasPublishedWorkflowDefinition with correct arguments', async () => {
+        vi.mocked(workflowDomain.hasPublishedWorkflowDefinition).mockResolvedValue(true);
+
+        const result = await workflowResolvers.Query.workflowDefinitionPublished(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(workflowDomain.hasPublishedWorkflowDefinition).toHaveBeenCalledWith(
+          mockContext,
+          mockContext.user,
+          'Incident',
+        );
+        expect(result).toBe(true);
       });
     });
 
@@ -877,6 +897,45 @@ describe('DraftWorkspace.workflowInstance resolver', () => {
 });
 
 // ---------------------------------------------------------------------------
+// StixDomainObject.workflowInstance / Container.workflowInstance /
+// StixCoreRelationship.workflowInstance / StixSightingRelationship.workflowInstance
+// ---------------------------------------------------------------------------
+
+describe.each([
+  ['StixDomainObject', () => workflowResolvers.StixDomainObject.workflowInstance],
+  ['Container', () => workflowResolvers.Container.workflowInstance],
+  ['StixCoreRelationship', () => workflowResolvers.StixCoreRelationship.workflowInstance],
+  ['StixSightingRelationship', () => workflowResolvers.StixSightingRelationship.workflowInstance],
+])('%s.workflowInstance resolver', (_typeName, getResolver) => {
+  it('calls getWorkflowInstance with the entity id', async () => {
+    (getWorkflowInstance as any).mockResolvedValue({ id: 'inst-id', currentState: 'reviewed' });
+
+    const resolver = getResolver();
+    const result = await resolver(
+      { id: 'entity-id', internal_id: 'entity-id' },
+      {},
+      mockContext,
+    );
+
+    expect(getWorkflowInstance).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id');
+    expect(result).toEqual({ id: 'inst-id', currentState: 'reviewed' });
+  });
+
+  it('uses internal_id when id is not present', async () => {
+    (getWorkflowInstance as any).mockResolvedValue(null);
+
+    const resolver = getResolver();
+    await resolver(
+      { internal_id: 'entity-internal-id' },
+      {},
+      mockContext,
+    );
+
+    expect(getWorkflowInstance).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-internal-id');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // EntitySetting.workflow_published_version_id
 // ---------------------------------------------------------------------------
 
@@ -891,7 +950,7 @@ describe('EntitySetting.workflow_published_version_id resolver', () => {
       mockContext,
     );
 
-    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, entitySetting);
+    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, mockContext.user, entitySetting);
     expect(result).toBe('pub-v1');
   });
 
@@ -918,7 +977,7 @@ describe('EntitySetting.workflow_published_version_id resolver', () => {
       mockContext,
     );
 
-    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, entitySetting);
+    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, mockContext.user, entitySetting);
     expect(result).toBeNull();
   });
 });

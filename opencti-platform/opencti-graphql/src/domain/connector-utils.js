@@ -1,4 +1,5 @@
-import EventSource from 'eventsource';
+import { EventSource } from 'eventsource';
+import { Agent } from 'undici';
 import { UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { isEmptyField } from '../database/utils';
@@ -22,17 +23,23 @@ export const createSyncHttpUri = (sync, state, testMode) => {
   return streamUri;
 };
 
+// Only needed when ssl_verify is disabled: with it enabled, undici's default dispatcher already
+// rejects unauthorized certificates, so no custom agent is required.
+const insecureAgent = new Agent({ connect: { rejectUnauthorized: false } });
+
+const buildSyncFetch = (eventSourceUri, ssl, token) => {
+  const dispatcher = getPlatformHttpProxyAgent(eventSourceUri, true) ?? (ssl ? undefined : insecureAgent);
+  const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
+  return (url, init) => fetch(url, { ...init, headers: { ...init.headers, ...headers }, dispatcher });
+};
+
 export const testSync = async (context, user, sync) => {
   const eventSourceUri = createSyncHttpUri(sync, now(), true);
   const { token, ssl_verify: ssl = false } = sync;
   return new Promise((resolve, reject) => {
     try {
-      const eventSource = new EventSource(eventSourceUri, {
-        rejectUnauthorized: ssl,
-        headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-        agent: getPlatformHttpProxyAgent(eventSourceUri),
-      });
-      eventSource.on('connected', (d) => {
+      const eventSource = new EventSource(eventSourceUri, { fetch: buildSyncFetch(eventSourceUri, ssl, token) });
+      eventSource.addEventListener('connected', (d) => {
         const { connectionId } = JSON.parse(d.data);
         if (connectionId) {
           eventSource.close();
@@ -42,7 +49,7 @@ export const testSync = async (context, user, sync) => {
           reject(UnsupportedError('Server cant generate connection id'));
         }
       });
-      eventSource.on('error', (e) => {
+      eventSource.addEventListener('error', (e) => {
         eventSource.close();
         reject(UnsupportedError(`Cant connect to remote opencti, ${e.message}`));
       });

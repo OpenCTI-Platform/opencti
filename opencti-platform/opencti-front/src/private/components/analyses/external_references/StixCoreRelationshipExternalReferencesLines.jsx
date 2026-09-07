@@ -375,6 +375,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
               size="small"
               onClick={this.handleToggleExpand.bind(this)}
               classes={{ root: classes.buttonExpand }}
+              aria-expanded={expanded}
             >
               {expanded ? (
                 <ExpandLessOutlined />

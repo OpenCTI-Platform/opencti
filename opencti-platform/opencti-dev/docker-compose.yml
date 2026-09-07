@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: kibana:8.19.20
+    image: kibana:8.19.21
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -113,7 +113,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:4.3.4-management
+    image: rabbitmq:4.3.5-management
     restart: unless-stopped
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
@@ -156,7 +156,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-prometheus:
     container_name: opencti-dev-telemetry-prometheus
-    image: prom/prometheus:v3.13.2
+    image: prom/prometheus:v3.14.0
     restart: unless-stopped
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"

@@ -441,6 +441,7 @@ const StixCoreObjectFileExportForm = ({
                     ) => <li {...props}>{option.label}</li>}
                     textfieldprops={{ label: t_i18n('Connector') }}
                     optionLength={80}
+                    autoFocus
                   />
                   {values.connector && (
                     <>

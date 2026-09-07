@@ -92,6 +92,7 @@ class CourseOfActionAttackPatternComponent extends Component {
                 aria-label={expanded ? t('Collapse') : t('Expand')}
                 color="primary"
                 onClick={this.handleToggleExpand.bind(this)}
+                aria-expanded={expanded}
               >
                 {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
               </IconButton>

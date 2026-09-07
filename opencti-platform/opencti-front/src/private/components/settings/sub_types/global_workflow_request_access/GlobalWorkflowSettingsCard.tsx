@@ -12,7 +12,6 @@ import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import GlobalWorkflowSettings from './GlobalWorkflowSettings';
 import RequestAccessSettings from './RequestAccessSettings';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../../../utils/hooks/useHelper';
 
 const globalWorkflowSettingsCardPatch = graphql`
     mutation GlobalWorkflowSettingsCardPatchMutation(
@@ -31,8 +30,6 @@ const GlobalWorkflowSettingsCard = () => {
 
   const { subType } = useSubTypeOutletContext();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isFeatureEnable } = useHelper();
-  const isSyncWorkflowStatusByNameFeatureEnabled = isFeatureEnable('SYNC_WORKFLOW_STATUS_BY_NAME');
   const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
   const [commit] = useApiMutation(globalWorkflowSettingsCardPatch);
 
@@ -60,40 +57,36 @@ const GlobalWorkflowSettingsCard = () => {
               <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
             )
           }
-          {isSyncWorkflowStatusByNameFeatureEnabled && (
-            <>
-              <Label
-                sx={{ marginTop: 4 }}
-                action={(
-                  <Tooltip
-                    title={!isSyncWorkflowStatusByNameAvailable
-                      ? t_i18n('This configuration is not available for this entity type')
-                      : t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
-                    }
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                    />
-                  </Tooltip>
-                )}
+          <Label
+            sx={{ marginTop: 4 }}
+            action={(
+              <Tooltip
+                title={!isSyncWorkflowStatusByNameAvailable
+                  ? t_i18n('This configuration is not available for this entity type')
+                  : t_i18n("When enabled, stream synchronizations will try to name-match the incoming entities' statuses with this instance's statuses, instead of dropping them.")
+                }
               >
-                {t_i18n('Entity status sync')}
-              </Label>
-              <FormGroup>
-                <FormControlLabel
-                  control={(
-                    <Switch
-                      disabled={!isSyncWorkflowStatusByNameAvailable}
-                      checked={subType.settings.sync_workflow_status_by_name ?? false}
-                      onChange={handleToggleSyncWorkflowStatusByName}
-                    />
-                  )}
-                  label={t_i18n("Update entities' statuses by name match")}
+                <InformationOutline
+                  fontSize="small"
+                  color="primary"
                 />
-              </FormGroup>
-            </>
-          )}
+              </Tooltip>
+            )}
+          >
+            {t_i18n('Entity status sync')}
+          </Label>
+          <FormGroup>
+            <FormControlLabel
+              control={(
+                <Switch
+                  disabled={!isSyncWorkflowStatusByNameAvailable}
+                  checked={subType.settings.sync_workflow_status_by_name ?? false}
+                  onChange={handleToggleSyncWorkflowStatusByName}
+                />
+              )}
+              label={t_i18n("Update entities' statuses by name match")}
+            />
+          </FormGroup>
         </Grid>
         {hasRequestAccessConfig && requestAccessConfiguration && (
           <>

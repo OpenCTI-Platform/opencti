@@ -396,7 +396,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                     <IconButton
                       aria-label={this.state.expandedLines[sector.id] ? t('Collapse') : t('Expand')}
                       onClick={this.handleToggleLine.bind(this, sector.id)}
-                      aria-haspopup="true"
+                      aria-expanded={this.state.expandedLines[sector.id]}
                     >
                       {this.state.expandedLines[sector.id] === true ? (
                         <ExpandLess />
@@ -506,7 +506,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                   this,
                                   subsector.id,
                                 )}
-                                aria-haspopup="true"
+                                aria-expanded={this.state.expandedLines[subsector.id]}
                               >
                                 {this.state.expandedLines[subsector.id]
                                   === true ? (

@@ -32,7 +32,7 @@ describe('Hook: useAuth', () => {
           {
             node: {
               id: 'b9e9766f-467c-4b1e-a4cd-dbf600e139be',
-              name: 'Dark',
+              name: 'Filigran Dark',
               theme_background: '#161616',
               theme_accent: '#0f1e38',
               theme_paper: '#09101e',

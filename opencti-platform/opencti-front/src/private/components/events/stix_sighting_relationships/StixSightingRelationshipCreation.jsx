@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
+import { List, ListItemButton } from '@mui/material';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -401,9 +402,10 @@ class StixSightingRelationshipCreation extends Component {
           </IconButton>
           <Typography variant="h6">{t('Select a sighting')}</Typography>
         </div>
-        <div className={classes.container}>
+        <List component="div" className={classes.container}>
           {existingSightings.map((sighting) => (
-            <div
+            <ListItemButton
+              focusVisibleClassName="focus-visible"
               key={sighting.node.id}
               className={classes.relation}
               onClick={this.handleSelectSighting.bind(this, sighting.node)}
@@ -508,9 +510,10 @@ class StixSightingRelationshipCreation extends Component {
                 </div>
               </div>
               <div className="clearfix" />
-            </div>
+            </ListItemButton>
           ))}
-          <div
+          <ListItemButton
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
           >
@@ -600,8 +603,8 @@ class StixSightingRelationshipCreation extends Component {
               </div>
             </div>
             <div className="clearfix" />
-          </div>
-        </div>
+          </ListItemButton>
+        </List>
       </div>
     );
   }

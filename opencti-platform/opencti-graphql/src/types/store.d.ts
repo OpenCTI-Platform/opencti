@@ -335,48 +335,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // Course-Of-Action specific
   x_opencti_threat_hunting: string;
   x_opencti_log_sources: Array<string>;
-  // CVSS3
-  x_opencti_cvss_vector_string: string;
-  x_opencti_cvss_base_severity: string;
-  x_opencti_cvss_attack_vector: string;
-  x_opencti_cvss_attack_complexity: string;
-  x_opencti_cvss_privileges_required: string;
-  x_opencti_cvss_user_interaction: string;
-  x_opencti_cvss_scope: string;
-  x_opencti_cvss_confidentiality_impact: string;
-  x_opencti_cvss_integrity_impact: string;
-  x_opencti_cvss_availability_impact: string;
-  x_opencti_cvss_exploit_code_maturity: string;
-  x_opencti_cvss_remediation_level: string;
-  x_opencti_cvss_report_confidence: string;
-  // CVSS2
-  x_opencti_cvss_v2_vector_string: string;
-  x_opencti_cvss_v2_access_vector: string;
-  x_opencti_cvss_v2_access_complexity: string;
-  x_opencti_cvss_v2_authentication: string;
-  x_opencti_cvss_v2_confidentiality_impact: string;
-  x_opencti_cvss_v2_integrity_impact: string;
-  x_opencti_cvss_v2_availability_impact: string;
-  x_opencti_cvss_v2_exploitability: string;
-  x_opencti_cvss_v2_remediation_level: string;
-  x_opencti_cvss_v2_report_confidence: string;
-  // CVSS4
-  x_opencti_cvss_v4_vector_string: string;
-  x_opencti_cvss_v4_base_severity: string;
-  x_opencti_cvss_v4_attack_vector: string;
-  x_opencti_cvss_v4_attack_complexity: string;
-  x_opencti_cvss_v4_attack_requirements: string;
-  x_opencti_cvss_v4_privileges_required: string;
-  x_opencti_cvss_v4_user_interaction: string;
-  x_opencti_cvss_v4_confidentiality_impact_v: string;
-  x_opencti_cvss_v4_confidentiality_impact_s: string;
-  x_opencti_cvss_v4_integrity_impact_v: string;
-  x_opencti_cvss_v4_integrity_impact_s: string;
-  x_opencti_cvss_v4_availability_impact_v: string;
-  x_opencti_cvss_v4_availability_impact_s: string;
-  x_opencti_cvss_v4_exploit_maturity: string;
   // Others
-  x_opencti_cwe: string;
   x_opencti_main_observable_type: string;
   x_opencti_lastname: string;
   x_opencti_firstname: string;
@@ -421,7 +380,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   first_observed: Date;
   last_observed: Date;
   // custom
-  x_opencti_first_seen_active: Date;
   x_opencti_modified_at: Date;
   // boolean
   revoked: boolean;
@@ -430,7 +388,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   password_valid_until: Date | null;
   // custom
   x_opencti_detection: boolean;
-  x_opencti_cisa_kev: boolean;
   // number
   number_observed: number;
   confidence: number;
@@ -442,16 +399,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   likelihood: number;
   x_opencti_order: number;
   x_opencti_score: number;
-  x_opencti_epss_score: number;
-  x_opencti_epss_percentile: number;
-  // CVSS3
-  x_opencti_cvss_base_score: number;
-  x_opencti_cvss_temporal_score: number;
-  // CVSS2
-  x_opencti_cvss_v2_base_score: number;
-  x_opencti_cvss_v2_temporal_score: number;
-  // CVSS4
-  x_opencti_cvss_v4_base_score: number;
   // PIR
   pir_information?: Array<PirInformation>;
   // Custom fields

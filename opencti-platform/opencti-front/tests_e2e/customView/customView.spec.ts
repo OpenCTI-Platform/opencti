@@ -60,8 +60,9 @@ test('Custom View CRUD - golden path', { tag: ['@ce', '@group1'] }, async ({ pag
   await customViewDetailsPage.widgets.openWidgetModal();
   await customViewDetailsPage.widgets.selectWidget('List');
   await customViewDetailsPage.widgets.selectPerspective('Entities');
-  await expect(page.getByText('In regards of')).toBeVisible();
-  await expect(page.getByText('CURRENT ENTITY', { exact: true })).toBeVisible();
+  // Assert the default filter chip through its button role: when the pointer hovers the chip,
+  // a tooltip duplicates the chip text and makes page-wide getByText locators ambiguous.
+  await expect(page.getByRole('button', { name: /In regards of.*CURRENT ENTITY/ })).toBeVisible();
   await customViewDetailsPage.widgets.fillLabel('Malwares');
   await customViewDetailsPage.widgets.validateFilters();
   await customViewDetailsPage.widgets.titleField.fill('Related malwares');
@@ -135,11 +136,16 @@ test('Custom View CRUD - golden path', { tag: ['@ce', '@group1'] }, async ({ pag
   // ─── Cleanup: delete all created views ───────────────────────────────────────
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
   for (const name of [viewName, duplicateName, viewName]) {
-    const item = customViewsSettingsPage.getItemFromList(name).nth(0);
+    const items = customViewsSettingsPage.getItemFromList(name);
+    const item = items.nth(0);
     await item.waitFor({ state: 'visible', timeout: 30000 });
+    const countBeforeDelete = await items.count();
     await customViewsSettingsPage.getQuickActionsButton(item).click();
     await customViewsSettingsPage.getDeleteQuickActionButton().click();
     await customViewsSettingsPage.getConfirmButton().click();
+    // Wait for the deletion to be reflected in the list before opening the next popover,
+    // otherwise the next delete menu item anchors to a moving row and is never stable to click.
+    await expect(items).toHaveCount(countBeforeDelete - 1);
   }
   await expect(customViewsSettingsPage.getItemFromList(viewName)).toBeHidden();
 });

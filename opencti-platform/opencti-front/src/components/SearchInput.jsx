@@ -367,6 +367,7 @@ const SearchInput = (props) => {
             }
           }}
           isActive={false}
+          label={t_i18n('Search')}
           slotProps={{
             input: {
               startAdornment: (
@@ -465,6 +466,7 @@ const SearchInput = (props) => {
           }}
           onKeyDown={handleKeyDown}
           isActive={isNLQActivated}
+          label={t_i18n('Search')}
           slotProps={{
             input: {
               startAdornment: (

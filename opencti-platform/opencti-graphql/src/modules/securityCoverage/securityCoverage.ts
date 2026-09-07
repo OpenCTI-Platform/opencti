@@ -12,7 +12,7 @@ import {
 } from './securityCoverage-types';
 import convertSecurityCoverageToStix from './securityCoverage-converter';
 import { createdBy, objectLabel, objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { COVERED_ENTITIES_TYPE, securityCoverageStixBundle } from './securityCoverage-domain';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
@@ -20,6 +20,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/secu
 import type { StoreEntity } from '../../types/store';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 
 const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {

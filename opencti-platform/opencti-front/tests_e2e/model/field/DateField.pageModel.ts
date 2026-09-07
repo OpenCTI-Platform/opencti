@@ -27,6 +27,10 @@ export default class DateFieldPageModel {
 
   async fill(input: string) {
     await this.inputLocator.click();
-    return this.page.keyboard.type(input, { delay: 100 });
+    // The field is split in date sections and a click puts the caret on the section under
+    // the pointer, so the typing would start on an arbitrary one. Selecting every section
+    // first makes it always start on the first section, whatever the locale order.
+    await this.page.keyboard.press('ControlOrMeta+A');
+    await this.page.keyboard.type(input, { delay: 100 });
   }
 }

@@ -36,6 +36,9 @@ Additional configuration options:
 
 ![Live stream additional configuration](../assets/live-stream-additional-configuration.png)
 
+!!! note
+    By default, entities imported through this synchronizer keep no recognizable processing status, since the remote platform's status reference isn't valid locally. To keep processing statuses consistent across both platforms instead, enable [Entity status sync](../../administration/entities.md#workflow-section) on the entity types you want to synchronize.
+
 ## Export an OpenCTI Stream
 
 You can export your existing OpenCTI Stream from the platform, making it easy to share your configuration with others.

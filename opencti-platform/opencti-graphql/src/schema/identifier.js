@@ -23,6 +23,7 @@ import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationsh
 import { cleanObject } from '../database/stix-converter-utils';
 import nconf from 'nconf';
 import { pushAll } from '../utils/arrayUtil';
+import { normalizeEmail } from '../utils/email';
 
 // region hashes
 const MD5 = 'MD5';
@@ -228,7 +229,6 @@ const stixBaseEntityContribution = {
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }, { src: INNER_TYPE, dependencies: [NAME_FIELD] }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created', dependencies: [NAME_FIELD] }],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],
@@ -269,6 +269,9 @@ const stixBaseEntityContribution = {
     },
     objects(data) {
       return data.map((o) => o.standard_id).sort();
+    },
+    user_email(data) {
+      return normalizeEmail(data);
     },
   },
 };

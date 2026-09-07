@@ -83,6 +83,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         {variant === FiltersVariant.dialog && (
           <Grid item xs={12}>
             <TextField
+              role="search"
               label={t_i18n('Global keyword')}
               variant="outlined"
               size="small"
@@ -90,6 +91,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
               value={keyword}
               onChange={handleChangeKeyword}
               disabled={disabled}
+              slotProps={{ input: { type: 'search' } }}
             />
           </Grid>
         )}

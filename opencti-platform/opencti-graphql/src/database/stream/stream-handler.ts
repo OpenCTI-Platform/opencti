@@ -22,7 +22,7 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
-import { isFeatureEnabled, logApp, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import { getEntitiesMapFromCache } from '../cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 
@@ -36,7 +36,6 @@ export const initializeStreamStack = async () => {
 const resolveWorkflowStatusName = async (context: AuthContext, user: AuthUser, instance: StoreObject): Promise<{ name: string; scope: string } | undefined> => {
   const workflowId = instance.x_opencti_workflow_id;
   if (!workflowId) return undefined;
-  if (!isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG)) return undefined;
   try {
     const platformStatuses = await getEntitiesMapFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
     const status = platformStatuses.get(workflowId);

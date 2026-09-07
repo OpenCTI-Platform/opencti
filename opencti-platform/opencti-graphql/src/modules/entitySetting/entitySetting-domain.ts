@@ -5,9 +5,9 @@ import type { BasicStoreEntityEntitySetting, StoreEntityEntitySetting } from './
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
-import { enforceEnableFeatureFlag, SYSTEM_USER } from '../../utils/access';
+import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypesPaginated } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -77,10 +77,6 @@ export const findEntitySettingPaginated = (context: AuthContext, user: AuthUser,
 };
 
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
-  const enablesSyncWorkflowStatusByName = input.some(({ key, value }) => key === 'sync_workflow_status_by_name' && value[0] === 'true');
-  if (enablesSyncWorkflowStatusByName) {
-    enforceEnableFeatureFlag(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG);
-  }
   const authorizedMembersEdit = input
     .filter(({ key, value }) => key === 'attributes_configuration' && value.length > 0)
     .flatMap(({ value }) => JSON.parse(value[0]))

@@ -71,8 +71,8 @@ import {
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
 } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import {
   isStixCoreRelationship,

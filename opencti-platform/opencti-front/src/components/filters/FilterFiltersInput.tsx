@@ -4,9 +4,9 @@ import Box from '@mui/material/Box';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { emptyFilterGroup, isFilterGroupNotEmpty, sanitizeFiltersStructure, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import useFiltersState from '../../utils/filters/useFiltersState';
-
 import FilterIconButton from '../FilterIconButton';
 import { useTheme } from '@mui/material/styles';
+import { WidgetHost } from '../../utils/widget/widget';
 
 interface BasicFilterInputProps {
   filter?: Filter;
@@ -14,6 +14,7 @@ interface BasicFilterInputProps {
   childKey?: string;
   helpers?: handleFilterHelpers;
   filterValues: FilterGroup;
+  host?: WidgetHost;
   disabled?: boolean;
 }
 
@@ -22,6 +23,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   childKey,
   helpers,
   filterValues,
+  host,
   disabled = false,
 }) => {
   const theme = useTheme();
@@ -75,6 +77,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         helpers={filterHelpers}
         redirection
         searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+        host={host}
       />
     </>
   );

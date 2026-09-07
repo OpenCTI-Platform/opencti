@@ -151,6 +151,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   # SecurityCoverage
   coverage_last_result: DateTime

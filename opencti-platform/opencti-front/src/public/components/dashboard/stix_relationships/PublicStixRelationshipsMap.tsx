@@ -88,10 +88,12 @@ const PublicStixRelationshipsMapComponent = ({
 
     return (
       <LocationMiniMapTargets
-        center={[dataSelection[0].centerLat ?? 48.8566969, dataSelection[0].centerLng ?? 2.3514616]}
+        zoom={dataSelection[0].zoom ?? 2}
+        center={dataSelection[0].centerLat && dataSelection[0].centerLng
+          ? { latitude: dataSelection[0].centerLat, longitude: dataSelection[0].centerLng }
+          : undefined}
         countries={countries}
         cities={cities}
-        zoom={dataSelection[0].zoom ?? 2}
       />
     );
   }

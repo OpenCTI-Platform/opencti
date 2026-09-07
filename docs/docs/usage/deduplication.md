@@ -67,6 +67,22 @@ The deduplication process of relationships is based on the following criteria:
 
 For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the [STIX specification](https://docs.oasis-open.org/cti/stix/v2.1/csprd01/stix-v2.1-csprd01.html#_Toc16070607) using the "ID Contributing Properties" defined for each type of observable.
 
+### STIX IDs and imported objects
+
+The `Standard STIX ID` displayed by OpenCTI is the platform's canonical STIX
+identifier for the object. For imported data, this identifier may differ from the
+STIX ID used by the original source, such as a TAXII feed or an external CTI
+repository.
+
+This behavior is expected when OpenCTI needs to deduplicate and consolidate
+objects from multiple sources. Source STIX IDs can still be stored under `Other
+STIX IDs` when available, but users should not assume that the visible
+`Standard STIX ID` always matches the original source object's STIX ID.
+
+When correlating OpenCTI data with external sources, check the object's `Other
+STIX IDs` and external references (if any), especially for data
+imported from TAXII feeds or third-party CTI repositories.
+
 ## Update behavior
 
 In cases where an entity already exists in the platform, incoming creations can trigger updates to the existing entity's attributes.

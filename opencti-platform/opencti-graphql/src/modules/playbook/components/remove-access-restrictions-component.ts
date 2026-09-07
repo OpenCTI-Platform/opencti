@@ -7,7 +7,7 @@ import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { executionContext } from '../../../utils/access';
 
 export interface RemoveAccessRestrictionsConfiguration {
@@ -46,15 +46,16 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+  executor: async ({ dataInstanceId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
     const { applyToElements, applyWithFilters } = playbookNode.configuration;
+    const eventContext = buildPlaybookEventContext(event);
     const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
       const isTypeCompatible = AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType);
-      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
 
       if (isTypeCompatible && isFilteredElement && isElementInScope) {

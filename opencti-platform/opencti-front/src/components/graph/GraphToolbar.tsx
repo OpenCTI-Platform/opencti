@@ -56,9 +56,10 @@ const GraphToolbar = ({
         style: {
           zIndex: 1,
           paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+          right: 'var(--chatbot-sidebar-width, 0px)',
+          transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease',
           height: showTimeRange ? 134 : 54,
           overflow: 'hidden',
-          transition: 'height 0.2s ease',
           marginBottom: bannerHeightNumber,
           bottom: posBottom,
         },

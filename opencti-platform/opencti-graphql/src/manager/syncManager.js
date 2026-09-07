@@ -1,6 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
-import conf, { booleanConf, isFeatureEnabled, logApp, SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -63,7 +63,31 @@ const extractStorageRelativePath = (candidateUri) => {
   return normalizedUri.substring(pathIndex).replace(/^\/+/, '');
 };
 
-const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
+// Percent-encode each segment of a relative storage path so that reserved characters
+// present in filenames (e.g. '#', '?', ...) are not interpreted as URL fragment/query
+// delimiters by the HTTP client. Idempotent: already-encoded segments are not double-encoded.
+export const encodeStorageRelativePath = (relativePath) => {
+  return relativePath
+    .split('/')
+    .map((segment) => {
+      if (segment === '') {
+        return segment;
+      }
+      // Decode first so that already-encoded input is not double-encoded,
+      // then re-encode reserved characters consistently.
+      let decodedSegment;
+      try {
+        decodedSegment = decodeURIComponent(segment);
+      } catch {
+        // Malformed percent-sequence (e.g. a literal '%'): keep the raw segment as-is.
+        decodedSegment = segment;
+      }
+      return encodeURIComponent(decodedSegment);
+    })
+    .join('/');
+};
+
+export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   if (typeof storageUri !== 'string') {
     return null;
   }
@@ -80,7 +104,7 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
       const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
       if (normalizedPath.startsWith('embedded/')) {
         const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-        return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+        return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
       }
       return null;
     } catch {
@@ -90,13 +114,13 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
 
   const extractedPath = extractStorageRelativePath(trimmedStorageUri);
   if (extractedPath) {
-    return `${httpBase(syncUri)}${extractedPath}`;
+    return `${httpBase(syncUri)}${encodeStorageRelativePath(extractedPath)}`;
   }
 
   const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
   if (normalizedPath.startsWith('embedded/')) {
     const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-    return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+    return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
   }
 
   return null;
@@ -116,7 +140,7 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
   const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
   if (remoteWorkflowId) {
     const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
-    const syncWorkflowStatusByName = isFeatureEnabled(SYNC_WORKFLOW_STATUS_BY_NAME_FEATURE_FLAG) && (entitySetting?.sync_workflow_status_by_name ?? false);
+    const syncWorkflowStatusByName = entitySetting?.sync_workflow_status_by_name ?? false;
     // Not opted in: keep the raw remote workflow_id untouched, same as pre-existing behavior.
     if (syncWorkflowStatusByName) {
       const localWorkflowId = await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName);

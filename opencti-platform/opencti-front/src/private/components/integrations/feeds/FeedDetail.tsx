@@ -14,6 +14,7 @@ import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPo
 import FormView from '@components/data/forms/view/FormView';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import IngestionTaxiiLogsTab from '@components/data/ingestionTaxii/IngestionTaxiiLogsTab';
+import IngestionCsvLogsTab from '@components/data/ingestionCsv/IngestionCsvLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -284,8 +285,9 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
-  // Only TAXII feeds get the Overview / Works / Logs tabs, mirroring the
-  // connector detail page. Other feed kinds keep the single-page layout.
+  // Only TAXII and CSV feeds get the Overview / Works / Logs tabs, mirroring
+  // the connector detail page. Other feed kinds keep the single-page layout.
+  const hasTabs = kind === 'taxii' || kind === 'csv';
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -410,7 +412,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         </Stack>
       </Stack>
 
-      {kind === 'taxii' && (
+      {hasTabs && (
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label={t_i18n('Overview')} />
@@ -420,7 +422,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         </Box>
       )}
 
-      {(kind !== 'taxii' || tabValue === 0) && (
+      {(!hasTabs || tabValue === 0) && (
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 7 }}>
             <Card title={t_i18n('Configuration')}>
@@ -559,15 +561,19 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
 
       {/* Works of the feed's technical queue connector (in progress and
           completed), exactly like the connector detail pages. Synchronizers
-          consume streams directly and never register works. For TAXII feeds
-          this now lives in its own "Works" tab instead of the single page. */}
-      {isConnectorReader && kind !== 'sync' && (kind !== 'taxii' || tabValue === 1) && (
+          consume streams directly and never register works. For TAXII and
+          CSV feeds this now lives in its own "Works" tab instead of the
+          single page. */}
+      {isConnectorReader && kind !== 'sync' && (!hasTabs || tabValue === 1) && (
         <ConnectorWorksSection connectorId={connectorIdFromIngestId(node.id)} />
       )}
 
-      {/* "Logs" tab content, TAXII feeds only. */}
-      {isIngestionFeedLogsEnabled && kind === 'taxii' && tabValue === 2 && (
-        <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />
+      {/* "Logs" tab content, TAXII and CSV feeds only. */}
+      {isIngestionFeedLogsEnabled && hasTabs && tabValue === 2 && (
+        <>
+          {kind === 'taxii' && <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />}
+          {kind === 'csv' && <IngestionCsvLogsTab feedId={node.id} feedName={node.name} />}
+        </>
       )}
     </PageContainer>
   );

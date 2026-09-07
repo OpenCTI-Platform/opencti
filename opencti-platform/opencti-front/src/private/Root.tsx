@@ -51,8 +51,6 @@ const rootSettingsFragment = graphql`
       }
     }
     platform_language
-    platform_map_tile_server_dark
-    platform_map_tile_server_light
     platform_openaev_url
     platform_opengrc_url
     platform_xtmhub_url

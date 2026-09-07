@@ -70,7 +70,6 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
@@ -446,76 +445,11 @@ const convertToolToStix = (instance: StoreEntity, type: string): SDO.StixTool =>
     tool_version: instance.tool_version,
   };
 };
-const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.StixVulnerability => {
-  assertType(ENTITY_TYPE_VULNERABILITY, type);
-  const vulnerability = buildStixDomain(instance);
-  return {
-    ...vulnerability,
-    name: instance.name,
-    description: instance.description,
-    extensions: {
-      [STIX_EXT_OCTI]: cleanObject({
-        ...vulnerability.extensions[STIX_EXT_OCTI],
-        // CVSS3
-        cvss_vector: instance.x_opencti_cvss_vector_string,
-        cvss_base_score: instance.x_opencti_cvss_base_score,
-        cvss_base_severity: instance.x_opencti_cvss_base_severity,
-        cvss_attack_vector: instance.x_opencti_cvss_attack_vector,
-        cvss_attack_complexity: instance.x_opencti_cvss_attack_complexity,
-        cvss_privileges_required: instance.x_opencti_cvss_privileges_required,
-        cvss_user_interaction: instance.x_opencti_cvss_user_interaction,
-        cvss_scope: instance.x_opencti_cvss_scope,
-        cvss_confidentiality_impact: instance.x_opencti_cvss_confidentiality_impact,
-        cvss_integrity_impact: instance.x_opencti_cvss_integrity_impact,
-        cvss_availability_impact: instance.x_opencti_cvss_availability_impact,
-        cvss_exploit_code_maturity: instance.x_opencti_cvss_exploit_code_maturity,
-        cvss_remediation_level: instance.x_opencti_cvss_remediation_level,
-        cvss_report_confidence: instance.x_opencti_cvss_report_confidence,
-        cvss_temporal_score: instance.x_opencti_cvss_temporal_score,
-        // CVSS2
-        cvss_v2_vector: instance.x_opencti_cvss_v2_vector_string,
-        cvss_v2_base_score: instance.x_opencti_cvss_v2_base_score,
-        cvss_v2_access_vector: instance.x_opencti_cvss_v2_access_vector,
-        cvss_v2_access_complexity: instance.x_opencti_cvss_v2_access_complexity,
-        cvss_v2_authentication: instance.x_opencti_cvss_v2_authentication,
-        cvss_v2_confidentiality_impact: instance.x_opencti_cvss_v2_confidentiality_impact,
-        cvss_v2_integrity_impact: instance.x_opencti_cvss_v2_integrity_impact,
-        cvss_v2_availability_impact: instance.x_opencti_cvss_v2_availability_impact,
-        cvss_v2_exploitability: instance.x_opencti_cvss_v2_exploitability,
-        cvss_v2_remediation_level: instance.x_opencti_cvss_v2_remediation_level,
-        cvss_v2_report_confidence: instance.x_opencti_cvss_v2_report_confidence,
-        cvss_v2_temporal_score: instance.x_opencti_cvss_v2_temporal_score,
-        // CVSS4
-        cvss_v4_vector: instance.x_opencti_cvss_v4_vector_string,
-        cvss_v4_base_score: instance.x_opencti_cvss_v4_base_score,
-        cvss_v4_base_severity: instance.x_opencti_cvss_v4_base_severity,
-        cvss_v4_attack_vector: instance.x_opencti_cvss_v4_attack_vector,
-        cvss_v4_attack_complexity: instance.x_opencti_cvss_v4_attack_complexity,
-        cvss_v4_attack_requirements: instance.x_opencti_cvss_v4_attack_requirements,
-        cvss_v4_privileges_required: instance.x_opencti_cvss_v4_privileges_required,
-        cvss_v4_user_interaction: instance.x_opencti_cvss_v4_user_interaction,
-        cvss_v4_confidentiality_impact_v: instance.x_opencti_cvss_v4_confidentiality_impact_v,
-        cvss_v4_confidentiality_impact_s: instance.x_opencti_cvss_v4_confidentiality_impact_s,
-        cvss_v4_integrity_impact_v: instance.x_opencti_cvss_v4_integrity_impact_v,
-        cvss_v4_integrity_impact_s: instance.x_opencti_cvss_v4_integrity_impact_s,
-        cvss_v4_availability_impact_v: instance.x_opencti_cvss_v4_availability_impact_v,
-        cvss_v4_availability_impact_s: instance.x_opencti_cvss_v4_availability_impact_s,
-        cvss_v4_exploit_maturity: instance.x_opencti_cvss_v4_exploit_maturity,
-        // Others
-        cwe: instance.x_opencti_cwe,
-        cisa_kev: instance.x_opencti_cisa_kev,
-        epss_score: instance.x_opencti_epss_score,
-        epss_percentile: instance.x_opencti_epss_percentile,
-        score: instance.x_opencti_score,
-        first_seen_active: instance.x_opencti_first_seen_active,
-      }),
-    },
-  };
-};
 const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActor => {
   assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, type);
+  const threatActorGroup = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...threatActorGroup,
     name: instance.name,
     description: instance.description,
     threat_actor_types: instance.threat_actor_types,
@@ -529,6 +463,12 @@ const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO
     primary_motivation: instance.primary_motivation,
     secondary_motivations: instance.secondary_motivations,
     personal_motivations: instance.personal_motivations,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...threatActorGroup.extensions[STIX_EXT_OCTI],
+        score: instance.x_opencti_score,
+      }),
+    },
   };
 };
 const convertInfrastructureToStix = (instance: StoreEntity, type: string): SDO.StixInfrastructure => {
@@ -546,8 +486,9 @@ const convertInfrastructureToStix = (instance: StoreEntity, type: string): SDO.S
 };
 const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.StixIntrusionSet => {
   assertType(ENTITY_TYPE_INTRUSION_SET, type);
+  const intrusionSet = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...intrusionSet,
     name: instance.name,
     description: instance.description,
     aliases: instance.aliases,
@@ -557,6 +498,12 @@ const convertIntrusionSetToStix = (instance: StoreEntity, type: string): SDO.Sti
     resource_level: instance.resource_level,
     primary_motivation: instance.primary_motivation,
     secondary_motivations: instance.secondary_motivations,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...intrusionSet.extensions[STIX_EXT_OCTI],
+        score: instance.x_opencti_score,
+      }),
+    },
   };
 };
 
@@ -575,8 +522,9 @@ const convertCourseOfActionToStix = (instance: StoreEntity, type: string): SDO.S
 };
 const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalware => {
   assertType(ENTITY_TYPE_MALWARE, type);
+  const malware = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...malware,
     name: instance.name,
     description: instance.description,
     malware_types: instance.malware_types,
@@ -590,6 +538,12 @@ const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalw
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...malware.extensions[STIX_EXT_OCTI],
+        score: instance.x_opencti_score,
+      }),
+    },
   };
 };
 const convertAttackPatternToStix = (instance: StoreEntity, type: string): SDO.StixAttackPattern => {
@@ -1621,9 +1575,6 @@ const convertToStix_2_1 = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_TYPE_TOOL === type) {
       return convertToolToStix(basic, type);
-    }
-    if (ENTITY_TYPE_VULNERABILITY === type) {
-      return convertVulnerabilityToStix(basic, type);
     }
     // No converter_2_1 found
     throw UnsupportedError(`No entity converter available for ${type}`);

@@ -3,6 +3,7 @@ declare namespace Express {
     session?: {
       nonce?: string;
       referer?: string;
+      user?: { id?: string };
     };
   }
 }

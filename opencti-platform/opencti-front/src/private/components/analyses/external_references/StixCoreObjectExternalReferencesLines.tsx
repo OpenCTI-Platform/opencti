@@ -476,6 +476,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
             aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
             onClick={handleToggleExpand}
             classes={{ root: classes.buttonExpand }}
+            aria-expanded={expanded}
           >
             {expanded ? (
               <ExpandLessOutlined />

@@ -345,15 +345,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       <ItemOperations draftOperation={draftVersion?.draft_operation} />
     ),
   },
-  workflowInstance: {
-    id: 'workflowInstance',
-    label: 'Workflow status',
-    percentWidth: 12,
-    isSortable: false,
-    render: ({ workflowInstance }) => (
-      <ItemStatus status={workflowInstance?.currentStatus ?? null} disabled={!workflowInstance?.currentStatus} />
-    ),
-  },
   draft_status: {
     id: 'draft_status',
     label: 'Processing status',

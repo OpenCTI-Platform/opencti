@@ -534,6 +534,7 @@ const EntityDetailsComponent: FunctionComponent<
           size="small"
           onClick={handleToggleExpand}
           className={classes.buttonExpand}
+          aria-expanded={expanded}
         >
           {expanded ? (
             <ExpandLessOutlined />

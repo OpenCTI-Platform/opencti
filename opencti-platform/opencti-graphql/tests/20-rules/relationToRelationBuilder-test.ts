@@ -88,8 +88,9 @@ describe('relationToRelationBuilder applyUpsert function', () => {
       [existingRelationId, createdRelationId],
       {
         confidence: 40, // mid value between created relationship (30) and existing relationship (50)
+        // The two periods do not overlap, so the inferred relation covers both of them
         start_time: existingRelationStartTime.toISOString(),
-        stop_time: existingRelationStopTime.toISOString(),
+        stop_time: createdRelationStopTime,
         objectMarking: [], // no markings for both the created and the existing relation
       });
     expect(middleware.createInferredRelation).toHaveBeenCalledWith(
@@ -136,8 +137,9 @@ describe('relationToRelationBuilder applyUpsert function', () => {
       [createdRelationId, existingRelationId],
       {
         confidence: 25, // mid value between created relationship (0 by default) and existing relationship (50)
+        // The two periods do not overlap, so the inferred relation covers both of them
         start_time: existingRelationStartTime.toISOString(),
-        stop_time: existingRelationStopTime.toISOString(),
+        stop_time: createdRelationStopTime,
         objectMarking: ['markingA', 'markingB', 'markingC'], // combination of markings from created and existing relations
       });
     expect(middleware.createInferredRelation).toHaveBeenCalledWith(
@@ -191,8 +193,9 @@ describe('relationToRelationBuilder applyUpsert function', () => {
       [createdRelationId, existingRelationId],
       {
         confidence: 0, // mid value between created relationship (0 by default) and existing relationship (0 by default)
+        // The two periods do not overlap, so the inferred relation covers both of them
         start_time: existingRelationStartTime.toISOString(),
-        stop_time: existingRelationStopTime.toISOString(),
+        stop_time: createdRelationStopTime,
         objectMarking: [],
       });
     expect(middleware.createInferredRelation).toHaveBeenCalledWith(
