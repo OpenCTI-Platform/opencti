@@ -7,8 +7,7 @@ import { FilterMode } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { findByType } from '../../../src/domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
-import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { wait } from '../../../src/database/utils';
 
 // Directly query the store for the WorkflowInstance attached to an entity,
 // mirroring the lookup used internally by workflow-domain.ts.
@@ -770,6 +769,15 @@ describe('Workflow Resolver', () => {
           }
         }
       `;
+      const STIX_DOMAIN_OBJECT_STATUS_QUERY = gql`
+        query StixDomainObjectStatus($id: String!) {
+          stixDomainObject(id: $id) {
+            status {
+              id
+            }
+          }
+        }
+      `;
 
       let reportId: string;
       let secondStatusId: string;
@@ -794,11 +802,10 @@ describe('Workflow Resolver', () => {
           variables: { entityType: 'Report' },
         });
 
-        // Publishing just created new legacy Status entities: force the cache to reload so that
-        // the fieldPatch below (validated against the cached Status list) doesn't race with the
-        // asynchronous pub/sub cache invalidation and silently drop the update.
-        resetCacheForEntity(ENTITY_TYPE_STATUS);
-
+        // Note: `findByType` below runs in-process in the test runner, not against the API
+        // server (mutations above went over HTTP to a separate server process/container in CI).
+        // It reads Status entities straight from Elasticsearch (refresh: true on every write),
+        // so it's always fresh regardless of any in-memory cache state.
         const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
         secondStatusId = statuses[1].id;
       });
@@ -819,12 +826,22 @@ describe('Workflow Resolver', () => {
         const beforePatch = await findWorkflowInstance(reportId);
         expect(beforePatch).toBeUndefined();
 
-        resetCacheForEntity(ENTITY_TYPE_STATUS);
-
-        await queryAsAdmin({
-          query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
-          variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
-        });
+        let statusAfterPatch: string | undefined;
+        for (let attempt = 0; attempt < 20 && statusAfterPatch !== secondStatusId; attempt += 1) {
+          if (attempt > 0) {
+            await wait(500);
+          }
+          await queryAsAdmin({
+            query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
+            variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
+          });
+          const statusResult = await queryAsAdmin({
+            query: STIX_DOMAIN_OBJECT_STATUS_QUERY,
+            variables: { id: reportId },
+          });
+          statusAfterPatch = statusResult.data?.stixDomainObject?.status?.id;
+        }
+        expect(statusAfterPatch).toBe(secondStatusId);
 
         // Patching the legacy status field should have lazily triggered initializeEntityWorkflow,
         // which in turn calls ensureWorkflowInstance since no instance existed for this entity yet.
