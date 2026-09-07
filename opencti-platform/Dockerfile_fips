@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.26
-FROM filigran/python-nodejs-fips:latest AS base
+FROM filigran/alpine-python-nodejs-fips:python3.12-nodejs24 AS base
 FROM node:22-alpine3.23 AS base-nonfips
 
 
@@ -12,7 +12,7 @@ FROM base AS builder
 RUN <<EOT
   set -euxo pipefail
 
-  apk --no-cache add make g++ gettext-dev
+  apk --no-cache add make g++ npm python3-dev
   npm install -g corepack
 EOT
 
@@ -87,7 +87,7 @@ FROM base AS app
 RUN <<EOT
   set -euxo pipefail
 
-  apk --no-cache add tini
+  apk --no-cache add tini python3-dev
   rm /var/log/apk.log
 EOT
 
