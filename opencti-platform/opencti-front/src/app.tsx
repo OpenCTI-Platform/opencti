@@ -12,7 +12,9 @@ const RedirectByPath = lazy(() => import('./private/components/RedirectByPath'))
 
 const App = () => (
   <CookiesProvider>
-    <BrowserRouter basename={APP_BASE_PATH}>
+    {/* v7 wraps navigation in React.startTransition, which hides the suspense
+        fallback until the destination is ready; keep the v6 behaviour. */}
+    <BrowserRouter basename={APP_BASE_PATH} useTransitions={false}>
       <AuthBoundaryComponent>
         <RedirectManager>
           <Suspense fallback={<Loader />}>

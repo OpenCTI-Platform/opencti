@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
+import useSplatLessBasePath from '../utils/hooks/useSplatLessBasePath';
 
 const EXTRACT_UUID_FROM_SEGMENT = (segment: string) => {
   const results = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.exec(segment);
@@ -70,6 +71,7 @@ const SlugRedirectHandler = ({
   extractPageIdFromSegment = EXTRACT_UUID_FROM_SEGMENT,
 }: SlugRedirectHandlerProps) => {
   const { '*': splat } = useParams();
+  const basePath = useSplatLessBasePath();
   if (!splat) {
     return NoMatch;
   }
@@ -85,7 +87,7 @@ const SlugRedirectHandler = ({
     return NoMatch;
   }
   if (pageInfo.path !== segment) {
-    return <Navigate to={pageInfo.path} />;
+    return <Navigate to={`${basePath}/${pageInfo.path}`} />;
   }
   return renderMatch(pageInfo);
 };

@@ -6,20 +6,21 @@ import { TabWithDropDownMenu, useDropDownMenuState } from '../../../components/T
 import { useFormatter } from '../../../components/i18n';
 
 type OtherCustomViewsTabProps = {
+  basePath: string;
   displayMode: CustomViewDisplayMode;
   otherCustomViews: ReturnType<typeof useCustomViews>['customViews'];
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   value: string;
 } & TabProps<'a'> & TabProps<'div'>;
 
-export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode, dropDownMenuState, value, ...tabProps }: OtherCustomViewsTabProps) => {
+export const OtherCustomViewsTab = ({ basePath, otherCustomViews: customViews, displayMode, dropDownMenuState, value, ...tabProps }: OtherCustomViewsTabProps) => {
   const { t_i18n } = useFormatter();
   if (displayMode.others === 'single') {
     return (
       <Tab
         {...tabProps}
         component={Link}
-        to={customViews[0].path}
+        to={`${basePath}/${customViews[0].path}`}
         value={value}
         label={customViews[0].name}
         sx={{
@@ -51,12 +52,13 @@ export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode
 };
 
 type DefaultCustomViewTabProps = {
+  basePath: string;
   value: string;
   displayMode: CustomViewDisplayMode;
   defaultCustomView: ReturnType<typeof useCustomViews>['customViews'][number] | undefined;
 } & TabProps<'a'> & TabProps<'div'>;
 
-export const DefaultCustomViewTab = ({ value, displayMode, defaultCustomView, ...tabProps }: DefaultCustomViewTabProps) => {
+export const DefaultCustomViewTab = ({ basePath, value, displayMode, defaultCustomView, ...tabProps }: DefaultCustomViewTabProps) => {
   if (!displayMode.default) {
     return null;
   }
@@ -68,7 +70,7 @@ export const DefaultCustomViewTab = ({ value, displayMode, defaultCustomView, ..
       {...tabProps}
       key="default-custom-view"
       component={Link}
-      to={defaultCustomView.path}
+      to={`${basePath}/${defaultCustomView.path}`}
       value={value}
       label={defaultCustomView.name}
       sx={{
