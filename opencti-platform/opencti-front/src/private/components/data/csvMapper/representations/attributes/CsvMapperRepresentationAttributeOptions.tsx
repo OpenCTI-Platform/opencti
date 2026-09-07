@@ -27,14 +27,16 @@ const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepres
   return (
     <>
       {schemaAttribute.type === 'date' && (
-        <Field
-          component={CsvMapperRepresentationAttributeOption}
-          name={`${attributeName}.pattern_date`}
-          placeholder={t_i18n('Date pattern')}
-          tooltip={t_i18n(
-            'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)',
-          )}
-        />
+        <div style={{ marginBottom: '10px' }}>
+          <Field
+            component={CsvMapperRepresentationAttributeOption}
+            name={`${attributeName}.pattern_date`}
+            placeholder={t_i18n('Date pattern')}
+            tooltip={t_i18n(
+              'By default we accept iso date (YYYY-MM-DD), but you can specify your own date format in ISO notation (for instance DD.MM.YYYY)',
+            )}
+          />
+        </div>
       )}
       {schemaAttribute.multiple && (
         <Field
