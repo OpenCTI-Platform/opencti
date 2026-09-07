@@ -107,6 +107,12 @@ class IngestPool:
         self._inflight = 0
         self._pending: List[Tuple[ChunkEntry, _ChunkState]] = []
         self._cond = threading.Condition()
+        # Bundle-contiguous posting (user design 2026-09-07): a poster holds this
+        # lock while pushing ALL of a bundle's chunks, so two handlers picking the
+        # same pool can no longer interleave their bundles in the FIFO; the lock
+        # also lets the poster re-check the depth AFTER winning the pick (the
+        # least_full read is otherwise a TOCTOU race).
+        self.submit_lock = threading.Lock()
         self.coordinator = threading.Thread(
             target=self._run, name=f"ingest-imqt-{index}", daemon=True
         )
@@ -275,3 +281,32 @@ def pick_pool(pools: List[IngestPool], mode: str) -> IngestPool:
             _round_robin += 1
         return picked
     return min(pools, key=lambda pool: (pool.depth(), pool.index))
+
+
+def submit_bundle_atomic(
+    pools: List[IngestPool], mode: str, jobs: List[ChunkJob]
+) -> IngestPool:
+    """Post ALL of a bundle's chunk jobs contiguously into one pool.
+
+    least_full: the depth is re-checked under the winner's submit lock (second
+    check of the user design); if another pool got strictly emptier between the
+    pick and the lock, retry once with it. Contiguity is guaranteed by holding
+    the pool's submit lock for the whole post; per-bundle chunk ORDER was already
+    guaranteed (single poster per bundle).
+    """
+    pool = pick_pool(pools, mode)
+    for _ in range(2):
+        with pool.submit_lock:
+            if mode == "least_full":
+                emptier = min(pools, key=lambda p: (p.depth(), p.index))
+                if emptier is not pool and emptier.depth() < pool.depth():
+                    pool = emptier
+                    continue  # retry once against the emptier pool
+            for job in jobs:
+                pool.jobs.put(job)
+            return pool
+    # second attempt lost the race again: post anyway under the lock (bounded retry)
+    with pool.submit_lock:
+        for job in jobs:
+            pool.jobs.put(job)
+    return pool

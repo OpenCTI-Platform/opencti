@@ -9,11 +9,33 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Literal, Optional, Union
 
 import pika
+from opentelemetry import metrics as otel_metrics
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
-from ingest_pools import ChunkEntry, ChunkJob, get_ingest_pools, pick_pool
+from ingest_pools import ChunkEntry, ChunkJob, get_ingest_pools, submit_bundle_atomic
+
+# Chunked-path timing telemetry (user ask 2026-09-07): where a bundle's wall time
+# goes worker-side, to correlate with the platform series (burst/famine reading).
+# Instruments created at import time bind late to the provider set in worker.py
+# (OTel proxy meter), same pattern as worker.py's own module-level instruments.
+chunked_meter = otel_metrics.get_meter(__name__)
+chunked_split_seconds = chunked_meter.create_histogram(
+    name="opencti_worker_chunked_split_seconds",
+    unit="s",
+    description="Split + dependency collection + chunk building time per bundle (queue_thread work)",
+)
+chunked_post_seconds = chunked_meter.create_histogram(
+    name="opencti_worker_chunked_post_seconds",
+    unit="s",
+    description="Pool pick + submit-lock wait + chunk posting time per bundle (backpressure included)",
+)
+chunked_bundle_seconds = chunked_meter.create_histogram(
+    name="opencti_worker_chunked_bundle_seconds",
+    unit="s",
+    description="Full bundle wall time from split start to bundle-terminal (closed-loop round trip)",
+)
 
 # POC (plan 0009 s9.11): ONE request-thread pool per worker process, shared by every
 # queue handler. The wave of any in-flight bundle draws its threads from this common
@@ -404,6 +426,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         # chunks strictly ahead of dependent chunks. This handler thread then blocks until
         # every chunk reported terminal, so the caller's "ack" stays bundle-terminal
         # (decision Q1-B: at-least-once preserved, crash = RabbitMQ redelivery).
+        t_start = time.monotonic()
         update = data.get("update", False)
         event_version = content.get("x_opencti_event_version")
         stix2_splitter = OpenCTIStix2Splitter()
@@ -453,20 +476,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 ChunkEntry(mini_bundle=mini_bundle, object_id=object_id, blocking_deps=blocking)
             )
         bundle_terminal: set = set()
-        pool = pick_pool(self.pools, self.ingest_pick)
-        self.logger.info(
-            "Chunked bundle import",
-            {
-                "objects": expectations,
-                "chunks": len(chunks),
-                "chunk_size": size,
-                "pool": pool.index,
-                "pool_depth": pool.depth(),
-                "pick": self.ingest_pick,
-                "pipelined": self.ingest_pipelined,
-                "dep_admission": self.ingest_dep_admission,
-            },
-        )
+        t_split_done = time.monotonic()
         tracker_lock = threading.Lock()
         bundle_done = threading.Event()
         remaining = len(chunks)
@@ -504,17 +514,39 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             if is_last:
                 bundle_done.set()
 
-        for chunk_entries in chunks:
-            pool.submit(
-                ChunkJob(
-                    entries=chunk_entries,
-                    bundle_terminal=bundle_terminal,
-                    import_one=import_one,
-                    on_object_error=on_object_error,
-                    on_chunk_done=on_chunk_done,
-                )
+        jobs = [
+            ChunkJob(
+                entries=chunk_entries,
+                bundle_terminal=bundle_terminal,
+                import_one=import_one,
+                on_object_error=on_object_error,
+                on_chunk_done=on_chunk_done,
             )
+            for chunk_entries in chunks
+        ]
+        # bundle-contiguous post under the pool's submit lock (depth re-checked
+        # under lock for least_full: see submit_bundle_atomic)
+        pool = submit_bundle_atomic(self.pools, self.ingest_pick, jobs)
+        t_posted = time.monotonic()
+        self.logger.info(
+            "Chunked bundle import",
+            {
+                "objects": expectations,
+                "chunks": len(chunks),
+                "chunk_size": size,
+                "pool": pool.index,
+                "pool_depth": pool.depth(),
+                "pick": self.ingest_pick,
+                "pipelined": self.ingest_pipelined,
+                "dep_admission": self.ingest_dep_admission,
+                "split_ms": round((t_split_done - t_start) * 1000, 1),
+                "post_ms": round((t_posted - t_split_done) * 1000, 1),
+            },
+        )
         bundle_done.wait()
+        chunked_split_seconds.record(t_split_done - t_start)
+        chunked_post_seconds.record(t_posted - t_split_done)
+        chunked_bundle_seconds.record(time.monotonic() - t_start)
         # dead-letter forwarding after completion, from the handler thread (one connection)
         self.send_too_large_to_dead_letter(data, too_large_items_bundles)
         return imported_items
