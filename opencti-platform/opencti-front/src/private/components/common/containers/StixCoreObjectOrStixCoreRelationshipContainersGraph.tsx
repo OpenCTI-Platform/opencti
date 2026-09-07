@@ -325,8 +325,8 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = ({
       <Alert
         severity="warning"
         sx={{
-          paddingY: 0.5,
-          paddingX: 1.5,
+          paddingY: 1,
+          paddingX: 2,
           fontSize: 12,
           alignItems: 'center',
           '& .MuiAlert-message': {
