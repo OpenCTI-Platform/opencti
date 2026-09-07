@@ -55,8 +55,10 @@ const RichTextField = ({
     <Box
       sx={{
         '& .tiptap-editor-content': {
-          backgroundColor: theme.palette.background.secondary,
-          borderRadius: '4px',
+          // Same surface as the markdown textarea, read from the token so it
+          // follows the layer the field is dropped on.
+          backgroundColor: 'var(--bg-input-default)',
+          borderRadius: 'var(--radius-sm)',
         },
       }}
     >

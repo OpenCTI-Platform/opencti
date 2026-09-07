@@ -36,12 +36,16 @@ import {
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
+  IconButton as FdsIconButton,
   Select,
   SelectContent,
   SelectItem,
   SelectLabel,
   SelectTrigger,
   SelectValue,
+  Tooltip as FdsTooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@filigran/design-system';
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
@@ -149,7 +153,7 @@ const styles = (theme) => ({
   },
   buttonAdd: {
     width: '100%',
-    height: 20,
+    height: 36,
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -165,6 +169,7 @@ const styles = (theme) => ({
   editButtons: {
     display: 'flex',
     alignItems: 'center',
+    gap: 4,
     '& > span': {
       display: 'inline-flex',
       alignItems: 'center',
@@ -210,8 +215,8 @@ const styles = (theme) => ({
   },
   stepCloseButton: {
     position: 'absolute',
-    top: -20,
-    right: -20,
+    top: 4,
+    right: 4,
   },
   icon: {
     paddingTop: 4,
@@ -1601,7 +1606,22 @@ class DataTableToolBar extends Component {
               )}
             >
               <ComboboxLabel>{t('Values')}</ComboboxLabel>
-              <ComboboxField>
+              {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
+              <ComboboxField adornment={(
+                <FdsTooltip>
+                  <TooltipTrigger asChild>
+                    <FdsIconButton
+                      size="sm"
+                      priority="tertiary"
+                      aria-label={t('Create')}
+                      onClick={() => this.setState({ containerCreation: true })}
+                      icon={<AddOutlined fontSize="small" />}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{t('Create')}</TooltipContent>
+                </FdsTooltip>
+              )}
+              >
                 <ComboboxChips aria-label={t('Values')} />
                 <ComboboxInput onFocus={() => (this.searchContainers.bind(this, i))('')} />
                 <ComboboxControls>
@@ -1614,14 +1634,6 @@ class DataTableToolBar extends Component {
                 listAriaLabel={t('Values')}
               />
             </Combobox>
-            <IconButton
-              aria-label={t('Create')}
-              onClick={() => this.setState({ containerCreation: true })}
-              edge="end"
-              style={{ position: 'absolute', top: 80, right: 50 }}
-            >
-              <AddOutlined />
-            </IconButton>
           </>
         );
       case 'object-marking':
@@ -3293,7 +3305,22 @@ class DataTableToolBar extends Component {
                   disableClearable
                 >
                   <ComboboxLabel>{t('Values')}</ComboboxLabel>
-                  <ComboboxField>
+                  {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
+                  <ComboboxField adornment={(
+                    <FdsTooltip>
+                      <TooltipTrigger asChild>
+                        <FdsIconButton
+                          size="sm"
+                          priority="tertiary"
+                          aria-label={t('Create container')}
+                          onClick={() => this.setState({ containerCreation: true })}
+                          icon={<AddOutlined fontSize="small" />}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{t('Create container')}</TooltipContent>
+                    </FdsTooltip>
+                  )}
+                  >
                     <ComboboxChips aria-label={t('Values')} />
                     <ComboboxInput onFocus={() => (this.searchContainers.bind(this, 0))('')} />
                     <ComboboxControls>
@@ -3319,15 +3346,6 @@ class DataTableToolBar extends Component {
                     label={t('Also include first neighbours')}
                   />
                 </div>
-                <IconButton
-                  aria-label={t('Create container')}
-                  onClick={() => this.setState({ containerCreation: true })}
-                  edge="end"
-                  style={{ position: 'absolute', top: 80, right: 50 }}
-                >
-                  <AddOutlined />
-                </IconButton>
-
                 <DialogActions>
                   <Button
                     variant="secondary"
@@ -3393,7 +3411,7 @@ class DataTableToolBar extends Component {
                   onInputChange={(newValue, meta) => {
                     if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
                   }}
-                  onValueChange={(next, meta) => ((_, value) => this.setState({ shareOrganizations: value }))(next, meta.event)}
+                  onValueChange={(next) => this.setState({ shareOrganizations: next })}
                   renderOption={(option) => (
                     <>
                       <div className={classes.icon}>
@@ -3405,7 +3423,22 @@ class DataTableToolBar extends Component {
                   disableClearable
                 >
                   <ComboboxLabel>{t('Values')}</ComboboxLabel>
-                  <ComboboxField>
+                  {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
+                  <ComboboxField adornment={(
+                    <FdsTooltip>
+                      <TooltipTrigger asChild>
+                        <FdsIconButton
+                          size="sm"
+                          priority="tertiary"
+                          aria-label={t('Create organization')}
+                          onClick={() => this.setState({ organizationCreation: true })}
+                          icon={<AddOutlined fontSize="small" />}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{t('Create organization')}</TooltipContent>
+                    </FdsTooltip>
+                  )}
+                  >
                     <ComboboxChips aria-label={t('Values')} />
                     <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
                     <ComboboxControls>
@@ -3418,14 +3451,6 @@ class DataTableToolBar extends Component {
                     listAriaLabel={t('Values')}
                   />
                 </Combobox>
-                <IconButton
-                  aria-label={t('Create organization')}
-                  onClick={() => this.setState({ organizationCreation: true })}
-                  edge="end"
-                  style={{ position: 'absolute', top: 80, right: 50 }}
-                >
-                  <AddOutlined />
-                </IconButton>
                 <DialogActions>
                   <Button
                     variant="secondary"
@@ -3466,7 +3491,7 @@ class DataTableToolBar extends Component {
                   onInputChange={(newValue, meta) => {
                     if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
                   }}
-                  onValueChange={(next, meta) => ((_, value) => this.setState({ shareOrganizations: value }))(next, meta.event)}
+                  onValueChange={(next) => this.setState({ shareOrganizations: next })}
                   renderOption={(option) => (
                     <>
                       <div className={classes.icon}>

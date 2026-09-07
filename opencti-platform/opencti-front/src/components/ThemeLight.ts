@@ -631,6 +631,14 @@ const ThemeLight = (
               border: '1px solid var(--border-input-error) !important',
             },
           },
+          // Paragraph spacing belongs between blocks, not against the edges of
+          // the field, where it reads as a stray gap now that the editor is painted.
+          '.rich-text-editor-wrapper .ProseMirror > :first-child': {
+            marginTop: 0,
+          },
+          '.rich-text-editor-wrapper .ProseMirror > :last-child': {
+            marginBottom: 0,
+          },
           '.mde-header': {
             border: '0 !important',
             backgroundColor: 'transparent !important',
