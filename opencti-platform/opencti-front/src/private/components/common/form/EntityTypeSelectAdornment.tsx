@@ -1,4 +1,3 @@
-import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@common/button/IconButton';
 import { PaletteOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
@@ -41,14 +40,13 @@ const EntityTypeSelectAdornment = ({
   };
 
   return (
-    <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
+    <>
       <IconButton
         aria-label={t_i18n('Open menu')}
         aria-haspopup={disabled ? undefined : true}
         disabled={disabled}
         onClick={(e) => setAnchorButton(e.currentTarget)}
         size="small"
-      // edge="end"
       >
         <PaletteOutlined
           fontSize="small"
@@ -85,7 +83,7 @@ const EntityTypeSelectAdornment = ({
           ))}
         </MenuList>
       </Popover>
-    </InputAdornment>
+    </>
   );
 };
 

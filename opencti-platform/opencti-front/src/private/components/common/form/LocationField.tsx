@@ -1,14 +1,13 @@
 import { graphql } from 'react-relay';
-import React, { ChangeEvent, HTMLAttributes, useState } from 'react';
+import React, { useState } from 'react';
 import { Field } from 'formik';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
+import { ComboboxChangeMeta } from '@filigran/design-system';
 import EntityTypeSelectAdornment from '@components/common/form/EntityTypeSelectAdornment';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
 import { fetchQuery } from '../../../../relay/environment';
 import { LocationFieldSearchQuery$data } from './__generated__/LocationFieldSearchQuery.graphql';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const locationFieldSearchQuery = graphql`
@@ -44,8 +43,7 @@ const LocationField = ({
   const [options, setOptions] = useState<FieldOption[]>([]);
   const [types, setTypes] = useState<string[]>([]);
 
-  const searchLocations = async (e: ChangeEvent<HTMLInputElement>) => {
-    const search = e && e.target.value ? e.target.value : '';
+  const searchLocations = async (search: string) => {
     const { locations } = (await fetchQuery(
       locationFieldSearchQuery,
       { search, types },
@@ -62,37 +60,32 @@ const LocationField = ({
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       groupBy={(option: FieldOption) => option.type}
       multiple
       name={name}
       required={required}
-      textfieldprops={{
-        variant: 'outlined',
-        label,
-        helperText,
-        onFocus: searchLocations,
-        required,
-      }}
+      label={label}
+      helperText={helperText}
       style={containerStyle}
       noOptionsText={t_i18n('No available options')}
       options={options}
-      onInputChange={searchLocations}
-      endAdornment={(
+      onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') searchLocations(search);
+      }}
+      onFocusInput={() => searchLocations('')}
+      adornment={(
         <EntityTypeSelectAdornment
           value={types}
           onChange={setTypes}
           entityTypes={['Region', 'Country', 'Administrative-Area', 'City', 'Position']}
         />
       )}
-      renderOption={(
-        props: HTMLAttributes<HTMLLIElement>,
-        option: FieldOption,
-      ) => (
-        <ListItem {...props}>
+      renderOption={(option: FieldOption) => (
+        <>
           <ItemIcon type={option.type} />
-          <ListItemText primary={option.label} sx={{ marginLeft: 2 }} />
-        </ListItem>
+          <span style={{ marginLeft: 16 }}>{option.label}</span>
+        </>
       )}
     />
   );

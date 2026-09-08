@@ -44,6 +44,8 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
       style?: React.CSSProperties;
       className?: string;
       id?: string;
+      /** Extra input adornment (e.g. an entity-type filter) rendered alongside the create button. */
+      adornment?: ReactNode;
       groupBy?: (option: Value) => string;
       getOptionLabel?: (option: Value) => string;
       /** Argument order is NOT MUI's: the library passes the SELECTED value first. */
@@ -93,6 +95,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   style,
   className,
   id,
+  adornment,
   groupBy,
   getOptionLabel,
   isOptionEqualToValue,
@@ -186,14 +189,19 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
       >
         {label ? <ComboboxLabel>{label}</ComboboxLabel> : null}
         <FdsComboboxField
-          adornment={openCreate ? (
-            <IconButton
-              icon={<Icon name="plus" size={16} />}
-              aria-label={t_i18n('Add')}
-              priority="tertiary"
-              size="sm"
-              onClick={openCreate}
-            />
+          adornment={(openCreate || adornment) ? (
+            <>
+              {openCreate ? (
+                <IconButton
+                  icon={<Icon name="plus" size={16} />}
+                  aria-label={t_i18n('Add')}
+                  priority="tertiary"
+                  size="sm"
+                  onClick={openCreate}
+                />
+              ) : null}
+              {adornment}
+            </>
           ) : undefined}
         >
           {/* Named after the field: ComboboxChips otherwise defaults to one
