@@ -92,8 +92,8 @@ const connectorResolvers = {
     isWorkAlive: (_, { id }, context) => isWorkAlive(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id),
     synchronizerLogs: async (_, { id }, context) => {
-      await findSyncById(context, context.user, id);
-      return findIngestionLogsForFeed(id);
+      const sync = await findSyncById(context, context.user, id);
+      return findIngestionLogsForFeed(sync.internal_id ?? sync.id);
     },
     synchronizerAddInputFromImport: (_, { file }) => syncAddInputFromImport(file),
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),

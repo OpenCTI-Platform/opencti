@@ -109,7 +109,7 @@ describe('Connector resolver - stream logs', () => {
   it('should fail when encountering an unknown log level', async () => {
     await redisDeleteIngestionLogHistory(synchronizerId);
     await getClientBase().lpush(`ingestion-log-${synchronizerId}-history`, JSON.stringify({
-      timestamp: new Date().toISOString(),
+      timestamp: Date.now(),
       level: 'unknown_level',
       type: 'sync',
       identifier: synchronizerName,
