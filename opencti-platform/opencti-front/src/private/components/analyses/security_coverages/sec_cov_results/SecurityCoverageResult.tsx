@@ -1,24 +1,25 @@
 import React, { Suspense, useState } from 'react';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { graphql, useFragment } from 'react-relay';
-import DataTable from '../../../../components/dataGrid/DataTable';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import {
-  SecurityCoverageResultLinesPaginationQuery,
-  SecurityCoverageResultLinesPaginationQuery$variables,
-} from '@components/analyses/security_coverages/__generated__/SecurityCoverageResultLinesPaginationQuery.graphql';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import { SecurityCoverageResultLines_data$data } from '@components/analyses/security_coverages/__generated__/SecurityCoverageResultLines_data.graphql';
-import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import DataTable from '../../../../../components/dataGrid/DataTable';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
+import { UsePreloadedPaginationFragment } from '../../../../../utils/hooks/usePreloadedPaginationFragment';
+import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
+import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import Tooltip from '@mui/material/Tooltip';
-import { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../../components/i18n';
 import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import { useComputeLink } from '../../../../utils/hooks/useAppData';
+import { useComputeLink } from '../../../../../utils/hooks/useAppData';
+import SecurityCoverageResultFormDrawer from './SecurityCoverageResultFormDrawer';
+import {
+  SecurityCoverageResultLinesPaginationQuery,
+  SecurityCoverageResultLinesPaginationQuery$variables,
+} from './__generated__/SecurityCoverageResultLinesPaginationQuery.graphql';
+import { SecurityCoverageResultLines_data$data } from './__generated__/SecurityCoverageResultLines_data.graphql';
 import { SecurityCoverageResultFragment$data, SecurityCoverageResultFragment$key } from './__generated__/SecurityCoverageResultFragment.graphql';
 
 interface SecurityCoverageResultComponentProps {
@@ -366,6 +367,7 @@ const SecurityCoverageResultComponent = ({
           contextFilters={contextFilters}
           rootRef={tableRootRef ?? undefined}
           additionalHeaderButtons={[
+            <SecurityCoverageResultFormDrawer key="scr-form" />,
             <Tooltip
               key="security-coverage-result-global-information-tooltip"
               title={t_i18n('The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions')}
