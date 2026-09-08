@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Tab, { TabProps } from '@mui/material/Tab';
 import type { CustomViewDisplayMode } from './useCustomViewTabs';
 import { useCustomViews } from './useCustomViews';

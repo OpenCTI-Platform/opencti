@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { QueryRenderer } from '../../../../relay/environment';
 import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';

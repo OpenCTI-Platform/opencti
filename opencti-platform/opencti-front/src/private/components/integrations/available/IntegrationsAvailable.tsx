@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import { ViewListOutlined, ViewModuleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';

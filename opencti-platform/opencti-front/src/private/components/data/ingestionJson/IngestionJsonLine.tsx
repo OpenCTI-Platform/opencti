@@ -10,7 +10,7 @@ import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPo
 import TableViewIcon from '@mui/icons-material/TableView';
 import { IngestionJsonLine_node$key } from '@components/data/ingestionJson/__generated__/IngestionJsonLine_node.graphql';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';

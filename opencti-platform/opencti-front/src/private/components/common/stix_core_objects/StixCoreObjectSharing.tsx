@@ -14,7 +14,7 @@ import type { FormikHelpers } from 'formik/dist/types';
 import { BankPlus } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';

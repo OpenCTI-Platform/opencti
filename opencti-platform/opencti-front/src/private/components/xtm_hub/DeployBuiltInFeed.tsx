@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import { BuiltInIntegrationImport, ImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
 import Loader from '../../../components/Loader';
 

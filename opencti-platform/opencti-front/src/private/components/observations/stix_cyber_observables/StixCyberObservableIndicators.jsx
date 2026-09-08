@@ -13,7 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
 import { useRef, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Label from '../../../../components/common/label/Label';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';

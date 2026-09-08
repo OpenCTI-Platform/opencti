@@ -1,7 +1,7 @@
 import React from 'react';
 import { CardActions, Stack, Typography } from '@mui/material';
 import { GroupsOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { alpha, useTheme } from '@mui/material/styles';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';

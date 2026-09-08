@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import React, { lazy, Suspense } from 'react';
 import { CookiesProvider } from 'react-cookie';
 import { APP_BASE_PATH } from './relay/environment';

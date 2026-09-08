@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid2';
