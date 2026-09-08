@@ -147,7 +147,7 @@
     "node-forge": "1.4.0",
     "nodemailer": "9.1.1",
     "openai": "7.10.0",
-    "openid-client": "6.8.7",
+    "openid-client": "6.8.8",
     "openid-clientv5": "npm:openid-client@5.7.1",
     "opentelemetry-node-metrics": "3.0.0",
     "otplib": "13.5.0",
