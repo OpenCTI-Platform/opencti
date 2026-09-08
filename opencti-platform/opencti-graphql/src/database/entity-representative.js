@@ -30,7 +30,18 @@ export const extractRepresentativeDescription = (entityData) => {
 // -- RELATIONSHIP --
 
 const extractRelationshipRepresentativeName = (relationshipData) => {
-  return `${relationshipData.fromName} ➡️ ${relationshipData.toName}`;
+  // Memory-built relation instances (creation results) can lack the loader-synthesized
+  // fromName/toName: fall back on the connections denorm, then on the resolved end, then on
+  // the id, instead of stringifying `undefined` into stored connection names.
+  const type = relationshipData.entity_type;
+  const connections = relationshipData.connections ?? [];
+  const fromName = relationshipData.fromName
+    ?? connections.find((c) => c.role === `${type}_from`)?.name
+    ?? (relationshipData.from ? extractEntityRepresentativeName(relationshipData.from) : relationshipData.fromId);
+  const toName = relationshipData.toName
+    ?? connections.find((c) => c.role === `${type}_to`)?.name
+    ?? (relationshipData.to ? extractEntityRepresentativeName(relationshipData.to) : relationshipData.toId);
+  return `${fromName} ➡️ ${toName}`;
 };
 
 const extractRelationshipRepresentative = (relationshipData) => {

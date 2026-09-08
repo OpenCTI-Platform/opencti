@@ -14,6 +14,8 @@
 // then include the absorbed sources' stix ids, so their keys cascade-evict; remaining source
 // keys age out by TTL until the Stage D merge barrier evicts explicitly), TTL last.
 import { getInstanceIds } from '../../schema/identifier';
+import { BASE_TYPE_RELATION } from '../../schema/general';
+import { extractEntityRepresentativeName } from '../entity-representative';
 import { userFilterStoreElements } from '../../utils/access';
 import { getDraftContext } from '../../utils/draftContext';
 import { TOPIC_PREFIX, logApp } from '../../config/conf';
@@ -94,6 +96,22 @@ export class SequencerIdentityMap {
     // OBJECTS to elFindByIds (found live 2026-09-01, run ch16-d: every co-batched
     // container create rejected DATABASE_ERROR, plan 0009 s9.9.6).
     if (!element._id) element._id = internalId;
+    // Same ES-shaping contract, second gap (CS>=24 grid 2026-09-08): a relation CREATION
+    // result is memory-built (data-builder) and carries the resolved from/to instances but
+    // NOT the loader-synthesized fromName/toName (elBuildRelation reads them off the
+    // indexed connections). A later intent resolving this relation as the TARGET of a
+    // denormalized connection (report object ref co-batched with its relation) then
+    // templates the literal string "undefined ➡️ undefined" into the stored connection
+    // name. Synthesize the loader fields so memory-served relations are indistinguishable
+    // from ES-loaded ones.
+    if (element.base_type === BASE_TYPE_RELATION) {
+      if (element.fromName === undefined && element.from) {
+        element.fromName = extractEntityRepresentativeName(element.from);
+      }
+      if (element.toName === undefined && element.to) {
+        element.toName = extractEntityRepresentativeName(element.to);
+      }
+    }
     const previous = this.byInternalId.get(internalId);
     if (previous) this.removeEntry(internalId);
     const keys = getInstanceIds(element);
