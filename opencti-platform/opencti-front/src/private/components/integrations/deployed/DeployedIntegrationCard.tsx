@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';

@@ -2,7 +2,7 @@ import React, { FunctionComponent, ReactNode, Suspense, useEffect } from 'react'
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Badge from '@mui/material/Badge';

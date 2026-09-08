@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../../../utils/hooks/useAuth';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router';
 import { NoMatch } from '@components/Error';
 
 export const XTM_HUB_AUTO_REGISTER_QUERY_PARAM = 'xtmHubAutoRegister';

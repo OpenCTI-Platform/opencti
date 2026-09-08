@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';

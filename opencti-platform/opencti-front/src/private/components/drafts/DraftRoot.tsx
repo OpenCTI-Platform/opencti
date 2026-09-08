@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';

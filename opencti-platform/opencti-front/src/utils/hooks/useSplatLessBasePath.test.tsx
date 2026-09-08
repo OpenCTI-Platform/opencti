@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Link, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Outlet, Route, Routes } from 'react-router';
 import useSplatLessBasePath from './useSplatLessBasePath';
 
 const Probe = () => {

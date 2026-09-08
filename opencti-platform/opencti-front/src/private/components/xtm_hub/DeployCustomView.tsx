@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { DeployCustomViewImportMutation } from '@components/xtm_hub/__generated__/DeployCustomViewImportMutation.graphql';
 import { MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';

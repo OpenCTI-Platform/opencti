@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router';
 import useSplatLessBasePath from '../utils/hooks/useSplatLessBasePath';
 
 const EXTRACT_UUID_FROM_SEGMENT = (segment: string) => {

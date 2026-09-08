@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Suspense, lazy } from 'react';
 import { act, render, screen } from '@testing-library/react';
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Link, Route, Routes } from 'react-router';
 
 const NeverReady = lazy(() => new Promise<never>(() => {}));
 

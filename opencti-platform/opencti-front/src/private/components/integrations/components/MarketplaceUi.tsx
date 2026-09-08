@@ -3,7 +3,7 @@ import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material
 import { CheckCircleOutlined, ExpandMoreOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import GradientCard from '../../../../components/GradientCard';

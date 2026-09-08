@@ -9,7 +9,7 @@ import { useTheme } from '@mui/styles';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import ExportButtons from '../../../../components/ExportButtons';
 import { useFormatter } from '../../../../components/i18n';
 import PopoverMenu from '../../../../components/PopoverMenu';

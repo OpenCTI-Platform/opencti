@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
