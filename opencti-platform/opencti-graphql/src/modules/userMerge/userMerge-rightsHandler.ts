@@ -24,6 +24,7 @@ import {
   type UserMergeHandlerPlan,
   type UserMergePlannedChange,
   type UserMergeRightsAlert,
+  USER_MERGE_SILENT_WRITE,
   USER_MERGE_TARGET_INDICES,
 } from './userMerge-handler';
 import {
@@ -301,11 +302,11 @@ export const userMergeRightsHandler: UserMergeHandler = {
       const edge = MEMBERSHIP_EDGES[i];
       const edgePlan = await readEdgePlan(context, edge, sourceId, targetId, options.rightsStrategy);
       for (let granted = 0; granted < edgePlan.granted.length; granted += 1) {
-        await createRelation(context, SYSTEM_USER, { fromId: targetId, toId: edgePlan.granted[granted], relationship_type: edge.relationshipType });
+        await createRelation(context, SYSTEM_USER, { fromId: targetId, toId: edgePlan.granted[granted], relationship_type: edge.relationshipType }, USER_MERGE_SILENT_WRITE);
         updated += 1;
       }
       for (let removed = 0; removed < edgePlan.removed.length; removed += 1) {
-        await deleteElementById(context, SYSTEM_USER, edgePlan.removed[removed].id, ABSTRACT_INTERNAL_RELATIONSHIP);
+        await deleteElementById(context, SYSTEM_USER, edgePlan.removed[removed].id, ABSTRACT_INTERNAL_RELATIONSHIP, USER_MERGE_SILENT_WRITE);
         updated += 1;
       }
     }
@@ -313,7 +314,7 @@ export const userMergeRightsHandler: UserMergeHandler = {
       const edge = DERIVED_EDGES[i];
       const relations = await readDerivedEdge(context, edge, sourceId);
       for (let removed = 0; removed < relations.length; removed += 1) {
-        await deleteElementById(context, SYSTEM_USER, relations[removed], ABSTRACT_INTERNAL_RELATIONSHIP);
+        await deleteElementById(context, SYSTEM_USER, relations[removed], ABSTRACT_INTERNAL_RELATIONSHIP, USER_MERGE_SILENT_WRITE);
         updated += 1;
       }
     }

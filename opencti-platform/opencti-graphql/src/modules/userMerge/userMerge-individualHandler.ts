@@ -9,6 +9,7 @@ import { FilterMode } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
+import { USER_MERGE_SILENT_WRITE } from './userMerge-handler';
 import type { UserMergeHandler, UserMergeHandlerContext, UserMergeHandlerPlan, UserMergePlannedChange, UserMergeRightsAlert } from './userMerge-handler';
 
 export const USER_MERGE_INDIVIDUAL_HANDLER = 'user-individual';
@@ -115,7 +116,7 @@ export const userMergeIndividualHandler: UserMergeHandler = {
     }
     let updated = 0;
     if (plan.merged.length > 0) {
-      await mergeEntities(context, SYSTEM_USER, plan.survivor.internal_id, plan.merged.map((individual) => individual.internal_id));
+      await mergeEntities(context, SYSTEM_USER, plan.survivor.internal_id, plan.merged.map((individual) => individual.internal_id), USER_MERGE_SILENT_WRITE);
       updated += plan.merged.length;
     }
     if (plan.repoint) {
@@ -124,7 +125,7 @@ export const userMergeIndividualHandler: UserMergeHandler = {
       // user. This is the synchronized user/individual update the flag exists for.
       await patchAttribute(context, SYSTEM_USER, plan.survivor.internal_id, ENTITY_TYPE_IDENTITY_INDIVIDUAL, {
         [CONTACT_INFORMATION]: targetUser.user_email,
-      }, { bypassIndividualUpdate: true });
+      }, { bypassIndividualUpdate: true, ...USER_MERGE_SILENT_WRITE });
       updated += 1;
     }
     // The individual is denormalized onto the user as `individual_id` at session build, so a

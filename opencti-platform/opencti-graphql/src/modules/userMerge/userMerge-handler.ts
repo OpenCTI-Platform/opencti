@@ -17,6 +17,26 @@ import type { UserMergeProjectedRights, UserMergeRightsLabels } from './userMerg
  */
 export const USER_MERGE_TARGET_INDICES = [...READ_PLATFORM_INDICES, INDEX_DELETED_OBJECTS, READ_INDEX_DRAFT_OBJECTS];
 
+/**
+ * The merge writes nothing to the live stream.
+ *
+ * Most handlers write to Elasticsearch directly and are silent already. The three that go through
+ * the domain layer are not, and what they emit comes back at them: the notification manager turns
+ * a re-pointed assignee into a Notification addressed to the source, which is a reference to the
+ * source created after the merge scanned for them. The deletion gate then refuses, and the operator
+ * has to run the merge a second time for a residue the first run caused.
+ *
+ * Suppressing the events removes the cause instead of chasing the effect. Enumerating the triggers
+ * that could fire is not an option: a live trigger owned by the source matches on anything, and the
+ * transfer that moves it to the target is a raw index write the trigger cache does not see, so the
+ * source still owns it for the whole run.
+ *
+ * The trade this accepts is the individual merge: a stream consumer never learns the two Identity
+ * entities became one. The relations and memberships realign on their own through the entities that
+ * carry them, but that one does not.
+ */
+export const USER_MERGE_SILENT_WRITE = { publishStreamEvent: false };
+
 /** One planned or applied change, as it appears in the report. */
 export interface UserMergePlannedChange {
   /** Register row this change answers for. */
