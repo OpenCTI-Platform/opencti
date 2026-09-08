@@ -241,6 +241,13 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={stixCyberObservable.observable_value}
+                                  // Unbroken values (hashes) overflowed the drawer, spaced ones (AS names) wrapped to three lines.
+                                  slotProps={{
+                                    primary: {
+                                      noWrap: true,
+                                      title: stixCyberObservable.observable_value,
+                                    },
+                                  }}
                                 />
                               </ListItemButton>
                             );
