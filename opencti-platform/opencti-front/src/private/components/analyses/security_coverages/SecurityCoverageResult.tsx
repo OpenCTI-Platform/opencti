@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import {
@@ -19,10 +19,20 @@ import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useComputeLink } from '../../../../utils/hooks/useAppData';
+import { SecurityCoverageResultFragment$data, SecurityCoverageResultFragment$key } from './__generated__/SecurityCoverageResultFragment.graphql';
 
-interface SecurityCoverageResultProps {
-  id: string;
+interface SecurityCoverageResultComponentProps {
+  securityCoverage: SecurityCoverageResultFragment$data;
 }
+
+const fragment = graphql`
+  fragment SecurityCoverageResultFragment on SecurityCoverage {
+    id
+    results {
+      id
+    }
+  }
+`;
 
 const securityCoverageResultLineFragment = graphql`
     fragment SecurityCoverageResultLine_node on StixCoreRelationship {
@@ -251,7 +261,10 @@ export const securityCoverageResultLinesQuery = graphql`
     }
 `;
 
-const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) => {
+const SecurityCoverageResultComponent = ({
+  securityCoverage,
+}: SecurityCoverageResultComponentProps) => {
+  const { id, results } = securityCoverage;
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const computeLink = useComputeLink();
@@ -284,7 +297,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
     filters: [
       {
         key: 'fromOrToId',
-        values: [id],
+        values: (results ?? []).map((r) => r.id),
         operator: 'eq',
         mode: 'or',
       },
@@ -368,10 +381,16 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
   );
 };
 
-const SecurityCoverageResult = ({ id }: SecurityCoverageResultProps) => {
+interface SecurityCoverageResultProps {
+  data: SecurityCoverageResultFragment$key;
+}
+
+const SecurityCoverageResult = ({ data }: SecurityCoverageResultProps) => {
+  const securityCoverage = useFragment(fragment, data);
+
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <SecurityCoverageResultComponent id={id} />
+      <SecurityCoverageResultComponent securityCoverage={securityCoverage} />
     </Suspense>
   );
 };
