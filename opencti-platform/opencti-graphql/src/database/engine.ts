@@ -4980,6 +4980,8 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
   return retryElOperations(statsOperation);
 };
 
+// Branches are kept separate: ELK types the metric as an array, OpenSearch as a string,
+// and their client signatures are not mutually assignable.
 const fetchEngineUsedSize = async (): Promise<number> => {
   if (engine instanceof ElkClient) {
     const engineIndicesStats = await engine.indices.stats({ index: '*', metric: ['store'], expand_wildcards: 'all' as any });
