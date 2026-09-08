@@ -8,6 +8,7 @@ import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../i18n';
@@ -17,7 +18,6 @@ import BasicRelationshipDetails from './BasicRelationshipDetails';
 import { GraphLink, GraphNode, isGraphLink, isGraphNode } from '../graph.types';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
-import Label from '../../../components/common/label/Label';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -121,14 +121,17 @@ const EntitiesDetailsRightsBar = () => {
       classes={{ paper: classes.drawerPaper }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
-      <Label>
+      <Typography
+        variant="body1"
+        sx={{ textAlign: 'right', paddingRight: '20px' }}
+      >
         {t_i18n('', {
           id: 'objects selected',
           values: {
             count: uniqSelectedEntities.length,
           },
         })}
-      </Label>
+      </Typography>
       {/* The paper declares no right padding, so the row carries that gutter itself. */}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingRight: 20 }}>
         {/* Without `minWidth: 0` the selected value widens the field and pushes the button around. */}
