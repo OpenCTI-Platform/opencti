@@ -563,7 +563,13 @@ export const deleteWorkflowDefinition = async (
 
 /**
  * Ensures every workflow state's `statusId` (StatusTemplate reference) has a matching `Status`
- * record for this entity type in the Global scope, creating any that are missing.
+ * record for this entity type in the Global scope, creating any that are missing and syncing the
+ * `order` of any that already exist.
+ *
+ * The `order` sync is a self-healing backward-compatibility measure rather than a one-off
+ * migration: a `Status` published before ordering was computed from the transition graph (e.g.
+ * the built-in DraftWorkspace workflow) may carry a stale/default `order`. Every republish
+ * recomputes it here, so existing definitions naturally converge without requiring a migration.
  *
  * Only the Global scope is reconciled here — existing `Status` records in other scopes are
  * left untouched.
@@ -590,20 +596,25 @@ export const ensureFullStatusMapping = async (
       filterGroups: [],
     },
   });
-  const existingTemplateIds = new Set(existingStatuses.map((status) => status.template_id));
+  const existingStatusByTemplateId = new Map(existingStatuses.map((status) => [status.template_id, status]));
 
   const computedOrder = computeStateOrder(definitionData.initialState, definitionData.transitions);
 
   for (const state of states) {
-    if (!state.statusId || existingTemplateIds.has(state.statusId)) {
+    if (!state.statusId) {
       continue;
     }
     const order = computedOrder.get(state.statusId) ?? state.order ?? 0;
-    await createStatus(executionContext, executionUser, entityType, {
-      template_id: state.statusId,
-      order,
-      scope: StatusScope.Global,
-    });
+    const existingStatus = existingStatusByTemplateId.get(state.statusId);
+    if (!existingStatus) {
+      await createStatus(executionContext, executionUser, entityType, {
+        template_id: state.statusId,
+        order,
+        scope: StatusScope.Global,
+      });
+    } else if (existingStatus.order !== order) {
+      await updateAttribute(executionContext, executionUser, existingStatus.id, ENTITY_TYPE_STATUS, [{ key: 'order', value: [order] }]);
+    }
   }
 };
 

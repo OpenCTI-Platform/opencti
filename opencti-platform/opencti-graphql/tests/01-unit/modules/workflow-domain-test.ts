@@ -527,6 +527,66 @@ describe('Workflow Domain', () => {
     expect(createStatus).not.toHaveBeenCalled();
   });
 
+  it('should sync (not migrate) the order of an already-existing Status whose stored order is stale, without creating anything', async () => {
+    // Simulates a Status published before ordering was computed from the transition graph (e.g.
+    // the built-in DraftWorkspace workflow): its stored `order` (0) no longer matches the order
+    // freshly computed from the current transition graph (tpl-progress should be 1).
+    const draftVersion = {
+      id: 'draft-version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        name: 'Test Workflow',
+        initialState: 'tpl-open',
+        states: [{ statusId: 'tpl-open' }, { statusId: 'tpl-progress' }],
+        transitions: [{ from: 'tpl-open', to: 'tpl-progress', event: 'start' }],
+      }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any)
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        draft_version: draftVersion,
+        all_versions: [draftVersion],
+      })
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        published_version: draftVersion,
+        draft_version: draftVersion,
+        all_versions: [draftVersion],
+      });
+
+    // Both states already have a Status record, but tpl-progress carries a stale order (0
+    // instead of the freshly computed 1).
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 'status-open', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-open', order: 0 },
+      { id: 'status-progress', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-progress', order: 0 },
+    ]);
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(createStatus).not.toHaveBeenCalled();
+    expect(updateAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'status-progress',
+      ENTITY_TYPE_STATUS,
+      [{ key: 'order', value: [1] }],
+    );
+    // The already-correct status-open (order 0) must not be touched.
+    expect(updateAttribute).not.toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'status-open',
+      ENTITY_TYPE_STATUS,
+      expect.arrayContaining([expect.objectContaining({ key: 'order' })]),
+    );
+  });
+
   it('should be a no-op republish for a DraftWorkspace-shaped definition matching realistic production data (regression, Step 4.9)', async () => {
     // DraftWorkspace is the only entity type with an actually-published WorkflowDefinition in
     // existing installs today; its states already carry statusId (no name-only legacy states).
