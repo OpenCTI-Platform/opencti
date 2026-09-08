@@ -4131,14 +4131,6 @@ export const elBulk = async (context: AuthContext, args: any) => {
   return elRawBulk(context, args).then((data) => {
     if (data.errors) {
       const errors = data.items.map((i: any) => i.index?.error || i.update?.error).filter((f: any) => f !== undefined);
-      // [SEQUENCER-DIAG] rel_* truncation dig (2026-09-08, REMOVE after): doc-missing items
-      // are swallowed by design below; surface them so silent side-write drops become visible.
-      const missingItems = data.items
-        .filter((i: any) => (i.update?.error?.type ?? i.index?.error?.type) === DOCUMENT_MISSING_EXCEPTION)
-        .map((i: any) => ({ id: i.update?._id ?? i.index?._id, index: i.update?._index ?? i.index?._index }));
-      if (missingItems.length > 0) {
-        logApp.warn('[SEQUENCER-DIAG] bulk doc-missing items swallowed', { count: missingItems.length, items: missingItems.slice(0, 20) });
-      }
       if (errors.filter((err: any) => err.type !== DOCUMENT_MISSING_EXCEPTION).length > 0) {
         throw DatabaseError('Bulk indexing fail', { errors });
       }
@@ -5007,16 +4999,6 @@ export const elIndexElements = async (
       const groupsOfElementsToUpdate = R.splitEvery(MAX_BULK_OPERATIONS, elementsToUpdate);
       for (let i = 0; i < groupsOfElementsToUpdate.length; i += 1) {
         const elementsBulk = groupsOfElementsToUpdate[i];
-        // [SEQUENCER-DIAG] rel_* truncation dig (2026-09-08, REMOVE after): a memory-served
-        // impacted target lacks _index (identity-map instance); such an update op cannot be
-        // valid. Count them before the bulk to discriminate the drop mechanism.
-        const opsWithoutIndex = elementsBulk.filter((doc: any) => !doc._index);
-        if (opsWithoutIndex.length > 0) {
-          logApp.warn('[SEQUENCER-DIAG] side-write ops without _index', {
-            count: opsWithoutIndex.length,
-            ids: opsWithoutIndex.slice(0, 20).map((d: any) => ({ id: d._id ?? d.id, type: d.entity_type })),
-          });
-        }
         const bodyUpdate = elementsBulk.flatMap((doc: any) => [
           { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
           R.dissoc('_index', doc.data),
