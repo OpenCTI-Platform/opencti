@@ -13997,9 +13997,11 @@ export type IngestionJson = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   headers?: Maybe<Array<IngestionHeader>>;
   id: Scalars['ID']['output'];
+  ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   jsonMapper: JsonMapper;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  last_execution_status?: Maybe<Scalars['String']['output']>;
   markings?: Maybe<Array<Scalars['String']['output']>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -24838,6 +24840,7 @@ export type Query = {
   ingestionCsvLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionCsvs?: Maybe<IngestionCsvConnection>;
   ingestionJson?: Maybe<IngestionJson>;
+  ingestionJsonLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionJsons?: Maybe<IngestionJsonConnection>;
   ingestionRss?: Maybe<IngestionRss>;
   ingestionRssAddInputFromImport: IngestionRssAddInputFromImport;
@@ -26256,6 +26259,11 @@ export type QueryIngestionCsvsArgs = {
 
 
 export type QueryIngestionJsonArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryIngestionJsonLogsArgs = {
   id: Scalars['String']['input'];
 };
 
@@ -46710,9 +46718,11 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   headers?: Resolver<Maybe<Array<ResolversTypes['IngestionHeader']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jsonMapper?: Resolver<ResolversTypes['JsonMapper'], ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50113,6 +50123,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionCsvLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionCsvLogsArgs, 'id'>>;
   ingestionCsvs?: Resolver<Maybe<ResolversTypes['IngestionCsvConnection']>, ParentType, ContextType, Partial<QueryIngestionCsvsArgs>>;
   ingestionJson?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<QueryIngestionJsonArgs, 'id'>>;
+  ingestionJsonLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionJsonLogsArgs, 'id'>>;
   ingestionJsons?: Resolver<Maybe<ResolversTypes['IngestionJsonConnection']>, ParentType, ContextType, Partial<QueryIngestionJsonsArgs>>;
   ingestionRss?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<QueryIngestionRssArgs, 'id'>>;
   ingestionRssAddInputFromImport?: Resolver<ResolversTypes['IngestionRssAddInputFromImport'], ParentType, ContextType, RequireFields<QueryIngestionRssAddInputFromImportArgs, 'file'>>;

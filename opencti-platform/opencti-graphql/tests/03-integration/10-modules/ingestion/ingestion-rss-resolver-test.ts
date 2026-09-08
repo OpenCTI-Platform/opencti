@@ -54,6 +54,7 @@ describe('RSS ingestion resolver standard behavior', () => {
       `,
       variables: INGESTER_TO_CREATE,
     });
+
     expect(ingesterQueryResult.data?.ingestionRssAdd.id).toBeDefined();
     expect(ingesterQueryResult.data?.ingestionRssAdd.name).toBe('RSS ingester for integration test');
     expect(ingesterQueryResult.data?.ingestionRssAdd.uri).toBe('http://rss-feed.invalid/feed.xml');
