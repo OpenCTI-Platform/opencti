@@ -214,6 +214,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
       <DrawerMUI
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={1}
         onClose={disableBackdropClose
           ? (_, reason) => {
@@ -229,6 +230,8 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         slotProps={{
           paper: {
             ref,
+            'aria-modal': 'true',
+            role: 'dialog',
             sx: {
               minHeight: '100vh',
               width: getDrawerWidth(size),

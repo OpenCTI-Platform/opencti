@@ -701,10 +701,17 @@ const StixCoreRelationshipCreation = ({
       <Drawer
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        slotProps={{
+          paper: {
+            'aria-modal': 'true',
+            role: 'dialog',
+          },
+        }}
       >
         {step === 0
           || step === undefined

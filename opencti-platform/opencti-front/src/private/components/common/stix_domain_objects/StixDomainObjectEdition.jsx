@@ -48,10 +48,17 @@ class StixDomainObjectEdition extends Component {
       <Drawer
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={0}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaperInGraph }}
         onClose={handleClose.bind(this)}
+        slotProps={{
+          paper: {
+            'aria-modal': 'true',
+            role: 'dialog',
+          },
+        }}
       >
         {stixDomainObjectId ? (
           <QueryRenderer
