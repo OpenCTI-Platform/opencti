@@ -1,6 +1,6 @@
 import React, { useState, SyntheticEvent, ReactNode } from 'react';
 import Button from '@common/button/Button';
-import { FilterListOutlined } from '@mui/icons-material';
+import { FilterListOutlined, LibraryAddOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
@@ -249,6 +249,16 @@ const ListFilters = ({
             required={required}
             groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
             getOptionLabel={(option) => option.label}
+            // The row element, its role and its state stay the library's: this only fills the content,
+            // which is how the "Add Filter Group" entry gets its icon back (the MUI renderOption equivalent).
+            renderOption={(option) => (option.value === ADD_FILTER_GROUP_OPTION_VALUE
+              ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <LibraryAddOutlined fontSize="small" />
+                    {option.label}
+                  </span>
+                )
+              : option.label)}
             inputValue={inputValue}
             onInputChange={(newValue, meta) => {
               if (meta.cause !== 'type') {

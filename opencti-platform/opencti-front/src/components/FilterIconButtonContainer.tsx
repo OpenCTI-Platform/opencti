@@ -236,8 +236,22 @@ const FilterIconButtonContainer: FunctionComponent<
   const handleClickAwayPanel = (event: MouseEvent | TouchEvent) => {
     // MUI popovers/menus/autocompletes may render in a portal, i.e. outside the panel subtree:
     // a click inside one of them must not be treated as a click away.
+    // Same for the design-system Select/Combobox: they are Radix based and portal their content
+    // UNCONDITIONALLY (no `disablePortal`/`portalled` escape hatch on SelectContent), so the only
+    // guarantee left is to recognise their DOM markers here.
+    // `[data-radix-popper-content-wrapper]` is the wrapper Radix puts around any popper-positioned
+    // content (Select, Combobox), `[data-radix-select-viewport]` covers the item-aligned position.
     const target = event.target as HTMLElement | null;
-    if (target?.closest?.('.MuiPopover-root, .MuiPopper-root, .MuiModal-root, .MuiAutocomplete-popper')) return;
+    const portalSelectors = [
+      '.MuiPopover-root',
+      '.MuiPopper-root',
+      '.MuiModal-root',
+      '.MuiAutocomplete-popper',
+      '[data-radix-popper-content-wrapper]',
+      '[data-radix-select-viewport]',
+      '[role="listbox"]',
+    ].join(', ');
+    if (target?.closest?.(portalSelectors)) return;
     setOpenedGroupId(undefined);
   };
 

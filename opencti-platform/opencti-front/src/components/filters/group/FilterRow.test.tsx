@@ -88,7 +88,7 @@ describe('FilterRow', () => {
   it('calls the helpers when selecting another filter key', async () => {
     const { user } = renderRow();
     await user.click(within(screen.getByTestId('filter-row-key-select')).getByRole('combobox'));
-    // options are rendered in a non-portal menu (see disablePortal), query them by text
+    // options render in a Radix portal (FDS SelectContent portals unconditionally), query them by text
     await user.click(await screen.findByText('Description'));
     expect(helpers.handleRemoveFilterById).toHaveBeenCalledWith('filter-1');
     expect(helpers.handleAddFilterWithEmptyValue).toHaveBeenCalledTimes(1);

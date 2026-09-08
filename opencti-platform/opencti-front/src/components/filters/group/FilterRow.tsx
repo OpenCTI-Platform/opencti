@@ -1,17 +1,14 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import { SelectChangeEvent } from '@mui/material/Select';
+import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
+import { Checkbox, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { addDays, subDays } from 'date-fns';
-import { Dispatch, FunctionComponent, MouseEvent, ReactNode, SetStateAction, SyntheticEvent, useState } from 'react';
+import { CSSProperties, Dispatch, FunctionComponent, ReactNode, SetStateAction, SyntheticEvent, useState } from 'react';
 import { Filter, FilterValue, handleFilterHelpers } from '../../../utils/filters/filtersHelpers-types';
 import {
   DEFAULT_WITHIN_FILTER_VALUES,
@@ -176,16 +173,17 @@ export interface FilterOperatorAndValueProps {
   host?: WidgetHost;
   subKey?: string;
   disabled?: boolean;
-  /** MUI popups (autocomplete popper / select menu) are rendered in a portal by default. */
-  disablePortal?: boolean;
+  /** Accessible name of the operator select. */
   operatorLabel?: string;
-  operatorStyle?: React.CSSProperties;
+  /** DOM id of the operator trigger. */
+  operatorTriggerId?: string;
+  operatorStyle?: CSSProperties;
   dataTestIds?: { operator?: string; value?: string };
 }
 
 /**
  * Operator select + value editor of a single filter (or of one sub-key of a combined filter).
- * This is the whole editing logic previously inlined in FilterChipPopover.
+ * This is the whole editing logic previously inlined in FilterChipPopover, shared by the popover and by FilterRow.
  */
 export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValueProps> = ({
   filter,
@@ -198,9 +196,9 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
   host,
   subKey,
   disabled = false,
-  disablePortal = false,
   operatorLabel,
-  operatorStyle = { marginBottom: 15 },
+  operatorTriggerId = 'change-operator-select',
+  operatorStyle,
   dataTestIds,
 }) => {
   const { t_i18n } = useFormatter();
@@ -247,9 +245,8 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
     }
   };
 
-  const handleChangeOperator = (event: SelectChangeEvent, fDef?: FilterDefinition) => {
+  const handleChangeOperator = (newOperator: string, fDef?: FilterDefinition) => {
     const filterType = fDef?.type;
-    const newOperator = event.target.value;
     // for date check (date in days, operator) correspond to (timestamp in seconds, operator)
     if (filterType === 'date' && filter && filter.values.length > 0) {
       const formerOperator = filter?.operator;
@@ -400,6 +397,10 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
 
     return (
       <Autocomplete
+        // FDS-ORNAMENT: stays on MUI for this round. Its input endAdornment
+        // carries the search-scope selector for STIX object types, which is the
+        // gap #155 closes with `adornment` on ComboboxField. FIFTH ornament site.
+        // See fds-migration/LIBRARY-FEEDBACK.md
         multiple
         key={fKey}
         value={selectedOptions}
@@ -408,7 +409,6 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
         noOptionsText={t_i18n('No available options')}
         options={options}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        slotProps={disablePortal ? { popper: { disablePortal: true } } : undefined}
         onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
           if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
             setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: newInputValue }));
@@ -421,6 +421,16 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
         onChange={handleAutocompleteChange}
         disableCloseOnSelect
         isOptionEqualToValue={(option, val) => option.value === val.value}
+        sx={{
+          '& .MuiAutocomplete-tag': {
+            maxWidth: 200,
+          },
+          '& .MuiAutocomplete-tag .MuiChip-label': {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          },
+        }}
         renderInput={(paramsInput) => (
           <TextField
             role="search"
@@ -467,14 +477,17 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  padding: 0,
+                  minHeight: 32,
+                  padding: '0 8px 0 16px',
+                  gap: 8,
                   margin: 0,
                   pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
               >
+                {/* NOT `presentational`, deliberately — see fds-migration/MIGRATION-DECISIONS.md#filter-value-checkbox-role */}
                 <Checkbox checked={checked} disabled={disabledOptions} />
                 <ItemIcon type={option.type} color={option.color} />
-                <span style={{ padding: '0 4px 0 4px' }}>
+                <span>
                   {option.label}
                 </span>
               </li>
@@ -544,6 +557,7 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
 
   const isStixFiltering = entityTypes?.includes('Stix-Filtering');
   const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey, { isStixFiltering });
+  const accessibleOperatorLabel = operatorLabel ?? t_i18n('Operator');
 
   const valueElement = (
     <>
@@ -556,28 +570,32 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
     </>
   );
 
+  const operatorElement = availableOperators.length > 0 && (
+    <Select
+      value={filterOperator}
+      onValueChange={(value) => handleChangeOperator(value, finalFilterDefinition)}
+      disabled={disabled}
+    >
+      {/* The MUI version pointed labelId at a label that does not exist, so
+          the trigger had no accessible name at all. Named here. */}
+      <SelectTrigger id={operatorTriggerId} aria-label={accessibleOperatorLabel} style={operatorStyle}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent aria-label={accessibleOperatorLabel}>
+        {availableOperators.map((value) => (
+          <SelectItem key={value} value={value}>
+            {t_i18n(OperatorKeyValues[value])}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
     <>
-      {availableOperators.length > 0 && (
-        <Select
-          labelId="change-operator-select-label"
-          id="change-operator-select"
-          value={filterOperator}
-          label={operatorLabel ?? 'Operator'}
-          fullWidth={true}
-          onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
-          style={operatorStyle}
-          disabled={disabled}
-          data-testid={dataTestIds?.operator}
-          MenuProps={disablePortal ? { disablePortal: true } : undefined}
-        >
-          {availableOperators.map((value) => (
-            <MenuItem key={value} value={value}>
-              {t_i18n(OperatorKeyValues[value])}
-            </MenuItem>
-          ))}
-        </Select>
-      )}
+      {dataTestIds?.operator
+        ? <div data-testid={dataTestIds.operator}>{operatorElement}</div>
+        : operatorElement}
       {dataTestIds?.value
         ? <div data-testid={dataTestIds.value}>{valueElement}</div>
         : valueElement}
@@ -615,7 +633,7 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
   host,
 }) => {
   const { t_i18n } = useFormatter();
-  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
 
   const state = useFilterEditorState({
@@ -631,20 +649,16 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
     .map((key) => ({ value: key, label: t_i18n(getFilterDefinitionFromFilterKeysMap(key, filterKeysMap)?.label ?? key) }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-  const handleChangeKey = (event: SelectChangeEvent) => {
-    const newKey = event.target.value;
+  const handleChangeKey = (newKey: string) => {
     if (newKey === filter.key) return;
     const newDefinition = getFilterDefinitionFromFilterKeysMap(newKey, filterKeysMap);
     helpers.handleRemoveFilterById(filter.id ?? '');
     helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(newKey, newDefinition, undefined, filter.mode));
   };
 
-  const handleOpenMenu = (event: MouseEvent<HTMLElement>) => setMenuAnchorEl(event.currentTarget);
-  const handleCloseMenu = () => setMenuAnchorEl(null);
-
   const handleSwitchLocalMode = () => {
     helpers.handleSwitchLocalMode(filter);
-    handleCloseMenu();
+    setMenuOpen(false);
   };
 
   const localMode = (filter.mode ?? 'or').toUpperCase();
@@ -652,20 +666,18 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
 
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, width: '100%' }}>
-      <FormControl size="small" sx={{ minWidth: 180 }} data-testid="filter-row-key-select">
-        <InputLabel id={`filter-row-key-label-${filter.id}`}>{t_i18n('Filter name')}</InputLabel>
-        <Select
-          labelId={`filter-row-key-label-${filter.id}`}
-          label={t_i18n('Filter name')}
-          value={filter.key}
-          onChange={handleChangeKey}
-          MenuProps={{ disablePortal: true }}
-        >
-          {keyOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
-          ))}
+      <div data-testid="filter-row-key-select">
+        <Select value={filter.key} onValueChange={handleChangeKey}>
+          <SelectTrigger id={`filter-row-key-${filter.id}`} aria-label={t_i18n('Filter name')} style={{ minWidth: 180 }}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Filter name')}>
+            {keyOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+            ))}
+          </SelectContent>
         </Select>
-      </FormControl>
+      </div>
       <FilterOperatorAndValue
         filter={filter}
         filterKey={filter.key}
@@ -675,38 +687,35 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
         entityTypes={entityTypes}
         availableRelationFilterTypes={availableRelationFilterTypes}
         host={host}
-        disablePortal
         operatorLabel={t_i18n('Condition')}
+        operatorTriggerId={`filter-row-operator-${filter.id}`}
         operatorStyle={{ minWidth: 160 }}
         dataTestIds={{ operator: 'filter-row-operator-select', value: 'filter-row-value' }}
       />
-      <IconButton
-        size="small"
-        onClick={handleOpenMenu}
-        data-testid="filter-row-menu-button"
-        aria-label={t_i18n('Options')}
-      >
-        <MoreVert fontSize="small" />
-      </IconButton>
-      <Menu
-        anchorEl={menuAnchorEl}
-        open={Boolean(menuAnchorEl)}
-        onClose={handleCloseMenu}
-        disablePortal
-      >
-        <MenuItem onClick={handleSwitchLocalMode} data-testid="filter-row-switch-local-mode">
-          {t_i18n('Switch to')} {t_i18n(otherLocalMode)}
-        </MenuItem>
+      <Menu open={menuOpen} onOpenChange={setMenuOpen}>
+        <MenuTrigger asChild>
+          <IconButton
+            priority="tertiary"
+            data-testid="filter-row-menu-button"
+            aria-label={t_i18n('Options')}
+            icon={<MoreVert fontSize="small" />}
+          />
+        </MenuTrigger>
+        {/* portalled={false}: the group panel wraps its rows in a ClickAwayListener, and a portalled
+            menu would be seen as a click away, closing the panel on every interaction. */}
+        <MenuContent portalled={false}>
+          <MenuItem onSelect={handleSwitchLocalMode} data-testid="filter-row-switch-local-mode">
+            {t_i18n('Switch to')} {t_i18n(otherLocalMode)}
+          </MenuItem>
+        </MenuContent>
       </Menu>
       <IconButton
-        size="small"
-        color="error"
+        priority="tertiary"
         onClick={() => helpers.handleRemoveFilterById(filter.id ?? '')}
         data-testid="filter-row-remove-button"
         aria-label={t_i18n('Delete')}
-      >
-        <CloseOutlined fontSize="small" />
-      </IconButton>
+        icon={<CloseOutlined fontSize="small" />}
+      />
     </div>
   );
 };
