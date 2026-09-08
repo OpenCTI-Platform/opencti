@@ -24,7 +24,7 @@ export default class InfrastructureDetailsPageModel {
   }
 
   getCampaignsTab() {
-    return this.page.getByRole('menuitem', { name: 'Campaigns' }).click();
+    return this.page.getByRole('link', { name: 'Campaigns' }).click();
   }
 
   getCreateRelationshipButton() {

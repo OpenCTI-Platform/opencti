@@ -1,14 +1,12 @@
 import React, { FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
-import MenuList from '@mui/material/MenuList';
-import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import { Stack } from '@mui/material';
+import { List, ListItemButton, Stack } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -100,13 +98,13 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
   return (
     <StyledDrawer variant="permanent" anchor="right">
       <ToolbarSpacer />
-      <MenuList component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
+      <List component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
         {entries.map((entry, idx) => {
           const isSelected = location.pathname.startsWith(entry.path);
           const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
           const iconOpacity = isSelected ? 1 : 0.5;
           return (
-            <MenuItem
+            <ListItemButton
               key={idx}
               component={Link}
               to={entry.path}
@@ -129,10 +127,10 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
                 </ListItemIcon>
               )}
               <ListItemText primary={renderLabel(entry)} />
-            </MenuItem>
+            </ListItemButton>
           );
         })}
-      </MenuList>
+      </List>
     </StyledDrawer>
   );
 };
