@@ -62,6 +62,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
+  availableFilterKeys,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -97,6 +98,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             hasSavedFilters={hasSavedFilters}
             filterChipsParams={filterChipsParams}
             setFilterChipsParams={setFilterChipsParams}
+            availableFilterKeys={availableFilterKeys}
           />
         </React.Suspense>
       )}
@@ -146,13 +148,13 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     anchorPosition: undefined,
   });
 
-  const displayedFilters = filters
-    ? {
-        ...filters,
-        filters:
-          filters.filters.filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey)),
-      }
-    : undefined;
+  const filterGroupOnAvailableKeys = (filterGroup: FilterGroup, keys?: string[]): FilterGroup => ({
+    ...filterGroup,
+    filters: filterGroup.filters.filter((currentFilter) => !keys || keys.some((currentKey) => currentFilter.key === currentKey)),
+    filterGroups: (filterGroup.filterGroups ?? []).map((subGroup) => filterGroupOnAvailableKeys(subGroup, keys)),
+  });
+
+  const displayedFilters = filters ? filterGroupOnAvailableKeys(filters, availableFilterKeys) : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery
@@ -177,6 +179,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         hasSavedFilters={hasSavedFilters}
         filterChipsParams={filterChipsParams}
         setFilterChipsParams={setFilterChipsParams}
+        availableFilterKeys={availableFilterKeys}
       />
     );
   }

@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
+import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import {
   convertOperatorToIcon,
@@ -11,6 +11,7 @@ import {
   FiltersRestrictions,
   isFilterEditable,
   NO_VALUES_FILTER_OPERATORS,
+  useBuildFilterKeysMapFromEntityType,
   useFilterDefinition,
 } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
@@ -22,13 +23,14 @@ import { DataColumns } from './list_lines';
 import type { WidgetHost } from '../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
-import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
+import FilterGroupChipButton from './filters/group/FilterGroupChipButton';
+import FilterGroupPanel from './filters/group/FilterGroupPanel';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { PageContainerContext } from './PageContainer';
 import { useTheme } from '@mui/material/styles';
-import { Stack } from '@mui/material';
+import { ClickAwayListener, Grow, Paper, Popper, Stack } from '@mui/material';
 
 export type FilterIconButtonVariant
   = undefined // default variant (variant is undefined), for filters applied in datatables or widgets for instance
@@ -59,6 +61,7 @@ interface FilterIconButtonContainerProps {
   hasSavedFilters?: boolean;
   filterChipsParams: FilterChipsParameter;
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
+  availableFilterKeys?: string[];
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -86,6 +89,7 @@ const FilterIconButtonContainer: FunctionComponent<
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
+  availableFilterKeys,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -98,9 +102,14 @@ const FilterIconButtonContainer: FunctionComponent<
   );
 
   const displayedFilters = filters.filters;
+  const displayedFilterGroups = filters.filterGroups ?? [];
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
   const oldItemRefToPopover = useRef(null);
+  const filterLineRef = useRef<HTMLDivElement | null>(null);
+  const [openedGroupId, setOpenedGroupId] = useState<string | undefined>(undefined);
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
+  const panelFilterKeys = availableFilterKeys ?? Array.from(filterKeysMap.keys());
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
     filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
@@ -221,190 +230,244 @@ const FilterIconButtonContainer: FunctionComponent<
     };
   }
 
-  return (
-    <Box sx={boxStyle}>
-      {displayedFilters.map((currentFilter, index) => {
-        const filterKey = currentFilter.key;
-        const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
-        const filterOperator = currentFilter.operator ?? 'eq';
-        const filterValues = currentFilter.values;
-        const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator ?? 'eq');
-        const keyLabel = (
-          <>
-            {truncate(filterLabel, 20)}
-            {!isOperatorDisplayed && (
-              <Box
-                component="span"
-                sx={{ padding: '0 4px', fontWeight: 'normal' }}
-              >
-                {t_i18n(filterOperator)}
-              </Box>
-            )}
-            {isOperatorDisplayed
-              ? convertOperatorToIcon(filterOperator ?? 'eq')
-              : currentFilter.values.length > 0 && ':'}
-          </>
-        );
-        const isNotLastFilter = index < displayedFilters.length - 1;
+  const isGroupPanelReadOnly = !helpers || variant === 'small' || variant === 'tag';
+  const openedGroup = displayedFilterGroups.find((group) => group.id === openedGroupId);
 
-        const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
-          ? 'outlined'
-          : 'filled';
+  const handleClickAwayPanel = (event: MouseEvent | TouchEvent) => {
+    // MUI popovers/menus/autocompletes may render in a portal, i.e. outside the panel subtree:
+    // a click inside one of them must not be treated as a click away.
+    const target = event.target as HTMLElement | null;
+    if (target?.closest?.('.MuiPopover-root, .MuiPopper-root, .MuiModal-root, .MuiAutocomplete-popper')) return;
+    setOpenedGroupId(undefined);
+  };
+
+  const globalModeSeparator = (
+    <Box
+      sx={{
+        padding: variant === 'small' ? '0 4px' : '0',
+        display: 'flex',
+      }}
+    >
+      <FilterIconButtonGlobalMode
+        operatorStyle={operatorStyle}
+        isOperatorClickable={isReadWriteFilter}
+        globalMode={globalMode}
+        handleSwitchGlobalMode={() => {
+          if (helpers?.handleSwitchGlobalMode) {
+            helpers.handleSwitchGlobalMode();
+          } else if (handleSwitchGlobalMode) {
+            handleSwitchGlobalMode();
+          }
+        }}
+      />
+    </Box>
+  );
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Box sx={boxStyle} ref={filterLineRef}>
+        {displayedFilters.map((currentFilter, index) => {
+          const filterKey = currentFilter.key;
+          const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
+          const filterOperator = currentFilter.operator ?? 'eq';
+          const filterValues = currentFilter.values;
+          const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator ?? 'eq');
+          const keyLabel = (
+            <>
+              {truncate(filterLabel, 20)}
+              {!isOperatorDisplayed && (
+                <Box
+                  component="span"
+                  sx={{ padding: '0 4px', fontWeight: 'normal' }}
+                >
+                  {t_i18n(filterOperator)}
+                </Box>
+              )}
+              {isOperatorDisplayed
+                ? convertOperatorToIcon(filterOperator ?? 'eq')
+                : currentFilter.values.length > 0 && ':'}
+            </>
+          );
+          const isNotLastFilter = index < displayedFilters.length - 1 || displayedFilterGroups.length > 0;
+
+          const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
+            ? 'outlined'
+            : 'filled';
           // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
-        const chipBackgroundColorStyle = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
-          ? { bgcolor: `${chipColor}.dark` }
-          : undefined;
-        const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
-          && isFilterEditable(filtersRestrictions, filterKey, filterValues);
-        return (
-          <Fragment key={currentFilter.id ?? `filter-${index}`}>
-            <Tooltip
-              title={
-                filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
-                  ? undefined
-                  : (
-                      // As inline content the key, the values and the operator sat on three different baselines.
-                      <Box
+          const chipBackgroundColorStyle = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
+            ? { bgcolor: `${chipColor}.dark` }
+            : undefined;
+          const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
+            && isFilterEditable(filtersRestrictions, filterKey, filterValues);
+          return (
+            <Fragment key={currentFilter.id ?? `filter-${index}`}>
+              <Tooltip
+                title={
+                  filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
+                    ? undefined
+                    : (
+                        // As inline content the key, the values and the operator sat on three different baselines.
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: '4px',
+                          }}
+                        >
+                          <FilterValues
+                            label={keyLabel}
+                            tooltip={true}
+                            currentFilter={currentFilter}
+                            handleSwitchLocalMode={handleSwitchLocalMode}
+                            filtersRepresentativesMap={filtersRepresentativesMap}
+                            redirection={redirection}
+                            entityTypes={entityTypes}
+                            filtersRestrictions={filtersRestrictions}
+                            host={host}
+                          />
+                        </Box>
+                      )
+                }
+              >
+                <Box
+                  sx={{
+                    padding: '0',
+                    display: 'flex',
+                  }}
+                >
+                  <Chip
+                    color={chipColor}
+                    ref={
+                      helpers?.getLatestAddFilterId() === currentFilter.id
+                        ? itemRefToPopover
+                        : null
+                    }
+                    variant={chipVariant}
+                    sx={{
+                      ...filterStyle,
+                      ...chipBackgroundColorStyle,
+                      borderRadius: 1,
+                      '& .MuiChip-label': {
+                        lineHeight: '32px',
+                        maxWidth: 400,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      },
+                    }}
+                    label={(
+                      <Stack
+                        alignItems="center"
+                        direction="row"
+                        gap={0.5}
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '4px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         <FilterValues
                           label={keyLabel}
-                          tooltip={true}
+                          tooltip={false}
                           currentFilter={currentFilter}
-                          handleSwitchLocalMode={handleSwitchLocalMode}
+                          handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
                           filtersRepresentativesMap={filtersRepresentativesMap}
                           redirection={redirection}
+                          onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
+                          isReadWriteFilter={isReadWriteFilter}
+                          chipColor={chipColor}
                           entityTypes={entityTypes}
                           filtersRestrictions={filtersRestrictions}
                           host={host}
                         />
-                      </Box>
-                    )
-              }
-            >
-              <Box
-                sx={{
-                  padding: '0',
-                  display: 'flex',
-                }}
-              >
-                <Chip
-                  color={chipColor}
-                  ref={
-                    helpers?.getLatestAddFilterId() === currentFilter.id
-                      ? itemRefToPopover
-                      : null
-                  }
-                  variant={chipVariant}
-                  sx={{
-                    ...filterStyle,
-                    ...chipBackgroundColorStyle,
-                    borderRadius: 1,
-                    '& .MuiChip-label': {
-                      lineHeight: '32px',
-                      maxWidth: 400,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                    },
-                  }}
-                  label={(
-                    <Stack
-                      alignItems="center"
-                      direction="row"
-                      gap={0.5}
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      <FilterValues
-                        label={keyLabel}
-                        tooltip={false}
-                        currentFilter={currentFilter}
-                        handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                        redirection={redirection}
-                        onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
-                        isReadWriteFilter={isReadWriteFilter}
-                        chipColor={chipColor}
+                      </Stack>
+                    )}
+                    disabled={
+                      disabledPossible ? displayedFilters.length === 1 : undefined
+                    }
+                    onDelete={
+                      (isReadWriteFilter && authorizeFilterRemoving)
+                        ? () => manageRemoveFilter(
+                            currentFilter.id,
+                            filterKey,
+                            filterOperator,
+                          )
+                        : undefined
+                    }
+                  />
+                </Box>
+              </Tooltip>
+              {isNotLastFilter && globalModeSeparator}
+            </Fragment>
+          );
+        })}
+        {displayedFilterGroups.map((group, index) => (
+          <Fragment key={group.id ?? `filter-group-${index}`}>
+            <FilterGroupChipButton
+              filterGroup={group}
+              isOpen={openedGroupId === group.id}
+              readOnly={isGroupPanelReadOnly}
+              chipColor={chipColor}
+              style={filterStyle}
+              onClick={() => setOpenedGroupId((current) => (current === group.id ? undefined : group.id))}
+            />
+            {index < displayedFilterGroups.length - 1 && globalModeSeparator}
+          </Fragment>
+        ))}
+        {filterChipsParams.filterId && filterChipsParams.anchorPosition && (
+          <FilterChipPopover
+            filters={filters.filters}
+            params={filterChipsParams}
+            handleClose={handleClose}
+            open={Boolean(filterChipsParams.filterId)}
+            helpers={helpers}
+            filtersRepresentativesMap={filtersRepresentativesMap}
+            availableRelationFilterTypes={availableRelationFilterTypes}
+            entityTypes={entityTypes}
+            searchContext={searchContext}
+            availableEntityTypes={availableEntityTypes}
+            availableRelationshipTypes={availableRelationshipTypes}
+            host={host}
+          />
+        )}
+      </Box>
+      {helpers && (
+        <Popper
+          open={Boolean(openedGroup)}
+          anchorEl={filterLineRef.current}
+          placement="bottom-start"
+          disablePortal
+          transition
+          style={{ width: filterLineRef.current?.offsetWidth, zIndex: theme.zIndex.modal }}
+        >
+          {({ TransitionProps }) => (
+            <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
+              <Paper sx={{ width: '100%' }}>
+                <ClickAwayListener onClickAway={handleClickAwayPanel}>
+                  <Box>
+                    {openedGroup && (
+                      <FilterGroupPanel
+                        group={openedGroup}
+                        helpers={helpers}
+                        availableFilterKeys={panelFilterKeys}
                         entityTypes={entityTypes}
-                        filtersRestrictions={filtersRestrictions}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        availableEntityTypes={availableEntityTypes}
+                        availableRelationshipTypes={availableRelationshipTypes}
+                        availableRelationFilterTypes={availableRelationFilterTypes}
+                        searchContext={searchContext}
                         host={host}
                       />
-                    </Stack>
-                  )}
-                  disabled={
-                    disabledPossible ? displayedFilters.length === 1 : undefined
-                  }
-                  onDelete={
-                    (isReadWriteFilter && authorizeFilterRemoving)
-                      ? () => manageRemoveFilter(
-                          currentFilter.id,
-                          filterKey,
-                          filterOperator,
-                        )
-                      : undefined
-                  }
-                />
-              </Box>
-            </Tooltip>
-            {isNotLastFilter && (
-              <Box
-                sx={{
-                  padding: variant === 'small' ? '0 4px' : '0',
-                  display: 'flex',
-                }}
-              >
-                <FilterIconButtonGlobalMode
-                  operatorStyle={operatorStyle}
-                  isOperatorClickable={isReadWriteFilter}
-                  globalMode={globalMode}
-                  handleSwitchGlobalMode={() => {
-                    if (helpers?.handleSwitchGlobalMode) {
-                      helpers.handleSwitchGlobalMode();
-                    } else if (handleSwitchGlobalMode) {
-                      handleSwitchGlobalMode();
-                    }
-                  }}
-                />
-              </Box>
-            )}
-          </Fragment>
-        );
-      })}
-      {filterChipsParams.filterId && filterChipsParams.anchorPosition && (
-        <FilterChipPopover
-          filters={filters.filters}
-          params={filterChipsParams}
-          handleClose={handleClose}
-          open={Boolean(filterChipsParams.filterId)}
-          helpers={helpers}
-          filtersRepresentativesMap={filtersRepresentativesMap}
-          availableRelationFilterTypes={availableRelationFilterTypes}
-          entityTypes={entityTypes}
-          searchContext={searchContext}
-          availableEntityTypes={availableEntityTypes}
-          availableRelationshipTypes={availableRelationshipTypes}
-          host={host}
-        />
-      )}
-      {filters.filterGroups
-        && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-        <ImbricatedFilterGroupDisplay
-          filtersRepresentativesMap={filtersRepresentativesMap}
-          filterObj={filters}
-          filterMode={filters.mode}
-          filterStyle={filterStyle}
-        />
+                    )}
+                  </Box>
+                </ClickAwayListener>
+              </Paper>
+            </Grow>
+          )}
+        </Popper>
       )}
     </Box>
   );
