@@ -4901,6 +4901,17 @@ export const elIndexElements = async (
       }
     }
     // 02. If relation, generate impacts for from and to sides
+    // [SEQUENCER-DIAG] rel_* truncation dig round 2 (2026-09-08, REMOVE after): audit the
+    // containment impact building: an 'object' relation whose to-side impact is not built
+    // loses the target's rel_object denorm with no error anywhere.
+    const diagObjectRels = (elements as any[]).filter((e) => e.base_type === BASE_TYPE_RELATION && e.entity_type === 'object');
+    const diagNoToImpact = diagObjectRels.filter((e) => !isImpactedRole(e.entity_type, e.fromType, e.toType, e.toRole));
+    if (diagNoToImpact.length > 0) {
+      logApp.warn('[SEQUENCER-DIAG] object relations without to-side impact', {
+        count: diagNoToImpact.length,
+        sample: diagNoToImpact.slice(0, 5).map((e: any) => ({ id: e.internal_id, from: e.fromId, to: e.toId, fromType: e.fromType, toType: e.toType, toRole: e.toRole })),
+      });
+    }
     const cache: Record<string, BasicStoreBase | null | undefined> = {};
     const impactedEntities = R.pipe(
       R.filter((e: BasicStoreBase) => e.base_type === BASE_TYPE_RELATION),
