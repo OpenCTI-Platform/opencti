@@ -8,7 +8,7 @@ import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
 import { INDEX_DELETED_OBJECTS } from '../../database/utils';
 import { userMergeBulkUpdate } from './userMerge-bulk';
-import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, type UserMergePlannedChange } from './userMerge-handler';
+import { USER_MERGE_SILENT_WRITE, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, type UserMergePlannedChange } from './userMerge-handler';
 
 export const USER_MERGE_OPERATIONAL_RELATIONS_HANDLER = 'operational-relations';
 
@@ -152,13 +152,20 @@ export const userMergeOperationalRelationsHandler: UserMergeHandler = {
         const entity = relationPlan.repointed[repointed];
         const abstractType = abstractTypeOf(entity.type);
         // Added before the source edge is dropped, so the element is never left unassigned.
-        await stixObjectOrRelationshipAddRefRelation(context, SYSTEM_USER, entity.id, { relationship_type: relation.relationshipType, toId: targetId }, abstractType);
-        await stixObjectOrRelationshipDeleteRefRelation(context, SYSTEM_USER, entity.id, sourceId, relation.relationshipType, abstractType);
+        await stixObjectOrRelationshipAddRefRelation(
+          context,
+          SYSTEM_USER,
+          entity.id,
+          { relationship_type: relation.relationshipType, toId: targetId },
+          abstractType,
+          USER_MERGE_SILENT_WRITE,
+        );
+        await stixObjectOrRelationshipDeleteRefRelation(context, SYSTEM_USER, entity.id, sourceId, relation.relationshipType, abstractType, USER_MERGE_SILENT_WRITE);
         updated += 1;
       }
       for (let deduplicated = 0; deduplicated < relationPlan.deduplicated.length; deduplicated += 1) {
         const entity = relationPlan.deduplicated[deduplicated];
-        await stixObjectOrRelationshipDeleteRefRelation(context, SYSTEM_USER, entity.id, sourceId, relation.relationshipType, abstractTypeOf(entity.type));
+        await stixObjectOrRelationshipDeleteRefRelation(context, SYSTEM_USER, entity.id, sourceId, relation.relationshipType, abstractTypeOf(entity.type), USER_MERGE_SILENT_WRITE);
         updated += 1;
       }
       const trashPlanned = plan.changes.some((change) => change.register_row_id === relation.registerRow && change.detail === TRASHED && change.count > 0);
