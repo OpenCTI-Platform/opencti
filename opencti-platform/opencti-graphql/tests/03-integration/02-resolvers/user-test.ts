@@ -21,6 +21,7 @@ import {
   USER_SECURITY,
 } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
@@ -370,6 +371,12 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
     });
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
+  });
+  it('should not update api_tokens field', async () => {
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'api_tokens', value: [] } },
+    }, undefined, FORBIDDEN_ACCESS);
   });
   it('should update language only if the value is valid', async () => {
     const validQueryResult = await queryAsAdmin({

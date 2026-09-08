@@ -1096,6 +1096,9 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
+    if (input.key === 'api_tokens') {
+      throw ForbiddenAccess();
+    }
     if (userToUpdate.external && input.key === 'name') {
       throw FunctionalError('Name cannot be updated for external user', { userId });
     }
