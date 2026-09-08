@@ -28,7 +28,7 @@
     "types": ["@testing-library/jest-dom", "vite/client"]
   },
   "include": [
-    "src", "index.d.ts", ".eslintrc.js", "tests_e2e"
+    "src", "index.d.ts", "vitest.d.ts", ".eslintrc.js", "tests_e2e"
   ],
   "references": [
     {
