@@ -36,8 +36,11 @@ describe('investigationSelectionUtils', () => {
 
     it.each([
       ['domain objects', ['Malware']],
+      ['generic domain objects', ['Stix-Domain-Object']],
       ['cyber observables', ['IPv4-Addr']],
+      ['generic cyber observables', ['Stix-Cyber-Observable']],
       ['relationships', ['uses']],
+      ['generic relationships', ['stix-core-relationship']],
       ['sightings', ['stix-sighting-relationship']],
       ['mixed supported objects', ['Malware', 'IPv4-Addr', 'uses']],
     ])('allows explicit selections of %s', (_label, selectedTypes) => {
