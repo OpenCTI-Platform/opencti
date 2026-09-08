@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
-import { BulkEntityTypeInfo, entityNameHeaderWidth, entityTypeHeaderWidth, matchHeaderWidth } from '@components/common/bulk/dialog/BulkRelationDialog';
+import { BulkEntityTypeInfo } from '@components/common/bulk/dialog/BulkRelationDialog';
 import { DeleteOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { Autocomplete } from '@mui/material';
@@ -10,6 +10,8 @@ import TextField from '@mui/material/TextField';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 
 interface BulkSelectRawLineDataProps {
   entity: BulkEntityTypeInfo;
@@ -38,6 +40,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   isSubmitting,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const isSearchTermEmpty = entity.searchTerm === '';
   const isMatchingRelationship = entity.selectedEntityType.legitRelations.includes(selectedRelationType);
 
@@ -86,20 +89,13 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   };
 
   return (
-    <Box sx={{
-      display: 'flex',
-      gap: '15px',
-      paddingBottom: '5px',
-      paddingLeft: '5px',
-    }}
-    >
-      <Box sx={{ minWidth: `${entityTypeHeaderWidth}px` }}>
+    <>
+      <Box>
         <Autocomplete
           autoHighlight
           disableClearable
           disabled={isSearchTermEmpty || isSubmitting}
           noOptionsText={t_i18n('No available options')}
-          disablePortal
           options={getAutocompleteOptions()}
           onChange={(event, selectedOption) => {
             handleChangeEntityType(selectedOption.value.toEntitytype);
@@ -109,13 +105,22 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           sx={{ borderBottom: 'none' }}
           renderInput={(params) => (
             <TextField
+              label={t_i18n('Entity type')}
               sx={{ minWidth: '150px' }}
               {...params}
             />
           )}
         />
       </Box>
-      <Box sx={{ minWidth: `${entityNameHeaderWidth}px` }}>
+      <Box
+        tabIndex={0}
+        sx={{
+          '&:focus-visible': {
+            boxShadow: `0 0 0 2px ${theme.palette.text.primary}`,
+          },
+        }}
+      >
+        <Typography variant="body1" id={`representation-label-${entityIndex}`}>{t_i18n('Representation')}</Typography>
         <Typography
           sx={{
             fontSize: '0.9rem',
@@ -124,14 +129,23 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
             display: 'flex',
             alignItems: 'center',
           }}
-          variant="h3"
+          variant="body2"
         >
           {truncate(isSearchTermEmpty ? entity.searchTerm : entity.representative, 20)}
         </Typography>
       </Box>
-      <Box sx={{ minWidth: `${matchHeaderWidth}px` }}>
+      <Box
+        tabIndex={0}
+        sx={{
+          display: 'flex', flexDirection: 'column', '&:focus-visible': {
+            boxShadow: `0 0 0 2px ${theme.palette.text.primary}`,
+          },
+        }}
+      >
+        <Typography variant="body1" id={`match-status-label-${entityIndex}`}>{t_i18n('Relationship match status')}</Typography>
         <Chip
-          style={{ borderRadius: '4px' }}
+          variant="outlined"
+          sx={{ borderRadius: '4px' }}
           label={getRelationMatchStatus()}
           color={getChipColor()}
         />
@@ -148,7 +162,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           <DeleteOutlined />
         </IconButton>
       </Box>
-    </Box>
+    </>
   );
 };
 
