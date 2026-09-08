@@ -2,7 +2,7 @@ import { defaultResource, resourceFromAttributes } from '@opentelemetry/resource
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { booleanConf, DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
 import {
@@ -107,6 +107,7 @@ const booleanTrueFilter = (key: string) => ({
 });
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
+const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics'
   : 'https://telemetry.filigran.io/v1/metrics';
@@ -820,7 +821,7 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: TELEMETRY_MANAGER_KEY,
   },
-  enabledByConfig: true,
+  enabledByConfig: TELEMETRY_MANAGER_ENABLED,
   enabledToStart(): boolean {
     return this.enabledByConfig;
   },
