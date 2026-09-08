@@ -32,6 +32,8 @@ class SequencerMetrics {
 
   private eventsCoalesced: Counter | null = null;
 
+  private pendingRefs: Counter | null = null;
+
   private chainStepsCounter: Counter | null = null;
 
   private deferReasons: Counter | null = null;
@@ -97,6 +99,10 @@ class SequencerMetrics {
     this.eventsCoalesced = meter.createCounter('opencti_sequencer_events_coalesced_total', {
       valueType: ValueType.INT,
       description: 'Update events merged into a per-entity batch event (E8, coalesce_update_events)',
+    });
+    this.pendingRefs = meter.createCounter('opencti_sequencer_pending_refs_total', {
+      valueType: ValueType.INT,
+      description: 'Strip-and-reconcile events, by kind (stripped, reconciled, expired)',
     });
     this.chainStepsCounter = meter.createCounter('opencti_sequencer_chain_steps_total', {
       valueType: ValueType.INT,
@@ -169,6 +175,10 @@ class SequencerMetrics {
 
   sidewriteGrouped(count = 1) {
     this.sidewritesGrouped?.add(count);
+  }
+
+  pendingRefEvent(kind: 'stripped' | 'reconciled' | 'expired', count = 1) {
+    this.pendingRefs?.add(count, { kind });
   }
 
   eventCoalesced(count = 1) {

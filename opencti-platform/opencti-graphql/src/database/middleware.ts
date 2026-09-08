@@ -104,6 +104,8 @@ import { isSequencerEligible, sequencerScopedContext, stripMemberRefMarks } from
 import { registerSequencerLoaders, sequencerDedupPrefetchKey, submitIntent, takeSequencerDedupPrefetch } from './sequencer/sequencer-loop';
 import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
+import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
+import { registerReconcileAssert } from './sequencer/sequencer-pending-refs';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -1263,7 +1265,28 @@ export const inputResolveRefs = async (
     const attributesConfiguration = getAttributesConfiguration(entitySetting);
     const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
-    if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
+    // Strip-and-reconcile (plan 0009 s9.12.3, aggressive variant; design in the work-kb
+    // note opencti-strip-and-reconcile-design). Under the sequencer, an unresolved
+    // OPTIONAL ref never rejects the write: the historic reject-twice-then-silent-drop
+    // above lost the edge forever (verdict 30: 479 holes/run measured). Each droppable
+    // REF edge is recorded on the intent context; the loop persists the records with the
+    // batch and re-asserts the edges when their targets land. Non-ref unresolved values
+    // (vocabs) keep the stock behavior below.
+    const stripScope = SEQUENCER_CONFIG.stripReconcile && (context as any).sequencer?.scope === 'applying';
+    if (stripScope && expectedUnresolvedIdsNotDefault.length > 0) {
+      const strippedRefs: { targetRef: string; relType: string }[] = [];
+      expectedUnresolvedIdsNotDefault.forEach((refId) => {
+        const configs = fetchingIdsMap.get(refId) ?? [];
+        const destKey = (configs[0] as any)?.destKey;
+        const ref = destKey ? schemaRelationsRefDefinition.getRelationRef(type, destKey) : null;
+        if (ref?.databaseName) {
+          strippedRefs.push({ targetRef: refId, relType: ref.databaseName });
+        }
+      });
+      if (strippedRefs.length > 0) {
+        (context as any).sequencer.strippedRefs = strippedRefs;
+      }
+    } else if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
       throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }
     const complete = { ...cleanedInput, entity_type: type };
@@ -4556,4 +4579,25 @@ export const deleteRelationsByFromAndTo = async (
   });
   return { from: fromThing, to: toThing, deletions: relationsToDelete };
 };
+// endregion
+
+// region strip-and-reconcile assert (plan 0009 s9.12.3; design in the work-kb note
+// opencti-strip-and-reconcile-design). Registered here so the pending-refs module never
+// imports middleware (no cycle). The re-assertion is a NORMAL createRelation with a fresh
+// context: it goes back through the boundary, so under the sequencer it is enqueued,
+// batched and deduped like any intent; if the edge already exists it upserts to a no-op.
+// The target is resolved by any of its instance ids (targetInternalId when the loop
+// matched a committed element, or the recorded raw ref from the sweeper): a still-absent
+// target throws MISSING_REFERENCE and the record stays pending.
+registerReconcileAssert(async (record, targetId) => {
+  const reconcileContext = executionContext('sequencer_reconcile');
+  // original attribution when available (memory record, same process); SYSTEM_USER only
+  // for records rehydrated after a restart (sweeper path, documented divergence)
+  const reconcileUser = record.user ?? SYSTEM_USER;
+  await createRelation(reconcileContext, reconcileUser, {
+    fromId: record.owner_id,
+    toId: targetId,
+    relationship_type: record.rel_type,
+  });
+});
 // endregion

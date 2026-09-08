@@ -21,6 +21,11 @@ export interface SequencerConfig {
   coalesceUpdateEvents: boolean;
   bundleIntake: boolean;
   parkSoftRefs: boolean;
+  // s9.12.3 strip-and-reconcile, aggressive variant: unresolved OPTIONAL refs never reject
+  // the write (no reject-twice-then-silent-drop): the edge is recorded as a pending ref and
+  // re-asserted when the target lands. Design: work-kb note opencti-strip-and-reconcile-design.
+  stripReconcile: boolean;
+  pendingRefExpiryS: number;
   origin: string;
 }
 
@@ -47,6 +52,8 @@ const readConfig = (): SequencerConfig => {
     // D2 v3 soft-ref parking, off by default: measured to deadlock against a bounded
     // prefetch window (plan 0009 §8.8); default = v2 (hard endpoint deps only).
     parkSoftRefs: booleanConf('app:ingestion_sequencer:park_soft_refs', false),
+    stripReconcile: booleanConf('app:ingestion_sequencer:strip_reconcile', false),
+    pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     origin: conf.get('app:ingestion_sequencer:origin') ?? 'worker',
   };
 };

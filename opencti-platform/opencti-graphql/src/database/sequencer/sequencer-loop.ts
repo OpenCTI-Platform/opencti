@@ -21,7 +21,9 @@ import { generateStandardId, getInputIds, getInstanceIds } from '../../schema/id
 import { idLabel } from '../../schema/schema-labels';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
-import { elFindByIds, elFlushSequencerWrites } from '../engine';
+import { elCreateIndex, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
+import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
+import type { StrippedRefInput } from './sequencer-pending-refs';
 import { flushSequencerEvents } from '../stream/stream-handler';
 import { lockResources } from '../../lock/master-lock';
 import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-buffer';
@@ -240,7 +242,6 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
     });
     for (let i = 0; i < jobs.length; i += DEDUP_PREFETCH_CONCURRENCY) {
       const slice = jobs.slice(i, i + DEDUP_PREFETCH_CONCURRENCY);
-      // eslint-disable-next-line no-await-in-loop
       const results = await Promise.all(slice.map(async (job) => {
         try {
           return await job.run();
@@ -298,6 +299,7 @@ const applyGroup = async (
   group: CoalesceGroup,
   writtenIds: string[],
   pendings: PendingResolution[],
+  strippedInputs: StrippedRefInput[],
   onFailure: (group: CoalesceGroup, err: unknown) => void,
 ): Promise<boolean> => {
   const { leader, absorbed } = group;
@@ -319,6 +321,21 @@ const applyGroup = async (
         sequencerIdentityMap.ingestBare([element]);
       }
       getInstanceIds(element).forEach((id: string) => writtenIds.push(id));
+      // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (recorded on the
+      // intent context by inputResolveRefs) become pending-ref inputs, persisted with the
+      // batch at flush time so the debt commits with the accepted write.
+      const seqScope = (leader.context as any)?.sequencer;
+      if (seqScope?.strippedRefs?.length) {
+        seqScope.strippedRefs.forEach((s: { targetRef: string; relType: string }) => strippedInputs.push({
+          ownerId: element.internal_id,
+          ownerType: element.entity_type,
+          relType: s.relType,
+          targetRef: s.targetRef,
+          userId: leader.user.id,
+          user: leader.user,
+        }));
+        seqScope.strippedRefs = null;
+      }
     }
     pendings.push({ leader, absorbed, result });
   } catch (err) {
@@ -331,6 +348,21 @@ const applyGroup = async (
 
 const runBatchLoop = async () => {
   await startIdentityMapInvalidation();
+  if (SEQUENCER_CONFIG.stripReconcile) {
+    registerPendingRefsEsOps({
+      indexExists: (index) => elIndexExists(index),
+      createIndex: (index, mappingProperties) => elCreateIndex(index, mappingProperties),
+      bulk: async (body) => {
+        const esContext = executionContext('sequencer', SYSTEM_USER);
+        return elRawBulk(esContext, { body });
+      },
+      search: async (query) => {
+        const esContext = executionContext('sequencer', SYSTEM_USER);
+        return elRawSearch(esContext, SYSTEM_USER, null, query);
+      },
+    });
+    await initPendingRefs();
+  }
   logApp.info('[SEQUENCER] batch loop started');
   // Deferral lanes, RESIDUAL since P2 merge-fold (plan 0009 s9.7): same-target different-input
   // ENTITY writes now chain within one batch (each step diffing against the predecessor's
@@ -536,6 +568,7 @@ const runBatchLoop = async () => {
       });
     };
     const writtenIds: string[] = [];
+    const strippedInputs: StrippedRefInput[] = [];
     const buffer = new SequencerWriteBuffer();
     const pendings: PendingResolution[] = [];
     setCurrentWriteBuffer(buffer);
@@ -578,7 +611,7 @@ const runBatchLoop = async () => {
           }
           onApplyFailure(g, err);
         };
-        const ok = await applyGroup(group, writtenIds, pendings, onFailure);
+        const ok = await applyGroup(group, writtenIds, pendings, strippedInputs, onFailure);
         if (!ok) failedAt[i] = true;
       }
       setCurrentWriteBuffer(null); // flush must not re-buffer
@@ -592,6 +625,18 @@ const runBatchLoop = async () => {
         const tEvents = Date.now();
         await flushSequencerEvents(buffer.events);
         sequencerMetrics.phase('events', (Date.now() - tEvents) / 1000);
+        // s9.12.3: persist this batch's strip records BEFORE resolving the intents (the
+        // worker ack must never outrun the recorded debt), then match every committed
+        // element against the pending population and re-assert the hits (fire-and-forget:
+        // the re-assertions re-enter the boundary as normal mutations).
+        if (strippedInputs.length > 0) {
+          await persistPendingRecords(buildPendingRecords(strippedInputs));
+        }
+        pendings.forEach(({ result }) => {
+          const element = result?.element ?? result;
+          const hits = matchCreatedElement(element);
+          if (hits.length > 0) fireReconcile(hits);
+        });
         pendings.forEach(({ leader, absorbed, result }) => {
           sequencerMetrics.intent('applied', leader.kind);
           leader.resolve(result);
