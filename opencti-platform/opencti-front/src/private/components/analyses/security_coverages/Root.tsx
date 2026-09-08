@@ -57,6 +57,7 @@ const securityCoverageQuery = graphql`
       ...StixCoreObjectContent_stixCoreObject
       ...StixCoreObjectSharingListFragment
       ...GoToOpenAEVDrawerFragment
+      ...SecurityCoverageResultFragment
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -127,7 +128,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             pages={{
               overview:
                 <SecurityCoverage data={securityCoverage} />,
-              result: <SecurityCoverageResult id={securityCoverage.id} />,
+              result: <SecurityCoverageResult data={securityCoverage} />,
               content: (
                 <StixCoreObjectContentRoot
                   stixCoreObject={securityCoverage}
