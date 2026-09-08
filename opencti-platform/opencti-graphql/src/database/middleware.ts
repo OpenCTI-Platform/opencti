@@ -1266,17 +1266,6 @@ export const inputResolveRefs = async (
     if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
       throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }
-    // [SEQUENCER-DIAG] rel_* truncation dig round 2 (2026-09-08, REMOVE after): past two
-    // retries the unresolved optional refs are silently DROPPED (the create proceeds without
-    // them): log each drop so estate containment holes can be attributed to this site.
-    if (expectedUnresolvedIdsNotDefault.length > 0) {
-      logApp.warn('[SEQUENCER-DIAG] unresolved optional refs silently dropped', {
-        type,
-        input_id: input.stix_id ?? input.standard_id ?? input.name ?? null,
-        retryNumber: retryNumber ?? null,
-        dropped: expectedUnresolvedIdsNotDefault.slice(0, 10),
-      });
-    }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
     // Check Open vocab in resolved to convert them back to the raw value
