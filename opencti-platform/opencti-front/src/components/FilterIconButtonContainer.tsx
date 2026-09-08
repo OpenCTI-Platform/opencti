@@ -108,6 +108,7 @@ const FilterIconButtonContainer: FunctionComponent<
   const oldItemRefToPopover = useRef(null);
   const filterLineRef = useRef<HTMLDivElement | null>(null);
   const [openedGroupId, setOpenedGroupId] = useState<string | undefined>(undefined);
+  const chipRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const panelFilterKeys = availableFilterKeys ?? Array.from(filterKeysMap.keys());
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
@@ -234,24 +235,13 @@ const FilterIconButtonContainer: FunctionComponent<
   const openedGroup = displayedFilterGroups.find((group) => group.id === openedGroupId);
 
   const handleClickAwayPanel = (event: MouseEvent | TouchEvent) => {
-    // MUI popovers/menus/autocompletes may render in a portal, i.e. outside the panel subtree:
-    // a click inside one of them must not be treated as a click away.
-    // Same for the design-system Select/Combobox: they are Radix based and portal their content
-    // UNCONDITIONALLY (no `disablePortal`/`portalled` escape hatch on SelectContent), so the only
-    // guarantee left is to recognise their DOM markers here.
-    // `[data-radix-popper-content-wrapper]` is the wrapper Radix puts around any popper-positioned
-    // content (Select, Combobox), `[data-radix-select-viewport]` covers the item-aligned position.
-    const target = event.target as HTMLElement | null;
-    const portalSelectors = [
-      '.MuiPopover-root',
-      '.MuiPopper-root',
-      '.MuiModal-root',
-      '.MuiAutocomplete-popper',
-      '[data-radix-popper-content-wrapper]',
-      '[data-radix-select-viewport]',
-      '[role="listbox"]',
-    ].join(', ');
-    if (target?.closest?.(portalSelectors)) return;
+    // This listener runs on `pointerdown` (see `mouseEvent` on the ClickAwayListener below), so the
+    // chip that toggles the panel would be closed here and immediately reopened by its own click
+    // handler. The chip owns its toggle: ignore the gesture when it starts inside it.
+    const target = event.target as Node | null;
+    if (openedGroupId && target && chipRefs.current[openedGroupId]?.contains(target)) {
+      return;
+    }
     setOpenedGroupId(undefined);
   };
 
@@ -421,6 +411,9 @@ const FilterIconButtonContainer: FunctionComponent<
         {displayedFilterGroups.map((group, index) => (
           <Fragment key={group.id ?? `filter-group-${index}`}>
             <FilterGroupChipButton
+              ref={(node) => {
+                chipRefs.current[group.id ?? ''] = node;
+              }}
               filterGroup={group}
               isOpen={openedGroupId === group.id}
               readOnly={isGroupPanelReadOnly}
@@ -460,7 +453,15 @@ const FilterIconButtonContainer: FunctionComponent<
           {({ TransitionProps }) => (
             <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
               <Paper sx={{ width: '100%' }}>
-                <ClickAwayListener onClickAway={handleClickAwayPanel}>
+                {/* The decision must be taken on `pointerdown`: the design system Select opens on
+                    that event and portals its content, and the resulting `click` is then dispatched
+                    on the common ancestor of the trigger and of the freshly mounted content, i.e.
+                    the document element — outside the panel and outside any React tree, where no
+                    listener can recognise it. On `pointerdown` the target is still the trigger.
+                    Clicks landing inside an already open portal are handled by ClickAwayListener
+                    itself, which forgives events bubbling through a React portal.
+                    FDS-WORKAROUND #61: removable once SelectContent accepts `portalled`. */}
+                <ClickAwayListener mouseEvent="onPointerDown" onClickAway={handleClickAwayPanel}>
                   <Box>
                     {openedGroup && (
                       <FilterGroupPanel

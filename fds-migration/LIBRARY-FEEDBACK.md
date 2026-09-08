@@ -2264,3 +2264,70 @@ at 10% of the status colour; the wash is a different value.
 It retires the day the label follows the data colour and the wash yields to a
 caller-supplied background, or the day `Chip` exposes a label slot.
 
+
+---
+
+## 61. `SelectContent` cannot opt out of its portal, so a host that owns its own dismissal cannot see the click
+
+`MenuContent` takes `portalled`, documented as "Render inside a portal (default
+`true`). Set to `false` for hosts that clip or restyle portalled content (RFC
+§4.2)". `SelectContent` takes no such prop: its source renders
+`<SelectPrimitive.Portal>` unconditionally (`components/select/Select.js:267`),
+and `SelectContentProps` declares only `children`. The same asymmetry holds for
+`Combobox`. So two sibling components of the same library answer the same
+question differently.
+
+**Where it bites.** OpenCTI's nested filter groups (#12062) edit a group in a
+panel that behaves like a complex select: it is mounted in a MUI `Popper` and
+dismissed by a MUI `ClickAwayListener`. Each condition row inside it renders two
+`Select`s. Both dismissal systems are then in play, and the outer one cannot see
+the inner one.
+
+The failure is not the one a portal usually causes. `ClickAwayListener` already
+forgives portals: it treats an event as inside when it bubbled through the React
+tree, which a React portal does. What it cannot forgive is the gesture that
+OPENS the select. Radix opens on `pointerdown` and calls `preventDefault()`, so
+the content mounts mid-gesture; the `click` that follows is dispatched on the
+common ancestor of the trigger and of the freshly mounted content. Measured in
+the browser, that ancestor is the document element:
+
+```
+{ type: "click", targetTag: "HTML", pathTags: ["HTML", document, Window] }
+```
+
+An `<html>` target is outside the panel, carries no React tree, and matches no
+DOM marker — every recognition strategy available to the host fails on it, which
+is why a first attempt at listing the Radix markers
+(`[data-radix-popper-content-wrapper]`, `[data-radix-select-viewport]`) never
+worked and was removed rather than extended.
+
+**Workaround.** FDS-WORKAROUND #61 in `FilterIconButtonContainer.tsx`: the
+`ClickAwayListener` runs on `mouseEvent="onPointerDown"` instead of the default
+`onClick`, so the decision is taken while the target is still the trigger,
+inside the panel. Clicks inside an already open portal keep relying on the
+library's own React-tree rule. The chip that toggles the panel is excluded by
+ref containment, since moving to `pointerdown` would otherwise let the panel
+close and its own click reopen it.
+
+The cost is a semantic one the product accepts here but would rather not spread:
+a gesture started outside the panel and released inside it now dismisses.
+
+It retires the day `SelectContent` accepts `portalled`, at which point the row
+renders `portalled={false}`, the content lives inside the panel, and the host
+needs no dismissal special case at all — exactly how the panel's own MUI
+AND/OR `Select` already behaves with `MenuProps={{ disablePortal: true }}`.
+
+**Removal test.** Pass `portalled={false}` on both `Select`s of `FilterRow`,
+then delete all three parts of the compensation in
+`FilterIconButtonContainer.tsx`: the `mouseEvent="onPointerDown"` on the
+`ClickAwayListener`, the `chipRefs` containment check in `handleClickAwayPanel`,
+and the `FDS-WORKAROUND #61` comment. On a list with a filter group holding at
+least one condition, the panel must stay open while opening the filter-name
+select, the condition select, the row's overflow menu and a value autocomplete;
+it must close on a click anywhere else on the page; and the `{n} rules` chip
+must still close it in one click, without reopening. The entry closes only when
+that passes against a named pin.
+
+Once it does, the panel's own mode select can drop MUI as well and become an
+FDS `Select` with `portalled={false}`, removing one more entry from the
+migration ledger.
