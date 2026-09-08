@@ -126,13 +126,26 @@ export const buildPendingRecords = (inputs: StrippedRefInput[]): PendingRefRecor
 // Persist a batch of strip records (store write-through + memory index). Called by the
 // loop right after a successful batch flush: the debt commits with the batch (small
 // crash window between the two bulks, documented in the design note).
+// The platform index template is dynamic:strict: the persisted document must carry ONLY
+// mapped fields (validation campaign 2: the record's `id` field 400'd every item and the
+// bulk does not throw on per-item errors, so the whole store stayed silently empty).
+const checkBulkResponse = (response: any, operation: string) => {
+  const result = response?.body ?? response;
+  if (result?.errors) {
+    const firstError = (result.items ?? []).find((i: any) => (i.index ?? i.update)?.error);
+    logApp.error('[SEQUENCER] pending refs bulk rejected items', {
+      operation, sample: (firstError?.index ?? firstError?.update)?.error,
+    });
+  }
+};
+
 export const persistPendingRecords = async (records: PendingRefRecord[]) => {
   if (records.length === 0 || !esOps) return;
   const body = records.flatMap((r) => {
-    const { user: _user, ...persisted } = r; // user is memory-only
+    const { id: _id, user: _user, ...persisted } = r; // id is the _id; user is memory-only
     return [{ index: { _index: PENDING_REFS_INDEX, _id: r.id } }, persisted];
   });
-  await esOps.bulk(body);
+  checkBulkResponse(await esOps.bulk(body), 'persist');
   records.forEach((r) => {
     if (!byId.has(r.id)) sequencerMetrics.pendingRefEvent('stripped');
     memoryAdd(r);
@@ -157,7 +170,7 @@ const settle = async (record: PendingRefRecord, status: PendingRefRecord['status
   record.status = status;
   if (esOps) {
     const body = [{ update: { _index: PENDING_REFS_INDEX, _id: record.id } }, { doc: { status, attempts: record.attempts } }];
-    await esOps.bulk(body);
+    checkBulkResponse(await esOps.bulk(body), 'settle');
   }
 };
 
@@ -165,7 +178,7 @@ const bumpAttempts = async (record: PendingRefRecord) => {
   record.attempts += 1;
   if (esOps) {
     const body = [{ update: { _index: PENDING_REFS_INDEX, _id: record.id } }, { doc: { attempts: record.attempts } }];
-    await esOps.bulk(body);
+    checkBulkResponse(await esOps.bulk(body), 'bump');
   }
 };
 
@@ -197,27 +210,46 @@ export const fireReconcile = (hits: { record: PendingRefRecord; targetInternalId
 // the expiry go TERMINAL and visible, never silently dropped.
 const SWEEP_INTERVAL_MS = 60_000;
 const SWEEP_MIN_AGE_MS = 30_000;
+let sweeping = false; // sweeps can outlast the interval: never overlap them
 const sweepOnce = async () => {
-  const now = Date.now();
-  const aged = [...byId.values()].filter((r) => now - r.created_at > SWEEP_MIN_AGE_MS);
-  for (let i = 0; i < aged.length; i += 1) {
-    const record = aged[i];
-    if (now - record.created_at > SEQUENCER_CONFIG.pendingRefExpiryS * 1000) {
-      await settle(record, 'expired');
-      sequencerMetrics.pendingRefEvent('expired');
-      logApp.warn('[SEQUENCER] pending ref EXPIRED without target', {
-        id: record.id, owner: record.owner_id, rel_type: record.rel_type, target: record.target_ref, attempts: record.attempts,
-      });
-    } else if (reconcileAssert) {
-      try {
-        // target resolution happens inside the normal path (by any instance id)
-        await reconcileAssert(record, record.target_ref);
-        await settle(record, 'reconciled');
-        sequencerMetrics.pendingRefEvent('reconciled');
-      } catch {
-        await bumpAttempts(record);
+  if (sweeping) return;
+  sweeping = true;
+  const sweepStart = Date.now();
+  let reconciled = 0;
+  let failed = 0;
+  let failSample: unknown = null;
+  try {
+    const now = Date.now();
+    const aged = [...byId.values()].filter((r) => now - r.created_at > SWEEP_MIN_AGE_MS);
+    for (let i = 0; i < aged.length; i += 1) {
+      const record = aged[i];
+      if (now - record.created_at > SEQUENCER_CONFIG.pendingRefExpiryS * 1000) {
+        await settle(record, 'expired');
+        sequencerMetrics.pendingRefEvent('expired');
+        logApp.warn('[SEQUENCER] pending ref EXPIRED without target', {
+          id: record.id, owner: record.owner_id, rel_type: record.rel_type, target: record.target_ref, attempts: record.attempts,
+        });
+      } else if (reconcileAssert) {
+        try {
+          // target resolution happens inside the normal path (by any instance id)
+          await reconcileAssert(record, record.target_ref);
+          await settle(record, 'reconciled');
+          sequencerMetrics.pendingRefEvent('reconciled');
+          reconciled += 1;
+        } catch (err) {
+          await bumpAttempts(record);
+          failed += 1;
+          if (!failSample) failSample = { rel_type: record.rel_type, target: record.target_ref, attempts: record.attempts, cause: String(err) };
+        }
       }
     }
+    if (aged.length > 0) {
+      logApp.info('[SEQUENCER] pending refs sweep', {
+        swept: aged.length, reconciled, failed, remaining: byId.size, duration_ms: Date.now() - sweepStart, fail_sample: failSample,
+      });
+    }
+  } finally {
+    sweeping = false;
   }
 };
 
