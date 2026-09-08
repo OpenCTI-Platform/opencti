@@ -1964,3 +1964,174 @@ describe('Filter group cleaning compositions', () => {
     });
   });
 });
+
+// Characterization tests (issue 12062): they PIN DOWN the CURRENT behaviour of
+// getEntityTypeThreeFirstLevelsFilterValues when USER-MADE nested groups are present.
+// This function was designed for the "context" groups built by
+// useBuildEntityTypeBasedFilterContext, not for arbitrary user parentheses.
+// Decision: no behaviour change - these tests only make any future change explicit.
+describe('getEntityTypeThreeFirstLevelsFilterValues with user-made nested groups', () => {
+  const observableTypes = ['Domain-Name', 'File'];
+  const domainObjectTypes = ['Report', 'Malware'];
+
+  it('should ignore an entity_type sitting in a user-made OR group with several filters', () => {
+    // filters: Report AND (Malware OR Indicator)
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Report'] }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: 'entity_type', operator: 'eq', values: ['Malware'] },
+            { key: 'entity_type', operator: 'eq', values: ['Indicator'] },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = getEntityTypeThreeFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    // For the user: the mass-operations toolbar / widget scope only sees "Report".
+    // Malware and Indicator are invisible to the scope, which is the safe (widest) answer
+    // since an OR branch does not restrict the result set.
+    expect(result).toEqual(['Report']);
+  });
+
+  it('should treat a user-made OR group holding a SINGLE filter as an AND group', () => {
+    // filters: Stix-Cyber-Observable AND (Domain-Name) where the group mode is 'or'
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Stix-Cyber-Observable'] }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [{ key: 'entity_type', operator: 'eq', values: ['Domain-Name'] }],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = getEntityTypeThreeFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    // For the user: a one-filter OR group is semantically an AND, so the scope narrows
+    // to Domain-Name and the parent Stix-Cyber-Observable is dropped from the toolbar scope.
+    expect(result).toEqual(['Domain-Name']);
+  });
+
+  it('should pick up an entity_type located at the third level of user-made groups', () => {
+    // filters: Report AND ( ( Malware ) )
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Report'] }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [{ key: 'entity_type', operator: 'eq', values: ['Malware'] }],
+              filterGroups: [],
+            },
+          ],
+        },
+      ],
+    };
+    const result = getEntityTypeThreeFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    // For the user: the toolbar scope is Report + Malware (third level IS explored).
+    expect(result).toEqual(['Report', 'Malware']);
+  });
+
+  it('should ignore an entity_type located at the fourth level of user-made groups', () => {
+    // filters: Report AND ( ( ( Malware ) ) )
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Report'] }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [],
+              filterGroups: [
+                {
+                  mode: 'and',
+                  filters: [{ key: 'entity_type', operator: 'eq', values: ['Malware'] }],
+                  filterGroups: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const result = getEntityTypeThreeFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    // For the user: with 4 levels of parentheses the scope stays at Report only; deeper
+    // restrictions are never taken into account (hard 3-level limit).
+    expect(result).toEqual(['Report']);
+  });
+
+  it('should return an empty result when the root group is in OR mode and only deep groups hold entity_type', () => {
+    // filters: Report OR ( ( Malware ) )
+    const filters = {
+      mode: 'or',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Report'] }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [{ key: 'entity_type', operator: 'eq', values: ['Malware'] }],
+              filterGroups: [],
+            },
+          ],
+        },
+      ],
+    };
+    const result = getEntityTypeThreeFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    // For the user: the root OR short-circuits and even the first-level "Report" is lost,
+    // so the toolbar/widget scope falls back to "no known entity type" (all types).
+    expect(result).toEqual([]);
+  });
+
+  it('should still return second level values even when the root group is in OR mode', () => {
+    // filters: Report OR ( Malware )
+    const filters = {
+      mode: 'or',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Report'] }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [{ key: 'entity_type', operator: 'eq', values: ['Malware'] }],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = getEntityTypeThreeFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    // For the user: the OR short-circuit happens AFTER the second level check, so here the
+    // scope is Report + Malware although the two are combined with OR - inconsistent with
+    // the previous test, but that is today's behaviour.
+    expect(result).toEqual(['Report', 'Malware']);
+  });
+
+  it('should not remove the parent type when the narrowing group is in OR mode at the root', () => {
+    // filters: Stix-Domain-Object OR ( Malware )
+    const filters = {
+      mode: 'or',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Stix-Domain-Object'] }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [{ key: 'entity_type', operator: 'eq', values: ['Malware'] }],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = getEntityTypeThreeFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    // For the user: with an OR root the abstract parent type is kept, so the toolbar scope
+    // is the union Stix-Domain-Object + Malware (widest scope, no narrowing).
+    expect(result).toEqual(['Stix-Domain-Object', 'Malware']);
+  });
+});

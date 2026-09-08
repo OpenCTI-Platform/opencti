@@ -18,6 +18,15 @@ import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import Security from '../../utils/Security';
 import { Input } from '@filigran/design-system';
+import { stripFilterIds } from '../../utils/filters/filtersUtils';
+import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
+
+/**
+ * Serializes a filter group for saved filters persistence.
+ * /!\ Saved filters are persisted in the FRONTEND format (single string keys, empty filters kept)
+ * and are re-read with a bare JSON.parse: only the frontend-only ids are stripped here.
+ */
+export const serializeSavedFilterGroup = (filters?: FilterGroup | null) => JSON.stringify(filters ? stripFilterIds(filters) : filters);
 
 const savedFilterCreateDialogMutation = graphql`
   mutation SavedFilterCreateDialogMutation($input: SavedFilterAddInput!) {
@@ -90,7 +99,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
       variables: {
         input: {
           name: filterName,
-          filters: JSON.stringify(filters),
+          filters: serializeSavedFilterGroup(filters),
           scope: localStorageKey,
           authorized_members: restrictedMembers,
         },
