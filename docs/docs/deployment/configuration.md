@@ -489,7 +489,7 @@ Environment variables:
 | garbage_collection_manager:batch_size                | GARBAGE_COLLECTION_MANAGER__BATCH_SIZE                | 10000                            | Number of trash elements to delete at once                                                                                                     |
 | garbage_collection_manager:deleted_retention_days    | GARBAGE_COLLECTION_MANAGER__DELETED_RETENTION_DAYS    | 7                                | Days after which elements in trash are deleted                                                                                                 |
 | -                                                    | -                                                     | -                                | -                                                                                                                                              |
-| telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_LOCK                          | telemetry_manager_lock           | Lock key for the manager in Redis                                                                                                              |
+| telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_KEY                           | telemetry_manager_lock           | Lock key for the manager in Redis                                                                                                              |
 
 
 !!! note "Manager's duties"
