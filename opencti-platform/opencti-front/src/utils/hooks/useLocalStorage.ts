@@ -3,7 +3,16 @@ import { Dispatch, SetStateAction, SyntheticEvent, useCallback, useState } from 
 import { v4 as uuid } from 'uuid';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter, removeEmptyFiltersFromList, useFetchFilterKeysSchema } from '../filters/filtersUtils';
+import {
+  cloneFilterGroup,
+  emptyFilterGroup,
+  findFilterFromKey,
+  isFilterGroupNotEmpty,
+  isUniqFilter,
+  pruneEmptyFiltersAndGroups,
+  stripFilterIds,
+  useFetchFilterKeysSchema,
+} from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -671,7 +680,7 @@ export const usePaginationLocalStorage = <U>(
           }
         : {
             ...viewStorage,
-            filters: initialValue.filters ?? emptyFilterGroup,
+            filters: cloneFilterGroup(initialValue.filters ?? emptyFilterGroup),
             searchTerm: initialValue.searchTerm ?? '',
             savedFilters: undefined,
             view: value,
@@ -730,7 +739,7 @@ export const usePaginationLocalStorage = <U>(
     handleClearAllFilters: () => {
       const newValue = {
         ...viewStorage,
-        filters: initialValue.filters ?? emptyFilterGroup,
+        filters: cloneFilterGroup(initialValue.filters ?? emptyFilterGroup),
         searchTerm: initialValue.searchTerm ?? '',
         numberOfElements: viewStorage.numberOfElements,
         savedFilters: undefined,
@@ -777,25 +786,12 @@ export const usePaginationLocalStorage = <U>(
     },
   };
 
-  const notEmptyFiltersList = removeEmptyFiltersFromList(paginationOptions.filters?.filters ?? []);
-  let filters;
-  if (notEmptyFiltersList.length > 0) {
-    filters = {
-      ...paginationOptions.filters,
-      filters: notEmptyFiltersList.map((filter: Filter) => {
-        const removeIdFromFilter = { ...filter };
-        delete removeIdFromFilter.id;
-        return removeIdFromFilter;
-      }),
-    };
-  } else {
-    // In case where filter is empty but filterGroup exist
-    const newFilters = {
-      ...paginationOptions.filters,
-      filters: notEmptyFiltersList,
-    } as FilterGroup;
-    filters = isFilterGroupNotEmpty(newFilters) ? newFilters : undefined;
-  }
+  // Clean the filters before sending them to the backend: remove the frontend-only ids at every
+  // nesting level and prune the empty filters and empty descendant groups.
+  const cleanedFilters = paginationOptions.filters
+    ? pruneEmptyFiltersAndGroups(stripFilterIds(paginationOptions.filters))
+    : undefined;
+  const filters = cleanedFilters && isFilterGroupNotEmpty(cleanedFilters) ? cleanedFilters : undefined;
   const cleanPaginationOptions = {
     ...paginationOptions,
     filters,

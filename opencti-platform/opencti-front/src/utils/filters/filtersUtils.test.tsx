@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildFiltersAndOptionsForWidgets,
   buildFiltersForCustomView,
+  cloneFilterGroup,
   emptyFilterGroup,
   findFilterFromKey,
   findFiltersFromKeys,
@@ -12,15 +13,19 @@ import {
   isRegardingOfFilterWarning,
   normalizeFilterGroupForBackend,
   normalizeFilterGroupForFrontend,
+  pruneEmptyFiltersAndGroups,
   removeEmptyFiltersFromList,
   removeFrontendIdAndEmptyFiltersFromFilterGroupObject,
   removeIdAndIncorrectKeysFromFilterGroupObject,
+  sanitizeFiltersStructure,
   serializeFilterGroupForBackend,
+  stripFilterIds,
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
   GqlFilterGroup,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
+import { expectNoFrontendIds } from '../tests/filtersTestHelpers';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
 import { FilterGroup } from './filtersHelpers-types';
 
@@ -1531,5 +1536,431 @@ describe('isDraftWorkspaceFilterGroup', () => {
   it('should return true when entity_type value is an object with id property', () => {
     const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
     expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+});
+
+describe('emptyFilterGroup immutability', () => {
+  it('should be frozen, including its arrays', () => {
+    expect(Object.isFrozen(emptyFilterGroup)).toBe(true);
+    expect(Object.isFrozen(emptyFilterGroup.filters)).toBe(true);
+    expect(Object.isFrozen(emptyFilterGroup.filterGroups)).toBe(true);
+  });
+});
+
+describe('cloneFilterGroup', () => {
+  it('should deep copy a filter group without sharing any array instance', () => {
+    const source: FilterGroup = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' }],
+      filterGroups: [{
+        mode: 'or',
+        filters: [{ key: 'objectLabel', values: ['label-1'] }],
+        filterGroups: [],
+      }],
+    };
+    const clone = cloneFilterGroup(source);
+    expect(clone).toStrictEqual(source);
+    expect(clone).not.toBe(source);
+    expect(clone.filters).not.toBe(source.filters);
+    expect(clone.filters[0]).not.toBe(source.filters[0]);
+    expect(clone.filters[0].values).not.toBe(source.filters[0].values);
+    expect(clone.filterGroups).not.toBe(source.filterGroups);
+    expect(clone.filterGroups[0].filters).not.toBe(source.filterGroups[0].filters);
+  });
+
+  it('should produce a mutable copy of the frozen emptyFilterGroup', () => {
+    const clone = cloneFilterGroup(emptyFilterGroup);
+    expect(Object.isFrozen(clone)).toBe(false);
+    expect(() => clone.filters.push({ key: 'entity_type', values: ['Report'] })).not.toThrow();
+    expect(emptyFilterGroup.filters).toHaveLength(0);
+  });
+});
+
+describe('stripFilterIds', () => {
+  it('should remove ids at every level of a 3-level-deep filter group', () => {
+    const input = {
+      id: 'root-id',
+      mode: 'and',
+      filters: [{ id: 'f1', key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' }],
+      filterGroups: [{
+        id: 'g1',
+        mode: 'or',
+        filters: [{ id: 'f2', key: 'objectLabel', values: ['label-1'] }],
+        filterGroups: [{
+          id: 'g2',
+          mode: 'and',
+          filters: [{ id: 'f3', key: 'createdBy', values: ['author-1'], operator: 'eq' }],
+          filterGroups: [],
+        }],
+      }],
+    } as unknown as FilterGroup;
+    const result = stripFilterIds(input);
+    expectNoFrontendIds(result);
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' }],
+      filterGroups: [{
+        mode: 'or',
+        filters: [{ key: 'objectLabel', values: ['label-1'] }],
+        filterGroups: [{
+          mode: 'and',
+          filters: [{ key: 'createdBy', values: ['author-1'], operator: 'eq' }],
+          filterGroups: [],
+        }],
+      }],
+    });
+  });
+
+  it('should emit properties in the exact order mode/filters/filterGroups and key/values/operator/mode', () => {
+    const input = {
+      filterGroups: [],
+      filters: [{ mode: 'or', operator: 'eq', values: ['Report'], key: 'entity_type', id: 'f1' }],
+      mode: 'and',
+    } as unknown as FilterGroup;
+    const result = stripFilterIds(input);
+    expect(JSON.stringify(result)).toEqual(
+      '{"mode":"and","filters":[{"key":"entity_type","values":["Report"],"operator":"eq","mode":"or"}],"filterGroups":[]}',
+    );
+  });
+
+  it('should never emit undefined optional properties', () => {
+    const input = {
+      mode: 'and',
+      filters: [{ key: 'objectLabel', values: ['label-1'], operator: undefined, mode: undefined }],
+      filterGroups: [],
+    } as unknown as FilterGroup;
+    const result = stripFilterIds(input);
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [{ key: 'objectLabel', values: ['label-1'] }],
+      filterGroups: [],
+    });
+    expect(Object.keys(result.filters[0])).toEqual(['key', 'values']);
+  });
+
+  it('should not mutate its input and should work on a frozen filter group', () => {
+    const result = stripFilterIds(emptyFilterGroup);
+    expect(result).toStrictEqual({ mode: 'and', filters: [], filterGroups: [] });
+    expect(result).not.toBe(emptyFilterGroup);
+    const input = {
+      mode: 'and',
+      filters: [{ id: 'f1', key: 'objectLabel', values: ['label-1'] }],
+      filterGroups: [],
+    } as unknown as FilterGroup;
+    stripFilterIds(input);
+    expect(JSON.stringify(input)).toContain('"id":"f1"');
+  });
+
+  it('should reorder dynamicRegardingOf values as [...dynamic, ...relationship_type], drop other value keys and strip nested filter groups', () => {
+    const input = {
+      mode: 'and',
+      filters: [{
+        id: 'f1',
+        key: 'dynamicRegardingOf',
+        values: [
+          { key: 'relationship_type', values: ['targets'] },
+          { key: 'id', values: ['some-id'] },
+          {
+            key: 'dynamic',
+            values: [{
+              id: 'nested-group-id',
+              mode: 'and',
+              filters: [{ id: 'nested-filter-id', key: 'entity_type', values: ['Malware'], operator: 'eq' }],
+              filterGroups: [],
+            }],
+          },
+        ],
+        operator: 'eq',
+      }],
+      filterGroups: [],
+    } as unknown as FilterGroup;
+    const result = stripFilterIds(input);
+    expectNoFrontendIds(result);
+    expect(result.filters[0].values.map((v: { key: string }) => v.key)).toEqual(['dynamic', 'relationship_type']);
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [{
+        key: 'dynamicRegardingOf',
+        values: [
+          {
+            key: 'dynamic',
+            values: [{
+              mode: 'and',
+              filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq' }],
+              filterGroups: [],
+            }],
+          },
+          { key: 'relationship_type', values: ['targets'] },
+        ],
+        operator: 'eq',
+      }],
+      filterGroups: [],
+    });
+  });
+});
+
+describe('pruneEmptyFiltersAndGroups', () => {
+  it('should remove filters with no values but keep nil/not_nil filters', () => {
+    const input: FilterGroup = {
+      mode: 'and',
+      filters: [
+        { key: 'objectLabel', values: [] },
+        { key: 'createdBy', values: [], operator: 'nil' },
+        { key: 'objectMarking', values: [], operator: 'not_nil' },
+        { key: 'entity_type', values: ['Report'], operator: 'eq' },
+      ],
+      filterGroups: [],
+    };
+    const result = pruneEmptyFiltersAndGroups(input);
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [
+        { key: 'createdBy', values: [], operator: 'nil' },
+        { key: 'objectMarking', values: [], operator: 'not_nil' },
+        { key: 'entity_type', values: ['Report'], operator: 'eq' },
+      ],
+      filterGroups: [],
+    });
+  });
+
+  it('should remove empty descendant groups recursively', () => {
+    const input: FilterGroup = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Report'] }],
+      filterGroups: [
+        { mode: 'or', filters: [{ key: 'objectLabel', values: [] }], filterGroups: [] },
+        {
+          mode: 'or',
+          filters: [],
+          filterGroups: [{ mode: 'and', filters: [{ key: 'createdBy', values: [] }], filterGroups: [] }],
+        },
+        { mode: 'or', filters: [{ key: 'createdBy', values: ['author-1'] }], filterGroups: [] },
+      ],
+    };
+    const result = pruneEmptyFiltersAndGroups(input);
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Report'] }],
+      filterGroups: [
+        { mode: 'or', filters: [{ key: 'createdBy', values: ['author-1'] }], filterGroups: [] },
+      ],
+    });
+  });
+
+  it('should preserve the root group even when it becomes empty', () => {
+    const input: FilterGroup = {
+      mode: 'or',
+      filters: [{ key: 'objectLabel', values: [] }],
+      filterGroups: [{ mode: 'and', filters: [{ key: 'createdBy', values: [] }], filterGroups: [] }],
+    };
+    expect(pruneEmptyFiltersAndGroups(input)).toStrictEqual({ mode: 'or', filters: [], filterGroups: [] });
+  });
+
+  it('should descend into dynamicRegardingOf dynamic values', () => {
+    const input: FilterGroup = {
+      mode: 'and',
+      filters: [{
+        key: 'dynamicRegardingOf',
+        values: [
+          {
+            key: 'dynamic',
+            values: [{
+              mode: 'and',
+              filters: [
+                { key: 'objectLabel', values: [] },
+                { key: 'entity_type', values: ['Malware'] },
+              ],
+              filterGroups: [{ mode: 'or', filters: [{ key: 'createdBy', values: [] }], filterGroups: [] }],
+            }],
+          },
+          { key: 'relationship_type', values: ['targets'] },
+        ],
+      }],
+      filterGroups: [],
+    };
+    const result = pruneEmptyFiltersAndGroups(input);
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [{
+        key: 'dynamicRegardingOf',
+        values: [
+          {
+            key: 'dynamic',
+            values: [{
+              mode: 'and',
+              filters: [{ key: 'entity_type', values: ['Malware'] }],
+              filterGroups: [],
+            }],
+          },
+          { key: 'relationship_type', values: ['targets'] },
+        ],
+      }],
+      filterGroups: [],
+    });
+  });
+
+  it('should not mutate its input and should work on a frozen filter group', () => {
+    expect(pruneEmptyFiltersAndGroups(emptyFilterGroup)).toStrictEqual({ mode: 'and', filters: [], filterGroups: [] });
+    const input: FilterGroup = {
+      mode: 'and',
+      filters: [{ key: 'objectLabel', values: [] }],
+      filterGroups: [],
+    };
+    pruneEmptyFiltersAndGroups(input);
+    expect(input.filters).toHaveLength(1);
+  });
+});
+
+describe('Filter group cleaning compositions', () => {
+  const nestedFilterGroupWithIds = {
+    id: 'group-root',
+    mode: 'and',
+    filters: [
+      { id: 'f1', key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+      {
+        id: 'f2',
+        key: 'dynamicRegardingOf',
+        values: [
+          {
+            key: 'dynamic',
+            values: [{
+              id: 'group-dynamic',
+              mode: 'and',
+              filters: [{ id: 'f3', key: 'objectLabel', values: ['label1'] }],
+              filterGroups: [],
+            }],
+          },
+          { key: 'relationship_type', values: ['targets'] },
+        ],
+      },
+    ],
+    filterGroups: [
+      {
+        id: 'group-child',
+        mode: 'or',
+        filters: [{ id: 'f4', key: 'createdBy', values: ['author-1'], operator: 'eq' }],
+        filterGroups: [
+          {
+            id: 'group-grand-child',
+            mode: 'and',
+            filters: [{ id: 'f5', key: 'objectMarking', values: ['marking-1'] }],
+            filterGroups: [],
+          },
+        ],
+      },
+    ],
+  } as unknown as FilterGroup;
+
+  it('should drop a subgroup whose only filter has an unavailable key', () => {
+    const input = {
+      mode: 'and',
+      filters: [{ id: 'f1', key: 'entity_type', values: ['Malware'], operator: 'eq' }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [{ id: 'f2', key: 'unavailable_key', values: ['XX'], operator: 'eq' }],
+          filterGroups: [],
+        },
+        {
+          mode: 'and',
+          filters: [{ id: 'f3', key: 'objectLabel', values: ['label1'], operator: 'eq' }],
+          filterGroups: [],
+        },
+      ],
+    } as unknown as FilterGroup;
+    const result = removeIdAndIncorrectKeysFromFilterGroupObject(input, ['entity_type', 'objectLabel']);
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq' }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [{ key: 'objectLabel', values: ['label1'], operator: 'eq' }],
+          filterGroups: [],
+        },
+      ],
+    });
+  });
+
+  it('should drop a deeply nested subgroup whose only filter has an unavailable key', () => {
+    const input = {
+      mode: 'and',
+      filters: [{ id: 'f1', key: 'entity_type', values: ['Malware'], operator: 'eq' }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [{ id: 'f2', key: 'unavailable_key', values: ['XX'], operator: 'eq' }],
+              filterGroups: [],
+            },
+          ],
+        },
+      ],
+    } as unknown as FilterGroup;
+    const result = removeIdAndIncorrectKeysFromFilterGroupObject(input, ['entity_type']);
+    expect(result!.filterGroups).toStrictEqual([]);
+  });
+
+  it('should not leave any frontend id after removeFrontendIdAndEmptyFiltersFromFilterGroupObject', () => {
+    expectNoFrontendIds(removeFrontendIdAndEmptyFiltersFromFilterGroupObject(nestedFilterGroupWithIds) as FilterGroup);
+  });
+
+  it('should not leave any frontend id after removeIdAndIncorrectKeysFromFilterGroupObject', () => {
+    const availableFilterKeys = ['entity_type', 'dynamicRegardingOf', 'createdBy', 'objectMarking', 'objectLabel'];
+    expectNoFrontendIds(removeIdAndIncorrectKeysFromFilterGroupObject(nestedFilterGroupWithIds, availableFilterKeys) as FilterGroup);
+  });
+
+  it('should not leave any frontend id after normalizeFilterGroupForBackend', () => {
+    expectNoFrontendIds(normalizeFilterGroupForBackend(nestedFilterGroupWithIds) as unknown as FilterGroup);
+  });
+
+  it('should not leave any frontend id after stripFilterIds', () => {
+    expectNoFrontendIds(stripFilterIds(nestedFilterGroupWithIds));
+  });
+
+  it('should sanitize the structure of the nested filter groups recursively', () => {
+    const input = {
+      mode: 'and',
+      filters: [
+        { key: 'entity_type', values: ['Malware'] },
+        { key: 'objectLabel', values: [] },
+      ],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: 'createdBy', values: [] },
+            { key: 'objectMarking', values: ['marking-1'] },
+          ],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [{ key: 'name', values: [] }],
+              filterGroups: [],
+            },
+          ],
+        },
+      ],
+    } as unknown as FilterGroup;
+    expect(sanitizeFiltersStructure(input)).toStrictEqual({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware'] }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [{ key: 'objectMarking', values: ['marking-1'] }],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [],
+              filterGroups: [],
+            },
+          ],
+        },
+      ],
+    });
   });
 });

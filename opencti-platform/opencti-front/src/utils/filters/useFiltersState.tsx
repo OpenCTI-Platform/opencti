@@ -11,10 +11,10 @@ import {
   handleReplaceFilterValuesUtil,
   handleSwitchLocalModeUtil,
 } from './filtersManageStateUtil';
-import { emptyFilterGroup } from './filtersUtils';
+import { cloneFilterGroup, emptyFilterGroup } from './filtersUtils';
 
 const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, defaultClearFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
-  const [filtersState, setFiltersState] = useState<FilterGroup>(initFilters ?? emptyFilterGroup);
+  const [filtersState, setFiltersState] = useState<FilterGroup>(cloneFilterGroup(initFilters ?? emptyFilterGroup));
 
   const latestAddFilterIdRef = useRef<string | undefined>(undefined);
 
@@ -60,7 +60,7 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
     },
     handleClearAllFilters: () => {
       latestAddFilterIdRef.current = undefined;
-      setFiltersState({ ...defaultClearFilters });
+      setFiltersState(cloneFilterGroup(defaultClearFilters));
     },
     handleRemoveFilterById: (id: string) => {
       latestAddFilterIdRef.current = undefined;

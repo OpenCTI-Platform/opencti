@@ -28,11 +28,26 @@ export type FiltersRestrictions = {
   preventFilterValuesEditionFor?: Map<string, string[]>; // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
-export const emptyFilterGroup: FilterGroup = {
+// /!\ Frozen: this is a shared module-level object used as default value in many components.
+// Never mutate it, and never share its arrays: use cloneFilterGroup() to get a safe mutable copy.
+export const emptyFilterGroup: FilterGroup = Object.freeze({
   mode: 'and',
-  filters: [],
-  filterGroups: [],
-};
+  filters: Object.freeze([]) as unknown as Filter[],
+  filterGroups: Object.freeze([]) as unknown as FilterGroup[],
+}) as FilterGroup;
+
+/**
+ * Deep copy of a filter group, so that no array instance is shared with the source.
+ * Used when a shared/frozen filter group (typically emptyFilterGroup) is injected in a state.
+ */
+export const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => ({
+  ...filterGroup,
+  filters: (filterGroup.filters ?? []).map((filter) => ({
+    ...filter,
+    values: [...(filter.values ?? [])],
+  })),
+  filterGroups: (filterGroup.filterGroups ?? []).map(cloneFilterGroup),
+});
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -540,6 +555,7 @@ export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup 
   filters: (filterGroup.filters || []).filter(
     (filter) => Array.isArray(filter.values) && filter.values.length > 0,
   ),
+  filterGroups: (filterGroup.filterGroups || []).map((group) => sanitizeFiltersStructure(group)),
 });
 
 /**
@@ -560,17 +576,17 @@ export function normalizeFilterGroupForBackend(
   if (!filterGroup) {
     return undefined;
   }
-  return {
-    ...filterGroup,
-    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filterGroup.filters)
-      .map((f) => ({
-        ...f,
-        key: Array.isArray(f.key) ? f.key : [f.key],
-      })),
-    filterGroups: filterGroup.filterGroups
-      .map((fg) => normalizeFilterGroupForBackend(fg))
-      .filter((fg) => fg && isFilterGroupNotEmpty(fg)),
-  } as GqlFilterGroup;
+  // strip the frontend-only ids, prune the empty filters and groups, then turn the keys into arrays
+  const cleanFilterGroup = pruneEmptyFiltersAndGroups(stripFilterIds(filterGroup));
+  const keysToArrays = (group: FilterGroup): GqlFilterGroup => ({
+    mode: group.mode,
+    filters: group.filters.map((f) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key : [f.key],
+    })),
+    filterGroups: group.filterGroups.map((fg) => keysToArrays(fg)),
+  } as GqlFilterGroup);
+  return keysToArrays(cleanFilterGroup);
 }
 
 /**
@@ -920,49 +936,27 @@ export const removeFrontendIdAndEmptyFiltersFromFilterGroupObject = (filters?: F
   if (!filters) {
     return undefined;
   }
-  return {
-    ...filters,
-    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filters.filters),
-    filterGroups: filters.filterGroups.map((group) => removeFrontendIdAndEmptyFiltersFromFilterGroupObject(group)) as FilterGroup[],
-  };
+  // strip the frontend-only ids, then prune the empty filters only (empty descendant groups are kept, as before)
+  return pruneEmptyFiltersAndGroups(stripFilterIds(filters), false);
 };
 
 /**
- * Removes the frontend-only `id` property from a single filter.
- * For `dynamicRegardingOf` filters, also recursively cleans nested dynamic FilterGroup values.
+ * Keeps only the filters whose key is available, recursively.
  */
-const removeFrontendIdAndEmptyFiltersFromFiltersArray = (filtersArray: Filter[]): Filter[] => {
-  const removeFrontendIdFromFilter = (f: Filter): Filter => {
-    const newFilter = { ...f };
-    delete newFilter.id;
-    if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
-      const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
-        .map((dynamic) => ({
-          ...dynamic,
-          values: dynamic.values.map((dynamicFilter: FilterGroup) => removeFrontendIdAndEmptyFiltersFromFilterGroupObject(dynamicFilter)),
-        }));
-      const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
-      newFilter.values = [...dynamicValues, ...relationshipTypeValues];
-    }
-    return newFilter;
-  };
-
-  return removeEmptyFiltersFromList(filtersArray).map((f) => removeFrontendIdFromFilter(f));
-};
+const keepAvailableFilterKeys = (filterGroup: FilterGroup, availableFilterKeys: string[]): FilterGroup => ({
+  ...filterGroup,
+  filters: (filterGroup.filters ?? []).filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys)),
+  filterGroups: (filterGroup.filterGroups ?? []).map((fg) => keepAvailableFilterKeys(fg, availableFilterKeys)),
+});
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
 export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGroup | null | undefined, availableFilterKeys: string[]): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
-  return {
-    mode: filters.mode,
-    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filters.filters
-      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))),
-    filterGroups: filters.filterGroups
-      .map((fg) => removeIdAndIncorrectKeysFromFilterGroupObject(fg, availableFilterKeys))
-      .filter((fg) => fg && isFilterGroupNotEmpty(fg)) as FilterGroup[],
-  };
+  // ids are stripped first, then the filters with an unavailable key are removed,
+  // and only then the empty filters and the empty descendant groups are pruned
+  return pruneEmptyFiltersAndGroups(keepAvailableFilterKeys(stripFilterIds(filters), availableFilterKeys));
 };
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (
@@ -1268,3 +1262,79 @@ export const buildFiltersForCustomView = (
   }
   return JSON.parse(updatedFiltersStr);
 };
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Single source of truth for cleaning a frontend filter group before sending it to the backend.
+// ----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Rebuilds the values of a `dynamicRegardingOf` filter: only the `dynamic` values (whose nested
+ * filter groups are recursively stripped) followed by the `relationship_type` values are kept.
+ */
+const stripDynamicRegardingOfValues = (values: FilterValue[]): FilterValue[] => {
+  const dynamicValues = (values ?? [])
+    .filter((value) => value?.key === 'dynamic')
+    .map((dynamic) => ({
+      key: dynamic.key,
+      values: (dynamic.values ?? []).map((dynamicFilterGroup: FilterGroup) => stripFilterIds(dynamicFilterGroup)),
+    }));
+  const relationshipTypeValues = (values ?? [])
+    .filter((value) => value?.key === 'relationship_type')
+    .map((relationshipType) => ({ key: relationshipType.key, values: [...(relationshipType.values ?? [])] }));
+  return [...dynamicValues, ...relationshipTypeValues];
+};
+
+/**
+ * Rebuilds a single filter with only the properties expected by the backend, in the order
+ * `key`, `values`, `operator`, `mode`. Optional properties absent from the input are not emitted.
+ */
+const stripFilterId = (filter: Filter): Filter => ({
+  key: filter.key,
+  values: filter.key === 'dynamicRegardingOf' ? stripDynamicRegardingOfValues(filter.values) : [...(filter.values ?? [])],
+  ...(filter.operator !== undefined ? { operator: filter.operator } : {}),
+  ...(filter.mode !== undefined ? { mode: filter.mode } : {}),
+});
+
+/**
+ * Removes every frontend-only property (typically the uuid `id`) from a filter group, recursively.
+ * This is a whitelist rebuild: only `mode`, `filters` and `filterGroups` are emitted for a group,
+ * and only `key`, `values`, `operator` and `mode` for a filter, in that exact order.
+ * Non-mutating, safe on frozen inputs.
+ */
+export const stripFilterIds = (filterGroup: FilterGroup): FilterGroup => ({
+  mode: filterGroup.mode,
+  filters: (filterGroup.filters ?? []).map((filter) => stripFilterId(filter)),
+  filterGroups: (filterGroup.filterGroups ?? []).map((group) => stripFilterIds(group)),
+});
+
+/**
+ * Prunes the nested filter groups held in the `dynamic` values of a `dynamicRegardingOf` filter.
+ */
+const pruneDynamicRegardingOfValues = (values: FilterValue[], dropEmptyGroups = true): FilterValue[] => {
+  return (values ?? []).map((value) => {
+    if (value?.key !== 'dynamic') return value;
+    return {
+      ...value,
+      values: (value.values ?? []).map((dynamicFilterGroup: FilterGroup) => pruneEmptyFiltersAndGroups(dynamicFilterGroup, dropEmptyGroups)),
+    };
+  });
+};
+
+/**
+ * Removes the empty filters (no values, except for operators valid without values like nil/not_nil)
+ * and the empty descendant filter groups. The root group is always kept, even if it ends up empty.
+ * Non-mutating, safe on frozen inputs.
+ * /!\ This is a serialization helper: like stripFilterIds it rebuilds groups from a whitelist,
+ * so it also drops any frontend-only group property. Never use it on a state value.
+ */
+export const pruneEmptyFiltersAndGroups = (filterGroup: FilterGroup, dropEmptyGroups = true): FilterGroup => ({
+  mode: filterGroup.mode,
+  filters: removeEmptyFiltersFromList(filterGroup.filters ?? []).map((filter) => (
+    filter.key === 'dynamicRegardingOf'
+      ? { ...filter, values: pruneDynamicRegardingOfValues(filter.values, dropEmptyGroups) }
+      : filter
+  )),
+  filterGroups: (filterGroup.filterGroups ?? [])
+    .map((group) => pruneEmptyFiltersAndGroups(group, dropEmptyGroups))
+    .filter((group) => !dropEmptyGroups || isFilterGroupNotEmpty(group)),
+});
