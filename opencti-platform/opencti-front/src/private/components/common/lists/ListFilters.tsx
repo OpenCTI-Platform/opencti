@@ -59,6 +59,10 @@ type OptionType = {
   numberOfOccurences?: number;
 };
 
+// Synthetic option value, always displayed first in the "Add filter" autocomplete,
+// used as the entry point to create a nested filter group.
+const ADD_FILTER_GROUP_OPTION_VALUE = '__add_filter_group__';
+
 const ListFilters = ({
   handleOpenFilters,
   handleCloseFilters,
@@ -182,6 +186,32 @@ const ListFilters = ({
         })
         .sort((a, b) => a.label.localeCompare(b.label));
 
+  const addFilterGroupOption: OptionType = {
+    value: ADD_FILTER_GROUP_OPTION_VALUE,
+    label: t_i18n('Add Filter Group'),
+    groupLabel: t_i18n('Add Filter Group'),
+    groupOrder: Number.MAX_SAFE_INTEGER, // always displayed on top of the other groups
+  };
+
+  // prepended after the sorts so that it cannot be moved by them
+  const allOptions: OptionType[] = [addFilterGroupOption, ...(options as OptionType[])];
+
+  const defaultFilterOptions = (unfilteredOptions: OptionType[], inputValue: string) => {
+    const search = inputValue.trim().toLowerCase();
+    if (!search) return unfilteredOptions;
+    return unfilteredOptions.filter((o) => o.label.toLowerCase().includes(search));
+  };
+  // the synthetic option must never be filtered out by the search input
+  const filterOptions = (unfilteredOptions: OptionType[], inputValue: string) => [
+    addFilterGroupOption,
+    ...defaultFilterOptions(unfilteredOptions.filter((o) => o.value !== ADD_FILTER_GROUP_OPTION_VALUE), inputValue),
+  ];
+
+  const handleAddFilterGroup = () => {
+    helpers?.handleAddFilterGroup?.(); // always added at the root from ListFilters
+    setInputValue('');
+  };
+
   return (
     <>
       {variant === 'text' ? (
@@ -202,12 +232,17 @@ const ListFilters = ({
             // pushes the search field, the funnel and the chips onto lines of their own — the stacked filter bar
             // reported on the Triggers page and the threat- actor card page.
             className="w-50 shrink-0"
-            options={options as OptionType[]}
+            options={allOptions}
+            filterOptions={filterOptions}
             labelPosition="none"
             value={null}
             onValueChange={(next) => {
               const picked = Array.isArray(next) ? next[0] : next;
-              if (picked?.value) handleChange(picked.value);
+              if (picked?.value === ADD_FILTER_GROUP_OPTION_VALUE) {
+                handleAddFilterGroup();
+              } else if (picked?.value) {
+                handleChange(picked.value);
+              }
               setInputValue('');
             }}
             disabled={disabled}
