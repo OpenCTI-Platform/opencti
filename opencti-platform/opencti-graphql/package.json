@@ -161,7 +161,7 @@
     "ramda": "0.32.0",
     "rate-limiter-flexible": "11.2.0",
     "re2": "1.26.1",
-    "sanitize-html": "2.17.6",
+    "sanitize-html": "2.17.7",
     "semver": "7.8.5",
     "set-interval-async": "3.0.3",
     "slug": "12.0.1",

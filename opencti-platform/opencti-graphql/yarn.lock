@@ -10062,7 +10062,7 @@ __metadata:
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.2.0"
     re2: "npm:1.26.1"
-    sanitize-html: "npm:2.17.6"
+    sanitize-html: "npm:2.17.7"
     semver: "npm:7.8.5"
     set-interval-async: "npm:3.0.3"
     slug: "npm:12.0.1"
@@ -11138,9 +11138,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sanitize-html@npm:2.17.6":
-  version: 2.17.6
-  resolution: "sanitize-html@npm:2.17.6"
+"sanitize-html@npm:2.17.7":
+  version: 2.17.7
+  resolution: "sanitize-html@npm:2.17.7"
   dependencies:
     deepmerge: "npm:^4.2.2"
     escape-string-regexp: "npm:^4.0.0"
@@ -11149,7 +11149,7 @@ __metadata:
     launder: "npm:^1.7.1"
     parse-srcset: "npm:^1.0.2"
     postcss: "npm:^8.3.11"
-  checksum: 10c0/a78efe6aef93819c00c36252a07d26c8cd11ed418a403cc91aabcbc0af1dc98441d411ea68452ccbff1939f92e84571d97eb6bf69be96ed54f8769b25a10aa36
+  checksum: 10c0/d4783bf47f5379d619c9b2ff327e4ea355b5f95952295c4b69ab7f8bd7834bdaabbd274c6b519b3bdf3f909fec4727b544256c3e1a5985e4a85ee9aa079267f7
   languageName: node
   linkType: hard
 
