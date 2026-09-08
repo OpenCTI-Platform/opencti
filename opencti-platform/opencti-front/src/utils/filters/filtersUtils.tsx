@@ -1190,11 +1190,14 @@ export const convertOperatorToIcon = (operator: string) => {
 
 export const extractAllFilters: (filters: FilterGroup) => Filter[] = (filters: FilterGroup) => {
   const allFilters: Filter[] = [];
-  allFilters.push(...filters.filters);
-  filters.filterGroups.forEach((filterGroup) => extractAllFilters(filterGroup));
+  allFilters.push(...(filters.filters ?? []));
+  (filters.filterGroups ?? []).forEach((filterGroup) => allFilters.push(...extractAllFilters(filterGroup)));
   return allFilters;
 };
 
+/**
+ * Removes, at every nesting level, the filters whose key is not available anymore for the given types.
+ */
 export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
   const newAvailableFilterKeys = uniqueArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
   const allListedFilters = extractAllFilters(filters);

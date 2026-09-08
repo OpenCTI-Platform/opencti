@@ -7,6 +7,7 @@ import {
   cloneFilterGroup,
   emptyFilterGroup,
   ensureFilterGroupIds,
+  extractAllFilters,
   findFilterFromKey,
   isFilterGroupNotEmpty,
   isUniqFilter,
@@ -17,12 +18,15 @@ import {
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
+  addFilterGroupUtil,
   handleAddFilterWithEmptyValueUtil,
   handleAddRepresentationFilterUtil,
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
+  removeFilterGroupUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
+  handleSwitchGlobalModeUtil,
   handleSwitchLocalModeUtil,
   handleChangeRepresentationFilterUtil,
   handleReplaceFilterValuesUtil,
@@ -516,7 +520,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleAddRepresentationFilter: (id: string, value: string) => {
       if (value === null) { // handle clicking on 'no label' in entities list
-        const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
+        const findCorrespondingFilter = extractAllFilters(viewStorage.filters ?? emptyFilterGroup).find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
           if (viewStorage.filters) {
             const newValue = {
@@ -655,12 +659,9 @@ export const usePaginationLocalStorage = <U>(
         dispatch(`${key}_paginationStorage`, newValue);
       }
     },
-    handleSwitchGlobalMode: () => {
+    handleSwitchGlobalMode: (groupId?: string) => {
       if (viewStorage.filters) {
-        const newBaseFilters = {
-          ...viewStorage.filters,
-          mode: viewStorage.filters.mode === 'and' ? 'or' : 'and',
-        };
+        const newBaseFilters = handleSwitchGlobalModeUtil({ filters: viewStorage.filters, groupId });
         const newValue = {
           ...viewStorage,
           filters: newBaseFilters,
@@ -771,13 +772,37 @@ export const usePaginationLocalStorage = <U>(
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
-    handleAddFilterWithEmptyValue: (filter: Filter) => {
+    handleAddFilterWithEmptyValue: (filter: Filter, groupId?: string) => {
       const { filters } = viewStorage;
       const newValue = {
         ...viewStorage,
-        filters: handleAddFilterWithEmptyValueUtil({ filters: filters ?? emptyFilterGroup, filter }),
-        latestAddFilterId: filter.id,
-        latestAddFilterKey: filter.key,
+        filters: handleAddFilterWithEmptyValueUtil({ filters: filters ?? emptyFilterGroup, filter, groupId }),
+        // when the filter is added in a non-root group, there is no chip in the root chip line to
+        // anchor the popover on: reset the anchor.
+        latestAddFilterId: groupId ? undefined : filter.id,
+        latestAddFilterKey: groupId ? undefined : filter.key,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
+    },
+    handleAddFilterGroup: (parentGroupId?: string) => {
+      const { filters } = viewStorage;
+      const newValue = {
+        ...viewStorage,
+        filters: addFilterGroupUtil({ filters: filters ?? emptyFilterGroup, parentGroupId }),
+        latestAddFilterId: undefined,
+        latestAddFilterKey: undefined,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
+    },
+    handleRemoveFilterGroup: (groupId: string) => {
+      const { filters } = viewStorage;
+      const newValue = {
+        ...viewStorage,
+        filters: removeFilterGroupUtil({ filters: filters ?? emptyFilterGroup, groupId }),
+        latestAddFilterId: undefined,
+        latestAddFilterKey: undefined,
       };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);

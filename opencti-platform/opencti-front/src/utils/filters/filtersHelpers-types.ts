@@ -27,14 +27,16 @@ export type HandleOperatorFilter = (
 ) => void;
 
 export interface handleFilterHelpers {
-  handleSwitchGlobalMode: () => void;
+  handleSwitchGlobalMode: (groupId?: string) => void;
   handleSwitchLocalMode: (filter: Filter) => void;
   handleRemoveRepresentationFilter: (id: string, valueId: string | Filter | undefined | null) => void;
   handleRemoveFilterById: (id: string) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
   handleAddRepresentationFilter: (id: string, valueId: string | null) => void;
-  handleAddFilterWithEmptyValue: (filter: Filter) => void;
+  handleAddFilterWithEmptyValue: (filter: Filter, groupId?: string) => void;
+  handleAddFilterGroup: (parentGroupId?: string) => void;
+  handleRemoveFilterGroup: (groupId: string) => void;
   handleClearAllFilters: (filters?: Filter[]) => void;
   getLatestAddFilterId: () => string | undefined;
   handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;

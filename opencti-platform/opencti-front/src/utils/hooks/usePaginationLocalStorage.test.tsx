@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { act } from 'react';
 import { testRenderHook } from '../tests/test-render';
 import { expectNoFrontendIds } from '../tests/filtersTestHelpers';
 import { usePaginationLocalStorage } from './useLocalStorage';
@@ -110,5 +111,75 @@ describe('usePaginationLocalStorage filter group ids', () => {
     const filters = hook.result.current.viewStorage.filters as FilterGroup;
     expect(filters.filterGroups[0].id).toEqual('group-1');
     expect(filters.filterGroups[0].filterGroups[0].id).toEqual('group-1-1');
+  });
+});
+
+describe('usePaginationLocalStorage nested groups helpers', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  const renderWithNestedFilters = (storageKey: string) => testRenderHook(() => usePaginationLocalStorage<PaginationOptions>(
+    storageKey,
+    { filters: nestedFilters },
+    true,
+  ));
+
+  it('should add a filter group in the root group and in a nested group', () => {
+    const { hook } = renderWithNestedFilters('test-add-group');
+    act(() => hook.result.current.helpers.handleAddFilterGroup());
+    expect((hook.result.current.viewStorage.filters as FilterGroup).filterGroups).toHaveLength(2);
+    act(() => hook.result.current.helpers.handleAddFilterGroup('group-1-1'));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.filterGroups[0].filterGroups[0].filterGroups).toHaveLength(1);
+  });
+
+  it('should remove a nested filter group', () => {
+    const { hook } = renderWithNestedFilters('test-remove-group');
+    act(() => hook.result.current.helpers.handleRemoveFilterGroup('group-1-1'));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.filterGroups[0].filterGroups).toEqual([]);
+    expect(filters.filterGroups[0].filters).toHaveLength(1);
+  });
+
+  it('should switch only the mode of the targeted group', () => {
+    const { hook } = renderWithNestedFilters('test-switch-group-mode');
+    act(() => hook.result.current.helpers.handleSwitchGlobalMode('group-1-1'));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.mode).toEqual('and');
+    expect(filters.filterGroups[0].mode).toEqual('or');
+    expect(filters.filterGroups[0].filterGroups[0].mode).toEqual('or');
+  });
+
+  it('should switch the root mode when no group id is given', () => {
+    const { hook } = renderWithNestedFilters('test-switch-root-mode');
+    act(() => hook.result.current.helpers.handleSwitchGlobalMode());
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.mode).toEqual('or');
+    expect(filters.filterGroups[0].mode).toEqual('or');
+    expect(filters.filterGroups[0].filterGroups[0].mode).toEqual('and');
+  });
+
+  it('should add a filter in a nested group and not set latestAddFilterId', () => {
+    const { hook } = renderWithNestedFilters('test-add-filter-in-group');
+    act(() => hook.result.current.helpers.handleAddFilterWithEmptyValue({ id: 'f-new', key: 'createdBy', values: [] }, 'group-1'));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.filterGroups[0].filters.map((f) => f.id)).toEqual(['nested-filter-1', 'f-new']);
+    expect(hook.result.current.helpers.getLatestAddFilterId()).toBeUndefined();
+  });
+
+  it('should keep the root behaviour of handleAddFilterWithEmptyValue', () => {
+    const { hook } = renderWithNestedFilters('test-add-filter-in-root');
+    act(() => hook.result.current.helpers.handleAddFilterWithEmptyValue({ id: 'f-new', key: 'createdBy', values: [] }));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.filters.map((f) => f.id)).toEqual(['root-filter-1', 'f-new']);
+    expect(hook.result.current.helpers.getLatestAddFilterId()).toEqual('f-new');
+  });
+
+  it('should remove a filter located in a nested group', () => {
+    const { hook } = renderWithNestedFilters('test-remove-nested-filter');
+    act(() => hook.result.current.helpers.handleRemoveFilterById('nested-filter-2'));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.filterGroups[0].filterGroups[0].filters).toEqual([]);
   });
 });
