@@ -379,7 +379,6 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         <IconButton
           disabled={true}
           aria-label={t_i18n('Open menu')}
-          aria-haspopup="true"
           classes={classes.itemIconDisabled}
         >
           <MoreVert />

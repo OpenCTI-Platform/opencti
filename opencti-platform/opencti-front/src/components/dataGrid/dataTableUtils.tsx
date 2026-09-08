@@ -44,7 +44,7 @@ const chipStyle: CSSProperties = {
   height: '20px',
   marginRight: '7px',
   borderRadius: '4px',
-  textTransform: 'uppercase',
+  textTransform: 'none',
 };
 
 export const Truncate = ({ children }: { children: ReactNode }) => (

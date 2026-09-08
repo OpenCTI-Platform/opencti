@@ -47,6 +47,8 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
           return (
             <span key={element.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Typography
+                tabIndex={0}
+                aria-current="page"
                 sx={{ fontSize: 12, fontWeight: 700 }}
                 color="text.primary"
               >

@@ -215,7 +215,6 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
           aria-label={t_i18n('Open menu')}
           classes={classes.itemIconDisabled}
           disabled={true}
-          aria-haspopup="true"
         >
           <MoreVert />
         </IconButton>

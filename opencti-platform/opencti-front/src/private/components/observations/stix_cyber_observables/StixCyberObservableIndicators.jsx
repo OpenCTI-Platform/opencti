@@ -134,7 +134,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
             ref={AddOrCreateIndicatorsButtonRef}
-            aria-label="Add or create indicators button"
+            aria-label={t_i18n('Add or create indicators')}
             color="primary"
             onClick={handleOpenAddOrCreateIndicatorMenu}
           >

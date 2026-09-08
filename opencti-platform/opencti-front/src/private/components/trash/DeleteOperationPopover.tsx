@@ -136,7 +136,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
         color="primary"
         onClick={handleOpen}
         disabled={disabled}
-        aria-haspopup="true"
+        aria-haspopup={disabled ? undefined : true}
       >
         <MoreVert fontSize="small" color="primary" />
       </IconButton>

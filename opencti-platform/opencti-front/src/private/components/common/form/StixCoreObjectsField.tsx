@@ -658,7 +658,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
                 <Add fontSize="small" color="primary" />
               </IconButton>
             )}
-            <IconButton onClick={handleOpenSearchScope} size="small" disabled={disabled} aria-label={t_i18n('Open menu')}>
+            <IconButton onClick={handleOpenSearchScope} aria-haspopup={disabled ? undefined : true} size="small" disabled={disabled} aria-label={t_i18n('Open menu')}>
               <PaletteOutlined
                 fontSize="small"
                 color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}

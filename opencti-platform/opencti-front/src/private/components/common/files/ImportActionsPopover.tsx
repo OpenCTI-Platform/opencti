@@ -97,6 +97,7 @@ const ImportActionsPopover = ({
       </Tooltip>
       <IconButton
         aria-label={t_i18n('Open menu')}
+        aria-haspopup="true"
         onClick={handleOpen}
         color="primary"
       >
