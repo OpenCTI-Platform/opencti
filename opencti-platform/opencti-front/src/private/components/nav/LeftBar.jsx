@@ -454,7 +454,7 @@ const LeftBarComponent = ({ queryRef }) => {
         hasXtmHubAccess={hasXtmHubAccess}
       />
 
-      <div
+      <nav
         ref={ref}
         aria-label="Main navigation"
         style={{
@@ -467,7 +467,7 @@ const LeftBarComponent = ({ queryRef }) => {
           backgroundColor: 'transparent',
         }}
       >
-        <MenuList disablePadding component="nav">
+        <MenuList disablePadding>
           {!draftContext && (
             <LeftBarItem
               {...itemProps}
@@ -541,7 +541,7 @@ const LeftBarComponent = ({ queryRef }) => {
         <Separator />
 
         <Security needs={[KNOWLEDGE]}>
-          <MenuList component="nav">
+          <MenuList>
             {!hideAnalyses && (
               <LeftBarItem
                 {...itemProps}
@@ -611,7 +611,7 @@ const LeftBarComponent = ({ queryRef }) => {
 
           <Separator />
 
-          <MenuList component="nav">
+          <MenuList>
             {!hideThreats && (
               <LeftBarItem
                 {...itemProps}
@@ -708,7 +708,7 @@ const LeftBarComponent = ({ queryRef }) => {
         <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
           <Separator />
 
-          <MenuList component="nav">
+          <MenuList>
             <Security needs={[MODULES, INGESTION, INGESTION_SETINGESTIONS]}>
               {!draftContext && (
                 <LeftBarItem
@@ -764,7 +764,7 @@ const LeftBarComponent = ({ queryRef }) => {
         >
           <Separator />
           {!draftContext && (
-            <MenuList component="nav" style={{ marginBottom: 48 }}>
+            <MenuList style={{ marginBottom: 48 }}>
               <LeftBarItem
                 {...itemProps}
                 id="settings"
@@ -784,7 +784,7 @@ const LeftBarComponent = ({ queryRef }) => {
             </MenuList>
           )}
         </Security>
-      </div>
+      </nav>
 
       {/** Bottom **/}
       <div

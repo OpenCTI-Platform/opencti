@@ -377,6 +377,7 @@ const ThemeLight = (
               backgroundColor: hexToRGB('#000000', 0.05),
             },
           },
+          '&:focus-visible': { outline: `2px solid ${primary || THEME_LIGHT_DEFAULT_PRIMARY}`, outlineOffset: 2 },
         },
       },
     },

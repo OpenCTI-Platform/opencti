@@ -38,7 +38,6 @@ export const createBaseStyles = (params: StyleFactoryParams): SxProps<Theme> => 
     },
 
     '&:focus-visible': {
-      outline: 'none',
       boxShadow: `0 0 0 2px ${currentColor.focus}`,
     },
 

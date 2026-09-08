@@ -1,4 +1,5 @@
 import { alpha } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
@@ -13,6 +14,18 @@ interface ImportFilesDropzoneProps {
   onChange: (files: File[]) => void;
   openFreeText?: (value: boolean) => void;
 }
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const ImportFilesDropzone = ({
   fullSize = true,
@@ -81,9 +94,13 @@ const ImportFilesDropzone = ({
         {t_i18n('Drag and drop files to import')}
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-        <Button component="label" size="small">
+        <Button component="label" role={undefined} tabIndex={-1} size="small">
           {t_i18n('Browse files')}
-          <input type="file" hidden multiple onChange={handleFileChange} />
+          <VisuallyHiddenInput
+            type="file"
+            onChange={handleFileChange}
+            multiple
+          />
         </Button>
         {openFreeText && (
           <Button variant="secondary" component="label" size="small" onClick={() => openFreeText?.(true)}>

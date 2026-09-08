@@ -115,6 +115,13 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
         <MoreVert />
       </IconButton>
       <Menu
+        slotProps={{
+          list: {
+            onClick: (e: React.MouseEvent<HTMLUListElement>) => {
+              e.stopPropagation();
+            },
+          },
+        }}
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}

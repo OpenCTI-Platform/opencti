@@ -73,6 +73,7 @@ const DataTableCell = ({
 
   return (
     <div
+      role="gridcell"
       key={`${cell.id}_${data.id}`}
       style={{
         ...cellContainerStyle(theme),
@@ -180,13 +181,15 @@ const DataTableLine = ({
   );
 
   return (
-    <Box sx={{
-      '&:hover > a': {
-        backgroundColor: theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .1)'
-          : 'rgba(0, 0, 0, .1)',
-      },
-    }}
+    <Box
+      role="row"
+      sx={{
+        '&:hover > a': {
+          backgroundColor: theme.palette.mode === 'dark'
+            ? 'rgba(255, 255, 255, .1)'
+            : 'rgba(0, 0, 0, .1)',
+        },
+      }}
     >
       <a
         style={linkStyle}

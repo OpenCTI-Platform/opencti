@@ -236,6 +236,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         renderInput={(params) => (
           <TextField
             {...params}
+            label={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
             variant="outlined"
             size="small"
             placeholder={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
