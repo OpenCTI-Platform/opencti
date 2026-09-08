@@ -1,15 +1,12 @@
-export interface CoverageResult {
-  readonly coverage_name: string;
-  readonly coverage_score: number;
-}
+import { CoverageInformation } from './SecurityCoverage-types';
 
 export interface CoveredEntityLike {
   readonly relationship_id?: string;
-  readonly coverage_information?: ReadonlyArray<CoverageResult> | null;
+  readonly coverage_information?: ReadonlyArray<CoverageInformation> | null;
   readonly to?: { readonly id?: string | null; readonly name?: string | null } | null;
 }
 
-export type CoverageMap = Map<string, CoverageResult[]>;
+export type CoverageMap = Map<string, CoverageInformation[]>;
 
 /**
  * Builds a map from entity id to its averaged coverage entries.
@@ -20,7 +17,7 @@ export type CoverageMap = Map<string, CoverageResult[]>;
  * `coverage_name` (rounded), mirroring the backend `getAverageCoverageInformation`.
  *
  * @param entities Flat list of covered entities from a SecurityCoverage.
- * @returns Map of averages: Map<entityId, CoverageResult[]>.
+ * @returns Map of averages: Map<entityId, CoverageInformation[]>.
  */
 export const buildAverageCoverageMap = (
   entities: ReadonlyArray<CoveredEntityLike>,
@@ -42,7 +39,7 @@ export const buildAverageCoverageMap = (
 
   const result: CoverageMap = new Map();
   scoresByEntity.forEach((byName, entityId) => {
-    const coverageInformation: CoverageResult[] = [];
+    const coverageInformation: CoverageInformation[] = [];
     byName.forEach((scores, coverageName) => {
       const average = Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
       coverageInformation.push({ coverage_name: coverageName, coverage_score: average });

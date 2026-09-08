@@ -3,7 +3,7 @@ import testRender from '../../../../utils/tests/test-render';
 import SecurityCoverageInformation from './SecurityCoverageInformation';
 import { screen } from '@testing-library/react';
 
-vi.mock('./SecurityCoverageScores', () => ({
+vi.mock('./security_coverage_scores/SecurityCoverageScores', () => ({
   default: () => (<></>),
 }));
 
