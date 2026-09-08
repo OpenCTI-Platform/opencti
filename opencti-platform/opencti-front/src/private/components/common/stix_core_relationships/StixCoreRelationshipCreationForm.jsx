@@ -22,7 +22,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { minutesBefore, now } from '../../../../utils/Time';
-import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
+import CoverageInformationField from '../form/CoverageInformationField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CustomFieldsFormik from '../custom_fields/CustomFieldsFormik';
 import CustomFieldValuesCreation from '../custom_fields/CustomFieldValuesCreation';
@@ -314,11 +314,9 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
             />
             {isCoverage && (
-              <CoverageInformationFieldAdd
+              <Field
+                component={CoverageInformationField}
                 name="coverage_information"
-                values={values.coverage_information || []}
-                containerStyle={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
               />
             )}
             {hasKillChainPhase(values.relationship_type) ? (
