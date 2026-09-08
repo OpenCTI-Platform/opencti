@@ -288,7 +288,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -308,7 +308,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             textFieldProps={{
               label: t_i18n('Incident date'),
               required: (mandatoryAttributes.includes('created')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created" />

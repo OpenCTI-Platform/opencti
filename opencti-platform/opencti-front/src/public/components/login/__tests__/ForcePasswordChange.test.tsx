@@ -4,7 +4,7 @@ import { screen } from '@testing-library/react';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { createTheme, ThemeProvider, ThemeOptions } from '@mui/material/styles';
 import AppIntlProvider from '../../../../components/AppIntlProvider';
 import ThemeDark from '../../../../components/ThemeDark';

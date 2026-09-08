@@ -1,9 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
-import { IconButton } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Field, useField, useFormikContext } from 'formik';
 import { useFormatter } from './i18n';
-import { fieldSpacingContainerStyle } from '../utils/field';
 import TextField from './TextField';
 
 // TODO remove any when component TextField is typescript
@@ -31,44 +29,27 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
   };
 
   return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-      <Field
-        component={TextField}
-        variant="standard"
-        type={isVisible ? 'text' : 'password'}
-        fullWidth={true}
-        style={fieldSpacingContainerStyle}
-        {...textFieldProps}
-        {...(isSecret && ({
-          onSubmit: (name: string, value: string) => {
-            if (textFieldProps?.onSubmit && dirty) {
-              textFieldProps.onSubmit(name, value);
-            }
-          },
-          placeholder: isUndefinedCredential ? '••••' : undefined,
-          InputLabelProps: {
-            shrink: isUndefinedCredential ? true : undefined,
-          },
-        }))}
-      />
-      {!isUndefinedCredential && (
-        <IconButton
-          onClick={toggleVisibility}
-          aria-label={isVisible ? t_i18n('Hide') : t_i18n('Show')}
-          style={{
-            position: 'absolute',
-            right: 1,
-            top: '60%',
-            margin: 0,
-            padding: 0,
-            zIndex: 1,
-          }}
-          disableRipple
-        >
-          {isVisible ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      )}
-    </div>
+    <Field
+      component={TextField}
+      variant="outlined"
+      type={isVisible ? 'text' : 'password'}
+      fullWidth={true}
+      endIcon={isUndefinedCredential ? undefined : {
+        type: 'iconButton' as const,
+        icon: isVisible ? <VisibilityOff /> : <Visibility />,
+        label: isVisible ? t_i18n('Hide') : t_i18n('Show'),
+        onClick: toggleVisibility,
+      }}
+      {...textFieldProps}
+      {...(isSecret && ({
+        onSubmit: (name: string, value: string) => {
+          if (textFieldProps?.onSubmit && dirty) {
+            textFieldProps.onSubmit(name, value);
+          }
+        },
+        placeholder: isUndefinedCredential ? '••••' : undefined,
+      }))}
+    />
   );
 };
 

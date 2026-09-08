@@ -1,5 +1,5 @@
 import React, { useMemo, useState, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { NorthEastOutlined, LoupeOutlined } from '@mui/icons-material';
 import { VectorLink } from 'mdi-material-ui';
 import IconButton from '@common/button/IconButton';
@@ -154,6 +154,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             color="primary"
             component={Link}
             to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
+            aria-label={t_i18n('Display the correlation graph')}
           >
             <VectorLink fontSize="small" />
           </IconButton>
@@ -190,6 +191,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
                       event.preventDefault();
                       handleOpenDetails(row);
                     }}
+                    aria-label={t_i18n('Open the correlation details')}
                   >
                     <LoupeOutlined fontSize="small" />
                   </IconButton>
@@ -221,6 +223,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
               size="default"
               component={Link}
               to={`${resolveLink(selectedContainer?.entity_type)}/${selectedContainer?.id}`}
+              aria-label={t_i18n('Go to container')}
             >
               <NorthEastOutlined />
             </IconButton>

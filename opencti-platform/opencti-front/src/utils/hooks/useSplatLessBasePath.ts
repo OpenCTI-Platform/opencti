@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { UNSAFE_RouteContext } from 'react-router-dom';
+import { UNSAFE_RouteContext } from 'react-router';
 
 /**
  * Base path of the closest matched route, without its splat part nor trailing

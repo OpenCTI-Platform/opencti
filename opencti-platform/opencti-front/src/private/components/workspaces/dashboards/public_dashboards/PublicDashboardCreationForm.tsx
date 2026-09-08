@@ -7,14 +7,13 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption } from '../../../../../utils/field';
 import SwitchField from '../../../../../components/fields/SwitchField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -62,6 +61,8 @@ interface PublicDashboardCreationFormComponentProps {
   onCancel?: () => void;
   onCompleted?: () => void;
 }
+
+const publicDashboardFieldSpacing = { marginTop: 16, width: '100%' };
 
 const PublicDashboardCreationFormComponent = ({
   queryRef,
@@ -136,8 +137,8 @@ const PublicDashboardCreationFormComponent = ({
       {({ isSubmitting, isValid, dirty, handleReset, submitForm, setFieldValue, values }) => (
         <Form>
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="dashboard_id"
             label={t_i18n('Custom dashboard')}
             fullWidth={true}
@@ -145,9 +146,9 @@ const PublicDashboardCreationFormComponent = ({
             disabled={!!dashboard_id}
           >
             {dashboards?.map((dashboard) => (
-              <MenuItem key={dashboard.id} value={dashboard.id}>
+              <SelectItem key={dashboard.id} value={dashboard.id}>
                 {dashboard.name}
-              </MenuItem>
+              </SelectItem>
             ))}
           </Field>
 
@@ -162,9 +163,9 @@ const PublicDashboardCreationFormComponent = ({
           <Field
             name="name"
             component={TextField}
-            variant="standard"
+            variant="outlined"
             label={t_i18n('Name')}
-            style={fieldSpacingContainerStyle}
+            style={publicDashboardFieldSpacing}
             onChange={(_: string, val: string) => {
               setFieldValue('uri_key', generatePublicDashboardUriKey(val));
             }}
@@ -173,10 +174,10 @@ const PublicDashboardCreationFormComponent = ({
             disabled
             name="uri_key"
             component={TextField}
-            variant="standard"
+            variant="outlined"
             label={t_i18n('Public dashboard URI KEY')}
             helperText={t_i18n('ID of your public dashboard')}
-            style={fieldSpacingContainerStyle}
+            style={publicDashboardFieldSpacing}
             slotProps={{
               input: {
                 startAdornment: (
@@ -192,14 +193,14 @@ const PublicDashboardCreationFormComponent = ({
             type="checkbox"
             name="enabled"
             label={t_i18n('Enabled')}
-            containerstyle={fieldSpacingContainerStyle}
+            containerstyle={publicDashboardFieldSpacing}
             helpertext={t_i18n('Disabled dashboard...')}
           />
           <ObjectMarkingField
             name="max_markings"
             label={t_i18n('Max level markings')}
             helpertext={t_i18n('To prevent people seeing all the data...')}
-            style={fieldSpacingContainerStyle}
+            style={publicDashboardFieldSpacing}
             onChange={() => {}}
             setFieldValue={setFieldValue}
             limitToMaxSharing

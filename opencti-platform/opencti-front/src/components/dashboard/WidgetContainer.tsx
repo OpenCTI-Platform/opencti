@@ -8,7 +8,6 @@ import WidgetNoData from './WidgetNoData';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../Theme';
-import { hexToRGB } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 import Tag from '@common/tag/Tag';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
@@ -66,14 +65,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
                   {formattedTitle}
                   <Tag
                     label={t_i18n('Preview data')}
-                    size="small"
-                    sx={{
-                      backgroundColor: hexToRGB(previewColor, 0.1),
-                      color: previewColor,
-                      border: `1px solid ${previewColor}`,
-                      fontWeight: 700,
-                      fontSize: '0.65rem',
-                    }}
+                    color={previewColor}
                   />
                 </Stack>
               ) : formattedTitle}

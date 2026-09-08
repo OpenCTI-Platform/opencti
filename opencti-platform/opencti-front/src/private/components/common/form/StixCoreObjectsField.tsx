@@ -8,7 +8,6 @@ import { Add, PaletteOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@common/button/IconButton';
@@ -24,6 +23,7 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
 import { DeferredCreationContext } from '../../../../utils/hooks/useDeferredCreation';
+import { Checkbox } from '@filigran/design-system';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
@@ -646,19 +646,19 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         required={required}
         multiple={multiple}
         textfieldprops={{
-          variant: 'standard',
+          variant: 'outlined',
           label: label ?? (multiple ? t_i18n('Entities') : t_i18n('Entity')),
           helperText: helpertext,
           onFocus: searchStixCoreObjects,
         }}
         endAdornment={(
-          <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
+          <InputAdornment position="end" style={{ position: 'absolute', right: 8 }}>
             {!disableCreation && (
               <IconButton onClick={handleOpenCreation} size="small" disabled={disabled} title={t_i18n('Create')} aria-label={t_i18n('Create')}>
                 <Add fontSize="small" color="primary" />
               </IconButton>
             )}
-            <IconButton onClick={handleOpenSearchScope} size="small" disabled={disabled} aria-label={t_i18n('Open menu')}>
+            <IconButton onClick={handleOpenSearchScope} aria-haspopup={disabled ? undefined : true} size="small" disabled={disabled} aria-label={t_i18n('Open menu')}>
               <PaletteOutlined
                 fontSize="small"
                 color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
@@ -687,7 +687,6 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
                     onClick={() => handleToggleSearchScope(name, entityType.value)}
                   >
                     <Checkbox
-                      size="small"
                       checked={(searchScope[name] || []).includes(entityType.value)}
                     />
                     <ListItemText primary={entityType.label} />

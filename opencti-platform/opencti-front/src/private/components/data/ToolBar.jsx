@@ -5,7 +5,7 @@ import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
 import DataTableToolBar from './DataTableToolBar';
 import { UserContext } from '../../../utils/hooks/useAuth';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../utils/hooks/useDraftContext';
 import { useTheme } from '@mui/styles';
 

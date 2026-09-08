@@ -1,6 +1,7 @@
 import React from 'react';
 import { WarningAmber, ContentCopy, Edit, DeleteOutline } from '@mui/icons-material';
-import { Tooltip, IconButton, ListItemText, ListItem, Typography } from '@mui/material';
+import { Tooltip, ListItemText, ListItem, Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import { renderWidgetIcon } from '../../../../../utils/widget/widgetUtils';
@@ -60,24 +61,26 @@ const FintelTemplateWidgetAttribute = ({
           {onUpdate && (
             <Tooltip title={t_i18n('Change which data to retrieve in this widget')}>
               <IconButton
+                variant="default"
+                priority="tertiary"
+                aria-label={t_i18n('Change which data to retrieve in this widget')}
                 aria-haspopup="true"
-                color="primary"
                 onClick={onUpdate}
-              >
-                <Edit fontSize="small" />
-              </IconButton>
+                icon={<Edit fontSize="small" />}
+              />
             </Tooltip>
           )}
 
           {onDelete && (
             <Tooltip title={t_i18n('Delete widget')}>
               <IconButton
+                variant="default"
+                priority="tertiary"
+                aria-label={t_i18n('Delete widget')}
                 aria-haspopup="true"
-                color="primary"
                 onClick={onDelete}
-              >
-                <DeleteOutline fontSize="small" />
-              </IconButton>
+                icon={<DeleteOutline fontSize="small" />}
+              />
             </Tooltip>
           )}
         </div>
@@ -102,12 +105,13 @@ const FintelTemplateWidgetAttribute = ({
 
               <Tooltip title={t_i18n('Copy attribute name to clipboard')}>
                 <IconButton
+                  variant="default"
+                  priority="tertiary"
+                  aria-label={t_i18n('Copy attribute name to clipboard')}
                   aria-haspopup="true"
-                  color="primary"
                   onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
-                >
-                  <ContentCopy fontSize="small" />
-                </IconButton>
+                  icon={<ContentCopy fontSize="small" />}
+                />
               </Tooltip>
             </div>
           );

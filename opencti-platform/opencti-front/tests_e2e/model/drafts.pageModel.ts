@@ -47,7 +47,11 @@ export default class DraftsPage {
     const createDraftDrawer = this.getCreateDraftDrawer();
     await expect(createDraftDrawer).toBeVisible();
 
-    await createDraftDrawer.getByTestId('draft-creation-form-name-input').locator('input').fill(name);
+    // No `.locator('input')` hop: the pivot forwards `data-*` to the library
+    // Input, which places everything but `className` on the native <input>
+    // itself. MUI put the attribute on the field's root wrapper, so the extra
+    // hop used to be required and now finds nothing.
+    await createDraftDrawer.getByTestId('draft-creation-form-name-input').fill(name);
 
     for (const member of authorizedMembers) {
       await this.accessRestriction.addAccess(member.name, member.permission);

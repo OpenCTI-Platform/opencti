@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Box, ListItemButton } from '@mui/material';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';

@@ -3,10 +3,10 @@ import Alert from '@mui/material/Alert';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useTheme } from '@mui/styles';
-import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import { Checkbox } from '@filigran/design-system';
 
 type DrawerContainerPropsType = {
   isOpen: boolean;
@@ -28,7 +28,11 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
     const type = isOnlyStixCyberObservablesTypes ? 'indicators' : 'observables';
     return (
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
-        <Checkbox edge="start" checked={promoteToContainer} onChange={togglePromoteToContainer} />
+        <Checkbox
+          aria-label={t_i18n(`Add generated and existing ${type} in the container`)}
+          checked={promoteToContainer}
+          onCheckedChange={() => togglePromoteToContainer()}
+        />
         <Typography>{t_i18n(`Add generated and existing ${type} in the container`)}</Typography>
       </div>
     );

@@ -88,7 +88,10 @@ class StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContain
               stixCyberObservablesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
-            elevation={3}
+            // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+            elevation={0}
+            disableGutters
+            sx={{ backgroundColor: 'var(--bg-input-default)' }}
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import CustomViewRedirector from './CustomViewRedirector';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { useCustomViewsData } from './useCustomViewsData';
 import type { CustomViewProps } from './CustomView';
 

@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCoreObjectSharingListDeleteMutation.graphql';
@@ -81,6 +81,7 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: St
       renderTag={(organization) => (
         <Tag
           label={organization.name}
+          deleteLabel={`${t_i18n('Remove')} ${organization.name}`}
           onDelete={() => removeOrganization(organization.id)}
           disabled={disabled || disabledOrgs.includes(organization.id)}
           icon={<AccountBalanceOutlined fontSize="small" />}

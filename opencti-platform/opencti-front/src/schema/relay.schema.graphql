@@ -9540,6 +9540,7 @@ type Query {
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionRssAddInputFromImport(file: Upload!): IngestionRssAddInputFromImport!
+  ingestionRssLogs(id: String!): [IngestionEntry]
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
@@ -9555,6 +9556,7 @@ type Query {
   ingestionCsvLogs(id: String!): [IngestionEntry]
   ingestionJson(id: String!): IngestionJson
   ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
+  ingestionJsonLogs(id: String!): [IngestionEntry]
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -10450,6 +10452,7 @@ type Mutation {
   ingestionRssDelete(id: ID!): ID
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
   ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss
+  ingestionRssResetState(id: ID!): IngestionRss
   ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
@@ -13642,6 +13645,8 @@ type IngestionRss implements InternalObject & BasicObject {
   report_types: [String!]
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   ingestion_running: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -14014,6 +14019,8 @@ type IngestionJson implements InternalObject & BasicObject {
   user: Creator
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   markings: [String!]
   ssl_verify: Boolean
   toConfigurationExport: String!

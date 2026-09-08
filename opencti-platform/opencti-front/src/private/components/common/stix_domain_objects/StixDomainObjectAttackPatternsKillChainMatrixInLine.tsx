@@ -113,11 +113,9 @@ const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<Sti
 
   return (
     <>
-      <div
-        style={{
-          transform: 'translateY(-12px)',
-        }}
-      >
+      {/* No offset, same reason as the relationships view: the 24px below the
+          tab bar comes from TabsList, and this halved it. */}
+      <div>
         {queryRef && (
           <DataTable
             variant={DataTableVariant.inline}

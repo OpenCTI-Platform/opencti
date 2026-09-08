@@ -1,5 +1,5 @@
-import { Tab, Tabs } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
+import { Link, useLocation } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import type { SubTypeTabs } from './SubTypeOutletContext';
 import { getCurrentTab } from '../../../../utils/tabUtils';
@@ -21,56 +21,34 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
   const currentTab = getCurrentTab(location.pathname, basePath);
 
   return (
-    <Tabs
-      value={currentTab || false}
-      sx={{ paddingBottom: 2 }}
-    >
-      {tabs.workflow && (
-        <Tab
-          component={Link}
-          to={`${basePath}/workflow`}
-          value="workflow"
-          label={t_i18n('Workflow')}
-        />
-      )}
-
-      {
-        tabs.attributes && (
-          <Tab
-            component={Link}
-            to={`${basePath}/attributes`}
-            value="attributes"
-            label={t_i18n('Attributes')}
-          />
-        )
-      }
-
-      {tabs.templates && (
-        <Tab
-          component={Link}
-          to={`${basePath}/templates`}
-          value="templates"
-          label={t_i18n('Templates')}
-        />
-      )}
-
-      {tabs['overview-layout'] && (
-        <Tab
-          component={Link}
-          to={`${basePath}/overview-layout`}
-          value="overview-layout"
-          label={t_i18n('Overview Layout')}
-        />
-      )}
-
-      {tabs['custom-views'] && (
-        <Tab
-          component={Link}
-          to={`${basePath}/custom-views`}
-          value="custom-views"
-          label={t_i18n('Custom Views')}
-        />
-      )}
+    <Tabs value={currentTab} panels="external">
+      <TabsList className="mb-6">
+        {tabs.workflow && (
+          <TabsTrigger value="workflow" asChild>
+            <Link to={`${basePath}/workflow`}>{t_i18n('Workflow')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs.attributes && (
+          <TabsTrigger value="attributes" asChild>
+            <Link to={`${basePath}/attributes`}>{t_i18n('Attributes')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs.templates && (
+          <TabsTrigger value="templates" asChild>
+            <Link to={`${basePath}/templates`}>{t_i18n('Templates')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs['overview-layout'] && (
+          <TabsTrigger value="overview-layout" asChild>
+            <Link to={`${basePath}/overview-layout`}>{t_i18n('Overview Layout')}</Link>
+          </TabsTrigger>
+        )}
+        {tabs['custom-views'] && (
+          <TabsTrigger value="custom-views" asChild>
+            <Link to={`${basePath}/custom-views`}>{t_i18n('Custom Views')}</Link>
+          </TabsTrigger>
+        )}
+      </TabsList>
     </Tabs>
   );
 };

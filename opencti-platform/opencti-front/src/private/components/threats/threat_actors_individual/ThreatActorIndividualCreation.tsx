@@ -1,20 +1,15 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik, FormikErrors } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import { styled } from '@mui/material/styles';
-import { Badge, BadgeProps } from '@mui/material';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import CountryField from '@components/common/form/CountryField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
+
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -47,22 +42,8 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-
-interface ErrorBadgeProps extends BadgeProps {
-  errors?: FormikErrors<ThreatActorIndividualAddInput>;
-  width?: number;
-}
-
-const ErrorBadge = styled(Badge)<ErrorBadgeProps>(
-  ({ errors = {}, width = 80 }) => ({
-    color: Object.keys(errors).length > 0 ? 'red' : 'inherit',
-    width: Object.keys(errors).length > 0 ? width : 'auto',
-    '& .MuiBadge-badge': {
-      color: 'white',
-      backgroundColor: 'red',
-    },
-  }),
-);
+import TextareaField from '../../../../components/TextareaField';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const ThreatActorIndividualMutation = graphql`
   mutation ThreatActorIndividualCreationMutation(
@@ -144,8 +125,8 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { heightsConverterSave, weightsConverterSave } = useUserMetric();
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
+  const [currentTab, setCurrentTab] = useState('overview');
+  const handleChangeTab = (value: string) => setCurrentTab(value);
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string(),
@@ -344,318 +325,316 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
       }) => (
         <>
           <Form>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={currentTab} onChange={handleChangeTab}>
-                <Tab
-                  id="create-overview"
-                  sx={{ textTransform: 'capitalize' }}
-                  label={(
-                    <ErrorBadge
-                      badgeContent={Object.keys(errors).length}
-                    >
-                      {t_i18n('Overview')}
-                    </ErrorBadge>
-                  )}
+            <Tabs value={currentTab} onValueChange={handleChangeTab}>
+              <TabsList>
+                <TabsTrigger
+                  value="overview"
+                  badge={Object.keys(errors).length}
+                  badgeLabel={`${Object.keys(errors).length} ${t_i18n('errors')}`}
+                  badgeColor="error"
+                  badgeMax={99}
+                  badgeInvisible={Object.keys(errors).length === 0}
+                >
+                  {t_i18n('Overview')}
+                </TabsTrigger>
+                <TabsTrigger value="details">{t_i18n('Details')}</TabsTrigger>
+                <TabsTrigger value="demographics">{t_i18n('Demographics')}</TabsTrigger>
+                <TabsTrigger value="biographics">{t_i18n('Biographics')}</TabsTrigger>
+              </TabsList>
+              {/* forceMount keeps form state across tab switches; hidden is explicit because forceMount pins Radix's own hidden to false. */}
+              <TabsContent value="overview" forceMount hidden={currentTab !== 'overview'}>
+                <BulkTextModal
+                  open={bulkModalOpen}
+                  onClose={onBulkModalClose}
+                  onValidate={async (val) => {
+                    await setFieldValue('name', val);
+                    if (splitMultilines(val).length > 1) {
+                      await setFieldValue('file', null);
+                    }
+                  }}
+                  formValue={values.name}
                 />
-                <Tab id="threat-details" label={t_i18n('Details')} />
-                <Tab id="threat-demographics" label={t_i18n('Demographics')} />
-                <Tab id="threat-bio" label={t_i18n('Biographics')} />
-              </Tabs>
-            </Box>
-            <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>
-              <BulkTextModal
-                open={bulkModalOpen}
-                onClose={onBulkModalClose}
-                onValidate={async (val) => {
-                  await setFieldValue('name', val);
-                  if (splitMultilines(val).length > 1) {
-                    await setFieldValue('file', null);
+                <ProgressBar
+                  open={progressBarOpen}
+                  value={(bulkCurrentCount / bulkCount) * 100}
+                  label={`${bulkCurrentCount}/${bulkCount}`}
+                  title={t_i18n('Create multiple entities')}
+                  onClose={() => {
+                    setProgressBarOpen(false);
+                    resetForm();
+                    resetBulk();
+                    onCompleted?.();
+                  }}
+                >
+                  <BulkResult variablesToString={(v) => v.input.name} />
+                </ProgressBar>
+                <Field
+                  component={BulkTextField}
+                  style={{ marginTop: 20 }}
+                  name="name"
+                  label={t_i18n('Name')}
+                  required={(mandatoryAttributes.includes('name'))}
+                  fullWidth={true}
+                  askAi={true}
+                  detectDuplicate={[
+                    'Threat-Actor',
+                    'Intrusion-Set',
+                    'Campaign',
+                    'Malware',
+                  ]}
+                />
+                <OpenVocabField
+                  type="threat-actor-individual-type-ov"
+                  name="threat_actor_types"
+                  label={t_i18n('Threat actor types')}
+                  required={(mandatoryAttributes.includes('threat_actor_types'))}
+                  multiple={true}
+                  containerStyle={{ width: '100%', marginTop: 20 }}
+                  onChange={setFieldValue}
+                />
+                <ConfidenceField
+                  entityType="Threat-Actor-Individual"
+                  containerStyle={{ width: '100%', marginTop: 20 }}
+                />
+                <Field
+                  component={MarkdownField}
+                  name="description"
+                  label={t_i18n('Description')}
+                  required={(mandatoryAttributes.includes('description'))}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 20 }}
+                  askAi={true}
+                  autoPersistOnBlur={false}
+                  registerMarkdownImagesController={registerMarkdownImagesController}
+                  uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+                />
+                <CreatedByField
+                  name="createdBy"
+                  required={(mandatoryAttributes.includes('createdBy'))}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+                <ObjectLabelField
+                  name="objectLabel"
+                  required={(mandatoryAttributes.includes('objectLabel'))}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
+                <ObjectMarkingField
+                  name="objectMarking"
+                  required={(mandatoryAttributes.includes('objectMarking'))}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+                <ExternalReferencesField
+                  name="externalReferences"
+                  required={(mandatoryAttributes.includes('externalReferences'))}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  values={values.externalReferences}
+                />
+                <Field
+                  component={CustomFileUploader}
+                  name="file"
+                  setFieldValue={setFieldValue}
+                  disabled={splitMultilines(values.name).length > 1}
+                  noFileSelectedLabel={splitMultilines(values.name).length > 1
+                    ? t_i18n('File upload not allowed in bulk creation')
+                    : undefined
                   }
-                }}
-                formValue={values.name}
-              />
-              <ProgressBar
-                open={progressBarOpen}
-                value={(bulkCurrentCount / bulkCount) * 100}
-                label={`${bulkCurrentCount}/${bulkCount}`}
-                title={t_i18n('Create multiple entities')}
-                onClose={() => {
-                  setProgressBarOpen(false);
-                  resetForm();
-                  resetBulk();
-                  onCompleted?.();
-                }}
-              >
-                <BulkResult variablesToString={(v) => v.input.name} />
-              </ProgressBar>
-              <Field
-                component={BulkTextField}
-                style={{ marginTop: 20 }}
-                name="name"
-                label={t_i18n('Name')}
-                required={(mandatoryAttributes.includes('name'))}
-                fullWidth={true}
-                askAi={true}
-                detectDuplicate={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Malware',
-                ]}
-              />
-              <OpenVocabField
-                type="threat-actor-individual-type-ov"
-                name="threat_actor_types"
-                label={t_i18n('Threat actor types')}
-                required={(mandatoryAttributes.includes('threat_actor_types'))}
-                multiple={true}
-                containerStyle={{ width: '100%', marginTop: 20 }}
-                onChange={setFieldValue}
-              />
-              <ConfidenceField
-                entityType="Threat-Actor-Individual"
-                containerStyle={{ width: '100%', marginTop: 20 }}
-              />
-              <Field
-                component={MarkdownField}
-                name="description"
-                label={t_i18n('Description')}
-                required={(mandatoryAttributes.includes('description'))}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-                askAi={true}
-                autoPersistOnBlur={false}
-                registerMarkdownImagesController={registerMarkdownImagesController}
-                uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
-              />
-              <CreatedByField
-                name="createdBy"
-                required={(mandatoryAttributes.includes('createdBy'))}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-              />
-              <ObjectLabelField
-                name="objectLabel"
-                required={(mandatoryAttributes.includes('objectLabel'))}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                values={values.objectLabel}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                required={(mandatoryAttributes.includes('objectMarking'))}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-              />
-              <ExternalReferencesField
-                name="externalReferences"
-                required={(mandatoryAttributes.includes('externalReferences'))}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                values={values.externalReferences}
-              />
-              <Field
-                component={CustomFileUploader}
-                name="file"
-                setFieldValue={setFieldValue}
-                disabled={splitMultilines(values.name).length > 1}
-                noFileSelectedLabel={splitMultilines(values.name).length > 1
-                  ? t_i18n('File upload not allowed in bulk creation')
-                  : undefined
-                }
-              />
-            </Box>
-            <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
-              <Field
-                component={DateTimePickerField}
-                name="first_seen"
-                required={(mandatoryAttributes.includes('first_seen'))}
-                textFieldProps={{
-                  label: t_i18n('First seen'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="last_seen"
-                required={(mandatoryAttributes.includes('last_seen'))}
-                textFieldProps={{
-                  label: t_i18n('Last seen'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <OpenVocabField
-                label={t_i18n('Sophistication')}
-                type="threat_actor_individual_sophistication_ov"
-                name="sophistication"
-                required={(mandatoryAttributes.includes('sophistication'))}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={false}
-              />
-              <OpenVocabField
-                label={t_i18n('Resource level')}
-                type="attack-resource-level-ov"
-                name="resource_level"
-                required={(mandatoryAttributes.includes('resource_level'))}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={false}
-              />
-              <OpenVocabField
-                label={t_i18n('Roles')}
-                type="threat-actor-individual-role-ov"
-                name="roles"
-                required={(mandatoryAttributes.includes('roles'))}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={true}
-              />
-              <OpenVocabField
-                label={t_i18n('Primary motivation')}
-                type="attack-motivation-ov"
-                name="primary_motivation"
-                required={(mandatoryAttributes.includes('primary_motivation'))}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={false}
-              />
-              <OpenVocabField
-                label={t_i18n('Secondary motivations')}
-                type="attack-motivation-ov"
-                name="secondary_motivations"
-                required={(mandatoryAttributes.includes('secondary_motivations'))}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={true}
-              />
-              <OpenVocabField
-                label={t_i18n('Personal motivations')}
-                type="attack-motivation-ov"
-                name="personal_motivations"
-                required={(mandatoryAttributes.includes('personal_motivations'))}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={true}
-              />
-              <Field
-                component={TextField}
-                name="goals"
-                label={t_i18n('Goals (1 / line)')}
-                required={(mandatoryAttributes.includes('goals'))}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-              />
-            </Box>
-            <Box sx={{ display: currentTab === 2 ? 'block' : 'none' }}>
-              <CountryField
-                id="PlaceOfBirth"
-                name="bornIn"
-                label={t_i18n('Place of Birth')}
-                required={(mandatoryAttributes.includes('bornIn'))}
-                containerStyle={fieldSpacingContainerStyle}
-                onChange={setFieldValue}
-              />
-              <CountryField
-                id="Ethnicity"
-                name="ethnicity"
-                label={t_i18n('Ethnicity')}
-                required={(mandatoryAttributes.includes('ethnicity'))}
-                containerStyle={fieldSpacingContainerStyle}
-                onChange={setFieldValue}
-              />
-              <Field
-                id="DateOfBirth"
-                component={DateTimePickerField}
-                name="date_of_birth"
-                onSubmit={setFieldValue}
-                textFieldProps={{
-                  label: t_i18n('Date of Birth'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <OpenVocabField
-                name="marital_status"
-                label={t_i18n('Marital Status')}
-                required={(mandatoryAttributes.includes('marital_status'))}
-                type="marital_status_ov"
-                variant="edit"
-                onChange={setFieldValue}
-                containerStyle={fieldSpacingContainerStyle}
-                multiple={false}
-                editContext={[]}
-              />
-              <OpenVocabField
-                name="gender"
-                label={t_i18n('Gender')}
-                required={(mandatoryAttributes.includes('gender'))}
-                type="gender_ov"
-                variant="edit"
-                onChange={setFieldValue}
-                containerStyle={fieldSpacingContainerStyle}
-                multiple={false}
-                editContext={[]}
-              />
-              <Field
-                component={MarkdownField}
-                name="job_title"
-                id="job_title"
-                label={t_i18n('Job Title')}
-                required={(mandatoryAttributes.includes('job_title'))}
-                fullWidth={true}
-                multiline={false}
-                rows="1"
-                style={{ marginTop: 20 }}
-                onSubmit={setFieldValue}
-              />
-            </Box>
-            <Box sx={{ display: currentTab === 3 ? 'block' : 'none' }}>
-              <OpenVocabField
-                name="eye_color"
-                label={t_i18n('Eye Color')}
-                required={(mandatoryAttributes.includes('eye_color'))}
-                type="eye_color_ov"
-                variant="edit"
-                onChange={setFieldValue}
-                containerStyle={fieldSpacingContainerStyle}
-                multiple={false}
-                editContext={[]}
-              />
-              <OpenVocabField
-                name="hair_color"
-                label={t_i18n('Hair Color')}
-                required={(mandatoryAttributes.includes('hair_color'))}
-                type="hair_color_ov"
-                variant="edit"
-                onChange={setFieldValue}
-                containerStyle={fieldSpacingContainerStyle}
-                multiple={false}
-                editContext={[]}
-              />
-              <HeightFieldAdd
-                id="new_height"
-                name="height"
-                values={values?.height}
-                containerStyle={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-              />
-              <WeightFieldAdd
-                name="weight"
-                values={values?.weight}
-                containerStyle={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-              />
-            </Box>
+                />
+              </TabsContent>
+              <TabsContent value="details" forceMount hidden={currentTab !== 'details'}>
+                <Field
+                  component={DateTimePickerField}
+                  name="first_seen"
+                  required={(mandatoryAttributes.includes('first_seen'))}
+                  textFieldProps={{
+                    label: t_i18n('First seen'),
+                    variant: 'outlined',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+                <Field
+                  component={DateTimePickerField}
+                  name="last_seen"
+                  required={(mandatoryAttributes.includes('last_seen'))}
+                  textFieldProps={{
+                    label: t_i18n('Last seen'),
+                    variant: 'outlined',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+                <OpenVocabField
+                  label={t_i18n('Sophistication')}
+                  type="threat_actor_individual_sophistication_ov"
+                  name="sophistication"
+                  required={(mandatoryAttributes.includes('sophistication'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  variant="edit"
+                  multiple={false}
+                />
+                <OpenVocabField
+                  label={t_i18n('Resource level')}
+                  type="attack-resource-level-ov"
+                  name="resource_level"
+                  required={(mandatoryAttributes.includes('resource_level'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  variant="edit"
+                  multiple={false}
+                />
+                <OpenVocabField
+                  label={t_i18n('Roles')}
+                  type="threat-actor-individual-role-ov"
+                  name="roles"
+                  required={(mandatoryAttributes.includes('roles'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  variant="edit"
+                  multiple={true}
+                />
+                <OpenVocabField
+                  label={t_i18n('Primary motivation')}
+                  type="attack-motivation-ov"
+                  name="primary_motivation"
+                  required={(mandatoryAttributes.includes('primary_motivation'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  variant="edit"
+                  multiple={false}
+                />
+                <OpenVocabField
+                  label={t_i18n('Secondary motivations')}
+                  type="attack-motivation-ov"
+                  name="secondary_motivations"
+                  required={(mandatoryAttributes.includes('secondary_motivations'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  variant="edit"
+                  multiple={true}
+                />
+                <OpenVocabField
+                  label={t_i18n('Personal motivations')}
+                  type="attack-motivation-ov"
+                  name="personal_motivations"
+                  required={(mandatoryAttributes.includes('personal_motivations'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  variant="edit"
+                  multiple={true}
+                />
+                <Field
+                  component={TextareaField}
+                  name="goals"
+                  label={t_i18n('Goals (1 / line)')}
+                  required={(mandatoryAttributes.includes('goals'))}
+                  rows="4"
+                  className="mt-5"
+                />
+              </TabsContent>
+              <TabsContent value="demographics" forceMount hidden={currentTab !== 'demographics'}>
+                <CountryField
+                  id="PlaceOfBirth"
+                  name="bornIn"
+                  label={t_i18n('Place of Birth')}
+                  required={(mandatoryAttributes.includes('bornIn'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  onChange={setFieldValue}
+                />
+                <CountryField
+                  id="Ethnicity"
+                  name="ethnicity"
+                  label={t_i18n('Ethnicity')}
+                  required={(mandatoryAttributes.includes('ethnicity'))}
+                  containerStyle={fieldSpacingContainerStyle}
+                  onChange={setFieldValue}
+                />
+                <Field
+                  id="DateOfBirth"
+                  component={DateTimePickerField}
+                  name="date_of_birth"
+                  onSubmit={setFieldValue}
+                  textFieldProps={{
+                    label: t_i18n('Date of Birth'),
+                    variant: 'outlined',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+                <OpenVocabField
+                  name="marital_status"
+                  label={t_i18n('Marital Status')}
+                  required={(mandatoryAttributes.includes('marital_status'))}
+                  type="marital_status_ov"
+                  variant="edit"
+                  onChange={setFieldValue}
+                  containerStyle={fieldSpacingContainerStyle}
+                  multiple={false}
+                  editContext={[]}
+                />
+                <OpenVocabField
+                  name="gender"
+                  label={t_i18n('Gender')}
+                  required={(mandatoryAttributes.includes('gender'))}
+                  type="gender_ov"
+                  variant="edit"
+                  onChange={setFieldValue}
+                  containerStyle={fieldSpacingContainerStyle}
+                  multiple={false}
+                  editContext={[]}
+                />
+                <Field
+                  component={MarkdownField}
+                  name="job_title"
+                  id="job_title"
+                  label={t_i18n('Job Title')}
+                  required={(mandatoryAttributes.includes('job_title'))}
+                  fullWidth={true}
+                  multiline={false}
+                  rows="1"
+                  style={{ marginTop: 20 }}
+                  onSubmit={setFieldValue}
+                />
+              </TabsContent>
+              <TabsContent value="biographics" forceMount hidden={currentTab !== 'biographics'}>
+                <OpenVocabField
+                  name="eye_color"
+                  label={t_i18n('Eye Color')}
+                  required={(mandatoryAttributes.includes('eye_color'))}
+                  type="eye_color_ov"
+                  variant="edit"
+                  onChange={setFieldValue}
+                  containerStyle={fieldSpacingContainerStyle}
+                  multiple={false}
+                  editContext={[]}
+                />
+                <OpenVocabField
+                  name="hair_color"
+                  label={t_i18n('Hair Color')}
+                  required={(mandatoryAttributes.includes('hair_color'))}
+                  type="hair_color_ov"
+                  variant="edit"
+                  onChange={setFieldValue}
+                  containerStyle={fieldSpacingContainerStyle}
+                  multiple={false}
+                  editContext={[]}
+                />
+                <HeightFieldAdd
+                  id="new_height"
+                  name="height"
+                  values={values?.height}
+                  containerStyle={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+                <WeightFieldAdd
+                  name="weight"
+                  values={values?.weight}
+                  containerStyle={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+              </TabsContent>
+            </Tabs>
             <FormButtonContainer>
               <Button
                 variant="secondary"

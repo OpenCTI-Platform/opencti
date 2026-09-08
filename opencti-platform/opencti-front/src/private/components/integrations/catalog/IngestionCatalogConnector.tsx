@@ -10,7 +10,7 @@ import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@comp
 import { Stack } from '@mui/material';
 import React, { Suspense, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';

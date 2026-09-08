@@ -1,5 +1,5 @@
 import { ReactNode, useMemo } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router';
 import CustomView from './CustomView';
 import { useCustomViews } from './useCustomViews';
 import type { CustomView as CustomViewType } from './CustomViews-types';

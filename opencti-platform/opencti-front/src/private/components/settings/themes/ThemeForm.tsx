@@ -1,11 +1,10 @@
 import Button from '@common/button/Button';
-import { InputAdornment, MenuItem, Select, SelectChangeEvent, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import { ClearIcon } from '@mui/x-date-pickers';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { Field, Form, useFormikContext } from 'formik';
 import { FunctionComponent, useRef, useState } from 'react';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import IconButton from '../../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import Label from '../../../../components/common/label/Label';
 import { useFormatter } from '../../../../components/i18n';
@@ -83,8 +82,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
     return null;
   };
 
-  const handleLoginAsideTypeChange = (event: SelectChangeEvent<string>) => {
-    const type = event.target.value as '' | 'color' | 'gradient' | 'image';
+  const handleLoginAsideTypeChange = (type: '' | 'color' | 'gradient' | 'image') => {
     setLoginAsideType(type);
 
     const clearedValues: ThemeType = {
@@ -121,7 +119,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
       <Stack gap={2.5}>
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="name"
           label={t_i18n('Name')}
           error={!!errors.name}
@@ -145,7 +143,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_background"
           label={t_i18n('Background color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
           disabled={isDefaultTheme}
@@ -156,7 +154,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_paper"
           label={t_i18n('Paper color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
           disabled={isDefaultTheme}
@@ -167,7 +165,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_nav"
           label={t_i18n('Navigation color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
           disabled={isDefaultTheme}
@@ -178,7 +176,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_primary"
           label={t_i18n('Primary color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
           disabled={isDefaultTheme}
@@ -189,7 +187,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_secondary"
           label={t_i18n('Secondary color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
           disabled={isDefaultTheme}
@@ -200,7 +198,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_accent"
           label={t_i18n('Accent color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
           disabled={isDefaultTheme}
@@ -211,7 +209,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           name="theme_text_color"
           label={t_i18n('Text color')}
           fullWidth
-          variant="standard"
+          variant="outlined"
           required
           onSubmit={handleFieldSubmit}
           disabled={isDefaultTheme}
@@ -220,7 +218,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         {/* LOGOS */}
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="theme_logo"
           label={t_i18n('Logo URL')}
           fullWidth
@@ -230,7 +228,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="theme_logo_collapsed"
           label={t_i18n('Logo URL (collapsed)')}
           fullWidth
@@ -240,7 +238,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name="theme_logo_login"
           label={t_i18n('Logo URL (login)')}
           fullWidth
@@ -260,38 +258,29 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         </Label>
 
         <Stack gap={2.5}>
+          {/* FDS-WORKAROUND #45 retired in library #190; the empty string is still a real
+              product state — see fds-migration/MIGRATION-DECISIONS.md#theme-background-select */}
           <Select
             disabled={isDefaultTheme}
             value={loginAsideType}
-            onChange={handleLoginAsideTypeChange}
-            fullWidth
-            variant="standard"
-            displayEmpty
-            renderValue={(value) =>
-              value
-                ? getAsideTypeLabel(value)
-                : <em style={{ color: theme.palette.text.disabled }}>{t_i18n('Select a background type')}</em>
-            }
-            slotProps={{
-              input: {
-                sx: {
-                  textTransform: 'capitalize',
-                },
-              },
-            }}
-            endAdornment={
-              loginAsideType && (
-                <InputAdornment position="end" style={{ marginRight: 16 }}>
-                  <IconButton aria-label={t_i18n('Clear')} size="small" onClick={() => handleLoginAsideTypeChange({ target: { value: '' } } as SelectChangeEvent<string>)}>
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
+            onValueChange={(value) => handleLoginAsideTypeChange(value as '' | 'color' | 'gradient' | 'image')}
+            clearable
+            clearLabel={t_i18n('Clear')}
           >
-            <MenuItem value="color" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background color')}</MenuItem>
-            <MenuItem value="gradient" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background gradient')}</MenuItem>
-            <MenuItem value="image" sx={{ textTransform: 'capitalize' }}>{t_i18n('Image URL')}</MenuItem>
+            <SelectTrigger
+              className="w-full"
+              aria-label={t_i18n('Right panel customisation')}
+              style={{ textTransform: 'capitalize' }}
+            >
+              <SelectValue placeholder={t_i18n('Select a background type')}>
+                {getAsideTypeLabel(loginAsideType)}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Right panel customisation')}>
+              <SelectItem value="color" style={{ textTransform: 'capitalize' }}>{t_i18n('Add background color')}</SelectItem>
+              <SelectItem value="gradient" style={{ textTransform: 'capitalize' }}>{t_i18n('Add background gradient')}</SelectItem>
+              <SelectItem value="image" style={{ textTransform: 'capitalize' }}>{t_i18n('Image URL')}</SelectItem>
+            </SelectContent>
           </Select>
 
           <div ref={fieldRef}>
@@ -301,7 +290,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                 name="theme_login_aside_color"
                 label={t_i18n('Background color')}
                 fullWidth
-                variant="standard"
+                variant="outlined"
                 onSubmit={handleFieldSubmit}
                 sx={{ textTransform: 'capitalize' }}
                 disabled={isDefaultTheme}
@@ -315,7 +304,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   name="theme_login_aside_gradient_start"
                   label={t_i18n('First color')}
                   fullWidth
-                  variant="standard"
+                  variant="outlined"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
                   disabled={isDefaultTheme}
@@ -326,7 +315,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
                   name="theme_login_aside_gradient_end"
                   label={t_i18n('Second color')}
                   fullWidth
-                  variant="standard"
+                  variant="outlined"
                   onSubmit={handleFieldSubmit}
                   sx={{ textTransform: 'capitalize' }}
                   disabled={isDefaultTheme}
@@ -337,7 +326,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             {loginAsideType === 'image' && (
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="theme_login_aside_image"
                 label={t_i18n('Add image URL')}
                 fullWidth

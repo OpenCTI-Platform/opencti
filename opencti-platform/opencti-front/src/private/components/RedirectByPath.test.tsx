@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { describe, expect, it } from 'vitest';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router';
 import { screen } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import RedirectByPath, { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from './RedirectByPath';

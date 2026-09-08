@@ -1,18 +1,30 @@
-import { CloseOutlined } from '@mui/icons-material';
-import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } from '@mui/material';
-import React, { CSSProperties, ReactElement } from 'react';
-import { getLuminance } from '@mui/material/styles';
+import { Chip } from '@filigran/design-system';
+import { Tooltip } from '@mui/material';
+import React from 'react';
 
-export interface TagProps extends Omit<ChipProps, 'color'> {
-  label?: string | number | ReactElement | null;
+export interface TagProps {
+  label?: string | number | null;
   color?: string | null;
   onClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;
+  /** Accessible name for the delete button. Defaults, in the library, to an
+   *  untranslated `Remove ${label}` — pass a translated string. */
+  deleteLabel?: string;
+  /** `-1` inside a composite widget (a chip row in a select field owns its own
+   *  focus order, so each chip must not add a Tab stop). */
+  deleteTabIndex?: number;
   maxWidth?: number | string;
   icon?: React.ReactElement;
   tooltipTitle?: string;
   disableTooltip?: boolean;
   labelTextTransform?: 'capitalize' | 'uppercase' | 'lowercase' | 'none';
+  className?: string;
+  id?: string;
+  disabled?: boolean;
+  style?: React.CSSProperties;
+  sx?: Record<string, unknown>;
+  size?: 'small' | 'medium';
+  variant?: 'filled' | 'outlined';
 }
 
 const Tag = ({
@@ -20,115 +32,57 @@ const Tag = ({
   color,
   onClick,
   onDelete,
+  deleteLabel,
+  deleteTabIndex,
   maxWidth = '100%',
   icon,
   tooltipTitle,
   disableTooltip = false,
   labelTextTransform = 'capitalize',
+  className,
+  id,
+  disabled,
   sx,
-  ...chipProps
+  style,
 }: TagProps) => {
-  const theme = useTheme();
-  const defaultColor = theme.palette.severity?.default ?? '#004C66';
-
-  const getBackgroundColor = () => {
-    if (!color || color === defaultColor) {
-      return defaultColor;
-    }
-
-    try {
-      return alpha(color, 0.2);
-    } catch {
-      return defaultColor;
-    }
-  };
-  const getTextColor = () => {
-    const bgLuminance = getLuminance(bgColor);
-    return bgLuminance > 0.5 ? '#000000' : theme.palette.text.primary;
-  };
-
-  const bgColor = getBackgroundColor();
-  const textColor = getTextColor();
-
-  const chipStyle: CSSProperties = {
-    borderRadius: 4,
-    fontSize: 12,
-    fontWeight: 400,
-    paddingLeft: '8px',
-    cursor: onClick ? 'pointer' : 'default',
-    textTransform: labelTextTransform,
-  };
-
-  const sxStyles: SxProps<Theme> = {
-    backgroundColor: bgColor,
-    '&:hover': {
-      backgroundColor: onClick ? lighten(bgColor, 0.2) : undefined,
-    },
-    maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
-    height: 25,
-    '& .MuiChip-label': {
-      color: textColor,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      display: 'block',
-      paddingLeft: icon ? '8px' : '4px',
-      paddingRight: onDelete ? '4px' : '12px',
-      textTransform: labelTextTransform,
-      '&::first-letter': {
-        textTransform: labelTextTransform,
-      },
-    },
-    ...(icon && {
-      '& .MuiChip-icon': {
-        color: color,
-        mr: 0.1,
-      },
-    }),
-    '& .MuiChip-deleteIcon': {
-      color: '#F2F2F3',
-      fontSize: 18,
-      '&:hover': {
-        color: '#FFFFFF',
-      },
-      background: 'none',
-      marginLeft: '8px',
-    },
-    ...sx,
-  };
+  // `label` has always accepted a number or an element; the library types it as
+  // a string, so it is flattened here rather than at 202 call sites.
+  const text = typeof label === 'string' || typeof label === 'number' ? String(label) : '';
+  const flatSx = Object.fromEntries(
+    Object.entries(sx ?? {}).filter(([k, v]) => !k.includes('&') && typeof v !== 'object'),
+  ) as React.CSSProperties;
 
   const chip = (
     <Chip
-      label={label}
-      icon={icon}
+      id={id}
+      label={text}
+      color={color ?? undefined}
+      startIcon={icon}
       onClick={onClick}
-      onDelete={onDelete}
-      style={chipStyle}
-      sx={sxStyles}
-      deleteIcon={<CloseOutlined />}
-      {...chipProps}
+      // the library's handler takes no event; the wrapper's callers expect one
+      onDelete={onDelete ? () => onDelete({} as React.MouseEvent) : undefined}
+      deleteLabel={deleteLabel}
+      deleteTabIndex={deleteTabIndex}
+      className={className}
+      disabled={disabled}
+      style={{
+        textTransform: labelTextTransform,
+        maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
+        ...flatSx,
+        ...style,
+      }}
     />
   );
 
-  if (disableTooltip) {
+  const addsSomething = tooltipTitle !== undefined && tooltipTitle !== text;
+  if (disableTooltip || !addsSomething) {
     return chip;
   }
 
   return (
-    <Tooltip
-      title={tooltipTitle ?? label}
-      placement="bottom-start"
-      slotProps={{
-        tooltip: {
-          sx: {
-            textTransform: labelTextTransform,
-            '&::first-letter': {
-              textTransform: labelTextTransform,
-            },
-          },
-        },
-      }}
-    >
+    // The Chip is the Tooltip's direct child on purpose: an intermediate <span> makes MUI label the wrapper AND
+    // leaves the chip's own text matchable, so `getByLabel` resolves to two elements.
+    <Tooltip title={tooltipTitle} placement="bottom-start">
       {chip}
     </Tooltip>
   );

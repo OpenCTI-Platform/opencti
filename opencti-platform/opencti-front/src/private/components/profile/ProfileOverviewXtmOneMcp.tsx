@@ -1,7 +1,8 @@
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import { ContentCopyOutlined, OpenInNewOutlined } from '@mui/icons-material';
-import { IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Stack, Tooltip, Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import Label from '../../../components/common/label/Label';
 import { useFormatter } from '../../../components/i18n';
 import { toSafeHttpUrl } from '../../../utils/url';
@@ -51,12 +52,13 @@ const ProfileOverviewXtmOneMcp = () => {
           <pre style={{ flex: 1, minWidth: 0, margin: 0, overflowX: 'auto' }}>{mcpEndpointUrl}</pre>
           <Tooltip title={t_i18n('Copy MCP endpoint URL')}>
             <IconButton
-              size="small"
+              variant="default"
+              priority="tertiary"
+              size="sm"
               aria-label={t_i18n('Copy MCP endpoint URL')}
               onClick={() => copyToClipboard(t_i18n, mcpEndpointUrl)}
-            >
-              <ContentCopyOutlined fontSize="small" />
-            </IconButton>
+              icon={<ContentCopyOutlined fontSize="small" />}
+            />
           </Tooltip>
         </Stack>
       </div>

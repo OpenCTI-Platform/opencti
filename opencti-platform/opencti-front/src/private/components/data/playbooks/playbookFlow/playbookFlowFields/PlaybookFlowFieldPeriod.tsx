@@ -13,9 +13,8 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { MenuItem } from '@mui/material';
 import { Field } from 'formik';
-import SelectField from '../../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../../components/fields/SelectFieldFds';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import { useFormatter } from '../../../../../../components/i18n';
 
@@ -25,16 +24,16 @@ const PlaybookFlowFieldPeriod = () => {
   return (
     <Field
       fullWidth
-      component={SelectField}
-      variant="standard"
+      component={SelectFieldFds}
+      variant="outlined"
       name="period"
       label={t_i18n('Period')}
       containerstyle={fieldSpacingContainerStyle}
     >
-      <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
-      <MenuItem value="day">{t_i18n('day')}</MenuItem>
-      <MenuItem value="week">{t_i18n('week')}</MenuItem>
-      <MenuItem value="month">{t_i18n('month')}</MenuItem>
+      <SelectItem value="hour">{t_i18n('hour')}</SelectItem>
+      <SelectItem value="day">{t_i18n('day')}</SelectItem>
+      <SelectItem value="week">{t_i18n('week')}</SelectItem>
+      <SelectItem value="month">{t_i18n('month')}</SelectItem>
     </Field>
   );
 };

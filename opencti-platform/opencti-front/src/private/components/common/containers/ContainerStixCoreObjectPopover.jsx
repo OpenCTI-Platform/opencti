@@ -283,7 +283,7 @@ class ContainerStixCoreObjectPopover extends Component {
           color="primary"
           onClick={this.handleOpen.bind(this)}
           disabled={this.props.menuDisable ?? false}
-          aria-haspopup="true"
+          aria-haspopup={this.props.menuDisable ? undefined : true}
         >
           <MoreVert />
         </IconButton>

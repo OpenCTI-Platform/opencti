@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Stack, useTheme } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';

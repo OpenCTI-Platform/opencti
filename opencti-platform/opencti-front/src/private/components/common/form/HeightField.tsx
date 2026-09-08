@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
 import Button from '@common/button/Button';
-import { IconButton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import {
@@ -64,13 +64,14 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       display: 'grid',
                       gap: 20,
                       gridTemplateColumns: 'repeat(2, 1fr)',
+                      alignItems: 'end',
                     }}
                   >
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       type="number"
-                      slotProps={{ input: { min: 0 } }}
+                      min={0}
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
@@ -114,7 +115,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       }}
                       textFieldProps={{
                         label: t_i18n('Date Seen'),
-                        variant: 'standard',
+                        variant: 'outlined',
                         helperText: (
                           <SubscriptionFocus
                             context={editContext}
@@ -125,34 +126,20 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                     />
                   </div>
                   <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    size="md"
                     id="deleteHeight"
                     aria-label="Delete"
-                    onClick={() => {
-                      arrayHelpers.remove(index);
-                      commitMutation({
-                        ...defaultCommitMutation,
-                        mutation: individualHeightMutation,
-                        variables: {
-                          id,
-                          input: {
-                            key: 'height',
-                            object_path: `/height/${height.index}`,
-                            value: [],
-                            operation: 'remove',
-                          },
-                        },
-                      });
-                    }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
+                    style={{ position: 'absolute', right: -10, bottom: 0 }}
+                    icon={<DeleteOutlined sx={{ fontSize: 20 }} />}
+                  />
                 </div>
               );
             })}
             <Button
               size="small"
-              startIcon={<AddOutlined />}
+              startIcon={<AddOutlined fontSize="small" />}
               aria-label="Add"
               id="addHeight"
               onClick={() => {
@@ -214,41 +201,44 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                       display: 'grid',
                       gap: 20,
                       gridTemplateColumns: 'repeat(2, 1fr)',
+                      alignItems: 'end',
                     }}
                   >
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       type="number"
-                      slotProps={{ input: { min: 0 } }}
+                      min={0}
                     />
                     <Field
                       component={DateTimePickerField}
                       name={`${name}.${index}.date_seen`}
                       textFieldProps={{
                         label: t_i18n('Date Seen'),
-                        variant: 'standard',
+                        variant: 'outlined',
                       }}
                       type="date"
                     />
                   </div>
                   <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    size="md"
                     id="deleteHeight"
                     aria-label="Delete"
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
+                    style={{ position: 'absolute', right: -10, bottom: 0 }}
+                    icon={<DeleteOutlined sx={{ fontSize: 20 }} />}
+                  />
                 </div>
               ))}
               <Button
                 size="small"
-                startIcon={<AddOutlined />}
+                startIcon={<AddOutlined fontSize="small" />}
                 aria-label="Add"
                 id="addHeight"
                 onClick={() => {

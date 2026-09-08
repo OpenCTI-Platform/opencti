@@ -410,6 +410,7 @@ const StixSightingRelationshipCreationFromEntity = ({
       default:
         return (
           <Fab
+            /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
             onClick={handleOpen}
             color="secondary"
             aria-label="Add"
@@ -436,7 +437,6 @@ const StixSightingRelationshipCreationFromEntity = ({
             paginationOptions={stixDomainObjectsPaginationOptions}
             stixDomainObjectTypes={stixCoreObjectTypes}
             controlledDialStyles={{ float: 'right' }}
-            controlledDialSize="small"
           />
         )}
       >

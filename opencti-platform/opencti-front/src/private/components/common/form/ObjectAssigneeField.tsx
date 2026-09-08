@@ -4,7 +4,8 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
@@ -61,9 +62,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
 }));
 
 interface OptionAssignee extends FieldOption {
@@ -93,9 +91,9 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   const { me } = useContext((UserContext));
   const [assignees, setAssignees] = useState<OptionAssignee[]>([]);
 
-  const searchAssignees = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchAssignees = (search: string) => {
     fetchQuery(objectAssigneeFieldMembersSearchQuery, {
-      search: (event && event.target && event.target.value) ?? '',
+      search,
       entityTypes: ['User'],
       first: 10,
     })
@@ -128,36 +126,34 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
+      // MUI hid its clear indicator here with display:none; the library defaults
+      // clearable to true, so the affordance must be declined explicitly.
       style={style}
       name={name}
       disabled={disabled}
       required={required}
       multiple={true}
       groupBy={(option: OptionAssignee) => option.group}
-      textfieldprops={{
-        variant: 'standard',
-        label: label ?? t_i18n('Assignee(s)'),
-        helperText: helpertext,
-        onFocus: searchAssignees,
-        required,
-      }}
+      label={label ?? t_i18n('Assignee(s)')}
+      helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={assignees}
-      onInputChange={searchAssignees}
+      onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+        // Only a keystroke refetches. Selecting, clearing or reopening also
+        // reports an input change, and each one used to fire a query.
+        if (meta.cause === 'type') searchAssignees(search);
+      }}
+      onFocusInput={() => searchAssignees('')}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(
-        fieldProps: React.HTMLAttributes<HTMLLIElement>,
-        option: { type: string; label: string },
-      ) => (
-        <li {...fieldProps}>
+      renderOption={(option: { type: string; label: string }) => (
+        <>
           <div className={classes.icon}>
             <ItemIcon type={option.type} />
           </div>
           <div className={classes.text}>{option.label}</div>
-        </li>
+        </>
       )}
-      classes={{ clearIndicator: classes.autoCompleteIndicator }}
     />
   );
 };

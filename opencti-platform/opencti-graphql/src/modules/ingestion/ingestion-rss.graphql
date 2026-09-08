@@ -18,6 +18,8 @@ type IngestionRss implements InternalObject & BasicObject {
     report_types: [String!]
     current_state_date: DateTime
     last_execution_date: DateTime
+    last_execution_status: String
+    ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
     ingestion_running: Boolean
     ssl_verify: Boolean
     toConfigurationExport: String!
@@ -68,6 +70,7 @@ type Query {
     ingestionRssAddInputFromImport(
         file: Upload!
     ): IngestionRssAddInputFromImport! @auth(for: [INGESTION])
+    ingestionRssLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
 }
 
 # Mutations
@@ -98,5 +101,6 @@ type Mutation {
     ingestionRssDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss @auth(for:[INGESTION_SETINGESTIONS])
+    ingestionRssResetState(id: ID!): IngestionRss @auth(for: [INGESTION_SETINGESTIONS])
 
 }
