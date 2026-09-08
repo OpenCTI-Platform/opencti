@@ -7,7 +7,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { ShieldCheckOutline } from 'mdi-material-ui';
-import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -15,6 +15,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import { isEmptyField } from '../../../../utils/utils';
 import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/security_coverage_creation/SecurityCoverageCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,10 +29,7 @@ const useStyles = makeStyles<Theme>(() => ({
 
 interface SecurityCoverage {
   id: string;
-  coverage_information: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  coverage_information: ReadonlyArray<CoverageInformation> | null | undefined;
 }
 
 interface StixCoreObjectSecurityCoverageProps {

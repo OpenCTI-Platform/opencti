@@ -12,7 +12,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { SecurityCoverageVulnerabilities_securityCoverage$data } from './__generated__/SecurityCoverageVulnerabilities_securityCoverage.graphql';
-import SecurityCoverageScores from './SecurityCoverageScores';
+import SecurityCoverageScores from './security_coverage_scores/SecurityCoverageScores';
 import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
 import ItemIcon from '../../../../components/ItemIcon';
 import Label from '../../../../components/common/label/Label';

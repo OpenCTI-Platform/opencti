@@ -6,7 +6,7 @@ import { Stack, Tooltip, Typography } from '@mui/material';
 import { InformationOutline } from 'mdi-material-ui';
 import Divider from '@mui/material/Divider';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { graphql, useFragment } from 'react-relay';
 import { SecurityCoverageMainInfo_securityCoverage$key } from './__generated__/SecurityCoverageMainInfo_securityCoverage.graphql';
 

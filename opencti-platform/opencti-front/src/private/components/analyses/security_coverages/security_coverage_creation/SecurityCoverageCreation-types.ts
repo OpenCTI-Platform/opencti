@@ -1,5 +1,6 @@
 import { FieldOption } from 'src/utils/field';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
+import { CoverageInformation } from '../SecurityCoverage-types';
 
 // Type definitions for GraphQL responses
 export interface StixCoreObjectNode {
@@ -35,7 +36,7 @@ export interface SecurityCoverageFormValues {
   createdBy?: FieldOption;
   objectMarking: { value: string }[];
   objectLabel: { value: string; label: string }[];
-  coverage_information: { coverage_name: string; coverage_score: number | string }[];
+  coverage_information: CoverageInformation[];
   periodicity?: string;
   duration?: string;
   type_affinity: 'ENDPOINT';

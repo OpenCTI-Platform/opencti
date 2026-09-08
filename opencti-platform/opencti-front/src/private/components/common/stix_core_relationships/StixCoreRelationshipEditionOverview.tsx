@@ -29,6 +29,7 @@ import {
   StixCoreRelationshipEditionOverview_stixCoreRelationship$data,
   StixCoreRelationshipEditionOverview_stixCoreRelationship$key,
 } from './__generated__/StixCoreRelationshipEditionOverview_stixCoreRelationship.graphql';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 const StixCoreRelationshipEditionOverviewFragment = graphql`
   fragment StixCoreRelationshipEditionOverview_stixCoreRelationship on StixCoreRelationship {
@@ -171,10 +172,7 @@ interface StixCoreRelationshipAddInput {
   objectMarking: FieldOption[];
   message?: string;
   references?: FieldOption[];
-  coverage_information?: readonly {
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }[] | undefined;
+  coverage_information?: readonly CoverageInformation[] | undefined;
 }
 
 export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<

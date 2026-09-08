@@ -13,6 +13,7 @@ import { GenericContext } from '../model/GenericContextModel';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 export const coverageEntityInformationMutation = graphql`
   mutation CoverageInformationFieldEntityMutation($id: ID!, $input: [EditInput]!) {
@@ -38,14 +39,9 @@ export const coverageRelationInformationMutation = graphql`
   }
 `;
 
-interface CoverageInformationInput {
-  coverage_name: string;
-  coverage_score: number | string;
-}
-
 interface CoverageInformationFieldAddProps {
   name: string;
-  values: CoverageInformationInput[];
+  values: CoverageInformation[];
   containerStyle?: React.CSSProperties;
   setFieldValue?: (name: string, value: unknown) => void;
 }
@@ -54,10 +50,7 @@ interface CoverageInformationFieldEditProps {
   id: string;
   name: string;
   mode: 'entity' | 'relation';
-  values: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  values: ReadonlyArray<CoverageInformation> | null | undefined;
   containerStyle?: React.CSSProperties;
   editContext?: readonly (GenericContext | null)[] | null;
 }
