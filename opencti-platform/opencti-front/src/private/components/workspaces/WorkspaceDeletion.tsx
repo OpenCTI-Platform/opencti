@@ -19,8 +19,7 @@ const WorkspaceDeletion = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Workspace') },
   });
 

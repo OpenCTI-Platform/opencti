@@ -43,8 +43,7 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
   const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Report') },
   });
   const [commitMutation] = useApiMutation(

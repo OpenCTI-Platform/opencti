@@ -98,7 +98,7 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
               // on pasting data, we try to extract emails
               const extractedEmails = parseEmailList(pastedText);
               if (extractedEmails.length > 0) {
-                MESSAGING$.notifySuccess(t_i18n('', { id: '{count} email address(es) extracted from pasted text', values: { count: extractedEmails.length } }));
+                MESSAGING$.notifySuccess(t_i18n('{count} email address(es) extracted from pasted text', { values: { count: extractedEmails.length } }));
                 return extractedEmails.join('\n'); // alter the pasted content
               }
               return pastedText; // do not alter pasted content; it's probably invalid anyway

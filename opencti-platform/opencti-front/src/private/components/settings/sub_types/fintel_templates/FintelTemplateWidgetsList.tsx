@@ -39,8 +39,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
           {t_i18n('First, create widgets detailing which data to get. Then, copy paste the widget name in your template.')}
         </Typography>
         <Typography variant="body2">
-          {t_i18n('', {
-            id: 'Find examples on our documentation.',
+          {t_i18n('Find examples on our documentation.', {
             values: {
               link: (
                 <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
@@ -59,8 +58,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
             sx={{ marginLeft: 2, marginRight: 2 }}
             onClick={() => onUpdateWidget(widgetSelfInstance)}
           >
-            {t_i18n('', {
-              id: 'Add attributes of the instance',
+            {t_i18n('Add attributes of the instance', {
               values: { type: subTypeId ?? '' },
             })}
           </Button>
@@ -68,8 +66,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
           <FintelTemplateWidgetAttribute
             variableName={widgetSelfInstance.variable_name}
             widget={widgetSelfInstance.widget}
-            title={t_i18n('', {
-              id: 'Attributes of the instance',
+            title={t_i18n('Attributes of the instance', {
               values: { type: subTypeId ?? '' },
             })}
           />
@@ -106,8 +103,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
                 : undefined
               }
               variableName={isSelfAttributeWidget
-                ? t_i18n('', {
-                    id: 'Attributes of the instance',
+                ? t_i18n('Attributes of the instance', {
                     values: { type: subTypeId ?? '' },
                   })
                 : variable_name
