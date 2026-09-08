@@ -1,6 +1,6 @@
 import { Badge, iconButtonVariants } from '@filigran/design-system';
 import React, { ComponentPropsWithoutRef, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 // FDS-WORKAROUND #13: icon button that is really a link, library variants reused — remove when `IconButton` accepts `asChild` — see fds-migration/LIBRARY-FEEDBACK.md #13
 

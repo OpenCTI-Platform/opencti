@@ -2,7 +2,7 @@ import { Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, 
 import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
