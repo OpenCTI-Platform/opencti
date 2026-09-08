@@ -1010,6 +1010,7 @@
   "Subject public key modulus": "Subject public key modulus",
   "Submission date": "Submission date",
   "SWID": "SWID",
+  "Sync inflight cleanup manager": "Sync inflight cleanup manager",
   "Sync workflow statuses by name": "Sync workflow statuses by name",
   "Synchronized": "Synchronized",
   "Tags": "Tags",

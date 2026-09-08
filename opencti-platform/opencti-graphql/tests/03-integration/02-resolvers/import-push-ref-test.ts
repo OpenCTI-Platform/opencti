@@ -111,12 +111,14 @@ describe('f10 - importPushRef end-to-end', () => {
 // message replaying an already-consumed key, and a larger payload proving the pipeline never
 // buffers the whole file as base64 (the original motivation for #17896).
 describe('f14 - importPushRef failure injection and adversarial scenarios', () => {
-  let reportId: string;
+  // Each `it` below creates its own throwaway report, so a single shared `reportId` reassigned
+  // per-test would only let afterAll clean up the last one, leaking the earlier reports into
+  // the shared integration DB (this previously broke report-test.js's exact-count assertions).
+  // Track every id created in this block instead, and delete them all at the end.
+  const reportIds: string[] = [];
 
   afterAll(async () => {
-    if (reportId) {
-      await deleteElementById(testContext, ADMIN_USER, reportId, ENTITY_TYPE_CONTAINER_REPORT);
-    }
+    await Promise.all(reportIds.map((id) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_CONTAINER_REPORT)));
   });
 
   it('rejects a storage_key staged for a different sync, without leaking or consuming it', async () => {
@@ -125,7 +127,8 @@ describe('f14 - importPushRef failure injection and adversarial scenarios', () =
       variables: { input: { name: 'f14-cross-sync-report', published: '2020-02-26T00:51:35.000Z' } },
     });
     expect(reportResult.errors).toBeUndefined();
-    reportId = reportResult.data?.reportAdd.id;
+    const reportId = reportResult.data?.reportAdd.id;
+    reportIds.push(reportId);
 
     // Stage a file for sync A, then try to consume it while claiming to be sync B.
     // This is the real attack this segment's fix was built for: sync_id/storage_key are only
@@ -166,7 +169,8 @@ describe('f14 - importPushRef failure injection and adversarial scenarios', () =
       variables: { input: { name: 'f14-redelivery-report', published: '2020-02-26T00:51:35.000Z' } },
     });
     expect(reportResult.errors).toBeUndefined();
-    reportId = reportResult.data?.reportAdd.id;
+    const reportId = reportResult.data?.reportAdd.id;
+    reportIds.push(reportId);
 
     const syncId = 'sync--f14-redelivery';
     const storageKey = `sync/inflight/${syncId}/f14-redelivery-file/content`;
@@ -197,7 +201,8 @@ describe('f14 - importPushRef failure injection and adversarial scenarios', () =
       variables: { input: { name: 'f14-large-file-report', published: '2020-02-26T00:51:35.000Z' } },
     });
     expect(reportResult.errors).toBeUndefined();
-    reportId = reportResult.data?.reportAdd.id;
+    const reportId = reportResult.data?.reportAdd.id;
+    reportIds.push(reportId);
 
     // 8MB of pseudo-random bytes. Large enough to be representative of the real-world payloads
     // (scan reports, PCAPs, memory dumps) that used to risk ERR_STRING_TOO_LONG once base64
