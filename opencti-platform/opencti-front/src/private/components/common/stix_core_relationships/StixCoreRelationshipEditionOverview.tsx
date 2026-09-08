@@ -302,6 +302,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               containerStyle={{ width: '100%' }}
               editContext={editContext}
               entityType={stixCoreRelationshipType}
+              disableTopMargin
             />
             <Field
               component={DateTimePickerField}
