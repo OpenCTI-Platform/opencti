@@ -49,6 +49,32 @@ export const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => ({
   filterGroups: (filterGroup.filterGroups ?? []).map(cloneFilterGroup),
 });
 
+/**
+ * Assigns a FRONTEND-ONLY uuid `id` to the given filter group and to every nested group that does
+ * not already have one, so that a group can be addressed in a nested filter tree.
+ * - non-mutating and safe on frozen inputs (typically emptyFilterGroup);
+ * - idempotent: an existing id is always preserved, and when every group is already identified the
+ *   very same object (identity) is returned, so that calling it twice never triggers a state change
+ *   nor a url re-sync;
+ * - filter-level ids are left untouched (getDefaultFilterObject / normalizeFilterGroupForFrontend
+ *   are the only filter-id generators).
+ * /!\ Must only be called on state entry points (state initialization, setFilters), never in a
+ * render-derived value: new uuids on every render would cause endless history.replaceState churn.
+ */
+export const ensureFilterGroupIds = (filterGroup: FilterGroup): FilterGroup => {
+  const subGroups = filterGroup.filterGroups ?? [];
+  const newSubGroups = subGroups.map((group) => ensureFilterGroupIds(group));
+  const subGroupsChanged = newSubGroups.some((group, index) => group !== subGroups[index]);
+  if (filterGroup.id && !subGroupsChanged) {
+    return filterGroup;
+  }
+  return {
+    ...filterGroup,
+    id: filterGroup.id ?? uuid(),
+    filterGroups: newSubGroups,
+  };
+};
+
 // ----------------------------------------------------------------------------------------------------------------------
 
 export const SELF_ID = 'SELF_ID';
@@ -599,6 +625,8 @@ export const normalizeFilterGroupForFrontend = (
 ): FilterGroup => {
   return {
     ...filterGroup,
+    // frontend-only group id, preserved if the persisted group already carries one
+    id: (filterGroup as unknown as FilterGroup)?.id ?? uuid(),
     filters: filterGroup?.filters?.map((f) => {
       const key = Array.isArray(f.key) ? f.key[0] : f.key;
       // build values

@@ -72,3 +72,43 @@ describe('usePaginationLocalStorage paginationOptions', () => {
     });
   });
 });
+
+describe('usePaginationLocalStorage filter group ids', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('should give an id to every filter group of the state and stay stable across re-renders', () => {
+    const groupWithoutIds = {
+      mode: 'and',
+      filters: [],
+      filterGroups: [
+        { mode: 'or', filters: [], filterGroups: [{ mode: 'and', filters: [], filterGroups: [] }] },
+      ],
+    } as unknown as FilterGroup;
+    const { hook } = testRenderHook(() => usePaginationLocalStorage<PaginationOptions>(
+      'test-group-ids',
+      { filters: groupWithoutIds },
+      true,
+    ));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.id).toBeDefined();
+    expect(filters.filterGroups[0].id).toBeDefined();
+    expect(filters.filterGroups[0].filterGroups[0].id).toBeDefined();
+    // no new uuid on re-render: the state value must be referentially stable
+    hook.rerender();
+    hook.rerender();
+    expect(hook.result.current.viewStorage.filters).toBe(filters);
+  });
+
+  it('should preserve the group ids already persisted', () => {
+    const { hook } = testRenderHook(() => usePaginationLocalStorage<PaginationOptions>(
+      'test-existing-group-ids',
+      { filters: nestedFilters },
+      true,
+    ));
+    const filters = hook.result.current.viewStorage.filters as FilterGroup;
+    expect(filters.filterGroups[0].id).toEqual('group-1');
+    expect(filters.filterGroups[0].filterGroups[0].id).toEqual('group-1-1');
+  });
+});

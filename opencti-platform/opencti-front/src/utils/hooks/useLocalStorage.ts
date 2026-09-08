@@ -6,6 +6,7 @@ import { OrderMode, PaginationOptions } from '../../components/list_lines';
 import {
   cloneFilterGroup,
   emptyFilterGroup,
+  ensureFilterGroupIds,
   findFilterFromKey,
   isFilterGroupNotEmpty,
   isUniqFilter,
@@ -175,6 +176,17 @@ const setStoredValueToHistory = (
   }
 };
 
+/**
+ * State entry point helper: gives a frontend-only id to every filter group of a stored value
+ * (coming from the url, the local storage or the initial value). Existing ids are preserved, so
+ * the returned value is referentially stable once every group is identified.
+ */
+const withFilterGroupIds = <T extends LocalStorage>(value: T): T => {
+  if (!value?.filters) return value;
+  const filters = ensureFilterGroupIds(value.filters);
+  return filters === value.filters ? value : { ...value, filters };
+};
+
 const useLocalStorage = <T extends LocalStorage = LocalStorage>(
   key: string,
   initialValue?: T,
@@ -185,7 +197,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
-      return initialValue;
+      return withFilterGroupIds(initialValue as T);
     }
     try {
       const searchParams = new URLSearchParams(window.location.search);
@@ -204,15 +216,15 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
       if (isNotEmptyField(finalParams)) {
         const initialState = { ...value, ...finalParams };
         window.localStorage.setItem(key, JSON.stringify(initialState));
-        return initialState;
+        return withFilterGroupIds(initialState);
       }
       // Need to clear the local storage ?
       if (!R.equals(removeEmptyFields(value), value) || isEmptyField(item)) {
-        const initialState = removeEmptyFields(value);
+        const initialState = removeEmptyFields(value) as T;
         window.localStorage.setItem(key, JSON.stringify(initialState));
-        return initialState;
+        return withFilterGroupIds(initialState);
       }
-      return value;
+      return withFilterGroupIds(value);
     } catch {
       // If error also return initialValue
       throw Error('Error while initializing values in local storage');
@@ -291,7 +303,9 @@ export const usePaginationLocalStorage = <U>(
     handleChangeSavedFilters: (savedFilters: SavedFiltersSelectionData) => {
       const newValue = {
         ...viewStorage,
-        filters: JSON.parse(savedFilters.filters),
+        // saved filters are persisted in the backend format-agnostic frontend shape: only add the
+        // missing group ids, do not re-normalize (that would regenerate the filter-level ids too).
+        filters: ensureFilterGroupIds(JSON.parse(savedFilters.filters)),
         latestAddFilterId: undefined,
         latestAddFilterKey: undefined,
         savedFilters,
@@ -750,7 +764,7 @@ export const usePaginationLocalStorage = <U>(
     handleSetFilters: (filters: FilterGroup) => {
       const newValue = {
         ...viewStorage,
-        filters,
+        filters: ensureFilterGroupIds(filters),
         latestAddFilterId: undefined,
         latestAddFilterKey: undefined,
       };

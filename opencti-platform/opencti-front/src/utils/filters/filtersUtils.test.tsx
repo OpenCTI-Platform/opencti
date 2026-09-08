@@ -4,6 +4,7 @@ import {
   buildFiltersForCustomView,
   cloneFilterGroup,
   emptyFilterGroup,
+  ensureFilterGroupIds,
   findFilterFromKey,
   findFiltersFromKeys,
   formatFiltersInPirContext,
@@ -2133,5 +2134,67 @@ describe('getEntityTypeThreeFirstLevelsFilterValues with user-made nested groups
     // For the user: with an OR root the abstract parent type is kept, so the toolbar scope
     // is the union Stix-Domain-Object + Malware (widest scope, no narrowing).
     expect(result).toEqual(['Stix-Domain-Object', 'Malware']);
+  });
+});
+
+describe('ensureFilterGroupIds', () => {
+  const nested = {
+    mode: 'and',
+    filters: [{ id: 'filter-1', key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' }],
+    filterGroups: [
+      {
+        mode: 'or',
+        filters: [{ key: 'objectLabel', values: ['label'], operator: 'eq', mode: 'or' }],
+        filterGroups: [
+          { mode: 'and', filters: [], filterGroups: [] },
+        ],
+      },
+    ],
+  } as unknown as FilterGroup;
+
+  it('should give an id to every group at every depth', () => {
+    const result = ensureFilterGroupIds(nested);
+    expect(result.id).toBeDefined();
+    expect(result.filterGroups[0].id).toBeDefined();
+    expect(result.filterGroups[0].filterGroups[0].id).toBeDefined();
+    const ids = [result.id, result.filterGroups[0].id, result.filterGroups[0].filterGroups[0].id];
+    expect(new Set(ids).size).toEqual(3);
+  });
+
+  it('should not touch the filter-level ids', () => {
+    const result = ensureFilterGroupIds(nested);
+    expect(result.filters[0].id).toEqual('filter-1');
+    expect(result.filterGroups[0].filters[0].id).toBeUndefined();
+  });
+
+  it('should be idempotent: keep the existing ids and return the same object on a second call', () => {
+    const once = ensureFilterGroupIds(nested);
+    const twice = ensureFilterGroupIds(once);
+    expect(twice).toEqual(once);
+    expect(twice).toBe(once); // referential stability: no new uuid, no state change
+    expect(twice.id).toEqual(once.id);
+    expect(twice.filterGroups[0].id).toEqual(once.filterGroups[0].id);
+  });
+
+  it('should preserve the ids already present in a partially identified group', () => {
+    const partial = {
+      mode: 'and',
+      filters: [],
+      filterGroups: [{ id: 'existing-group', mode: 'or', filters: [], filterGroups: [] }],
+    } as unknown as FilterGroup;
+    const result = ensureFilterGroupIds(partial);
+    expect(result.filterGroups[0].id).toEqual('existing-group');
+    expect(result.id).toBeDefined();
+  });
+
+  it('should work on the frozen emptyFilterGroup without modifying it', () => {
+    const result = ensureFilterGroupIds(emptyFilterGroup);
+    expect(result.id).toBeDefined();
+    expect(emptyFilterGroup.id).toBeUndefined();
+    expect(result).not.toBe(emptyFilterGroup);
+  });
+
+  it('should not leak any id once stripped for the backend', () => {
+    expectNoFrontendIds(stripFilterIds(ensureFilterGroupIds(nested)));
   });
 });

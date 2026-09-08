@@ -3,6 +3,10 @@
 export type FilterValue = any;
 
 export type FilterGroup = {
+  // FRONTEND-ONLY stable uuid, used to address a group in a nested filter tree (add a filter in it,
+  // switch its and/or mode, delete it). It is never accepted by the backend `FilterGroup` input:
+  // every serialization path goes through stripFilterIds() which removes it recursively.
+  id?: string;
   mode: string;
   filters: Filter[];
   filterGroups: FilterGroup[];
