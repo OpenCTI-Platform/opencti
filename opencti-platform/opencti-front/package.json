@@ -154,7 +154,7 @@
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/react-transition-group": "4.4.12",
     "@vitejs/plugin-react": "6.1.1",
-    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/coverage-v8": "5.0.0",
     "babel-plugin-relay": "21.0.1",
     "dom-accessibility-api": "0.5.16",
     "esbuild": "0.28.2",
@@ -177,7 +177,7 @@
     "vite": "8.2.2",
     "vite-plugin-monaco-editor": "1.1.0",
     "vite-plugin-relay": "2.1.0",
-    "vitest": "4.1.11"
+    "vitest": "5.0.0"
   },
   "resolutions": {
     "@filigran/chatbot/lodash": "4.18.1",
