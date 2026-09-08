@@ -5,7 +5,7 @@ import { DialogActions, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Button from '@common/button/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@filigran/design-system';
 
 type IngestionCatalogUnverifiedDeploymentPopoverProps = {
   onClose: (e: UIEvent) => void;

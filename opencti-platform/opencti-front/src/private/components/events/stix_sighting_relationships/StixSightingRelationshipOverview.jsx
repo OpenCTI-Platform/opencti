@@ -3,7 +3,7 @@ import Card from '@common/card/Card';
 import Dialog from '@common/dialog/Dialog';
 import { ArrowRightAlt } from '@mui/icons-material';
 import { alpha, Stack } from '@mui/material';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Divider from '@mui/material/Divider';
@@ -294,9 +294,7 @@ class StixSightingRelationshipContainer extends Component {
                 <ArrowRightAlt fontSize="large" />
                 <br />
                 <Chip
-                  variant="outlined"
-                  classes={{ root: classes.chipInList }}
-                  color="primary"
+                  severity="info"
                   label={t('sighted in/at')}
                 />
               </div>
@@ -400,11 +398,7 @@ class StixSightingRelationshipContainer extends Component {
                         {t('x_opencti_negative')}
                       </Label>
                       <Chip
-                        classes={{
-                          root: stixSightingRelationship.x_opencti_negative
-                            ? classes.negative
-                            : classes.positive,
-                        }}
+                        severity={stixSightingRelationship.x_opencti_negative ? 'low' : 'critical'}
                         label={
                           stixSightingRelationship.x_opencti_negative
                             ? t('False positive')

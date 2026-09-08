@@ -35,6 +35,7 @@ import TitleMainEntity from '../../../../components/common/typography/TitleMainE
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
 import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../../utils/hooks/useGranted';
+import { paperBg } from '../paperSurface';
 
 const feedDetailSyncQuery = graphql`
   query FeedDetailSyncQuery($id: String!) {
@@ -353,7 +354,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               justifyContent: 'center',
               borderRadius: 1,
               border: `1px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: paperBg(theme),
             }}
           >
             <Icon sx={{ fontSize: 28, color: theme.palette.primary.main }} />

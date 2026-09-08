@@ -1,5 +1,6 @@
 import { MoreVert } from '@mui/icons-material';
-import { IconButton, Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
@@ -165,14 +166,14 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         needs={[SETTINGS_SETPARAMETERS]}
       >
         <IconButton
+          variant="default"
+          priority="tertiary"
           aria-label={t_i18n('Open menu')}
           onClick={handleOpen}
           aria-haspopup="true"
           data-testid={`${theme.name}-popover`}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
+          icon={<MoreVert />}
+        />
       </Security>
 
       <Menu

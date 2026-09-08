@@ -1,12 +1,11 @@
 import { graphql } from 'react-relay';
-import React, { ChangeEvent, HTMLAttributes, useState } from 'react';
+import React, { useState } from 'react';
 import { Field } from 'formik';
-import ListItemText from '@mui/material/ListItemText';
-import ListItem from '@mui/material/ListItem';
+import { ComboboxChangeMeta } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { SectorFieldSearchQuery$data } from './__generated__/SectorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -42,8 +41,7 @@ const SectorField = ({
   const { t_i18n } = useFormatter();
   const [options, setOptions] = useState<FieldOption[]>([]);
 
-  const searchSectors = async (e: ChangeEvent<HTMLInputElement>) => {
-    const search = e && e.target.value ? e.target.value : '';
+  const searchSectors = async (search: string) => {
     const { sectors } = (await fetchQuery(
       sectorFieldSearchQuery,
       { search },
@@ -60,30 +58,25 @@ const SectorField = ({
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       groupBy={(option: FieldOption) => option.type}
       multiple
       name={name}
       required={required}
-      textfieldprops={{
-        variant: 'standard',
-        label,
-        helperText,
-        onFocus: searchSectors,
-        required,
-      }}
+      label={label}
+      helperText={helperText}
       style={containerStyle}
       noOptionsText={t_i18n('No available options')}
       options={options}
-      onInputChange={searchSectors}
-      renderOption={(
-        props: HTMLAttributes<HTMLLIElement>,
-        option: FieldOption,
-      ) => (
-        <ListItem {...props}>
+      onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') searchSectors(search);
+      }}
+      onFocusInput={() => searchSectors('')}
+      renderOption={(option: FieldOption) => (
+        <>
           <ItemIcon type={option.type} />
-          <ListItemText primary={option.label} sx={{ marginLeft: 2 }} />
-        </ListItem>
+          <span style={{ marginLeft: 16 }}>{option.label}</span>
+        </>
       )}
     />
   );

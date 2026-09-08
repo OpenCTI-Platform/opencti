@@ -3,11 +3,9 @@ import { createFragmentContainer, graphql, usePreloadedQuery } from 'react-relay
 import type { PreloadedQuery } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
-import { useTheme } from '@mui/styles';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,8 +14,8 @@ import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCa
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import type { Theme } from '../../../../components/Theme';
 import { Stack } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -92,7 +90,6 @@ interface RoleEditionCapabilitiesComponentProps {
 
 const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef, isCapabilitiesInDraft = false }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const { capabilities, capabilitiesInDraft } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -111,10 +108,10 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   const [commitPatchAllowSensitiveConf] = useApiMutation(roleEditionPatchAllowSensitiveConf);
   const handleToggle = (
     capabilityId: string,
-    event: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean,
   ) => {
     const roleId = role.id;
-    if (event.target.checked) {
+    if (checked) {
       commitAddCapability({
         variables: {
           id: roleId,
@@ -135,16 +132,14 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
     }
   };
 
-  const handleSensitiveToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleSensitiveToggle = (checked: boolean) => {
     const roleId = role.id;
     commitPatchAllowSensitiveConf({
       variables: {
         id: roleId,
         input: {
           key: 'can_manage_sensitive_config',
-          value: event.target.checked,
+          value: checked,
         },
       },
     });
@@ -163,10 +158,10 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             style={{ paddingLeft: 0 }}
             secondaryAction={(
               <Checkbox
-                onChange={(event) => handleSensitiveToggle(event)}
+                aria-label={t_i18n('Manage sensitive configuration')}
+                error
+                onCheckedChange={(state) => handleSensitiveToggle(state === true)}
                 checked={!!role.can_manage_sensitive_config}
-                style={{ color: theme.palette.dangerZone.main }}
-                disabled={false}
               />
             )}
           >
@@ -207,7 +202,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 style={{ paddingLeft }}
                 secondaryAction={capability.name !== SETTINGS && (
                   <Checkbox
-                    onChange={(event) => handleToggle(capability.id, event)}
+                    onCheckedChange={(state) => handleToggle(capability.id, state === true)}
                     checked={isChecked}
                     disabled={isDisabled}
                   />

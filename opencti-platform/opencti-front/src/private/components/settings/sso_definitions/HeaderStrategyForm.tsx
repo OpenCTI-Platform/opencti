@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
+import { Paper, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import { Add, Delete } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -21,6 +19,7 @@ import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
 import type { HeaderStrategyFormQuery } from './__generated__/HeaderStrategyFormQuery.graphql';
 import type { HeaderStrategyFormMutation } from './__generated__/HeaderStrategyFormMutation.graphql';
+import TextareaField from '../../../../components/TextareaField';
 
 const headerStrategyFormQuery = graphql`
   query HeaderStrategyFormQuery {
@@ -161,7 +160,7 @@ interface HeaderStrategyFormProps {
 const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('configuration');
 
   const data = useLazyLoadQuery<HeaderStrategyFormQuery>(headerStrategyFormQuery, {});
   const settings = data.settings;
@@ -271,108 +270,104 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
     >
       {({ handleReset, submitForm, isSubmitting, dirty }) => (
         <Form>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-              <Tab label={t_i18n('Configuration')} />
-              <Tab label={t_i18n('Groups')} />
-              <Tab label={t_i18n('Organizations')} />
-            </Tabs>
-          </Box>
+          <Tabs value={currentTab} onValueChange={setCurrentTab}>
+            <TabsList>
+              <TabsTrigger value="configuration">{t_i18n('Configuration')}</TabsTrigger>
+              <TabsTrigger value="groups">{t_i18n('Groups')}</TabsTrigger>
+              <TabsTrigger value="organizations">{t_i18n('Organizations')}</TabsTrigger>
+            </TabsList>
 
-          {/* Tab 0: Configuration */}
-          {currentTab === 0 && (
-            <>
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="enabled"
-                label={t_i18n('Enable header authentication')}
-                containerstyle={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth
-                multiline
-                rows={3}
-                style={{ marginTop: 20 }}
-              />
-              <AuthProviderUserInfoFields fieldPrefix="user_info_mapping" />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="logout_uri"
-                label={t_i18n('Logout URI')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              {/* Headers audit - multi-value list */}
-              <FieldArray name="headers_audit">
-                {({ push, remove, form }) => {
-                  const entries = (form.values as HeaderStrategyFormValues).headers_audit;
-                  return (
-                    <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-                      <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Headers audit')}</Typography>
-                        <IconButton
-                          color="primary"
-                          aria-label={t_i18n('Add')}
-                          size="default"
-                          onClick={() => push('')}
-                        >
-                          <Add fontSize="small" color="primary" />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
-                        {entries.map((_: string, index: number) => (
-                          <div
-                            key={index}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+            <TabsContent value="configuration">
+              <>
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="enabled"
+                  label={t_i18n('Enable header authentication')}
+                  containerstyle={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextareaField}
+                  name="description"
+                  label={t_i18n('Description')}
+                  rows={3}
+                  className="mt-5"
+                />
+                <AuthProviderUserInfoFields fieldPrefix="user_info_mapping" />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="logout_uri"
+                  label={t_i18n('Logout URI')}
+                  fullWidth
+                  className="mt-5"
+                />
+                {/* Headers audit - multi-value list */}
+                <FieldArray name="headers_audit">
+                  {({ push, remove, form }) => {
+                    const entries = (form.values as HeaderStrategyFormValues).headers_audit;
+                    // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no
+                    // `mt-*` — remove when it ships consumer utilities — see LIBRARY-FEEDBACK.md #36
+                    return (
+                      <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
+                        <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Headers audit')}</Typography>
+                          <IconButton
+                            color="primary"
+                            aria-label={t_i18n('Add')}
+                            size="default"
+                            onClick={() => push('')}
                           >
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`headers_audit[${index}]`}
-                              label={t_i18n('Header name')}
-                              fullWidth
-                            />
-                            <IconButton
-                              color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
+                            <Add fontSize="small" color="primary" />
+                          </IconButton>
+                        </Box>
+                        <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
+                          {entries.map((_: string, index: number) => (
+                            <div
+                              key={index}
+                              style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
                             >
-                              <Delete fontSize="small" />
-                            </IconButton>
-                          </div>
-                        ))}
-                      </Box>
-                    </Paper>
-                  );
-                }}
-              </FieldArray>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="button_label_override"
-                label={t_i18n('Login button label')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-            </>
-          )}
+                              <Field
+                                component={TextField}
+                                variant="outlined"
+                                name={`headers_audit[${index}]`}
+                                label={t_i18n('Header name')}
+                                fullWidth
+                              />
+                              <IconButton
+                                color="primary"
+                                aria-label={t_i18n('Delete')}
+                                onClick={() => remove(index)}
+                                style={{ marginTop: 10 }}
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </div>
+                          ))}
+                        </Box>
+                      </Paper>
+                    );
+                  }}
+                </FieldArray>
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="button_label_override"
+                  label={t_i18n('Login button label')}
+                  fullWidth
+                  className="mt-5"
+                />
+              </>
+            </TabsContent>
 
-          {/* Tab 1: Groups */}
-          {currentTab === 1 && (
-            <AuthProviderGroupsFields />
-          )}
+            <TabsContent value="groups">
+              <AuthProviderGroupsFields />
+            </TabsContent>
 
-          {/* Tab 2: Organizations */}
-          {currentTab === 2 && (
-            <AuthProviderOrganizationsFields />
-          )}
+            <TabsContent value="organizations">
+              <AuthProviderOrganizationsFields />
+            </TabsContent>
+          </Tabs>
 
           {/* Shared Cancel / Update buttons */}
           <div style={{ marginTop: 20, textAlign: 'right' }}>

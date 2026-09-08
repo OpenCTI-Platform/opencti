@@ -11,7 +11,6 @@ import { RetentionLinesPaginationQuery$variables } from '@components/settings/re
 import { FormikConfig } from 'formik/dist/types';
 import { RetentionCreationCheckMutation$data } from '@components/settings/retention/__generated__/RetentionCreationCheckMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/material/styles';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -22,7 +21,7 @@ import { serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } 
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { insertNode } from '../../../../utils/store';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -147,27 +146,27 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
                 mandatory
               />
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="retention_unit"
                 label={t_i18n('Unit')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
               >
-                <MenuItem value="minutes">{t_i18n('minutes')}</MenuItem>
-                <MenuItem value="hours">{t_i18n('hours')}</MenuItem>
-                <MenuItem value="days">{t_i18n('days')}</MenuItem>
+                <SelectItem value="minutes">{t_i18n('minutes')}</SelectItem>
+                <SelectItem value="hours">{t_i18n('hours')}</SelectItem>
+                <SelectItem value="days">{t_i18n('days')}</SelectItem>
               </Field>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="max_retention"
                 label={t_i18n('Maximum retention')}
                 fullWidth={true}
@@ -194,15 +193,15 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 }}
               />
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="scope"
                 label={t_i18n('Scope')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
                 disabled={true}
               >
-                <MenuItem value="knowledge">{t_i18n('Knowledge')}</MenuItem>
+                <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
               </Field>
               <Box sx={{
                 paddingTop: 4,

@@ -12,7 +12,6 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import Checkbox from '@mui/material/Checkbox';
 import { ListItemButton } from '@mui/material';
 import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
@@ -25,6 +24,7 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 const styles = (theme) => ({
   item: {
@@ -119,12 +119,10 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
             }
           >
             <Checkbox
-              edge="start"
               checked={
                 (selectAll && !(node.id in (deSelectedElements || {})))
                 || node.id in (selectedElements || {})
               }
-              disableRipple={true}
             />
           </ListItemIcon>
           <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -651,7 +649,9 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
           classes={{ root: classes.itemIconDisabled }}
           style={{ minWidth: 40 }}
         >
-          <Checkbox edge="start" disabled={true} disableRipple={true} />
+          <Checkbox
+            disabled={true}
+          />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton

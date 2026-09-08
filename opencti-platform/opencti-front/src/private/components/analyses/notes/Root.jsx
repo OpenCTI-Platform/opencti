@@ -17,6 +17,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import NoteEdition from './NoteEdition';
 import NoteDeletion from './NoteDeletion';
 import { PATH_NOTE, PATH_NOTES } from '@components/common/routes/paths';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const subscription = graphql`
     subscription RootNoteSubscription($id: ID!) {
@@ -39,6 +40,9 @@ const noteQuery = graphql`
             id
             standard_id
             entity_type
+            representative {
+                main
+            }
             ...Note_note
             ...NoteDetails_note
             ...ContainerHeader_container
@@ -84,6 +88,7 @@ const RootNote = () => {
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
                     { label: t_i18n('Notes'), link: PATH_NOTES },
+                    { label: getMainRepresentative(note), current: true },
                   ]}
                   />
                   <CollaborativeSecurity

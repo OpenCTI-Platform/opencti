@@ -3,7 +3,8 @@ import { Field } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { NotifierConnectorFieldSearchQuery$data } from './__generated__/NotifierConnectorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -19,9 +20,6 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -58,12 +56,8 @@ const NotifierConnectorField: FunctionComponent<
     { label: string | undefined; value: string | undefined }[]
   >([]);
 
-  const searchNotifierConnectors = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    fetchQuery(NotifierConnectorFieldQuery, {
-      search: event && event.target.value ? event.target.value : '',
-    })
+  const searchNotifierConnectors = (search: string) => {
+    fetchQuery(NotifierConnectorFieldQuery, { search })
       .toPromise()
       .then((data) => {
         const notifierConnectors = (
@@ -82,34 +76,31 @@ const NotifierConnectorField: FunctionComponent<
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         name={name}
         multiple={false}
         style={style}
         disabled={disabled}
         onChange={onChange}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('Notification connector'),
-          helperText: helpertext,
-          onFocus: searchNotifierConnectors,
-          required,
-        }}
+        label={t_i18n('Notification connector')}
+        helperText={helpertext}
+        required={required}
         noOptionsText={t_i18n('No available options')}
         options={connectors}
-        onInputChange={searchNotifierConnectors}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string },
-        ) => (
-          <li {...props}>
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchNotifierConnectors(search);
+        }}
+        onFocusInput={() => searchNotifierConnectors('')}
+        renderOption={(option: { label: string }) => (
+          <>
             <div className={classes.icon}>
               <ItemIcon type="Notifier" />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>
   );

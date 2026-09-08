@@ -1,7 +1,8 @@
 import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFeedLine_node.graphql';
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
-import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
+import { Alert, Stack, Tooltip } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
@@ -179,13 +180,14 @@ const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> =
   return (
     <Tooltip title={t_i18n('Open in XTM Hub')}>
       <IconButton
-        component="a"
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        asChild
+        variant="default"
+        priority="tertiary"
+        size="sm"
+        aria-label={t_i18n('Open in XTM Hub')}
+        icon={<OpenInNewOutlined fontSize="small" color="primary" />}
       >
-        <OpenInNewOutlined fontSize="small" color="primary" />
+        <a href={href} target="_blank" rel="noopener noreferrer" onClick={(e: React.MouseEvent) => e.stopPropagation()} />
       </IconButton>
     </Tooltip>
   );

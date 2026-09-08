@@ -1,4 +1,4 @@
-import { CheckCircle, WorkOutline } from '@mui/icons-material';
+import { WorkOutline } from '@mui/icons-material';
 import ListItemButton from '@mui/material/ListItemButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -6,6 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import { Checkbox } from '@filigran/design-system';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -144,15 +145,11 @@ class AddNotesLinesContainer extends Component {
                   classes={{ root: classes.menuItem }}
                   onClick={this.toggleNote.bind(this, note)}
                 >
-                  <TableCell sx={{ width: 48, paddingY: 1, paddingX: 2 }}>
-                    {alreadyAdded ? (
-                      <CheckCircle
-                        color="primary"
-                        sx={{ marginTop: 0.5 }}
-                      />
-                    ) : (
-                      <WorkOutline sx={{ marginTop: 0.5 }} />
-                    )}
+                  <TableCell sx={{ width: 80, paddingY: 1, paddingX: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <Checkbox checked={alreadyAdded} />
+                      <WorkOutline />
+                    </div>
                   </TableCell>
                   <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>

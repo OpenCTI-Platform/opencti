@@ -10,6 +10,7 @@ import type { Theme } from '../../../../components/Theme';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemIcon from '../../../../components/ItemIcon';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -18,15 +19,7 @@ const useStyles = makeStyles<Theme>({
     paddingLeft: 10,
     height: 50,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,

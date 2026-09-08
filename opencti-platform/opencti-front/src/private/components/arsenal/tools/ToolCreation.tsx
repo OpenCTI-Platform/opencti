@@ -226,7 +226,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -291,7 +291,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               label={t_i18n('Tool Version')}
               required={(mandatoryAttributes.includes('tool_version'))}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
             />
             <ExternalReferencesField
               name="externalReferences"

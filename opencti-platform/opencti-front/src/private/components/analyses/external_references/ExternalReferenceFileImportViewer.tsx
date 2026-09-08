@@ -6,7 +6,6 @@ import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import DialogActions from '@mui/material/DialogActions';
 import List from '@mui/material/List';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { compose, includes } from 'ramda';
@@ -16,7 +15,7 @@ import { FragmentRefs } from 'relay-runtime';
 import { interval } from 'rxjs';
 import * as Yup from 'yup';
 import Card from '../../../../components/common/card/Card';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import UploadImport from '../../../../components/UploadImport';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -237,7 +236,7 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
                 title={t_i18n('Launch an import')}
               >
                 <Field
-                  component={SelectField}
+                  component={SelectFieldFds}
                   name="connector_id"
                   label={t_i18n('Connector')}
                   fullWidth={true}
@@ -252,21 +251,21 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
                           connector.connector_scope,
                         ));
                     return (
-                      <MenuItem
+                      <SelectItem
                         key={i}
                         value={connector.id}
                         disabled={disabled || !connector.active}
                       >
                         {connector.name}
-                      </MenuItem>
+                      </SelectItem>
                     );
                   })}
                 </Field>
                 {(selectedConnector?.configurations?.length ?? 0) > 0
                   ? (
                       <Field
-                        component={SelectField}
-                        variant="standard"
+                        component={SelectFieldFds}
+                        variant="outlined"
                         name="configuration"
                         label={t_i18n('Configuration')}
                         fullWidth={true}
@@ -275,12 +274,12 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
                       >
                         {selectedConnector?.configurations.map((config) => {
                           return (
-                            <MenuItem
+                            <SelectItem
                               key={config.id}
                               value={config.configuration}
                             >
                               {config.name}
-                            </MenuItem>
+                            </SelectItem>
                           );
                         })}
                       </Field>

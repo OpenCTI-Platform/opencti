@@ -316,7 +316,7 @@ const EntityDetailsComponent: FunctionComponent<
   return (
     <Stack gap={2}>
       {stixCoreObject.entity_type !== 'StixFile' && (
-        <div>
+        <div style={{ marginTop: 20 }}>
           <Label>
             {t_i18n('Value')}
           </Label>

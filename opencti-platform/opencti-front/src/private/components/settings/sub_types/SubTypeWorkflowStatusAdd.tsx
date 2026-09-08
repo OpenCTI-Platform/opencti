@@ -78,6 +78,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
   return (
     <div style={{ display: display ? 'block' : 'none' }}>
       <Fab
+        /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
         onClick={handleOpen}
         color="primary"
         aria-label="Add"
@@ -105,12 +106,12 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="order"
                 label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
               <DialogActions>
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>

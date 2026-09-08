@@ -16,6 +16,9 @@ interface DashboardRelativeDateSelectProps {
   labelId?: string;
 }
 
+// FDS-WORKAROUND #43 (second site): kept on MUI Select — the library exposes no
+// per-state border tint. Remove when it does; see fds-migration/LIBRARY-FEEDBACK.md #43
+// and fds-migration/MIGRATION-DECISIONS.md#field-state-tint
 const DashboardRelativeDateSelect = ({
   value,
   onChange,

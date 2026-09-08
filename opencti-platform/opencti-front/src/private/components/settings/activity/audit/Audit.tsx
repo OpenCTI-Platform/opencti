@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { useRef, useState, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Alert from '@mui/material/Alert';
 import { CSVLink } from 'react-csv';
@@ -36,6 +35,7 @@ import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
+import { Checkbox } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -204,8 +204,8 @@ const Audit = () => {
         value="start"
         control={(
           <Checkbox
-            style={{ padding: 7 }}
-            onChange={() => {
+            aria-label={t_i18n('Include knowledge')}
+            onCheckedChange={() => {
               const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
               storageHelpers.handleAddProperty('types', newTypes);
             }}
@@ -214,6 +214,7 @@ const Audit = () => {
         )}
         label={t_i18n('Include knowledge')}
         labelPlacement="end"
+        sx={{ '& .MuiFormControlLabel-label': { ml: 1 } }}
       />
     </div>
   ) : <></>;

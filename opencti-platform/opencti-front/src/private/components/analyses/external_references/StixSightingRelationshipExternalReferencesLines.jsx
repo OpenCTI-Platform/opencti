@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import Card from '@common/card/Card';
 import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import { ListItemButton } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -35,6 +36,7 @@ import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import ExternalReferencePopover from './ExternalReferencePopover';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -223,6 +225,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                     externalReference.url,
                                   )}
                                   color="primary"
+                                  aria-label={t('Browse the link')}
                                 >
                                   <OpenInBrowserOutlined />
                                 </IconButton>
@@ -379,10 +382,11 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           )}
         </Card>
         <Dialog
+          slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayDialog}
           onClose={this.handleCloseDialog.bind(this)}
-          title={t('Are you sure?')}
         >
+          <DialogTitle>{t('Are you sure?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to remove this external reference?')}
           </DialogContentText>
@@ -403,10 +407,11 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogActions>
         </Dialog>
         <Dialog
+          slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
           open={this.state.displayExternalLink}
           onClose={this.handleCloseExternalLink.bind(this)}
-          title={t('Do you want to browse this external link?')}
         >
+          <DialogTitle>{t('Do you want to browse this external link?')}</DialogTitle>
           <DialogContentText>
             {t('Do you want to browse this external link?')}
           </DialogContentText>

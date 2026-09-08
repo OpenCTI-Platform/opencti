@@ -20,6 +20,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
 import ToggleButton from '@mui/material/ToggleButton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { FormikConfig } from 'formik/dist/types';
@@ -31,7 +32,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { PlaybookCreationImportMutation } from './__generated__/PlaybookCreationImportMutation.graphql';
@@ -117,16 +117,21 @@ const PlaybookCreation = () => {
 
   const CreatePlaybookControlledDial: DrawerControlledDialType = (props) => (
     <>
-      <ToggleButton
-        value="import"
-        size="small"
-        onClick={() => inputRef.current?.click()}
-        sx={{ marginLeft: theme.spacing(1) }}
-        data-testid="ImporPlaybook"
-        title={t_i18n('Import playbook')}
-      >
-        <FileUploadOutlined fontSize="small" color="primary" />
-      </ToggleButton>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <ToggleButton
+            value="import"
+            size="small"
+            onClick={() => inputRef.current?.click()}
+            sx={{ marginLeft: theme.spacing(1) }}
+            data-testid="ImporPlaybook"
+            aria-label={t_i18n('Import playbook')}
+          >
+            <FileUploadOutlined fontSize="small" color="primary" />
+          </ToggleButton>
+        </TooltipTrigger>
+        <TooltipContent>{t_i18n('Import playbook')}</TooltipContent>
+      </Tooltip>
       {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
         <Button
           gradient
@@ -171,17 +176,17 @@ const PlaybookCreation = () => {
               <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Name')}
                   fullWidth
                 />
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="description"
                   label={t_i18n('Description')}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                   fullWidth
                 />
                 <FormButtonContainer>

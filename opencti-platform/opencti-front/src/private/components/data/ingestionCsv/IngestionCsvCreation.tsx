@@ -20,16 +20,13 @@ import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/Ingestio
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -48,6 +45,7 @@ import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { CsvMapperAddInput } from '../csvMapper/CsvMapperUtils';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const initCSVCreateForm: IngestionCsvAddInput = {
   name: '',
@@ -159,8 +157,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const [creatorId] = useState('');
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleChangeTab = (value: number) => {
+  const [currentTab, setCurrentTab] = useState('overview');
+  const handleChangeTab = (value: string) => {
     setCurrentTab(value);
   };
 
@@ -320,209 +318,207 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     >
       {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
         <>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 2 }}>
-            <Tabs
-              value={currentTab}
-              onChange={(_event, value) => handleChangeTab(value)}
-            >
-              <Tab label={t_i18n('Overview')} />
-              <Tab label={t_i18n('Inline csv mapper')} disabled={values.csv_mapper_type} />
-            </Tabs>
-          </Box>
-          <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
-            <IngestionCsvInlineWrapper>
-              <IngestionCsvInlineMapperForm
-                csvMapper={ingestionCsvData?.csv_mapper_type === 'inline' ? (ingestionCsvData.csvMapper as CsvMapperAddInput) : undefined}
-                setCSVMapperFieldValue={setFieldValue}
-                returnCSVFormat={ingestionCsvData?.csvMapper ? setFieldValue : undefined}
-              />
-            </IngestionCsvInlineWrapper>
-          </Box>
-          <Form>
-            <Box sx={{ display: currentTab === 0 ? 'block' : 'none' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-              <IngestionSchedulingField />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="uri"
-                label={t_i18n('CSV URL')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-              <IngestionCreationUserHandling
-                default_confidence_level={50}
-                labelTag="F"
-              />
-              <Box sx={{
-                marginTop: 2,
-              }}
-              >
+          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+              <TabsTrigger value="mapper" disabled={values.csv_mapper_type}>{t_i18n('Inline csv mapper')}</TabsTrigger>
+            </TabsList>
+            {/* forceMount keeps form state across tab switches; hidden is explicit because forceMount pins Radix's own hidden to false. */}
+            <TabsContent value="mapper" forceMount hidden={currentTab !== 'mapper'}>
+              <IngestionCsvInlineWrapper>
+                <IngestionCsvInlineMapperForm
+                  csvMapper={ingestionCsvData?.csv_mapper_type === 'inline' ? (ingestionCsvData.csvMapper as CsvMapperAddInput) : undefined}
+                  setCSVMapperFieldValue={setFieldValue}
+                  returnCSVFormat={ingestionCsvData?.csvMapper ? setFieldValue : undefined}
+                />
+              </IngestionCsvInlineWrapper>
+            </TabsContent>
+            <Form>
+              <TabsContent value="overview" forceMount hidden={currentTab !== 'overview'}>
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="name"
+                  label={t_i18n('Name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="description"
+                  label={t_i18n('Description')}
+                  fullWidth={true}
+                  className="mt-5"
+                />
+                <IngestionSchedulingField />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="uri"
+                  label={t_i18n('CSV URL')}
+                  fullWidth={true}
+                  className="mt-5"
+                />
+                <IngestionCreationUserHandling
+                  default_confidence_level={50}
+                  labelTag="F"
+                />
+                <Box sx={{
+                  marginTop: 2,
+                }}
+                >
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="csv_mapper_type"
+                    label={t_i18n('Existing csv mappers')}
+                  />
+                </Box>
+                {
+                  values.csv_mapper_type && queryRef && (
+                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                      <Box sx={{ width: '100%', marginTop: 5 }}>
+                        <Alert
+                          severity="info"
+                          variant="outlined"
+                          style={{ padding: '0px 10px 0px 10px' }}
+                        >
+                          {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                          <br />
+                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
+                        </Alert>
+                      </Box>
+                      <CsvMapperField
+                        name="csv_mapper_id"
+                        onChange={(_, option) => onCsvMapperSelection(option, { setFieldValue, values })}
+                        isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value}
+                        queryRef={queryRef}
+                      />
+                    </React.Suspense>
+                  )
+                }
+                {
+                  hasUserChoiceCsvMapper && (
+                    <ObjectMarkingField
+                      name="markings"
+                      label={t_i18n('Marking definition levels')}
+                      style={fieldSpacingContainerStyle}
+                      allowedMarkingOwnerId={isGranted ? creatorId : undefined}
+                      setFieldValue={setFieldValue}
+                    />
+                  )
+                }
+                <Field
+                  component={SelectFieldFds}
+                  variant="outlined"
+                  name="authentication_type"
+                  label={t_i18n('Authentication type')}
+                  fullWidth={true}
+                  containerstyle={{
+                    width: '100%',
+                    marginTop: 20,
+                  }}
+                >
+                  <SelectItem value="none">{t_i18n('None')}</SelectItem>
+                  <SelectItem value="basic">
+                    {t_i18n('Basic user / password')}
+                  </SelectItem>
+                  <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+                  <SelectItem value="certificate">
+                    {t_i18n('Client certificate')}
+                  </SelectItem>
+                </Field>
+                {values.authentication_type === 'basic' && (
+                  <>
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="username"
+                      label={t_i18n('Username')}
+                      fullWidth={true}
+                      className="mt-5"
+                    />
+                    <PasswordTextField
+                      name="password"
+                      label={t_i18n('Password')}
+                    />
+                  </>
+                )}
+                {values.authentication_type === 'bearer' && (
+                  <PasswordTextField
+                    name="authentication_value"
+                    label={t_i18n('Token')}
+                  />
+                )}
+                {values.authentication_type === 'certificate' && (
+                  <>
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="cert"
+                      label={t_i18n('Certificate (base64)')}
+                      fullWidth={true}
+                      className="mt-5"
+                    />
+                    <PasswordTextField
+                      name="key"
+                      label={t_i18n('Key (base64)')}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="ca"
+                      label={t_i18n('CA certificate (base64)')}
+                      fullWidth={true}
+                      className="mt-5"
+                    />
+                  </>
+                )}
                 <Field
                   component={SwitchField}
                   type="checkbox"
-                  name="csv_mapper_type"
-                  label={t_i18n('Existing csv mappers')}
+                  name="ssl_verify"
+                  label={t_i18n('Verify SSL certificate')}
+                  containerstyle={fieldSpacingContainerStyle}
                 />
-              </Box>
-              {
-                values.csv_mapper_type && queryRef && (
-                  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                    <Box sx={{ width: '100%', marginTop: 5 }}>
-                      <Alert
-                        severity="info"
-                        variant="outlined"
-                        style={{ padding: '0px 10px 0px 10px' }}
-                      >
-                        {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
-                        <br />
-                        {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
-                      </Alert>
-                    </Box>
-                    <CsvMapperField
-                      name="csv_mapper_id"
-                      onChange={(_, option) => onCsvMapperSelection(option, { setFieldValue, values })}
-                      isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value}
-                      queryRef={queryRef}
-                    />
-                  </React.Suspense>
-                )
-              }
-              {
-                hasUserChoiceCsvMapper && (
-                  <ObjectMarkingField
-                    name="markings"
-                    label={t_i18n('Marking definition levels')}
-                    style={fieldSpacingContainerStyle}
-                    allowedMarkingOwnerId={isGranted ? creatorId : undefined}
-                    setFieldValue={setFieldValue}
-                  />
-                )
-              }
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="authentication_type"
-                label={t_i18n('Authentication type')}
-                fullWidth={true}
-                containerstyle={{
-                  width: '100%',
-                  marginTop: 20,
-                }}
-              >
-                <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                <MenuItem value="basic">
-                  {t_i18n('Basic user / password')}
-                </MenuItem>
-                <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-                <MenuItem value="certificate">
-                  {t_i18n('Client certificate')}
-                </MenuItem>
-              </Field>
-              {values.authentication_type === 'basic' && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="username"
-                    label={t_i18n('Username')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <PasswordTextField
-                    name="password"
-                    label={t_i18n('Password')}
-                  />
-                </>
-              )}
-              {values.authentication_type === 'bearer' && (
-                <PasswordTextField
-                  name="authentication_value"
-                  label={t_i18n('Token')}
-                />
-              )}
-              {values.authentication_type === 'certificate' && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="cert"
-                    label={t_i18n('Certificate (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <PasswordTextField
-                    name="key"
-                    label={t_i18n('Key (base64)')}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="ca"
-                    label={t_i18n('CA certificate (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                </>
-              )}
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="ssl_verify"
-                label={t_i18n('Verify SSL certificate')}
-                containerstyle={fieldSpacingContainerStyle}
-              />
-              <Box sx={{ width: '100%', marginTop: 5 }}>
-                <Alert
-                  severity="info"
-                  variant="outlined"
-                  style={{ padding: '0px 10px 0px 10px' }}
+                <Box sx={{ width: '100%', marginTop: 5 }}>
+                  <Alert
+                    severity="info"
+                    variant="outlined"
+                    style={{ padding: '0px 10px 0px 10px' }}
+                  >
+                    {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br />
+                    {t_i18n('Only successful tests allow the ingestion creation.')}
+                  </Alert>
+                </Box>
+              </TabsContent>
+              <FormButtonContainer>
+                <Button
+                  variant="secondary"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
                 >
-                  {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br />
-                  {t_i18n('Only successful tests allow the ingestion creation.')}
-                </Alert>
-              </Box>
-            </Box>
-            <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setOpen(true)}
-                disabled={disableVerify(values)}
-              >
-                {t_i18n('Verify')}
-              </Button>
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setOpen(true)}
+                  disabled={disableVerify(values)}
+                >
+                  {t_i18n('Verify')}
+                </Button>
 
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting || isCreateDisabled}
-              >
-                {drawerSettings?.button ?? t_i18n('Create')}
-              </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting || isCreateDisabled}
+                >
+                  {drawerSettings?.button ?? t_i18n('Create')}
+                </Button>
 
-            </FormButtonContainer>
+              </FormButtonContainer>
 
-          </Form>
+            </Form>
+          </Tabs>
           <IngestionCsvFeedTestDialog
             open={open}
             onClose={() => setOpen(false)}

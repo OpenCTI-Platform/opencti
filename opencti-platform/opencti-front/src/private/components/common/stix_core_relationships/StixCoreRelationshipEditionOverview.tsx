@@ -302,6 +302,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               containerStyle={{ width: '100%' }}
               editContext={editContext}
               entityType={stixCoreRelationshipType}
+              disableTopMargin
             />
             <Field
               component={DateTimePickerField}
@@ -310,7 +311,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               onSubmit={editor.changeField}
               textFieldProps={{
                 label: t_i18n('Start time'),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 40 },
                 helperText: (
@@ -328,7 +329,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               onSubmit={handleSubmitFieldStopTime}
               textFieldProps={{
                 label: t_i18n('Stop time'),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
                 helperText: (

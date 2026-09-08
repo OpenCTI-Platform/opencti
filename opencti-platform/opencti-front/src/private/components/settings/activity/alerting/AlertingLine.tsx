@@ -21,6 +21,7 @@ import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/styles';
 import { Stack } from '@mui/material';
+import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -32,15 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,
@@ -161,31 +154,16 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 textOverflow="ellipsis"
               >
                 <Tag
-                  label={(
-                    <span>
-                      <strong>{t_i18n('Period: ')}</strong>
-                      {data.period}
-                    </span>
-                  )}
+                  label={`${t_i18n('Period: ')}${data.period}`}
                 />
                 {currentTime.length > 1 && (
                   <Tag
-                    label={(
-                      <span>
-                        <strong>{t_i18n('Day: ')}</strong>
-                        {day}
-                      </span>
-                    )}
+                    label={`${t_i18n('Day: ')}${day}`}
                   />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
                   <Tag
-                    label={(
-                      <span>
-                        <strong>{t_i18n('Time: ')}</strong>
-                        {nt(time)}
-                      </span>
-                    )}
+                    label={`${t_i18n('Time: ')}${nt(time)}`}
                   />
                 )}
               </Stack>

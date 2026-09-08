@@ -8,7 +8,6 @@ import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
-import Checkbox from '@mui/material/Checkbox';
 import { graphql, useFragment } from 'react-relay';
 import { Theme } from '@mui/material/styles/createTheme';
 import { NarrativeLine_node$data, NarrativeLine_node$key } from './__generated__/NarrativeLine_node.graphql';
@@ -17,6 +16,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilled } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
 
 interface NarrativeLineProps {
   node: NarrativeLine_node$key;
@@ -129,12 +129,10 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
         }
       >
         <Checkbox
-          edge="start"
           checked={
             (selectAll && !(data.id in (deSelectedElements || {})))
             || data.id in (selectedElements || {})
           }
-          disableRipple={true}
         />
       </ListItemIcon>
       <ListItemIcon style={{ color: theme.palette.primary.main }}>

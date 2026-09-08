@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'reac
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
+import { IconButton } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import { RefreshOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
@@ -65,13 +65,14 @@ const IngestionTaxiiLogsTab: React.FC<IngestionTaxiiLogsTabProps> = ({ feedId, f
         <Tooltip title={t_i18n('Refresh')}>
           <span>
             <IconButton
-              size="small"
+              variant="default"
+              priority="tertiary"
+              size="sm"
               onClick={handleRefresh}
               disabled={refreshing || !queryRef}
               aria-label={t_i18n('Refresh')}
-            >
-              <RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />
-            </IconButton>
+              icon={<RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />}
+            />
           </span>
         </Tooltip>
       </Stack>

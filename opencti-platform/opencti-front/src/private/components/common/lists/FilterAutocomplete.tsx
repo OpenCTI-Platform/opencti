@@ -1,6 +1,5 @@
 import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
-import TextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
@@ -108,8 +107,8 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     'indicates',
     'contextEntityId',
   ].includes(filterKey);
-  const handleChange = (event: SyntheticEvent, value: FilterOptionValue | null) => {
-    if (value) {
+  const handleChange = (event: SyntheticEvent | null, value: FilterOptionValue | null) => {
+    if (value && event) {
       if (
         (event as unknown as MouseEvent).altKey
         && event.type === 'click'
@@ -152,48 +151,25 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
   }
   const input = inputValues.filter((f) => f.key === filterKey)?.[0]?.values?.[0] ?? '';
   return (
-    <MUIAutocomplete
+    <Combobox<FilterOptionValue>
       key={filterKey}
       disabled={disabled}
-      selectOnFocus={true}
+      selectOnFocus
       openOnFocus={openOnFocus}
-      autoSelect={false}
-      autoHighlight={true}
       getOptionLabel={(option) => option.label ?? ''}
-      noOptionsText={t_i18n('No available options')}
       options={options}
-      onInputChange={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)}
       inputValue={input}
-      onChange={handleChange}
+      onInputChange={(_, meta) => searchEntities(filterKey, cacheEntities, setCacheEntities, meta.event as SyntheticEvent)}
+      value={null}
+      onValueChange={(val, meta) => handleChange(meta.event, val as FilterOptionValue | null)}
       groupBy={
         isStixObjectTypes
           ? (option) => option.type
           : (option) => (option.group ? t_i18n(option.group) : filterLabel)
       }
-      isOptionEqualToValue={(option, value) => option.value === value.value}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          role="search"
-          label={filterLabel}
-          variant="outlined"
-          size="small"
-          fullWidth={true}
-          onFocus={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)
-          }
-          slotProps={{
-            input: {
-              ...params.InputProps,
-              type: 'search',
-              endAdornment: isStixObjectTypes
-                ? renderSearchScopeSelection(filterKey)
-                : params.InputProps.endAdornment,
-            },
-          }}
-        />
-      )}
-      renderOption={(propsOption, option) => (
-        <li {...propsOption}>
+      isOptionEqualToValue={(a, b) => a.value === b.value}
+      renderOption={(option) => (
+        <>
           <div style={{
             paddingTop: 4,
             display: 'inline-block',
@@ -209,9 +185,24 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
           }}
           >{option.label}
           </div>
-        </li>
+        </>
       )}
-    />
+    >
+      <ComboboxLabel>{filterLabel}</ComboboxLabel>
+      <ComboboxField>
+        <ComboboxInput
+          onFocus={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)}
+        />
+        <ComboboxControls>
+          {isStixObjectTypes && renderSearchScopeSelection(filterKey)}
+          <ComboboxTrigger />
+        </ComboboxControls>
+      </ComboboxField>
+      <ComboboxContent
+        emptyMessage={t_i18n('No available options')}
+        listAriaLabel={filterLabel}
+      />
+    </Combobox>
   );
 };
 

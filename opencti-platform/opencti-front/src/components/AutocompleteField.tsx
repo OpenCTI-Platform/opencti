@@ -99,6 +99,9 @@ const AutocompleteField = <
       return (
         <Tag
           {...getTagProps({ index })}
+          // a chip row inside a select field is ONE tab stop; the delete
+          // buttons must not each add another
+          deleteTabIndex={-1}
           labelTextTransform={preserveCase ? 'none' : 'capitalize'}
           key={value}
           label={label}

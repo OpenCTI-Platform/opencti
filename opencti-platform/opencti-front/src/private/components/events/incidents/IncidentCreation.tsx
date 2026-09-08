@@ -186,7 +186,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -197,16 +197,17 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             entityType="Incident"
             containerStyle={fieldSpacingContainerStyle}
           />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="x_opencti_score"
-            label={t_i18n('Score')}
-            required={(mandatoryAttributes.includes('x_opencti_score'))}
-            type="number"
-            fullWidth={true}
-            style={fieldSpacingContainerStyle}
-          />
+          {/* A `style` on the field is unplaceable and sends it back to MUI. */}
+          <div style={fieldSpacingContainerStyle}>
+            <Field
+              component={TextField}
+              name="x_opencti_score"
+              label={t_i18n('Score')}
+              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              type="number"
+              fullWidth={true}
+            />
+          </div>
           <OpenVocabField
             label={t_i18n('Incident type')}
             type="incident-type-ov"
@@ -240,12 +241,12 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="source"
             label={t_i18n('Source')}
             required={(mandatoryAttributes.includes('source'))}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <ObjectAssigneeField
             name="objectAssignee"

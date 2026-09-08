@@ -23,6 +23,7 @@ import StixCoreRelationshipPopover from '../../common/stix_core_relationships/St
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -38,15 +39,7 @@ const styles = (theme) => ({
     paddingLeft: 10,
     textTransform: 'uppercase',
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,

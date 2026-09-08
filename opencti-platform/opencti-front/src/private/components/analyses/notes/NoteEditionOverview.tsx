@@ -168,7 +168,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Publication date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created" />
@@ -182,7 +182,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             label={t_i18n('Abstract')}
             required={(mandatoryAttributes.includes('attribute_abstract'))}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}

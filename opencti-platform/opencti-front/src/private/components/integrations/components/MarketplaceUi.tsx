@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
-import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Chip, IconButton } from '@filigran/design-system';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { CheckCircleOutlined, ExpandMoreOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -36,7 +37,6 @@ export const BrowseMoreButton = () => {
 // is provided, clicking the chip opens the deployed tab with matching filters.
 export const DeployedCountChip = ({ count, to }: { count: number; to?: string }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const navigate = useNavigate();
   if (count <= 0) return null;
   return (
@@ -46,10 +46,9 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
       slotProps={{ popper: { sx: { textTransform: 'none' } } }}
     >
       <Chip
-        icon={<CheckCircleOutlined sx={{ fontSize: 14 }} />}
         label={count > 1 ? t_i18n('{count} deployed', { values: { count } }) : t_i18n('Deployed')}
-        size="small"
-        variant="outlined"
+        severity="low"
+        startIcon={<CheckCircleOutlined sx={{ fontSize: 14 }} />}
         onClick={to
           ? (event) => {
             // The chip may live inside a clickable card: do not trigger it.
@@ -57,19 +56,6 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
               navigate(to);
             }
           : undefined}
-        sx={{
-          height: 24,
-          fontSize: 11,
-          fontWeight: 600,
-          borderRadius: 1,
-          color: theme.palette.success.main,
-          borderColor: alpha(theme.palette.success.main, 0.4),
-          backgroundColor: alpha(theme.palette.success.main, 0.08),
-          '& .MuiChip-icon': { color: theme.palette.success.main },
-          '&.MuiChip-clickable:hover': {
-            backgroundColor: alpha(theme.palette.success.main, 0.16),
-          },
-        }}
       />
     </Tooltip>
   );
@@ -142,18 +128,21 @@ export const MarketplaceSectionHeader = ({ icon: Icon, label, count, collapsed =
       <Box sx={{ flex: 1, height: '1px', backgroundColor: alpha(theme.palette.text.primary, 0.05) }} />
       {onToggleCollapse && (
         <IconButton
-          size="small"
+          variant="default"
+          priority="tertiary"
+          size="sm"
           aria-expanded={!collapsed}
           aria-label={label}
-        >
-          <ExpandMoreOutlined
-            fontSize="small"
-            sx={{
-              transition: 'transform 0.2s ease-in-out',
-              transform: collapsed ? 'rotate(-90deg)' : 'none',
-            }}
-          />
-        </IconButton>
+          icon={(
+            <ExpandMoreOutlined
+              fontSize="small"
+              sx={{
+                transition: 'transform 0.2s ease-in-out',
+                transform: collapsed ? 'rotate(-90deg)' : 'none',
+              }}
+            />
+          )}
+        />
       )}
     </Stack>
   );

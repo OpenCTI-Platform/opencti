@@ -40,7 +40,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
       {t_i18n('Third-party analytics')}
 
       <Stack direction="row" gap={1}>
-        <EEChip />
+        <EEChip size="sm" />
         <Tooltip
           title={(
             <>
@@ -92,7 +92,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                     onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)
                     }
                     disabled={!isEnterpriseEdition}
-                    variant="standard"
+                    variant="outlined"
                     helperText={(
                       <SubscriptionFocus
                         context={editContext}

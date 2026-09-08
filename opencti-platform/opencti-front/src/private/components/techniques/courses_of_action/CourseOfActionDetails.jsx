@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -57,10 +57,8 @@ class CourseOfActionDetailsComponent extends Component {
                 source={courseOfAction.x_mitre_id}
               >
                 <Chip
-                  size="small"
                   label={courseOfAction.x_mitre_id}
-                  color="primary"
-                  style={{ borderRadius: 4 }}
+                  severity="info"
                 />
               </FieldOrEmpty>
               <Label

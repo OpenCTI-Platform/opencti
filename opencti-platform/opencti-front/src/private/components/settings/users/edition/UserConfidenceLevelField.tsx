@@ -10,6 +10,7 @@ import InputSliderField from '../../../../../components/InputSliderField';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';
+import { layerInputVars } from '../../../../../utils/fdsLayer';
 import UserConfidenceLevel from '../UserConfidenceLevel';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -18,12 +19,18 @@ const useStyles = makeStyles((theme: Theme) => ({
   alert: {
     width: '100%',
     marginTop: 20,
-    paddingBottom: 0,
+    padding: 16,
+    border: 'none',
+    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--bg-elevation-default)',
+    // `--bg-input-default` resolves where it is DECLARED, on `:root`, so the layer class alone misses it.
+    ...layerInputVars,
   },
+  // The alert's own message slot leads with 8px, which stacked on the padding above.
   message: {
     width: '100%',
     overflow: 'visible',
-    paddingBottom: 0,
+    padding: 0,
     color: theme.palette.text?.secondary,
   },
 }));
@@ -76,10 +83,12 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
       severity="info"
       icon={false}
       variant="outlined"
+      // The alias ladder is anchored by the host panel; the block sits one step above it.
+      className="layer-3"
       sx={{ position: 'relative' }}
     >
       { user && !!user.effective_confidence_level && (
-        <Box>
+        <Box sx={{ marginBottom: '24px' }}>
           {t_i18n('Effective Max Confidence Level:')}
           &nbsp;
           <UserConfidenceLevel user={user} />
@@ -99,7 +108,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           {t_i18n('This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.')}
         </Box>
       )}
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '24px' }}>
         {/* we still use a technical field for this switch to be able to do lazy yup validation ; do NOT submit! */}
         <Field
           component={SwitchField}

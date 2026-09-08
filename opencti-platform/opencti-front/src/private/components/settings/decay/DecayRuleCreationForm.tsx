@@ -148,21 +148,21 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_lifetime"
             label={t_i18n('Lifetime (in days)')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_pound"
             label={t_i18n('Decay factor')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <FieldArray
             name="decay_points"
@@ -191,7 +191,7 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
                       <div style={{ flex: 1 }}>
                         <Field
                           component={TextField}
-                          variant="standard"
+                          variant="outlined"
                           name={`decay_points.${index}`}
                           type="number"
                           fullWidth
@@ -216,21 +216,21 @@ const DecayRuleCreationForm = ({ updater, onReset, onCompleted }: DecayRuleCreat
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="decay_revoke_score"
             label={t_i18n('Revoke score')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="order"
             label={t_i18n('Order')}
             fullWidth
             type="number"
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
           <Field
             component={SwitchField}

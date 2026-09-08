@@ -5,11 +5,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
 import { Security } from '@mui/icons-material';
 import { GroupEditionRoles_group$data } from './__generated__/GroupEditionRoles_group.graphql';
 import { GroupEditionRolesLinesSearchQuery } from './__generated__/GroupEditionRolesLinesSearchQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { Checkbox } from '@filigran/design-system';
 
 const groupEditionAddRoles = graphql`
     mutation GroupEditionRolesRelationAddMutation(
@@ -73,8 +73,8 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
   const [commitAddRole] = useApiMutation(groupEditionAddRoles);
   const [commitRemoveRole] = useApiMutation(groupEditionRemoveRoles);
 
-  const handleToggle = (roleId?: string, groupRole?: { id?: string }, event?: React.ChangeEvent<HTMLInputElement>) => {
-    if (event?.target.checked) {
+  const handleToggle = (roleId?: string, groupRole?: { id?: string }, checked?: boolean) => {
+    if (checked) {
       commitAddRole({
         variables: {
           id: group.id,
@@ -105,10 +105,10 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
             divider={true}
             secondaryAction={(
               <Checkbox
-                onChange={(event) => handleToggle(
+                onCheckedChange={(state) => handleToggle(
                   role.id,
                   groupRole,
-                  event,
+                  state === true,
                 )}
                 checked={groupRole !== undefined}
               />

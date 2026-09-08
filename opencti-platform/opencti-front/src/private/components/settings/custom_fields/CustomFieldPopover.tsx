@@ -85,7 +85,7 @@ const CustomFieldPopover: FunctionComponent<CustomFieldPopoverProps> = ({
 
   return (
     <>
-      <IconButton onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton onClick={handleOpen} aria-haspopup="true" color="primary" aria-label={t_i18n('Open the menu')}>
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

@@ -1,7 +1,7 @@
 import React from 'react';
+import { Paper } from '@filigran/design-system';
 import { Field, FieldArray } from 'formik';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { Add, Delete } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -39,8 +39,10 @@ const AuthProviderOrganizationsFields = () => {
       <FieldArray name="organizations_mapping.default_organizations">
         {({ push, remove, form }) => {
           const entries = (form.values as { organizations_mapping: OrganizationsMappingValues }).organizations_mapping.default_organizations ?? [];
+          // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no
+          // `mt-*` — remove when it ships consumer utilities — see LIBRARY-FEEDBACK.md #36
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default organizations')}</Typography>
                 <IconButton
@@ -57,7 +59,7 @@ const AuthProviderOrganizationsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.default_organizations[${index}]`}
                       label={t_i18n('Organization name')}
                       fullWidth
@@ -83,7 +85,7 @@ const AuthProviderOrganizationsFields = () => {
         {({ push, remove, form }) => {
           const entries = (form.values as { organizations_mapping: OrganizationsMappingValues }).organizations_mapping.organizations_expr ?? [];
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations expressions')}</Typography>
                 <IconButton
@@ -100,7 +102,7 @@ const AuthProviderOrganizationsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.organizations_expr[${index}]`}
                       label={t_i18n('Expression')}
                       fullWidth
@@ -123,12 +125,12 @@ const AuthProviderOrganizationsFields = () => {
 
       <Field
         component={TextField}
-        variant="standard"
+        variant="outlined"
         name="organizations_mapping.organizations_splitter"
         label={t_i18n('Organizations splitter')}
         placeholder=","
         fullWidth
-        style={{ marginTop: 20 }}
+        className="mt-5"
       />
 
       {/* Organizations mapping (provider -> platform) */}
@@ -136,7 +138,7 @@ const AuthProviderOrganizationsFields = () => {
         {({ push, remove, form }) => {
           const entries = (form.values as { organizations_mapping: OrganizationsMappingValues }).organizations_mapping.organizations_mapping ?? [];
           return (
-            <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
+            <Paper padding={0} className="overflow-hidden" style={{ marginTop: 16 }}>
               <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Organizations mapping')}</Typography>
                 <IconButton
@@ -153,14 +155,14 @@ const AuthProviderOrganizationsFields = () => {
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.organizations_mapping[${index}].provider`}
                       label={t_i18n('Provider organization')}
                       fullWidth
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`organizations_mapping.organizations_mapping[${index}].platform`}
                       label={t_i18n('Platform organization')}
                       fullWidth
