@@ -102,7 +102,7 @@
     "compression": "1.8.1",
     "content-disposition": "3.0.0",
     "content-type": "3.0.0",
-    "convert": "7.0.2",
+    "convert": "8.0.1",
     "cors": "2.8.6",
     "csv-parse": "7.0.2",
     "dataloader": "2.2.3",
