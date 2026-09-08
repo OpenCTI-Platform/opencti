@@ -2,9 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import { IconButton, Spinner, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { RefreshOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import type { SyncLogsTabQuery } from './__generated__/SyncLogsTabQuery.graphql';
@@ -58,24 +56,25 @@ const SyncLogsTab: React.FC<SyncLogsTabProps> = ({ feedId, feedName }) => {
   return (
     <Box>
       <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
-        <Tooltip title={t_i18n('Refresh')}>
-          <span>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <IconButton
-              size="small"
+              size="sm"
+              priority="tertiary"
               onClick={handleRefresh}
               disabled={refreshing || !queryRef}
               aria-label={t_i18n('Refresh')}
-            >
-              <RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />
-            </IconButton>
-          </span>
+              icon={<RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} aria-hidden />}
+            />
+          </TooltipTrigger>
+          <TooltipContent>{t_i18n('Refresh')}</TooltipContent>
         </Tooltip>
       </Stack>
       {queryRef ? (
         <Suspense
           fallback={(
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress size={32} />
+              <Spinner size="xl" label={t_i18n('Loading')} />
             </Box>
           )}
         >
@@ -83,7 +82,7 @@ const SyncLogsTab: React.FC<SyncLogsTabProps> = ({ feedId, feedName }) => {
         </Suspense>
       ) : (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={32} />
+          <Spinner size="xl" label={t_i18n('Loading')} />
         </Box>
       )}
     </Box>
