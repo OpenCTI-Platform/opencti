@@ -1,6 +1,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
-import conf, { booleanConf, logApp } from '../config/conf';
+import crypto from 'node:crypto';
+import conf, { booleanConf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE, logApp } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -21,6 +22,8 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { clearSyncConsumerMetrics, storeSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
 import { InterruptibleTimer } from './interruptible-timer';
+import { rawUpload } from '../database/raw-file-storage';
+import { SYNC_INFLIGHT_STORAGE_PATH } from '../modules/internal/document/document-types';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
   extractMarkdownImageReferences,
@@ -33,6 +36,12 @@ const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_000;
+// Below this size, inline the file as base64 even when reference mode is enabled: the extra
+// staging-upload + copy + delete round-trips aren't worth it for small files, which is the
+// only thing reference mode exists to avoid holding in memory/queue.
+// Configured in KB (human-readable, e.g. 5000) rather than raw bytes, then converted once here.
+const FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB = conf.get('sync_manager:file_reference_mode_size_threshold_kb') || 5_000;
+const FILE_REFERENCE_MODE_SIZE_THRESHOLD = FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB * 1024;
 
 const waitLoopTimer = new InterruptibleTimer();
 
@@ -161,6 +170,36 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
       const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
       if (!fetchUri) {
         logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
+        continue;
+      }
+      // Reference mode: stream the bytes straight into our own bucket instead of buffering
+      // them as base64 in the event JSON. Worker resolves x_opencti_storage_key later (issue #17896).
+      // The path segment is a fresh cryptographically random token, not derived from fileUri (which
+      // is not secret -- it can appear in bundle content, logs, etc). This makes storage_key itself
+      // the real bearer-capability: nothing about the platform's own authenticated-caller identity
+      // can distinguish "the legitimate sync worker" from any other caller with edit rights on some
+      // entity (workers share one platform-wide token across every connector/sync), so knowledge of
+      // this exact, unguessable, single-use key is what actually gates the copy -- not sync_id, which
+      // is only cross-checked against the key's own prefix and must never be treated as authorization
+      // on its own.
+      if (ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE) {
+        const { data: fileStream, headers } = await httpClient.get(fetchUri, { responseType: 'stream' });
+        const contentLength = Number(headers?.['content-length']);
+        // Unknown/invalid content-length is treated as "large": we must never buffer an
+        // unbounded stream in memory just to measure it.
+        const isBelowThreshold = Number.isFinite(contentLength) && contentLength <= FILE_REFERENCE_MODE_SIZE_THRESHOLD;
+        if (isBelowThreshold) {
+          const chunks = [];
+          for await (const chunk of fileStream) {
+            chunks.push(chunk);
+          }
+          entityFile.data = Buffer.concat(chunks).toString('base64');
+          continue;
+        }
+        const remoteFileId = crypto.randomBytes(16).toString('hex');
+        const storageKey = `${SYNC_INFLIGHT_STORAGE_PATH}/${sync.internal_id}/${remoteFileId}/content`;
+        await rawUpload(storageKey, fileStream);
+        entityFile.x_opencti_storage_key = storageKey;
         continue;
       }
       const response = await httpClient.get(fetchUri);

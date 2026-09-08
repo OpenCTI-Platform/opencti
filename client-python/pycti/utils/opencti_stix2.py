@@ -1328,6 +1328,10 @@ class OpenCTIStix2:
         files_markings = []
         no_trigger_import = []
         embedded_flags = []
+        # Files already staged in storage by the sync manager (issue #17896) are attached
+        # in a follow-up call once the entity exists (see below), since none of the create
+        # mutations accept a fileRefs argument (only Upload for inline base64 files).
+        files_to_attach_by_ref = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1343,6 +1347,8 @@ class OpenCTIStix2:
                 files_markings.append(file_obj.get("object_marking_refs", None))
                 no_trigger_import.append(file_obj.get("no_trigger_import", False))
                 embedded_flags.append(file_obj.get("embedded", False))
+            elif "x_opencti_storage_key" in file_obj:
+                files_to_attach_by_ref.append(file_obj)
 
         # Extra
         extras = {
@@ -1404,6 +1410,11 @@ class OpenCTIStix2:
                     ),
                 },
             )
+            self.attach_referenced_sync_files(
+                stix_object["type"],
+                stix_object_result["id"],
+                files_to_attach_by_ref,
+            )
             # Add reports from external references
             for external_reference_id in external_references_ids:
                 if external_reference_id in reports:
@@ -1455,6 +1466,9 @@ class OpenCTIStix2:
         files_markings = []
         no_trigger_import = []
         embedded_flags = []
+        # Files already staged in storage by the sync manager (issue #17896) are attached
+        # in a follow-up call once the entity exists (see below).
+        files_to_attach_by_ref = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1470,6 +1484,8 @@ class OpenCTIStix2:
                 files_markings.append(file_obj.get("object_marking_refs", None))
                 no_trigger_import.append(file_obj.get("no_trigger_import", False))
                 embedded_flags.append(file_obj.get("embedded", False))
+            elif "x_opencti_storage_key" in file_obj:
+                files_to_attach_by_ref.append(file_obj)
 
         # Extra
         extras = {
@@ -1583,6 +1599,11 @@ class OpenCTIStix2:
                     "id": stix_observable_result["id"],
                     "type": stix_observable_result["entity_type"],
                 },
+            )
+            self.attach_referenced_sync_files(
+                stix_object["type"],
+                stix_observable_result["id"],
+                files_to_attach_by_ref,
             )
             # Iterate over refs to create appropriate relationships
             for key in stix_object.keys():
@@ -2989,6 +3010,53 @@ class OpenCTIStix2:
             self._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
         return bundle
 
+    def _get_add_file_ref_handler(self, item_type):
+        """Resolve the add_file_ref method for the given STIX item type.
+
+        Mirrors the dispatch already used for add_file: Stix-Cyber-Observable and
+        External-Reference have their own edit mutation namespace, everything else
+        (Stix-Domain-Object and friends) shares the generic one.
+
+        :param item_type: the STIX object's "type" value
+        :type item_type: str
+        :return: bound add_file_ref method
+        :rtype: Callable
+        """
+        if StixCyberObservableTypes.has_value(item_type):
+            return self.opencti.stix_cyber_observable.add_file_ref
+        if item_type == "external-reference":
+            return self.opencti.external_reference.add_file_ref
+        return self.opencti.stix_domain_object.add_file_ref
+
+    def attach_referenced_sync_files(self, item_type, item_id, files_to_attach_by_ref):
+        """Attach files already staged in storage (issue #17896) to an entity.
+
+        Used right after creation, since creation mutations don't accept a fileRefs
+        argument (only Upload) -- see apply_patch_files for the equivalent update-time path,
+        which every entity already goes through the same way for base64 files.
+
+        :param item_type: the STIX object's "type" value, used to pick the right mutation
+        :type item_type: str
+        :param item_id: the id of the just-created (or patched) entity
+        :type item_id: str
+        :param files_to_attach_by_ref: raw x_opencti_files entries carrying x_opencti_storage_key
+        :type files_to_attach_by_ref: list
+        """
+        if not files_to_attach_by_ref:
+            return
+        do_add_file_ref = self._get_add_file_ref_handler(item_type)
+        for file_obj in files_to_attach_by_ref:
+            do_add_file_ref(
+                id=item_id,
+                storage_key=file_obj["x_opencti_storage_key"],
+                file_name=file_obj["name"],
+                version=file_obj.get("version", None),
+                fileMarkings=file_obj.get("object_marking_refs", None),
+                mime_type=file_obj.get("mime_type", None),
+                no_trigger_import=file_obj.get("no_trigger_import", False),
+                embedded=file_obj.get("embedded", False),
+            )
+
     def apply_patch_files(self, item):
         """Apply file patches to an item.
 
@@ -3012,6 +3080,7 @@ class OpenCTIStix2:
         elif item["type"] == "external-reference":
             do_add_file = self.opencti.external_reference.add_file
         if field_patch_files is not None:
+            files_to_attach_by_ref = []
             for file in field_patch_files["value"]:
                 if "data" in file:
                     do_add_file(
@@ -3024,6 +3093,13 @@ class OpenCTIStix2:
                         no_trigger_import=file.get("no_trigger_import", False),
                         embedded=file.get("embedded", False),
                     )
+                elif "x_opencti_storage_key" in file:
+                    # File already staged in storage by the sync manager (issue #17896):
+                    # copy it into place instead of round-tripping its bytes as base64.
+                    files_to_attach_by_ref.append(file)
+            self.attach_referenced_sync_files(
+                item["type"], item_id, files_to_attach_by_ref
+            )
 
     def apply_patch(self, item):
         """Apply field patches to an item.

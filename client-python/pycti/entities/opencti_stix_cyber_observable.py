@@ -275,6 +275,92 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
             return None
 
+    def add_file_ref(self, **kwargs):
+        """Attach a file to this Observable by copying it from a location already staged
+        in storage (issue #17896), instead of uploading its bytes through this call.
+
+        Used for files received via platform-to-platform synchronization: the sync manager
+        streams the file straight into the receiving platform's own storage ahead of time, and
+        this only needs to point at it.
+
+        :param id: the Stix-Cyber-Observable id
+        :type id: str
+        :param storage_key: the storage key where the file was staged
+        :type storage_key: str
+        :param file_name: the file name to attach
+        :type file_name: str
+        :param sync_id: the id of the synchronizer that staged the file, used by the platform
+            to verify storage_key really belongs to this transfer. Defaults to the connector ID
+            of the queue currently being processed (see OpenCTIApiClient.set_connector_id).
+        :type sync_id: str
+        :param fileMarkings: list of marking definition IDs for the file
+        :type fileMarkings: list
+        :param version: version datetime
+        :type version: str
+        :param mime_type: MIME type of the file
+        :type mime_type: str
+        :param no_trigger_import: whether to skip triggering import
+        :type no_trigger_import: bool
+        :param embedded: whether the file is embedded
+        :type embedded: bool
+        :return: File upload result
+        :rtype: dict or None
+        """
+        id = kwargs.get("id", None)
+        storage_key = kwargs.get("storage_key", None)
+        file_name = kwargs.get("file_name", None)
+        sync_id = kwargs.get("sync_id", None) or self.opencti.get_connector_id()
+        file_markings = kwargs.get("fileMarkings", None)
+        version = kwargs.get("version", None)
+        mime_type = kwargs.get("mime_type", None)
+        no_trigger_import = kwargs.get("no_trigger_import", False)
+        embedded = kwargs.get("embedded", False)
+        if (
+            id is not None
+            and storage_key is not None
+            and file_name is not None
+            and sync_id is not None
+        ):
+            query = """
+                    mutation StixCyberObservableEditImportPushRef($id: ID!, $fileRef: FileRefInput!) {
+                        stixCyberObservableEdit(id: $id) {
+                            importPushRef(fileRef: $fileRef) {
+                                id
+                                name
+                            }
+                        }
+                    }
+                 """
+            self.opencti.app_logger.info(
+                "Attaching a referenced sync file in Stix-Cyber-Observable",
+                {"file": file_name, "id": id},
+            )
+            return self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "fileRef": {
+                        "sync_id": sync_id,
+                        "storage_key": storage_key,
+                        "name": file_name,
+                        "mime_type": mime_type,
+                        "version": version,
+                        "file_markings": file_markings,
+                        "no_trigger_import": (
+                            no_trigger_import
+                            if isinstance(no_trigger_import, bool)
+                            else no_trigger_import == "True"
+                        ),
+                        "embedded": embedded,
+                    },
+                },
+            )
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_stix_cyber_observable] Missing parameters: id, storage_key, file_name or sync_id"
+            )
+            return None
+
     def create(self, **kwargs):
         """Create a Stix-Cyber-Observable object.
 

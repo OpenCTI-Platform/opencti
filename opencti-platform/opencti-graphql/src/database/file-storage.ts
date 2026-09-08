@@ -19,10 +19,18 @@ import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { lockResources } from '../lock/master-lock';
 // Storage path constants are imported directly from this dependency-free module (not document-domain.ts)
 // to avoid a circular import evaluation-order issue where these constants could be undefined
 // at the time ALL_MERGEABLE_FOLDERS/ALL_ROOT_FOLDERS are computed below.
-import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-types';
+import {
+  EMBEDDED_STORAGE_PATH,
+  EXPORT_STORAGE_PATH,
+  FROM_TEMPLATE_STORAGE_PATH,
+  IMPORT_STORAGE_PATH,
+  SUPPORT_STORAGE_PATH,
+  SYNC_INFLIGHT_STORAGE_PATH,
+} from '../modules/internal/document/document-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
@@ -95,6 +103,40 @@ interface S3FileObject {
   mimeType: string;
 }
 
+export type SyncInflightStorageKeyValidationResult
+  = | { valid: true; normalizedKey: string }
+    | { valid: false; reason: string };
+
+const MAX_STORAGE_KEY_LENGTH = 512;
+export const validateSyncInflightStorageKey = (storageKey: unknown, expectedSyncId: string): SyncInflightStorageKeyValidationResult => {
+  if (typeof storageKey !== 'string' || storageKey.trim().length === 0 || storageKey.length > MAX_STORAGE_KEY_LENGTH) {
+    return { valid: false, reason: `storage_key must be a non-empty string of at most ${MAX_STORAGE_KEY_LENGTH} characters` };
+  }
+  const trimmed = storageKey.trim();
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed) || trimmed.startsWith('/') || trimmed.includes('\\') || trimmed.includes('\0')) {
+    return { valid: false, reason: 'storage_key must be a plain relative path' };
+  }
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(trimmed);
+  } catch {
+    return { valid: false, reason: 'storage_key contains an invalid percent-encoding' };
+  }
+  const hasInvalidSegment = (candidate: string) => candidate.split('/').some((segment) => segment === '..' || segment === '.' || segment.length === 0);
+  if (hasInvalidSegment(trimmed) || hasInvalidSegment(decoded)) {
+    return { valid: false, reason: 'storage_key must not contain path traversal or empty segments' };
+  }
+  const expectedPrefix = `${SYNC_INFLIGHT_STORAGE_PATH}/${expectedSyncId}/`;
+  if (!decoded.startsWith(expectedPrefix)) {
+    return { valid: false, reason: `storage_key must be located under ${expectedPrefix}` };
+  }
+  const segmentsAfterPrefix = decoded.slice(expectedPrefix.length).split('/');
+  if (segmentsAfterPrefix.length < 2) {
+    return { valid: false, reason: 'storage_key must include a remoteFileId and a filename' };
+  }
+  return { valid: true, normalizedKey: decoded };
+};
+
 /**
  * Get file metadata from database, or else from S3.
  */
@@ -109,6 +151,13 @@ export const loadFile = async (
       throw FunctionalError('File path not specified');
     }
     const pathForPermissionChecks = fileS3Path.replace(/^draft\/[^/]+\//, '');
+    // 00. Sync inflight files are an internal transfer buffer, never user-readable regardless of capability
+    if (pathForPermissionChecks.startsWith(SYNC_INFLIGHT_STORAGE_PATH)) {
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
     // 01. Check if user as enough capability to get support packages
     if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
       if (opts.dontThrow) {
@@ -345,6 +394,95 @@ export const guessMimeType = (fileId: string): string => {
     return 'application/octet-stream';
   }
   return mimeType;
+};
+
+/**
+ * Completes a sync file-reference transfer: server-side copies a validated sync/inflight
+ * object into its final storage path and indexes it, using metadata resolved from the local
+ * bundle (never inherited from the staged object, which is untrusted remote data).
+ *
+ * Security model: the platform cannot use the caller's authenticated identity to prove "this
+ * is really sync <syncId>'s own worker" -- every opencti-worker process shares one platform-wide
+ * token across every connector/sync it processes, so there is no distinct per-sync identity to
+ * check against. The actual security boundary is storageKey itself: it must be an unguessable,
+ * single-use, cryptographically random token (see syncManager.js's remoteFileId), never one
+ * derived from data an unrelated caller could also know (e.g. a hash of the remote file's URI).
+ * validateSyncInflightStorageKey only re-confirms storageKey and syncId are consistent with each
+ * other; that check alone is NOT authorization, since both are supplied together by the same
+ * caller -- it exists to catch accidental cross-sync path mistakes, not a malicious caller who
+ * deliberately crafts a matching pair. Real security uses the deleted-on-success semantics below:
+ * a storageKey stops being valid the instant it's consumed once, so knowledge of a live one is
+ * exactly as sensitive as a one-time bearer token.
+ * Deletes the sync/inflight source on success, so the TTL janitor (f3) stays a pure backstop.
+ */
+export const copyFileFromSyncReference = async (
+  context: AuthContext,
+  user: AuthUser,
+  syncId: string,
+  filePath: string,
+  copyProps: { storageKey: string; name: string; mimeType?: string; version?: string; fileMarkings?: string[]; entityId: string; externalReferenceId?: string },
+): Promise<LoadedFile | null> => {
+  const { storageKey, name, mimeType, version, fileMarkings = [], entityId, externalReferenceId } = copyProps;
+  const validation = validateSyncInflightStorageKey(storageKey, syncId);
+  if (!validation.valid) {
+    // Deliberately not logging storageKey here: unlike the success path below (which only logs
+    // it after deleteFileFromStorage has run), a rejected key is still live/unconsumed. Logging
+    // it would hand an attacker's stolen-but-misapplied key straight into the application logs.
+    logApp.warn('[FILE STORAGE] Rejected sync file reference copy: invalid or unauthorized storage_key', { syncId, reason: validation.reason });
+    return null;
+  }
+  // Claim the key before touching S3. Validation alone is a check-then-act race: without an
+  // atomic claim, two concurrent callers presenting the same (e.g. leaked) storage_key could
+  // both pass validation and both successfully copy before either reaches deleteFileFromStorage,
+  // silently defeating the "single-use" guarantee. retryCount: 0 means a losing racer fails
+  // immediately instead of queueing behind the winner -- it should treat the key as already
+  // consumed, not wait around to try again once the source is gone.
+  let lock;
+  try {
+    lock = await lockResources([`sync-inflight-copy:${validation.normalizedKey}`], { retryCount: 0 });
+  } catch {
+    logApp.warn('[FILE STORAGE] Rejected sync file reference copy: storage_key is already being consumed', { syncId });
+    return null;
+  }
+  try {
+    // name is remote-controlled (comes from the synced entity's file extension); never trust it
+    // raw in a storage key. Same basename-only sanitization as upload() for identical files/ names.
+    const truncatedName = `${truncate(path.parse(name).name, 200, false)}${truncate(path.parse(name).ext, 10, false)}`;
+    let targetId = `${filePath}/${truncatedName.toLowerCase()}`;
+    const draftContext = getDraftContext(context, user);
+    if (draftContext) {
+      targetId = `${getDraftFilePrefix(draftContext)}${targetId}`;
+    }
+    try {
+      await rawCopyFile(validation.normalizedKey, targetId);
+      const fileSize = await getFileSize(user, targetId);
+      const file: LoadedFile = {
+        id: targetId,
+        name: truncatedName,
+        size: fileSize,
+        information: '',
+        lastModified: new Date(),
+        lastModifiedSinceMin: sinceNowInMinutes(new Date()),
+        metaData: {
+          version: version ?? now(),
+          mimetype: mimeType ?? guessMimeType(targetId),
+          entity_id: entityId,
+          file_markings: fileMarkings,
+          ...(externalReferenceId ? { external_reference_id: externalReferenceId } : {}),
+        },
+        uploadStatus: 'complete',
+      };
+      await indexFileToDocument(context, file);
+      await deleteFileFromStorage(validation.normalizedKey);
+      logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId });
+      return file;
+    } catch (err) {
+      logApp.error('[FILE STORAGE] Cannot copy referenced sync file in S3', { cause: err, storageKey: validation.normalizedKey, targetId });
+      return null;
+    }
+  } finally {
+    await lock.unlock();
+  }
 };
 
 /**

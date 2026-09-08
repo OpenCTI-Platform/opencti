@@ -58,7 +58,7 @@ import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
+import { copyFileFromSyncReference, defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
@@ -838,13 +838,14 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
+  const { fileRef } = args;
   const {
-    noTriggerImport,
-    version: fileVersion,
-    fileMarkings: file_markings,
+    noTriggerImport = fileRef?.no_trigger_import,
+    version: fileVersion = fileRef?.version,
+    fileMarkings: file_markings = fileRef?.file_markings,
     importContextEntities,
     fromTemplate = false,
-    embedded = false,
+    embedded = fileRef?.embedded ?? false,
     fintelTemplateId,
   } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
@@ -862,7 +863,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     // Lock the participants that will be merged
     lock = await lockResources(participantIds);
     const { internal_id: internalId } = previous;
-    const { filename } = await file;
+    const filename = fileRef ? fileRef.name : (await file).filename;
     const entitySetting = await getEntitySettingFromCache(context, previous.entity_type);
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
     let prefix = 'import';
@@ -872,7 +873,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       prefix = 'embedded';
     }
     const filePath = `${prefix}/${previous.entity_type}/${internalId}`;
-    // 01. Upload the file
+    // 01. Upload the file (from a direct upload, or by copying a previously staged sync file reference)
     const meta = { version: fileVersion?.toISOString() };
     if (fromTemplate && fintelTemplateId) {
       meta.fintel_template_id = fintelTemplateId;
@@ -881,7 +882,24 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities });
+    let up;
+    let untouched = false;
+    if (fileRef) {
+      up = await copyFileFromSyncReference(context, user, fileRef.sync_id, filePath, {
+        storageKey: fileRef.storage_key,
+        name: fileRef.name,
+        mimeType: fileRef.mime_type,
+        version: meta.version,
+        fileMarkings: file_markings,
+        entityId: internalId,
+        externalReferenceId: meta.external_reference_id,
+      });
+      if (!up) {
+        throw FunctionalError('Cannot copy referenced sync file', { storageKey: fileRef.storage_key });
+      }
+    } else {
+      ({ upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities }));
+    }
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications
@@ -972,6 +990,13 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   } finally {
     if (lock) await lock.unlock();
   }
+};
+
+// Thin ref-mode entry point, mirrors the file-upload/fileRef branch already handled inside
+// stixCoreObjectImportPush -- kept separate so the GraphQL resolver signatures stay distinct
+// per mutation (importPush vs importPushRef), matching the existing pattern.
+export const stixCoreObjectImportPushRef = async (context, user, id, fileRef) => {
+  return stixCoreObjectImportPush(context, user, id, null, { fileRef });
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {

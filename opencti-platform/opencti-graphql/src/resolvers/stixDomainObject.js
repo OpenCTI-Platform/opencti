@@ -27,7 +27,7 @@ import { findById as findStatusById, findByType } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
-import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
+import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectImportPushRef, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadAssignees } from '../database/members';
 
@@ -83,6 +83,7 @@ const stixDomainObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       editAuthorizedMembers: ({ input }) => stixDomainObjectEditAuthorizedMembers(context, context.user, id, input),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
+      importPushRef: (args) => stixCoreObjectImportPushRef(context, context.user, id, args.fileRef),
       exportAsk: ({ input }) => stixDomainObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
       stixDomainObjectFileEdit: ({ input }) => stixDomainObjectFileEdit(context, context.user, id, input),
