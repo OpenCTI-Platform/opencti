@@ -105,7 +105,7 @@ import { registerSequencerLoaders, sequencerDedupPrefetchKey, submitIntent, take
 import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
-import { registerReconcileAssert } from './sequencer/sequencer-pending-refs';
+import { getCurrentStripSink, registerReconcileAssert } from './sequencer/sequencer-pending-refs';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -1269,23 +1269,22 @@ export const inputResolveRefs = async (
     // note opencti-strip-and-reconcile-design). Under the sequencer, an unresolved
     // OPTIONAL ref never rejects the write: the historic reject-twice-then-silent-drop
     // above lost the edge forever (verdict 30: 479 holes/run measured). Each droppable
-    // REF edge is recorded on the intent context; the loop persists the records with the
-    // batch and re-asserts the edges when their targets land. Non-ref unresolved values
-    // (vocabs) keep the stock behavior below.
-    const stripScope = SEQUENCER_CONFIG.stripReconcile && (context as any).sequencer?.scope === 'applying';
-    if (stripScope && expectedUnresolvedIdsNotDefault.length > 0) {
-      const strippedRefs: { targetRef: string; relType: string }[] = [];
+    // REF edge is pushed into the loop's per-apply strip sink (a context-carried slot
+    // dies with the scoped context copy the apply closure builds: the loop never sees
+    // it); the loop persists the records with the batch and re-asserts the edges when
+    // their targets land. Non-ref unresolved values (vocabs) keep the stock behavior
+    // below.
+    const stripSink = SEQUENCER_CONFIG.stripReconcile && (context as any).sequencer?.scope === 'applying'
+      ? getCurrentStripSink() : null;
+    if (stripSink && expectedUnresolvedIdsNotDefault.length > 0) {
       expectedUnresolvedIdsNotDefault.forEach((refId) => {
         const configs = fetchingIdsMap.get(refId) ?? [];
         const destKey = (configs[0] as any)?.destKey;
         const ref = destKey ? schemaRelationsRefDefinition.getRelationRef(type, destKey) : null;
         if (ref?.databaseName) {
-          strippedRefs.push({ targetRef: refId, relType: ref.databaseName });
+          stripSink.push({ targetRef: refId, relType: ref.databaseName });
         }
       });
-      if (strippedRefs.length > 0) {
-        (context as any).sequencer.strippedRefs = strippedRefs;
-      }
     } else if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
       throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }

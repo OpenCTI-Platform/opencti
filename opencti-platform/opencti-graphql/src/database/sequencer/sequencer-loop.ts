@@ -22,8 +22,16 @@ import { idLabel } from '../../schema/schema-labels';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndex, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
-import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
-import type { StrippedRefInput } from './sequencer-pending-refs';
+import {
+  buildPendingRecords,
+  fireReconcile,
+  initPendingRefs,
+  matchCreatedElement,
+  persistPendingRecords,
+  registerPendingRefsEsOps,
+  setCurrentStripSink,
+} from './sequencer-pending-refs';
+import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { flushSequencerEvents } from '../stream/stream-handler';
 import { lockResources } from '../../lock/master-lock';
 import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-buffer';
@@ -305,8 +313,18 @@ const applyGroup = async (
   const { leader, absorbed } = group;
   const t0 = Date.now();
   let success = true;
+  // s9.12.3 strip-and-reconcile: arm the per-apply sink (module holder, applies are
+  // serial). Strips from nested re-entrant creates land in the same sink and get
+  // attributed to the leader element (documented POC approximation).
+  const stripSink: StrippedRef[] = [];
   try {
-    const result = await leader.apply();
+    setCurrentStripSink(stripSink);
+    let result;
+    try {
+      result = await leader.apply();
+    } finally {
+      setCurrentStripSink(null);
+    }
     const element = result?.element ?? result;
     if (element?.internal_id) {
       // read-your-writes for later intents of THIS batch (E2); evicted at commit (D4a).
@@ -321,21 +339,17 @@ const applyGroup = async (
         sequencerIdentityMap.ingestBare([element]);
       }
       getInstanceIds(element).forEach((id: string) => writtenIds.push(id));
-      // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (recorded on the
-      // intent context by inputResolveRefs) become pending-ref inputs, persisted with the
-      // batch at flush time so the debt commits with the accepted write.
-      const seqScope = (leader.context as any)?.sequencer;
-      if (seqScope?.strippedRefs?.length) {
-        seqScope.strippedRefs.forEach((s: { targetRef: string; relType: string }) => strippedInputs.push({
-          ownerId: element.internal_id,
-          ownerType: element.entity_type,
-          relType: s.relType,
-          targetRef: s.targetRef,
-          userId: leader.user.id,
-          user: leader.user,
-        }));
-        seqScope.strippedRefs = null;
-      }
+      // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (pushed into the
+      // sink by inputResolveRefs) become pending-ref inputs, persisted with the batch at
+      // flush time so the debt commits with the accepted write.
+      stripSink.forEach((s) => strippedInputs.push({
+        ownerId: element.internal_id,
+        ownerType: element.entity_type,
+        relType: s.relType,
+        targetRef: s.targetRef,
+        userId: leader.user.id,
+        user: leader.user,
+      }));
     }
     pendings.push({ leader, absorbed, result });
   } catch (err) {

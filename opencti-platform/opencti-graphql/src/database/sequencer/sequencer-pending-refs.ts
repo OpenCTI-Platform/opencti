@@ -66,6 +66,19 @@ export const registerPendingRefsEsOps = (ops: EsOps) => {
   esOps = ops;
 };
 
+// Per-apply sink for stripped refs (same module-holder pattern as the write buffer: the
+// batch loop applies intents SERIALLY, so a single slot is race-free). applyGroup arms it
+// around each leader.apply(); inputResolveRefs pushes into it when stripping. A slot
+// carried on the context does NOT work: the 'applying' scoped context is a spread COPY
+// built inside the apply closure, so the loop never sees what middleware writes on it
+// (first validation campaign: strips fired, zero records persisted, refs lost).
+export interface StrippedRef { targetRef: string; relType: string }
+let currentStripSink: StrippedRef[] | null = null;
+export const setCurrentStripSink = (sink: StrippedRef[] | null) => {
+  currentStripSink = sink;
+};
+export const getCurrentStripSink = () => currentStripSink;
+
 const byTarget = new Map<string, Map<string, PendingRefRecord>>();
 const byId = new Map<string, PendingRefRecord>();
 let sweeper: ReturnType<typeof setInterval> | null = null;
@@ -116,7 +129,7 @@ export const buildPendingRecords = (inputs: StrippedRefInput[]): PendingRefRecor
 export const persistPendingRecords = async (records: PendingRefRecord[]) => {
   if (records.length === 0 || !esOps) return;
   const body = records.flatMap((r) => {
-    const { user, ...persisted } = r; // user is memory-only
+    const { user: _user, ...persisted } = r; // user is memory-only
     return [{ index: { _index: PENDING_REFS_INDEX, _id: r.id } }, persisted];
   });
   await esOps.bulk(body);
