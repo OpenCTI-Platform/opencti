@@ -9,7 +9,8 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { CheckCircle, ExpandMore } from '@mui/icons-material';
+import { ExpandMore } from '@mui/icons-material';
+import { Checkbox } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { commitMutation } from '../../../../relay/environment';
@@ -41,9 +42,6 @@ const useStyles = makeStyles((theme) => ({
   },
   list: {
     width: '100%',
-  },
-  icon: {
-    color: theme.palette.primary.main,
   },
 }));
 
@@ -232,12 +230,15 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                                 divider={true}
                                 onClick={() => toggleStixCyberObservable(stixCyberObservable, alreadyAdded)}
                               >
+                                {/* The check no longer replaces the type icon: a
+                                    row used to lose the only thing that said WHAT
+                                    it was as soon as it was selected. Slot width
+                                    matches AddExternalReferencesLines. */}
+                                <ListItemIcon style={{ minWidth: 40 }}>
+                                  <Checkbox checked={alreadyAdded} />
+                                </ListItemIcon>
                                 <ListItemIcon>
-                                  {alreadyAdded ? (
-                                    <CheckCircle classes={{ root: classes.icon }} />
-                                  ) : (
-                                    <ItemIcon type={type} />
-                                  )}
+                                  <ItemIcon type={type} />
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={stixCyberObservable.observable_value}

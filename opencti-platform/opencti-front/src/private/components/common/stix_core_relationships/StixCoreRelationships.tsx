@@ -364,7 +364,9 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
 
   return (
     <>
-      <div style={{ marginTop: -12 }}>
+      {/* No offset: TabsList already sets the 24px below the tab bar, and this
+          pulled the table back up to 12. */}
+      <div>
         {queryRef && (
           <DataTable
             variant={DataTableVariant.inline}
