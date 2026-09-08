@@ -14,7 +14,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { useTheme } from '@mui/styles';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';

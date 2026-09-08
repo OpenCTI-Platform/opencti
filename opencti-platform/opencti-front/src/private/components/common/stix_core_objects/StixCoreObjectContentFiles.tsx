@@ -60,9 +60,16 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
     $fileMarkings: [String]
     $noTriggerImport: Boolean
     $fromTemplate: Boolean
+    $fintelTemplateId: String
   ) {
     stixCoreObjectEdit(id: $id) {
-      importPush(file: $file, noTriggerImport: $noTriggerImport, fileMarkings: $fileMarkings, fromTemplate: $fromTemplate) {
+      importPush(
+        file: $file
+        noTriggerImport: $noTriggerImport
+        fileMarkings: $fileMarkings
+        fromTemplate: $fromTemplate
+        fintelTemplateId: $fintelTemplateId
+      ) {
         id
         name
         uploadStatus
@@ -70,6 +77,7 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
         lastModifiedSinceMin
         metaData {
           mimetype
+          fintel_template_id
           list_filters
           messages {
             timestamp

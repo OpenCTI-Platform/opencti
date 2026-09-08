@@ -7,8 +7,14 @@ import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default;
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const configuredFrontEndPort = env.FRONT_END_PORT?.trim();
+  const frontEndPort = configuredFrontEndPort ? Number.parseInt(configuredFrontEndPort, 10) : 3000;
+
+  if (configuredFrontEndPort && (!/^\d+$/.test(configuredFrontEndPort) || frontEndPort < 1 || frontEndPort > 65535)) {
+    throw new Error(`FRONT_END_PORT must be an integer between 1 and 65535, got "${env.FRONT_END_PORT}"`);
+  }
 
   // Support APP__BASE_PATH from .env* files (via loadEnv) or from process.env (e.g. set by test scripts).
   // Normalize: ensure leading slash, strip trailing slash.
@@ -24,7 +30,7 @@ export default defineConfig(({ mode }) => {
   });
 
   return {
-    base: './',
+    base: command === 'serve' && basePath ? `${basePath}/` : './',
     build: {
       sourcemap: true,
     },
@@ -49,7 +55,7 @@ export default defineConfig(({ mode }) => {
             .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
             .replace(/%APP_TITLE%/g, 'OpenCTI Dev')
             .replace(/%APP_DESCRIPTION%/g, 'OpenCTI Development platform')
-            .replace(/%APP_FAVICON%/g, `./assets/static/favicon.png`),
+            .replace(/%APP_FAVICON%/g, `${basePath}/assets/static/favicon.png`),
       },
       react(),
       relay,
@@ -66,7 +72,7 @@ export default defineConfig(({ mode }) => {
     ],
 
     server: {
-      port: 3000,
+      port: frontEndPort,
       proxy: {
         [`${basePath}/logout`]: backProxy(),
         [`${basePath}/stream`]: backProxy(),
@@ -78,6 +84,7 @@ export default defineConfig(({ mode }) => {
         [`${basePath}/graphql`]: backProxy(true),
         [`${basePath}/auth`]: backProxy(),
         [`${basePath}/chatbot`]: backProxy(),
+        [`${basePath}/maps`]: backProxy(),
       },
     },
   };

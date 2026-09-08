@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import makeStyles from '@mui/styles/makeStyles';
 import type { Theme } from '../../../../../../components/Theme';
+import Button from '@common/button/Button';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -26,10 +27,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textAlign: 'center',
     cursor: 'pointer',
     '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.04)'
+          : 'rgba(0, 0, 0, 0.04)',
       border:
         theme.palette.mode === 'dark'
           ? '1px dashed rgba(255, 255, 255, 0.2)'
           : '1px dashed rgba(0, 0, 0, 0.2)',
+    },
+    '&:focus-visible': {
+      outline: '2px solid blue',
     },
   },
   handle: {
@@ -41,7 +49,7 @@ const NodePlaceholder = ({ id, data }: NodeProps) => {
   const classes = useStyles();
   const { getNode } = useReactFlow();
   return (
-    <div className={classes.node} onClick={() => data.openConfig(getNode(id))}>
+    <Button className={classes.node} onClick={() => data.openConfig(getNode(id))}>
       {data.name}
       <Handle
         className={classes.handle}
@@ -55,7 +63,7 @@ const NodePlaceholder = ({ id, data }: NodeProps) => {
         position={Position.Bottom}
         isConnectable={false}
       />
-    </div>
+    </Button>
   );
 };
 

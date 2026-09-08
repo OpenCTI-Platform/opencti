@@ -44,6 +44,7 @@ export interface StixIntrusionSet extends StixDomainObject {
   resource_level: string;
   primary_motivation: string;
   secondary_motivations: Array<string>;
+  x_opencti_score: number;
 }
 
 export interface StixThreatActor extends StixDomainObject {
@@ -60,6 +61,7 @@ export interface StixThreatActor extends StixDomainObject {
   primary_motivation: string;
   secondary_motivations: Array<string>;
   personal_motivations: Array<string>;
+  x_opencti_score: number;
 }
 
 export interface StixMalware extends StixDomainObject {
@@ -76,6 +78,7 @@ export interface StixMalware extends StixDomainObject {
   capabilities: Array<string>; // optional
   operating_system_refs: Array<StixId>; // optional
   sample_refs: Array<StixId>; // optional
+  x_opencti_score: number;
 }
 
 export interface StixTool extends StixDomainObject {
@@ -187,6 +190,7 @@ export interface StixIncident extends StixDomainObject {
   aliases: Array<string>;
   source: string;
   severity: string;
+  x_opencti_score: number;
 }
 
 // Container specific Properties

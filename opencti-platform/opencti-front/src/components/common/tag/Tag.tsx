@@ -1,6 +1,7 @@
 import { CloseOutlined } from '@mui/icons-material';
 import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } from '@mui/material';
 import React, { CSSProperties, ReactElement } from 'react';
+import { getLuminance } from '@mui/material/styles';
 
 export interface TagProps extends Omit<ChipProps, 'color'> {
   label?: string | number | ReactElement | null;
@@ -41,8 +42,13 @@ const Tag = ({
       return defaultColor;
     }
   };
+  const getTextColor = () => {
+    const bgLuminance = getLuminance(bgColor);
+    return bgLuminance > 0.5 ? '#000000' : theme.palette.text.primary;
+  };
 
   const bgColor = getBackgroundColor();
+  const textColor = getTextColor();
 
   const chipStyle: CSSProperties = {
     borderRadius: 4,
@@ -61,6 +67,7 @@ const Tag = ({
     maxWidth: typeof maxWidth === 'number' ? `${maxWidth}px` : maxWidth,
     height: 25,
     '& .MuiChip-label': {
+      color: textColor,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',

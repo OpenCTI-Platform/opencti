@@ -86,10 +86,10 @@ const READ_CONNECTOR_QUERY = gql`
   }
 `;
 
-const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
-const TEST_CN_NAME = 'TestConnector';
+const TEST_CN_MIGRATION_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1696';
+const TEST_CN_MIGRATION_NAME = 'TestConnectorMigration';
 
-describe.todo('Check connector migration', () => {
+describe('Check connector migration', () => {
   let userId: string;
 
   /**
@@ -113,8 +113,8 @@ describe.todo('Check connector migration', () => {
     userId = user.data.userAdd.id;
 
     const connectorData = {
-      id: TEST_CN_ID,
-      name: TEST_CN_NAME,
+      id: TEST_CN_MIGRATION_ID,
+      name: TEST_CN_MIGRATION_NAME,
       type: ConnectorType.ExternalImport,
       scope: ['Observable'],
       auto: true,
@@ -136,8 +136,8 @@ describe.todo('Check connector migration', () => {
     );
 
     expect(connector).not.toBeNull();
-    expect(connector.name).toEqual(TEST_CN_NAME);
-    expect(connector.id).toEqual(TEST_CN_ID);
+    expect(connector.name).toEqual(TEST_CN_MIGRATION_NAME);
+    expect(connector.id).toEqual(TEST_CN_MIGRATION_ID);
   });
 
   /**
@@ -146,9 +146,9 @@ describe.todo('Check connector migration', () => {
    */
   afterAll(async () => {
     // Delete the connector
-    await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
 
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.connector).toBeNull();
@@ -159,7 +159,7 @@ describe.todo('Check connector migration', () => {
   describe('migrate connector to managed', () => {
     describe('when migration is successful', () => {
       it('should migrate a standalone connector to managed, and user is now service account', async () => {
-        const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+        const queryConnectorRegistered = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_MIGRATION_ID } });
         const standaloneConnector = queryConnectorRegistered.data?.connector;
         expect(standaloneConnector).not.toBeNull();
 
@@ -224,6 +224,81 @@ describe.todo('Check connector migration', () => {
         expect(managedConnector.id).toMatch(standaloneConnector.id);
         // user should be a service account
         expect(managedConnector.connector_user.user_service_account).toBeTruthy();
+      });
+    });
+
+    describe('when name collides with an existing connector', () => {
+      // Regression test: migrateConnectorToManaged must not create two connectors sharing
+      // the same name (which makes the composer fail to reconciliate and redeploy forever).
+      // On collision, the migrated connector name must be prefixed to stay unique.
+      const COLLISION_NAME = 'CollisionConnector';
+      const OCCUPYING_CN_ID = 'a1b2c3d4-0000-4aaa-bbbb-000000000001';
+      const MIGRATING_CN_ID = 'a1b2c3d4-0000-4aaa-bbbb-000000000002';
+
+      it('should rename the migrated connector with a prefix instead of duplicating the name', async () => {
+        // An existing connector already occupies COLLISION_NAME
+        const occupyingConnector = await registerConnector(
+          testContext,
+          ADMIN_USER,
+          {
+            id: OCCUPYING_CN_ID,
+            name: COLLISION_NAME,
+            type: ConnectorType.ExternalImport,
+            scope: ['Observable'],
+            auto: true,
+            only_contextual: true,
+          },
+          { connector_user_id: userId },
+        );
+        expect(occupyingConnector.name).toEqual(COLLISION_NAME);
+
+        // A standalone connector to migrate uses the exact same name
+        const connectorToMigrate = await registerConnector(
+          testContext,
+          ADMIN_USER,
+          {
+            id: MIGRATING_CN_ID,
+            name: COLLISION_NAME,
+            type: ConnectorType.ExternalImport,
+            scope: ['Observable'],
+            auto: true,
+            only_contextual: true,
+          },
+          { connector_user_id: userId },
+        );
+        expect(connectorToMigrate.name).toEqual(COLLISION_NAME);
+
+        try {
+          const migrationResult = await queryAsAdminWithSuccess({
+            query: MIGRATE_CONNECTOR_TO_MANAGED,
+            variables: {
+              input: {
+                connectorId: MIGRATING_CN_ID,
+                containerImage: 'opencti/connector-cve',
+                resetConnectorState: false,
+                convertUserToServiceAccount: true,
+                configuration: [
+                  { key: 'CVE_API_KEY', value: 'cve_api_key' },
+                ],
+              },
+            },
+          });
+
+          const managedConnector = migrationResult.data.connectorMigrateToManaged;
+          // The migrated connector keeps its id
+          expect(managedConnector.id).toEqual(MIGRATING_CN_ID);
+          // But its name must NOT collide with the existing connector anymore
+          expect(managedConnector.name).not.toEqual(COLLISION_NAME);
+          // The collision is resolved by prefixing with 'migrated-'
+          expect(managedConnector.name).toEqual(`migrated-${COLLISION_NAME}`);
+          // The occupying connector still owns the original name
+          const occupyingQuery = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: OCCUPYING_CN_ID } });
+          expect(occupyingQuery.data?.connector?.name).toEqual(COLLISION_NAME);
+        } finally {
+          // Cleanup both connectors
+          await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: MIGRATING_CN_ID } });
+          await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: OCCUPYING_CN_ID } });
+        }
       });
     });
   });

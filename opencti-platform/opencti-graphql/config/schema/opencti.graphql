@@ -780,6 +780,7 @@ type FileMetadata {
   analysis_content_source: String
   analysis_content_type: String
   analysis_type: String
+  fintel_template_id: String
 }
 enum FileOrdering {
   _score
@@ -1226,8 +1227,8 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_banner_text: String
   platform_banner_level: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_whitemark: Boolean
   platform_language: String
   platform_translations: String
@@ -1339,8 +1340,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_openaev_url: String
   platform_opengrc_url: String
   platform_xtmhub_url: String
@@ -1412,6 +1413,13 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   # XTM1 AI
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  # Map file
+  platform_map_custom_file: MapCustomFile
+}
+
+type MapCustomFile {
+  name: String!
+  size: Float!
 }
 
 ############## Groups
@@ -3063,6 +3071,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input StixDomainObjectAddInput {
@@ -3283,6 +3292,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input AttackPatternAddInput {
@@ -3510,6 +3520,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   securityCoverage: SecurityCoverage
 }
@@ -3705,6 +3716,7 @@ interface Container {
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
+  workflowInstance: WorkflowInstance
 }
 
 ################ Notes
@@ -3896,6 +3908,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input NoteAddInput {
@@ -4139,6 +4152,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input ObservedDataAddInput {
@@ -4358,6 +4372,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input OpinionAddInput {
@@ -4601,6 +4616,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   securityCoverage: SecurityCoverage
@@ -4808,6 +4824,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input CourseOfActionAddInput {
@@ -5007,6 +5024,7 @@ interface Identity {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 input IdentityAddInput {
   stix_id: StixId
@@ -5208,6 +5226,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
@@ -5416,6 +5435,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input SectorAddInput {
@@ -5617,6 +5637,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input SystemAddInput {
@@ -5824,6 +5845,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input InfrastructureAddInput {
@@ -5869,6 +5891,7 @@ enum IntrusionSetsOrdering {
   x_opencti_workflow_id
   resource_level
   primary_motivation
+  x_opencti_score
   confidence
   _score
   objectMarking
@@ -6003,6 +6026,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   locations: LocationConnection
   # Technical
   creators: [Creator!]
@@ -6030,6 +6054,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   securityCoverage: SecurityCoverage
 }
@@ -6045,6 +6070,7 @@ input IntrusionSetAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -6232,6 +6258,7 @@ interface Location {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 input LocationAddInput {
   stix_id: StixId
@@ -6434,6 +6461,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input PositionAddInput {
@@ -6638,6 +6666,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input CityAddInput {
@@ -6836,6 +6865,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input CountryAddInput {
@@ -7036,6 +7066,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input RegionAddInput {
@@ -7083,6 +7114,7 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   is_family
+  x_opencti_score
   confidence
   _score
 }
@@ -7221,6 +7253,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   # Technical
@@ -7249,6 +7282,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input MalwareAddInput {
@@ -7264,6 +7298,7 @@ input MalwareAddInput {
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -7299,6 +7334,7 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  x_opencti_score
   sophistication
   resource_level
   _score
@@ -7469,6 +7505,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
@@ -7491,6 +7528,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7636,12 +7674,14 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
@@ -7843,6 +7883,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 input ToolAddInput {
@@ -7877,307 +7918,6 @@ input ToolAddInput {
   upsertOperations: [EditInput!]
 }
 
-############## Vulnerabilities
-enum VulnerabilitiesOrdering {
-  name
-  x_opencti_cvss_base_score
-  x_opencti_cvss_base_severity
-  x_opencti_cvss_attack_vector
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
-  creator
-  confidence
-  _score
-}
-type VulnerabilityConnection {
-  pageInfo: PageInfo!
-  edges: [VulnerabilityEdge]
-}
-type VulnerabilityEdge {
-  cursor: String!
-  node: Vulnerability!
-}
-type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # StixObject
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  currentUserAccessRight: String
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: FilterGroup
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  opinions_metrics: OpinionsMetrics
-  # StixDomainObject
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: [Assignee!]
-  objectParticipant: [Participant!]
-  avatar: OpenCtiFile
-  fintelTemplates: [FintelTemplate!]
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  # Vulnerability
-  name: String!
-  description: String
-  x_opencti_aliases: [String]
-  # CVSS 3
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  # CVSS2
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  # CVSS 4
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  # Others
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
-  # Technical
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  pendingFiles(
-    first: Int
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-}
-input VulnerabilityAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  description: String
-  x_opencti_aliases: [String]
-  # CVSS 3
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  # CVSS2
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  # CVSS 4
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  # Others
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  x_opencti_modified_at: DateTime
-  x_opencti_workflow_id: String
-  clientMutationId: String
-  update: Boolean
-  file: Upload
-  fileMarkings: [String]
-  files: [Upload]
-  filesMarkings: [[String]]
-  noTriggerImport: [Boolean]
-  embedded: [Boolean]
-  upsertOperations: [EditInput!]
-}
-
 ############## Incident
 enum IncidentsOrdering {
   name
@@ -8186,6 +7926,7 @@ enum IncidentsOrdering {
   incident_type
   severity
   source
+  x_opencti_score
   created
   modified
   created_at
@@ -8326,6 +8067,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   objectParticipant: [Participant!]
   # Technical
   creators: [Creator!]
@@ -8353,6 +8095,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   securityCoverage: SecurityCoverage
 }
@@ -8371,6 +8114,7 @@ input IncidentAddInput {
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   createdBy: String
   objectOrganization: [String]
   objectMarking: [String]
@@ -14460,6 +14204,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input SecurityCoverageExpectation {
@@ -14581,6 +14326,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 input StixSightingRelationshipAddInput {
   # StixRelationship
@@ -15531,16 +15277,6 @@ type Query {
     search: String
     toStix: Boolean
   ): ToolConnection @auth(for: [KNOWLEDGE])
-  vulnerability(id: String): Vulnerability @auth(for: [KNOWLEDGE])
-  vulnerabilities(
-    first: Int
-    after: ID
-    orderBy: VulnerabilitiesOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
-    search: String
-    toStix: Boolean
-  ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
   incident(id: String): Incident @auth(for: [KNOWLEDGE])
   incidents(
     first: Int
@@ -16007,6 +15743,8 @@ type SettingsEditMutations {
   updateLocalAuth(input: LocalAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   updateCertAuth(input: CertAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
+  uploadMapCustomFile(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  deleteMapCustomFile: Settings @auth(for: [SETTINGS_SETPARAMETERS])
 }
 type SubTypeEditMutations {
   statusAdd(input: StatusAddInput!): SubType
@@ -16141,7 +15879,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
@@ -16167,7 +15905,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!, file_markings: [String]!): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -16356,14 +16094,6 @@ type ToolEditMutations {
   contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
-}
-type VulnerabilityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type IncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -16614,8 +16344,6 @@ type Mutation {
   threatActorGroupEdit(id: ID!): ThreatActorGroupEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   toolAdd(input: ToolAddInput!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   toolEdit(id: ID!): ToolEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   incidentAdd(input: IncidentAddInput!): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   incidentEdit(id: ID!): IncidentEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 

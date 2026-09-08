@@ -32,7 +32,7 @@ import { useFormatter } from '../i18n';
 import Tag from '../common/tag/Tag';
 import { resolveLink } from '../../utils/Entity';
 import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
@@ -44,7 +44,7 @@ const chipStyle: CSSProperties = {
   height: '20px',
   marginRight: '7px',
   borderRadius: '4px',
-  textTransform: 'uppercase',
+  textTransform: 'none',
 };
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
@@ -343,15 +343,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ draftVersion }) => (
       <ItemOperations draftOperation={draftVersion?.draft_operation} />
-    ),
-  },
-  workflowInstance: {
-    id: 'workflowInstance',
-    label: 'Workflow status',
-    percentWidth: 12,
-    isSortable: false,
-    render: ({ workflowInstance }) => (
-      <ItemStatus status={workflowInstance?.currentStatus ?? null} disabled={!workflowInstance?.currentStatus} />
     ),
   },
   draft_status: {

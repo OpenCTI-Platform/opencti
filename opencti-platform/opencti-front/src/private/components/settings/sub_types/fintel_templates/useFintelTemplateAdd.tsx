@@ -11,6 +11,8 @@ const fintelTemplateAddMutation = graphql`
       id
       entity_type
       default
+      includeCoverPageByDefault
+      includeBackPageByDefault
     }
   }
 `;

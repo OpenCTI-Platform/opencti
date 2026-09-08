@@ -40,6 +40,10 @@ class Identity:
                   color
                 }
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -148,6 +152,10 @@ class Identity:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {

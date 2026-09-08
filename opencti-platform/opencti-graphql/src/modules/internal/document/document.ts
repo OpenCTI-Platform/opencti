@@ -53,6 +53,7 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'analysis_content_source', label: 'Analysis content source', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'analysis_content_type', label: 'Analysis content type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'analysis_type', label: 'Analysis type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'fintel_template_id', label: 'Fintel template id', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     ],
   },
   // TODO MOVE THAT PART TO A SPECIFIC Place

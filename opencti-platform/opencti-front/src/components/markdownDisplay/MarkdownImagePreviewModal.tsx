@@ -1,9 +1,10 @@
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import Carousel from 'react-material-ui-carousel';
 import { Box, Modal, SxProps } from '@mui/material';
-import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
+import { KeyboardArrowLeft, KeyboardArrowRight, CloseOutlined } from '@mui/icons-material';
 import IconButton from '../common/button/IconButton';
 import type { MarkdownPreviewImage } from './markdownPreviewImageUtils';
+import { useFormatter } from '../i18n';
 
 export type { MarkdownPreviewImage };
 
@@ -57,6 +58,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
   const prevActionRef = useRef<(() => void) | null>(null);
   const nextActionRef = useRef<(() => void) | null>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const { t_i18n } = useFormatter();
 
   useEffect(() => {
     if (open) {
@@ -80,6 +82,8 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
 
   return (
     <Modal
+      role="dialog"
+      aria-label={t_i18n('Image preview')}
       open={open}
       onClose={onClose}
       onKeyDown={handleKeyDown}
@@ -95,53 +99,88 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
         sx={imageModalStyle}
         onClick={onClose}
       >
-        {images.length > 1 ? (
-          <Carousel
-            autoPlay={false}
-            animation="slide"
-            indicators={images.length > 1}
-            index={activeIndex}
-            onChange={(now) => {
-              if (typeof now === 'number') {
-                setActiveIndex(now);
-              }
-            }}
-            navButtonsAlwaysVisible={images.length > 1}
-            navButtonsWrapperProps={{
-              style: navWrapperStyle,
-            }}
-            NavButton={({ onClick, next }) => {
-              const run = () => onClick?.();
-              if (next) {
-                nextActionRef.current = run;
-              } else {
-                prevActionRef.current = run;
-              }
+        <Box sx={{ position: 'relative', width: '100%' }}>
+          <IconButton
+            sx={{ color: 'rgba(255, 255, 255, 0.54)', position: 'absolute', top: 0, right: 0 }}
+            onClick={onClose}
+            size="small"
+            aria-label="Close"
+          >
+            <CloseOutlined />
+          </IconButton>
+          {images.length > 1 ? (
+            <Carousel
+              autoPlay={false}
+              animation="slide"
+              indicators={images.length > 1}
+              index={activeIndex}
+              onChange={(now) => {
+                if (typeof now === 'number') {
+                  setActiveIndex(now);
+                }
+              }}
+              navButtonsAlwaysVisible={images.length > 1}
+              navButtonsWrapperProps={{
+                style: navWrapperStyle,
+              }}
+              NavButton={({ onClick, next }) => {
+                const run = () => onClick?.();
+                if (next) {
+                  nextActionRef.current = run;
+                } else {
+                  prevActionRef.current = run;
+                }
 
-              return (
-                <IconButton
-                  aria-label={next ? 'Next image' : 'Previous image'}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    run();
-                  }}
+                return (
+                  <IconButton
+                    aria-label={next ? 'Next image' : 'Previous image'}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      run();
+                    }}
+                    sx={{
+                      color: '#fff',
+                      backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+                      },
+                    }}
+                  >
+                    {next ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+                  </IconButton>
+                );
+              }}
+              sx={{ width: '100%', height: '100%' }}
+            >
+              {images.map((image) => (
+                <Box
+                  key={`${image.src}-${image.alt}`}
                   sx={{
-                    color: '#fff',
-                    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.65)',
-                    },
+                    width: '100%',
+                    height: '85vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  {next ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-                </IconButton>
-              );
-            }}
-            sx={{ width: '100%', height: '100%' }}
-          >
-            {images.map((image) => (
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    style={{ maxWidth: '90vw', maxHeight: image.alt ? '74vh' : '80vh' }}
+                    onClick={(event) => event.stopPropagation()}
+                  />
+                  {image.alt && (
+                    <Box sx={captionStyle} onClick={(event) => event.stopPropagation()}>
+                      {image.alt}
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </Carousel>
+          ) : (
+            images[0] && (
               <Box
-                key={`${image.src}-${image.alt}`}
                 sx={{
                   width: '100%',
                   height: '85vh',
@@ -152,45 +191,20 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
                 }}
               >
                 <img
-                  src={image.src}
-                  alt={image.alt}
-                  style={{ maxWidth: '90vw', maxHeight: image.alt ? '74vh' : '80vh' }}
+                  src={images[0].src}
+                  alt={images[0].alt}
+                  style={{ maxWidth: '90vw', maxHeight: images[0].alt ? '74vh' : '80vh' }}
                   onClick={(event) => event.stopPropagation()}
                 />
-                {image.alt && (
+                {images[0].alt && (
                   <Box sx={captionStyle} onClick={(event) => event.stopPropagation()}>
-                    {image.alt}
+                    {images[0].alt}
                   </Box>
                 )}
               </Box>
-            ))}
-          </Carousel>
-        ) : (
-          images[0] && (
-            <Box
-              sx={{
-                width: '100%',
-                height: '85vh',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <img
-                src={images[0].src}
-                alt={images[0].alt}
-                style={{ maxWidth: '90vw', maxHeight: images[0].alt ? '74vh' : '80vh' }}
-                onClick={(event) => event.stopPropagation()}
-              />
-              {images[0].alt && (
-                <Box sx={captionStyle} onClick={(event) => event.stopPropagation()}>
-                  {images[0].alt}
-                </Box>
-              )}
-            </Box>
-          )
-        )}
+            )
+          )}
+        </Box>
       </Box>
     </Modal>
   );

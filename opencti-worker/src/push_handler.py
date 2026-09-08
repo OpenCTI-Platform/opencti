@@ -160,6 +160,14 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                     )
                 else:
                     # As bundle is received as complete, split and requeue
+                    self.logger.warning(
+                        "Received a multi-object bundle without no_split, splitting in worker",
+                        {
+                            "connector_id": self.connector_id,
+                            "work_id": work_id,
+                            "object_count": len(content["objects"]),
+                        },
+                    )
                     # Create a specific channel to push the split bundles
                     with pika.BlockingConnection(
                         self.pika_parameters

@@ -77,6 +77,12 @@ The workers can have more or less verbose outputs:
     
     OpenCTI check the validity of the observable value.
 
+!!! warning "Indicator pattern is contained in an exclusion list"
+
+    The Indicator pattern contains a value present in one of your exclusion lists, so the Indicator is rejected on purpose and the rest of the bundle keeps being imported.
+
+    The error details give the matched value and the exclusion list identifier. If the value should not be excluded, edit the list in **Settings > Customization > Exclusion lists**.
+
 ### Dependencies errors
 
 !!! warning "TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark..."

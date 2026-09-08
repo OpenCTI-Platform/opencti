@@ -1,6 +1,6 @@
 import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';

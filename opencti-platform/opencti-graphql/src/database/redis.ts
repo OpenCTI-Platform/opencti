@@ -1048,4 +1048,12 @@ export const redisSetXtmAgentResponse = async (cacheKey: string, content: string
     logApp.warn('[XTM One] Agent response cache write failed', { cause: err });
   }
 };
+
+export const redisDeleteXtmAgentResponse = async (cacheKey: string): Promise<void> => {
+  try {
+    await getClientBase().del(`${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`);
+  } catch (err) {
+    logApp.warn('[XTM One] Agent response cache eviction failed', { cause: err });
+  }
+};
 // endregion - XTM agent response cache

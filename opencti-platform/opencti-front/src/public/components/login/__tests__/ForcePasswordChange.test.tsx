@@ -4,7 +4,7 @@ import { screen } from '@testing-library/react';
 import { render } from '@testing-library/react';
 import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { createTheme, ThemeProvider, ThemeOptions } from '@mui/material/styles';
 import AppIntlProvider from '../../../../components/AppIntlProvider';
 import ThemeDark from '../../../../components/ThemeDark';
@@ -28,7 +28,7 @@ vi.mock('../../../../relay/environment', async (importOriginal) => {
 const renderWithLoginContext = (ui: React.ReactNode) => {
   const user = userEvent.setup();
   const result = render(
-    <BrowserRouter>
+    <BrowserRouter useTransitions={false}>
       <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
         <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
           <LoginContextProvider>

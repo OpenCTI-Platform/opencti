@@ -51,6 +51,7 @@ const mockSettings = {
   platform_url: 'https://opencti.test',
   platform_title: 'Test OpenCTI',
   enterprise_license: 'some-pem',
+  filigran_chatbot_ai_cgu_status: 'enabled',
 };
 
 const mockRegistrationResponse = {
@@ -129,8 +130,28 @@ describe('registerWithXtmOne', () => {
     expect(callArgs.enterprise_license_pem).toBe('test-pem');
     expect(callArgs.license_type).toBe('enterprise');
     expect(callArgs.business_vertical).toBe('cti');
+    // Ask Ariane can render an approval prompt and collect a verdict; this flag is
+    // what makes XTM One gate OpenCTI-contributed tools instead of asking an
+    // administrator to exempt them. A typo here would silently disable the feature.
+    expect(callArgs.supports_approval_prompts).toBe(true);
     expect(callArgs.intents.length).toBeGreaterThan(0);
     expect(callArgs.intents.map((i: { name: string }) => i.name)).toContain('global.assistant');
+  });
+
+  it('should not advertise approval prompts when the chatbot is not usable', async () => {
+    // The flag promises somebody can be asked. With the CGU not accepted the
+    // panel is unreachable, so there is nobody to answer a prompt and a gated
+    // tool would stall for callers that cannot prompt at all.
+    vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ ...mockSettings, filigran_chatbot_ai_cgu_status: 'disabled' } as any);
+    vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: 'test-pem', licenseByConfiguration: false });
+    vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: true, license_type: 'enterprise' } as any);
+    vi.mocked(xtmOneClient.register).mockResolvedValue(mockRegistrationResponse);
+
+    await registerWithXtmOne(mockContext, mockUser);
+
+    const callArgs = vi.mocked(xtmOneClient.register).mock.calls[0][0];
+    expect(callArgs.supports_approval_prompts).toBe(false);
   });
 
   it('should handle null register response gracefully', async () => {

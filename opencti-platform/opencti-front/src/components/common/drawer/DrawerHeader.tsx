@@ -17,7 +17,7 @@ const DrawerHeader = ({ title, onClose, endContent }: DrawerHeaderProps) => {
     <Stack
       direction="row"
       sx={{
-        backgroundColor: theme.palette.background.secondary,
+        backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
         paddingX: 3,
         paddingY: 2,
         alignItems: 'center',

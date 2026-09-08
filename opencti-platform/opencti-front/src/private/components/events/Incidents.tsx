@@ -56,6 +56,7 @@ const Incidents: FunctionComponent = () => {
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     name: { percentWidth: 20 },
+    x_opencti_score: { percentWidth: 7 },
     incident_type: { percentWidth: 8 },
     severity: { percentWidth: 8 },
     objectAssignee: { percentWidth: 12, isSortable: isRuntimeSort },

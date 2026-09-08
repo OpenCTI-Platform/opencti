@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import LaunchIcon from '@mui/icons-material/Launch';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Loader from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';

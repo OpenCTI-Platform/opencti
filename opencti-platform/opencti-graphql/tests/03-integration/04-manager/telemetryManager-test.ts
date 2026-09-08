@@ -38,6 +38,7 @@ import { aiSummary } from '../../../src/domain/container';
 import { askEntityExport, askListExport } from '../../../src/domain/stix';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { addSavedFilter, deleteSavedFilter, savedFilterEditAuthorizedMembers } from '../../../src/modules/savedFilter/savedFilter-domain';
+import { awaitUntilCondition } from '../../utils/testQueryHelper';
 
 describe('Telemetry manager test coverage', () => {
   let filigranTelemetryMeterManager: TelemetryMeterManager;
@@ -115,11 +116,16 @@ describe('Telemetry manager test coverage', () => {
 
     test('shared saved filters count and permission changes are collected', async () => {
       // WHEN telemetry data is fetched after filter creation
-      await fetchTelemetryData(filigranTelemetryMeterManager);
-
       // THEN 1 shared saved filter should be counted (shared with non-creator members)
-      expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
       // AND 1 permission change event was recorded (the share with USER_EDITOR)
+      // Fetching telemetry data is fire-and-forget under the hood, so poll until the values land.
+      await awaitUntilCondition(async () => {
+        await fetchTelemetryData(filigranTelemetryMeterManager);
+        return filigranTelemetryMeterManager.sharedSavedFiltersCount === 1
+          && filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount === 1;
+      }, 1000, 60, true, 'Shared saved filters telemetry counters were not updated in time');
+
+      expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
       expect(filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount).toEqual(1);
     });
   });
@@ -156,9 +162,6 @@ describe('Telemetry manager test coverage', () => {
       addNotificationSentCount('email');
     }
 
-    const loopCount = 3; // 3' max
-    let loopCurrent = 0;
-
     const isRedisUpdatedCallback = async () => {
       const disseminationGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
       const chatbotGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
@@ -169,12 +172,10 @@ describe('Telemetry manager test coverage', () => {
         && askAiGaugeValue === ASK_AI_SUMMARIZE_EVENTS
         && notificationGaugeValue === NOTIFICATION_EMAIL_EVENTS;
     };
-    let isRedisUpdated = await isRedisUpdatedCallback();
-    while (!isRedisUpdated && loopCurrent < loopCount) {
-      await waitInSec(1);
-      isRedisUpdated = await isRedisUpdatedCallback();
-      loopCurrent += 1;
-    }
+    // Those gauges are fed by fire-and-forget helpers, so poll until they land. Giving up
+    // silently here would let the assertions below report a counter mismatch instead of the
+    // actual cause.
+    await awaitUntilCondition(isRedisUpdatedCallback, 1000, 60, true, 'Redis telemetry gauges were not updated in time');
 
     // WHEN data is fetched from elastic (platform wide gauges) and redis (user event gauge)
     await fetchTelemetryData(filigranTelemetryMeterManager);

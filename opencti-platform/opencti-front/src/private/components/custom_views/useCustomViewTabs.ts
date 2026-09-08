@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
 import { getCurrentTab } from '../../../utils/tabUtils';
 import { useCustomViews } from './useCustomViews';

@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { checkStixCoreRelationshipMapping } from '../../../src/database/stix';
-import { ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_VULNERABILITY } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_USES, RELATION_HAS } from '../../../src/schema/stixCoreRelationship';
+import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
 
 /**
  * Unit tests to validate the new relationship mappings in the STIX model:

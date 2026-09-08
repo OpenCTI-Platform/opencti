@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
-import { generateAttributesInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
+import { generateAttributesInputsForUpsert, generateRefsInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 
@@ -398,6 +398,156 @@ describe('middleware upsertElement test', () => {
       // inputs should be operation: 'replace', value: [labelCurrentValue, labelToAdd]
       expect(inputs.length).toEqual(1);
       expect(inputs.find((n) => n.key === 'objectLabel')).toEqual({ operation: 'replace', key: 'objectLabel', value: [labelToReplace, labelToAdd2, labelToAdd] });
+    });
+  });
+  describe('middleware generateRefsInputsForUpsert test', () => {
+    const type = 'Indicator';
+    // base resolved element (Indicator) used across the tests
+    const baseIndicator = {
+      id: 'indicator1-uuid-internal',
+      internal_id: 'indicator1-uuid-internal',
+      standard_id: 'indicator1-uuid-standard',
+      entity_type: 'Indicator',
+      pattern: '[domain-name:value = \'filigran.dev\']',
+      pattern_type: 'stix',
+      x_opencti_main_observable_type: ENTITY_DOMAIN_NAME,
+    };
+    // createdBy is a "multiple: false" ref (databaseName === 'created-by')
+    const authorA = { internal_id: 'author-A', standard_id: 'identity--author-A', entity_type: 'Organization' };
+    const authorB = { internal_id: 'author-B', standard_id: 'identity--author-B', entity_type: 'Organization' };
+
+    describe('non multiple ref (createdBy)', () => {
+      it('should NOT replace an existing ref value with a null input (regression: no data cleaning)', () => {
+        // resolvedElement has an author, the incoming patch explicitly provides createdBy = null
+        const resolvedElement = { ...baseIndicator, 'created-by': authorA };
+        const updatePatch = { createdBy: null };
+        // even with a higher confidence, an empty input must not erase the current value
+        const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: true };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        const createdByInput = inputs.find((n) => n.key === 'createdBy');
+        expect(createdByInput).toBeUndefined();
+      });
+
+      it('should NOT replace an existing ref value with an undefined input', () => {
+        const resolvedElement = { ...baseIndicator, 'created-by': authorA };
+        const updatePatch = { createdBy: undefined };
+        const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: true };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        expect(inputs.find((n) => n.key === 'createdBy')).toBeUndefined();
+      });
+
+      it('should fill an empty ref value with an incoming author (auto consolidation)', () => {
+        // current author is empty -> we always want to set the incoming value
+        const resolvedElement = { ...baseIndicator };
+        const updatePatch = { createdBy: authorA };
+        // even with a lower confidence, empty current value is filled
+        const confidenceForUpsert = { isConfidenceMatch: false, isConfidenceUpper: false };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        const createdByInput = inputs.find((n) => n.key === 'createdBy');
+        expect(createdByInput).toEqual({ key: 'createdBy', value: [authorA] });
+      });
+
+      it('should replace an existing author with a different one when confidence is strictly upper', () => {
+        const resolvedElement = { ...baseIndicator, 'created-by': authorA };
+        const updatePatch = { createdBy: authorB };
+        const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: true };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        const createdByInput = inputs.find((n) => n.key === 'createdBy');
+        expect(createdByInput).toEqual({ key: 'createdBy', value: [authorB] });
+      });
+
+      it('should NOT replace an existing author when confidence is not strictly upper (protected createdBy)', () => {
+        const resolvedElement = { ...baseIndicator, 'created-by': authorA };
+        const updatePatch = { createdBy: authorB };
+        // isConfidenceMatch true but not upper -> createdBy is protected against flickering
+        const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: false };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        expect(inputs.find((n) => n.key === 'createdBy')).toBeUndefined();
+      });
+
+      it('should NOT produce any input when incoming author is identical to the current one', () => {
+        const resolvedElement = { ...baseIndicator, 'created-by': authorA };
+        const updatePatch = { createdBy: authorA };
+        const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: true };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        expect(inputs.find((n) => n.key === 'createdBy')).toBeUndefined();
+      });
+
+      it('should remove an existing author with a null input in full synchronization mode', () => {
+        // in full synchro, an empty input is an explicit removal request
+        const synchroContext = { ...testContext, synchronizedUpsert: true };
+        const resolvedElement = { ...baseIndicator, 'created-by': authorA };
+        const updatePatch = { createdBy: null };
+        const confidenceForUpsert = { isConfidenceMatch: false, isConfidenceUpper: false };
+        const inputs = generateRefsInputsForUpsert(synchroContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        const createdByInput = inputs.find((n) => n.key === 'createdBy');
+        expect(createdByInput).toEqual({ key: 'createdBy', value: [null] });
+      });
+    });
+
+    describe('multiple ref (objectLabel)', () => {
+      const labelA = { internal_id: 'label-A', standard_id: 'label--A', entity_type: 'Label' };
+      const labelB = { internal_id: 'label-B', standard_id: 'label--B', entity_type: 'Label' };
+
+      it('should fill an empty multiple ref with the incoming values', () => {
+        const resolvedElement = { ...baseIndicator };
+        const updatePatch = { objectLabel: [labelA] };
+        // labels can be added without confidence match
+        const confidenceForUpsert = { isConfidenceMatch: false, isConfidenceUpper: false };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        const labelInput = inputs.find((n) => n.key === 'objectLabel');
+        expect(labelInput).toEqual({ key: 'objectLabel', value: [labelA], operation: 'add' });
+      });
+
+      it('should add only the missing values (differential) on a multiple ref', () => {
+        const resolvedElement = { ...baseIndicator, 'object-label': [labelA.internal_id] };
+        const updatePatch = { objectLabel: [labelA, labelB] };
+        const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: false };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        const labelInput = inputs.find((n) => n.key === 'objectLabel');
+        expect(labelInput).toEqual({ key: 'objectLabel', value: [labelB], operation: 'add' });
+      });
+
+      it('should not add an empty multiple ref input (no data cleaning)', () => {
+        const resolvedElement = { ...baseIndicator, 'object-label': [labelA.internal_id] };
+        const updatePatch = { objectLabel: [] };
+        const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: true };
+        const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        // current has label-A, input is empty: currentToInputDiff triggers an update in synchro only,
+        // outside synchro the add operation only contains the (empty) differential -> nothing added
+        const labelInput = inputs.find((n) => n.key === 'objectLabel');
+        expect(labelInput).toBeUndefined();
+      });
+
+      it('should replace all values on a multiple ref in full synchronization mode', () => {
+        const synchroContext = { ...testContext, synchronizedUpsert: true };
+        const resolvedElement = { ...baseIndicator, 'object-label': [labelA.internal_id] };
+        const updatePatch = { objectLabel: [labelB] };
+        const confidenceForUpsert = { isConfidenceMatch: false, isConfidenceUpper: false };
+        const inputs = generateRefsInputsForUpsert(synchroContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+        const labelInput = inputs.find((n) => n.key === 'objectLabel');
+        expect(labelInput).toEqual({ key: 'objectLabel', value: [labelB], operation: 'replace' });
+      });
+    });
+
+    it('should ignore refs not present in the update patch', () => {
+      const resolvedElement = { ...baseIndicator, 'created-by': authorA };
+      const updatePatch = {}; // no ref key at all
+      const confidenceForUpsert = { isConfidenceMatch: true, isConfidenceUpper: true };
+      const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
+
+      expect(inputs.length).toEqual(0);
     });
   });
 });

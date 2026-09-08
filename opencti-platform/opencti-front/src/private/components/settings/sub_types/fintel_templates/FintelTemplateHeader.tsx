@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
@@ -24,6 +24,8 @@ const headerFragment = graphql`
     start_date
     template_content
     default
+    includeCoverPageByDefault
+    includeBackPageByDefault
   }
 `;
 
@@ -132,6 +134,8 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
           description: template.description ?? null,
           published: !!template.start_date,
           default: !!template.default,
+          include_cover_page_by_default: template.includeCoverPageByDefault ?? true,
+          include_back_page_by_default: template.includeBackPageByDefault ?? true,
         }}
         currentDefaultName={template.default ? undefined : currentDefaultName}
         onClose={() => setFormOpen(false)}

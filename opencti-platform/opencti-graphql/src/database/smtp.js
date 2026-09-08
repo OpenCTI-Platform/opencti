@@ -279,8 +279,17 @@ export const sendMail = async (args, meterMetadata) => {
     // For OAuth2 the transporter is recreated so that the access token is
     // refreshed before each send (avoids failures once the token has expired).
     const transporter = await createSmtpTransporter();
-    await transporter.sendMail({ from, to, bcc, subject, html, attachments });
+    const sentMailInfos = await transporter.sendMail({ from, to, bcc, subject, html, attachments });
     meterManager.emailSent(meterMetadata);
+
+    if (sentMailInfos.rejected && sentMailInfos.rejected.length > 0) {
+      logApp.warn('SMTP message sent with partial recipient rejection', {
+        ...meterMetadata,
+        accepted: sentMailInfos.accepted.length,
+        rejected: sentMailInfos.rejected,
+        rejectedErrors: sentMailInfos.rejectedErrors,
+      });
+    }
   }
 };
 

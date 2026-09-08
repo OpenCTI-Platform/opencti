@@ -3,7 +3,7 @@ import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mu
 import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import AccordionAttackPattern from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixAccordion';
 import AttackPatternsMatrixBadge from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixBadge';

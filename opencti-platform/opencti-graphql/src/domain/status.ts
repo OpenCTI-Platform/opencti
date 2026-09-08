@@ -51,6 +51,27 @@ export const findByType = async (context: AuthContext, user: AuthUser, statusTyp
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return platformStatuses.filter((status) => status.type === statusType);
 };
+export const findStatusByTypeScopeAndTemplateName = async (
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+  scope: string | undefined | null,
+  templateName: string,
+): Promise<BasicWorkflowStatus | undefined> => {
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  return platformStatuses.find((status) => status.type === type && status.scope === scope && status.name === templateName);
+};
+export const resolveSyncedWorkflowId = async (
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+  scope: string | undefined | null,
+  templateName: string | undefined,
+): Promise<string | undefined> => {
+  if (!templateName) return undefined;
+  const status = await findStatusByTypeScopeAndTemplateName(context, user, type, scope, templateName);
+  return status?.id;
+};
 export const findStatusPaginated = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {
   return pageEntitiesConnection<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
 };

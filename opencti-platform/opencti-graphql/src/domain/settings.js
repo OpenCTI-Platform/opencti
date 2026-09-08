@@ -1,6 +1,7 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import ipaddr from 'ipaddr.js';
+import { rawUploadWithMetadata, deleteFileFromStorage, getFileMetadata } from '../database/raw-file-storage';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
@@ -138,8 +139,9 @@ export const getSettings = async (context) => {
     platform_demo: ENABLED_DEMO_MODE,
     platform_modules: clusterInfo.modules,
     platform_reference_attachment: conf.get('app:reference_attachment'),
-    platform_map_tile_server_dark: nconf.get('app:map_tile_server_dark'),
-    platform_map_tile_server_light: nconf.get('app:map_tile_server_light'),
+    // Deprecated: kept in the GraphQL schema for API backward-compatibility, no longer configurable.
+    platform_map_tile_server_dark: null,
+    platform_map_tile_server_light: null,
     platform_openaev_url: nconf.get('xtm:openaev_url'),
     platform_opengrc_url: nconf.get('xtm:opengrc_url'),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
@@ -235,8 +237,6 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_consent_message',
   'platform_consent_confirm_text',
   'platform_no_access_message',
-  'platform_map_tile_server_dark',
-  'platform_map_tile_server_light',
   'platform_session_idle_timeout',
   'platform_session_timeout',
   'platform_session_max_concurrent',
@@ -404,6 +404,41 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+const MAP_CUSTOM_FILE_KEY = 'maps/world.pmtiles';
+
+export const uploadMapCustomFile = async (context, user, file) => {
+  const { createReadStream, filename } = await file;
+  const stream = createReadStream();
+  const contentDisposition = `attachment; filename="${filename}"`;
+  await rawUploadWithMetadata(MAP_CUSTOM_FILE_KEY, stream, contentDisposition);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'uploads map custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'map_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const deleteMapCustomFile = async (context, user) => {
+  await deleteFileFromStorage(MAP_CUSTOM_FILE_KEY);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'deletes map custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'map_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const getMapCustomFileInfo = async () => {
+  return getFileMetadata(MAP_CUSTOM_FILE_KEY);
 };
 
 export const getCriticalAlerts = async (context, user) => {

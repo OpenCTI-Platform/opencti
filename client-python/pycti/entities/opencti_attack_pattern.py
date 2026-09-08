@@ -38,6 +38,10 @@ class AttackPattern:
                   color
                 }
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -142,6 +146,10 @@ class AttackPattern:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {

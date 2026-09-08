@@ -13,7 +13,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';

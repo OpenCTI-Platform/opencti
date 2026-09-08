@@ -46,7 +46,7 @@ import { createAuthenticatedContext } from '../../../../src/http/httpAuthenticat
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { resolvePublicUser } from '../../../../src/modules/dataSharing/dataSharing-utils';
 import { findById as findTaxiiCollection } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
-import { authenticateForPublic } from '../../../../src/graphql/sseMiddleware.js';
+import { authenticate, authenticateForPublic } from '../../../../src/graphql/sseMiddleware.js';
 import { extractUserAndCollection } from '../../../../src/http/httpTaxii.js';
 import { resolveUserForFeed } from '../../../../src/http/httpRollingFeed.js';
 import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
@@ -214,6 +214,121 @@ describe('authenticateForPublic middleware', () => {
 
     expect(next).toHaveBeenCalled();
     expect(req.user).toBe(mockAuthUser);
+  });
+});
+
+// ─── authenticate (sseMiddleware, private stream token auth) ─────────────────
+
+describe('authenticate middleware (OTP enforcement)', () => {
+  const AUTH_USER = { id: 'auth-user', user_email: 'auth@test.com', capabilities: [{ name: 'KNOWLEDGE' }], allowed_marking: [] };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns 401 when otp_mandatory is true and user_otp_validated is false (OTP already activated)', async () => {
+    // Regression: a stream must not be accessible when the platform enforces OTP
+    // and the session has not validated it -> checkOTPValidationStatus => VALIDATION_REQUIRED
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: true },
+      otp_mandatory: true,
+      user_otp_validated: false,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.statusMessage).toContain('validate your two-factor authentication');
+    expect(req.user).toBeUndefined();
+  });
+
+  it('returns 401 when otp_mandatory is true, user_otp_validated is false and OTP is not yet activated', async () => {
+    // checkOTPValidationStatus => ACTIVATION_REQUIRED
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: false },
+      otp_mandatory: true,
+      user_otp_validated: false,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.statusMessage).toContain('activate your two-factor authentication');
+  });
+
+  it('calls next() and populates req when OTP is validated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: true },
+      otp_mandatory: true,
+      user_otp_validated: true,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(req.user).toEqual({ ...AUTH_USER, otp_activated: true });
+    expect(req.userId).toBe('auth-user');
+    expect(req.capabilities).toEqual(AUTH_USER.capabilities);
+  });
+
+  it('calls next() when otp_mandatory is false and user has not self-activated OTP', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: false },
+      otp_mandatory: false,
+      user_otp_validated: false,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 when no user is resolved from the context', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.statusMessage).toContain('not authenticated');
+  });
+
+  it('returns 500 when context resolution throws', async () => {
+    vi.mocked(createAuthenticatedContext).mockRejectedValue(new Error('boom'));
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.statusMessage).toContain('boom');
   });
 });
 

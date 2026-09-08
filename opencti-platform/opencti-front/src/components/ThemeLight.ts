@@ -55,8 +55,8 @@ const ThemeLight = (
       contrastText: '#000000',
       text: { primary: '#881106' },
     },
-    success: { main: '#1CA55E', dark: '#0D7E39' },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
+    success: { main: '#0D7E39', dark: '#075C28' },
+    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#6978EE' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
@@ -108,9 +108,9 @@ const ThemeLight = (
     },
     text: {
       secondary: THEME_LIGHT_DEFAULT_TEXT,
-      tertiary: '#717172',
+      tertiary: '#5F5F60',
       light: '#494A50',
-      disabled: '#6E7788',
+      disabled: '#5F6B7A',
     },
     leftBar: {
       header: {
@@ -210,9 +210,9 @@ const ThemeLight = (
           800: '#005744',
         },
         green: {
-          400: '#41E149',
-          600: '#17AB1F',
-          800: '#094E0B',
+          400: '#416F3E',
+          600: '#094E0B',
+          800: '#053806',
         },
         red: {
           100: '#FBCBC5',
@@ -612,9 +612,6 @@ const ThemeLight = (
           },
           '.react_time_range__handle_marker': {
             backgroundColor: '#00bcd4 !important',
-          },
-          '.leaflet-container': {
-            backgroundColor: `${paper || '#ffffff'} !important`,
           },
           '.react-grid-item .react-resizable-handle::after': {
             borderRight: '2px solid #AFB0B6 !important',

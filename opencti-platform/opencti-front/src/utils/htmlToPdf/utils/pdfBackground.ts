@@ -1,8 +1,12 @@
 import { DynamicBackground } from 'pdfmake/interfaces';
 
-const pdfBackground = (linearGradiant: string[] | undefined): DynamicBackground => {
+const pdfBackground = (
+  linearGradiant: string[] | undefined,
+  options?: { hasCoverPage?: boolean },
+): DynamicBackground => {
+  const hasCoverPage = options?.hasCoverPage ?? true;
   return (currentPage, pageSize) => ({
-    canvas: currentPage > 1
+    canvas: !hasCoverPage || currentPage > 1
       ? []
       : [{
           type: 'rect',

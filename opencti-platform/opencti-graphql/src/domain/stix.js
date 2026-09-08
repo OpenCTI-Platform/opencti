@@ -7,8 +7,8 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById, markingDefinitionDeleteAndUpdateGroups } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
-import { createWork, updateExpectationsNumber } from './work';
-import { pushToConnector, pushToWorkerForConnector } from '../database/rabbitmq';
+import { createWork } from './work';
+import { pushToConnector, pushBundleToWorker } from '../database/rabbitmq';
 import { isStixDomainObjectShareableContainer } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE, INPUT_GRANTED_REFS } from '../schema/general';
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
@@ -67,17 +67,14 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
       throw UnsupportedError('Invalid connector', { connectorId });
     }
     let target_work_id = work_id;
-    if (isEmptyField(work_id)) {
+    const createdWorkHere = isEmptyField(work_id);
+    if (createdWorkHere) {
       const workName = `${connector.name} run @ ${now()}`;
       const work = await createWork(context, user, connector, workName, connector.internal_id, { receivedTime: now() });
       target_work_id = work.id;
-      if (jsonBundle.objects.length === 1) {
-        // Only add explicit expectation if the worker will not split anything
-        await updateExpectationsNumber(context, context.user, target_work_id, jsonBundle.objects.length);
-      }
     }
     const content = Buffer.from(bundle, 'utf-8').toString('base64');
-    await pushToWorkerForConnector(connectorId, {
+    await pushBundleToWorker(context, user, connectorId, {
       type: 'bundle',
       applicant_id: user.internal_id,
       content,

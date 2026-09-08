@@ -7,6 +7,7 @@ export const entitySettingsFragment = graphql`
     platform_entity_files_ref
     platform_hidden_type
     enforce_reference
+    sync_workflow_status_by_name
     availableSettings
     mandatoryAttributes
     scaleAttributes {

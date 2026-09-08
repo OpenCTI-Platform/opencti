@@ -174,6 +174,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       renderInput={(params) => (
         <TextField
           {...params}
+          role="search"
           label={filterLabel}
           variant="outlined"
           size="small"
@@ -183,6 +184,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
           slotProps={{
             input: {
               ...params.InputProps,
+              type: 'search',
               endAdornment: isStixObjectTypes
                 ? renderSearchScopeSelection(filterKey)
                 : params.InputProps.endAdornment,

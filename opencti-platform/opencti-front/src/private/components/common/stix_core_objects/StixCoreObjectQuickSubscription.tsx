@@ -26,7 +26,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { useRefetchableFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as Yup from 'yup';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -526,7 +526,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   <IconButton
                     aria-label={expandedLines ? t_i18n('Collapse') : t_i18n('Expand')}
                     onClick={handleToggleLine}
-                    aria-haspopup="true"
+                    aria-expanded={expandedLines}
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>

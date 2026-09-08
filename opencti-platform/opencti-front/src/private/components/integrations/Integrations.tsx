@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useMemo } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useQueryLoader } from 'react-relay';

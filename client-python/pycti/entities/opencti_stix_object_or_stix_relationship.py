@@ -28,6 +28,10 @@ class StixObjectOrStixRelationship:
                 updated_at
             }
             ... on StixDomainObject {
+            creators {
+                id
+                name
+            }
                 createdBy {
                     ... on Identity {
                         id

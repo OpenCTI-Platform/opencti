@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
 import Box from '@mui/material/Box';
 import inject18n from '../../../../components/i18n';

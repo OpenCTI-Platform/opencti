@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError } from '../config/errors';
+import { DOC_INCORRECT_OBSERVABLE_FORMAT, FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
@@ -35,7 +35,6 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, buildRefRelationKey, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixRefRelationship';
 import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { checkScore, now, observableValue } from '../utils/format';
@@ -45,6 +44,7 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage';
 import { isNumericAttribute } from '../schema/schema-attributes';
+import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -241,7 +241,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput, doc_code: 'INCORRECT_OBSERVABLE_FORMAT' });
+    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput, doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT });
   }
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);

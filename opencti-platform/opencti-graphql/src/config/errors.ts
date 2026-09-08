@@ -1,5 +1,15 @@
 import { GraphQLError } from 'graphql';
 
+// region DOC CODE
+// Doc codes are a stable contract, they identify a precise error.
+// They are used to build the troubleshooting documentation links,
+// to classify work errors in the UI and by the worker.
+export const DOC_INSUFFICIENT_CONFIDENCE_LEVEL = 'INSUFFICIENT_CONFIDENCE_LEVEL';
+export const DOC_INCORRECT_OBSERVABLE_FORMAT = 'INCORRECT_OBSERVABLE_FORMAT';
+export const DOC_INCORRECT_INDICATOR_FORMAT = 'INCORRECT_INDICATOR_FORMAT';
+export const DOC_INDICATOR_PATTERN_EXCLUDED = 'INDICATOR_PATTERN_EXCLUDED';
+// End region DOC CODE
+
 const CATEGORY_TECHNICAL = 'TECHNICAL';
 const CATEGORY_BUSINESS = 'BUSINESS';
 
@@ -151,7 +161,7 @@ export const TECHNICAL_ERRORS = [
 
 // region CATEGORY_FUNCTIONAL
 export const FUNCTIONAL_ERROR = 'FUNCTIONAL_ERROR';
-export const INSUFFICIENT_CONFIDENCE_LEVEL = 'INSUFFICIENT_CONFIDENCE_LEVEL';
+
 export const FunctionalError = (reason?: string, data?: any) => error('FUNCTIONAL_ERROR', reason || 'Business validation', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,

@@ -139,7 +139,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   // -------------------------
 
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000); // After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getPageTitle()).toBeVisible();
   await expect(dashboardPage.getItemFromList(duplicateDashboardName)).toBeHidden();
@@ -169,7 +170,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
   await expect(dashboardDetailsPage.getTitle(updateDashboardName)).toBeVisible();
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
 
   // Import dashboard with exhaustive list of widgets
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
@@ -206,7 +208,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
 
   // Delete imported dashboard
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000); // After delete need to wait a bit
+  // Being back on the list proves the delete mutation completed (deletion redirects there)
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
   // ---------
   // endregion
 
@@ -224,7 +227,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await widgetsPage.getActionsWidgetsPopover().click();
   await widgetsPage.getActionButton('Delete').click();
   await widgetsPage.getConfirmButton().click();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // The widget disappearing proves the delete mutation completed
+  await expect(widgetsPage.getItemFromWidgetList(malwareName)).toBeHidden();
 
   await widgetsPage.createTimelineOfMalwaresWidget();
   await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
@@ -301,5 +305,8 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
+  // Wait for the redirect to the list before ending the test: closing the page
+  // right after the click could abort the in-flight delete mutation
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
+  await expect(dashboardPage.getItemFromList(updateDashboardName)).toBeHidden();
 });

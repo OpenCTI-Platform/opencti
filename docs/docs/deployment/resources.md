@@ -2,7 +2,7 @@
 
 ## Introduction
 
-OpenCTI is an open and modular platform. A lot of [connectors, plugins and clients](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations) are created by [Filigran](https://www.filigran.io) and by the community. You can find here other resources available to complete your OpenCTI journey.
+OpenCTI is an open and modular platform. A lot of [connectors, plugins, and clients](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations) are created by [Filigran](https://www.filigran.io) and by the community. You can find here other resources available to complete your OpenCTI journey.
 
 ## Videos & training
 
@@ -21,10 +21,10 @@ OpenCTI is an open and modular platform. A lot of [connectors, plugins and clien
 
     ---
 
-    Empower your journey with OpenCTI training courses for both analyst and 
+    Empower your journey with OpenCTI training courses for both analysts and
     administrators, and get your certificate.
 
-    [:octicons-arrow-right-24:{ .middle } Learn](https://training.filigran.io)
+    [:octicons-arrow-right-24:{ .middle } Learn](https://academy.filigran.io)
 </div>
 
 ## Articles & news
@@ -47,28 +47,27 @@ OpenCTI is an open and modular platform. A lot of [connectors, plugins and clien
     Subscribe to Filigran newsletters to get informed about the latest evolutions
     of our product ecosystems.
 
-    [:octicons-arrow-right-24:{ .middle } Subscribe](https://www.filigran.io)
+    [:octicons-arrow-right-24:{ .middle } Subscribe](https://filigran.io/blog/#newsletter)
 </div>
 
 ## Analysis
 
 <div class="grid cards" markdown>
 
--   :material-biohazard:{ .lg .middle } __Verticalized threat landscapes__
+-   :material-biohazard:{ .lg .middle } __Resources__
 
     ---
 
-    Access to monthly sectorial analysis from our experts team based on knowledge and
-    data collected by our partners.
+    Browse our Content Library to find competitive briefs, customer stories, on-demand webinars, reports, and white papers.
 
-    [:octicons-arrow-right-24:{ .middle } Consult](https://www.filigran.io/en/resources/read/verticalized-threat-landscapes)
+    [:octicons-arrow-right-24:{ .middle } Consult](https://filigran.io/content-library/)
 
 -   :fontawesome-solid-microscope:{ .lg .middle } __Case studies__
 
     ---
 
-    Explore the Filigran case studies about stories and usages of the platform 
+    Explore the Filigran case studies about stories and usages of the platform
     among our communities and customers.
 
-    [:octicons-arrow-right-24:{ .middle } Download](https://www.filigran.io/en/resources/read/case-studies)
+    [:octicons-arrow-right-24:{ .middle } Download](https://filigran.io/customer-story-library/)
 </div>

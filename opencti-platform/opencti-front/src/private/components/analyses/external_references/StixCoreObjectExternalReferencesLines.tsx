@@ -22,7 +22,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { includes } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -476,6 +476,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
             aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
             onClick={handleToggleExpand}
             classes={{ root: classes.buttonExpand }}
+            aria-expanded={expanded}
           >
             {expanded ? (
               <ExpandLessOutlined />

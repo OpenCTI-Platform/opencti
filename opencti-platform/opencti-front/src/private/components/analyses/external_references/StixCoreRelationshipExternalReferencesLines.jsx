@@ -16,7 +16,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ConnectionHandler } from 'relay-runtime';
 import { interval } from 'rxjs';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -375,6 +375,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
               size="small"
               onClick={this.handleToggleExpand.bind(this)}
               classes={{ root: classes.buttonExpand }}
+              aria-expanded={expanded}
             >
               {expanded ? (
                 <ExpandLessOutlined />

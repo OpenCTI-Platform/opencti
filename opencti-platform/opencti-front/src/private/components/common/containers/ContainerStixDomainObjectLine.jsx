@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -379,7 +379,6 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         <IconButton
           disabled={true}
           aria-label={t_i18n('Open menu')}
-          aria-haspopup="true"
           classes={classes.itemIconDisabled}
         >
           <MoreVert />

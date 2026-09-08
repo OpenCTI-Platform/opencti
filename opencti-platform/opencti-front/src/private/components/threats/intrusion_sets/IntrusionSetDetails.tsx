@@ -6,6 +6,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ItemScore from '../../../../components/ItemScore';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import TextList from '../../../../components/common/text/TextList';
@@ -77,6 +78,12 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
           </Grid>
           <Grid item xs={6}>
             <Label>
+              {t_i18n('Score')}
+            </Label>
+            <ItemScore score={intrusionSet.x_opencti_score} />
+          </Grid>
+          <Grid item xs={6}>
+            <Label>
               {t_i18n('Primary motivation')}
             </Label>
             <FieldOrEmpty source={intrusionSet.primary_motivation}>
@@ -118,6 +125,7 @@ const IntrusionSetDetails = createFragmentContainer(
         last_seen
         description
         resource_level
+        x_opencti_score
         primary_motivation
         secondary_motivations
         goals

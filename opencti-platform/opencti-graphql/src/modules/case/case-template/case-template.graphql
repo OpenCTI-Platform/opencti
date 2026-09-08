@@ -53,6 +53,6 @@ type Mutation {
   caseTemplateAdd(input: CaseTemplateAddInput!): CaseTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
   caseTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCASETEMPLATES])
   caseTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
-  caseTemplateRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): CaseTemplate @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseTemplateRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTemplate @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseTemplateRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): CaseTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
+  caseTemplateRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
 }

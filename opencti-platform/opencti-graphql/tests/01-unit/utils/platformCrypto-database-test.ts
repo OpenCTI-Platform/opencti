@@ -5,23 +5,37 @@ import { encryptSynchronizerCredential, decryptSynchronizerCredential, isSynchro
 // Mock nconf with a valid 32-byte encryption key (base64-encoded)
 // "0123456789abcdef0123456789abcdef" = 32 bytes
 vi.mock('nconf', () => ({
-  default: {
-    get: (key: string) => {
-      if (key === 'app:encryption_key') return 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
-      return undefined;
-    },
-  },
+  default: (() => {
+    const api = {
+      get: (key: string) => {
+        if (key === 'app:encryption_key') return 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
+        if (key === 'env' || key === 'node_env') return 'test';
+        return undefined;
+      },
+      env: () => api,
+      add: () => api,
+      file: () => api,
+      path: (confName: string, separator: string) => confName.split(separator),
+    };
+    return api;
+  })(),
 }));
 
-vi.mock('../../../src/config/conf', () => ({
-  default: {
-    get: (key: string) => {
-      if (key === 'app:encryption_key') return 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
-      return undefined;
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/config/conf')>();
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      get: (key: string) => {
+        if (key === 'app:encryption_key') return 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
+        if (key === 'redis:ca') return [];
+        return (actual.default as { get: (k: string) => unknown }).get(key);
+      },
     },
-  },
-  confNameToEnvName: () => 'APP__ENCRYPTION_KEY',
-}));
+    confNameToEnvName: () => 'APP__ENCRYPTION_KEY',
+  };
+});
 
 vi.mock('../../../src/config/credentials', () => ({
   enrichWithRemoteCredentials: vi.fn().mockResolvedValue({ value: undefined }),

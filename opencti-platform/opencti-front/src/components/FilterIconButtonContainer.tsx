@@ -250,7 +250,7 @@ const FilterIconButtonContainer: FunctionComponent<
         const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
-        // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
+          // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
         const chipBackgroundColorStyle = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
@@ -308,6 +308,7 @@ const FilterIconButtonContainer: FunctionComponent<
                   }}
                   label={(
                     <Stack
+                      alignItems="center"
                       direction="row"
                       gap={0.5}
                       sx={{

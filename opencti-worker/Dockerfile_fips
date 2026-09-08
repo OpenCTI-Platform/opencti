@@ -1,13 +1,11 @@
 # syntax=docker/dockerfile:1.26
-FROM filigran/python-fips:latest
+FROM filigran/alpine-python-fips:python3.12
 
 COPY src /opt/opencti-worker
 WORKDIR /opt/opencti-worker
 
 RUN --mount=type=bind,source=requirements.txt,target=requirements.txt <<EOT
     set -euxo pipefail
-
-    apk --no-cache add libmagic
 
     apk --no-cache add -t .pip_deps git
     pip3 install --no-cache-dir --requirement requirements.txt

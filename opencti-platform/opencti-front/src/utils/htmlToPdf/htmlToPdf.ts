@@ -156,7 +156,7 @@ export const resolvePdfMakeEmbeddedImages = async (
  * @param content HTML content.
  * @param templateName Name of the template used for PDF generation.
  * @param markingNames Markings of the outcome report.
- * @param fintelDesign Design of the template
+ * @param fintelDesign Design of the template, optionally enriched with page options
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdfReport = async (
@@ -165,6 +165,10 @@ export const htmlToPdfReport = async (
   templateName: string,
   markingNames: string[],
   fintelDesign?: FintelDesign | null | undefined,
+  pageOptions?: {
+    includeCoverPage?: boolean;
+    includeBackPage?: boolean;
+  },
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logo;
@@ -222,6 +226,53 @@ export const htmlToPdfReport = async (
     fintelDesign?.gradiantToColor || DARK_BLUE,
   ];
   const textColor = fintelDesign?.textColor || WHITE;
+  const includeCoverPage = pageOptions?.includeCoverPage ?? true;
+  const includeBackPage = pageOptions?.includeBackPage ?? true;
+
+  const coverPage: Content[] = [
+    {
+      columns: [
+        isLogoSvg
+          ? { svg: logo, width: 133 }
+          : { image: logo, width: 133 },
+        {
+          text: dateFormat(new Date()) ?? '',
+          alignment: 'right',
+          style: ['colorWhite'],
+        },
+      ],
+    },
+    {
+      text: reportName,
+      style: ['colorWhite', selectedFont, 'textXl'],
+      marginTop: 200,
+    },
+    {
+      text: formattedTemplateName,
+      style: ['colorWhite', 'textMd'],
+      marginTop: 10,
+      pageBreak: 'after',
+    },
+  ];
+
+  const backPage: Content[] = [
+    {
+      pageBreak: 'before',
+      absolutePosition: { x: 0, y: 0 },
+      canvas: [{
+        type: 'rect',
+        x: 0,
+        y: 0,
+        w: 600,
+        h: 850,
+        linearGradient: linearGradiant,
+      }],
+    },
+    ...(isLogoSvg
+      ? [{ svg: logo, width: 133, alignment: 'center' as const, margin: [0, 380, 0, 0] as [number, number, number, number] }]
+      : [{ image: logo, width: 133, alignment: 'center' as const, margin: [0, 380, 0, 0] as [number, number, number, number] }]
+    ),
+  ];
 
   const docDefinition: TDocumentDefinitions = {
     pageMargins: [20, 30],
@@ -239,52 +290,15 @@ export const htmlToPdfReport = async (
     ...pdfMakeObject,
     images: normalizedImages,
     content: [
-      {
-        columns: [
-          isLogoSvg
-            ? { svg: logo, width: 133 }
-            : { image: logo, width: 133 },
-          {
-            text: dateFormat(new Date()) ?? '',
-            alignment: 'right',
-            style: ['colorWhite'],
-          },
-        ],
-      },
-      {
-        text: reportName,
-        style: ['colorWhite', selectedFont, 'textXl'],
-        marginTop: 200,
-      },
-      {
-        text: formattedTemplateName,
-        style: ['colorWhite', 'textMd'],
-        marginTop: 10,
-        pageBreak: 'after',
-      },
+      ...(includeCoverPage ? coverPage : []),
       {
         stack: pdfMakeObject.content as Content[],
       },
-      {
-        pageBreak: 'before',
-        absolutePosition: { x: 0, y: 0 },
-        canvas: [{
-          type: 'rect',
-          x: 0,
-          y: 0,
-          w: 600,
-          h: 850,
-          linearGradient: linearGradiant,
-        }],
-      },
-      ...(isLogoSvg
-        ? [{ svg: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
-        : [{ image: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
-      ),
+      ...(includeBackPage ? backPage : []),
     ] as Content[],
-    background: pdfBackground(linearGradiant),
-    header: pdfHeader(linearGradiant),
-    footer: pdfFooter(markingNames),
+    background: pdfBackground(linearGradiant, { hasCoverPage: includeCoverPage }),
+    header: pdfHeader(linearGradiant, { hasCoverPage: includeCoverPage, hasBackPage: includeBackPage }),
+    footer: pdfFooter(markingNames, { hasCoverPage: includeCoverPage, hasBackPage: includeBackPage }),
     pageBreakBefore: pdfPageBreaks,
   };
 

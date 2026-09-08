@@ -28,6 +28,7 @@ import { convertDataComponentToStix_2_0 } from '../../../src/modules/dataCompone
 import { convertDataSourceToStix_2_0 } from '../../../src/modules/dataSource/dataSource-converter';
 import { convertOrganizationToStix_2_0 } from '../../../src/modules/organization/organization-converter';
 import { convertSecurityPlatformToStix_2_0 } from '../../../src/modules/securityPlatform/securityPlatform-converter';
+import { convertVulnerabilityToStix_2_0 } from '../../../src/modules/vulnerability/vulnerability-converter';
 import {
   convertAttackPatternToStix,
   convertCampaignToStix,
@@ -35,7 +36,6 @@ import {
   convertIntrusionSetToStix,
   convertToolToStix,
   convertThreatActorGroupToStix,
-  convertVulnerabilityToStix,
   convertMalwareToStix,
   convertNoteToStix,
   convertObservedDataToStix,
@@ -201,7 +201,7 @@ describe('Stix 2.0 opencti converter', () => {
     expect(result).toEqual(EXPECTED_TOOL);
   });
   it('should convert Vulnerability', async () => {
-    const result = convertVulnerabilityToStix(INSTANCE_VULNERABILITY);
+    const result = convertVulnerabilityToStix_2_0(INSTANCE_VULNERABILITY as any);
     expect(result).toEqual(EXPECTED_VULNERABILITY);
   });
   it('should convert Malware Analysis', async () => {

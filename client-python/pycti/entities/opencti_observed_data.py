@@ -38,6 +38,10 @@ class ObservedData:
                   color
                 }
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -243,6 +247,10 @@ class ObservedData:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {

@@ -21,12 +21,12 @@ import {
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_MEDIA_CONTENT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import convertOrganizationToStix, { convertOrganizationToStix_2_0 } from './organization-converter';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 
 const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization, Stix2Organization> = {
   type: {

@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildLocalMustFilter, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
+import { buildDenormalizedRefsScriptParams, buildLocalMustFilter, buildReplaceScriptParams, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
+import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import * as engineConfig from '../../../src/database/engine-config';
 
 describe('prepareElementForIndexing testing', () => {
@@ -376,5 +378,83 @@ describe('isTransitoryError testing', () => {
 
   it('should return false when text fields are empty strings (not matched)', () => {
     expect(isTransitoryError({ message: '', reason: '', type: '', name: '', stack: '' })).toBe(false);
+  });
+});
+
+describe('buildReplaceScriptParams testing', () => {
+  it('should split set and unset attributes', () => {
+    const params = buildReplaceScriptParams({ name: 'test', description: null, score: 0, revoked: false });
+    expect(params.replacements).toEqual({ name: 'test', score: 0, revoked: false });
+    expect(params.removals).toEqual(['description']);
+  });
+
+  it('should remove undefined attributes', () => {
+    const params = buildReplaceScriptParams({ name: 'test', current_state_cursor: undefined });
+    expect(params.replacements).toEqual({ name: 'test' });
+    expect(params.removals).toEqual(['current_state_cursor']);
+  });
+
+  it('should keep empty strings and empty arrays as replacements', () => {
+    const params = buildReplaceScriptParams({ name: '', objectLabel: [] });
+    expect(params.replacements).toEqual({ name: '', objectLabel: [] });
+    expect(params.removals).toEqual([]);
+  });
+
+  it('should support an empty document', () => {
+    const params = buildReplaceScriptParams({});
+    expect(params.replacements).toEqual({});
+    expect(params.removals).toEqual([]);
+  });
+});
+
+describe('buildDenormalizedRefsScriptParams testing', () => {
+  const UPDATED_AT = '2026-08-30T00:00:00.000Z';
+
+  it('should route unidirectional refs to distinct_refs and the others to appended_refs', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_OBJECT_MARKING, field: 'internal_id', elements: [{ id: 'marking-1', side: 'from', type: 'Report' }] },
+      { relation: RELATION_OBJECT, field: 'internal_id', elements: [{ id: 'object-1', side: 'from', type: 'Report' }] },
+    ], UPDATED_AT);
+    expect(params.distinct_refs).toEqual([{ field: 'rel_object-marking.internal_id', ids: ['marking-1'] }]);
+    expect(params.appended_refs).toEqual([{ field: 'rel_object.internal_id', ids: ['object-1'] }]);
+    expect(params.updated_at).toEqual(UPDATED_AT);
+  });
+
+  it('should deduplicate the timestamp fields across targets', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_OBJECT_MARKING, field: 'internal_id', elements: [{ id: 'marking-1', side: 'from', type: 'Report' }] },
+      { relation: RELATION_CREATED_BY, field: 'internal_id', elements: [{ id: 'author-1', side: 'from', type: 'Report' }] },
+    ], UPDATED_AT);
+    expect(params.timestamp_fields).toEqual(['updated_at', 'modified', 'refreshed_at']);
+  });
+
+  it('should not touch timestamps for a non ref relationship', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: 'uses', field: 'internal_id', elements: [{ id: 'target-1', side: 'from', type: 'Malware' }] },
+    ], UPDATED_AT);
+    expect(params.timestamp_fields).toEqual(['refreshed_at']);
+  });
+
+  it('should leave pir params null when no in-pir relationship is involved', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_OBJECT_MARKING, field: 'internal_id', elements: [{ id: 'marking-1', side: 'from', type: 'Report' }] },
+    ], UPDATED_AT);
+    expect(params.pir_ids).toBeNull();
+    expect(params.new_pir_information).toBeNull();
+  });
+
+  it('should build pir params for in-pir relationships', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_IN_PIR, field: 'internal_id', elements: [{ id: 'pir-1', side: 'from', type: 'Report', pir_score: 42 }] },
+    ], UPDATED_AT);
+    expect(params.pir_ids).toEqual(['pir-1']);
+    expect(params.new_pir_information).toEqual([{ pir_id: 'pir-1', pir_score: 42, last_pir_score_date: UPDATED_AT }]);
+  });
+
+  it('should support an empty target list', () => {
+    const params = buildDenormalizedRefsScriptParams([], UPDATED_AT);
+    expect(params.appended_refs).toEqual([]);
+    expect(params.distinct_refs).toEqual([]);
+    expect(params.timestamp_fields).toEqual([]);
   });
 });

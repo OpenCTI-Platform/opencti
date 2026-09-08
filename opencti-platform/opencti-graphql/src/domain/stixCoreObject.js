@@ -838,7 +838,15 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
-  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false, embedded = false } = args;
+  const {
+    noTriggerImport,
+    version: fileVersion,
+    fileMarkings: file_markings,
+    importContextEntities,
+    fromTemplate = false,
+    embedded = false,
+    fintelTemplateId,
+  } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
@@ -866,6 +874,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const filePath = `${prefix}/${previous.entity_type}/${internalId}`;
     // 01. Upload the file
     const meta = { version: fileVersion?.toISOString() };
+    if (fromTemplate && fintelTemplateId) {
+      meta.fintel_template_id = fintelTemplateId;
+    }
     if (isAutoExternal) {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });

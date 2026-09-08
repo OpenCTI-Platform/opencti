@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { computeAccountStatusChoices } from '../../config/conf';
-import { CONNECTOR_PRIORITY_GROUP_VALUES } from '../../database/repository';
+import { ConnectorPriorityGroup } from '../../generated/graphql';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import {
   type AttributeDefinition,
@@ -451,7 +451,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'connector_scope', label: 'Connector scope', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_state', label: 'Connector state', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_state_reset', label: 'State reset', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'connector_priority_group', label: 'Priority group', type: 'string', format: 'enum', values: CONNECTOR_PRIORITY_GROUP_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'connector_priority_group', label: 'Priority group', type: 'string', format: 'enum', values: Object.values(ConnectorPriorityGroup), mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_state_timestamp', label: 'State reset timestamp', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_trigger_filters', label: 'Connector trigger filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_user_id', label: 'Connector user id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

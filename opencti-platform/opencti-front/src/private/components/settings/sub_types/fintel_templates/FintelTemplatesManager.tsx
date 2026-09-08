@@ -5,7 +5,7 @@ import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { BaseSyntheticEvent, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Card from '../../../../../components/common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
@@ -35,6 +35,8 @@ const fintelTemplatesFragment = graphql`
           start_date
           entity_type
           default
+          includeCoverPageByDefault
+          includeBackPageByDefault
         }
       }
     }
@@ -65,6 +67,8 @@ const FintelTemplatesManager = () => {
       description: template.description ?? null,
       published: !!template.start_date,
       default: !!template.default,
+      include_cover_page_by_default: template.includeCoverPageByDefault ?? true,
+      include_back_page_by_default: template.includeBackPageByDefault ?? true,
     });
     setDrawerOpen(true);
   };

@@ -1,17 +1,18 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import MenuItem from '@mui/material/MenuItem';
 import { DropDownMenu, useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
 import { useCustomViews } from './useCustomViews';
 import { type CustomViewDisplayMode } from './useCustomViewTabs';
 
 interface CustomViewTabDropDownMenuProps {
+  basePath: string;
   displayMode: CustomViewDisplayMode;
   otherCustomViews: ReturnType<typeof useCustomViews>['customViews'];
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   currentCustomViewMenuItem?: string;
 }
 
-const CustomViewTabDropDownMenu = ({ displayMode, otherCustomViews: customViews, dropDownMenuState, currentCustomViewMenuItem }: CustomViewTabDropDownMenuProps) => {
+const CustomViewTabDropDownMenu = ({ basePath, displayMode, otherCustomViews: customViews, dropDownMenuState, currentCustomViewMenuItem }: CustomViewTabDropDownMenuProps) => {
   const { anchorEl, isOpen, onClose, close } = dropDownMenuState;
   if (displayMode.others !== 'dropdown') {
     return null;
@@ -29,7 +30,7 @@ const CustomViewTabDropDownMenu = ({ displayMode, otherCustomViews: customViews,
             selected={isSelected}
             role="link"
             component={Link}
-            to={path}
+            to={`${basePath}/${path}`}
             onClick={close}
             sx={{
               '&.Mui-selected': {

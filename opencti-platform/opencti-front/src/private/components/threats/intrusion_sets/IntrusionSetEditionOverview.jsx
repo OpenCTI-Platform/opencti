@@ -95,6 +95,10 @@ const IntrusionSetEditionOverviewComponent = (props) => {
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     createdBy: Yup.object().nullable(),
@@ -178,6 +182,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       'name',
       'references',
       'confidence',
+      'x_opencti_score',
       'description',
       'createdBy',
       'objectMarking',
@@ -223,6 +228,20 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+          />
+          <Field
+            component={TextField}
+            name="x_opencti_score"
+            label={t_i18n('Score')}
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            type="number"
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="x_opencti_score" />
+            }
           />
           <Field
             component={MarkdownField}
@@ -299,6 +318,7 @@ export default createFragmentContainer(IntrusionSetEditionOverviewComponent, {
       id
       name
       confidence
+      x_opencti_score
       entity_type
       description
       createdBy {

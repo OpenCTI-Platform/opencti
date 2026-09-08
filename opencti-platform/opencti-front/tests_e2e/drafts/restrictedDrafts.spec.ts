@@ -31,6 +31,10 @@ test.describe('Draft Review Tab Navigation', { tag: ['@ce'] }, () => {
     const exitDraftButton = page.getByRole('button', { name: 'Exit draft' });
     await expect(exitDraftButton).toBeVisible();
     await exitDraftButton.click();
+    // The draft toolbar is only rendered while the session is inside a draft. Assert it is
+    // gone before going on: the navigation can reach the drafts list URL while the session
+    // is still in the draft, and every later step then runs against the draft workspace.
+    await expect(exitDraftButton).toBeHidden();
     await expect(page).toHaveURL(/\/dashboard\/data\/import\/draft$/);
 
     const draftRow = Drafts.getDraft(draftName);

@@ -60,7 +60,7 @@ import * as R from 'ramda';
 import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemMarkings from '../../../components/ItemMarkings';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
@@ -218,6 +218,7 @@ const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', '
 const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const typesWithScore = [
+  'Malware',
   'Stix-Cyber-Observable',
   'Indicator',
   'Autonomous-System',
@@ -251,6 +252,9 @@ const typesWithScore = [
   'Payment-Card',
   'Media-Content',
   'Persona',
+  'Threat-Actor-Group',
+  'Intrusion-Set',
+  'Event',
 ];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];

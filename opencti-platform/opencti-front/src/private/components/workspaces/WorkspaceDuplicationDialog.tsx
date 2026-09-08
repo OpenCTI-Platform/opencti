@@ -4,7 +4,7 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../relay/environment';

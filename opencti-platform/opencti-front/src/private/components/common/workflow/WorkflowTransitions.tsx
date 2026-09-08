@@ -16,13 +16,17 @@ import { useTransitionWizard } from './useTransitionWizard';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { Close } from 'mdi-material-ui';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
+  entityType?: string;
 }
 
-export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
+export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
@@ -63,7 +67,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     prevSyncActionsRef.current = pendingTransition?.syncActions ?? null;
   });
 
-  if (!workflowInstance) {
+  if (!workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
     return null;
   }
 

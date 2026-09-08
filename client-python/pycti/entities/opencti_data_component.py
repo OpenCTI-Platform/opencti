@@ -38,6 +38,10 @@ class DataComponent:
                   color
                 }
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -146,6 +150,10 @@ class DataComponent:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {

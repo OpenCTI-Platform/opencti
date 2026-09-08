@@ -6,6 +6,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './__generated__/IncidentDetails_incident.graphql';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ItemScore from '../../../../components/ItemScore';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -21,6 +22,7 @@ const incidentDetailsFragment = graphql`
     incident_type
     severity
     source
+    x_opencti_score
     status {
       id
       order
@@ -116,6 +118,12 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
                 label={incident.incident_type}
               />
             </FieldOrEmpty>
+            <Label
+              sx={{ marginTop: 2 }}
+            >
+              {t_i18n('Score')}
+            </Label>
+            <ItemScore score={incident.x_opencti_score} />
             <Label
               sx={{ marginTop: 2 }}
             >

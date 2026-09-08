@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
@@ -584,6 +584,7 @@ const RelationshipDetailsComponent: FunctionComponent<
           size="small"
           onClick={handleToggleExpand}
           className={classes.buttonExpand}
+          aria-expanded={expanded}
         >
           {expanded ? (
             <ExpandLessOutlined />

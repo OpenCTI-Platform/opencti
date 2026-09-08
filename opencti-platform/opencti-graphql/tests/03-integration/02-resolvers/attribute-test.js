@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_VULNERABILITY } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_LOCATION_POSITION } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_MIGRATION_STATUS } from '../../../src/schema/internalObject';
 import { ENTITY_EMAIL_ADDR } from '../../../src/schema/stixCyberObservable';
@@ -9,6 +9,7 @@ import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationshi
 import { RELATION_OBJECT_LABEL, RELATION_OPERATING_SYSTEM } from '../../../src/schema/stixRefRelationship';
 import { RELATION_HOSTS } from '../../../src/schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
+import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
 
 const RUNTIME_ATTRIBUTES_QUERY = gql`
   query runtimeAttributes(
@@ -69,7 +70,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_VULNERABILITY }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(78);
+    expect(attributes.length).toEqual(79);
     expect(attributes.map((node) => node.value).includes('x_opencti_stix_ids')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('revoked')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('description')).toBeTruthy(); // Direct attribute

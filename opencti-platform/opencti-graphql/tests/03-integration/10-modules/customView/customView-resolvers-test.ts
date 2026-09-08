@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
 import { createEntity, deleteElementById } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsAdminWithError } from '../../../utils/testQueryHelper';
+import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsAdminWithError, awaitUntilCondition } from '../../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../../src/modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CUSTOM_VIEW, type StoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
@@ -755,6 +755,13 @@ describe('CustomView resolvers', () => {
 
     describe('telemetry', () => {
       it('gauges are updated', async () => {
+        // Redis telemetry writes are fire-and-forget, so poll until they land.
+        await awaitUntilCondition(async () => {
+          const created = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
+          const enabled = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+          return created === 5 && enabled === 1;
+        }, 1000, 5, true, 'Custom view telemetry gauges were not updated in time');
+
         expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED)).toBe(5);
         expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED)).toBe(1);
       });

@@ -290,7 +290,7 @@ nav:
       - Data Streaming: reference/streaming.md
     - Deployment and stack:
         - Usage telemetry: reference/usage-telemetry.md
-        - FIPS 140-2 installation: reference/fips.md
+        - FIPS 140-3 installation: reference/fips.md
   - Development:
     - Prerequisites:
       - Ubuntu: development/environment_ubuntu.md

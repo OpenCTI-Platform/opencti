@@ -27,7 +27,7 @@ import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
 import { updatePir } from '../modules/pir/pir-domain';
-import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { pushBundleToWorker } from '../database/rabbitmq';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf } from '../config/conf';
@@ -44,6 +44,7 @@ const PIR_MANAGER_ENABLED = booleanConf('pir_manager:enabled', false);
 const PIR_MANAGER_MAX_CONCURRENCY = conf.get('pir_manager:max_concurrency') ?? 5;
 
 const pirFlagElementToQueue = async (
+  context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
   sourceId: string,
@@ -65,10 +66,11 @@ const pirFlagElementToQueue = async (
     update: true,
     content,
   };
-  await pushToWorkerForConnector(pir.internal_id, message);
+  await pushBundleToWorker(context, PIR_MANAGER_USER, pir.internal_id, message);
 };
 
 const pirUnflagElementFromQueue = async (
+  context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
   sourceId: string,
@@ -88,7 +90,7 @@ const pirUnflagElementFromQueue = async (
     update: true,
     content,
   };
-  await pushToWorkerForConnector(pir.internal_id, message);
+  await pushBundleToWorker(context, PIR_MANAGER_USER, pir.internal_id, message);
 };
 
 /**
@@ -139,10 +141,10 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
         switch (event.type) {
           case EVENT_TYPE_CREATE:
           case EVENT_TYPE_UPDATE:
-            await pirFlagElementToQueue(pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
+            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
             break;
           case EVENT_TYPE_DELETE:
-            await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
+            await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
             break;
           default: // Nothing to do
         }
@@ -153,7 +155,7 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
           if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
           const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
           if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
-          await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
+          await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
         }
       }
     }

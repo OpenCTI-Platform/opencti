@@ -131,8 +131,8 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
   const [displayCreation, setDisplayCreation] = useState<boolean>(false);
 
   const initialValues = {
-    sortBy: 'created_at',
-    orderAsc: false,
+    sortBy: 'name',
+    orderAsc: true,
   };
 
   const { helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ThemeManagerQuery>(
@@ -152,7 +152,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
   const dataColumns = {
     name: {
       percentWidth: 100,
-      isSortable: false,
+      isSortable: true,
     },
   };
 
@@ -218,7 +218,6 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
             initialValues={initialValues}
             lineFragment={themesLineFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
-
           />
         )}
       </Card>

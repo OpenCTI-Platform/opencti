@@ -85,7 +85,7 @@ from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_logger import logger
 from pycti.utils.opencti_stix2 import OpenCTIStix2
-from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
+from pycti.utils.opencti_stix2_utils import NOT_PROVIDED, OpenCTIStix2Utils
 
 # Global singleton variables for proxy certificate management
 _PROXY_CERT_BUNDLE = None
@@ -608,6 +608,10 @@ class OpenCTIApiClient:
             cleaned = {}
             files_vars = []
             for key, val in obj.items():
+                # NOT_PROVIDED marks a value never supplied by the
+                # caller (as opposed to an explicit None/null).
+                if val is NOT_PROVIDED:
+                    continue
                 new_path = f"{path_prefix}.{key}" if path_prefix else key
                 cleaned_val, nested_files = self._extract_files(val, new_path)
                 cleaned[key] = cleaned_val
@@ -721,11 +725,11 @@ class OpenCTIApiClient:
                 proxies=self.proxies,
                 timeout=self.session_requests_timeout,
             )
-        # If no
+        # If no files, send a normal request
         else:
             r = self.session.post(
                 self.api_url,
-                json={"query": query, "variables": variables},
+                json={"query": query, "variables": query_var},
                 headers=query_headers,
                 verify=self.ssl_verify,
                 cert=self.cert,
@@ -737,19 +741,24 @@ class OpenCTIApiClient:
             result = r.json()
             if "errors" in result:
                 main_error = result["errors"][0]
-                error_name = (
-                    main_error["name"]
-                    if "name" in main_error
-                    else main_error["message"]
+                extensions = main_error.get("extensions") or {}
+                # "name" is added at top level by the platform for compatibility,
+                # fallback on the GraphQL extensions code for older platforms.
+                error_name = main_error.get("name") or extensions.get(
+                    "code", main_error["message"]
                 )
                 error_detail = {
                     "name": error_name,
                     "error_message": main_error["message"],
                 }
-                meta_data = main_error["data"] if "data" in main_error else {}
+                # Contextual attributes of the error (type, doc_code, ...) are
+                # carried in the GraphQL extensions, keep the top level lookup
+                # for backward compatibility with older platforms.
+                meta_data = main_error.get("data") or extensions.get("data") or {}
                 # Prevent logging of input as bundle is logged differently
-                if meta_data.get("input") is not None:
-                    del meta_data["input"]
+                meta_data = {
+                    key: value for key, value in meta_data.items() if key != "input"
+                }
                 value_error = {**error_detail, **meta_data}
                 raise ValueError(value_error)
             else:

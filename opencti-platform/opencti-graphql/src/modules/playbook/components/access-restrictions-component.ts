@@ -10,7 +10,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organizati
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch, extractBundleBaseElement, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import { applyOperationFieldPatch, buildPlaybookEventContext, extractBundleBaseElement, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 
 export interface AccessRestrictionsConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
@@ -72,9 +72,10 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+  executor: async ({ dataInstanceId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
     const { access_restrictions: accessRestrictions, applyToElements, applyWithFilters } = playbookNode.configuration;
+    const eventContext = buildPlaybookEventContext(event);
     // Resolve potential dynamic access rights
     const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixObject;
     const finalAccessRestrictions = [];
@@ -126,7 +127,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
       const isTypeCompatible = AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType);
-      const isFilteredElement = (await isBundleElementMatchFilters(context, element, applyWithFilters));
+      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
 
       if (isTypeCompatible && isFilteredElement && isElementInScope) {

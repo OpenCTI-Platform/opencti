@@ -38,7 +38,6 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
       size={size}
       variant={variant}
       aria-label={buttonValue}
-      title={buttonValue}
       data-testid={`create-${entityType.toLowerCase()}-button`}
     >
       {buttonValue}

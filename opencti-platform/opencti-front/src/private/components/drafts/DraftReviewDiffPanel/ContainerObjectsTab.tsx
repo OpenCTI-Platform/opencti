@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import LaunchIcon from '@mui/icons-material/Launch';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import { useComputeLink } from '../../../../utils/hooks/useAppData';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';

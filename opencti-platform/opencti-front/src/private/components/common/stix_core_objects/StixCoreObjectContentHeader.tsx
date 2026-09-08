@@ -1,11 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { DifferenceOutlined, DriveFileRenameOutlineOutlined, NewspaperOutlined } from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useSplatLessBasePath from '../../../../utils/hooks/useSplatLessBasePath';
 
 interface StixCoreObjectContentHeaderProps {
   currentMode?: string;
@@ -22,6 +23,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
 }) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+  const basePath = useSplatLessBasePath();
 
   return (
     <div style={{
@@ -34,7 +36,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Content view')}>
             <ToggleButton
               component={Link}
-              to=""
+              to={basePath}
               selected={currentMode === 'content'}
               value="content"
             >
@@ -48,7 +50,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Editor view')}>
             <ToggleButton
               component={Link}
-              to="editor"
+              to={`${basePath}/editor`}
               selected={currentMode === 'editor'}
               value="editor"
               disabled={disableEditor}
@@ -63,7 +65,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
           <Tooltip title={t_i18n('Content mapping view')}>
             <ToggleButton
               component={Link}
-              to="mapping"
+              to={`${basePath}/mapping`}
               selected={currentMode === 'mapping'}
               value="mapping"
               disabled={disableMapping || !!draftContext}

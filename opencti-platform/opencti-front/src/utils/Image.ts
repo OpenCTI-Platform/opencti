@@ -4,6 +4,10 @@ import pdfMake from 'pdfmake';
 import isSvg from 'is-svg';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
 
+// html-to-image does not export its Options type from the package root, so it's derived here
+// instead of reaching into an internal (non-public) import path.
+type HtmlToImageOptions = NonNullable<Parameters<typeof htmlToImage.toPng>[1]>;
+
 /**
  * MUI class names that are excluded from image/PDF exports by default.
  * Elements with these classes are filtered out unless explicitly marked with EXPORT_KEEP_CLASS.
@@ -20,6 +24,73 @@ export const EXPORT_KEEP_CLASS = 'export-keep';
 
 /** CSS class to force a DOM node (and its descendants) to be excluded from exports. */
 export const EXPORT_REMOVE_CLASS = 'export-remove';
+
+/**
+ * apexcharts sets DOM attributes containing a colon on its chart legend, such as
+ * `data:collapsed="false"` (pure internal bookkeeping for its own click/animation handling, never
+ * read by CSS or by the browser's renderer). It declares the matching `xmlns:data="ApexChartsNS"`
+ * namespace on its own chart `<svg>` root, which is valid as long as those attributes stay within
+ * that SVG's subtree.
+ *
+ * Since v4.5.0, apexcharts renders its legend as a plain HTML sibling of that SVG instead of nesting
+ * it inside the SVG's own `<foreignObject>` (a legitimate change, for PowerPoint/Word SVG-export
+ * compatibility - see apexcharts.js#4014). That takes the `data:*`-attributed legend elements out of
+ * the `xmlns:data` declaration's scope (XML namespace declarations only apply to the element they're
+ * declared on and its descendants). html-to-image serializes the whole export tree with
+ * XMLSerializer and embeds it as an SVG data URI to rasterize it: there, any such now-out-of-scope
+ * colon-attribute is an undeclared XML namespace prefix, which makes the whole generated SVG
+ * document fail to parse and load.
+ *
+ * Rather than removing these attributes, we declare the same namespace on the export root for the
+ * duration of the export, which covers the legend too - nothing is ever removed from the DOM.
+ */
+const APEX_CHARTS_XML_NAMESPACE_ATTRIBUTE = 'xmlns:data';
+const APEX_CHARTS_XML_NAMESPACE_VALUE = 'ApexChartsNS';
+
+const declareApexChartsNamespace = (root: HTMLElement): (() => void) => {
+  if (root.hasAttribute(APEX_CHARTS_XML_NAMESPACE_ATTRIBUTE)) {
+    return () => {};
+  }
+  root.setAttribute(APEX_CHARTS_XML_NAMESPACE_ATTRIBUTE, APEX_CHARTS_XML_NAMESPACE_VALUE);
+  return () => root.removeAttribute(APEX_CHARTS_XML_NAMESPACE_ATTRIBUTE);
+};
+
+/** Options shared by every html-to-image call used to export a dashboard/widget. */
+const buildExportOptions = (
+  backgroundColor: string | undefined,
+  pixelRatio: number,
+): HtmlToImageOptions => ({
+  skipFonts: true,
+  pixelRatio,
+  backgroundColor,
+  style: { margin: '0', paddingTop: '12px', paddingLeft: '12px' },
+  imagePlaceholder: '', // ignore image fetch failure, and display empty area
+  filter: isDomNodeKeptAtExport,
+  onImageErrorHandler: () => {
+    // We do nothing, it's just to avoid crashing export in case of image error.
+  },
+});
+
+/** Common signature shared by html-to-image's toBlob and toPng. */
+type HtmlToImageExportFn<T> = (node: HTMLElement, options?: HtmlToImageOptions) => Promise<T>;
+
+/**
+ * Runs an html-to-image export function against `container` with the apexcharts XML namespace
+ * declared for the duration of the call (see declareApexChartsNamespace above), regardless of
+ * success/failure.
+ */
+const runExport = async <T>(
+  exportFn: HtmlToImageExportFn<T>,
+  container: HTMLElement,
+  options: HtmlToImageOptions,
+): Promise<T> => {
+  const undeclareApexChartsNamespace = declareApexChartsNamespace(container);
+  try {
+    return await exportFn(container, options);
+  } finally {
+    undeclareApexChartsNamespace();
+  }
+};
 
 /**
  * Determines whether a DOM node should be included in the exported image/PDF.
@@ -52,35 +123,18 @@ export const exportImage = async (
   adjust: ((value: boolean) => void) | null = null,
 ): Promise<void> => {
   const container = document.getElementById(domElementId);
-  if (!container) return Promise.reject(new Error(`Element #${domElementId} not found`));
-  return new Promise((resolve, reject) => {
-    htmlToImage
-      .toBlob(container, {
-        skipFonts: true,
-        pixelRatio,
-        backgroundColor,
-        style: { margin: '0', paddingTop: '12px', paddingLeft: '12px' },
-        filter: isDomNodeKeptAtExport,
-        onImageErrorHandler: () => {
-          // We do nothing, it's just to avoid crashing export in case of image error.
-        },
-      })
-      .then((blob) => {
-        if (blob) {
-          fileDownload(blob, `${name}.png`, 'image/png');
-        }
-        if (adjust) {
-          container.setAttribute(
-            'style',
-            `width:${currentWidth}px; height:${currentHeight}px;`,
-          );
-          adjust(true);
-        }
-        resolve();
-      }).catch((reason) => {
-        reject(reason);
-      });
-  });
+  if (!container) throw new Error(`Element #${domElementId} not found`);
+
+  const options = buildExportOptions(backgroundColor, pixelRatio);
+  const blob = await runExport(htmlToImage.toBlob, container, options);
+
+  if (blob) {
+    fileDownload(blob, `${name}.png`, 'image/png');
+  }
+  if (adjust) {
+    container.setAttribute('style', `width:${currentWidth}px; height:${currentHeight}px;`);
+    adjust(true);
+  }
 };
 
 export const exportPdf = async (
@@ -91,66 +145,46 @@ export const exportPdf = async (
   adjust: ((value: boolean) => void) | null = null,
 ): Promise<void> => {
   const container = document.getElementById(domElementId);
-  if (!container) return Promise.reject(new Error(`Element #${domElementId} not found`));
+  if (!container) throw new Error(`Element #${domElementId} not found`);
   const { offsetWidth, offsetHeight } = container;
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;
-  return new Promise((resolve, reject) => {
-    htmlToImage
-      .toPng(container, {
-        skipFonts: true,
-        pixelRatio,
-        backgroundColor,
-        style: { margin: '0', paddingTop: '12px', paddingLeft: '12px' },
-        imagePlaceholder: '', // ignore image fetch failure, and display empty area
-        filter: isDomNodeKeptAtExport,
-        onImageErrorHandler: () => {
-          // We do nothing, it's just to avoid crashing export in case of image error.
+
+  const options = buildExportOptions(backgroundColor, pixelRatio);
+  const image = await runExport(htmlToImage.toPng, container, options);
+
+  const docDefinition: TDocumentDefinitions = {
+    pageSize: {
+      width: imageWidth,
+      height: 'auto',
+    },
+    pageOrientation: 'portrait',
+    pageMargins: [0, 0, 0, 0],
+    background: () => ({
+      canvas: [
+        {
+          type: 'rect',
+          x: 0,
+          y: 0,
+          w: imageWidth,
+          h: imageHeight,
+          color: backgroundColor,
         },
-      })
-      .then((image) => {
-        const docDefinition: TDocumentDefinitions = {
-          pageSize: {
-            width: imageWidth,
-            height: 'auto',
-          },
-          pageOrientation: 'portrait',
-          pageMargins: [0, 0, 0, 0],
-          background: () => ({
-            canvas: [
-              {
-                type: 'rect',
-                x: 0,
-                y: 0,
-                w: imageWidth,
-                h: imageHeight,
-                color: backgroundColor,
-              },
-            ],
-          }),
-          content: [
-            {
-              image,
-              width: imageWidth,
-              alignment: 'center',
-            },
-          ],
-        };
-        const pdf = pdfMake.createPdf(docDefinition);
-        pdf.download(`${name}.pdf`).then(() => {
-          if (adjust) {
-            container.setAttribute(
-              'style',
-              `width:${offsetWidth}px; height:${offsetHeight}px;`,
-            );
-          }
-          resolve();
-        });
-      })
-      .catch((reason) => {
-        reject(reason);
-      });
-  });
+      ],
+    }),
+    content: [
+      {
+        image,
+        width: imageWidth,
+        alignment: 'center',
+      },
+    ],
+  };
+  const pdf = pdfMake.createPdf(docDefinition);
+  await pdf.download(`${name}.pdf`);
+  if (adjust) {
+    container.setAttribute('style', `width:${offsetWidth}px; height:${offsetHeight}px;`);
+  }
 };
 
 export const getBase64ImageFromURL = async (url: string): Promise<string> => {

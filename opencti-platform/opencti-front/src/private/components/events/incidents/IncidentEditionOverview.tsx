@@ -93,6 +93,7 @@ const incidentEditionOverviewFragment = graphql`
     id
     name
     confidence
+    x_opencti_score
     entity_type
     description
     source
@@ -149,6 +150,7 @@ interface IncidentEditionFormValues {
   references?: FieldOption[];
   createdBy: FieldOption | undefined;
   x_opencti_workflow_id: FieldOption;
+  x_opencti_score: number | null;
   objectMarking?: FieldOption[];
   objectAssignee?: FieldOption[];
   objectParticipant?: FieldOption[];
@@ -168,6 +170,10 @@ const IncidentEditionOverviewComponent: FunctionComponent<
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     references: Yup.array(),
@@ -239,6 +245,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
     description: incident.description,
     incident_type: incident.incident_type,
     severity: incident.severity,
+    x_opencti_score: incident.x_opencti_score ?? null,
     createdBy: convertCreatedBy(incident) as FieldOption,
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
@@ -288,6 +295,25 @@ const IncidentEditionOverviewComponent: FunctionComponent<
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            label={t_i18n('Score')}
+            type="number"
+            fullWidth={true}
+            disabled={isInferred}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
+            helperText={(
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_score"
+              />
+            )}
           />
           <OpenVocabField
             label={t_i18n('Incident type')}

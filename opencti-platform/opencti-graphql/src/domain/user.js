@@ -40,7 +40,7 @@ import {
   storeLoadById,
 } from '../database/middleware-loader';
 import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../database/redis';
-import { findUserSessions, killSessions, killUserSessions } from '../database/session';
+import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -131,6 +131,7 @@ import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
 import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
 import { hashSHA256 } from '../utils/hash';
+import { normalizeEmail } from '../utils/email';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -875,18 +876,19 @@ export const sendEmailToUser = async (context, user, input) => {
 };
 
 export const addUser = async (context, user, newUser) => {
-  let userEmail;
   const userServiceAccount = newUser.user_service_account;
-  if (newUser.user_email && !userServiceAccount) {
-    userEmail = newUser.user_email.toLowerCase();
+  if (!newUser.user_email && !userServiceAccount) {
+    throw FunctionalError('User cannot be created without email');
+  }
+  const userEmail = newUser.user_email ? normalizeEmail(newUser.user_email) : `automatic+${uuid()}@opencti.invalid`;
+  if (isEmptyField(userEmail)) {
+    throw FunctionalError('The email you have provided is not valid');
+  }
+  if (newUser.user_email) {
     const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
     if (existingUser) {
       throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
     }
-  } else if (userServiceAccount) {
-    userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
-  } else {
-    throw FunctionalError('User cannot be created without email');
   }
 
   if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
@@ -1070,6 +1072,23 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 };
 
 // User related
+export const validateAndNormalizeEmailInput = async (context, userId, input) => {
+  if (input.key === 'user_email') {
+    if (!Array.isArray(input.value) || input.value.length !== 1 || typeof input.value[0] !== 'string') {
+      throw FunctionalError('The email you have provided is not valid');
+    }
+    const newEmail = normalizeEmail(input.value[0]);
+    if (isEmptyField(newEmail)) {
+      throw FunctionalError('The email you have provided is not valid');
+    }
+    input.value = [newEmail];
+    const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', newEmail, ENTITY_TYPE_USER);
+    if (existingUser && existingUser.internal_id !== userId) {
+      throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+    }
+  }
+};
+
 export const userEditField = async (context, user, userId, rawInputs) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
@@ -1086,6 +1105,8 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (userToUpdate.external && input.key === 'password_valid_until') {
       throw FunctionalError('Cannot force password change for external user', { userId });
     }
+    // Check user email is valid and not already used in case of email change
+    await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
       // orgs admins can't update other users passwords
       if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
@@ -1289,14 +1310,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
   // If password was expired, kill all other sessions of this user (force change scenario)
   const hasPasswordInput = inputs.some((i) => i.key === 'password');
   if (hasPasswordInput && isPasswordExpired(user)) {
-    const currentSessionId = context.req?.session?.id;
-    const userSessions = await findUserSessions(userId);
-    const otherSessionIds = userSessions
-      .filter((s) => currentSessionId && !s.id.endsWith(currentSessionId))
-      .map((s) => s.id);
-    if (otherSessionIds.length > 0) {
-      await killSessions(otherSessionIds);
-    }
+    await killOtherUserSessions(userId, context.req?.session?.id);
   }
   return userEditField(context, user, userId, inputs);
 };
@@ -1570,7 +1584,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   if (isEmptyField(email)) {
     throw ForbiddenAccess('User email not provided');
   }
-  const userEmail = email.toLowerCase();
+  const userEmail = normalizeEmail(email);
   const name = isEmptyField(providedName) ? userEmail : providedName;
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
@@ -1635,7 +1649,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
 
 export const getUserByEmail = async (email) => {
   const context = executionContext('login');
-  return await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
+  return await elLoadBy(context, SYSTEM_USER, 'user_email', normalizeEmail(email), ENTITY_TYPE_USER);
 };
 
 export const login = async (email, password) => {
@@ -2162,27 +2176,6 @@ const validateUser = (user, settings, { skipForcePasswordCheck = false } = {}) =
   }
 };
 
-export const enforceSessionLimit = async (user, settings) => {
-  if (settings.platform_session_max_concurrent && settings.platform_session_max_concurrent > 0) {
-    const sessions = await findUserSessions(user.id);
-    if (sessions.length >= settings.platform_session_max_concurrent) {
-      const sortedSessions = sessions.sort((a, b) => {
-        if (a.created < b.created) {
-          return -1;
-        }
-        if (a.created > b.created) {
-          return 1;
-        }
-        return 0;
-      });
-      const sessionsToKill = sortedSessions.slice(0, sessions.length - settings.platform_session_max_concurrent + 1);
-      await killSessions(sessionsToKill.map((s) => s.id));
-      return sessionsToKill.length;
-    }
-  }
-  return 0;
-};
-
 export const sessionAuthenticateUser = async (context, req, user, provider) => {
   let platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   let logged = platformUsers.get(user.internal_id);
@@ -2197,8 +2190,8 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged, settings, { skipForcePasswordCheck: true });
+  const numberOfKilledSessions = await killUserSessionsOverLimit(logged.id, settings.platform_session_max_concurrent);
   const withOrigin = userWithOrigin(req, logged);
-  const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session
   req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged.password_valid_until ?? null };
   req.session.session_provider = provider;
@@ -2279,7 +2272,7 @@ const initAdmin = async (context, email, password, tokenValue) => {
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
-      user_email: email,
+      user_email: normalizeEmail(email),
       password: bcrypt.hashSync(password.toString()),
       account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       external: true,
@@ -2290,7 +2283,7 @@ const initAdmin = async (context, email, password, tokenValue) => {
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
       external: true,
-      user_email: email.toLowerCase(),
+      user_email: normalizeEmail(email),
       account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       name: 'admin',
       firstname: 'Admin',

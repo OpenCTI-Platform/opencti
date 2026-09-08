@@ -1,7 +1,7 @@
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { RelayEnvironmentProvider } from 'react-relay';
 import React, { ReactNode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { render, renderHook } from '@testing-library/react';
 import { createMockEnvironment } from 'relay-test-utils';
 import { EnvironmentConfig } from 'relay-runtime';
@@ -83,7 +83,8 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
   const defaultUserContext = userContext ?? createMockUserContext();
 
   return (
-    <BrowserRouter>
+    // Same navigation semantics as app.tsx.
+    <BrowserRouter useTransitions={false}>
       <RelayEnvironmentProvider environment={relayEnv}>
         <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
           <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>

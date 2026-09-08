@@ -9,12 +9,12 @@ import type {
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { ConnectorType } from '../../generated/graphql';
 import { now, utcDate } from '../../utils/format';
-import { createWork, updateExpectationsNumber } from '../../domain/work';
+import { createWork } from '../../domain/work';
 import { SYSTEM_USER } from '../../utils/access';
 import { patchAttribute } from '../../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import type { StixBundle } from '../../types/stix-2-1-common';
-import { pushToWorkerForConnector } from '../../database/rabbitmq';
+import { pushBundleToWorker } from '../../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManagerConfiguration';
 
@@ -66,11 +66,7 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
   const work: any = await createWorkForIngestion(context, ingestion);
   const stixBundle = JSON.stringify(bundle);
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-  if (bundle.objects.length === 1) {
-    // Only add explicit expectation if the worker will not split anything
-    await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
-  }
-  await pushToWorkerForConnector(connectorId, {
+  await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
     type: 'bundle',
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
     content,

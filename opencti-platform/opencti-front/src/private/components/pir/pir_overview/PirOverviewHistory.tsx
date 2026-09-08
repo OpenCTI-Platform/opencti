@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';

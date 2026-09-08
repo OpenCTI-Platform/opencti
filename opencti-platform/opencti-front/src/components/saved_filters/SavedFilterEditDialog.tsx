@@ -160,6 +160,7 @@ const SavedFilterEditDialog = ({
               fullWidth
               value={values.name}
               onChange={(e) => setFieldValue('name', e.target.value)}
+              autoFocus
             />
             <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
               <SavedFilterSharingSection

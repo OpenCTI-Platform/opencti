@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { ManageSearchOutlined, Search, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
@@ -367,6 +367,7 @@ const SearchInput = (props) => {
             }
           }}
           isActive={false}
+          label={t_i18n('Search')}
           slotProps={{
             input: {
               startAdornment: (
@@ -465,6 +466,7 @@ const SearchInput = (props) => {
           }}
           onKeyDown={handleKeyDown}
           isActive={isNLQActivated}
+          label={t_i18n('Search')}
           slotProps={{
             input: {
               startAdornment: (

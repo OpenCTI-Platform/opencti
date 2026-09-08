@@ -34,6 +34,10 @@ class StixDomainObject:
                 standard_id
                 name
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -335,6 +339,7 @@ class StixDomainObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -419,6 +424,9 @@ class StixDomainObject:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name
@@ -557,6 +565,10 @@ class StixDomainObject:
             objectOrganization {
                 id
                 standard_id
+                name
+            }
+            creators {
+                id
                 name
             }
             createdBy {
@@ -873,6 +885,7 @@ class StixDomainObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -957,6 +970,9 @@ class StixDomainObject:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name

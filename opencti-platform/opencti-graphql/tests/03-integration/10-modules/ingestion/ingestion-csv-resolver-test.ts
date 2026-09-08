@@ -11,6 +11,7 @@ import { IngestionAuthType, type IngestionCsvAddInput, IngestionCsvMapperType } 
 import { findById as findUserById } from '../../../../src/domain/user';
 import { regenerateCsvMapperUUID } from '../../../../src/modules/ingestion/ingestion-converter';
 import type { CsvMapperResolved } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../../src/database/redis';
 
 const DELETE_USER_QUERY = gql`
     mutation userDelete($id: ID!) {
@@ -778,5 +779,150 @@ describe('CSV ingestion resolver standard behavior', () => {
       },
     });
     expect(csvMapperId).not.toEqual(getCsvFeedForDuplication?.data?.ingestionCsv.duplicateCsvMapper.id);
+  });
+});
+
+describe('CSV ingestion resolver — ingestion logs', () => {
+  let csvLogsIngestionId: string;
+  const csvLogsIngestionName = 'CSV logs resolver test';
+  const csvLogsIngestionMapper = JSON.stringify({
+    has_header: false,
+    name: 'CSV logs mapper',
+    separator: ',',
+    representations: [{ id: '75c3c21c-0a92-497f-962d-4e6e1a488482', type: 'entity', target: { entity_type: 'IPv4-Addr' }, attributes: [{ key: 'value', column: { column_name: 'A' }, based_on: null }] }],
+    skipLineChar: '',
+  });
+
+  it('should create a CSV ingestion for logs tests', async () => {
+    const input: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: csvLogsIngestionName,
+      uri: 'http://csvserver.invalid',
+      csv_mapper: csvLogsIngestionMapper,
+      csv_mapper_type: IngestionCsvMapperType.Inline,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createCsvIngesterForLogs($input: IngestionCsvAddInput!) {
+          ingestionCsvAdd(input: $input) {
+            id
+            name
+          }
+        }
+      `,
+      variables: { input },
+    });
+    csvLogsIngestionId = result.data?.ingestionCsvAdd.id;
+    expect(csvLogsIngestionId).toBeDefined();
+  });
+
+  it('should resolve logs from ingestionCsvLogs query and ingestionLogs field', async () => {
+    await redisDeleteIngestionLogHistory(csvLogsIngestionId);
+    await redisPushIngestionLog(csvLogsIngestionId, {
+      level: 'info',
+      type: 'csv',
+      identifier: csvLogsIngestionName,
+      message: 'info-log',
+      meta: { step: 1 },
+    });
+    await redisPushIngestionLog(csvLogsIngestionId, {
+      level: 'success',
+      type: 'csv',
+      identifier: csvLogsIngestionName,
+      message: 'success-log',
+      meta: { step: 2 },
+    });
+    await redisPushIngestionLog(csvLogsIngestionId, {
+      level: 'warn',
+      type: 'csv',
+      identifier: csvLogsIngestionName,
+      message: 'warn-log',
+      meta: { step: 3 },
+    });
+    await redisPushIngestionLog(csvLogsIngestionId, {
+      level: 'error',
+      type: 'csv',
+      identifier: csvLogsIngestionName,
+      message: 'error-log',
+      meta: { step: 4 },
+    });
+
+    const queryLogsResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query readCsvLogs($id: String!) {
+          ingestionCsvLogs(id: $id) {
+            level
+            message
+            type
+            identifier
+            meta
+          }
+        }
+      `,
+      variables: { id: csvLogsIngestionId },
+    });
+    expect(queryLogsResult.data?.ingestionCsvLogs).toHaveLength(4);
+    expect(queryLogsResult.data?.ingestionCsvLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+    expect(queryLogsResult.data?.ingestionCsvLogs[0].message).toBe('error-log');
+
+    const fieldLogsResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query readCsvLogsField($id: String!) {
+          ingestionCsv(id: $id) {
+            id
+            ingestionLogs {
+              level
+              message
+            }
+          }
+        }
+      `,
+      variables: { id: csvLogsIngestionId },
+    });
+    expect(fieldLogsResult.data?.ingestionCsv.ingestionLogs).toHaveLength(4);
+    expect(fieldLogsResult.data?.ingestionCsv.ingestionLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+  });
+
+  it('should fail when encountering an unknown log level', async () => {
+    await redisDeleteIngestionLogHistory(csvLogsIngestionId);
+    await getClientBase().lpush(`ingestion-log-${csvLogsIngestionId}-history`, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'unknown_level',
+      type: 'csv',
+      identifier: csvLogsIngestionName,
+      message: 'bad-level',
+      meta: {},
+    }));
+
+    const result = await queryAsAdmin({
+      query: gql`
+        query readCsvLogsWithBadLevel($id: String!) {
+          ingestionCsvLogs(id: $id) {
+            level
+            message
+          }
+        }
+      `,
+      variables: { id: csvLogsIngestionId },
+    });
+    expect(result.errors).toBeDefined();
+    if (result.errors) {
+      expect(result.errors[0].message).toContain('Unknown ingestion log level');
+    }
+  });
+
+  it('should delete the CSV ingestion used for logs tests', async () => {
+    await redisDeleteIngestionLogHistory(csvLogsIngestionId);
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation deleteCsvIngesterForLogs($id: ID!) {
+          ingestionCsvDelete(id: $id)
+        }
+      `,
+      variables: { id: csvLogsIngestionId },
+    });
+    expect(result.data?.ingestionCsvDelete).toEqual(csvLogsIngestionId);
   });
 });

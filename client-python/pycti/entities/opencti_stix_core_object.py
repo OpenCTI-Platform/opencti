@@ -31,6 +31,10 @@ class StixCoreObject:
                 standard_id
                 name
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -261,6 +265,7 @@ class StixCoreObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -720,6 +725,10 @@ class StixCoreObject:
                 standard_id
                 name
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -987,6 +996,7 @@ class StixCoreObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
