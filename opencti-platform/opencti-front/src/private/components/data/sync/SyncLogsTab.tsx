@@ -74,7 +74,7 @@ const SyncLogsTab: React.FC<SyncLogsTabProps> = ({ feedId, feedName }) => {
         <Suspense
           fallback={(
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <Spinner size="xl" label={t_i18n('Loading')} />
+              <Spinner size="xl" label={t_i18n('Loading synchronizer logs...')} />
             </Box>
           )}
         >
@@ -82,7 +82,7 @@ const SyncLogsTab: React.FC<SyncLogsTabProps> = ({ feedId, feedName }) => {
         </Suspense>
       ) : (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <Spinner size="xl" label={t_i18n('Loading')} />
+          <Spinner size="xl" label={t_i18n('Loading synchronizer logs...')} />
         </Box>
       )}
     </Box>

@@ -2874,6 +2874,7 @@
   "Loading agents...": "Agenten werden geladen...",
   "Loading current message count...": "Laden der aktuellen Nachrichtenanzahl...",
   "Loading image…": "Bild wird geladen…",
+  "Loading synchronizer logs...": "Synchronizer-Protokolle werden geladen...",
   "Local": "Lokal",
   "Local authentication cannot be changed when authentication is managed by environment configuration": "Die lokale Authentifizierung kann nicht geändert werden, wenn die Authentifizierung über die Umgebungskonfiguration verwaltet wird",
   "Local authentication cannot be disabled when no other authentication provider is enabled": "Die lokale Authentifizierung kann nicht deaktiviert werden, wenn kein anderer Authentifizierungsanbieter aktiviert ist",
