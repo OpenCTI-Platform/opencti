@@ -2078,9 +2078,9 @@ const authenticateUserByEmail = async (context, req, email) => {
 };
 
 export const authenticateUserByToken = async (context, req, token) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const hashedToken = await generateTokenHmac(token);
-  const user = platformUsers.get(hashedToken);
+  const user = platformUsers.find((u) => u.api_tokens.some((t) => t.hash === hashedToken));
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
       throw ForbiddenAccess('You are not allowed to use API Access Tokens');
