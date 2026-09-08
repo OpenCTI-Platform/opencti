@@ -1,7 +1,7 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
+import { alpha, Collapse, List, ListItemButton, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Theme } from '../../../components/Theme';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
@@ -10,14 +10,14 @@ interface SubMenuItem {
   type?: string;
   link: string;
   label: string;
-  icon?: React.ReactNode;
+  icon?: React.ReactElement;
   exact?: boolean;
   granted?: boolean;
 }
 
 interface LeftBarItemProps {
   id: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement;
   label: string;
   link: string;
   exact?: boolean;
@@ -32,6 +32,16 @@ interface LeftBarItemProps {
   isMobile: boolean;
   submenuShowIcons?: boolean;
   hiddenEntities?: string[];
+}
+
+interface RenderMenuItemParams {
+  itemLabel: string;
+  selected: boolean;
+  showIcon?: boolean;
+  fontSize?: 'default' | 'small';
+  forceShowText?: boolean;
+  itemIcon?: React.ReactElement;
+  showTooltip?: boolean;
 }
 
 const LeftBarItem: React.FC<LeftBarItemProps> = ({
@@ -55,7 +65,9 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   const location = useLocation();
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
-  const anchorRef = useRef<HTMLLIElement | null>(null);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const [showSubItemMenu, setShowSubItemMenu] = useState<boolean>(false);
+  const [usingHover, setUsingHover] = useState<boolean>(false);
 
   const visibleSubItems = subItems.filter(
     (item) => item.granted !== false && (!item.type || !hiddenEntities.includes(item.type)),
@@ -63,6 +75,48 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
 
   const hasSubItems = visibleSubItems.length > 0;
   const isMenuOpen = selectedMenu.includes(id);
+
+  const handleHover = () => {
+    if (!isMenuOpen) {
+      setUsingHover(true);
+      handleSubMenuOpen();
+    }
+  };
+
+  const handleUnHover = () => {
+    if (isMenuOpen) {
+      setUsingHover(false);
+      handleSubMenuClose();
+    }
+  };
+
+  const handleSubMenuOpen = () => {
+    if (isMobile || navOpen) {
+      onMenuToggle(id);
+    } else {
+      onMenuOpen(id);
+    }
+    setShowSubItemMenu(true);
+  };
+
+  const handleSubMenuClose = () => {
+    onMenuClose();
+    setShowSubItemMenu(false);
+  };
+
+  const handleKeyboard = (event: React.KeyboardEvent) => {
+    if (hasSubItems && (event.code === 'Space' || event.code === 'Enter')) {
+      event.preventDefault();
+      event.stopPropagation();
+      handleSubMenuOpen();
+    }
+  };
+  const handleClick = (event: React.MouseEvent) => {
+    if (event.button !== undefined) {
+      onGoToPage(event, link);
+      setShowSubItemMenu(false);
+    }
+  };
 
   const isSelected = (itemLink: string, itemExact?: boolean) => {
     if (itemExact) {
@@ -88,16 +142,40 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       } else {
         onGoToPage(e, link);
       }
+      setShowSubItemMenu(true);
     }
   };
 
-  const renderMenuItem = (
-    itemIcon: React.ReactNode,
-    itemLabel: string,
-    selected: boolean,
+  const handleListKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      onMenuClose();
+      setShowSubItemMenu(false);
+    } else if (event.key === 'Escape') {
+      onMenuClose();
+      setShowSubItemMenu(false);
+    }
+  };
+
+  // return focus to the button when we transitioned from !open -> open
+  const prevOpen = React.useRef(showSubItemMenu);
+  React.useEffect(() => {
+    if (prevOpen.current === true && showSubItemMenu === false) {
+      anchorRef.current!.focus();
+    }
+
+    prevOpen.current = showSubItemMenu;
+  }, [showSubItemMenu]);
+
+  const renderMenuItem = ({
+    itemLabel,
+    selected,
     showIcon = true,
-    fontSize: 'default' | 'small' = 'default',
+    fontSize = 'default',
     forceShowText = false, // For popover items
+    itemIcon = undefined,
+    showTooltip = true,
+  }: RenderMenuItemParams,
   ) => {
     const isSubItem = fontSize === 'small';
     const iconColor = selected ? theme.palette.text.light : theme.palette.text.tertiary;
@@ -133,7 +211,14 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
               },
             }}
           >
-            {itemIcon}
+            {showTooltip ? (
+              <Tooltip key={itemLabel} title={itemLabel} aria-hidden="true" placement="right">
+                {itemIcon}
+              </Tooltip>
+            ) : (
+              itemIcon
+            )
+            }
           </ListItemIcon>
         )}
 
@@ -156,11 +241,12 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   };
 
   // Render submenu item
-  const renderSubMenuItem = (item: SubMenuItem, inCollapse: boolean) => {
+  const renderSubMenuItem = (item: SubMenuItem, inCollapse: boolean, index: number) => {
     const itemSelected = isSelected(item.link, item.exact);
-
-    const menuItem = (
-      <MenuItem
+    return inCollapse ? (
+      <ListItemButton
+        key={`sub-menu-${index}`}
+        data-testid={`sub-menu-${item.label.toLowerCase()}`}
         component={Link}
         to={item.link}
         dense
@@ -173,16 +259,26 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           },
         }}
       >
-        {renderMenuItem(item.icon, item.label, itemSelected, submenuShowIcons, 'small', !inCollapse)}
-      </MenuItem>
-    );
-
-    return inCollapse ? (
-      <Tooltip key={item.label} title={item.label} placement="right">
-        {menuItem}
-      </Tooltip>
+        {renderMenuItem({ itemLabel: item.label, selected: itemSelected, showIcon: submenuShowIcons, fontSize: 'small', forceShowText: !inCollapse, itemIcon: item.icon })}
+      </ListItemButton>
     ) : (
-      <div key={item.label}>{menuItem}</div>
+      <MenuItem
+        key={`sub-menu-${index}`}
+        data-testid={`sub-menu-${item.label.toLowerCase()}`}
+        component={Link}
+        to={item.link}
+        dense
+        onClick={inCollapse ? undefined : handleSubMenuClose}
+        sx={{
+          px: 2.5,
+          py: 1,
+          '&:hover': {
+            backgroundColor: theme.palette.leftBar.hover,
+          },
+        }}
+      >
+        {renderMenuItem({ itemLabel: item.label, selected: itemSelected, showIcon: submenuShowIcons, fontSize: 'small', forceShowText: !inCollapse, itemIcon: item.icon })}
+      </MenuItem>
     );
   };
 
@@ -209,17 +305,17 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   // No Subitems
   if (!hasSubItems) {
     return (
-      <Tooltip title={!navOpen ? label : ''} placement="right">
-        <MenuItem
-          component={Link}
-          to={link}
-          dense
-          onClick={onClick}
-          sx={getMenuStyles(isParentSelected)}
-        >
-          {renderMenuItem(icon, label, isParentSelected)}
-        </MenuItem>
-      </Tooltip>
+      <ListItemButton
+        component={Link}
+        to={link}
+        aria-label={label}
+        data-testid={`nav-button-${label.toLowerCase()}`}
+        dense
+        onClick={onClick}
+        sx={getMenuStyles(isParentSelected)}
+      >
+        {renderMenuItem({ itemLabel: label, selected: isParentSelected, itemIcon: icon })}
+      </ListItemButton>
     );
   }
 
@@ -227,20 +323,30 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   if (navOpen) {
     return (
       <>
-        <MenuItem
-          ref={anchorRef}
+        <ListItemButton
+          id={`nav-button-${label}`}
           dense
+          aria-expanded={isMenuOpen}
+          aria-controls={`nav-${label}-collapse`}
+          aria-label={label}
+          data-testid={`nav-button-${label.toLowerCase()}`}
           onClick={handleParentClick}
           sx={getMenuStyles(isParentSelected)}
         >
-          {renderMenuItem(icon, label, isParentSelected)}
+          {renderMenuItem({ itemLabel: label, selected: isParentSelected, itemIcon: icon, showTooltip: false })}
           {isMenuOpen ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
-        </MenuItem>
+        </ListItemButton>
 
         <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
-          <MenuList component="nav" disablePadding sx={{ backgroundColor: theme.palette.designSystem.background.main }}>
-            {visibleSubItems.map((item) => renderSubMenuItem(item, true))}
-          </MenuList>
+          <List
+            component="nav"
+            id={`nav-${label}-collapse`}
+            aria-labelledby={`nav-button-${label}`}
+            disablePadding
+            sx={{ backgroundColor: theme.palette.designSystem.background.main }}
+          >
+            {visibleSubItems.map((item, i) => renderSubMenuItem(item, true, i))}
+          </List>
         </Collapse>
       </>
     );
@@ -248,38 +354,41 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
 
   // Nav Closed, show popover with subitems
   return (
-    <>
-      <MenuItem
+    <span
+      onMouseEnter={handleHover}
+      onMouseLeave={handleUnHover}
+    >
+      <ListItemButton
         ref={anchorRef}
-        dense
-        onClick={handleParentClick}
-        onMouseEnter={() => onMenuOpen(id)}
-        onMouseLeave={() => onMenuClose()}
+        tabIndex={0}
+        id={`nav-${label}`}
+        data-testid={`nav-button-${label.toLowerCase()}`}
+        aria-expanded={isMenuOpen ? 'true' : undefined}
+        aria-controls={isMenuOpen ? `${label}-sub-menu` : undefined}
+        aria-haspopup="true"
+        onClick={handleClick}
+        onKeyDown={handleKeyboard}
         sx={getMenuStyles(isParentSelected)}
+        aria-label={label}
       >
-        {renderMenuItem(icon, label, isParentSelected)}
-      </MenuItem>
-
-      {
-        /*
-        * Popover has pointerEvents: 'none' and Paper has pointerEvents: 'auto'
-        * This keeps the popover open when the mouse moves from the menu item to the popover
-        */
-      }
+        {renderMenuItem({ itemLabel: label, selected: isParentSelected, itemIcon: icon, showTooltip: false })}
+      </ListItemButton>
       <Popover
         sx={{ pointerEvents: 'none' }}
-        open={isMenuOpen}
+        role="menu"
+        open={showSubItemMenu}
         anchorEl={anchorRef.current}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         onClose={onMenuClose}
-        disableRestoreFocus
+        aria-expanded={showSubItemMenu}
+        aria-hidden={!showSubItemMenu}
         disableScrollLock
         elevation={0}
         slotProps={{
           paper: {
-            onMouseEnter: () => onMenuOpen(id),
-            onMouseLeave: onMenuClose,
+            onMouseEnter: handleHover,
+            onMouseLeave: handleUnHover,
             sx: {
               pointerEvents: 'auto',
               width: 180,
@@ -288,11 +397,18 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           },
         }}
       >
-        <MenuList component="nav" disablePadding>
-          {visibleSubItems.map((item) => renderSubMenuItem(item, false))}
+        <MenuList
+          variant="menu"
+          aria-labelledby={`nav-${label}`}
+          autoFocusItem={!usingHover}
+          disablePadding
+          id={`${label}-sub-menu`}
+          onKeyDown={handleListKeyDown}
+        >
+          {visibleSubItems.map((item, i) => renderSubMenuItem(item, false, i))}
         </MenuList>
       </Popover>
-    </>
+    </span>
   );
 };
 

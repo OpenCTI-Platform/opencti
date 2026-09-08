@@ -14,6 +14,7 @@ export default class LeftBarPage {
     const isOpenButtonVisible = await this.page.getByTestId('ChevronRightIcon').isVisible();
     if (isOpenButtonVisible) {
       await this.page.getByTestId('ChevronRightIcon').click();
+      await expect(this.page.getByTestId('ChevronLeftIcon')).toBeVisible();
     }
   }
 
@@ -24,8 +25,8 @@ export default class LeftBarPage {
     // Here to be sure we are opening the menu instead of closing it, we open
     // an other one before, as we can have only one menu open at a time.
     const otherMenu = menuName === 'Threats' ? 'Arsenal' : 'Threats';
-    const otherMenuLocator = this.page.getByRole('menuitem', { name: otherMenu, exact: true });
-    const menuLocator = this.page.getByRole('menuitem', { name: menuName, exact: true });
+    const otherMenuLocator = this.page.getByTestId(`nav-button-${otherMenu.toLowerCase()}`);
+    const menuLocator = this.page.getByTestId(`nav-button-${menuName.toLowerCase()}`);
 
     if (!subMenuItem) {
       await otherMenuLocator.click();
@@ -39,7 +40,7 @@ export default class LeftBarPage {
     // the click silently lands on the neighbouring row without navigating anywhere.
     // Retry the whole sequence - reopening the menu from a known state on each attempt -
     // until the navigation actually happened.
-    const subMenuItemLocator = this.page.getByRole('menuitem', { name: subMenuItem, exact: true });
+    const subMenuItemLocator = this.page.getByTestId(`sub-menu-${subMenuItem.toLowerCase()}`);
     await expect(async () => {
       await otherMenuLocator.click({ timeout: STEP_TIMEOUT });
       await menuLocator.click({ timeout: STEP_TIMEOUT });
@@ -60,7 +61,8 @@ export default class LeftBarPage {
   }
 
   async getSubItem(subMenuItem: string) {
-    await this.page.getByLabel(subMenuItem, { exact: true }).click();
+    expect(await this.page.getByTestId(`sub-menu-${subMenuItem.toLowerCase()}`).isVisible());
+    await this.page.getByTestId(`sub-menu-${subMenuItem.toLowerCase()}`).click();
   }
 
   async expectBreadcrumb(...items: string[]) {
