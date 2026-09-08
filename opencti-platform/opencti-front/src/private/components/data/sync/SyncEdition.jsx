@@ -43,7 +43,9 @@ const useStyles = makeStyles((theme) => ({
   },
   message: {
     width: '100%',
-    overflow: 'hidden',
+    // Same block as the creation drawer: hidden clipped the focus ring of the
+    // full-width fields it holds.
+    overflow: 'visible',
   },
 }));
 

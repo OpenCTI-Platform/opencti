@@ -294,6 +294,10 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   style={{ position: 'relative',
                     marginTop: 20, width: '100%',
                     overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                  // The fields inside are full width, so their 4px focus ring has
+                  // no room inside a message box MUI scrolls: it was cut off left
+                  // and right, leaving two horizontal lines.
+                  sx={{ '& .MuiAlert-message': { overflow: 'visible' } }}
                 >
                   <AlertTitle sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {t_i18n('Remote OpenCTI configuration')}

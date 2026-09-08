@@ -68,7 +68,11 @@ const SavedFiltersAutocomplete = ({
             </div>
           </Tooltip>
           {canManage && localStorageKey && (
-            <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
+            // The library insets an option's content 8px from the row edge — a
+            // TEXT rule (Combobox.tsx, Figma 2814:16482). These are icon
+            // buttons, so it stacked with their own padding and left the glyph
+            // 20px short against 18px for the label. Cancelled here only.
+            <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', marginRight: -8 }}>
               <Tooltip title={t_i18n('Edit this saved filter')}>
                 <IconButton
                   color="primary"
