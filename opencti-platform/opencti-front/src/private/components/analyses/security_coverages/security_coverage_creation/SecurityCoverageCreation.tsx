@@ -17,7 +17,7 @@ import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../../utils/store';
 import { serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
 import ChooseModeStep from './ChooseModeStep';
 import SelectCoveredEntityStep from './SelectCoveredEntityStep';
