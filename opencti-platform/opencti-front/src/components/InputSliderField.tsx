@@ -1,9 +1,10 @@
 import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
-import { Grid, Slider } from '@mui/material';
+import { Grid } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from './TextField';
+import SliderFieldFds from './fields/SliderFieldFds';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
 
@@ -41,7 +42,6 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   helperText,
 }) => {
   const {
-    level: { color },
     marks: defaultMarks,
     scale,
   } = useLevel(entityType, attributeName, value);
@@ -51,12 +51,6 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
     ? maxLimit
     : defaultMaxValue;
   const marks = defaultMarks.filter((mark) => mark.value <= max);
-  const sliderStyle = {
-    color,
-    '& .MuiSlider-rail': {
-      background: `${color}`,
-    },
-  };
   const updateFromSelect = (newValue: string) => {
     setFieldValue(name, newValue);
     onSubmit?.(name, newValue);
@@ -111,18 +105,17 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             </Select>
           </Grid>
         </Grid>
-        <Slider
-          value={typeof value === 'string' ? parseInt(value, 10) : value ?? 0}
+        <Field
+          component={SliderFieldFds}
+          name={name}
           min={min}
           max={max}
-          onChange={(_, v) => setFieldValue(name, v.toString())}
-          onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
-          sx={sliderStyle}
-          style={{ margin: '5px 0 0 0' }}
-          valueLabelDisplay="off"
-          size="small"
-          valueLabelFormat={() => currentLevel.level.label}
+          showBounds={false}
           disabled={finalDisabled}
+          ariaLabel={label}
+          color={currentLevel.level.color}
+          onSubmit={onSubmit}
+          containerstyle={{ marginTop: 16 }}
         />
         {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
       </>
@@ -165,17 +158,16 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           </Select>
         </Grid>
       </Grid>
-      <Slider
-        value={value || 0}
+      <Field
+        component={SliderFieldFds}
+        name={name}
         min={min}
         max={max}
-        onChange={(_, v) => setFieldValue(name, v.toString())}
-        sx={sliderStyle}
-        style={{ margin: '5px 0 0 0' }}
-        valueLabelDisplay="auto"
-        size="small"
-        valueLabelFormat={() => currentLevel.level.label}
+        showBounds={false}
         disabled={disabled}
+        ariaLabel={label}
+        color={currentLevel.level.color}
+        containerstyle={{ marginTop: 16 }}
       />
       {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
     </>

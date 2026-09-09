@@ -18,7 +18,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
-import SliderField from '../../../../components/fields/SliderField';
+import SliderFieldFds from '../../../../components/fields/SliderFieldFds';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -230,20 +230,16 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             editContext={context}
             variant="edit"
           />
-          <Field
-            component={SliderField}
-            name="likelihood"
-            required={(mandatoryAttributes.includes('likelihood'))}
-            type="number"
-            label={t_i18n('Likelihood')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-            onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="likelihood" />
-            }
-          />
+          <div style={fieldSpacingContainerStyle}>
+            <Field
+              component={SliderFieldFds}
+              name="likelihood"
+              required={(mandatoryAttributes.includes('likelihood'))}
+              label={t_i18n('Likelihood')}
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+            />
+          </div>
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"

@@ -30,7 +30,7 @@ import {
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$data,
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$key,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
-import SliderField from '../../../../components/fields/SliderField';
+import SliderFieldFds from '../../../../components/fields/SliderFieldFds';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -257,13 +257,13 @@ const NoteForm = ({
                     entityType="Note"
                     containerStyle={fieldSpacingContainerStyle}
                   />
-                  <Field
-                    component={SliderField}
-                    name="likelihood"
-                    label={t_i18n('Likelihood')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
+                  <div style={fieldSpacingContainerStyle}>
+                    <Field
+                      component={SliderFieldFds}
+                      name="likelihood"
+                      label={t_i18n('Likelihood')}
+                    />
+                  </div>
                   <ObjectLabelField
                     name="objectLabel"
                     required={(mandatoryAttributes.includes('objectLabel'))}
