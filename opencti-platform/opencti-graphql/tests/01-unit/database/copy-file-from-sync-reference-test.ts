@@ -171,4 +171,26 @@ describe('copyFileFromSyncReference', () => {
     expect(mockRawCopyFile).toHaveBeenCalledTimes(1);
     expect(mockDeleteFileFromStorage).toHaveBeenCalledTimes(1);
   });
+
+  it('still returns the file as successful when copy and index succeed but deleting the staged source fails', async () => {
+    // A delete failure here is a cleanup problem, not a correctness problem: the file is already
+    // durably copied and indexed, so the caller (and the entity it attaches to) must see success.
+    // The leftover staging object is left for the syncInflightCleanupManager TTL backstop.
+    mockGetFileSize.mockResolvedValue(10);
+    mockDeleteFileFromStorage.mockRejectedValueOnce(new Error('S3 unavailable'));
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+    });
+
+    expect(result).not.toBeNull();
+    expect(result?.id).toEqual('import/Report/entity-1/report.pdf');
+    expect(mockIndexFileToDocument).toHaveBeenCalled();
+    expect(mockDeleteFileFromStorage).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content');
+    // Lock must still be released even though the delete step failed.
+    expect(mockUnlock).toHaveBeenCalledTimes(1);
+  });
 });

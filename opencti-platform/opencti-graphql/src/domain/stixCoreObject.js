@@ -895,7 +895,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
         externalReferenceId: meta.external_reference_id,
       });
       if (!up) {
-        throw FunctionalError('Cannot copy referenced sync file', { storageKey: fileRef.storage_key });
+        throw FunctionalError('Cannot copy referenced sync file', { syncId: fileRef.sync_id });
       }
     } else {
       ({ upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities }));

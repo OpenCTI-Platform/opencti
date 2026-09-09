@@ -473,11 +473,17 @@ export const copyFileFromSyncReference = async (
         uploadStatus: 'complete',
       };
       await indexFileToDocument(context, file);
-      await deleteFileFromStorage(validation.normalizedKey);
-      logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId });
+      try {
+        await deleteFileFromStorage(validation.normalizedKey);
+        logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId });
+      } catch (deleteErr) {
+        logApp.warn('[FILE STORAGE] Copied and indexed referenced sync file, but failed to delete the staged source (left for TTL cleanup backstop)', { cause: deleteErr, syncId, targetId });
+      }
       return file;
     } catch (err) {
-      logApp.error('[FILE STORAGE] Cannot copy referenced sync file in S3', { cause: err, storageKey: validation.normalizedKey, targetId });
+      // Not logging storageKey: whichever step failed here (copy, size, index), the staging
+      // source was never reached/consumed, so the key is still live.
+      logApp.error('[FILE STORAGE] Cannot copy referenced sync file in S3', { cause: err, syncId, targetId });
       return null;
     }
   } finally {
