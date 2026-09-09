@@ -4134,6 +4134,15 @@ export const elBulk = async (context: AuthContext, args: any) => {
       if (errors.filter((err: any) => err.type !== DOCUMENT_MISSING_EXCEPTION).length > 0) {
         throw DatabaseError('Bulk indexing fail', { errors });
       }
+      // document_missing items used to be swallowed in COMPLETE silence: each one is a
+      // side-write (denorm impact, update op) that never landed, i.e. a lost edge unless
+      // something replays it (verdict 31 hunt, write-path reference note).
+      const swallowed = data.items
+        .filter((i: any) => (i.index?.error ?? i.update?.error)?.type === DOCUMENT_MISSING_EXCEPTION)
+        .map((i: any) => ({ id: (i.index ?? i.update)?._id, index: (i.index ?? i.update)?._index }));
+      if (swallowed.length > 0) {
+        logApp.warn('[SEARCH] bulk swallowed document_missing items', { count: swallowed.length, sample: swallowed.slice(0, 5) });
+      }
     }
     return data;
   });
