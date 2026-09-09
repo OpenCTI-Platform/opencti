@@ -1,7 +1,10 @@
 import Button from '@common/button/Button';
 import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -142,6 +145,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     { setSubmitting, resetForm },
   ) => {
     const input: NoteCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       created: values.created,
       attribute_abstract: values.attribute_abstract,
@@ -195,6 +199,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
 
   return (
     <Formik<NoteAddInput>
+      entityType={NOTE_TYPE}
       initialValues={initialValues}
       validationSchema={noteValidator}
       validateOnChange={true}
@@ -289,6 +294,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"

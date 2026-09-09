@@ -14,22 +14,12 @@ export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'd
 export interface CustomFieldValue {
   field_id: string;
   field_name: string;
-  int_value?: number;
-  string_value?: string;
-  boolean_value?: boolean;
-  date_value?: string;
-  select_value?: string;
-  select_values?: string[];
-}
-
-// Per-entity-type settings of a custom field definition.
-// `mandatory` and `default_value` are defined for each entity type the field is
-// attached to (US.2), not globally on the definition. Field-intrinsic constraints
-// (field_type, min/max, select_options) stay global on the definition.
-export interface CustomFieldEntityTypeSetting {
-  entity_type: string;
-  mandatory: boolean;
-  default_value?: string;
+  int_value?: number | null;
+  string_value?: string | null;
+  boolean_value?: boolean | null;
+  date_value?: string | null;
+  select_value?: string | null;
+  select_values?: string[] | null;
 }
 
 // Per-entity-type settings of a custom field definition.
@@ -73,6 +63,7 @@ export interface StoreEntityCustomFieldDefinition extends StoreEntity {
 
 export interface StixCustomFieldDefinition extends StixObject {
   name: string;
+  aliases?: string[];
   description: string;
   label: string;
   field_type: CustomFieldType;

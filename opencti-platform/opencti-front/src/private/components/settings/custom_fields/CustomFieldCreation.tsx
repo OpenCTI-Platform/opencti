@@ -11,6 +11,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import ComboboxFieldComponent from '../../../../components/ComboboxField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
@@ -48,6 +49,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       .required(t_i18n('This field is required'))
       .matches(/^[a-z][a-z0-9_]*$/, t_i18n('Only lowercase letters, numbers and underscores, starting with a letter')),
     label: Yup.string().required(t_i18n('This field is required')),
+    aliases: Yup.array().of(Yup.string()),
     field_type: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     min_value: Yup.number().nullable(),
@@ -64,6 +66,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
   const initialValues = {
     nameSuffix: '',
     label: '',
+    aliases: [] as string[],
     field_type: '',
     description: '',
     min_value: null as number | null,
@@ -82,6 +85,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
     const input: CustomFieldDefinitionAddInput = {
       name: `${CUSTOM_FIELD_NAME_PREFIX}${values.nameSuffix}`,
       label: values.label,
+      aliases: values.aliases,
       field_type: values.field_type,
       description: values.description || undefined,
       min_value: values.field_type === 'integer' && values.min_value !== null && String(values.min_value) !== '' ? Number(values.min_value) : undefined,
@@ -166,6 +170,17 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                         <InputAdornment position="start">{CUSTOM_FIELD_NAME_PREFIX}</InputAdornment>
                       ),
                     }}
+                  />
+                  <Field
+                    component={ComboboxFieldComponent<string>}
+                    name="aliases"
+                    label={t_i18n('Aliases')}
+                    multiple
+                    options={[]}
+                    allowCustomValue
+                    createValueFromInput={(input: string) => input}
+                    placeholder={t_i18n('Type and press Enter to add items')}
+                    className="mt-5"
                   />
                   {values.field_type === 'integer' && (
                     <>

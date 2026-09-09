@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './__generated__/IncidentDetails_incident.graphql';
@@ -15,6 +16,10 @@ import Tag from '../../../../components/common/tag/Tag';
 const incidentDetailsFragment = graphql`
   fragment IncidentDetails_incident on Incident {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     first_seen
     last_seen
     objective
@@ -165,6 +170,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             </Label>
             <ExpandableMarkdown source={incident.objective} limit={100} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={incident.entity_type} values={incident.customFieldValues ?? []} />
           <Grid item xs={6}>
             <StixCoreObjectsDonut
               dataSelection={entitiesDataSelection}

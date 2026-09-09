@@ -1,4 +1,5 @@
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
@@ -16,6 +17,9 @@ import { Stack } from '@mui/material';
 const CaseRftDetailsFragment = graphql`
   fragment CaseRftDetails_case on CaseRft {
     id
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     entity_type
     description
@@ -115,6 +119,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
         </Grid>
         <Divider />
         <RelatedContainers

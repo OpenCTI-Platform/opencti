@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
 import { ArrowRightAlt } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
@@ -24,6 +24,8 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import { minutesBefore, now } from '../../../../utils/Time';
 import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CustomFieldsFormik from '../custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '../custom_fields/CustomFieldValuesCreation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -167,7 +169,8 @@ const StixCoreRelationshipCreationForm = ({
   );
 
   return (
-    <Formik
+    <CustomFieldsFormik
+      entityType={STIX_CORE_RELATIONSHIP_TYPE}
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={stixCoreRelationshipValidator}
@@ -341,6 +344,7 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <CustomFieldValuesCreation />
 
             <FormButtonContainer>
               {typeof handleResetSelection === 'function' && (
@@ -369,7 +373,7 @@ const StixCoreRelationshipCreationForm = ({
           </div>
         </Form>
       )}
-    </Formik>
+    </CustomFieldsFormik>
   );
 };
 

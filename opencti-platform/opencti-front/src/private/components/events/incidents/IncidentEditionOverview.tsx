@@ -21,6 +21,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -91,6 +92,7 @@ const incidentMutationRelationDelete = graphql`
 const incidentEditionOverviewFragment = graphql`
   fragment IncidentEditionOverview_incident on Incident {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     confidence
     x_opencti_score
@@ -411,6 +413,15 @@ const IncidentEditionOverviewComponent: FunctionComponent<
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          {!isInferred && (
+            <CustomFieldValuesEdition
+              entityType={incident.entity_type}
+              entityId={incident.id}
+              values={incident.customFieldValues ?? []}
+              fieldPatch={editor.fieldPatch}
+              enableReferences={enableReferences}
+            />
+          )}
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

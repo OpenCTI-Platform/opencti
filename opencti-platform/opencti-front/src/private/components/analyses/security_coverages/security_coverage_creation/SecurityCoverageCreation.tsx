@@ -1,7 +1,8 @@
 import { SecurityCoveragesLinesPaginationQuery$variables } from '@components/analyses/__generated__/SecurityCoveragesLinesPaginationQuery.graphql';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
 import { Box, Step, StepLabel, Stepper } from '@mui/material';
-import { Form, Formik } from 'formik';
+import { Form } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -17,6 +18,7 @@ import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../../utils/store';
 import { serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
+import { getCustomFieldValues } from '../../../../../utils/customFields';
 import { useNavigate } from 'react-router';
 import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
 import ChooseModeStep from './ChooseModeStep';
@@ -24,6 +26,8 @@ import SelectCoveredEntityStep from './SelectCoveredEntityStep';
 import { SecurityCoverageFormValues, SecurityCoverageMode, SelectedEntities, StepKey, StixCoreObjectNode } from './SecurityCoverageCreation-types';
 import CoverageDetailsStep from './CoverageDetailsStep';
 import SelectEntitiesToCoverStep from './select_entities_to_cover_step/SelectEntitiesToCoverStep';
+
+const SECURITY_COVERAGE_TYPE = 'Security-Coverage';
 
 interface ConnectorsQueryProps {
   connectors?: Array<{
@@ -242,6 +246,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     }
     const finalValues = {
       ...buildCreationFilesInput(),
+      ...getCustomFieldValues(values),
       name: values.name,
       description: values.description,
       objectCovered: selectedEntity.id,
@@ -298,7 +303,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const defaultLabels = (preSelectedEntity?.objectLabel ?? []).map((label) => ({ value: label.id, label: label.value }));
 
   const initialValues = useDefaultValues<SecurityCoverageFormValues>(
-    'Security-Coverage',
+    SECURITY_COVERAGE_TYPE,
     {
       name: defaultName,
       description: '',
@@ -394,6 +399,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       </Box>
 
       <Formik<SecurityCoverageFormValues>
+        entityType={SECURITY_COVERAGE_TYPE}
         enableReinitialize
         initialValues={initialValues}
         validationSchema={securityCoverageValidation(t_i18n, mode === SecurityCoverageMode.AUTO)}

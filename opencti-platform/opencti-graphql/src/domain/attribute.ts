@@ -3,10 +3,9 @@ import { elAttributeValues } from '../database/engine';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { Attribute, QueryRuntimeAttributesArgs } from '../generated/graphql';
+import type { Attribute, QueryRuntimeAttributesArgs, TypeAttribute } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
-import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-cache';
-import type { AttributeDefinition } from '../schema/attribute-definition';
+import { getCustomFieldDefinitionsForEntityType, getDynamicTypeAttributeForEntityType } from '../modules/customField/custom-field-cache';
 
 export interface DefaultValue {
   id: string;
@@ -62,30 +61,12 @@ export const getSchemaAttributes = async (context: AuthContext, user: AuthUser) 
         scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
         // Default values would need to be fetched from entity settings if needed
         defaultValues: undefined,
-      }));
+      } as TypeAttribute));
 
     // Inject custom field attributes dynamically
-    const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
-    for (const cfDef of customFieldDefs) {
-      let attributeType: AttributeDefinition['type'] = 'string';
-      if (cfDef.field_type === 'integer') attributeType = 'numeric';
-      else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
-      else if (cfDef.field_type === 'date') attributeType = 'date';
-
-      const entitySetting = cfDef.entity_type_settings?.find((setting) => setting.entity_type === entityType);
-      const isMandatory = entitySetting?.mandatory ?? false;
-      typeAttributes.push({
-        name: cfDef.name,
-        type: attributeType,
-        label: cfDef.label,
-        mandatory: isMandatory,
-        mandatoryType: isMandatory ? 'external' : 'no',
-        editDefault: true,
-        multiple: cfDef.multiple ?? false,
-        upsert: true,
-        scale: undefined,
-        defaultValues: undefined,
-      });
+    const customFieldAttributes = await getDynamicTypeAttributeForEntityType(context, user, entityType);
+    for (const cfAttribute of customFieldAttributes) {
+      typeAttributes.push(cfAttribute);
     }
 
     return {
