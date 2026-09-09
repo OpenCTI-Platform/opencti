@@ -280,7 +280,8 @@ export const getFileContent = async (id: string, encoding: BufferEncoding = 'utf
 export const rawCopyFile = async (sourceId: string, targetId: string) => {
   const input = {
     Bucket: bucketName,
-    CopySource: `${bucketName}/${buildKey(sourceId)}`, // CopySource must start with bucket name, but not Key
+    // CopySource identifies the source object as bucket + key, unlike Key which is bucket relative
+    CopySource: `${bucketName}/${buildKey(sourceId)}`,
     Key: buildKey(targetId),
   };
   const command = new CopyObjectCommand(input);
