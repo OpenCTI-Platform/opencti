@@ -27,6 +27,7 @@ const clientSecretKey = conf.get('minio:secret_key');
 const clientSessionToken = conf.get('minio:session_token');
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
+const bucketPrefix = (conf.get('minio:bucket_prefix') || '').replace(/^\/+|\/+$/g, '');
 const useSslConnection = booleanConf('minio:use_ssl', false);
 const useAwsRole = booleanConf('minio:use_aws_role', false);
 const useAwsLogs = booleanConf('minio:use_aws_logs', false);
@@ -46,6 +47,14 @@ export const s3ConnectionConfig = () => ({
   access_key: clientAccessKey,
   secret_key: clientSecretKey,
 });
+
+/**
+ * Object keys are namespaced under `minio:bucket_prefix` when configured, so that several
+ * deployments can share one bucket. The prefix stays confined to this module: every exported
+ * function takes and returns platform relative keys.
+ */
+export const buildKey = (key: string) => (bucketPrefix ? `${bucketPrefix}/${key}` : key);
+export const stripKey = (key: string) => (bucketPrefix && key.startsWith(`${bucketPrefix}/`) ? key.slice(bucketPrefix.length + 1) : key);
 
 let s3Client: S3Client; // Client reference
 
@@ -132,7 +141,7 @@ export const isStorageAlive = () => initializeBucket();
 export const deleteFileFromStorage = async (id: string) => {
   return s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
-    Key: id,
+    Key: buildKey(id),
   }));
 };
 
@@ -146,7 +155,7 @@ export const downloadFile = async (id: string): Promise<Readable | null> => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
-      Key: id,
+      Key: buildKey(id),
     }));
     if (!object || !object.Body) {
       logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
@@ -179,13 +188,13 @@ export const downloadFileRange = async (id: string, range?: string): Promise<Ran
     // First get file size via HEAD
     const head = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
-      Key: id,
+      Key: buildKey(id),
     }));
     totalSize = head.ContentLength ?? 0;
 
     const getParams: s3.GetObjectCommandInput = {
       Bucket: bucketName,
-      Key: id,
+      Key: buildKey(id),
     };
     if (range) {
       getParams.Range = range;
@@ -260,7 +269,7 @@ export const streamToString = (stream: any, encoding: BufferEncoding = 'utf8'): 
 export const getFileContent = async (id: string, encoding: BufferEncoding = 'utf8'): Promise<string | undefined> => {
   const object: GetObjectCommandOutput = await s3Client.send(new s3.GetObjectCommand({
     Bucket: bucketName,
-    Key: id,
+    Key: buildKey(id),
   }));
   if (!object.Body) {
     return undefined;
@@ -271,8 +280,8 @@ export const getFileContent = async (id: string, encoding: BufferEncoding = 'utf
 export const rawCopyFile = async (sourceId: string, targetId: string) => {
   const input = {
     Bucket: bucketName,
-    CopySource: `${bucketName}/${sourceId}`, // CopySource must start with bucket name, but not Key
-    Key: targetId,
+    CopySource: `${bucketName}/${buildKey(sourceId)}`, // CopySource must start with bucket name, but not Key
+    Key: buildKey(targetId),
   };
   const command = new CopyObjectCommand(input);
   await s3Client.send(command);
@@ -285,7 +294,7 @@ export const getFileSize = async (user: AuthUser, fileS3Path: string): Promise<n
   try {
     const object: HeadObjectCommandOutput = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
-      Key: fileS3Path,
+      Key: buildKey(fileS3Path),
     }));
     return object.ContentLength;
   } catch (err) {
@@ -298,7 +307,7 @@ export const rawUpload = async (key: string, body: string | Readable | Buffer) =
     client: s3Client,
     params: {
       Bucket: bucketName,
-      Key: key,
+      Key: buildKey(key),
       Body: body,
     },
   });
@@ -315,7 +324,7 @@ export const rawUploadWithMetadata = async (key: string, body: Readable, content
     client: s3Client,
     params: {
       Bucket: bucketName,
-      Key: key,
+      Key: buildKey(key),
       Body: body,
       ContentDisposition: contentDisposition,
     },
@@ -325,7 +334,7 @@ export const rawUploadWithMetadata = async (key: string, body: Readable, content
 
 export const getFileMetadata = async (key: string): Promise<FileMetadata | null> => {
   try {
-    const head = await s3Client.send(new s3.HeadObjectCommand({ Bucket: bucketName, Key: key }));
+    const head = await s3Client.send(new s3.HeadObjectCommand({ Bucket: bucketName, Key: buildKey(key) }));
     return {
       contentDisposition: head.ContentDisposition,
       contentLength: head.ContentLength,
@@ -341,11 +350,21 @@ export const getFileMetadata = async (key: string): Promise<FileMetadata | null>
 export const rawListObjects = async (directory: string, recursive: boolean, continuationToken?: string): Promise<ListObjectsV2CommandOutput> => {
   const requestParams: ListObjectsV2CommandInput = {
     Bucket: bucketName,
-    Prefix: directory,
+    Prefix: buildKey(directory),
     Delimiter: recursive ? undefined : '/',
   };
   if (continuationToken) {
     requestParams.ContinuationToken = continuationToken;
   }
-  return s3Client.send(new s3.ListObjectsV2Command(requestParams));
+  const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
+  if (!bucketPrefix) {
+    return response;
+  }
+  // Give back platform relative keys, callers never know about the namespace
+  return {
+    ...response,
+    Prefix: response.Prefix ? stripKey(response.Prefix) : response.Prefix,
+    Contents: response.Contents?.map((content) => (content.Key ? { ...content, Key: stripKey(content.Key) } : content)),
+    CommonPrefixes: response.CommonPrefixes?.map((common) => (common.Prefix ? { ...common, Prefix: stripKey(common.Prefix) } : common)),
+  };
 };

@@ -397,6 +397,7 @@
   },
   "minio": {
     "bucket_name": "opencti-bucket",
+    "bucket_prefix": "",
     "bucket_region": "us-east-1",
     "endpoint": "localhost",
     "port": 9000,
