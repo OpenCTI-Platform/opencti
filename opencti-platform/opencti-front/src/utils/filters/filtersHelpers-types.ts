@@ -41,4 +41,6 @@ export interface handleFilterHelpers {
   getLatestAddFilterId: () => string | undefined;
   handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
   handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => void;
+  /** Replaces key/values/operator of an existing filter in-place, keeping its id and position. */
+  handleChangeFilterKey: (id: string, newFilter: Filter) => void;
 }

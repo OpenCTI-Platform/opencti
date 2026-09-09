@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import type { FilterDefinition } from '../../../utils/hooks/useAuth';
 import type { FilterGroup, handleFilterHelpers } from '../../../utils/filters/filtersHelpers-types';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
@@ -50,6 +50,7 @@ const buildHelpers = () => ({
   getLatestAddFilterId: vi.fn(),
   handleChangeRepresentationFilter: vi.fn(),
   handleReplaceFilterValues: vi.fn(),
+  handleChangeFilterKey: vi.fn(),
 }) as unknown as handleFilterHelpers & Record<string, ReturnType<typeof vi.fn>>;
 
 import FilterGroupPanel from './FilterGroupPanel';
@@ -138,8 +139,7 @@ describe('Component: FilterGroupPanel', () => {
 
   it('switches the mode of the sub-group only', async () => {
     const { user } = renderPanel(group);
-    const select = within(screen.getByTestId('filter-group-mode-select-group-1-1')).getByRole('combobox');
-    fireEvent.mouseDown(select);
+    await user.click(screen.getByTestId('filter-group-mode-select-group-1-1'));
     const options = await screen.findAllByRole('option', { hidden: true });
     const andOption = options.find((o) => o.textContent?.toUpperCase() === 'AND');
     await user.click(andOption as HTMLElement);

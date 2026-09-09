@@ -1,18 +1,19 @@
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
-import Tooltip from '@mui/material/Tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import {
   convertOperatorToIcon,
   filterOperatorsWithIcon,
+  FILTER_LINE_ITEM_HEIGHT,
   FilterSearchContext,
   FiltersRestrictions,
+  getFilterDefinitionFromFilterKeysMap,
   isFilterEditable,
   NO_VALUES_FILTER_OPERATORS,
   useBuildFilterKeysMapFromEntityType,
-  useFilterDefinition,
 } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
@@ -30,7 +31,8 @@ import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { PageContainerContext } from './PageContainer';
 import { useTheme } from '@mui/material/styles';
-import { ClickAwayListener, Grow, Paper, Popper, Stack } from '@mui/material';
+import { ClickAwayListener, Grow, Popper, Stack } from '@mui/material';
+import { Paper } from '@filigran/design-system';
 
 export type FilterIconButtonVariant
   = undefined // default variant (variant is undefined), for filters applied in datatables or widgets for instance
@@ -193,7 +195,7 @@ const FilterIconButtonContainer: FunctionComponent<
       fontSize: 12,
       height: 20,
       borderRadius: 4,
-      lineHeight: '32px',
+      lineHeight: `${FILTER_LINE_ITEM_HEIGHT}px`,
     };
     operatorStyle = {
       borderRadius: 4,
@@ -268,11 +270,27 @@ const FilterIconButtonContainer: FunctionComponent<
   );
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%', position: 'relative' }}>
       <Box sx={boxStyle} ref={filterLineRef}>
+        {displayedFilterGroups.map((group, index) => (
+          <Fragment key={group.id ?? `filter-group-${index}`}>
+            <FilterGroupChipButton
+              ref={(node) => {
+                chipRefs.current[group.id ?? ''] = node;
+              }}
+              filterGroup={group}
+              isOpen={openedGroupId === group.id}
+              readOnly={isGroupPanelReadOnly}
+              chipColor={chipColor}
+              style={filterStyle}
+              onClick={() => setOpenedGroupId((current) => (current === group.id ? undefined : group.id))}
+            />
+            {(index < displayedFilterGroups.length - 1 || displayedFilters.length > 0) && globalModeSeparator}
+          </Fragment>
+        ))}
         {displayedFilters.map((currentFilter, index) => {
           const filterKey = currentFilter.key;
-          const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
+          const filterLabel = t_i18n(getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap)?.label ?? filterKey);
           const filterOperator = currentFilter.operator ?? 'eq';
           const filterValues = currentFilter.values;
           const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator ?? 'eq');
@@ -292,7 +310,7 @@ const FilterIconButtonContainer: FunctionComponent<
                 : currentFilter.values.length > 0 && ':'}
             </>
           );
-          const isNotLastFilter = index < displayedFilters.length - 1 || displayedFilterGroups.length > 0;
+          const isNotLastFilter = index < displayedFilters.length - 1;
 
           const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
             ? 'outlined'
@@ -303,127 +321,116 @@ const FilterIconButtonContainer: FunctionComponent<
             : undefined;
           const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
             && isFilterEditable(filtersRestrictions, filterKey, filterValues);
-          return (
-            <Fragment key={currentFilter.id ?? `filter-${index}`}>
-              <Tooltip
-                title={
-                  filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
-                    ? undefined
-                    : (
-                        // As inline content the key, the values and the operator sat on three different baselines.
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            flexWrap: 'wrap',
-                            gap: '4px',
-                          }}
-                        >
-                          <FilterValues
-                            label={keyLabel}
-                            tooltip={true}
-                            currentFilter={currentFilter}
-                            handleSwitchLocalMode={handleSwitchLocalMode}
-                            filtersRepresentativesMap={filtersRepresentativesMap}
-                            redirection={redirection}
-                            entityTypes={entityTypes}
-                            filtersRestrictions={filtersRestrictions}
-                            host={host}
-                          />
-                        </Box>
-                      )
-                }
-              >
+          const tooltipContent = filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
+            ? undefined
+            : (
+                // As inline content the key, the values and the operator sat on three different baselines.
                 <Box
                   sx={{
-                    padding: '0',
                     display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '4px',
                   }}
                 >
-                  <Chip
-                    color={chipColor}
-                    ref={
-                      helpers?.getLatestAddFilterId() === currentFilter.id
-                        ? itemRefToPopover
-                        : null
-                    }
-                    variant={chipVariant}
-                    sx={{
-                      ...filterStyle,
-                      ...chipBackgroundColorStyle,
-                      borderRadius: 1,
-                      '& .MuiChip-label': {
-                        lineHeight: '32px',
-                        maxWidth: 400,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      },
-                    }}
-                    label={(
-                      <Stack
-                        alignItems="center"
-                        direction="row"
-                        gap={0.5}
-                        sx={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        <FilterValues
-                          label={keyLabel}
-                          tooltip={false}
-                          currentFilter={currentFilter}
-                          handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
-                          filtersRepresentativesMap={filtersRepresentativesMap}
-                          redirection={redirection}
-                          onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
-                          isReadWriteFilter={isReadWriteFilter}
-                          chipColor={chipColor}
-                          entityTypes={entityTypes}
-                          filtersRestrictions={filtersRestrictions}
-                          host={host}
-                        />
-                      </Stack>
-                    )}
-                    disabled={
-                      disabledPossible ? displayedFilters.length === 1 : undefined
-                    }
-                    onDelete={
-                      (isReadWriteFilter && authorizeFilterRemoving)
-                        ? () => manageRemoveFilter(
-                            currentFilter.id,
-                            filterKey,
-                            filterOperator,
-                          )
-                        : undefined
-                    }
+                  <FilterValues
+                    label={keyLabel}
+                    tooltip={true}
+                    currentFilter={currentFilter}
+                    handleSwitchLocalMode={handleSwitchLocalMode}
+                    filtersRepresentativesMap={filtersRepresentativesMap}
+                    redirection={redirection}
+                    entityTypes={entityTypes}
+                    filtersRestrictions={filtersRestrictions}
+                    host={host}
                   />
                 </Box>
-              </Tooltip>
+              );
+          const chip = (
+            <Box
+              sx={{
+                padding: '0',
+                display: 'flex',
+              }}
+            >
+              <Chip
+                color={chipColor}
+                ref={
+                  helpers?.getLatestAddFilterId() === currentFilter.id
+                    ? itemRefToPopover
+                    : null
+                }
+                variant={chipVariant}
+                sx={{
+                  ...filterStyle,
+                  ...chipBackgroundColorStyle,
+                  borderRadius: 1,
+                  '& .MuiChip-label': {
+                    lineHeight: `${FILTER_LINE_ITEM_HEIGHT}px`,
+                    maxWidth: 400,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  },
+                }}
+                label={(
+                  <Stack
+                    alignItems="center"
+                    direction="row"
+                    gap={0.5}
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    <FilterValues
+                      label={keyLabel}
+                      tooltip={false}
+                      currentFilter={currentFilter}
+                      handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      redirection={redirection}
+                      onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
+                      isReadWriteFilter={isReadWriteFilter}
+                      chipColor={chipColor}
+                      entityTypes={entityTypes}
+                      filtersRestrictions={filtersRestrictions}
+                      host={host}
+                    />
+                  </Stack>
+                )}
+                disabled={
+                  disabledPossible ? displayedFilters.length === 1 : undefined
+                }
+                onDelete={
+                  (isReadWriteFilter && authorizeFilterRemoving)
+                    ? () => manageRemoveFilter(
+                        currentFilter.id,
+                        filterKey,
+                        filterOperator,
+                      )
+                    : undefined
+                }
+              />
+            </Box>
+          );
+          return (
+            <Fragment key={currentFilter.id ?? `filter-${index}`}>
+              {tooltipContent
+                ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                      <TooltipContent>{tooltipContent}</TooltipContent>
+                    </Tooltip>
+                  )
+                : chip}
               {isNotLastFilter && globalModeSeparator}
             </Fragment>
           );
         })}
-        {displayedFilterGroups.map((group, index) => (
-          <Fragment key={group.id ?? `filter-group-${index}`}>
-            <FilterGroupChipButton
-              ref={(node) => {
-                chipRefs.current[group.id ?? ''] = node;
-              }}
-              filterGroup={group}
-              isOpen={openedGroupId === group.id}
-              readOnly={isGroupPanelReadOnly}
-              chipColor={chipColor}
-              style={filterStyle}
-              onClick={() => setOpenedGroupId((current) => (current === group.id ? undefined : group.id))}
-            />
-            {index < displayedFilterGroups.length - 1 && globalModeSeparator}
-          </Fragment>
-        ))}
         {filterChipsParams.filterId && filterChipsParams.anchorPosition && (
           <FilterChipPopover
             filters={filters.filters}
@@ -448,21 +455,24 @@ const FilterIconButtonContainer: FunctionComponent<
           placement="bottom-start"
           disablePortal
           transition
-          style={{ width: filterLineRef.current?.offsetWidth, zIndex: theme.zIndex.modal }}
+          // Sized against the wrapping `Box` (position: relative) instead of a JS-measured
+          // offsetWidth: stays in sync with the chip line's real width on every resize /
+          // sidebar collapse, with no state tracking needed.
+          style={{ width: '100%', zIndex: theme.zIndex.modal }}
         >
           {({ TransitionProps }) => (
             <Grow {...TransitionProps} style={{ transformOrigin: 'left top' }}>
-              <Paper sx={{ width: '100%' }}>
+              <Paper padding={0} style={{ width: '100%', marginTop: 8 }}>
                 {/* The decision must be taken on `pointerdown`: the design system Select opens on
                     that event and portals its content, and the resulting `click` is then dispatched
                     on the common ancestor of the trigger and of the freshly mounted content, i.e.
                     the document element — outside the panel and outside any React tree, where no
-                    listener can recognise it. On `pointerdown` the target is still the trigger.
+                    listener can recognize it. On `pointerdown` the target is still the trigger.
                     Clicks landing inside an already open portal are handled by ClickAwayListener
                     itself, which forgives events bubbling through a React portal.
                     FDS-WORKAROUND #61: removable once SelectContent accepts `portalled`. */}
                 <ClickAwayListener mouseEvent="onPointerDown" onClickAway={handleClickAwayPanel}>
-                  <Box>
+                  <Box sx={{ padding: 2 }}>
                     {openedGroup && (
                       <FilterGroupPanel
                         group={openedGroup}

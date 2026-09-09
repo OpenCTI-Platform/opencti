@@ -1,13 +1,12 @@
-import { Chip } from '@filigran/design-system';
 import Popover from '@mui/material/Popover';
 import { useTheme } from '@mui/material/styles';
 import { FunctionComponent } from 'react';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { FilterSearchContext, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import type { WidgetHost } from '../../utils/widget/widget';
-import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
+import CompositeRegardingOfEditor from './group/CompositeRegardingOfEditor';
 import { FilterOperatorAndValue, useFilterEditorState } from './group/FilterRow';
 
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../utils/fdsLayer';
@@ -47,7 +46,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   searchContext,
   host,
 }) => {
-  const { t_i18n } = useFormatter();
   const theme = useTheme();
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
@@ -80,20 +78,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  let disableSubfilter1 = false;
-  let disableSubfilter2 = false;
-  if (filterDefinition?.subFilters
-    && filterDefinition.subFilters.length > 1
-    && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-    && filter?.values.filter((f) => f.key === 'relationship_type').length === 0
-  ) {
-    disableSubfilter2 = true;
-  } else if (filterDefinition?.subFilters
-    && filterDefinition.subFilters.length > 1
-    && filterDefinition?.subFilters[1].filterKey === 'dynamic'
-    && (filter?.values.filter((f) => f.key === 'dynamic')?.length ?? 0) > 0) {
-    disableSubfilter1 = true;
-  }
   return (
     <Popover
       open={open}
@@ -114,22 +98,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     >
       {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
         ? (
-            <div
-              style={{
-                minWidth: 250,
-                padding: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 16,
-              }}
-            >
-              {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
-              <Chip
-                style={{ alignSelf: 'flex-start' }}
-                label={t_i18n('WITH')}
-              />
-              {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
-            </div>
+            <CompositeRegardingOfEditor
+              filter={filter}
+              filterKey={filterKey}
+              helpers={helpers}
+              state={state}
+              filtersRepresentativesMap={filtersRepresentativesMap}
+              entityTypes={entityTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              host={host}
+              showFirstOperator
+            />
           )
         : (
             <div style={{ display: 'inline-flex' }}>

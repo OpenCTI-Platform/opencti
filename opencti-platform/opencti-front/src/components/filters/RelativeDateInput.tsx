@@ -86,7 +86,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     handleChangeValue('');
   };
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', flex: 1, minWidth: 0 }}>
       {isDatePickerOpen
         && (
           <DateTimePicker

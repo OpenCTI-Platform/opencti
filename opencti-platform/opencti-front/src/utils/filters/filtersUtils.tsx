@@ -85,6 +85,12 @@ export const ME_FILTER_VALUE = '@me';
 // Filter operators that do not require any values in filter.values
 export const NO_VALUES_FILTER_OPERATORS = ['nil', 'not_nil', 'has_changed', 'not_has_changed'];
 
+/** Default height (in px) of one item on the filter line rendered by `FilterIconButtonContainer`
+ * (the default/non-'small'/non-'tag' variant): each filter `Chip`, the AND/OR mode chip, and the
+ * nested filter-group chip button all line up on it. Matches MUI `Chip`'s own default height —
+ * not a themed token, just named here once so nothing on that line repeats the literal `32`. */
+export const FILTER_LINE_ITEM_HEIGHT = 32;
+
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 

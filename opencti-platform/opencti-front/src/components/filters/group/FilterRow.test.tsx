@@ -54,6 +54,7 @@ const buildHelpers = () => ({
   getLatestAddFilterId: vi.fn(),
   handleChangeRepresentationFilter: vi.fn(),
   handleReplaceFilterValues: vi.fn(),
+  handleChangeFilterKey: vi.fn(),
 }) as unknown as handleFilterHelpers & Record<string, ReturnType<typeof vi.fn>>;
 
 const filter: Filter = { id: 'filter-1', key: 'name', values: ['abc'], operator: 'eq', mode: 'or' };
@@ -76,23 +77,20 @@ describe('FilterRow', () => {
     helpers = buildHelpers();
   });
 
-  it('renders the three controls and the two buttons', () => {
+  it('renders the three controls and the remove button', () => {
     renderRow();
     expect(screen.getByTestId('filter-row-key-select')).toBeDefined();
     expect(screen.getByTestId('filter-row-operator-select')).toBeDefined();
     expect(screen.getByTestId('filter-row-value')).toBeDefined();
-    expect(screen.getByTestId('filter-row-menu-button')).toBeDefined();
     expect(screen.getByTestId('filter-row-remove-button')).toBeDefined();
   });
 
-  it('calls the helpers when selecting another filter key', async () => {
+  it('calls handleChangeFilterKey when selecting another filter key', async () => {
     const { user } = renderRow();
     await user.click(within(screen.getByTestId('filter-row-key-select')).getByRole('combobox'));
     // options render in a Radix portal (FDS SelectContent portals unconditionally), query them by text
     await user.click(await screen.findByText('Description'));
-    expect(helpers.handleRemoveFilterById).toHaveBeenCalledWith('filter-1');
-    expect(helpers.handleAddFilterWithEmptyValue).toHaveBeenCalledTimes(1);
-    expect(helpers.handleAddFilterWithEmptyValue).toHaveBeenCalledWith(expect.objectContaining({ key: 'description' }));
+    expect(helpers.handleChangeFilterKey).toHaveBeenCalledWith('filter-1', expect.objectContaining({ key: 'description' }));
   });
 
   it('calls handleChangeOperatorFilters when selecting an operator', async () => {
@@ -106,12 +104,5 @@ describe('FilterRow', () => {
     const { user } = renderRow();
     await user.click(screen.getByTestId('filter-row-remove-button'));
     expect(helpers.handleRemoveFilterById).toHaveBeenCalledWith('filter-1');
-  });
-
-  it('opens the overflow menu and switches the local mode', async () => {
-    const { user } = renderRow();
-    await user.click(screen.getByTestId('filter-row-menu-button'));
-    await user.click(await screen.findByTestId('filter-row-switch-local-mode'));
-    expect(helpers.handleSwitchLocalMode).toHaveBeenCalledWith(filter);
   });
 });

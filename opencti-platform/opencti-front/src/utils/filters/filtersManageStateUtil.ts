@@ -171,6 +171,25 @@ export const handleReplaceFilterValuesUtil = ({ filters, id, values }: FiltersLo
   return updateFilters(filters, (f) => (f.id === id ? { ...f, values } : f));
 };
 
+/**
+ * Replaces the key/values/operator/mode of the filter identified by `id`, keeping its id and its
+ * position in the tree. Used when the user changes the "Filter name" of an existing row: unlike
+ * remove + add, it never moves the row and never touches a different group.
+ */
+export const handleChangeFilterKeyUtil = ({ filters, id, newFilter }: FiltersLocalStorageUtilProps<{
+  id: string;
+  newFilter: Filter;
+}>): FilterGroup => {
+  return updateFilters(filters, (f) => (f.id === id
+    ? {
+        ...f,
+        key: newFilter.key,
+        values: newFilter.values,
+        operator: newFilter.operator,
+      }
+    : f));
+};
+
 export const handleRemoveRepresentationFilterUtil = ({ filters, id, value }: FiltersLocalStorageUtilProps<{
   id: string;
   value: string | FilterValue;

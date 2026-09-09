@@ -5,6 +5,7 @@ import {
   handleAddFilterWithEmptyValueUtil,
   handleAddRepresentationFilterUtil,
   handleAddSingleValueFilterUtil,
+  handleChangeFilterKeyUtil,
   handleChangeOperatorFiltersUtil,
   handleChangeRepresentationFilterUtil,
   removeFilterGroupUtil,
@@ -66,6 +67,10 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
     handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => {
       latestAddFilterIdRef.current = undefined;
       setFiltersState((prevState) => handleReplaceFilterValuesUtil({ filters: prevState, id, values }));
+    },
+    handleChangeFilterKey: (id: string, newFilter: Filter) => {
+      latestAddFilterIdRef.current = undefined;
+      setFiltersState((prevState) => handleChangeFilterKeyUtil({ filters: prevState, id, newFilter }));
     },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       latestAddFilterIdRef.current = undefined;

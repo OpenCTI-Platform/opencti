@@ -30,6 +30,7 @@ import {
   handleSwitchLocalModeUtil,
   handleChangeRepresentationFilterUtil,
   handleReplaceFilterValuesUtil,
+  handleChangeFilterKeyUtil,
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useBus from './useBus';
@@ -51,6 +52,7 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
   handleAddSingleValueFilter: (id: string, value?: FilterValue) => void;
   handleReplaceFilterValues: (id: string, values: FilterValue[]) => void;
+  handleChangeFilterKey: (id: string, newFilter: Filter) => void;
   handleSwitchFilter: HandleAddFilter;
   handleToggleExports: () => void;
   handleSetNumberOfElements: (value: NumberOfElements) => void;
@@ -591,6 +593,20 @@ export const usePaginationLocalStorage = <U>(
       const newStorageValue = {
         ...viewStorage,
         filters: handleReplaceFilterValuesUtil({ filters, id, values }),
+        latestAddFilterId: undefined,
+        latestAddFilterKey: undefined,
+      };
+      setValue(newStorageValue);
+      dispatch(`${key}_paginationStorage`, newStorageValue);
+    },
+    handleChangeFilterKey: (id: string, newFilter: Filter) => {
+      const filters = viewStorage?.filters;
+      if (!filters) {
+        return;
+      }
+      const newStorageValue = {
+        ...viewStorage,
+        filters: handleChangeFilterKeyUtil({ filters, id, newFilter }),
         latestAddFilterId: undefined,
         latestAddFilterKey: undefined,
       };
