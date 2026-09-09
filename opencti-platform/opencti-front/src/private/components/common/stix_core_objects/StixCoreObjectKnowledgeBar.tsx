@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router';
 import Drawer from '@mui/material/Drawer';
 import { NavbarItem, NavbarTitle } from '@filigran/design-system';
-import { graphql, useFragment } from 'react-relay';
+import { fetchQuery, graphql, useFragment } from 'react-relay';
 import {
   StixCoreObjectKnowledgeBar_stixCoreObject$data,
   StixCoreObjectKnowledgeBar_stixCoreObject$key,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectKnowledgeBar_stixCoreObject.graphql';
+import { StixCoreObjectKnowledgeBarRefreshQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectKnowledgeBarRefreshQuery.graphql';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
+import { KnowledgeBarRefreshEvent } from '@components/common/bulk/useForceUpdate';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
@@ -17,12 +19,14 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import { environment } from '../../../../relay/environment';
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
   @argumentDefinitions(
     relatedRelationshipTypes: { type: "[String]", defaultValue: ["related-to"] }
   ) {
+    id
     # distribution of entities without "related to" relationship
     relationshipsWithoutRelatedToDistribution: stixCoreRelationshipsDistribution(
       field: "entity_type"
@@ -83,6 +87,14 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
   }
 `;
 
+const stixCoreObjectKnowledgeBarRefreshQuery = graphql`
+  query StixCoreObjectKnowledgeBarRefreshQuery($id: String!, $relatedRelationshipTypes: [String!]) {
+    stixCoreObject(id: $id) {
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
+    }
+  }
+`;
+
 type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution']
@@ -93,6 +105,7 @@ interface StixCoreObjectKnowledgeBarProps {
   availableSections: string[];
   data: StixCoreObjectKnowledgeBar_stixCoreObject$key;
   attribution?: string[];
+  relatedRelationshipTypes?: string[];
 }
 
 interface SectionConfig {
@@ -134,6 +147,7 @@ const StixCoreObjectKnowledgeBar = ({
   availableSections,
   data,
   attribution,
+  relatedRelationshipTypes,
 }: StixCoreObjectKnowledgeBarProps) => {
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
@@ -141,11 +155,25 @@ const StixCoreObjectKnowledgeBar = ({
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
   const {
+    id,
     relationshipsWithoutRelatedToDistribution,
     relationshipsRelatedDistribution,
     stixCoreObjectsDistribution,
     indicatorsDistribution,
   } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
+
+  useEffect(() => {
+    const onKnowledgeBarRefresh = () => {
+      fetchQuery<StixCoreObjectKnowledgeBarRefreshQuery>(
+        environment,
+        stixCoreObjectKnowledgeBarRefreshQuery,
+        { id, relatedRelationshipTypes: relatedRelationshipTypes ?? ['related-to'] },
+        { fetchPolicy: 'network-only' },
+      ).subscribe({});
+    };
+    window.addEventListener(KnowledgeBarRefreshEvent, onKnowledgeBarRefresh);
+    return () => window.removeEventListener(KnowledgeBarRefreshEvent, onKnowledgeBarRefresh);
+  }, [id, relatedRelationshipTypes]);
 
   const indexEntities = (distribution: ObjectsDistribution): Record<string, number> => (
     distribution?.reduce((acc, item) => ({
