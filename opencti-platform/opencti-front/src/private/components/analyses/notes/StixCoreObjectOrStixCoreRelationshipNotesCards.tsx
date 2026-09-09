@@ -267,7 +267,7 @@ const NoteForm = ({
                   <ObjectLabelField
                     name="objectLabel"
                     required={(mandatoryAttributes.includes('objectLabel'))}
-                    style={{ marginTop: 10, width: '100%' }}
+                    style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />

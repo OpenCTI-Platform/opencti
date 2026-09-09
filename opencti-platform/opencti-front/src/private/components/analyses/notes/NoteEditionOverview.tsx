@@ -244,7 +244,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
-              style={{ marginTop: 10, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               onChange={editor.changeCreated}
             />

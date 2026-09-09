@@ -280,7 +280,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
-              style={{ marginTop: 10 }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
           )}

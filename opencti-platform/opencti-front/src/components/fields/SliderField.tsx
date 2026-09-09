@@ -52,9 +52,11 @@ const SliderField = ({
   const finalLabel = label != null && required ? <>{label} *</> : label;
   // The filled range and thumb read `var(--icon-highlight)`; overriding it on the wrapper cascades to them,
   // so the track colour tracks the value's scale level.
-  const wrapperStyle = (color
-    ? { ...containerstyle, '--icon-highlight': color }
-    : containerstyle) as React.CSSProperties;
+  const wrapperStyle = {
+    marginBottom: 16,
+    ...containerstyle,
+    ...(color ? { '--icon-highlight': color } : {}),
+  } as React.CSSProperties;
 
   // Radix reports the whole thumb array; likelihood is a single thumb, so read entry 0.
   const handleValueChange = useCallback(([next]: number[]) => {
