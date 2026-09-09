@@ -6,7 +6,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Box, ListItemButton, Tooltip } from '@mui/material';
+import { Box, ListItemButton } from '@mui/material';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
+import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
