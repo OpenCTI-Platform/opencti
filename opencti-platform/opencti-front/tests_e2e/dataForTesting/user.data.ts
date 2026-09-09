@@ -74,6 +74,22 @@ const getUserGroups = (userId: string) => `
   }
 `;
 
+const resetUserDraftContext = async (request: APIRequestContext, userId: string) => {
+  await graphqlRequest(
+    request,
+    `
+      mutation ResetTestUserDraftContext($id: ID!) {
+        userEdit(id: $id) {
+          fieldPatch(input: [{ key: "draft_context", value: [""] }]) {
+            id
+          }
+        }
+      }
+    `,
+    `reset draft context of user ${userId}`,
+  );
+};
+
 export const addUsers = async (request: APIRequestContext, users: AddUserInput[]) => {
   const { groups } = await graphqlRequest<{ groups: EdgesOf<NamedNode> }>(request, getGroups(), 'list groups');
   const allGroups = groups.edges.map((e) => e.node);
@@ -86,6 +102,10 @@ export const addUsers = async (request: APIRequestContext, users: AddUserInput[]
 
   for (const user of users) {
     let userId = existingUsers.get(user.name);
+    if (userId && user.organizations) {
+      // Old workflow runs can leave a persona in a draft they can no longer access.
+      await resetUserDraftContext(request, userId);
+    }
     if (!userId) {
       const userOrganizations = allOrganizations.filter((organization) => user.organizations?.includes(organization.name));
       const organizationIds = userOrganizations.map((organization) => organization.id);

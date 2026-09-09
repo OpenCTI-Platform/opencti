@@ -18,7 +18,7 @@ export default class IntegrationsPage {
   }
 
   async search(text: string) {
-    const input = this.page.getByTestId('integrations-search-input').locator('input');
+    const input = this.page.getByTestId('integrations-search-input');
     await input.fill(text);
     await input.press('Enter');
   }

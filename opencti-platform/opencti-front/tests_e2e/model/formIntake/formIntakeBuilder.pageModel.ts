@@ -38,6 +38,14 @@ export default class FormIntakeBuilderPageModel {
     return this.mainEntityTypeSelect.selectOption(entityType);
   }
 
+  getCreateTitle() {
+    return this.drawer.getByRole('heading', { name: 'Create a form intake', exact: true });
+  }
+
+  getLastMainEntityFieldType() {
+    return this.drawer.getByRole('combobox', { name: 'Field Type', exact: true }).last();
+  }
+
   getDraftByDefaultToggle() {
     return this.page.getByLabel('Create as draft by default');
   }
@@ -51,8 +59,11 @@ export default class FormIntakeBuilderPageModel {
   }
 
   /** Expands the "Advanced Draft Settings" accordion (required before setting the draft author source). */
-  openAdvancedDraftSettings() {
-    return this.page.getByText('Advanced Draft Settings').click();
+  async openAdvancedDraftSettings() {
+    const accordion = this.drawer.locator('.MuiAccordion-root').filter({ hasText: 'Advanced Draft Settings' });
+    await accordion.getByRole('button', { name: 'Advanced Draft Settings', exact: true }).click();
+    // Opening a select during expansion can scroll its popup outside the viewport.
+    await accordion.locator('.MuiCollapse-entered').waitFor({ state: 'visible' });
   }
 
   async setDraftAuthorSource(source: DraftAuthorSource) {

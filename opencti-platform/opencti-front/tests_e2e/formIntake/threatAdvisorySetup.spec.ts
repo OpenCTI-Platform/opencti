@@ -42,6 +42,7 @@ test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@w
     // "Created By" lets the submitting analyst pick the Report's actual author.
     await builder.addMainEntityField();
     await builder.setLastMainEntityFieldAttribute('Created By');
+    await expect(builder.getLastMainEntityFieldType()).toHaveText('Created By');
     await builder.toggleDraftByDefault();
     await builder.openAdvancedDraftSettings();
     await builder.setDraftAuthorSource('Main entity author (reuse the same author)');
@@ -59,6 +60,7 @@ test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@w
   });
 
   await test.step('Verify the form intake was created', async () => {
+    await expect(builder.getCreateTitle()).toBeHidden();
     await expect(catalog.getFormIntakeCard()).toBeVisible();
     await catalog.goToDeployed();
     // Filter by name: the deployed list isn't scoped to form intakes and could paginate the new one out of view.
