@@ -6,7 +6,6 @@ import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@m
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -3312,18 +3311,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenEntity(null, null)}
-          color="primary"
-          aria-label="Add"
+          variant="primary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add entity')}
+        </Button>
         <Drawer
           open={entityStep != null}
           onClose={handleCloseEntity}
@@ -3558,18 +3554,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenObservable(null, null)}
-          color="secondary"
-          aria-label="Add"
+          variant="secondary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add observable')}
+        </Button>
         <Drawer
           open={displayObservable}
           onClose={handleCloseObservable}
@@ -4108,18 +4101,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenContainer(null, null)}
-          color="secondary"
-          aria-label="Add"
+          variant="secondary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add container')}
+        </Button>
         <Drawer
           open={containerStep != null}
           onClose={handleCloseContainer}
