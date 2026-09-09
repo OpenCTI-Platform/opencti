@@ -87,7 +87,6 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
         }}
       >
         <Select
-          aria-label={label}
           value={isExternal && action === 'keep' ? 'use_external_secret' : action}
           onValueChange={(value) => {
             const v = value as SecretAction;
@@ -100,7 +99,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
             }
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger aria-label={label}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={label}>
@@ -132,11 +131,10 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
         {action === 'use_external_secret' && (
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Select
-              aria-label={t_i18n('External secret')}
               value={secretName || (availableSecrets[0]?.secret_name ?? '')}
               onValueChange={(value) => setFieldValue(`${namePrefix}_secret_name`, value)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full" aria-label={t_i18n('External secret')}>
                 <SelectValue placeholder={t_i18n('External secret')} />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('External secret')}>
