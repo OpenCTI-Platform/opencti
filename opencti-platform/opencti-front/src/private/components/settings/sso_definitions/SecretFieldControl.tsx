@@ -3,7 +3,6 @@ import { Field, useFormikContext } from 'formik';
 import Box from '@mui/material/Box';
 
 import FormHelperText from '@mui/material/FormHelperText';
-import InputLabel from '@mui/material/InputLabel';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../components/TextField';
@@ -61,9 +60,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
   if (isExternal && !isEditing) {
     return (
       <Box sx={style}>
-        <InputLabel shrink sx={{ position: 'relative', mb: 0.5, display: 'block' }}>
-          {label}
-        </InputLabel>
+        <SelectLabel>{label}</SelectLabel>
         <Tag
           label={displayLabel ? `${t_i18n('External secret')}: ${displayLabel}` : t_i18n('Externally managed')}
           color={theme.palette.primary.main}
@@ -76,6 +73,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
 
   return (
     <Box sx={style}>
+      <SelectLabel>{label}</SelectLabel>
       <Box
         sx={{
           display: 'flex',
@@ -97,8 +95,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
             }
           }}
         >
-          <SelectLabel>{label}</SelectLabel>
-          <SelectTrigger>
+          <SelectTrigger aria-label={label}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={label}>
@@ -128,26 +125,27 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
           </Box>
         )}
         {action === 'use_external_secret' && (
-          <Select
-            value={secretName || (availableSecrets[0]?.secret_name ?? '')}
-            onValueChange={(value) => setFieldValue(`${namePrefix}_secret_name`, value)}
-          >
-            <SelectLabel>{t_i18n('External secret')}</SelectLabel>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent aria-label={t_i18n('External secret')}>
-              {availableSecrets.length === 0 ? (
-                <SelectItem value="" disabled>{t_i18n('No external secrets configured')}</SelectItem>
-              ) : (
-                availableSecrets.map((s) => (
-                  <SelectItem key={s.secret_name} value={s.secret_name}>
-                    {s.secret_name} ({s.provider_name})
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Select
+              value={secretName || (availableSecrets[0]?.secret_name ?? '')}
+              onValueChange={(value) => setFieldValue(`${namePrefix}_secret_name`, value)}
+            >
+              <SelectTrigger className="w-full" aria-label={t_i18n('External secret')}>
+                <SelectValue placeholder={t_i18n('External secret')} />
+              </SelectTrigger>
+              <SelectContent aria-label={t_i18n('External secret')}>
+                {availableSecrets.length === 0 ? (
+                  <SelectItem value="" disabled>{t_i18n('No external secrets configured')}</SelectItem>
+                ) : (
+                  availableSecrets.map((s) => (
+                    <SelectItem key={s.secret_name} value={s.secret_name}>
+                      {s.secret_name} ({s.provider_name})
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </Box>
         )}
       </Box>
     </Box>

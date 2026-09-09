@@ -18,6 +18,7 @@ import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGr
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { isNotEmptyField } from '../../../utils/utils';
 import { NavBarQuery } from './__generated__/NavBarQuery.graphql';
+import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import MadeByFiligran from './MadeByFiligran';
 import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from './navBarConstants';
 import useNavMenu, { NavGroup, NavItem, NavSubItem } from './useNavMenu';
@@ -51,6 +52,7 @@ export interface NavBarViewProps {
   accentColor?: string;
   topOffset: string;
   bottomOffset: string;
+  flowOffset: string;
   header: React.ReactNode;
   footer: React.ReactNode;
   navLabel: string;
@@ -68,6 +70,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
   accentColor,
   topOffset,
   bottomOffset,
+  flowOffset,
   header,
   footer,
   navLabel,
@@ -76,6 +79,7 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
   const navStyle: React.CSSProperties & Record<string, string | undefined> = {
     position: 'sticky',
     top: topOffset,
+    marginTop: flowOffset,
     alignSelf: 'flex-start',
     height: `calc(100dvh - ${topOffset} - ${bottomOffset})`,
   };
@@ -178,10 +182,16 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
   const { height: topBannerHeight } = useTopBanner();
-  // Mirrors the app shell's own offsets (private/Index.tsx): the classification banners take the banner height at
-  // the top and at the bottom, the notification banner `topBannerHeight` at the top only.
-  const topOffset = `${topBannerHeight + bannerHeightNumber}px`;
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  // Mirrors the app shell's own offsets (private/Index.tsx and nav/TopBar.tsx): the classification banners take the
+  // banner height at the top and at the bottom, the notification banner `topBannerHeight` and the platform message
+  // banner `settingsMessagesBannerHeight` at the top only. Without the platform message banner height the fixed
+  // banner overlaps the top of the rail and hides the Filigran logo.
+  const topOffset = `${topBannerHeight + bannerHeightNumber + settingsMessagesBannerHeight}px`;
   const bottomOffset = `${bannerHeightNumber}px`;
+  // The parent shell (private/Index.tsx) reserves flow space for the classification and notification banners via its
+  // own margins; only the platform message banner is left for the rail to reserve here.
+  const flowOffset = `${settingsMessagesBannerHeight}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const data = usePreloadedQuery<NavBarQuery>(navBarQuery, queryRef);
   const groups = useNavMenu();
@@ -241,6 +251,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
       accentColor={accentColor}
       topOffset={topOffset}
       bottomOffset={bottomOffset}
+      flowOffset={flowOffset}
       navLabel={t_i18n('Main navigation')}
       header={(
         <ProductSwitcher
