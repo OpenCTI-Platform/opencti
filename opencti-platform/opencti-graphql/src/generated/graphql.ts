@@ -38686,7 +38686,7 @@ export type WorkflowTransition = {
   event: Scalars['String']['output'];
   requiresShareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
   requiresUnshareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
-  toState: Scalars['String']['output'];
+  toState?: Maybe<Scalars['String']['output']>;
   toStatus?: Maybe<Status>;
 };
 
@@ -53897,7 +53897,7 @@ export type WorkflowTransitionResolvers<ContextType = any, ParentType extends Re
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   requiresShareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   requiresUnshareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  toState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toState?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
 }>;
 

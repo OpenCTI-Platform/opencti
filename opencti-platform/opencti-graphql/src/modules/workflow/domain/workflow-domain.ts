@@ -850,7 +850,14 @@ export const getAllowedTransitions = async (
     definitionData?: WorkflowDefinitionResponse | null;
     instanceEntity?: WorkflowInstanceStoreEntity | null;
   },
-): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
+): Promise<Array<{
+  event: string;
+  toState: string | null;
+  comment?: string;
+  actions: string[];
+  requiresShareOrganizationInput: boolean;
+  requiresUnshareOrganizationInput: boolean;
+}>> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     return [];
@@ -892,7 +899,7 @@ export const getAllowedTransitions = async (
       }
       return {
         event: transition.event,
-        toState: transition.to,
+        toState: transition.to ?? null,
         comment: transition.comment,
         actions: transition.actionTypes || [],
         requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
