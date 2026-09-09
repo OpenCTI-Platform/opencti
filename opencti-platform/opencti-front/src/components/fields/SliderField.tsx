@@ -3,7 +3,7 @@ import { Slider } from '@filigran/design-system';
 import { FieldProps, useField } from 'formik';
 import { isNilField } from '../../utils/utils';
 
-export type SliderFieldProps = FieldProps<number> & {
+export type SliderFieldProps = FieldProps<string> & {
   label?: ReactNode;
   ariaLabel?: string;
   helpertext?: ReactNode;
@@ -17,8 +17,8 @@ export type SliderFieldProps = FieldProps<number> & {
   showBounds?: boolean;
   /** Paints the filled range and thumb, used to reflect the value's scale level (confidence/likelihood). */
   color?: string;
-  onChange?: (name: string, value: number) => void;
-  onSubmit?: (name: string, value: number) => void;
+  onChange?: (name: string, value: string) => void;
+  onSubmit?: (name: string, value: string) => void;
   /**
    * The pivot's `onFocus`, which OpenCTI uses to publish the collaborative editing context
    * rather than for anything visual.
@@ -47,7 +47,7 @@ const SliderField = ({
 }: SliderFieldProps) => {
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
-  const currentValue = value === null || value === undefined ? min : Number(value);
+  const currentValue = value === null || value === undefined || value === '' ? min : Number(value);
   // The DS Slider has no `required` flag, so the asterisk is carried on the label like the other form fields.
   const finalLabel = label != null && required ? <>{label} *</> : label;
   // The filled range and thumb read `var(--icon-highlight)`; overriding it on the wrapper cascades to them,
@@ -60,14 +60,15 @@ const SliderField = ({
 
   // Radix reports the whole thumb array; likelihood is a single thumb, so read entry 0.
   const handleValueChange = useCallback(([next]: number[]) => {
-    onChange?.(name, next);
-    setFieldValue(name, next);
+    const nextValue = String(next);
+    onChange?.(name, nextValue);
+    setFieldValue(name, nextValue);
   }, [name, onChange, setFieldValue]);
 
   // A Radix Slider commits on pointer release / keyboard change, mirroring the blur-commit MUI used.
   const handleValueCommit = useCallback(([next]: number[]) => {
     setFieldTouched(name, true);
-    onSubmit?.(name, next);
+    onSubmit?.(name, String(next));
   }, [name, onSubmit, setFieldTouched]);
 
   return (
