@@ -1,7 +1,11 @@
 import DraftsPage from 'tests_e2e/model/drafts.pageModel';
 import SearchPageModel from 'tests_e2e/model/search.pageModel';
+import { setTimeout } from 'node:timers/promises';
 import { expect, test } from '../fixtures/baseFixtures';
 import { restoreAdminSession } from '../restoreAdminSession';
+import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
+import LoginFormPageModel from '../model/form/loginForm.pageModel';
+import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
 
 test.describe('Drafts list', { tag: ['@ce', '@workflow'] }, () => {
   test('should list, search, and delete manually-created drafts', async ({ page }) => {
@@ -39,5 +43,44 @@ test.describe('Drafts list', { tag: ['@ce', '@workflow'] }, () => {
     await page.reload();
     await expect(Drafts.getDraft(alphaName)).not.toBeVisible();
     await expect(Drafts.getDraft(betaName)).not.toBeVisible();
+  });
+
+  test('should exit an existing draft after a delayed login', { tag: '@mutation' }, async ({ page }) => {
+    const draftName = `Draft Session E2E - ${crypto.randomUUID()}`;
+    const drafts = new DraftsPage(page);
+    const toolbar = new DraftToolbarPageModel(page);
+    const loginForm = new LoginFormPageModel(page);
+    const topBar = new TopMenuProfilePage(page);
+
+    await restoreAdminSession(page);
+    await toolbar.exitDraftIfPresent();
+    await drafts.createDraft({ name: draftName, authorizedMembers: [] });
+    await drafts.openDraft(draftName);
+    await toolbar.assertHasAccess();
+    await topBar.logout();
+    await expect(loginForm.getPage()).toBeVisible();
+
+    // Reproduce CI's slow post-login bootstrap and independently delayed draft toolbar.
+    await page.route('**/graphql', async (route) => {
+      const operation = route.request().postDataJSON()?.id;
+      if (operation === 'RootPrivateQuery' || operation === 'DraftToolbarQuery') {
+        await setTimeout(8000);
+      }
+      await route.fallback();
+    });
+
+    try {
+      await loginForm.login();
+      expect(await topBar.getMenuProfile().isVisible()).toBe(true);
+      await toolbar.exitDraftIfPresent();
+      await expect(drafts.getPage()).toBeVisible();
+      await expect(toolbar.getToolbar()).toBeHidden();
+    } finally {
+      await page.unrouteAll({ behavior: 'wait' });
+      await restoreAdminSession(page);
+      await toolbar.exitDraftIfPresent();
+      await drafts.navigate();
+      await drafts.deleteDraft(draftName);
+    }
   });
 });

@@ -2,7 +2,7 @@ import { test } from '../fixtures/baseFixtures';
 import { addUsers } from './user.data';
 import { addRoles } from './role.data';
 import { addGroups } from './group.data';
-import { addOrganizations, restrictOrganizationVisibility } from './organization.data';
+import { addOrganizations } from './organization.data';
 import { addStatusTemplates } from './statusTemplate.data';
 
 test('Init data', async ({ request }) => {
@@ -11,9 +11,6 @@ test('Init data', async ({ request }) => {
     { name: 'OrgB' },
     { name: 'OrgC' },
   ]);
-  // OrgA's own Identity must not be visible to OrgB, so a Report authored by OrgA shows a
-  // "restricted" Author to OrgB users (Threat Advisory product-test-plan steps 19-20).
-  await restrictOrganizationVisibility(request, 'OrgA', ['OrgA', 'OrgC']);
   await addStatusTemplates(request, [
     { name: 'NEW', color: '#4caf50' },
     { name: 'MO MANAGER REVIEW', color: '#ff9800' },

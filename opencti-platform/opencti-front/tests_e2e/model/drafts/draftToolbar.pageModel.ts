@@ -115,13 +115,19 @@ export default class DraftToolbarPageModel {
     await expect(this.getToolbar().getByTestId('workflow-transitions-pending')).toBeVisible();
   }
 
+  private getLastCommentDialog() {
+    return this.page.getByRole('dialog').filter({
+      has: this.page.getByRole('heading', { name: 'Last workflow comment', exact: true }),
+    });
+  }
+
   async assertLastCommentVisible(text: string) {
     // `useDraftCommentPopup` auto-opens a "Last workflow comment" dialog the first time this
     // browser (localStorage is keyed by draftId only, not per-user) sees a given comment. It can
     // pop up at any point (e.g. on the toolbar's periodic background refetch) including mid-click,
     // so this dismisses it in a retrying loop instead of a single point-in-time check, until the
     // toolbar button click actually goes through.
-    const commentDialog = this.page.getByRole('dialog', { name: 'Last workflow comment' });
+    const commentDialog = this.getLastCommentDialog();
     await expect(async () => {
       if (await commentDialog.isVisible()) {
         await commentDialog.getByRole('button', { name: 'Close' }).click();
@@ -135,14 +141,23 @@ export default class DraftToolbarPageModel {
   /** Exits without an associated container entity navigates to the drafts list
    * (`DraftExit.tsx`'s `onCompleted` fallback) - wait for it to actually load. */
   async exitDraft() {
-    await this.getToolbar().getByRole('button', { name: 'Exit draft' }).click();
-    await expect(this.page.getByTestId('draft-page')).toBeVisible({ timeout: 5000 });
+    const commentDialog = this.getLastCommentDialog();
+    // The unseen-comment modal can open after the toolbar has already mounted.
+    await this.page.addLocatorHandler(commentDialog, async () => {
+      await commentDialog.getByRole('button', { name: 'Close', exact: true }).click();
+    });
+    try {
+      await this.getToolbar().getByRole('button', { name: 'Exit draft' }).click({ timeout: 30000 });
+      await expect(this.page.getByTestId('draft-page')).toBeVisible();
+    } finally {
+      await this.page.removeLocatorHandler(commentDialog);
+    }
   }
 
-  /** A previous, interrupted test run can leave a user stuck in a draft context; call after login and before navigating elsewhere. Uses a bounded wait since the toolbar mounts asynchronously. */
+  /** Check the authenticated navigation's draft context instead of treating a slow toolbar as absent. */
   async exitDraftIfPresent() {
-    const isPresent = await this.getToolbar().waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false);
-    if (isPresent) {
+    await expect(this.page.getByLabel('Main navigation', { exact: true })).toBeVisible();
+    if (await this.page.getByRole('menuitem', { name: 'Draft overview', exact: true, includeHidden: true }).isVisible()) {
       await this.exitDraft();
     }
   }

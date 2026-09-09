@@ -1,5 +1,7 @@
 import { Page } from '@playwright/test';
 import TextFieldPageModel from '../field/TextField.pageModel';
+import TopMenuProfilePage from '../menu/topMenuProfile.pageModel';
+import { expect } from '../../fixtures/baseFixtures';
 
 export default class LoginFormPageModel {
   nameField: TextFieldPageModel;
@@ -22,9 +24,9 @@ export default class LoginFormPageModel {
     await this.nameField.fill(name ?? 'admin@opencti.io');
     await this.passwordField.fill(pwd ?? 'admin');
     await this.getSignInButton().click();
-    // LoginForm.tsx does `window.location.reload()` on success, then the authenticated
-    // app client-side redirects '/' -> '/dashboard' (private/Root.tsx) - wait for that
-    // full round-trip so a subsequent direct page.goto() doesn't race the pending reload.
+    // The login form can already be displayed at a dashboard URL. Wait for the
+    // authenticated shell after LoginForm.tsx's reload, not just the URL.
     await this.page.waitForURL('**/dashboard**');
+    await expect(new TopMenuProfilePage(this.page).getMenuProfile()).toBeVisible();
   }
 }

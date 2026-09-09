@@ -69,6 +69,7 @@ export default defineConfig({
       testMatch: "workflow/threatAdvisoryWorkflowSetup.spec.ts",
       use: {
         ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
@@ -82,6 +83,7 @@ export default defineConfig({
       testMatch: "formIntake/threatAdvisorySetup.spec.ts",
       use: {
         ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
@@ -107,6 +109,7 @@ export default defineConfig({
       ],
       use: {
         ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,

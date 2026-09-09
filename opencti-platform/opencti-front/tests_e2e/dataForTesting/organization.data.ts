@@ -1,4 +1,5 @@
 import { APIRequestContext } from '@playwright/test';
+import { expect } from '../fixtures/baseFixtures';
 
 export const getOrganizations = () => `
   query {
@@ -60,6 +61,12 @@ const editAuthorizedMembers = (id: string, adminId: string, viewerIds: string[])
         ${viewerIds.map((memberId) => `{ id: "${memberId}", access_right: "use" }`).join(',\n        ')}
       ]) {
         id
+        ... on Organization {
+          authorized_members {
+            member_id
+            access_right
+          }
+        }
       }
     }
   }
@@ -78,4 +85,14 @@ export const restrictOrganizationVisibility = async (request: APIRequestContext,
   if (responseData.errors) {
     throw new Error(`restrictOrganizationVisibility failed: ${JSON.stringify(responseData.errors)}`);
   }
+  const authorizedMembers = responseData.data.stixDomainObjectEdit.editAuthorizedMembers.authorized_members;
+  const expectedMembers = [
+    { member_id: adminId, access_right: 'admin' },
+    ...viewerIds.map((memberId) => ({ member_id: memberId, access_right: 'use' })),
+  ];
+  expect(
+    authorizedMembers,
+    `Expected ${organizationName}'s organization access grants to be saved; ACCESS_RESTRICTION_CAN_USE must be enabled`,
+  ).toEqual(expect.arrayContaining(expectedMembers));
+  expect(authorizedMembers).toHaveLength(expectedMembers.length);
 };

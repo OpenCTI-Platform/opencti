@@ -5,9 +5,14 @@ import WorkflowEditorPageModel from '../model/workflow/workflowEditor.pageModel'
 import WorkflowEditionDrawerPageModel from '../model/workflow/workflowEditionDrawer.pageModel';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import { restoreAdminSession } from '../restoreAdminSession';
+import { restrictOrganizationVisibility } from '../dataForTesting/organization.data';
 
-test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
+test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@workflow'] }, async ({ page, request }) => {
   test.setTimeout(300000);
+
+  // Restrict OrgA's identity before logging out of the admin session. This fixture needs
+  // ACCESS_RESTRICTION_CAN_USE, unlike the shared initialization used by other CI jobs.
+  await restrictOrganizationVisibility(request, 'OrgA', ['OrgA', 'OrgC']);
 
   const topBar = new TopMenuProfilePage(page);
   const loginForm = new LoginFormPageModel(page);
