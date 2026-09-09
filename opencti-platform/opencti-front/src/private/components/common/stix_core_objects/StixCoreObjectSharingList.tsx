@@ -87,7 +87,17 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: St
         />
       )}
       renderOverflowTooltip={(hiddenOrganizations) => (
-        <Stack direction="column" gap={0.5} sx={{ p: 0.5 }}>
+        <Stack
+          direction="column"
+          gap={0.5}
+          sx={{
+            p: 0.5,
+            '& > span': {
+              width: '100%',
+              justifyContent: 'space-between',
+            },
+          }}
+        >
           {hiddenOrganizations.map((organization) => (
             <ItemOrganizations
               key={organization.id}
