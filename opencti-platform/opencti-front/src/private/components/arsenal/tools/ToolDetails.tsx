@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Tooltip from '@mui/material/Tooltip';
 import { ToolDetails_tool$key } from '@components/arsenal/tools/__generated__/ToolDetails_tool.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -15,6 +16,10 @@ import TextList from '../../../../components/common/text/TextList';
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
    id
+   entity_type
+   customFieldValues {
+     ...CustomFieldValuesDisplay_values @relay(mask: false)
+   }
    description
    tool_version
    tool_types
@@ -67,6 +72,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             />
             <StixCoreObjectKillChainPhasesView killChainPhases={tool.killChainPhases ?? []} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={tool.entity_type} values={tool.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>

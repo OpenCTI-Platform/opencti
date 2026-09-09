@@ -16,6 +16,7 @@ type WidgetConfigColumnsCustomizationProps = {
   defaultColumns: WidgetColumn[];
   value?: WidgetColumn[];
   onChange: (columns: WidgetColumn[]) => void;
+  isAvailableColumnsLoading?: boolean;
 };
 
 const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
@@ -23,6 +24,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
   defaultColumns,
   value = [],
   onChange,
+  isAvailableColumnsLoading = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -31,6 +33,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
     availableColumns,
     value,
     onChange,
+    isAvailableColumnsLoading,
   );
 
   return (

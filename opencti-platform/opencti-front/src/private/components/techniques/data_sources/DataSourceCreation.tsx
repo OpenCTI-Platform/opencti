@@ -5,7 +5,10 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { Stack } from '@mui/material';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -145,6 +148,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: DataSourceCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -188,6 +192,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
 
   return (
     <Formik<DataSourceAddInput>
+      entityType={DATA_SOURCE_TYPE}
       initialValues={initialValues}
       validationSchema={dataSourceValidator}
       validateOnChange={true}
@@ -302,6 +307,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               containerStyle={fieldSpacingContainerStyle}
               multiple={true}
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

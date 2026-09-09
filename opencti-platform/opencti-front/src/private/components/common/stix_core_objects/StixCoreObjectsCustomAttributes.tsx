@@ -36,6 +36,16 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
           }
         }
         workflowEnabled
+        customFieldValues {
+          field_id
+          field_name
+          int_value
+          string_value
+          boolean_value
+          date_value
+          select_value
+          select_values
+        }
       }
       ... on Report {
         name

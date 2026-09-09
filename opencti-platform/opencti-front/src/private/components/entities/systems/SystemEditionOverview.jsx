@@ -17,6 +17,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import TextareaField from '../../../../components/TextareaField';
@@ -289,6 +290,13 @@ const SystemEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={system.entity_type}
+            entityId={system.id}
+            values={system.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -309,6 +317,7 @@ export default createFragmentContainer(SystemEditionOverviewComponent, {
   system: graphql`
       fragment SystemEditionOverview_system on System {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         name
         description
         confidence

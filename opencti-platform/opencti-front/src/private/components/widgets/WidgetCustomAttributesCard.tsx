@@ -24,6 +24,7 @@ import { entityTypeRenderers } from 'src/utils/widget/widgetCustomAttributesRend
 import ListItemText from '@mui/material/ListItemText';
 import { openVocabListRenderers, openVocabSingleRenderers } from 'src/utils/widget/widgetOpenVocabRendererUtils';
 import { EMPTY_VALUE } from 'src/utils/String';
+import { getCustomFieldRawValueByFieldName, isCustomFieldAttribute } from 'src/utils/customFields';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -184,6 +185,36 @@ const renderAttributeValue = (
     );
   }
 
+  if (isCustomFieldAttribute(attribute)) {
+    const rawValue = getCustomFieldRawValueByFieldName(
+      (data as unknown as { customFieldValues?: never }).customFieldValues as never,
+      attribute,
+    );
+    if (rawValue === undefined || rawValue === null || rawValue === '') return empty();
+    // Reuse the standard type-based renderer (date/boolean/markdown/tag/tag_list...) by
+    // patching the value onto the data under its own attribute key. Custom fields without
+    // a matching attributeType (text, integer) fall back to plain text / tag list below.
+    if (column.attributeType) {
+      const patchedData = { ...data, [attribute]: rawValue } as StixCoreObject;
+      const rendered = renderByAttributeType(column, patchedData, t_i18n, fldt);
+      if (rendered !== null) return rendered;
+    }
+    if (isStringArray(rawValue)) {
+      if (rawValue.length === 0) return empty();
+      return (
+        <FieldOrEmpty source={rawValue}>
+          <Stack direction="row" flexWrap="wrap" gap={1}>
+            {rawValue.map((item) => <Tag key={item} label={item} />)}
+          </Stack>
+        </FieldOrEmpty>
+      );
+    }
+    return (
+      <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+        {String(rawValue)}
+      </Typography>
+    );
+  }
   const entityType = data.entity_type ?? '';
   const isSCO = 'observable_value' in data;
   const specificRenderer

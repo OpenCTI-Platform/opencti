@@ -2790,6 +2790,7 @@ interface StixDomainObject {
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input StixDomainObjectAddInput {
@@ -2817,6 +2818,7 @@ input StixDomainObjectAddInput {
   modified: DateTime
   x_opencti_modified_at: DateTime
   update: Boolean
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum AttackPatternsOrdering {
@@ -2912,6 +2914,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input AttackPatternAddInput {
@@ -2948,6 +2951,7 @@ input AttackPatternAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type AttackPatternForMatrix {
@@ -3067,6 +3071,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 
@@ -3103,6 +3108,7 @@ input CampaignAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum ContainersOrdering {
@@ -3275,6 +3281,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input NoteAddInput {
@@ -3309,6 +3316,7 @@ input NoteAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 input NoteUserAddInput {
@@ -3332,6 +3340,7 @@ input NoteUserAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum ObservedDatasOrdering {
@@ -3429,6 +3438,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input ObservedDataAddInput {
@@ -3461,6 +3471,7 @@ input ObservedDataAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum OpinionsOrdering {
@@ -3552,6 +3563,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input OpinionAddInput {
@@ -3583,6 +3595,7 @@ input OpinionAddInput {
   filesMarkings: [[String]]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 input OpinionUserAddInput {
@@ -3604,6 +3617,7 @@ input OpinionUserAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   clientMutationId: String
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum ReportsOrdering {
@@ -3701,6 +3715,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 
@@ -3741,6 +3756,7 @@ input ReportAddInput {
   embedded: [Boolean]
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum CoursesOfActionOrdering {
@@ -3830,6 +3846,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input CourseOfActionAddInput {
@@ -3862,6 +3879,7 @@ input CourseOfActionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum IdentitiesOrdering {
@@ -3953,6 +3971,7 @@ interface Identity {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 
 input IdentityAddInput {
@@ -3986,6 +4005,7 @@ input IdentityAddInput {
   embedded: [Boolean]
   update: Boolean
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum IndividualsOrdering {
@@ -4078,6 +4098,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   workflowInstance: WorkflowInstance
   isUser: Boolean
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input IndividualAddInput {
@@ -4114,6 +4135,7 @@ input IndividualAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum SectorsOrdering {
@@ -4207,6 +4229,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input SectorAddInput {
@@ -4239,6 +4262,7 @@ input SectorAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum SystemsOrdering {
@@ -4330,6 +4354,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input SystemAddInput {
@@ -4366,6 +4391,7 @@ input SystemAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum InfrastructuresOrdering {
@@ -4460,6 +4486,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input InfrastructureAddInput {
@@ -4495,6 +4522,7 @@ input InfrastructureAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum IntrusionSetsOrdering {
@@ -4591,6 +4619,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 
@@ -4631,6 +4660,7 @@ input IntrusionSetAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum LocationsOrdering {
@@ -4717,6 +4747,7 @@ interface Location {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 
 input LocationAddInput {
@@ -4751,6 +4782,7 @@ input LocationAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum PositionsOrdering {
@@ -4842,6 +4874,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input PositionAddInput {
@@ -4877,6 +4910,7 @@ input PositionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum CitiesOrdering {
@@ -4968,6 +5002,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input CityAddInput {
@@ -5002,6 +5037,7 @@ input CityAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum CountriesOrdering {
@@ -5089,6 +5125,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input CountryAddInput {
@@ -5122,6 +5159,7 @@ input CountryAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum RegionsOrdering {
@@ -5211,6 +5249,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input RegionAddInput {
@@ -5244,6 +5283,7 @@ input RegionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum MalwaresOrdering {
@@ -5350,6 +5390,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input MalwareAddInput {
@@ -5392,6 +5433,7 @@ input MalwareAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum ThreatActorsOrdering {
@@ -5493,6 +5535,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 type ThreatActorEdge {
@@ -5579,6 +5622,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input ThreatActorGroupAddInput {
@@ -5622,6 +5666,7 @@ input ThreatActorGroupAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum ToolsOrdering {
@@ -5709,6 +5754,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input ToolAddInput {
@@ -5743,6 +5789,7 @@ input ToolAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum IncidentsOrdering {
@@ -5843,6 +5890,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 
@@ -5884,6 +5932,7 @@ input IncidentAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum StixCyberObservablesOrdering {
@@ -8796,6 +8845,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 
 input SecurityCoverageExpectation {
@@ -8830,6 +8880,7 @@ input StixCoreRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum StixSightingRelationshipsOrdering {
@@ -8914,6 +8965,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 
 input StixSightingRelationshipAddInput {
@@ -8939,6 +8991,7 @@ input StixSightingRelationshipAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum StixRefRelationshipsOrdering {
@@ -9493,6 +9546,7 @@ type Query {
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
+  customFieldStixFilterKeys(entityType: String): [String!]
 }
 
 type Subscription {
@@ -10716,6 +10770,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum ChannelsOrdering {
@@ -10772,6 +10827,7 @@ input ChannelAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Catalog implements InternalObject & BasicObject {
@@ -10871,6 +10927,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum LanguagesOrdering {
@@ -10923,6 +10980,7 @@ input LanguageAddInput {
   filesMarkings: [[String]]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -10990,6 +11048,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum EventsOrdering {
@@ -11050,6 +11109,7 @@ input EventAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
@@ -11120,6 +11180,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 
@@ -11183,6 +11244,7 @@ input GroupingAddInput {
   embedded: [Boolean]
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -11250,6 +11312,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum NarrativesOrdering {
@@ -11305,6 +11368,7 @@ input NarrativeAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type ResolvedInstanceFilter {
@@ -11537,6 +11601,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   name: String!
   description: String
   aliases: [String]
@@ -11595,6 +11660,7 @@ input DataComponentAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11655,6 +11721,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   name: String!
   description: String
   aliases: [String]
@@ -11716,6 +11783,7 @@ input DataSourceAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum VocabularyCategory {
@@ -11909,6 +11977,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum AdministrativeAreasOrdering {
@@ -11964,6 +12033,7 @@ input AdministrativeAreaAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Task implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {
@@ -12028,6 +12098,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   name: String!
   description: String
   due_date: DateTime
@@ -12084,6 +12155,7 @@ input TaskAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type TaskTemplate implements InternalObject & BasicObject {
@@ -12188,6 +12260,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   name: String!
   description: String
   content: String
@@ -12321,6 +12394,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
   name: String!
   description: String
@@ -12331,7 +12405,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
-  customFieldValues: [CustomFieldValue!]
 }
 
 enum CaseIncidentsOrdering {
@@ -12452,6 +12525,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   fintelTemplates: [FintelTemplate!]
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   authorized_members: [MemberAccess!]
@@ -12549,6 +12623,7 @@ input CaseRfiAddInput {
   authorized_members: [MemberAccessInput!]
   x_opencti_request_access: String
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -12595,6 +12670,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   fintelTemplates: [FintelTemplate!]
   authorized_members: [MemberAccess!]
@@ -12689,6 +12765,7 @@ input CaseRftAddInput {
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -12753,6 +12830,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   name: String!
   description: String
   content: String
@@ -12820,6 +12898,7 @@ input FeedbackAddInput {
   update: Boolean
   rating: Int
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type DefaultValue {
@@ -13017,6 +13096,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   product: String!
   version: String
   hostVm: Software
@@ -13102,6 +13182,7 @@ input MalwareAnalysisAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type ManagerConfiguration implements InternalObject & BasicObject {
@@ -13275,6 +13356,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 
@@ -13353,6 +13435,7 @@ input ThreatActorIndividualAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type PlayBookExecutionStep {
@@ -14107,6 +14190,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input IndicatorAddInput {
@@ -14153,6 +14237,7 @@ input IndicatorAddInput {
   embedded: [Boolean]
   basedOn: [String!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum VulnerabilitiesOrdering {
@@ -14309,6 +14394,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 input VulnerabilityAddInput {
@@ -14391,6 +14477,7 @@ input VulnerabilityAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type VulnerabilityEditMutations {
@@ -14575,6 +14662,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum OrganizationsOrdering {
@@ -14635,6 +14723,7 @@ input OrganizationAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type MeOrganization {
@@ -15846,6 +15935,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum SecurityPlatformOrdering {
@@ -15894,6 +15984,7 @@ input SecurityPlatformAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15965,6 +16056,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
@@ -16060,6 +16152,7 @@ input SecurityCoverageAddInput {
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
+  customFieldValues: [CustomFieldValueAddInput!]
   tenant_id: String
   tenant_name: String
   add_related_entities: SecurityCoverageSelectedEntitiesInput
@@ -16142,6 +16235,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
@@ -17434,14 +17528,8 @@ type CustomFieldValue {
 }
 
 input CustomFieldValueAddInput {
-  field_id: ID!
   field_name: String!
-  int_value: Int
-  string_value: String
-  boolean_value: Boolean
-  date_value: DateTime
-  select_value: String
-  select_values: [String!]
+  value: [Any]!
 }
 
 type CustomFieldEntityTypeSetting {
@@ -17466,6 +17554,7 @@ type CustomFieldDefinition implements InternalObject & BasicObject {
   entity_type_settings: [CustomFieldEntityTypeSetting!]
   multiple: Boolean!
   description: String
+  aliases: [String!]
   min_value: Int
   max_value: Int
   select_options: [String!]
@@ -17495,6 +17584,7 @@ input CustomFieldDefinitionAddInput {
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   label: String!
+  aliases: [String!]
   field_type: String!
   entity_types: [String!]
   multiple: Boolean

@@ -17,7 +17,7 @@ import { Box, FormControl, FormLabel } from '@mui/material';
 import FilterIconButton from '../../../../../../components/FilterIconButton';
 import Filters from '../../../../common/lists/Filters';
 import useFiltersState from '../../../../../../utils/filters/useFiltersState';
-import { stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../../utils/filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, useStixFilters } from '../../../../../../utils/filters/filtersUtils';
 import { useTheme } from '@mui/material/styles';
 
 interface PlaybookFlowFieldFiltersProps {
@@ -33,6 +33,7 @@ const PlaybookFlowFieldFilters = ({
 }: PlaybookFlowFieldFiltersProps) => {
   const theme = useTheme();
   const [filters, helpers] = filtersState;
+  const stixFilters = useStixFilters();
   const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes(
     ['Stix-Core-Object', 'stix-core-relationship'],
   );
