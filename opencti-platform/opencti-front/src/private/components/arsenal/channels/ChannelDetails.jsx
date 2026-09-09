@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { Stack } from '@mui/material';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
@@ -12,6 +13,10 @@ import Tag from '@common/tag/Tag';
 const ChannelDetailsFragment = graphql`
   fragment ChannelDetails_channel on Channel {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     description
     channel_types
   }
@@ -46,6 +51,7 @@ export const ChannelDetails = ({
             </Stack>
           </FieldOrEmpty>
         </Grid>
+        <CustomFieldValuesDisplay entityType={channel.entity_type} values={channel.customFieldValues ?? []} />
       </Grid>
     </Card>
   );
