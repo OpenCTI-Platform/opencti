@@ -2,7 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-import { Stack, Tooltip, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
+import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Divider from '@mui/material/Divider';
 import { EMPTY_VALUE } from '../../../../utils/String';

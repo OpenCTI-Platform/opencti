@@ -1,14 +1,12 @@
 import Typography from '@mui/material/Typography';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ToggleButton from '@mui/material/ToggleButton';
 import { ViewListOutlined, ViewModuleOutlined, VisibilityOutlined } from '@mui/icons-material';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import React, { useEffect, useMemo, useState } from 'react';
+import { ButtonGroup, ButtonGroupItem, IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { useEffect, useMemo, useState } from 'react';
 import { createFragmentContainer, graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
-import { Box, IconButton, ListItemButton, Stack, Tooltip } from '@mui/material';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
+import Tooltip from '@mui/material/Tooltip';
+import { Box, ListItemButton, Stack } from '@mui/material';
 import { Link } from 'react-router';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -44,6 +42,9 @@ const securityCoverageKillChainPhasesFragment = graphql`
     }
   }
 `;
+
+// The library item declares a 16x16 glyph.
+const GLYPH = { fontSize: 16 };
 
 interface SecurityCoverageAttackPatternsProps {
   securityCoverage: SecurityCoverageAttackPatternsFragment$data;
@@ -105,41 +106,6 @@ const SecurityCoverageAttackPatternsComponent = ({
       )}
       action={(
         <Stack direction="row" spacing={1}>
-          <ToggleButtonGroup
-            size="small"
-            value={viewMode}
-            onValueChange={(value) => value && setViewMode(value as 'matrix' | 'lines')}
-            aria-label={t_i18n('Change view')}
-          >
-            <ToggleButton value="matrix" aria-label="matrix view">
-              <ViewModuleOutlined fontSize="small" />
-            </ToggleButton>
-            <ToggleButton value="lines" aria-label="lines view">
-              <ViewListOutlined fontSize="small" />
-            </ToggleButton>
-          </ToggleButtonGroup>
-          {showKillChainSelector && viewMode === 'matrix' && (
-            <FormControl size="small" style={{ width: 194, height: 30 }}>
-              <Select
-                value={selectedKillChain}
-                onChange={handleKillChainChange}
-                variant="outlined"
-                displayEmpty
-                style={{ height: 30 }}
-              >
-                {killChains.map((chain) => (
-                  <MenuItem key={chain} value={chain}>
-                    {(() => {
-                      if (chain === 'mitre-attack') return 'Mitre Attack';
-                      if (chain === 'capec') return 'CAPEC';
-                      if (chain === 'disarm') return 'Disarm';
-                      return capitalizeFirstLetter(chain);
-                    })()}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
           {viewMode === 'matrix' && (
             <Tooltip
               title={
@@ -150,15 +116,37 @@ const SecurityCoverageAttackPatternsComponent = ({
             >
               <span>
                 <IconButton
-                  size="small"
+                  size="sm"
+                  priority="tertiary"
                   color={isModeOnlyActive ? 'secondary' : 'primary'}
                   onClick={() => setIsModeOnlyActive((value) => !value)}
-                >
-                  <VisibilityOutlined fontSize="small" />
-                </IconButton>
+                  icon={<VisibilityOutlined fontSize="small" />}
+                  aria-label="matrix-mode"
+                />
               </span>
             </Tooltip>
           )}
+          <ButtonGroup
+            size="sm"
+            value={viewMode}
+            onValueChange={(value) => value && setViewMode(value as 'matrix' | 'lines')}
+            aria-label={t_i18n('Change view')}
+          >
+            <Tooltip title={t_i18n('Matrix view')}>
+              <ButtonGroupItem
+                value="matrix"
+                aria-label="matrix view"
+                icon={<ViewModuleOutlined sx={GLYPH} />}
+              />
+            </Tooltip>
+            <Tooltip title={t_i18n('Lines view')}>
+              <ButtonGroupItem
+                value="lines"
+                aria-label="lines view"
+                icon={<ViewListOutlined sx={GLYPH} />}
+              />
+            </Tooltip>
+          </ButtonGroup>
           <SearchInput
             variant="thin"
             onSubmit={setSearchTerm}
@@ -177,12 +165,38 @@ const SecurityCoverageAttackPatternsComponent = ({
         />
       )}
       {viewMode === 'matrix' ? (
-        <SecurityCoverageAttackPatternsMatrix
-          securityCoverage={securityCoverage}
-          searchTerm={searchTerm}
-          selectedKillChain={selectedKillChain}
-          isModeOnlyActive={isModeOnlyActive}
-        />
+        <>
+          {showKillChainSelector && (
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 1 }}>
+              <Select
+                value={selectedKillChain}
+                onValueChange={handleKillChainChange}
+              >
+                <SelectTrigger aria-label={t_i18n('Kill chain')}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent aria-label={t_i18n('Kill chain')}>
+                  {killChains.map((chain) => (
+                    <SelectItem key={chain} value={chain}>
+                      {(() => {
+                        if (chain === 'mitre-attack') return 'Mitre Attack';
+                        if (chain === 'capec') return 'CAPEC';
+                        if (chain === 'disarm') return 'Disarm';
+                        return capitalizeFirstLetter(chain);
+                      })()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Box>
+          )}
+          <SecurityCoverageAttackPatternsMatrix
+            securityCoverage={securityCoverage}
+            searchTerm={searchTerm}
+            selectedKillChain={selectedKillChain}
+            isModeOnlyActive={isModeOnlyActive}
+          />
+        </>
       ) : (
         <>
           <div className="clearfix" />

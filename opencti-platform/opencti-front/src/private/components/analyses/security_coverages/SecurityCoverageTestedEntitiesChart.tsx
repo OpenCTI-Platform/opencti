@@ -2,7 +2,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Card from '@common/card/Card';
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useMemo } from 'react';
-import { Stack, Tooltip } from '@mui/material';
+import { Stack } from '@mui/material';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
+import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';

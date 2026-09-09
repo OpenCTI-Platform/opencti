@@ -4,10 +4,8 @@ import { Field } from 'formik';
 import TextField from 'src/components/TextField';
 import MarkdownField, { MarkdownImagesController } from 'src/components/fields/markdownField/MarkdownField';
 import PeriodicityField from 'src/components/fields/PeriodicityField';
-import SelectField from 'src/components/fields/SelectField';
 import SwitchField from 'src/components/fields/SwitchField';
 import FormButtonContainer from 'src/components/common/form/FormButtonContainer';
-import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from 'src/components/i18n';
 import { SecurityCoverageFormValues, SecurityCoverageMode } from './SecurityCoverageCreation-types';
 import { CoverageInformationFieldAdd } from 'src/private/components/common/form/CoverageInformationField';
@@ -17,6 +15,7 @@ import ObjectMarkingField from 'src/private/components/common/form/ObjectMarking
 import { fieldSpacingContainerStyle } from 'src/utils/field';
 import ConfidenceField from 'src/private/components/common/form/ConfidenceField';
 import OpenVocabField from 'src/private/components/common/form/OpenVocabField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 
 interface CoverageDetailsStepProps {
   values: SecurityCoverageFormValues;
@@ -67,7 +66,7 @@ const CoverageDetailsStep = ({
         style={fieldSpacingContainerStyle}
         setFieldValue={setFieldValue}
       />
-      {mode === SecurityCoverageMode.AUTO && (
+      {mode === SecurityCoverageMode.MANUAL && (
         <>
           <PeriodicityField
             name="duration"
@@ -76,7 +75,7 @@ const CoverageDetailsStep = ({
             setFieldValue={setFieldValue}
           />
           <Field
-            component={SelectField}
+            component={SelectFieldFds}
             variant="standard"
             name="type_affinity"
             onChange={(name: string, value: string) => setFieldValue(name, value)}
@@ -84,9 +83,9 @@ const CoverageDetailsStep = ({
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem key="ENDPOINT" value="ENDPOINT">
+            <SelectItem key="ENDPOINT" value="ENDPOINT">
               {t_i18n('Endpoint')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           <OpenVocabField
             label={t_i18n('Platform(s) affinity')}
