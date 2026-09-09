@@ -30,7 +30,6 @@ import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/typ
 import { FilterMode, StatusScope } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
-import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 
