@@ -41,6 +41,7 @@ const renderNav = (overrides: Partial<NavBarViewProps> = {}, route = '/dashboard
     submenuShowIcons={false}
     topOffset="0px"
     bottomOffset="0px"
+    flowOffset="0px"
     header={null}
     footer={null}
     navLabel="Main navigation"
@@ -135,10 +136,13 @@ describe('NavBarView', () => {
   it('pins the rail to the viewport, full height, below the banners', () => {
     // The library lays its <nav> out in flow and sizes it with a percentage height; the fixed-
     // position drawer it replaces was full height and did not scroll away with the page.
-    const { container } = renderNav({ topOffset: '50px', bottomOffset: '20px' });
+    const { container } = renderNav({ topOffset: '50px', bottomOffset: '20px', flowOffset: '30px' });
     const nav = container.querySelector('nav') as HTMLElement;
     expect(nav.style.position).toBe('sticky');
     expect(nav.style.top).toBe('50px');
+    // The platform message banner is a fixed overlay the app shell does not reserve flow space for, so the rail
+    // reserves it itself to keep the ProductSwitcher (Filigran logo) from being hidden while unscrolled.
+    expect(nav.style.marginTop).toBe('30px');
     // jsdom reorders the terms of a calc(), so assert on its parts: the rail
     // is one viewport tall minus the space the banners take.
     expect(nav.style.height).toContain('100dvh');
