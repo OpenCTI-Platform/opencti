@@ -7080,15 +7080,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:3.4.14":
-  version: 3.4.14
-  resolution: "dompurify@npm:3.4.14"
+"dompurify@npm:3.4.15":
+  version: 3.4.15
+  resolution: "dompurify@npm:3.4.15"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10c0/feca07ece3805d1d4e33e847c11196888dcdc97b2afe0bb8a2fd11de4e62bfdc434c2403ee3fb3c7771e903325041d062febec6c5518796391fdc0419a90a873
+  checksum: 10c0/406b5f0f9c9dcbc80016367d33e73585b6a6f440815228d7e9cbe8abe71058183b1f4cb4207b79b8473637de4a106fc055eb6da271ef9db353d29679b891ecbc
   languageName: node
   linkType: hard
 
@@ -11926,7 +11926,7 @@ __metadata:
     d3-timer: "npm:3.0.1"
     date-fns: "npm:4.4.0"
     dom-accessibility-api: "npm:0.5.16"
-    dompurify: "npm:3.4.14"
+    dompurify: "npm:3.4.15"
     esbuild: "npm:0.28.2"
     eslint: "npm:10.9.1"
     eslint-import-resolver-typescript: "npm:4.4.5"
