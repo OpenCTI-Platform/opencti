@@ -3,7 +3,7 @@ import { Field, useFormikContext } from 'formik';
 import Box from '@mui/material/Box';
 
 import FormHelperText from '@mui/material/FormHelperText';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../components/TextField';
 import Tag from '../../../../components/common/tag/Tag';
@@ -60,9 +60,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
   if (isExternal && !isEditing) {
     return (
       <Box sx={style}>
-        <label className="font-sans-plex font-medium text-2 text-input-label" style={{ display: 'block', marginBottom: 8 }}>
-          {label}
-        </label>
+        <SelectLabel>{label}</SelectLabel>
         <Tag
           label={displayLabel ? `${t_i18n('External secret')}: ${displayLabel}` : t_i18n('Externally managed')}
           color={theme.palette.primary.main}
@@ -75,9 +73,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
 
   return (
     <Box sx={style}>
-      <label className="font-sans-plex font-medium text-2 text-input-label" style={{ display: 'block', marginBottom: 8 }}>
-        {label}
-      </label>
+      <SelectLabel>{label}</SelectLabel>
       <Box
         sx={{
           display: 'flex',
