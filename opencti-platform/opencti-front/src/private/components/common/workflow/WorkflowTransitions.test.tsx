@@ -176,7 +176,7 @@ describe('WorkflowTransitions – validate draft dialog', () => {
     mockCommitClear.mockReset();
   });
 
-  it('shows the validate draft dialog when currentStep is validate', async () => {
+  it.each(['approved', null])('shows the validate draft dialog with destination %s', async (toState) => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',
@@ -189,12 +189,12 @@ describe('WorkflowTransitions – validate draft dialog', () => {
         allowedTransitions: [
           {
             event: 'approve',
-            toState: 'approved',
+            toState,
             actions: ['validateDraft'],
             comment: null,
             requiresShareOrganizationInput: false,
             requiresUnshareOrganizationInput: false,
-            toStatus: makeStatus(),
+            toStatus: toState ? makeStatus() : null,
           },
         ],
       },

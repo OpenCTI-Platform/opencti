@@ -10779,7 +10779,7 @@ type WorkflowTriggerResult {
 
 type WorkflowTransition {
   event: String!
-  toState: String!
+  toState: String
   toStatus: Status
   comment: String
   actions: [String!]
