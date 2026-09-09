@@ -19,7 +19,9 @@ from pycti.connector.opencti_connector_helper import (
     get_config_variable,
 )
 
+from gil_probe import start_gil_probe
 from listen_handler import ListenHandler
+from orjson_shim import install_orjson_shim
 from message_queue_consumer import MessageQueueConsumer
 from push_handler import PushHandler
 from thread_pool_selector import ThreadPoolSelector
@@ -297,6 +299,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
+        # study 0011 step 2b: GIL convoy probe, env-gated (WORKER_GIL_PROBE), no-op otherwise
+        start_gil_probe(self.worker_logger)
+        # study 0011: orjson swap on the JSON hot path, env-gated (WORKER_ORJSON)
+        install_orjson_shim(self.worker_logger)
 
     def build_pika_parameters(
         self, connector_config: Dict[str, Any]
