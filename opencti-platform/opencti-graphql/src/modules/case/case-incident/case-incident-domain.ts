@@ -35,30 +35,6 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
     const individualId = await resolveUserIndividual(context, user);
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
-  // Validate custom field values (mandatory fields are enforced even when none are provided)
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    // Normalize GraphQL input (explicit null allowed) to the internal CustomFieldValue shape (undefined only)
-    const customFieldValues: CustomFieldValue[] = (caseIncidentAdd.customFieldValues ?? []).map((v) => ({
-      field_id: v.field_id,
-      field_name: v.field_name,
-      int_value: v.int_value ?? undefined,
-      string_value: v.string_value ?? undefined,
-      boolean_value: v.boolean_value ?? undefined,
-      date_value: v.date_value ?? undefined,
-      select_value: v.select_value ?? undefined,
-      select_values: v.select_values ?? undefined,
-    }));
-    await validateCustomFieldValues(context, user, customFieldValues, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
-    if (customFieldValues.length > 0) {
-      (caseToCreate as any).custom_field_values = customFieldValues;
-    }
-  } else if (caseIncidentAdd.customFieldValues && caseIncidentAdd.customFieldValues.length > 0) {
-    // Values were supplied while the feature is disabled: reject explicitly.
-    enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
-  }
-  // The GraphQL input uses camelCase (customFieldValues) but the store attribute is custom_field_values;
-  // remove the raw camelCase key so it isn't sent to indexing (ES strict mapping rejects unknown fields).
-  delete (caseToCreate as any).customFieldValues;
   const { caseTemplates } = caseToCreate;
   delete caseToCreate.caseTemplates;
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);

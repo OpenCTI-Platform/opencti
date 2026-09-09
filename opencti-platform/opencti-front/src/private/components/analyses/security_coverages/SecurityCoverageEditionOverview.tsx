@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { SecurityCoverageEditionOverview_securityCoverage$key } from './__generated__/SecurityCoverageEditionOverview_securityCoverage.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -87,6 +88,7 @@ const securityCoverageMutationRelationDelete = graphql`
 const securityCoverageEditionOverviewFragment = graphql`
   fragment SecurityCoverageEditionOverview_securityCoverage on SecurityCoverage {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -398,6 +400,12 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={SECURITY_COVERAGE_TYPE}
+            entityId={securityCoverageData.id}
+            values={securityCoverageData.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
           />
         </div>
       )}

@@ -40,6 +40,7 @@ vi.mock('../../../src/config/conf', () => ({
   DEV_MODE: false,
   TEST_MODE: false,
   ENABLED_UI: false,
+  CUSTOM_FIELDS_FEATURE_FLAG: 'CUSTOM_FIELDS',
   OPENCTI_SESSION: 'opencti_session',
   AUTH_PAYLOAD_BODY_SIZE: undefined,
   getBaseUrl: vi.fn(() => 'http://localhost:4000'),

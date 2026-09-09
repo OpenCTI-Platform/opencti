@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -153,6 +156,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     const allNames = splitMultilines(values.name);
     const variables: InfrastructureCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -203,6 +207,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
 
   return (
     <Formik<InfrastructureAddInput>
+      entityType={INFRASTRUCTURE_TYPE}
       initialValues={initialValues}
       validationSchema={infrastructureValidator}
       validateOnChange={true}
@@ -335,6 +340,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

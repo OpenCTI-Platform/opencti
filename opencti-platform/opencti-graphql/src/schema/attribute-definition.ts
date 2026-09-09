@@ -6,7 +6,7 @@ import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { TEST_MODE } from '../config/conf';
+import { CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
@@ -690,4 +690,27 @@ export const identityClass: TextAttribute = {
   multiple: false,
   upsert: false,
   isFilterable: false,
+};
+
+export const customFieldValues: NestedObjectAttribute = {
+  name: 'custom_field_values',
+  label: 'Custom field values',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: false,
+  featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
+  mappings: [
+    { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'int_value', label: 'Integer value', type: 'numeric', precision: 'integer', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'string_value', label: 'String value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'boolean_value', label: 'Boolean value', type: 'boolean', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'date_value', label: 'Date value', type: 'date', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'select_value', label: 'Select value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'select_values', label: 'Select values', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: true, isFilterable: false },
+  ],
 };

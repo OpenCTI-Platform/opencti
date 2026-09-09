@@ -143,6 +143,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 # Ordering
@@ -212,6 +213,7 @@ input ChannelAddInput {
     noTriggerImport: [Boolean]
     embedded: [Boolean]
     upsertOperations: [EditInput!]
+    customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

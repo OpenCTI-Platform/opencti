@@ -1344,6 +1344,25 @@ class OpenCTIStix2:
                 no_trigger_import.append(file_obj.get("no_trigger_import", False))
                 embedded_flags.append(file_obj.get("embedded", False))
 
+        # Extract all custom properties
+        custom_properties = []
+        seen_custom_fields = set()
+        for key, value in stix_object.items():
+            if key.startswith("x_"):
+                custom_properties.append({"field_name": key, "value": value})
+                seen_custom_fields.add(key)
+        # Also extract x_ custom properties nested inside all extensions
+        extensions = stix_object.get("extensions")
+        if isinstance(extensions, dict):
+            for extension in extensions.values():
+                if not isinstance(extension, dict):
+                    continue
+                for key, value in extension.items():
+                    # Keep top-level custom properties precedence over extensions
+                    if key.startswith("x_") and key not in seen_custom_fields:
+                        custom_properties.append({"field_name": key, "value": value})
+                        seen_custom_fields.add(key)
+
         # Extra
         extras = {
             "created_by_id": created_by_id,
@@ -1360,6 +1379,9 @@ class OpenCTIStix2:
             "filesMarkings": files_markings if files_markings else None,
             "noTriggerImport": no_trigger_import if no_trigger_import else None,
             "embedded": embedded_flags if embedded_flags else None,
+            "custom_properties": (
+                custom_properties if len(custom_properties) > 0 else None
+            ),
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -2077,6 +2099,27 @@ class OpenCTIStix2:
             for hash_item in hashes:
                 entity["hashes"][hash_item["algorithm"]] = hash_item["hash"]
 
+        # Flatten custom fields
+        if "customFieldValues" in entity:
+            custom_field_values = entity["customFieldValues"]
+            for custom_field_value in custom_field_values:
+                field_name = custom_field_value.get("field_name")
+                value = None
+                for value_field in [
+                    "select_values",
+                    "int_value",
+                    "string_value",
+                    "boolean_value",
+                    "date_value",
+                    "select_value",
+                ]:
+                    candidate = custom_field_value.get(value_field)
+                    if candidate is not None:
+                        value = candidate
+                        break
+                if value is not None:
+                    entity[field_name] = value
+            del entity["customFieldValues"]
         # Final
         entity["x_opencti_id"] = entity["id"]
         if not no_custom_attributes:

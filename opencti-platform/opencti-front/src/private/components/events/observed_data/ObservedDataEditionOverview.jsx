@@ -18,6 +18,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const observedDataMutationFieldPatch = graphql`
@@ -308,6 +309,13 @@ const ObservedDataEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
+            <CustomFieldValuesEdition
+              entityType={observedData.entity_type}
+              entityId={observedData.id}
+              values={observedData.customFieldValues ?? []}
+              fieldPatch={editor.fieldPatch}
+              enableReferences={enableReferences}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -329,6 +337,7 @@ export default createFragmentContainer(ObservedDataEditionOverviewComponent, {
   observedData: graphql`
     fragment ObservedDataEditionOverview_observedData on ObservedData {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       confidence
       entity_type
       first_observed

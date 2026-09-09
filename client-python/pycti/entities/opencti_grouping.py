@@ -24,6 +24,16 @@ class Grouping:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -215,6 +225,16 @@ class Grouping:
             }
         """
         self.properties_with_files = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -753,10 +773,13 @@ class Grouping:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_properties: (optional) list of custom field name/value inputs
+        :type custom_properties: list
         :return: Grouping object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
+        custom_properties = kwargs.get("custom_properties", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -797,6 +820,7 @@ class Grouping:
             """
             input_variables = {
                 "stix_id": stix_id,
+                "customFieldValues": custom_properties,
                 "createdBy": created_by,
                 "objectMarking": object_marking,
                 "objectLabel": object_label,
@@ -966,6 +990,7 @@ class Grouping:
                     )
                 )
             return self.create(
+                custom_properties=extras.get("custom_properties", None),
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None

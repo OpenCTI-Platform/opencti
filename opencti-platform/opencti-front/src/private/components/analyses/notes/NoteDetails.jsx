@@ -4,6 +4,7 @@ import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
@@ -77,6 +78,7 @@ class NoteDetailsComponent extends Component {
               </Label>
               <ItemLikelihood likelihood={note.likelihood} />
             </Grid>
+            <CustomFieldValuesDisplay entityType={note.entity_type} values={note.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -95,6 +97,10 @@ const NoteDetails = createFragmentContainer(NoteDetailsComponent, {
   note: graphql`
     fragment NoteDetails_note on Note {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       attribute_abstract
       content
       note_types

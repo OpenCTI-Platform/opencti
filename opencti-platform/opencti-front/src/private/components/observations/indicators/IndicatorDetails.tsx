@@ -6,6 +6,7 @@ import { TroubleshootOutlined } from '@mui/icons-material';
 import { Stack, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { InformationOutline } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -173,6 +174,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             </Label>
             <TextList list={indicator.x_mitre_platforms} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={indicator.entity_type} values={indicator.customFieldValues ?? []} />
         </Grid>
         <IndicatorObservables indicator={indicator} />
       </Card>
@@ -184,6 +186,10 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
   indicator: graphql`
     fragment IndicatorDetails_indicator on Indicator {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       description
       pattern
       valid_from

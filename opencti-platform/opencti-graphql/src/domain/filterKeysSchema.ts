@@ -58,7 +58,6 @@ import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalR
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-cache';
-import { isStixDomainObject } from '../schema/stixDomainObject';
 import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
 export type FilterDefinition = {
@@ -242,7 +241,7 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
   }
 
   // Add custom field filters dynamically from loaded definitions
-  if (isStixDomainObject(type) && isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, type);
     for (const cfDef of customFieldDefs) {
       // Map custom field type to filter type

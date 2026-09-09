@@ -7,7 +7,10 @@ import { AutoModeOutlined, EditOutlined } from '@mui/icons-material';
 import { Box, CardContent, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -427,6 +430,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       return;
     }
     const finalValues = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(),
       name: values.name,
       description: values.description,
@@ -784,6 +788,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"
@@ -829,6 +834,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       </div>
 
       <Formik<SecurityCoverageFormValues>
+        entityType="Security-Coverage"
         enableReinitialize
         initialValues={initialValues}
         validationSchema={securityCoverageValidation(t_i18n, mode === 'automated')}

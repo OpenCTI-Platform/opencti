@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Divider from '@mui/material/Divider';
 import Card from '@common/card/Card';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
@@ -86,6 +87,7 @@ const GroupingDetailsComponent = (props) => {
               variant="inEntity"
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={grouping.entity_type} values={grouping.customFieldValues ?? []} />
         </Grid>
         <Divider sx={{ marginTop: 3 }} />
         <RelatedContainers
@@ -109,6 +111,9 @@ const GroupingDetails = createFragmentContainer(GroupingDetailsComponent, {
   grouping: graphql`
     fragment GroupingDetails_grouping on Grouping {
       id
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       entity_type
       context
       description

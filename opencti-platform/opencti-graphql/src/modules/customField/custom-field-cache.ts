@@ -1,6 +1,8 @@
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldEntityTypeSetting, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type CustomFieldType } from './custom-field-types';
+import type { AttributeDefinition } from '../../schema/attribute-definition';
+import type { TypeAttribute } from '../../generated/graphql';
 
 // ----- Custom field definitions read through the platform generic cache -----
 // Registered like any other cached entity type in cacheManager.ts (writeCacheForEntity),
@@ -38,13 +40,13 @@ export const getCustomFieldSettingForEntityType = (
 /**
  * Get a cached custom field definition by its name (e.g. x_opencti_cf_score).
  */
-export const getCustomFieldDefinitionByName = async (
+export const getCustomFieldDefinitionByNameOrAlias = async (
   context: AuthContext,
   user: AuthUser,
   name: string,
 ): Promise<BasicStoreEntityCustomFieldDefinition | undefined> => {
   const definitions = await getCustomFieldDefinitions(context, user);
-  return definitions.find((def) => def.name === name);
+  return definitions.find((def) => def.name === name || def.aliases?.some((a) => a === name));
 };
 
 export const getCustomFieldDefinitionByLabel = async (
@@ -55,7 +57,6 @@ export const getCustomFieldDefinitionByLabel = async (
   const definitions = await getCustomFieldDefinitions(context, user);
   return definitions.find((def) => def.label === label);
 };
-
 /**
  * Get the value field name in the nested object based on the field type.
  * Pure mapping function: no cache access needed.
@@ -78,4 +79,35 @@ export const getCustomFieldValueField = (fieldType: CustomFieldType): string => 
     default:
       return 'string_value';
   }
+};
+// get all dynamic schema attributes for a given type
+export const getDynamicTypeAttributeForEntityType = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<TypeAttribute[]> => {
+  const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
+  const resultAttributes = [];
+  for (const cfDef of customFieldDefs) {
+    let attributeType: AttributeDefinition['type'] = 'string';
+    if (cfDef.field_type === 'integer') attributeType = 'numeric';
+    else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
+    else if (cfDef.field_type === 'date') attributeType = 'date';
+
+    const entitySetting = cfDef.entity_type_settings?.find((setting) => setting.entity_type === entityType);
+    const isMandatory = entitySetting?.mandatory ?? false;
+    resultAttributes.push({
+      name: cfDef.name,
+      type: attributeType,
+      label: cfDef.label,
+      mandatory: isMandatory,
+      mandatoryType: isMandatory ? 'external' : 'no',
+      editDefault: true,
+      multiple: cfDef.multiple ?? false,
+      upsert: true,
+      scale: undefined,
+      defaultValues: undefined,
+    });
+  }
+  return resultAttributes;
 };
