@@ -45,7 +45,7 @@ const FAMILIES = {
   Chip:         { mui: ['Chip'], lib: ['Chip'], pivots: [] },
   Fab:          { mui: ['Fab'], lib: [], pivots: [] },
   ToggleButton: { mui: ['ToggleButton', 'ToggleButtonGroup'], lib: ['ButtonGroup'], pivots: ['components/fields/ToggleButtonField'] },
-  Slider:       { mui: ['Slider'], lib: ['Slider'], pivots: ['components/InputSliderField', 'components/fields/SliderField'] },
+  Slider:       { mui: ['Slider'], lib: ['Slider'], pivots: ['components/ConfidenceInputSliderField', 'components/fields/SliderField'] },
 };
 
 const MUI_TO_FAMILY = new Map();

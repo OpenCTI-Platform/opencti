@@ -27,7 +27,7 @@ interface InputSliderFieldProps {
   helperText?: string;
 }
 
-const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({
+const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({
   form: { setFieldValue },
   field: { name, value },
   label,
@@ -174,4 +174,4 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   );
 };
 
-export default InputSliderField;
+export default ConfidenceInputSliderField;

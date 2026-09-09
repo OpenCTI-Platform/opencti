@@ -39,7 +39,7 @@ const SliderField = ({
   min = 0,
   max = 100,
   step = 1,
-  showBounds = true,
+  showBounds = false,
   color,
   onChange,
   onSubmit,
