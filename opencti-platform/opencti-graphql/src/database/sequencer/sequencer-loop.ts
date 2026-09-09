@@ -19,6 +19,7 @@ import { MissingReferenceFinalError } from '../../config/errors';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { generateStandardId, getInputIds, getInstanceIds } from '../../schema/identifier';
 import { idLabel } from '../../schema/schema-labels';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndex, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
@@ -350,6 +351,31 @@ const applyGroup = async (
         userId: leader.user.id,
         user: leader.user,
       }));
+      // Verdict 31 fix: plan-time member-dead strips (s9.10.2) feed the SAME pending
+      // store. The member was declared dead on a bounded wait, but a late member DOES
+      // land (proven: this was the dominant estate loss family), and the commit-time
+      // match or the sweeper then restores the edge. Input key -> databaseName through
+      // the schema; an unmapped key is logged, never silently dropped.
+      [leader, ...absorbed].forEach((intent) => {
+        (intent.deadStrippedRefs ?? []).forEach(({ inputKey, refId }) => {
+          const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
+          if (ref?.databaseName) {
+            strippedInputs.push({
+              ownerId: element.internal_id,
+              ownerType: element.entity_type,
+              relType: ref.databaseName,
+              targetRef: refId,
+              userId: intent.user.id,
+              user: intent.user,
+            });
+          } else {
+            logApp.warn('[SEQUENCER] dead-stripped ref without relation mapping, not recorded', {
+              type: element.entity_type, inputKey, refId,
+            });
+          }
+        });
+        intent.deadStrippedRefs = undefined;
+      });
     }
     pendings.push({ leader, absorbed, result });
   } catch (err) {

@@ -188,26 +188,45 @@ const classifyMissing = (intent: SequencerIntent, id: string, options: BatchPlan
 // this same object, so the direct path creates the element without the dead references,
 // deterministically and in zero extra round trips (the upstream reject-twice heuristic
 // reaches the same end state after 2 blind worker retries).
-const stripDeadRefIds = (value: any, deadIds: Set<string>): void => {
+// Verdict 31 (write-path reference note): a "dead" member is usually just LATE (proven:
+// the stripped edges were THE dominant estate loss, and their members existed in the
+// final estate), so every removal is recorded on the intent (input key + ref id) and
+// harvested into the pending-refs store after the apply: strip = deferred edge, not loss.
+const stripDeadRefIds = (value: any, deadIds: Set<string>, onStrip: (refId: string) => void): void => {
   if (Array.isArray(value)) {
     for (let i = value.length - 1; i >= 0; i -= 1) {
       const entry = value[i];
-      if (typeof entry === 'string' && deadIds.has(entry)) value.splice(i, 1);
-      else if (entry !== null && typeof entry === 'object') stripDeadRefIds(entry, deadIds);
+      if (typeof entry === 'string' && deadIds.has(entry)) {
+        value.splice(i, 1);
+        onStrip(entry);
+      } else if (entry !== null && typeof entry === 'object') stripDeadRefIds(entry, deadIds, onStrip);
     }
     return;
   }
   if (value !== null && typeof value === 'object') {
     Object.keys(value).forEach((key) => {
       const v = value[key];
-      if (typeof v === 'string' && deadIds.has(v)) value[key] = null;
-      else if (v !== null && typeof v === 'object') stripDeadRefIds(v, deadIds);
+      if (typeof v === 'string' && deadIds.has(v)) {
+        value[key] = null;
+        onStrip(v);
+      } else if (v !== null && typeof v === 'object') stripDeadRefIds(v, deadIds, onStrip);
     });
   }
 };
 
 const stripDeadFromIntent = (intent: SequencerIntent, deadIds: Set<string>): void => {
-  stripDeadRefIds(intent.input, deadIds);
+  Object.keys(intent.input).forEach((inputKey) => {
+    const v = intent.input[inputKey];
+    const onStrip = (refId: string) => {
+      (intent.deadStrippedRefs ??= []).push({ inputKey, refId });
+    };
+    if (typeof v === 'string' && deadIds.has(v)) {
+      intent.input[inputKey] = null;
+      onStrip(v);
+    } else if (v !== null && typeof v === 'object') {
+      stripDeadRefIds(v, deadIds, onStrip);
+    }
+  });
   intent.referencedIds = intent.referencedIds.filter((id) => !deadIds.has(id));
   deadIds.forEach((id) => intent.memberRefIds?.delete(id));
 };
