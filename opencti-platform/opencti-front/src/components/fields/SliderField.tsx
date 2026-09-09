@@ -71,12 +71,15 @@ const SliderField = ({
   }, [name, onSubmit, setFieldTouched]);
 
   return (
-    <div style={wrapperStyle} className={className}>
+    <div
+      style={wrapperStyle}
+      className={className}
+      onFocusCapture={() => onFocus?.(name)}
+    >
       <Slider
         value={[currentValue]}
         onValueChange={handleValueChange}
         onValueCommit={handleValueCommit}
-        onPointerDown={() => onFocus?.(name)}
         min={min}
         max={max}
         step={step}

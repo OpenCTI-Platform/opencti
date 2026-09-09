@@ -238,6 +238,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               label={t_i18n('Likelihood')}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
+              helpertext={<SubscriptionFocus context={context} fieldName="likelihood" />}
             />
           </div>
           {userIsKnowledgeEditor && (
