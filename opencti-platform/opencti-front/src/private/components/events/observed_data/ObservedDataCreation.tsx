@@ -1,7 +1,10 @@
 import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { ObservedDatasLinesPaginationQuery$variables } from '@components/events/__generated__/ObservedDatasLinesPaginationQuery.graphql';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -107,6 +110,7 @@ export const ObservedDataCreationForm: FunctionComponent<
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: ObservedDataCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       objects: values.objects.map((v) => v.value),
       first_observed: values.first_observed ? parse(values.first_observed).format() : null,
       last_observed: values.last_observed ? parse(values.last_observed).format() : null,
@@ -154,6 +158,7 @@ export const ObservedDataCreationForm: FunctionComponent<
   });
   return (
     <Formik<ObservedDataAddInput>
+      entityType={OBSERVED_DATA_TYPE}
       initialValues={initialValues}
       validationSchema={observedDataValidator}
       validateOnChange={true}
@@ -230,6 +235,7 @@ export const ObservedDataCreationForm: FunctionComponent<
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"

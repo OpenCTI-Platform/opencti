@@ -24,7 +24,7 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
+import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
@@ -161,7 +161,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -281,6 +281,7 @@ import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import { transformCustomFieldValueAddInput, validateCustomFieldValues } from '../modules/customField/custom-field-validator';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -780,7 +781,7 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
+
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -886,7 +887,7 @@ export const distributionEntities = async (
 
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
   if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
-    const customFieldDef = await getCustomFieldDefinitionByName(context, user, field);
+    const customFieldDef = await getCustomFieldDefinitionByNameOrAlias(context, user, field);
     // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
     // and date sub-fields are already aggregatable as-is.
     const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
@@ -3005,6 +3006,11 @@ export const updateAttribute = async <T extends StoreObject>(
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
+  // Validate custom field values against their definitions (mandatory / min-max / select options)
+  const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
+  if (customFieldValuesInput) {
+    await validateCustomFieldValues(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+  }
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);
   if (!opts.noEnrich && data.event) {
@@ -3415,6 +3421,17 @@ export const createRelationRaw = async (
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
 
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    if (input.customFieldValues?.length > 0) {
+      const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, input.customFieldValues, relationshipType);
+      await validateCustomFieldValues(context, user, customFieldValuesFromInput, relationshipType);
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
+  // endregion
+
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
@@ -3732,6 +3749,17 @@ const internalCreateEntityRaw = async (
     input.restricted_members = input.authorized_members;
   }
   delete input.authorized_members; // always remove authorized_members input, even if empty
+  // endregion
+
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    if (input.customFieldValues?.length > 0) {
+      const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, input.customFieldValues, type);
+      await validateCustomFieldValues(context, user, customFieldValuesFromInput, type);
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
   // endregion
 
   // validate user access to create the entity in draft

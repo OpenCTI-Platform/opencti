@@ -22,6 +22,16 @@ class StixDomainObject:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -555,6 +565,16 @@ class StixDomainObject:
             }
         """
         self.properties_with_files = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -2068,6 +2088,16 @@ class StixDomainObject:
                         reports {
                             edges {
                                 node {
+                                    customFieldValues {
+                                        field_id
+                                        field_name
+                                        int_value
+                                        string_value
+                                        boolean_value
+                                        date_value
+                                        select_value
+                                        select_values
+                                    }
                                     id
                                     standard_id
                                     entity_type
@@ -2195,6 +2225,16 @@ class StixDomainObject:
                         notes {
                             edges {
                                 node {
+                                    customFieldValues {
+                                        field_id
+                                        field_name
+                                        int_value
+                                        string_value
+                                        boolean_value
+                                        date_value
+                                        select_value
+                                        select_values
+                                    }
                                     id
                                     standard_id
                                     entity_type
@@ -2323,6 +2363,16 @@ class StixDomainObject:
                             observedData {
                                 edges {
                                     node {
+                                        customFieldValues {
+                                            field_id
+                                            field_name
+                                            int_value
+                                            string_value
+                                            boolean_value
+                                            date_value
+                                            select_value
+                                            select_values
+                                        }
                                         id
                                         standard_id
                                         entity_type

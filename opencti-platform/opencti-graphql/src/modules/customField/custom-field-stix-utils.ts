@@ -1,7 +1,10 @@
-import type { CustomFieldValue } from './custom-field-types';
+import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './custom-field-types';
 import { CUSTOM_FIELD_PREFIX } from './custom-field-types';
 import { getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { FilterEventContext, TesterFunction } from '../../utils/filtering/boolean-logic-engine';
+import type { Filter } from '../../generated/graphql';
+import { testBooleanFilter, testDateFilter, testNumericFilter, testStringFilter } from '../../utils/filtering/boolean-logic-engine';
 
 /**
  * Flatten custom_field_values array into a flat object for STIX export.
@@ -81,4 +84,87 @@ export const unflattenStixToCustomFieldValues = async (
   }
 
   return customFieldValues.length > 0 ? customFieldValues : undefined;
+};
+
+export const getStixCustomFieldValue = (data: Record<string, any>, customFieldName: string, customFieldAliases: string[] | null | undefined) => {
+  let result = undefined;
+  let resultFound = false;
+  // Check the main custom field name first
+  if (Object.hasOwn(data, customFieldName)) {
+    result = data[customFieldName];
+    resultFound = true;
+  } else {
+    const dataExtensions = data.extensions;
+    if (dataExtensions !== null && dataExtensions !== undefined) {
+      const extensionsValues = Object.values(dataExtensions) as Record<string, any>;
+      for (let i = 0; i < extensionsValues.length; i++) {
+        const extensionValue = extensionsValues[i];
+        if (Object.hasOwn(extensionValue, customFieldName)) {
+          result = extensionValue[customFieldName];
+          resultFound = true;
+          break;
+        }
+      }
+    }
+  }
+  let aliasIndex = 0;
+  // Check all possible aliases
+  while (!resultFound && customFieldAliases && aliasIndex < customFieldAliases.length) {
+    const alias = customFieldAliases[aliasIndex];
+    if (Object.hasOwn(data, alias)) {
+      result = data[alias];
+      resultFound = true;
+    } else {
+      const dataExtensions = data.extensions;
+      if (dataExtensions !== null && dataExtensions !== undefined) {
+        const extensionsValues = Object.values(dataExtensions) as Record<string, any>;
+        for (let i = 0; i < extensionsValues.length; i++) {
+          const extensionValue = extensionsValues[i];
+          if (Object.hasOwn(extensionValue, alias)) {
+            result = extensionValue[alias];
+            resultFound = true;
+            break;
+          }
+        }
+      }
+    }
+    aliasIndex++;
+  }
+
+  return result;
+};
+
+export const buildCustomFieldStixFilterTester = (customFieldDefinition: BasicStoreEntityCustomFieldDefinition): TesterFunction => {
+  return (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+    const { name, aliases, field_type } = customFieldDefinition;
+    const customFieldStixValue = getStixCustomFieldValue(stix, name, aliases);
+    switch (field_type) {
+      case 'string':
+      case 'select':
+      case 'multi_select':
+        return testStringFilter(filter, customFieldStixValue, changeContext);
+      case 'integer':
+        return testNumericFilter(filter, customFieldStixValue, changeContext);
+      case 'boolean':
+        return testBooleanFilter(filter, customFieldStixValue, changeContext);
+      case 'date':
+        // TODO date testing is deprecated and needs to be updated to work properly
+        return testDateFilter(filter, customFieldStixValue);
+      default:
+        throw new Error(`Unsupported custom field type: ${customFieldDefinition.field_type}`);
+    }
+  };
+};
+
+export const getCustomFieldsStixFilterTesters = async (context: AuthContext, user: AuthUser): Promise<Record<string, TesterFunction>> => {
+  const customFieldsDefinitions = await getCustomFieldDefinitions(context, user);
+  const customFieldsTestersMap: Record<string, TesterFunction> = {};
+  for (let i = 0; i < customFieldsDefinitions.length; i++) {
+    const customFieldDefinition = customFieldsDefinitions[i];
+    const customFieldTester = buildCustomFieldStixFilterTester(customFieldDefinition);
+    const customFieldName = customFieldDefinition.name;
+    // Add the tester for the main name
+    customFieldsTestersMap[customFieldName] = customFieldTester;
+  }
+  return customFieldsTestersMap;
 };

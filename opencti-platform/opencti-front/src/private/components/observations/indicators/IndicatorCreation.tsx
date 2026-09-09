@@ -5,7 +5,10 @@ import { IndicatorsLinesPaginationQuery$variables } from '@components/observatio
 import { Add } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -158,6 +161,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: IndicatorCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -230,6 +234,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 
   return (
     <Formik<IndicatorAddInput>
+      entityType={INDICATOR_TYPE}
       initialValues={initialValues}
       validationSchema={indicatorValidator}
       validateOnChange={true}
@@ -394,6 +399,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             fullWidth={true}
             containerstyle={{ marginTop: 10 }}
           />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"

@@ -22,7 +22,7 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, stixFilters, useFilterDefinition } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, useFilterDefinition, useStixFilters } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import Filters from '../../common/lists/Filters';
@@ -85,6 +85,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const stixFilters = useStixFilters();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
     filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],

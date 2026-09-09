@@ -1,5 +1,5 @@
 import { ConnectorsStateQuery$data } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
-import { stixFilters, useAvailableFilterKeysForEntityTypes } from './filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, useStixFilters } from './filters/filtersUtils';
 import useSchema from './hooks/useSchema';
 
 export interface Connector {
@@ -53,11 +53,12 @@ export const useGetConnectorFilterEntityTypes = (connector: Connector): string[]
 };
 
 export const useGetConnectorAvailableFilterKeys = (connector: Connector): string[] => {
+  const entityTypes = useGetConnectorFilterEntityTypes(connector);
+  let availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
+  const stixFilters = useStixFilters();
   if (connector.connector_type !== 'INTERNAL_ENRICHMENT') {
     return []; // only for enrichment
   }
-  const entityTypes = useGetConnectorFilterEntityTypes(connector);
-  let availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
   // filter to keep only stixFilters
   availableFilterKeys = availableFilterKeys.filter((key) => stixFilters.includes(key));
   return availableFilterKeys;

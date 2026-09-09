@@ -2,6 +2,121 @@ import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './
 import { FunctionalError } from '../../config/errors';
 import { getCustomFieldDefinitionsForEntityType } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { CustomFieldValueAddInput } from '../../generated/graphql';
+import { logApp } from '../../config/conf';
+
+const verifyAddInputValueType = (
+  customFieldValueAddInputValue: any[],
+  customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
+): boolean => {
+  // Verify that the value type matches the definition
+  // If not, drop
+  switch (customFieldDefinition.field_type) {
+    case 'integer':
+      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'number') {
+        logApp.warn('Invalid value type for integer custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
+    case 'string':
+    case 'markdown':
+      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'string') {
+        logApp.warn('Invalid value type for string/markdown custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
+    case 'boolean':
+      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'boolean') {
+        logApp.warn('Invalid value type for boolean custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
+    case 'date':
+      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'string') {
+        logApp.warn('Invalid value type for date custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
+    case 'select':
+      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'string') {
+        logApp.warn('Invalid value type for select custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
+    case 'multi_select':
+      if (!customFieldValueAddInputValue.every((v) => typeof v === 'string')) {
+        logApp.warn('Invalid value type for multi_select custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
+    default:
+      throw FunctionalError('Unknown custom field type', { field_type: customFieldDefinition.field_type, field_name: customFieldDefinition.label });
+  }
+  return true;
+};
+
+const extractCustomFieldValueFromAddInputValue = (
+  customFieldValueAddInputValue: any[],
+  customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
+) => {
+  // Check if input value is properly typed, ignore input if not
+  const isCustomFieldValueProperlyTyped = verifyAddInputValueType(customFieldValueAddInputValue, customFieldDefinition);
+  if (!isCustomFieldValueProperlyTyped) {
+    return undefined;
+  }
+  // Transform the input into a CustomFieldValue object
+  const customFieldValue: CustomFieldValue = {
+    field_id: customFieldDefinition.id,
+    field_name: customFieldDefinition.name,
+  };
+  switch (customFieldDefinition.field_type) {
+    case 'integer':
+      customFieldValue.int_value = customFieldValueAddInputValue[0] as number;
+      break;
+    case 'string':
+    case 'markdown':
+      customFieldValue.string_value = customFieldValueAddInputValue[0] as string;
+      break;
+    case 'boolean':
+      customFieldValue.boolean_value = customFieldValueAddInputValue[0] as boolean;
+      break;
+    case 'date':
+      customFieldValue.date_value = customFieldValueAddInputValue[0] as string;
+      break;
+    case 'select':
+      customFieldValue.select_value = customFieldValueAddInputValue[0] as string;
+      break;
+    case 'multi_select':
+      customFieldValue.select_values = customFieldValueAddInputValue as string[];
+      break;
+  }
+  return customFieldValue;
+};
+
+// Transform a customFieldValueAddInput coming from the API into a backend formatted CustomValue, ready to be indexed
+export const transformCustomFieldValueAddInput = async (
+  context: AuthContext,
+  user: AuthUser,
+  customFieldValueAddInput: CustomFieldValueAddInput[],
+  entityType: string,
+): Promise<CustomFieldValue[]> => {
+  const customFieldDefinitionsForEntity = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
+  const resultCustomFieldValues: CustomFieldValue[] = [];
+  for (let i = 0; i < customFieldValueAddInput.length; i++) {
+    const currentCustomField = customFieldValueAddInput[i];
+    const customFieldDefinition = customFieldDefinitionsForEntity
+      .find((d) => d.name === currentCustomField.field_name
+        || d.aliases?.some((a) => a === currentCustomField.field_name));
+    // Drop custom field add input not in configured custom fields of the entity type
+    if (customFieldDefinition) {
+      const customFieldValue = extractCustomFieldValueFromAddInputValue(currentCustomField.value, customFieldDefinition);
+      if (customFieldValue) {
+        resultCustomFieldValues.push(customFieldValue);
+      }
+    }
+  }
+  return resultCustomFieldValues;
+};
 
 /**
  * Validates an array of custom field values against the definitions for a given entity type.

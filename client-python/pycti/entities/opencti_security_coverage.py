@@ -23,6 +23,16 @@ class SecurityCoverage:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -257,10 +267,13 @@ class SecurityCoverage:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_properties: (optional) list of custom field name/value inputs
+        :type custom_properties: list
         :return: Security Coverage object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
+        custom_properties = kwargs.get("custom_properties", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         created_by = kwargs.get("createdBy", None)
@@ -301,6 +314,7 @@ class SecurityCoverage:
                 {
                     "input": {
                         "stix_id": stix_id,
+                        "customFieldValues": custom_properties,
                         "name": name,
                         "description": description,
                         "createdBy": created_by,
@@ -373,6 +387,7 @@ class SecurityCoverage:
             )
 
             return self.create(
+                custom_properties=extras.get("custom_properties", None),
                 stix_id=stix_object["id"],
                 name=stix_object["name"],
                 external_uri=(

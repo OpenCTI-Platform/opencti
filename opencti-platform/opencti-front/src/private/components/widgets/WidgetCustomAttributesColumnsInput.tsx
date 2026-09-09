@@ -21,6 +21,7 @@ type WidgetCustomAttributesColumnsInputProps = {
   onChange: (columns: WidgetColumn[]) => void;
   layout?: WidgetColumnsLayout;
   onLayoutChange?: (layout: WidgetColumnsLayout) => void;
+  isAvailableColumnsLoading?: boolean;
 };
 
 type DraggableColumnItemProps = {
@@ -189,6 +190,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   onChange,
   layout = '1',
   onLayoutChange,
+  isAvailableColumnsLoading = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -197,6 +199,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
     availableColumns,
     value,
     onChange,
+    isAvailableColumnsLoading,
   );
 
   const listSx = {

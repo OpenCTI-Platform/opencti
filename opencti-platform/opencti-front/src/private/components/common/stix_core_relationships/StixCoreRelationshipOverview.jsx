@@ -46,6 +46,7 @@ import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import CustomFieldValuesDisplay from '../custom_fields/CustomFieldValuesDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -499,6 +500,10 @@ class StixCoreRelationshipContainer extends Component {
                     creators={stixCoreRelationship.creators ?? []}
                   />
                 </Grid>
+                <CustomFieldValuesDisplay
+                  entityType="stix-core-relationship"
+                  values={stixCoreRelationship.customFieldValues ?? []}
+                />
               </Grid>
             </Card>
           </Grid>
@@ -635,6 +640,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         is_inferred
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         coverage_information {
           coverage_name
           coverage_score
