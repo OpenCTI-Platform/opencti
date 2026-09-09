@@ -18,7 +18,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
-import SliderFieldFds from '../../../../components/fields/SliderFieldFds';
+import SliderField from '../../../../components/fields/SliderField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -232,7 +232,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
           />
           <div style={fieldSpacingContainerStyle}>
             <Field
-              component={SliderFieldFds}
+              component={SliderField}
               name="likelihood"
               required={(mandatoryAttributes.includes('likelihood'))}
               label={t_i18n('Likelihood')}

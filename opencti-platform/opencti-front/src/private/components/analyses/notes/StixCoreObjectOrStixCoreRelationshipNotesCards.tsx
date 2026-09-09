@@ -30,7 +30,7 @@ import {
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$data,
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$key,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
-import SliderFieldFds from '../../../../components/fields/SliderFieldFds';
+import SliderField from '../../../../components/fields/SliderField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -259,7 +259,7 @@ const NoteForm = ({
                   />
                   <div style={fieldSpacingContainerStyle}>
                     <Field
-                      component={SliderFieldFds}
+                      component={SliderField}
                       name="likelihood"
                       label={t_i18n('Likelihood')}
                     />

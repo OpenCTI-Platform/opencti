@@ -15,7 +15,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SliderFieldFds from '../../../../components/fields/SliderFieldFds';
+import SliderField from '../../../../components/fields/SliderField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
@@ -270,7 +270,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           />
           <div style={fieldSpacingContainerStyle}>
             <Field
-              component={SliderFieldFds}
+              component={SliderField}
               name="likelihood"
               required={(mandatoryAttributes.includes('likelihood'))}
               label={t_i18n('Likelihood')}

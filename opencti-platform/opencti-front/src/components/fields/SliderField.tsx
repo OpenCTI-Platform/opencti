@@ -3,7 +3,7 @@ import { Slider } from '@filigran/design-system';
 import { FieldProps, useField } from 'formik';
 import { isNilField } from '../../utils/utils';
 
-export type SliderFieldFdsProps = FieldProps<number> & {
+export type SliderFieldProps = FieldProps<number> & {
   label?: ReactNode;
   ariaLabel?: string;
   helpertext?: ReactNode;
@@ -26,7 +26,7 @@ export type SliderFieldFdsProps = FieldProps<number> & {
   onFocus?: (name: string) => void;
 };
 
-const SliderFieldFds = ({
+const SliderField = ({
   form: { setFieldValue, setFieldTouched, submitCount },
   field: { name, value },
   label,
@@ -44,7 +44,7 @@ const SliderFieldFds = ({
   onChange,
   onSubmit,
   onFocus,
-}: SliderFieldFdsProps) => {
+}: SliderFieldProps) => {
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
   const currentValue = value === null || value === undefined ? min : Number(value);
@@ -89,4 +89,4 @@ const SliderFieldFds = ({
   );
 };
 
-export default SliderFieldFds;
+export default SliderField;

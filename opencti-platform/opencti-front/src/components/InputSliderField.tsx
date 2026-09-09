@@ -4,7 +4,7 @@ import { Grid } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from './TextField';
-import SliderFieldFds from './fields/SliderFieldFds';
+import SliderField from './fields/SliderField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
 
@@ -106,7 +106,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           </Grid>
         </Grid>
         <Field
-          component={SliderFieldFds}
+          component={SliderField}
           name={name}
           min={min}
           max={max}
@@ -159,7 +159,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
         </Grid>
       </Grid>
       <Field
-        component={SliderFieldFds}
+        component={SliderField}
         name={name}
         min={min}
         max={max}
