@@ -26,6 +26,11 @@ export interface SequencerConfig {
   // re-asserted when the target lands. Design: work-kb note opencti-strip-and-reconcile-design.
   stripReconcile: boolean;
   pendingRefExpiryS: number;
+  // s9.8.2 bounded member wait: plan passes spent waiting for a declared in-bundle member
+  // before the ref is declared dead. With strip_reconcile on, a dead strip is recorded and
+  // reconciled (verdict 31 fix): the limit is a latency knob, not a data-loss knob; 0 =
+  // strip-and-record immediately, no member parking at all.
+  memberWaitLimit: number;
   origin: string;
 }
 
@@ -54,6 +59,7 @@ const readConfig = (): SequencerConfig => {
     parkSoftRefs: booleanConf('app:ingestion_sequencer:park_soft_refs', false),
     stripReconcile: booleanConf('app:ingestion_sequencer:strip_reconcile', false),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
+    memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
     origin: conf.get('app:ingestion_sequencer:origin') ?? 'worker',
   };
 };

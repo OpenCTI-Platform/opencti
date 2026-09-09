@@ -486,6 +486,7 @@ const runBatchLoop = async () => {
     const t0 = Date.now();
     const plan = buildBatchPlan(batch, (id) => sequencerIdentityMap.resolveInternalId(id), forceDirect, {
       parkSoftRefs: SEQUENCER_CONFIG.parkSoftRefs,
+      memberWaitLimit: SEQUENCER_CONFIG.memberWaitLimit,
       queueHas: (id) => queue.hasCandidate(id), // s9.8.3 queue index
     });
     sequencerMetrics.phase('order', (Date.now() - t0) / 1000);
