@@ -2874,6 +2874,7 @@
   "Loading agents...": "Loading agents...",
   "Loading current message count...": "Loading current message count...",
   "Loading image…": "Loading image…",
+  "Loading synchronizer logs...": "Loading synchronizer logs...",
   "Local": "Local",
   "Local authentication cannot be changed when authentication is managed by environment configuration": "Local authentication cannot be changed when authentication is managed by environment configuration",
   "Local authentication cannot be disabled when no other authentication provider is enabled": "Local authentication cannot be disabled when no other authentication provider is enabled",

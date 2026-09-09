@@ -544,7 +544,14 @@ export const unregisterConnectorForIngestion = async (context: AuthContext, id: 
   await connectorDelete(context, SYSTEM_USER, connectorId);
 };
 
-export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running: boolean }) => {
+type SynchronizerPatch = {
+  running?: boolean;
+  current_state_date?: Date | string;
+  last_execution_date?: Date | string;
+  last_execution_status?: string;
+};
+
+export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: SynchronizerPatch) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
