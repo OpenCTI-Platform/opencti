@@ -15,6 +15,10 @@ inputs:
   docker_image_suffix:
     description: "Dockerfile image suffix such as _ubi9 or _fips"
     default: ""
+  target:
+    description: "Dockerfile stage to build. Use 'builder-back' when the caller reuses the prebuilt backend deps (e.g. backend test jobs); use 'builder' (toolchain only) when the caller always performs its own fresh install/build anyway, to avoid a redundant backend build."
+    required: false
+    default: "builder-back"
 
 runs:
   using: "composite"
@@ -42,12 +46,12 @@ runs:
         images: filigran/builder
         tags: type=raw,value=${{ inputs.image_tag }}
 
-    - name: Build (builder)
+    - name: Build (${{ inputs.target }})
       uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a #v7.3.0
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
-        target: builder
+        target: ${{ inputs.target }}
         push: 'false'
         outputs: type=docker,dest=/tmp/opencti-builder${{ inputs.docker_image_suffix }}.tar
         tags: ${{ steps.meta.outputs.tags }}

@@ -21,6 +21,11 @@ jobs:
         with:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
+          # app-sbom (below) always bind-mounts the checkout over this image's build path and
+          # runs its own fresh "yarn install --immutable && yarn build:prod" regardless of what
+          # this image contains, so building builder-back here would only add a redundant
+          # backend install/build with no benefit. Keep this toolchain-only.
+          target: builder
 
   app-sbom:
     name: Build and generate app SBOM
