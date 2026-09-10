@@ -50,6 +50,7 @@ import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKi
 import UserHistory from './UserHistory';
 import UserTokenList from './UserTokenList';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import useTimeSeriesAxisFormatter from '../../../../utils/hooks/useTimeSeriesAxisFormatter';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -212,7 +213,8 @@ interface UserProps {
 }
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
-  const { t_i18n, nsdt, fsd, fldt, fd } = useFormatter();
+  const { t_i18n, nsdt, fldt, fd } = useFormatter();
+  const auditsAxisFormatter = useTimeSeriesAxisFormatter('month');
   const { me } = useAuth();
   const theme = useTheme<Theme>();
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
@@ -705,7 +707,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           areaChartOptions(
                             theme,
                             true,
-                            fsd,
+                            auditsAxisFormatter,
                             simpleNumberFormat,
                             undefined,
                           ) as ApexOptions

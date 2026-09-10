@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   buildDate,
   dateFiltersValueForDisplay,
@@ -10,6 +10,7 @@ import {
   formatSeconds,
   formatUptime,
   jsDate,
+  lastDayOfThePreviousMonth,
   minutesBefore,
   minutesBetweenDates,
   parse,
@@ -170,6 +171,37 @@ describe('Time utils', () => {
       const result = streamEventIdToDate(`${ts}-0`);
       expect(typeof result).toBe('string');
       expect(result).toContain('2024-06-15');
+    });
+  });
+
+  describe('lastDayOfThePreviousMonth', () => {
+    // Time series buckets are UTC calendar months: a bound computed in browser local
+    // time would spill into the next UTC month and add a partial bucket to the axis.
+    // See https://github.com/OpenCTI-Platform/opencti/issues/12150
+    const initialTimeZone = process.env.TZ;
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+      if (initialTimeZone === undefined) {
+        delete process.env.TZ;
+      } else {
+        process.env.TZ = initialTimeZone;
+      }
+    });
+
+    it('should return the UTC end of the previous month, milliseconds included', () => {
+      vi.setSystemTime(new Date('2025-08-26T12:00:00.000Z'));
+      expect(lastDayOfThePreviousMonth()).toEqual('2025-07-31T23:59:59.999Z');
+    });
+
+    it('should follow the UTC month even when the local date is still in the previous one', () => {
+      // 2025-09-01T01:00Z is 2025-08-31 21:00 in New York: reading the clock locally
+      // would yield July instead of August and drop a whole month from the axis.
+      process.env.TZ = 'America/New_York';
+      vi.setSystemTime(new Date('2025-09-01T01:00:00.000Z'));
+      expect(lastDayOfThePreviousMonth()).toEqual('2025-08-31T23:59:59.999Z');
     });
   });
 });
