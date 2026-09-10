@@ -30,7 +30,7 @@ import { notify, redisDeleteAuthLogHistory } from '../../database/redis';
 import conf, { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { unregisterStrategy } from './providers';
-import { isAuthenticationForcedFromEnv } from './providers-configuration';
+import { isAuthenticationForcedFromEnv, isLocalAuthForcedEnabledFromEnv } from './providers-configuration';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
@@ -307,9 +307,14 @@ export const addAuthenticationProvider = async (
     },
   });
 
-  if (created.enabled) {
-    logAuthInfo('Activating new provider', type, { identifier });
-    await notify(BUS_TOPICS[ENTITY_TYPE_AUTHENTICATION_PROVIDER].EDIT_TOPIC, created, user);
+  // If Local auth is forced through env, do not load the new providers at the risk of being locked out of platform
+  if (isLocalAuthForcedEnabledFromEnv()) {
+    logAuthInfo('New provider created but not enforced because Local Auth is currently enforced through env vars', type, { identifier });
+  } else {
+    if (created.enabled) {
+      logAuthInfo('Activating new provider', type, { identifier });
+      await notify(BUS_TOPICS[ENTITY_TYPE_AUTHENTICATION_PROVIDER].EDIT_TOPIC, created, user);
+    }
   }
   return created;
 };
