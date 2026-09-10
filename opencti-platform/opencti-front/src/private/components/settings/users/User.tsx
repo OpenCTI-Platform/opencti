@@ -214,7 +214,7 @@ interface UserProps {
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const { t_i18n, nsdt, fldt, fd } = useFormatter();
-  const auditsAxisFormatter = useTimeSeriesAxisFormatter();
+  const auditsAxisFormatter = useTimeSeriesAxisFormatter('month');
   const { me } = useAuth();
   const theme = useTheme<Theme>();
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);

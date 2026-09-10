@@ -111,7 +111,7 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
 `;
 
 const StixDomainObjectAuthorKnowledge = ({ t, n, classes, stixDomainObjectId, theme }) => {
-  const timeSeriesAxisFormatter = useTimeSeriesAxisFormatter();
+  const timeSeriesAxisFormatter = useTimeSeriesAxisFormatter('month');
   const fallbackDates = useMemo(() => ({
     monthAgo: monthsAgo(1),
     yearAgo: yearsAgo(1),
