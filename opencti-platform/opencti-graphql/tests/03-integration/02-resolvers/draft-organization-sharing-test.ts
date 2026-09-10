@@ -215,8 +215,7 @@ describe.skip('Draft organization sharing', () => {
           });
           return tRes.data?.backgroundTask.completed;
         },
-        1000,
-        10000,
+        10000000,
       );
 
       // 7. Test removing the restriction in Draft
