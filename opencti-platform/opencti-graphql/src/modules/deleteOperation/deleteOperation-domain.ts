@@ -168,7 +168,10 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
   while (relationShipHandled.length < relationshipsToRestore.length) {
     const currentSize = relationshipNotHandledYet.length;
     for (let i = 0; i < currentSize; i += 1) {
-      const relationship = relationshipsToRestore[i];
+      // Iterate the not-yet-handled list (which shrinks each round), not the original full list:
+      // currentSize is bounded by relationshipNotHandledYet, so indexing relationshipsToRestore
+      // here would re-process already-handled relationships and skip the remaining ones.
+      const relationship = relationshipNotHandledYet[i];
       const { id: relId, fromId, toId } = relationship;
       // if both sides are in DB (previously or already restored), we can restore this relationship
       if (availableElementsIds.includes(fromId) && availableElementsIds.includes(toId)) {
