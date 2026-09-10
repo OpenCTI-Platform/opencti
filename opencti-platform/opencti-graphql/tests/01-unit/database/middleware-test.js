@@ -1,8 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
-import { generateAttributesInputsForUpsert, generateRefsInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
+import {
+  generateAttributesInputsForUpsert,
+  generateInputsForUpsert,
+  generateRefsInputsForUpsert,
+  mergeUpsertInput,
+  mergeUpsertInputs,
+  sanitizeSynchronizedWorkflowInputs,
+  sanitizeSynchronizedWorkflowUpsertOperations
+} from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
+import * as cacheModule from '../../../src/database/cache';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('middleware hashMergeValidation test', () => {
   it('should hashes allowed to merge', () => {
@@ -57,6 +70,40 @@ describe('middleware upsertElement test', () => {
       expect(inputs.length).toEqual(1); // we still update description since no existing
       expect(inputs[0]).toEqual({ key: 'description', value: ['indicator1 new description'] });
     });
+    describe('middleware synchronized workflow status input sanitization', () => {
+      it('should discard x_opencti_workflow_id input if workflow id is unknown locally', () => {
+        const inputs = [
+          { key: 'x_opencti_workflow_id', value: ['remote-status-id'] },
+          { key: 'description', value: ['updated'] },
+        ];
+        const validStatusIdsByType = new Set(['local-status-id']);
+
+        const sanitizedInputs = sanitizeSynchronizedWorkflowInputs(inputs, 'remote-status-id', validStatusIdsByType);
+        expect(sanitizedInputs).toEqual([{ key: 'description', value: ['updated'] }]);
+      });
+
+      it('should keep x_opencti_workflow_id input if workflow id exists locally', () => {
+        const inputs = [
+          { key: 'x_opencti_workflow_id', value: ['local-status-id'] },
+          { key: 'description', value: ['updated'] },
+        ];
+        const validStatusIdsByType = new Set(['local-status-id']);
+
+        const sanitizedInputs = sanitizeSynchronizedWorkflowInputs(inputs, 'local-status-id', validStatusIdsByType);
+        expect(sanitizedInputs).toEqual(inputs);
+      });
+
+      it('should drop workflow upsert operations if workflow id is unknown locally', () => {
+        const upsertOperations = [
+          { key: 'x_opencti_workflow_id', operation: 'replace', value: ['remote-status-id'] },
+          { key: 'indicator_types', operation: 'add', value: ['malicious-activity'] },
+        ];
+        const validStatusIdsByType = new Set(['local-status-id']);
+
+        const sanitizedOperations = sanitizeSynchronizedWorkflowUpsertOperations(upsertOperations, 'remote-status-id', validStatusIdsByType);
+        expect(sanitizedOperations).toEqual([{ key: 'indicator_types', operation: 'add', value: ['malicious-activity'] }]);
+      });
+    });
     it('should generateAttributesInputsForUpsert with indicator description update', () => {
       const resolvedElement = { ...indicator1, description: 'indicator1 old description' }; // existing description
 
@@ -86,6 +133,60 @@ describe('middleware upsertElement test', () => {
       inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatchWithTypes, confidenceForUpsert);
 
       expect(inputs.length).toEqual(0); // no changes since confidenceMatch is false, we don't replace existing description
+    });
+  });
+  describe('middleware generateInputsForUpsert synchronized workflow status filtering', () => {
+    const resolvedIndicator = {
+      id: 'indicator2-uuid-internal',
+      internal_id: 'indicator2-uuid-internal',
+      standard_id: 'indicator2-uuid-standard',
+      entity_type: 'Indicator',
+      description: 'existing description',
+      pattern: '[domain-name:value = \'filigran.dev\']',
+      pattern_type: 'stix',
+      x_opencti_main_observable_type: ENTITY_DOMAIN_NAME,
+    };
+
+    it('should remove unknown workflow id update in synchronized mode', async () => {
+      vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([{ id: 'local-status-id', type: 'Indicator' }]);
+      const synchronizedContext = { ...testContext, synchronizedUpsert: true };
+      const updatePatch = {
+        description: 'updated description',
+        x_opencti_workflow_id: 'remote-status-id',
+      };
+
+      const inputs = await generateInputsForUpsert(
+        synchronizedContext,
+        ADMIN_USER,
+        resolvedIndicator,
+        'Indicator',
+        updatePatch,
+        { isConfidenceMatch: true, isConfidenceUpper: true },
+        true
+      );
+      expect(inputs.find((n) => n.key === 'x_opencti_workflow_id')).toBeUndefined();
+      expect(inputs.find((n) => n.key === 'description')).toEqual({ key: 'description', value: ['updated description'] });
+    });
+
+    it('should keep known workflow id update in synchronized mode', async () => {
+      vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([{ id: 'local-status-id', type: 'Indicator' }]);
+      const synchronizedContext = { ...testContext, synchronizedUpsert: true };
+      const updatePatch = {
+        description: 'updated description',
+        x_opencti_workflow_id: 'local-status-id',
+      };
+
+      const inputs = await generateInputsForUpsert(
+        synchronizedContext,
+        ADMIN_USER,
+        resolvedIndicator,
+        'Indicator',
+        updatePatch,
+        { isConfidenceMatch: true, isConfidenceUpper: true },
+        true
+      );
+      expect(inputs.find((n) => n.key === 'x_opencti_workflow_id')).toEqual({ key: 'x_opencti_workflow_id', value: ['local-status-id'] });
+      expect(inputs.find((n) => n.key === 'description')).toEqual({ key: 'description', value: ['updated description'] });
     });
   });
   describe('middleware generateAttributesInputsForUpsert with opencti_upsert_operations test', () => {
