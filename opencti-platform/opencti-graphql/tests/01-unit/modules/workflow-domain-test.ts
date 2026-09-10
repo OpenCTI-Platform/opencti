@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { booleanConf } from '../../../src/config/conf';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
@@ -12,12 +13,14 @@ import { findByType } from '../../../src/modules/entitySetting/entitySetting-dom
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { addNotification } from '../../../src/modules/notification/notification-domain';
 import {
+  __resetReadRepairRateLimitForTest,
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  initializeEntityWorkflow,
   isStatusTemplateUsedInWorkflows,
   publishWorkflowDefinition,
   hasPublishedWorkflowDefinition,
@@ -26,11 +29,13 @@ import {
   triggerWorkflowEvent,
   cleanupEntityWorkflow,
 } from '../../../src/modules/workflow/domain/workflow-domain';
+import { projectWorkflowState, resolveMappedStatusId } from '../../../src/modules/workflow/domain/workflow-projection';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { FilterMode } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 vi.mock('../../../src/database/middleware', () => ({
@@ -57,6 +62,7 @@ vi.mock('../../../src/modules/entitySetting/entitySetting-domain', () => ({
 
 vi.mock('../../../src/utils/draftContext', () => ({
   bypassDraftContext: vi.fn((context) => context),
+  getDraftContext: vi.fn(() => undefined),
 }));
 
 vi.mock('../../../src/modules/workflow/workflow-validation', async (importOriginal) => {
@@ -105,6 +111,12 @@ vi.mock('../../../src/domain/status', () => ({
   createStatus: vi.fn(),
 }));
 
+vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
+  projectWorkflowState: vi.fn(),
+  resolveProjectionScope: vi.fn((scope: string | undefined) => (scope && scope !== 'standard' ? scope : 'GLOBAL')),
+  resolveMappedStatusId: vi.fn(),
+}));
+
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
   return {
@@ -114,6 +126,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
       info: vi.fn(),
       warn: vi.fn(),
     },
+    booleanConf: vi.fn(actual.booleanConf),
   };
 });
 
@@ -2214,6 +2227,34 @@ describe('getWorkflowInstance', () => {
     expect(result.pendingTransition).toBeNull();
   });
 
+  it('falls back to scope: "standard" when the instance has no scope value (pre-existing rows)', async () => {
+    makeBaseSetup();
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]' }); // no `scope` field
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result.scope).toBe('standard');
+  });
+
+  it('falls back to entity.id when the loaded entity has no internal_id', async () => {
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', entity_type: 'Incident' }); // no internal_id
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({
+        initialState: 'draft',
+        states: [{ statusId: 'draft' }],
+        transitions: [],
+      }), validation_errors: [] } });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingTransition: null });
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result).not.toBeNull();
+    expect(result.currentState).toBe('draft');
+  });
+
   it('returns pendingTransition: null when pendingTransition JSON is malformed', async () => {
     makeBaseSetup();
     (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingTransition: '{ bad json' });
@@ -2611,5 +2652,370 @@ describe('cleanupEntityWorkflow', () => {
     await cleanupEntityWorkflow(mockContext, mockUser, entity);
 
     expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
+  });
+});
+
+// ===========================================================================
+// initializeEntityWorkflow — creation-time status resolution
+// (3 cases: explicit valid status / explicit unresolvable status / no status)
+// ===========================================================================
+describe('initializeEntityWorkflow — creation-time status resolution', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+    transitions: [],
+  });
+
+  const setupCommon = () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue(null); // no existing WorkflowInstance yet
+    (createEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id' });
+    (createRelation as any).mockResolvedValue({});
+  };
+
+  it('case (a): an explicit status that resolves to a valid state starts the instance there, with no projection write', async () => {
+    setupCommon();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-reviewing-id') {
+        return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
+      }
+      return Promise.resolve(null);
+    });
+
+    const entity = {
+      id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-reviewing-id',
+    };
+    await initializeEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      { ...mockUser, draft_context: undefined },
+      expect.objectContaining({ currentState: 'reviewing', scope: StatusScope.Global }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+    const [, , instanceInput] = (createEntity as any).mock.calls[0];
+    expect(instanceInput.pendingError).toBeUndefined();
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('case (b): an explicit status that does not resolve to any state starts at initialState with pendingError set, and does not project', async () => {
+    setupCommon();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      if (id === 'status-foreign-id') {
+        return Promise.resolve({ id: 'status-foreign-id', template_id: 'some-other-state', scope: StatusScope.Global });
+      }
+      return Promise.resolve(null);
+    });
+
+    const entity = {
+      id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-foreign-id',
+    };
+    await initializeEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      { ...mockUser, draft_context: undefined },
+      expect.objectContaining({ currentState: 'draft', pendingError: expect.any(String) }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('case (b): an explicit status id that does not resolve to any Status at all is treated the same way (starts at initialState, pendingError set)', async () => {
+    setupCommon();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(undefined); // status lookup misses entirely
+    });
+
+    const entity = {
+      id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-does-not-exist',
+    };
+    await initializeEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      { ...mockUser, draft_context: undefined },
+      expect.objectContaining({ currentState: 'draft', pendingError: expect.any(String) }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('case (c): no status supplied at all starts at initialState with the default scope, and projects once', async () => {
+    setupCommon();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+
+    const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
+    await initializeEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      { ...mockUser, draft_context: undefined },
+      expect.objectContaining({ currentState: 'draft', scope: 'standard' }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+    const [, , instanceInput] = (createEntity as any).mock.calls[0];
+    expect(instanceInput.pendingError).toBeUndefined();
+    expect(projectWorkflowState).toHaveBeenCalledTimes(1);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, entity, 'draft', StatusScope.Global);
+  });
+});
+
+// ===========================================================================
+// getWorkflowInstance — lazy backfill on first read
+// ===========================================================================
+describe('getWorkflowInstance — lazy backfill', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }],
+    transitions: [],
+  });
+
+  const setupCommon = () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+  };
+
+  it('persists a real WorkflowInstance under the WORKFLOW_MANAGER_USER identity when none exists yet', async () => {
+    setupCommon();
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(createEntity).toHaveBeenCalledWith(
+      expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      WORKFLOW_MANAGER_USER,
+      expect.objectContaining({ currentState: 'draft' }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+    expect(result.id).toBe('backfilled-instance-id');
+  });
+
+  it('falls back to the synthesized instance when the backfill write fails, without failing the read', async () => {
+    setupCommon();
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockRejectedValue(new Error('store unavailable'));
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result).not.toBeNull();
+    expect(result.id).toBe('initial-entity-id');
+  });
+
+  it('calling getWorkflowInstance twice creates exactly one WorkflowInstance (idempotent backfill)', async () => {
+    setupCommon();
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    (loadEntity as any).mockResolvedValueOnce(null); // first call: no instance yet, triggers backfill
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    (loadEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' }); // second call: now found
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(createEntity).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ===========================================================================
+// triggerWorkflowEvent — status projection on sync transitions
+// ===========================================================================
+describe('triggerWorkflowEvent — status projection', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
+  const workflowContent = {
+    id: 'workflow-1',
+    name: 'Test Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'closed' }],
+    transitions: [{ from: 'open', to: 'closed', event: 'close' }],
+  };
+  const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+  const existingInstance = { id: 'instance-1', internal_id: 'instance-1', currentState: 'open', history: '[]', scope: 'GLOBAL' };
+
+  const setup = () => {
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return entity;
+      if (type === 'WorkflowDefinition') {
+        return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      }
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    // Reset to a plain synchronous success, since other describe blocks in this file
+    // permanently override `getInstance`'s return value via `mockReturnValue`.
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('closed'),
+    });
+  };
+
+  it('calls projectWorkflowState with the entity, new state, and the instance scope right after the instance is updated', async () => {
+    setup();
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    expect(result.success).toBe(true);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, entity, 'closed', StatusScope.Global);
+    // Must happen after the instance's own currentState/history update, not before.
+    const updateAttributeOrder = (updateAttribute as any).mock.invocationCallOrder[0];
+    const projectionOrder = (projectWorkflowState as any).mock.invocationCallOrder[0];
+    expect(projectionOrder).toBeGreaterThan(updateAttributeOrder);
+  });
+
+  it('does not call projectWorkflowState for async/pending transitions', async () => {
+    const asyncWorkflowContent = {
+      id: 'workflow-1',
+      name: 'Test Workflow',
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'closed' }],
+      transitions: [{ from: 'open', to: 'closed', event: 'close', actions: [{ type: 'asyncBulkAction', params: {} }] }],
+    };
+    const asyncVersion = { id: 'v1', content: JSON.stringify(asyncWorkflowContent), validation_errors: [] };
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return entity;
+      if (type === 'WorkflowDefinition') {
+        return { id: 'workflow-id', name: 'Workflow', published_version: asyncVersion, all_versions: [asyncVersion] };
+      }
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({
+        success: true,
+        executionStatus: 'pending',
+        asyncActionSlots: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction' }],
+      }),
+      getCurrentState: vi.fn().mockReturnValue('closed'),
+    });
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// getWorkflowInstance — read-repair
+// ===========================================================================
+describe('getWorkflowInstance — read-repair', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    __resetReadRepairRateLimitForTest();
+    (booleanConf as any).mockReturnValue(false);
+  });
+
+  const entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'stale-status-id' };
+  const instance = { id: 'instance-id', internal_id: 'instance-id', currentState: 'reviewing', history: '[]', scope: 'GLOBAL' };
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+    transitions: [],
+  });
+
+  const setup = () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve(entity);
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue(instance);
+  };
+
+  it('repairs x_opencti_workflow_id under the WORKFLOW_MANAGER_USER identity when it diverges from currentState', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).toHaveBeenCalledWith(
+      expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      entity,
+      'reviewing',
+      'GLOBAL',
+    );
+  });
+
+  it('does not repair when x_opencti_workflow_id already matches the mapped Status', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('stale-status-id'); // already matches entity.x_opencti_workflow_id
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('does not fail the read when the repair write throws', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+    (projectWorkflowState as any).mockRejectedValue(new Error('store unavailable'));
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result).not.toBeNull();
+    expect(result.currentState).toBe('reviewing');
+  });
+
+  it('does not repair a second time within the rate-limit TTL window', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips repair entirely when the workflow:disable_read_repair kill switch is enabled', async () => {
+    setup();
+    (booleanConf as any).mockReturnValue(true);
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(resolveMappedStatusId).not.toHaveBeenCalled();
+    expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 });
