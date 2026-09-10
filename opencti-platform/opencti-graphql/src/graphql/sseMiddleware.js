@@ -283,7 +283,7 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
 };
 
 // before sending the event, sendEventWithFilteredObjectRefs removes from object_refs list all the ids of the entities the user cannot access
-// By using entities in the cache to avoir reloading all of them
+// By using entities in the cache to avoid reloading all of them
 // And by checking the ids that are not in the cache to load only the missing ones
 export const sendEventWithFilteredObjectRefs = async (
   context,
@@ -300,7 +300,7 @@ export const sendEventWithFilteredObjectRefs = async (
           context,
           user,
           objectsRefsNotFoundInCache,
-          { baseFields: ['internal_id', 'standard_id'], indices: READ_STIX_INDICES, toMap: true, mapWithAllIds: true })
+          { baseData: true, baseFields: ['internal_id', 'standard_id'], indices: READ_STIX_INDICES, toMap: true, mapWithAllIds: true })
         )
       : {};
     objectsRefs = objectsRefs.filter((ref) => cache.has(ref) || objectRefsAccessibleNotFoundInCache[ref] !== undefined);
