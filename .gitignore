@@ -40,3 +40,12 @@ fds-migration/reports/
 # Env local files
 .env.local
 .env.development.local
+
+# Python
+__pycache__/
+*.py[cod]
+dist/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.coverage

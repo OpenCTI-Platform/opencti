@@ -7,6 +7,6 @@ cd /opencti/opencti-platform/opencti-graphql/
 yarn install
 yarn install:python
 
-echo -e "\n\nInstalling OpenCTI Python client ...\n"
-cd /opencti/client-python
-pip install -r requirements.txt
+echo -e "\n\nInstalling the Python workspace (pycti, worker, platform runtime) ...\n"
+cd /opencti
+uv sync --locked --all-packages

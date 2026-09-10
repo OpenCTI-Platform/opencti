@@ -25,17 +25,13 @@ $ cd client-python
 $ git remote add upstream https://github.com/OpenCTI-Platform/opencti.git
 # Create a branch for your feature/fix
 $ git checkout -b [branch-name]
-# Create a virtualenv
-$ cd client-python
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-# Install the client-python and dependencies for the development and the documentation
-$ python3 -m pip install -e .[dev,doc]
+# Install the client-python and its development dependencies (uv creates the .venv at the repository root)
+$ uv sync --package pycti
 # Set up the git hook scripts
-$ pre-commit install
+$ uv run pre-commit install
 # Create your feature/fix
 # Create tests for your changes
-$ pytest
+$ uv run pytest
 # Push you feature/fix on Github
 $ git add [file(s)]
 $ git commit -m "[descriptive message]"
@@ -46,8 +42,10 @@ $ git push origin [branch-name]
 ### Install the package locally
 
 ```bash
-$ pip install -e .
+$ uv sync --package pycti
 ```
+
+[uv](https://docs.astral.sh/uv/) manages the dependencies of every Python project of the repository from a single `uv.lock`, run `uv run <command>` instead of activating the virtual environment.
 
 ## Documentation
 
@@ -64,7 +62,7 @@ To learn about the methods available for executing queries and retrieving their 
 ### Install dependencies
 
 ```bash
-$ pip install -r ./test-requirements.txt
+$ uv sync --package pycti --group test
 ```
 
 [pytest](https://docs.pytest.org/en/7.2.x/) is used to launch the tests.
@@ -80,12 +78,12 @@ Your conftest.py should be configured with your API url, your token, and if appl
 
 Unit tests
 ```bash
-$ pytest ./tests/01-unit/
+$ uv run pytest ./tests/01-unit/
 ```
 
 Integration testing
 ```bash
-$ pytest ./tests/02-integration/
+$ uv run pytest ./tests/02-integration/
 ```
 
 Example testing:
@@ -99,7 +97,7 @@ export OPENCTI_API_URL="http://localhost:4000"
 export OPENCTI_API_TOKEN="xxxxxxxxxxxxxxxxxxxxxx"
 
 #Run one example file
-python get_indicators_of_malware.py
+uv run python get_indicators_of_malware.py
 ```
 
 ## About

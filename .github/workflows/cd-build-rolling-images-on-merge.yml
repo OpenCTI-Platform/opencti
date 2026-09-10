@@ -20,7 +20,6 @@ jobs:
       - uses: ./.github/actions/docker-build-builder
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
 
   app-sbom:
     name: Build and generate app SBOM
@@ -40,18 +39,13 @@ jobs:
       - name: Load builder image
         run: docker load --input /tmp/opencti-builder.tar
 
-      - name: Use client-python in OpenCTI from same branch
-        env:
-          CHECKOUT_REF: ${{ github.sha }}
-        run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
-
       - name: Build graphql production and prune devDependencies
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
             -w /opt/opencti/opencti-graphql \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+            sh -c "yarn install --immutable && yarn build:prod && yarn workspaces focus --production"
 
       - name: Build front production and prune devDependencies
         run: |
@@ -156,7 +150,6 @@ jobs:
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
 
   # -----------------------
@@ -180,7 +173,6 @@ jobs:
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
 
   # -----------------------
