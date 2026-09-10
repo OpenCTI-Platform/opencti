@@ -3,9 +3,9 @@ import { useMemo } from 'react';
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import type { Theme } from '../Theme';
-import { useFormatter } from '../i18n';
 import { lineChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
+import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
 interface WidgetMultiLinesProps {
   series: ApexAxisChartSeries;
@@ -21,17 +21,9 @@ const WidgetMultiLines = ({
   onMounted,
 }: WidgetMultiLinesProps) => {
   const theme = useTheme<Theme>();
-  const { fsd, mtdy, yd } = useFormatter();
+  const formatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    let formatter = fsd;
-    if (interval === 'month' || interval === 'quarter') {
-      formatter = mtdy;
-    }
-    if (interval === 'year') {
-      formatter = yd;
-    }
-
     return lineChartOptions(
       theme,
       !interval || ['day', 'week'].includes(interval),
@@ -41,7 +33,7 @@ const WidgetMultiLines = ({
       false,
       hasLegend,
     ) as ApexOptions;
-  }, [theme, interval, hasLegend]);
+  }, [theme, interval, formatter, hasLegend]);
 
   return (
     <Chart

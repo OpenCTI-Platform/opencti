@@ -3593,7 +3593,7 @@ export const elHistogramCount = async (
       dateFormat = 'yyyy-MM-dd';
       break;
     case 'hour':
-      dateFormat = 'yyyy-MM-dd hh:mm:ss';
+      dateFormat = 'yyyy-MM-dd HH:mm:ss';
       break;
     default:
       throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
