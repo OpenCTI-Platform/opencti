@@ -1,8 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters, buildRateLimiterOptions } from '../../../src/http/httpUtils';
+import {
+  applyKeepAliveTimeout,
+  buildDefaultHelmetParameters,
+  buildPublicHelmetParameters,
+  buildRateLimiterOptions,
+  decodeOidcState,
+  encodeOidcState,
+} from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs } from '../../../src/http/httpConfig';
 import type { Request, Response } from 'express';
+import type { Server } from 'node:http';
 
 describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('encodeOidcState', () => {
@@ -272,5 +280,43 @@ describe('httpUtils: buildRateLimiter configuration tests', () => {
     const skip = rateLimiter.skip as (req: Partial<Request>, res: Partial<Response>) => boolean;
     // Even with no IP, user-agent prefix match should still skip
     expect(skip(mockReq(undefined, 'Mozilla/5.0'), {} as Response)).toBe(true);
+  });
+});
+
+describe('httpUtils: server keep-alive timeout', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const mockServer = () => ({ keepAliveTimeout: 5000, headersTimeout: 60000 }) as Server;
+
+  it('should apply the configured keep-alive timeout on the server', () => {
+    vi.spyOn(httpConfig, 'getKeepAliveTimeout').mockReturnValue(120000);
+    const server = mockServer();
+    expect(applyKeepAliveTimeout(server)).toBe(120000);
+    expect(server.keepAliveTimeout).toBe(120000);
+  });
+
+  it('should default above the usual 60s load balancer idle timeout', () => {
+    // The node default of 5s is the root cause of the intermittent 502 behind a load balancer
+    const server = mockServer();
+    applyKeepAliveTimeout(server);
+    expect(server.keepAliveTimeout).toBe(65000);
+  });
+
+  it('should support a disabled keep-alive timeout', () => {
+    vi.spyOn(httpConfig, 'getKeepAliveTimeout').mockReturnValue(0);
+    const server = mockServer();
+    applyKeepAliveTimeout(server);
+    expect(server.keepAliveTimeout).toBe(0);
+  });
+
+  it('should leave headersTimeout untouched', () => {
+    // headersTimeout only bounds the headers of a request already started, it never counts
+    // keep-alive idle time, so it has no constraint against keepAliveTimeout.
+    vi.spyOn(httpConfig, 'getKeepAliveTimeout').mockReturnValue(120000);
+    const server = mockServer();
+    applyKeepAliveTimeout(server);
+    expect(server.headersTimeout).toBe(60000);
   });
 });
