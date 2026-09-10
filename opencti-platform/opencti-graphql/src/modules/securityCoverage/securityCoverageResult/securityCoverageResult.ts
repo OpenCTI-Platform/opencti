@@ -11,7 +11,6 @@ import { REL_NEW } from '../../../database/stix';
 import type { StoreEntity } from '../../../types/store';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
-import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
 import {
   ATTRIBUTE_RESULT_OF,
   ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
@@ -61,7 +60,6 @@ const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityC
       name: RELATION_HAS_COVERED,
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
-        { name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type: REL_NEW },
         { name: ENTITY_TYPE_VULNERABILITY, type: REL_NEW },
         { name: ENTITY_HASHED_OBSERVABLE_ARTIFACT, type: REL_NEW },
         { name: ENTITY_TYPE_INDICATOR, type: REL_NEW },
