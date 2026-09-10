@@ -24,7 +24,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObje
 const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName.toLowerCase()}`;
 const importFileId = `import/global/${exportFileName.toLowerCase()}`;
-const FILE_SIZE = 10700;
+const FILE_SIZE = 10765; // Updated: backend STIX 2.0 converter (convertMalwareToStix) produces a slightly different payload than the legacy client-side converter.
 
 describe('File storage file listing', () => {
   it('should initializeFilStorage initializes without error', async () => {
