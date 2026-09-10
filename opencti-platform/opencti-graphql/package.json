@@ -236,9 +236,6 @@
     "@datadog/pprof": {
       "built": false
     },
-    "es5-ext": {
-      "built": false
-    },
     "esbuild": {
       "built": false
     },
