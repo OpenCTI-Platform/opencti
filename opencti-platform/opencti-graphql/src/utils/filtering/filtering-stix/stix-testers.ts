@@ -50,6 +50,9 @@ import {
   PIR_IDS_SUBFILTER,
   DESCRIPTION_FILTER,
   X_OPENCTI_WORKFLOW_ID,
+  SSVC_EXPLOITATION_FILTER,
+  SSVC_AUTOMATABLE_FILTER,
+  SSVC_TECHNICAL_IMPACT_FILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -466,6 +469,24 @@ export const testCvssSeverity = (stix: any, filter: Filter, changeContext?: { fi
   return testStringFilter(filter, value, changeContext);
 };
 
+export const testSsvcExploitation = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const stixValue: string | null = stix.x_opencti_ssvc_exploitation ?? stix.extensions?.[STIX_EXT_OCTI].ssvc_exploitation ?? null;
+  const value = stixValue ? [stixValue] : [];
+  return testStringFilter(filter, value, changeContext);
+};
+
+export const testSsvcAutomatable = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const stixValue: string | null = stix.x_opencti_ssvc_automatable ?? stix.extensions?.[STIX_EXT_OCTI].ssvc_automatable ?? null;
+  const value = stixValue ? [stixValue] : [];
+  return testStringFilter(filter, value, changeContext);
+};
+
+export const testSsvcTechnicalImpact = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+  const stixValue: string | null = stix.x_opencti_ssvc_technical_impact ?? stix.extensions?.[STIX_EXT_OCTI].ssvc_technical_impact ?? null;
+  const value = stixValue ? [stixValue] : [];
+  return testStringFilter(filter, value, changeContext);
+};
+
 export const testPirScore = (stix: any, filter: Filter, _changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   // Retrieve data from the filter.
   const pirIds = filter.values.find((v) => v.key === PIR_IDS_SUBFILTER)?.values ?? [];
@@ -526,6 +547,9 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [CVSS_BASE_SEVERITY_FILTER]: testCvssSeverity,
   [PIR_SCORE_FILTER]: testPirScore,
   [DESCRIPTION_FILTER]: testDescription,
+  [SSVC_EXPLOITATION_FILTER]: testSsvcExploitation,
+  [SSVC_AUTOMATABLE_FILTER]: testSsvcAutomatable,
+  [SSVC_TECHNICAL_IMPACT_FILTER]: testSsvcTechnicalImpact,
 
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events
