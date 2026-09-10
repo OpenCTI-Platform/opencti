@@ -558,15 +558,23 @@ export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreEn
 export const batchEntitiesThroughRelations = async <T extends BasicStoreEntity>(
   context: AuthContext,
   user: AuthUser,
-  parentIds: string[],
+  targetIds: string[],
   relationType: string,
   fromType: string,
 ): Promise<BasicConnection<T>[]> => {
-  const relations = await fullRelationsList<BasicStoreRelation>(context, user, relationType, { toId: parentIds, fromTypes: [fromType], baseData: true });
+  const relations: { fromId: string; toId: string }[] = [];
+  await fullRelationsList<BasicStoreRelation>(context, user, relationType, {
+    toId: targetIds,
+    fromTypes: [fromType],
+    baseData: true,
+    callback: async (page) => {
+      page.forEach((relation) => relations.push({ fromId: relation.fromId, toId: relation.toId }));
+    },
+  });
   const entitiesById = await internalFindByIdsMapped<T>(context, user, R.uniq(relations.map((relation) => relation.fromId)), { type: fromType });
-  const relationsByParentId = R.groupBy((relation) => relation.toId, relations);
-  return parentIds.map((id) => {
-    const nodes = (relationsByParentId[id] ?? [])
+  const relationsByTargetId = R.groupBy((relation) => relation.toId, relations);
+  return targetIds.map((id) => {
+    const nodes = (relationsByTargetId[id] ?? [])
       .map((relation) => entitiesById[relation.fromId])
       .filter((node): node is T => !!node);
     return buildPagination(0, null, nodes.map((node) => ({ node })), nodes.length);
