@@ -2,12 +2,26 @@ import datetime
 
 import pytest
 
+from pycti import OpenCTIApiClient
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 
 @pytest.fixture
 def opencti_stix2(api_client):
     return OpenCTIStix2(api_client)
+
+
+@pytest.fixture
+def opencti_stix2_no_server():
+    """Same as opencti_stix2, but skips the live-server health check so these
+    tests can run without a running OpenCTI instance."""
+    client = OpenCTIApiClient(
+        "http://localhost:4000",
+        "test-token",
+        ssl_verify=False,
+        perform_health_check=False,
+    )
+    return OpenCTIStix2(client)
 
 
 def test_unknown_type(opencti_stix2: OpenCTIStix2, caplog):
@@ -532,6 +546,114 @@ def test_prepare_export_keeps_non_embedded_markdown_image_uri(
     assert len(result) == 1
     assert result[0]["description"] == "desc ![img](/storage/get/import/global/a.png)"
     assert len(fetch_calls) == 0
+
+
+def test_prepare_export_drops_restricted_created_by_ref(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    """When createdBy is a restricted placeholder (name and identity_class both
+    forced to "Restricted" by the backend), the export must not set
+    created_by_ref and must not include the placeholder identity in the
+    bundle (see OpenCTI-Platform/opencti#18026)."""
+    monkeypatch.setattr(
+        opencti_stix2_no_server.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    entity = {
+        "id": "report--44444444-4444-4444-8444-444444444444",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": "internal-report-id-restricted",
+        "createdBy": {
+            "id": "internal-identity-id-restricted",
+            "standard_id": "identity--55555555-5555-4555-8555-555555555555",
+            "entity_type": "Organization",
+            "parent_types": ["Stix-Domain-Object", "Identity"],
+            "name": "Restricted",
+            "identity_class": "Restricted",
+        },
+        "createdById": "internal-identity-id-restricted",
+    }
+
+    result = opencti_stix2_no_server.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    assert "created_by_ref" not in result[0]
+    assert not any(obj.get("type") == "identity" for obj in result)
+
+
+def test_prepare_export_keeps_created_by_ref_for_real_identity(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    """Regression guard: a real (accessible) createdBy must still be exported
+    and referenced normally."""
+    monkeypatch.setattr(
+        opencti_stix2_no_server.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    entity = {
+        "id": "report--66666666-6666-4666-8666-666666666666",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": "internal-report-id-real",
+        "createdBy": {
+            "id": "internal-identity-id-real",
+            "standard_id": "identity--77777777-7777-4777-8777-777777777777",
+            "entity_type": "Organization",
+            "parent_types": ["Stix-Domain-Object", "Identity"],
+            "name": "Acme Corp",
+            "identity_class": "organization",
+        },
+        "createdById": "internal-identity-id-real",
+    }
+
+    result = opencti_stix2_no_server.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 2
+    identity = next(obj for obj in result if obj["type"] == "identity")
+    report = next(obj for obj in result if obj["type"] == "report")
+    assert report["created_by_ref"] == identity["id"]
+    assert identity["name"] == "Acme Corp"
+
+
+def test_prepare_export_keeps_created_by_ref_for_identity_literally_named_restricted(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    """A real identity that happens to be named "Restricted" but has a real
+    identity_class must not be mistaken for the platform's restricted
+    placeholder."""
+    monkeypatch.setattr(
+        opencti_stix2_no_server.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    entity = {
+        "id": "report--88888888-8888-4888-8888-888888888888",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": "internal-report-id-named-restricted",
+        "createdBy": {
+            "id": "internal-identity-id-named-restricted",
+            "standard_id": "identity--99999999-9999-4999-8999-999999999999",
+            "entity_type": "Organization",
+            "parent_types": ["Stix-Domain-Object", "Identity"],
+            "name": "Restricted",
+            "identity_class": "organization",
+        },
+        "createdById": "internal-identity-id-named-restricted",
+    }
+
+    result = opencti_stix2_no_server.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 2
+    identity = next(obj for obj in result if obj["type"] == "identity")
+    report = next(obj for obj in result if obj["type"] == "report")
+    assert report["created_by_ref"] == identity["id"]
 
 
 def test_generate_export_fetches_external_reference_files_by_id(

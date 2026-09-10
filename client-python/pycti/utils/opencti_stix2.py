@@ -2143,6 +2143,26 @@ class OpenCTIStix2:
                 ],
             }
 
+    @staticmethod
+    def _is_restricted_identity(identity: Dict) -> bool:
+        """Detect a createdBy identity obfuscated by the platform because the
+        user has no access to it (see buildRestrictedEntity on the backend).
+
+        Both name and identity_class must match: identity_class is a
+        platform-controlled field and is never legitimately set to the
+        literal string "Restricted", so requiring both avoids false
+        positives on a real entity that happens to be named "Restricted".
+
+        :param identity: createdBy entity as returned by the API
+        :type identity: Dict
+        :return: True if the identity is a restricted placeholder
+        :rtype: bool
+        """
+        return (
+            identity.get("name") == "Restricted"
+            and identity.get("identity_class") == "Restricted"
+        )
+
     def prepare_export(
         self,
         entity: Dict,
@@ -2172,6 +2192,7 @@ class OpenCTIStix2:
             not no_custom_attributes
             and "createdBy" in entity
             and entity["createdBy"] is not None
+            and not self._is_restricted_identity(entity["createdBy"])
         ):
             created_by = self.generate_export(entity=entity["createdBy"])
             if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
