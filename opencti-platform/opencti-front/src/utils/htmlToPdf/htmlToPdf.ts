@@ -11,7 +11,7 @@ import { getBase64ImageFromURL, isImageFromUrlSvg } from '../Image';
 import { FONTS, detectLanguage } from './utils/pdfFonts';
 import determineOrientation from './utils/pdfOrientation';
 import setImagesWidth from './utils/pdfImageWidth';
-import setTableFullWidth, { defaultTableLayout } from './utils/pdfTableWidth';
+import setTableFullWidth, { defaultTableLayout, getMaxTableColumnCount, VERY_WIDE_TABLE_COLUMN_THRESHOLD, WIDE_TABLE_COLUMN_THRESHOLD } from './utils/pdfTableWidth';
 import addPageBreaks, { pdfPageBreaks } from './utils/pdfPageBreaks';
 import removeUnnecessaryHtml from './utils/pdfUnnecessarytHtml';
 import pdfBackground from './utils/pdfBackground';
@@ -19,6 +19,25 @@ import pdfHeader from './utils/pdfHeader';
 import pdfFooter from './utils/pdfFooter';
 import { DARK, DARK_BLUE, GREY, WHITE } from './utils/constants';
 import { dateFormat } from '../Time';
+
+type PdfPageSize = 'A4' | 'A3';
+type PdfPageOrientation = 'portrait' | 'landscape';
+
+const PDF_PAGE_DIMENSIONS: Record<PdfPageSize, { width: number; height: number }> = {
+  A4: { width: 595.28, height: 841.89 },
+  A3: { width: 841.89, height: 1190.55 },
+};
+
+export const resolvePdfPageGeometry = (
+  pageSize: PdfPageSize,
+  pageOrientation: PdfPageOrientation,
+) => {
+  const dimensions = PDF_PAGE_DIMENSIONS[pageSize];
+  const pageWidth = pageOrientation === 'landscape' ? dimensions.height : dimensions.width;
+  const pageHeight = pageOrientation === 'landscape' ? dimensions.width : dimensions.height;
+  const backPageLogoMarginTop = Math.max(120, Math.round((pageHeight - 133) / 2));
+  return { pageWidth, pageHeight, backPageLogoMarginTop };
+};
 
 /**
  * NOT MEANT FOR EXPORT
@@ -190,6 +209,12 @@ export const htmlToPdfReport = async (
 
   let htmlData = removeUnnecessaryHtml(content);
   htmlData = setImagesWidth(htmlData);
+  const maxTableColumnCount = getMaxTableColumnCount(htmlData);
+  const containsWideTable = maxTableColumnCount >= WIDE_TABLE_COLUMN_THRESHOLD;
+  const containsVeryWideTable = maxTableColumnCount >= VERY_WIDE_TABLE_COLUMN_THRESHOLD;
+  const pageSize: PdfPageSize = containsVeryWideTable ? 'A3' : 'A4';
+  const pageOrientation: PdfPageOrientation = containsWideTable ? 'landscape' : 'portrait';
+  const { pageWidth, pageHeight, backPageLogoMarginTop } = resolvePdfPageGeometry(pageSize, pageOrientation);
   htmlData = setTableFullWidth(htmlData);
   htmlData = addPageBreaks(htmlData);
 
@@ -263,19 +288,21 @@ export const htmlToPdfReport = async (
         type: 'rect',
         x: 0,
         y: 0,
-        w: 600,
-        h: 850,
+        w: pageWidth,
+        h: pageHeight,
         linearGradient: linearGradiant,
       }],
     },
     ...(isLogoSvg
-      ? [{ svg: logo, width: 133, alignment: 'center' as const, margin: [0, 380, 0, 0] as [number, number, number, number] }]
-      : [{ image: logo, width: 133, alignment: 'center' as const, margin: [0, 380, 0, 0] as [number, number, number, number] }]
+      ? [{ svg: logo, width: 133, alignment: 'center' as const, margin: [0, backPageLogoMarginTop, 0, 0] as [number, number, number, number] }]
+      : [{ image: logo, width: 133, alignment: 'center' as const, margin: [0, backPageLogoMarginTop, 0, 0] as [number, number, number, number] }]
     ),
   ];
 
   const docDefinition: TDocumentDefinitions = {
-    pageMargins: [20, 30],
+    pageMargins: containsVeryWideTable ? [8, 12] : containsWideTable ? [10, 20] : [20, 30],
+    pageSize,
+    pageOrientation,
     styles: {
       colorWhite: { color: textColor },
       colorLight: { color: GREY },

@@ -57,4 +57,47 @@ describe('Hook: useBuildListOutcome', () => {
     expect(listOutcome).toContain('<tr><td>Malware</td><td>Joker</td><td>2024-05-25</td></tr>');
     expect(listOutcome).toContain('<tr><td>Location</td><td>Annecy</td><td>2023-05-25</td></tr>');
   });
+
+  it('should format object-based columns as readable values', async () => {
+    const { hook, relayEnv } = testRenderHook(() => useBuildListOutcome());
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
+    const { buildListOutcome } = hook.result.current;
+
+    relayEnv.mock.queueOperationResolver((op) => {
+      return MockPayloadGenerator.generate(op, {
+        StixCoreObjectConnection() {
+          return {
+            edges: [{
+              node: {
+                id: 'sco-object-columns',
+                entity_type: 'Report',
+                createdBy: { id: 'identity-1', name: 'Alice' },
+                creators: [{ id: 'creator-1', name: 'Bob' }, { id: 'creator-2', name: 'Carol' }],
+                objectLabel: [{ id: 'label-1', value: 'TLP:AMBER' }],
+                objectMarking: [{ id: 'marking-1', definition: 'TLP:CLEAR' }],
+                status: { id: 'status-1', template: { name: 'In progress' } },
+              },
+            }],
+          };
+        },
+      });
+    });
+
+    const listOutcome = await buildListOutcome({
+      columns: [
+        { attribute: 'createdBy', label: 'Author' },
+        { attribute: 'creators', label: 'Creators' },
+        { attribute: 'objectLabel', label: 'Label' },
+        { attribute: 'objectMarking', label: 'Marking definition' },
+        { attribute: 'x_opencti_workflow_id', label: 'Processing status' },
+      ],
+    }, 'entities');
+    const normalizedOutcome = listOutcome.replaceAll('\u200B', '');
+
+    expect(normalizedOutcome).toContain('<td>Alice</td>');
+    expect(normalizedOutcome).toContain('<td>Bob, Carol</td>');
+    expect(normalizedOutcome).toContain('<td>TLP:AMBER</td>');
+    expect(normalizedOutcome).toContain('<td>TLP:CLEAR</td>');
+    expect(normalizedOutcome).toContain('<td>In progress</td>');
+  });
 });

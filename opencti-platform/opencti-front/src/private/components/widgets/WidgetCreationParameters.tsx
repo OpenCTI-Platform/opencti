@@ -343,6 +343,24 @@ const WidgetCreationParameters = () => {
     );
   };
 
+  const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
+    if (!filterGroup) return undefined;
+
+    const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filterGroup);
+    const hasSingleEntityType = entityTypeFilters.length === 1;
+    const otherFiltersLength = filterGroup.filters.filter((filter) => filter.key !== 'entity_type').length;
+
+    if (hasSingleEntityType && filterGroup.mode === 'and') {
+      return entityTypeFilters[0];
+    }
+
+    if (hasSingleEntityType && filterGroup.mode === 'or' && otherFiltersLength === 0) {
+      return entityTypeFilters[0];
+    }
+
+    return undefined;
+  };
+
   return (
     <div style={{ marginTop: 20 }}>
       <TextField
@@ -961,43 +979,45 @@ const WidgetCreationParameters = () => {
             label={t_i18n('Display legend')}
           />
         )}
-        {type === 'list' && host.kind !== 'fintelTemplate'
-          && dataSelection.map(({ perspective, columns, filters }, index) => {
-            if (perspective === 'relationships' || perspective === 'entities') {
-              const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
-                if (!filterGroup) return undefined;
-
-                const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filterGroup);
-                const hasSingleEntityType = entityTypeFilters.length === 1;
-                const otherFiltersLength = filterGroup?.filters?.filter((filter) => filter.key !== 'entity_type')?.length;
-
-                if (filterGroup.mode === 'and' && hasSingleEntityType && otherFiltersLength >= 0) {
-                  return entityTypeFilters[0];
-                }
-
-                if (filterGroup.mode === 'or' && hasSingleEntityType && otherFiltersLength === 0) {
-                  return entityTypeFilters[0];
-                }
-
-                return undefined;
-              };
-
-              const entityType = getEntityTypeFromFilters(filters);
-
-              const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
-
-              return (
-                <WidgetColumnsCustomizationInput
-                  key={index}
-                  availableColumns={getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined)}
-                  defaultColumns={defaultWidgetColumnsByType}
-                  value={[...(columns ?? defaultWidgetColumnsByType)]}
-                  onChange={(newColumns) => setColumns(index, newColumns)}
-                />
-              );
-            }
+        {type === 'list' && dataSelection.map(({ perspective, columns, filters }, index) => {
+          if (perspective !== 'relationships' && perspective !== 'entities') {
             return null;
-          })}
+          }
+
+          const entityTypeFromFilters = getEntityTypeFromFilters(filters);
+          const entityType = entityTypeFromFilters
+            ?? (host.kind === 'fintelTemplate' ? host.fintelEntityType : undefined);
+          const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
+          const availableColumns = getWidgetColumns(perspective, entityType, metricsDefinition || undefined);
+          const selectedColumns = [...(columns ?? defaultWidgetColumnsByType)];
+
+          if (host.kind === 'fintelTemplate') {
+            return (
+              <WidgetCustomAttributesColumnsInput
+                key={index}
+                availableColumns={availableColumns}
+                defaultColumns={defaultWidgetColumnsByType}
+                value={selectedColumns}
+                onChange={(newColumns) => setColumns(index, newColumns)}
+                labels={{
+                  title: 'Customize columns',
+                  available: 'Available columns',
+                  selected: 'Selected columns',
+                }}
+              />
+            );
+          }
+
+          return (
+            <WidgetColumnsCustomizationInput
+              key={index}
+              availableColumns={availableColumns}
+              defaultColumns={defaultWidgetColumnsByType}
+              value={selectedColumns}
+              onChange={(newColumns) => setColumns(index, newColumns)}
+            />
+          );
+        })}
         {getCurrentCategory(type) === 'custom-attributes' && (() => {
           const entityType = host.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
           const allColumns = getCustomAttributesColumns(entityType);
