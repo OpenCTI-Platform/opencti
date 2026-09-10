@@ -5,6 +5,7 @@ import graphqlLoaderPluginPkg from '@luckycatfactory/esbuild-graphql-loader';
 import nativeNodePlugin from './plugin/native.node.plugin.js';
 import nodeGypBuildShimPlugin from './plugin/node-gyp-build-shim.plugin.js';
 import { generateEsmPlugin } from './plugin/generate-esm-plugin.js';
+import { BUILD_ENTRY_POINTS } from './entry-points.js';
 
 const { default: importGlobPlugin } = importGlobPluginPkg;
 const { default: graphqlLoaderPlugin } = graphqlLoaderPluginPkg;
@@ -20,13 +21,7 @@ const entryPoints = [];
 if (scriptName) {
   entryPoints.push(scriptName);
 } else {
-  entryPoints.push(...[
-    'src/back.ts',
-    'src/lock/child-lock.manager.ts',
-    'script/script-clean-relations.js',
-    'script/script-insert-dataset.js',
-    'src/utils/safeEjs.worker.ts'
-  ]);
+  entryPoints.push(...BUILD_ENTRY_POINTS);
 }
 
 await esbuild.build({
