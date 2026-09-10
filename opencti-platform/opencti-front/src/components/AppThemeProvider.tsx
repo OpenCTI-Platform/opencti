@@ -10,8 +10,10 @@ import themeDark, {
   THEME_DARK_DEFAULT_SECONDARY,
   THEME_DARK_DEFAULT_TEXT,
 } from './ThemeDark';
-import themeLight from './ThemeLight';
+import themeLight, { THEME_LIGHT_DEFAULT_PAPER } from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
+import useFdsThemeScope from '../utils/hooks/useFdsThemeScope';
+import { isLightThemeName } from '../utils/themeName';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { useExportTheme } from '../utils/ExportThemeContext';
 
@@ -47,7 +49,7 @@ const themeBuilder = (
   const platformThemeSecondary = theme?.theme_secondary ?? null;
   const platformThemeAccent = theme?.theme_accent ?? null;
   const platformThemeTextColor = theme?.theme_text_color ?? 'rgba(255, 255, 255, 0.7)';
-  if (theme?.name === 'Light' || theme?.name === 'Filigran Light') {
+  if (isLightThemeName(theme?.name)) {
     // needed until everything is customizable, like text colors
     return themeLight(
       platformThemeLogo,
@@ -115,10 +117,11 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     return createTheme(themeBuilder(appTheme) as ThemeOptions);
   }, [themeToUse]);
 
-  // Keep the body `data-theme` attribute in sync with the MUI palette mode so
-  // that CSS files targeting `body[data-theme="dark"]` / `body[data-theme="light"]`
-  // apply on the very first render.
-  const themeMode = (themeToUse?.name ?? defaultTheme.name) === 'Filigran Light' ? 'light' : 'dark';
+  const resolvedName = themeToUse?.name ?? defaultTheme.name;
+  const resolvedPaper = themeToUse?.theme_paper ?? defaultTheme.theme_paper;
+  const defaultPaper = isLightThemeName(resolvedName) ? THEME_LIGHT_DEFAULT_PAPER : THEME_DARK_DEFAULT_PAPER;
+  const customPaper = resolvedPaper && resolvedPaper !== defaultPaper ? resolvedPaper : null;
+  const themeMode = useFdsThemeScope(resolvedName, customPaper);
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

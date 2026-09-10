@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import Box from '@mui/material/Box';
 import { Stack } from '@mui/material';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';

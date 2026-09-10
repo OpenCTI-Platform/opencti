@@ -80,7 +80,7 @@ const StixCoreObjectLabels = ({
         </Stack>
 
         {/* Visible chips */}
-        <Stack direction="row" gap={1} overflow="hidden" flex={1}>
+        <Stack direction="row" gap={1} overflow="hidden">
           {labels.slice(0, visibleCount).map((label) => (
             <Box key={label.id} sx={{ minWidth: 0 }}>
               <RawTag

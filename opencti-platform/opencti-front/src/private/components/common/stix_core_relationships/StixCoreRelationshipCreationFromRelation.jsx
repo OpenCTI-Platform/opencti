@@ -4,8 +4,7 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import IconButton from '@common/button/IconButton';
 import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -59,16 +58,6 @@ const styles = (theme) => ({
   },
   search: {
     float: 'right',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
   },
 });
 
@@ -469,7 +458,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   renderForm(sourceEntity) {
-    const { t, classes, isRelationReversed, allowedRelationshipTypes } = this.props;
+    const { isRelationReversed, allowedRelationshipTypes } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
@@ -493,26 +482,14 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               || allowedRelationshipTypes.includes(n),
           ));
           return (
-            <>
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={this.handleClose.bind(this)}
-                >
-                  <Close fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">{t('Create a relationship')}</Typography>
-              </div>
-              <StixCoreRelationshipCreationForm
-                fromEntities={[fromEntity]}
-                toEntities={[toEntity]}
-                relationshipTypes={relationshipTypes}
-                handleResetSelection={this.handleResetSelection.bind(this)}
-                onSubmit={this.onSubmit.bind(this)}
-                handleClose={this.handleClose.bind(this)}
-              />
-            </>
+            <StixCoreRelationshipCreationForm
+              fromEntities={[fromEntity]}
+              toEntities={[toEntity]}
+              relationshipTypes={relationshipTypes}
+              handleResetSelection={this.handleResetSelection.bind(this)}
+              onSubmit={this.onSubmit.bind(this)}
+              handleClose={this.handleClose.bind(this)}
+            />
           );
         }}
       </UserContext.Consumer>
@@ -551,6 +528,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           </IconButton>
         ) : (
           <Fab
+            /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
             onClick={this.handleOpen.bind(this)}
             color="primary"
             aria-label="Add"

@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -23,6 +24,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import IngestionTaxiiCollectionEdition, { ingestionTaxiiCollectionMutationFieldPatch } from './IngestionTaxiiCollectionEdition';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const ingestionTaxiiPopoverDeletionMutation = graphql`
   mutation IngestionTaxiiCollectionPopoverDeletionMutation($id: ID!) {
@@ -233,10 +235,11 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         message={t_i18n('Do you want to delete this TAXII ingester?')}
       />
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayStart}
         onClose={handleCloseStart}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to start this TAXII ingester?')}
         </DialogContentText>
@@ -257,10 +260,11 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         </DialogActions>
       </Dialog>
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayStop}
         onClose={handleCloseStop}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to stop this TAXII ingester?')}
         </DialogContentText>

@@ -319,12 +319,17 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   // ------------------------------
 
   // Create author from the incident response creation form
-  await incidentResponseForm.authorAutocomplete.openAddOptionForm();
+  // The AUTHOR dialog IS prefilled: CreatedByField passes `inputValue={keyword}`
+  // to IdentityCreation, so the create row carries the typed text over. Measured
+  // scoped to the dialog — name = "Jeanne Mitchel" — so the name can no longer be
+  // empty by this path and only the entity type is still required.
+  //
+  // Do NOT harmonise this with the external-reference block below: that dialog
+  // receives no inputValue and genuinely opens empty. The two differ in the
+  // product code, not by accident.
+  await incidentResponseForm.authorAutocomplete.createOption('Jeanne Mitchel');
   await authorForm.getCreateButton().click();
-  await expect(authorForm.nameField.getByText('This field is required')).toBeVisible();
   await expect(authorForm.entityTypeSelect.getByText('This field is required')).toBeVisible();
-  await authorForm.nameField.fill('Jeanne Mitchel');
-  await expect(authorForm.nameField.getByText('This field is required')).toBeHidden();
   await authorForm.entityTypeSelect.selectOption('Individual');
   await expect(authorForm.entityTypeSelect.getOption('Individual')).toBeVisible();
   await authorForm.getCreateButton().click();
@@ -332,19 +337,28 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   await expect(incidentResponseForm.authorAutocomplete.getOption('Jeanne Mitchel')).toBeVisible();
 
   // Create label from the incident response creation form
-  await incidentResponseForm.labelsAutocomplete.openAddOptionForm();
-  await labelForm.getCreateButton().click();
-  await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
-  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
-  await labelForm.valueField.fill(labelName);
+  // Opened through the library's create row instead of the MUI `+`.
+  //
+  // The two label mounts differ, and this one is `ObjectLabelField`: here the
+  // typed text DOES carry into the creation form, so `value` is never empty and
+  // only the colour can report itself missing. The other mount — the shared
+  // labels view on an entity's details page — opens the same form EMPTY;
+  // measured at the pointer, both inputs '' after clicking `Create ‘…’`. Same
+  // form component, same `inputValueContextual` prop, opposite outcome, and the
+  // reason is not established. Whichever it is, each flow now asserts what its
+  // own mount actually does.
+  await incidentResponseForm.labelsAutocomplete.createOption(labelName);
   await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
+  await labelForm.getCreateButton().click();
+  await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
   await expect(incidentResponseForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
-  await incidentResponseForm.externalReferencesAutocomplete.openAddOptionForm();
+  // The create row opens the form empty — it does not carry the typed text over.
+  await incidentResponseForm.externalReferencesAutocomplete.createOption('external ref incident response');
   await externalReferenceForm.urlField.fill('bad url');
   await externalReferenceForm.getCreateButton().click();
   await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeVisible();

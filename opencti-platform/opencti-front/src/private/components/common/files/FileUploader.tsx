@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { graphql } from 'react-relay';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
@@ -151,7 +151,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           title={`Uploading ${upload}`}
           aria-label={`Uploading ${upload}`}
         >
-          <IconButton disabled={true} size="small">
+          <IconButton disabled={true} size="small" aria-label={t_i18n('Uploading')}>
             <CircularProgress
               size={24}
               thickness={2}
@@ -167,6 +167,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
             color="primary"
             size="small"
             variant="tertiary"
+            aria-label={t_i18n('Select your file')}
           >
             <CloudUploadOutlined fontSize="small" />
           </IconButton>

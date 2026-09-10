@@ -236,7 +236,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
             helperText={

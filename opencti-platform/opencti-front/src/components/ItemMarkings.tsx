@@ -3,6 +3,7 @@ import { Badge, Stack, Tooltip } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
+import { isWashVisibleOn } from '../utils/Colors';
 import FieldOrEmpty from './FieldOrEmpty';
 
 interface Marking {
@@ -31,9 +32,13 @@ const ChipMarking = ({
   const theme = useTheme<Theme>();
 
   const getColor = () => {
-    let color = markingDefinition.x_opencti_color;
+    // The admin's colour wins whenever it can be seen.
+    const stored = markingDefinition.x_opencti_color;
+    if (stored) {
+      return isWashVisibleOn(stored, theme.palette.background.paper) ? stored : undefined;
+    }
 
-    if (color) return color;
+    let color;
 
     switch (markingDefinition.definition) {
       case 'CD':

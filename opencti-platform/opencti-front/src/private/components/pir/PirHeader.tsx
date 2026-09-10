@@ -84,7 +84,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Stack direction="row" alignItems="center" gap={1} marginBottom={3}>
+      <Stack direction="row" alignItems="center" gap={1} marginBottom={1}>
         <TitleMainEntity sx={{ flex: 1 }}>
           {name}
         </TitleMainEntity>

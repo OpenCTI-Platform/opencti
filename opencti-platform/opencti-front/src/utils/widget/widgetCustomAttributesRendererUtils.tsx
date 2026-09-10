@@ -12,7 +12,7 @@ import ItemOpenVocab from 'src/components/ItemOpenVocab';
 import { EMPTY_VALUE } from 'src/utils/String';
 import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
 import ItemIcon from '../../components/ItemIcon';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { WidgetHost } from 'src/utils/widget/widget';
 
 type AttributeRenderer = (

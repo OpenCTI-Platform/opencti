@@ -5642,10 +5642,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"convert@npm:7.0.2":
-  version: 7.0.2
-  resolution: "convert@npm:7.0.2"
-  checksum: 10c0/6081d4122ae1b325c46b679e784c015e6009d70ac321a6579affd2cfc8ae2accf2b2d93a6b9897924cef3e7814c199058909dcb561d8d01523c6e35a92f9cebf
+"convert@npm:8.0.1":
+  version: 8.0.1
+  resolution: "convert@npm:8.0.1"
+  checksum: 10c0/6cb1c3c69090323f845ee5bf12569f9be5d770f89c8ad3d9ca83a3d471fe61d7fd852ff9a3795a4d658b6b99fdc21a1d018a4785627998db4d0b8551c6c543d9
   languageName: node
   linkType: hard
 
@@ -8377,10 +8377,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:6.2.10, jose@npm:^6.2.8":
-  version: 6.2.10
-  resolution: "jose@npm:6.2.10"
-  checksum: 10c0/799fd8d3d92fe748ebe1f57dbd3dfd917d2e61d9fb39912c72cc674ae61d69414b7cc0ce773df8a0160e849926fc31853aec9caab88c481563d5a8ab6558e107
+"jose@npm:6.2.12, jose@npm:^6.2.12":
+  version: 6.2.12
+  resolution: "jose@npm:6.2.12"
+  checksum: 10c0/e8582b946fabcae228819982dda4849908c353e9cb098f02f773635aa0d2f4917f17484c7441b8d526e564013b4cf96951455c94f81d0a39ee765bad44ce293d
   languageName: node
   linkType: hard
 
@@ -9565,10 +9565,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:9.1.1":
-  version: 9.1.1
-  resolution: "nodemailer@npm:9.1.1"
-  checksum: 10c0/b213a2a906697a735f6eb21103629b7a77aeac297b6d843efd4588157999bf6d19381853ac1224e472f5a34aec2e2412444151a2c6ec6e8c52150afa3055039c
+"nodemailer@npm:10.0.0":
+  version: 10.0.0
+  resolution: "nodemailer@npm:10.0.0"
+  checksum: 10c0/917fb3a5c75e2a86917212c3e9083713a1e9c77abbddd7ab52c94deadd5fbd3ee4fe12ce5d87c7a7bc31dc5b8a29a09532872cf08c9bc489b0b0a3f0aa12aa8b
   languageName: node
   linkType: hard
 
@@ -9696,10 +9696,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oauth4webapi@npm:^3.8.7":
-  version: 3.8.7
-  resolution: "oauth4webapi@npm:3.8.7"
-  checksum: 10c0/7e581e24572a12c3b2abd4889d8f5271a7de0166a0971b8398468abe3baf9134012d312775f05b1a64b38b4413563bfb203801ba00909f831557823875b0699e
+"oauth4webapi@npm:^3.8.8":
+  version: 3.8.8
+  resolution: "oauth4webapi@npm:3.8.8"
+  checksum: 10c0/1f7d35ba8d7d5aa9ce9ec5959a4611ed2b5dd7830172b1546749b91dda8c53f7934e669c6f81e912c64e3ae4fc681d4d6ce149b42cc9d17db97162bf8765e028
   languageName: node
   linkType: hard
 
@@ -9877,7 +9877,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.9.0, openai@npm:^7.5.0":
+"openai@npm:7.10.0":
+  version: 7.10.0
+  resolution: "openai@npm:7.10.0"
+  peerDependencies:
+    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
+    "@smithy/hash-node": ">=4.3.0 <5"
+    "@smithy/signature-v4": ">=5.4.0 <6"
+    undici: ">=5 <9"
+    ws: ^8.21.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    "@aws-sdk/credential-provider-node":
+      optional: true
+    "@smithy/hash-node":
+      optional: true
+    "@smithy/signature-v4":
+      optional: true
+    undici:
+      optional: true
+    ws:
+      optional: true
+    zod:
+      optional: true
+  checksum: 10c0/9a61a4dcd6a22e22cee3a239752de448091fcb8ec0ceafe5a4d3cb223f207520b7ea529977edd95961cd20f3cb5986d2220d948d526aa0314734384cc51ef3c0
+  languageName: node
+  linkType: hard
+
+"openai@npm:^7.5.0":
   version: 7.9.0
   resolution: "openai@npm:7.9.0"
   peerDependencies:
@@ -9987,7 +10014,7 @@ __metadata:
     compression: "npm:1.8.1"
     content-disposition: "npm:3.0.0"
     content-type: "npm:3.0.0"
-    convert: "npm:7.0.2"
+    convert: "npm:8.0.1"
     cors: "npm:2.8.6"
     csv-parse: "npm:7.0.2"
     dataloader: "npm:2.2.3"
@@ -10023,7 +10050,7 @@ __metadata:
     https-proxy-agent: "npm:9.1.0"
     ioredis: "npm:5.8.2"
     ipaddr.js: "npm:2.5.0"
-    jose: "npm:6.2.10"
+    jose: "npm:6.2.12"
     js-deep-equals: "npm:2.1.1"
     json-to-plain-text: "npm:1.2.0"
     jsonpath-plus: "npm:10.4.0"
@@ -10039,9 +10066,9 @@ __metadata:
     node-calls-python: "npm:1.13.0"
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.0"
-    nodemailer: "npm:9.1.1"
-    openai: "npm:7.9.0"
-    openid-client: "npm:6.8.7"
+    nodemailer: "npm:10.0.0"
+    openai: "npm:7.10.0"
+    openid-client: "npm:6.8.8"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:13.5.0"
@@ -10055,7 +10082,7 @@ __metadata:
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.2.0"
     re2: "npm:1.26.1"
-    sanitize-html: "npm:2.17.6"
+    sanitize-html: "npm:2.17.7"
     semver: "npm:7.8.5"
     set-interval-async: "npm:3.0.3"
     slug: "npm:12.0.1"
@@ -10104,13 +10131,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@npm:6.8.7":
-  version: 6.8.7
-  resolution: "openid-client@npm:6.8.7"
+"openid-client@npm:6.8.8":
+  version: 6.8.8
+  resolution: "openid-client@npm:6.8.8"
   dependencies:
-    jose: "npm:^6.2.8"
-    oauth4webapi: "npm:^3.8.7"
-  checksum: 10c0/309a7924e034193d36634b7e2cfbb003c5018bfb800d9c1d6c5d3cb986682e9aef594038eb7a87153d36a96d1a9dba921491cb9145930116340a7af7e73928ee
+    jose: "npm:^6.2.12"
+    oauth4webapi: "npm:^3.8.8"
+  checksum: 10c0/b1d60ca45623c77b8869b5a9725e25309cca20d32823861c5f72f0e9126a3ce43da2a93be964bfe771a39560f356c06adaedb2be29fe1762c4d097f91a4b620e
   languageName: node
   linkType: hard
 
@@ -11131,9 +11158,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sanitize-html@npm:2.17.6":
-  version: 2.17.6
-  resolution: "sanitize-html@npm:2.17.6"
+"sanitize-html@npm:2.17.7":
+  version: 2.17.7
+  resolution: "sanitize-html@npm:2.17.7"
   dependencies:
     deepmerge: "npm:^4.2.2"
     escape-string-regexp: "npm:^4.0.0"
@@ -11142,7 +11169,7 @@ __metadata:
     launder: "npm:^1.7.1"
     parse-srcset: "npm:^1.0.2"
     postcss: "npm:^8.3.11"
-  checksum: 10c0/a78efe6aef93819c00c36252a07d26c8cd11ed418a403cc91aabcbc0af1dc98441d411ea68452ccbff1939f92e84571d97eb6bf69be96ed54f8769b25a10aa36
+  checksum: 10c0/d4783bf47f5379d619c9b2ff327e4ea355b5f95952295c4b69ab7f8bd7834bdaabbd274c6b519b3bdf3f909fec4727b544256c3e1a5985e4a85ee9aa079267f7
   languageName: node
   linkType: hard
 

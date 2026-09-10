@@ -4,7 +4,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@filigran/design-system';
 import Alert from '@mui/lab/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
@@ -15,7 +15,7 @@ import { useTheme } from '@mui/material/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -123,9 +123,9 @@ const GroupEditionMarkingsComponent = ({
         id?: string;
       }
       | undefined,
-    event: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean | 'indeterminate',
   ) => {
-    if (event.target.checked) {
+    if (checked === true) {
       commitAdd({
         variables: {
           id: group.id,
@@ -255,10 +255,11 @@ const GroupEditionMarkingsComponent = ({
                         divider={true}
                         secondaryAction={(
                           <Checkbox
-                            onChange={(event) => handleToggleAllowedMarkings(
+                            aria-label={markingDefinition.definition ?? undefined}
+                            onCheckedChange={(checked) => handleToggleAllowedMarkings(
                               markingDefinition.id,
                               groupMarkingDefinition,
-                              event,
+                              checked,
                             )
                             }
                             checked={groupMarkingDefinition !== undefined}
@@ -302,21 +303,18 @@ const GroupEditionMarkingsComponent = ({
                         )}
                       </Alert>
                       <Field
-                        component={AutocompleteField}
+                        component={ComboboxField}
                         style={fieldSpacingContainerStyle}
                         name="defaultMarkings"
                         multiple={true}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n('Default markings'),
-                        }}
+                        label={t_i18n('Default markings')}
                         noOptionsText={t_i18n('No available options')}
                         options={resolvedGroupMarkingDefinitions}
-                        renderOption={(
-                          renderProps: React.HTMLAttributes<HTMLLIElement>,
-                          option: FieldOption,
-                        ) => (
-                          <li {...renderProps}>
+                        // Same rule as ObjectMarkingField: on a marking the
+                        // colour is the classification.
+                        getChipColor={(option: FieldOption) => option.color}
+                        renderOption={(option: FieldOption) => (
+                          <>
                             <div
                               className={classes.icon}
                               style={{ color: option.color }}
@@ -324,7 +322,7 @@ const GroupEditionMarkingsComponent = ({
                               <MarkingIcon theme={theme} color={option.color} />
                             </div>
                             <div className={classes.text}>{option.label}</div>
-                          </li>
+                          </>
                         )}
                         onChange={(name: string, values: FieldOption[]) => handleToggleDefaultValues(values)
                         }

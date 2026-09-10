@@ -88,7 +88,6 @@ export const JsonFormDeprecatedRenderer = (props: ControlProps) => {
         </Typography>
         <Tag
           tooltipTitle={formattedDescription}
-          sx={{ color: warningHintColor }}
           label={t_i18n('Deprecated')}
           color={theme.palette.designSystem.tertiary.orange[400] ?? '#F2933A'}
         />

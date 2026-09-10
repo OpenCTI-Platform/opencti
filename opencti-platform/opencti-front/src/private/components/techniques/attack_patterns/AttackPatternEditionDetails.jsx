@@ -7,7 +7,7 @@ import { useTheme } from '@mui/styles';
 import { attackPatternMutationRelationAdd, attackPatternMutationRelationDelete } from './AttackPatternEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import TextField from '../../../../components/TextField';
+
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -15,6 +15,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionDetailsFieldPatchMutation(
@@ -180,13 +181,11 @@ const AttackPatternEditionDetailsComponent = (props) => {
             editContext={context}
           />
           <Field
-            component={TextField}
+            component={TextareaField}
             name="x_mitre_detection"
             label={t_i18n('Detection')}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={(

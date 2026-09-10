@@ -32,6 +32,9 @@ import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hoo
 import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { Stack, useTheme } from '@mui/material';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import useAuth from '../../../../utils/hooks/useAuth';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
 
 interface ContentBlocProps {
   title: ReactNode;
@@ -129,6 +132,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { bannerSettings } = useAuth();
+  const { height: topBannerHeight } = useTopBanner();
+  const topOffset = topBannerHeight + bannerSettings.bannerHeightNumber;
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayCreate, setDisplayCreate] = useState(false);
@@ -176,13 +182,24 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       variant="permanent"
       anchor="right"
       elevation={1}
+      // Same surface contract as the Knowledge bar next door: the two tab-scoped right bars are
+      // one family, so they sit on the same elevation step and carry the same edge.
+      slotProps={{
+        paper: {
+          // Same layer and the same mechanism as the Knowledge bar next door.
+          className: fdsLayerClass(RIGHT_BAR_LAYER),
+          sx: { ...layerInputVars },
+        },
+      }}
       sx={{
         width: 350,
         '& .MuiDrawer-paper': {
           zIndex: theme.zIndex.appBar - 1,
           width: 350,
+          background: 'var(--bg-elevation-default)',
+          borderLeft: '1px solid var(--border-elevation-subtle-soft)',
           paddingBottom: draftContext ? '89px' : '20px', // Add 69px in case DraftToolbar is opened
-          paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 16 for margin, 64 for top bar,
+          paddingTop: `calc(16px + 64px + ${topOffset}px + ${settingsMessagesBannerHeight ?? 0}px)`,
         },
       }}
     >
@@ -288,7 +305,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         <ContentBloc
           title={(
             <>
-              {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip />}
+              {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip size="sm" />}
               {isEnterpriseEdition
                 && (
                   <Tooltip

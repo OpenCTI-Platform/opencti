@@ -8,6 +8,7 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectEditionOverview from './StixDomainObjectEditionOverview';
 import Loader from '../../../../components/Loader';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const styles = (theme) => ({
   drawerPaperInGraph: {
@@ -49,8 +50,10 @@ class StixDomainObjectEdition extends Component {
         open={open}
         anchor="right"
         elevation={0}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaperInGraph }}
+        // Raw MUI Drawer, not the shared one: it has to declare the layer
+        // itself or its fields resolve at layer 0. See utils/fdsLayer.ts.
+        sx={{ zIndex: 1202, '& .MuiDrawer-paper': { ...layerInputVars } }}
+        classes={{ paper: `${classes.drawerPaperInGraph} ${fdsLayerClass(SURFACE_LAYER)}` }}
         onClose={handleClose.bind(this)}
       >
         {stixDomainObjectId ? (

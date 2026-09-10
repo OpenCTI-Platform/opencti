@@ -1,10 +1,11 @@
 import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFeedLine_node.graphql';
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
-import { IconButton, Stack, Tooltip } from '@mui/material';
+import { Alert, Stack, Tooltip, IconButton } from '@mui/material';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
+import { Link } from 'react-router';
 import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -182,6 +183,8 @@ const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> =
         href={href}
         target="_blank"
         rel="noopener noreferrer"
+        size="small"
+        aria-label={t_i18n('Open in XTM Hub')}
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         <OpenInNewOutlined fontSize="small" color="primary" />

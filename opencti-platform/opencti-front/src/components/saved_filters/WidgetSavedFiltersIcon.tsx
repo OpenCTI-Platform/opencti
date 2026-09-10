@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import Bookmarks from '@mui/icons-material/Bookmarks';
 import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
@@ -21,14 +21,15 @@ const WidgetSavedFiltersIcon = ({
         : t_i18n('Use a saved filter')}
     >
       <span>
-        <Button
-          size="small"
+        <IconButton
+          variant="default"
+          priority="tertiary"
+          size="md"
+          aria-label={t_i18n('Use a saved filter')}
           onClick={onClick}
-          sx={{ minWidth: 'unset', padding: '4px' }}
           disabled={disabled}
-        >
-          <Bookmarks fontSize="small" />
-        </Button>
+          icon={<Bookmarks fontSize="small" />}
+        />
       </span>
     </Tooltip>
   );

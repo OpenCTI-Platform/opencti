@@ -17,6 +17,7 @@ import UserPage from '../model/user.pageModel';
 import UserFormPage from '../model/form/userForm.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import { patchEntitySetting } from '../dataForTesting/entitySetting.data';
+import LeftBarPage from 'tests_e2e/model/menu/leftBar.pageModel';
 
 const noBypassUserAuthFile = 'tests_e2e/.setup/.auth/no-bypass-ref-user.json';
 const nowTime = `${new Date().getTime()}`;
@@ -172,6 +173,11 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     // Create a report and check that adding an observable is possible
     const reportName = `Test add observable e2e 2 ${nowTime}`;
     await reportPage.goto();
+    // Was `getByTestId('ChevronRightIcon')`: the rail's expand affordance used
+    // to be a raw MUI icon. The design-system rail exposes a named control,
+    // so this goes through the page object like every other rail interaction.
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
     await reportPage.openNewReportForm();
     await reportForm.nameField.fill(reportName);
     await reportPage.getCreateReportButton().click();
@@ -199,7 +205,9 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
       await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
       await containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9').click();
       await expect(commitMessagePage.getPage()).toBeVisible();
-      await commitMessagePage.getAddNewReferenceButton().click();
+      // The create affordance moved into the panel with the conversion, so the
+      // typed text is what opens the form — and it prefills the source name.
+      await commitMessagePage.openNewReferenceForm('SourceTest');
       await commitMessagePage.fillNewReferenceSourceNameInput('SourceTest');
       await commitMessagePage.fillNewReferenceExternalIDInput('SourceTest');
       await commitMessagePage.getNewReferenceCreateButton().click();

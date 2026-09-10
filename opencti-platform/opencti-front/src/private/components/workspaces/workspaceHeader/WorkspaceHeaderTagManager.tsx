@@ -6,17 +6,15 @@ import { AddOutlined, CloseOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
-import { SelectChangeEvent } from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
-import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
+import TextField from 'src/components/TextField';
 import { useFormatter } from 'src/components/i18n';
 import { MESSAGING$ } from 'src/relay/environment';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
@@ -49,10 +47,16 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
 
   const [commit] = useApiMutation(workspaceMutation);
 
+  // The header holds two chips; the counter's tooltip stands for the rest.
+  const namedTags = tags.filter((tag) => tag.length > 0);
+  const shownTags = namedTags.slice(0, 2);
+  const hiddenTagCount = namedTags.length - shownTags.length;
+
   const toggleTagInput = () => setIsTagInputOpen(!isTagInputOpen);
   const toggleTagDialog = () => setIsTagDialogOpen(!isTagDialogOpen);
 
-  const handleChangeNewTag = (event: SelectChangeEvent) => setNewTag(event.target.value);
+  // The product field reports (name, value), not a DOM event.
+  const handleChangeNewTag = (_: string, value: string) => setNewTag(value);
 
   const handleManageTags = (tagList: string[], message: string) => {
     commit({
@@ -87,6 +91,9 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           {tags.length > 1 ? (
             <IconButton
               color="primary"
+              // md, like its `Add tag` alternate below: the two share one slot
+              // and must not change size with the state.
+              size="default"
               aria-label="More"
               onClick={toggleTagDialog}
             >
@@ -96,6 +103,8 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
             <Tooltip title={isTagInputOpen ? t_i18n('Cancel') : t_i18n('Add tag')}>
               <IconButton
                 color="primary"
+                // md.
+                size="default"
                 aria-label="Add tag"
                 onClick={toggleTagInput}
               >
@@ -122,7 +131,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 <Form>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="newTag"
                     aria-label="tag field"
                     autoFocus
@@ -139,15 +148,16 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
             open={isTagDialogOpen}
             onClose={toggleTagDialog}
             title={t_i18n('Entity tags')}
+            size="small"
           >
             <Formik
               initialValues={{ newTag: '' }}
               onSubmit={onSubmitCreateTag}
             >
-              <Form style={{ float: 'right' }}>
+              <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="newTag"
                   autoFocus
                   placeholder={t_i18n('New tag')}
@@ -164,16 +174,16 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                     key={label}
                     disableGutters
                     dense
-                  >
-                    <ListItemText primary={label} />
-                    <ListItemSecondaryAction>
+                    secondaryAction={(
                       <IconButton
                         aria-label="delete"
                         onClick={deleteTag(label)}
                       >
                         <Delete />
                       </IconButton>
-                    </ListItemSecondaryAction>
+                    )}
+                  >
+                    <ListItemText primary={label} />
                   </ListItem>
                 ),
               )}
@@ -187,15 +197,21 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           </Dialog>
         </>
       </Security>
-      <div style={{ display: 'flex', gap: 7 }}>
-        {tags.slice(0, 2).map(
-          (tag) => tag.length > 0 && (
-            <Tag
-              key={tag}
-              label={tag}
-              onDelete={deleteTag(tag)}
-            />
-          ),
+      <div style={{ display: 'flex', gap: 4 }}>
+        {shownTags.map((tag) => (
+          <Tag
+            key={tag}
+            label={tag}
+            deleteLabel={`${t_i18n('Remove')} ${tag}`}
+            onDelete={deleteTag(tag)}
+          />
+        ))}
+        {hiddenTagCount > 0 && (
+          <Tag
+            label={`+${hiddenTagCount}`}
+            labelTextTransform="none"
+            tooltipTitle={namedTags.join(', ')}
+          />
         )}
       </div>
     </>

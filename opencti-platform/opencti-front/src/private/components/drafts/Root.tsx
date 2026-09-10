@@ -1,5 +1,5 @@
 import React, { lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 

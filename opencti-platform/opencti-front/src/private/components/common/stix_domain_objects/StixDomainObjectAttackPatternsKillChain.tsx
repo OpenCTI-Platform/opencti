@@ -17,9 +17,7 @@ import StixDomainObjectAttackPatternsKillChainMatrixInline from '@components/com
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, IconButton } from '@filigran/design-system';
 import { attackPatternsMatrixColumnsFragment } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
@@ -27,7 +25,6 @@ import StixCoreRelationships from '@components/common/stix_core_relationships/St
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
-import { IconButton } from '@mui/material';
 import {
   StixDomainObjectAttackPatternsKillChainOverlapQuery$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainOverlapQuery.graphql';
@@ -153,8 +150,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     setTargetEntities([entity]);
   };
 
-  const handleKillChainChange = (event: SelectChangeEvent<unknown>) => {
-    setSelectedKillChain(event.target.value as string);
+  const handleKillChainChange = (value: string) => {
+    setSelectedKillChain(value);
   };
 
   const getAttackPatternIdsToOverlap = async (entityIdsToOverlap: string[]) => {
@@ -315,26 +312,26 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             >
               <Stack
                 direction="row"
-                alignItems="center"
+                alignItems="end"
                 gap={1}
               >
                 <Stack direction="row">
-                  <InputLabel
-                    style={{ paddingInlineEnd: 10, marginTop: 1 }}
-                  >
-                    {t_i18n('Kill chain :')}
-                  </InputLabel>
                   <FormControl>
                     <Select
-                      size="small"
                       value={selectedKillChain}
-                      onChange={handleKillChainChange}
+                      onValueChange={handleKillChainChange}
                     >
-                      {killChains.map((killChainName) => (
-                        <MenuItem key={killChainName} value={killChainName}>
-                          {killChainName}
-                        </MenuItem>
-                      ))}
+                      <SelectLabel>{t_i18n('Kill chain :')}</SelectLabel>
+                      <SelectTrigger aria-label={t_i18n('Kill chain')}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent aria-label={t_i18n('Kill chain')}>
+                        {killChains.map((killChainName) => (
+                          <SelectItem key={killChainName} value={killChainName}>
+                            {killChainName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </FormControl>
                 </Stack>
@@ -347,11 +344,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   }
                 >
                   <IconButton
-                    color={isModeOnlyActive ? 'secondary' : 'primary'}
+                    variant="default"
+                    priority="tertiary"
+                    active={isModeOnlyActive}
+                    aria-label={
+                      isModeOnlyActive
+                        ? t_i18n('Display the whole matrix')
+                        : t_i18n('Display only used techniques')
+                    }
                     onClick={() => setIsModeOnlyActive((value) => !value)}
-                  >
-                    <VisibilityOutlined />
-                  </IconButton>
+                    icon={<VisibilityOutlined />}
+                  />
                 </Tooltip>
               </Stack>
 
@@ -365,8 +368,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   <FormControl style={{ display: 'flex', minWidth: 300, maxWidth: 500 }}>
                     <EntitySelect
                       multiple
-                      variant="outlined"
-                      size="small"
                       value={selectedSecurityPlatforms}
                       label={t_i18n('Compare with my security posture')}
                       types={['SecurityPlatform']}

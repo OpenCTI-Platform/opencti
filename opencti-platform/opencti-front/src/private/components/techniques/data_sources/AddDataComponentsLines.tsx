@@ -3,25 +3,16 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
-import { CheckCircle, SourceOutlined } from '@mui/icons-material';
+import { SourceOutlined } from '@mui/icons-material';
+import { Checkbox } from '@filigran/design-system';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
-import type { Theme } from '../../../../components/Theme';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import { AddDataComponentsLinesToDataSource_data$key } from './__generated__/AddDataComponentsLinesToDataSource_data.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    color: theme.palette.primary.main,
-  },
-}));
 
 const addDataComponentsMutationRelationAdd = graphql`
   mutation AddDataComponentsLinesToDataSourceRelationAddMutation(
@@ -85,7 +76,6 @@ interface AddDataComponentsLinesContainerProps {
 const AddDataComponentsLines: FunctionComponent<
   AddDataComponentsLinesContainerProps
 > = ({ dataSource, queryRef }) => {
-  const classes = useStyles();
   const { data } = usePreloadedPaginationFragment<
     AddDataComponentsLinesToDataSourceQuery,
     AddDataComponentsLinesToDataSource_data$key
@@ -154,16 +144,17 @@ const AddDataComponentsLines: FunctionComponent<
         return (
           <ListItemButton
             key={dataComponent.id}
-            classes={{ root: classes.menuItem }}
             divider={true}
             onClick={() => toggleDataComponent(dataComponent.id)}
           >
+            {/* The check no longer replaces the type icon: a row used to lose
+                the only thing that said WHAT it was as soon as it was selected.
+                Slot width matches AddExternalReferencesLines. */}
+            <ListItemIcon style={{ minWidth: 40 }}>
+              <Checkbox checked={alreadyAdded} />
+            </ListItemIcon>
             <ListItemIcon>
-              {alreadyAdded ? (
-                <CheckCircle classes={{ root: classes.icon }} />
-              ) : (
-                <SourceOutlined />
-              )}
+              <SourceOutlined />
             </ListItemIcon>
             <ListItemText
               primary={dataComponent.name}

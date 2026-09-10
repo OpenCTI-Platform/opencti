@@ -8,6 +8,7 @@ import type { AuthorizedMember } from '../../utils/access';
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
 
 export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
+  kind: 'rss';
   name: string;
   description: string;
   scheduling_period: string;
@@ -19,6 +20,7 @@ export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
   current_state_date: Date | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   ssl_verify?: boolean;
 }
 
@@ -155,6 +157,7 @@ export interface StixIngestionCsv extends StixObject {
 export const ENTITY_TYPE_INGESTION_JSON = 'IngestionJson';
 
 export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
+  kind: 'json';
   name: string;
   description: string;
   scheduling_period: string;
@@ -169,6 +172,7 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   ingestion_json_state: Record<string, object>;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   headers?: { name: string; value: string }[];
   // pagination
   pagination_with_sub_page: boolean;
@@ -179,6 +183,7 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
 }
 
 export interface StoreEntityIngestionJson extends StoreEntity {
+  kind: 'json';
   name: string;
   description: string;
   scheduling_period: string;
@@ -193,6 +198,7 @@ export interface StoreEntityIngestionJson extends StoreEntity {
   ingestion_json_state: Record<string, object>;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   headers?: { name: string; value: string }[];
   // pagination
   pagination_with_sub_page: boolean;

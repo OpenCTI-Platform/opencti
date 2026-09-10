@@ -1,17 +1,13 @@
-import IconButton from '@common/button/IconButton';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import { AccountCircleOutlined, AlarmOnOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
-import { alpha, Badge, Divider, Stack } from '@mui/material';
+import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
+import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { usePage } from 'use-analytics';
 import { useFormatter } from '../../../components/i18n';
 import ItemBoolean from '../../../components/ItemBoolean';
@@ -38,6 +34,8 @@ import { TopBarNewsFeedNumberSubscription$data } from './__generated__/TopBarNew
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import { useAINLQ } from '../common/ai/AINLQ';
+import TopBarIconLink from './TopBarIconLink';
+import { TOP_BAR_SEARCH_MAX_WIDTH, TOP_BAR_SEARCH_MIN_WIDTH } from './topBarConstants';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -101,6 +99,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
+  const showAiCluster = hasKnowledgeAccess
+    && filigran_chatbot_ai_cgu_status !== CGUStatus.disabled;
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
@@ -164,10 +164,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   useEffect(() => {
     page();
   }, [location.pathname]);
-  const [menuOpen, setMenuOpen] = useState<{
-    open: boolean;
-    anchorEl: HTMLButtonElement | null;
-  }>({ open: false, anchorEl: null });
+  const [menuOpen, setMenuOpen] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
 
   const { search: nlqSearch, isLoading: isNLQLoading } = useAINLQ({
@@ -190,14 +187,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     onError: (msg) => MESSAGING$.notifyError(msg),
   });
 
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
-    event.preventDefault();
-    setMenuOpen({ open: true, anchorEl: event.currentTarget });
-  };
   const handleCloseMenu = () => {
-    setMenuOpen({ open: false, anchorEl: null });
+    setMenuOpen(false);
   };
 
   const handleSearch = (searchKeyword: string, askAI = false, agentSlug?: string) => {
@@ -219,67 +210,72 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
 
-  const getAppTopBarGradient = (): string => {
-    const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(theme.palette.designSystem.background.bg1, 0.9)}`;
+  // Stops stay OPAQUE: the library's Header carries the glass itself, a ::before layer at
+  // Figma's 94% over a 4px backdrop blur.
+  const getAppTopBarGradient = (): { start: string; end: string } => {
     if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.end) {
-      return `${alpha(theme.palette.background.gradient.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient.end, 0.9)}`;
+      return {
+        start: theme.palette.background.gradient.start,
+        end: theme.palette.background.gradient.end,
+      };
     }
-    return defaultGradientDark;
+    return {
+      start: THEME_DARK_DEFAULT_BACKGROUND,
+      end: theme.palette.designSystem.background.bg1,
+    };
   };
 
   const appBarGradient = getAppTopBarGradient();
 
   return (
-    <AppBar
-      position="fixed"
-      elevation={0}
-      sx={{
-        marginLeft: navOpen ? `${OPEN_BAR_WIDTH}px` : `${SMALL_BAR_WIDTH}px`,
-        width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
-        backgroundColor: 'transparent',
-        backdropFilter: 'blur(4px)',
-      }}
-    >
-      {/* Header and Footer Banners containing classification level of system */}
-      <Toolbar
+    // Radix tooltips need a provider in scope; scoped to this bar, not the whole app.
+    <>
+      <Header
+        // FDS-WORKAROUND #14: bar positioned product-side, `fullWidth={false}` with it — see fds-migration/LIBRARY-FEEDBACK.md #14
+        fullWidth={false}
         style={{
-          alignItems: 'center',
-          marginTop: bannerHeightNumber + settingsMessagesBannerHeight + topBannerHeight,
-          height: '100%',
-          minHeight: 68,
-          paddingLeft: theme.spacing(3),
-          paddingRight: theme.spacing(3),
-          display: 'flex',
-          justifyContent: 'space-between',
-          background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
-        }}
+          position: 'fixed',
+          top: bannerHeightNumber + settingsMessagesBannerHeight + topBannerHeight,
+          left: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+          right: 0,
+          zIndex: theme.zIndex.appBar,
+          // FDS-WORKAROUND #15: re-declare the assembled gradient on the element — see fds-migration/LIBRARY-FEEDBACK.md #15
+          '--gradient-default': `linear-gradient(90deg, ${appBarGradient.start} 0%, ${appBarGradient.end} 100%)`,
+        } as React.CSSProperties}
       >
-        {hasKnowledgeAccess && (
-          <SearchInput
-            onSubmit={handleSearch}
-            keyword={keyword}
-            variant="topBar"
-            placeholder={`${t_i18n('Search the platform')}...`}
-            isNLQLoading={isNLQLoading}
-          />
-        )}
-        <div>
-          <Stack direction="row" gap={1} alignItems="center">
-            <Security needs={[KNOWLEDGE]}>
-              <>
-                {
-                  filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
-                    <>
-                      <AskArianeButton />
-                      <CtemCommandCenterButton />
-                      {/* Discrete full-height separator between the AI (XTM One)
-                          actions and the standard platform actions. */}
-                      <Divider orientation="vertical" flexItem sx={{ mx: 1.5 }} />
-                    </>
-                  )
-                }
-              </>
-            </Security>
+        <HeaderGroup
+          // `grow` caps below this bar's ceiling — see fds-migration/LIBRARY-FEEDBACK.md #17.
+          // NOT `HeaderSearch` (LIBRARY-FEEDBACK.md #54) — see fds-migration/MIGRATION-DECISIONS.md#topbar-search-not-headersearch
+          grow="unbounded"
+          style={{
+            minWidth: TOP_BAR_SEARCH_MIN_WIDTH,
+            maxWidth: TOP_BAR_SEARCH_MAX_WIDTH,
+          }}
+        >
+          {hasKnowledgeAccess && (
+            <SearchInput
+              onSubmit={handleSearch}
+              keyword={keyword}
+              variant="topBar"
+              placeholder={`${t_i18n('Search the platform')}...`}
+              isNLQLoading={isNLQLoading}
+            />
+          )}
+        </HeaderGroup>
+        <HeaderGroup>
+          <Security needs={[KNOWLEDGE]}>
+            <>
+              {
+                filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
+                  <>
+                    <AskArianeButton />
+                    <CtemCommandCenterButton />
+                  </>
+                )
+              }
+            </>
+          </Security>
+          <HeaderGroup separatorBefore={showAiCluster}>
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
@@ -291,95 +287,86 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       size="default"
                     />
                   </Security>
-                  <Tooltip title={t_i18n('Triggers')}>
-                    <IconButton
-                      aria-haspopup="true"
-                      size="default"
-                      component={Link}
-                      to="/dashboard/profile/triggers"
-                      selected={location.pathname === '/dashboard/profile/triggers'}
-                    >
-                      <AlarmOnOutlined fontSize="medium" />
-                    </IconButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TopBarIconLink
+                        aria-label={t_i18n('Triggers')}
+                        to="/dashboard/profile/triggers"
+                        active={location.pathname === '/dashboard/profile/triggers'}
+                        icon={<AlarmOnOutlined fontSize="medium" />}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{t_i18n('Triggers')}</TooltipContent>
                   </Tooltip>
-                  <Tooltip title={t_i18n('Alerts')}>
-                    <IconButton
-                      aria-haspopup="true"
-                      size="default"
-                      component={Link}
-                      to="/dashboard/profile/notifications"
-                      selected={location.pathname === '/dashboard/profile/notifications'}
-                    >
-                      <Badge
-                        color="secondary"
-                        variant="dot"
-                        invisible={!isNewNotification}
-                      >
-                        <NotificationsOutlined fontSize="medium" />
-                      </Badge>
-                    </IconButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TopBarIconLink
+                        aria-label={t_i18n('Alerts')}
+                        to="/dashboard/profile/notifications/alerts"
+                        active={location.pathname.startsWith('/dashboard/profile/notifications')}
+                        icon={<NotificationsOutlined fontSize="medium" />}
+                        // Marks the control, never the glyph: the glyph sits in an aria-hidden
+                        // span, where the badge's description reaches nobody.
+                        badge={{
+                          content: notificationsNumber ?? 0,
+                          dot: true,
+                          invisible: !isNewNotification,
+                          accessibleText: `${notificationsNumber} ${t_i18n('unread')}`,
+                        }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{t_i18n('Alerts')}</TooltipContent>
                   </Tooltip>
-                  <Tooltip title={t_i18n('News Feed')}>
-                    <IconButton
-                      aria-haspopup="true"
-                      size="default"
-                      component={Link}
-                      to="/dashboard/news-feed"
-                      selected={location.pathname.startsWith('/dashboard/news-feed')}
-                    >
-                      <Badge
-                        color="secondary"
-                        variant="dot"
-                        invisible={!isNewNewsFeed}
-                      >
-                        <CampaignOutlined fontSize="medium" />
-                      </Badge>
-                    </IconButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TopBarIconLink
+                        aria-label={t_i18n('News Feed')}
+                        to="/dashboard/news-feed"
+                        active={location.pathname.startsWith('/dashboard/news-feed')}
+                        icon={<CampaignOutlined fontSize="medium" />}
+                        // Marks the control, never the glyph: the glyph sits in an aria-hidden
+                        // span, where the badge's description reaches nobody.
+                        badge={{
+                          content: newsFeedCount ?? 0,
+                          dot: true,
+                          invisible: !isNewNewsFeed,
+                          accessibleText: `${newsFeedCount} ${t_i18n('unread')}`,
+                        }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{t_i18n('News Feed')}</TooltipContent>
                   </Tooltip>
                 </>
               </Security>
             )}
-            <IconButton
-              aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
-              size="default"
-              aria-haspopup="true"
-              aria-label={t_i18n('Profile')}
-              id="profile-menu-button"
-              onClick={handleOpenMenu}
-              selected={location.pathname === '/dashboard/profile/me'}
-            >
-              <AccountCircleOutlined fontSize="medium" />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={menuOpen.anchorEl}
-              open={menuOpen.open}
-              onClose={handleCloseMenu}
-            >
-              <MenuItem
-                component={Link}
-                to="/dashboard/profile"
-                onClick={handleCloseMenu}
-              >
-                {t_i18n('Profile')}
-              </MenuItem>
-              <MenuItem onClick={handleOpenDrawer}>{t_i18n('Feedback')}</MenuItem>
-              <MenuItem
-                component="a"
-                href={`${APP_BASE_PATH}/logout`}
-                rel="noreferrer"
-              >
-                {t_i18n('Logout')}
-              </MenuItem>
+            <Menu open={menuOpen} onOpenChange={setMenuOpen}>
+              <MenuTrigger asChild>
+                <IconButton
+                  priority="tertiary"
+                  aria-label={t_i18n('Profile')}
+                  id="profile-menu-button"
+                  active={location.pathname === '/dashboard/profile/me'}
+                  icon={<AccountCircleOutlined fontSize="medium" />}
+                />
+              </MenuTrigger>
+              <MenuContent align="end">
+                <MenuItem asChild onSelect={handleCloseMenu}>
+                  <Link to="/dashboard/profile">{t_i18n('Profile')}</Link>
+                </MenuItem>
+                <MenuItem onSelect={handleOpenDrawer}>{t_i18n('Feedback')}</MenuItem>
+                <MenuItem asChild onSelect={handleCloseMenu}>
+                  <a href={`${APP_BASE_PATH}/logout`} rel="noreferrer">{t_i18n('Logout')}</a>
+                </MenuItem>
+              </MenuContent>
             </Menu>
-          </Stack>
-        </div>
-      </Toolbar>
+          </HeaderGroup>
+        </HeaderGroup>
+      </Header>
       <FeedbackCreation
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
-    </AppBar>
+    </>
   );
 };
 

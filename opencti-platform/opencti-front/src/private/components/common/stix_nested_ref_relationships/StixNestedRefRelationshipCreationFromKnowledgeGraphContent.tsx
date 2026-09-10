@@ -1,4 +1,5 @@
-import { IconButton, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { ReadMoreOutlined } from '@mui/icons-material';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { stixNestedRefRelationshipCreationResolveQuery } from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
@@ -37,12 +38,13 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraphContent: FunctionCompon
   return (
     <Tooltip title={t_i18n('Create a nested relationship')}>
       <IconButton
-        color="primary"
+        variant="default"
+        priority="tertiary"
+        aria-label={t_i18n('Create a nested relationship')}
         onClick={() => handleOpenCreateNested()}
         disabled={!nestedRelationExist}
-      >
-        <ReadMoreOutlined />
-      </IconButton>
+        icon={<ReadMoreOutlined />}
+      />
     </Tooltip>
   );
 };

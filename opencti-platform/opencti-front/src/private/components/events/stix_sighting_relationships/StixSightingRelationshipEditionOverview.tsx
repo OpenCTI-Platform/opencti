@@ -258,7 +258,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
           <AlertConfidenceForEntity entity={stixSightingRelationship} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="attribute_count"
             label={t_i18n('Count')}
             required={(mandatoryAttributes.includes('attribute_count'))}
@@ -287,7 +287,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             textFieldProps={{
               label: t_i18n('First seen'),
               required: (mandatoryAttributes.includes('first_seen')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -304,7 +304,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             textFieldProps={{
               label: t_i18n('Last seen'),
               required: (mandatoryAttributes.includes('last_seen')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (

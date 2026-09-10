@@ -65,7 +65,7 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               autoFocus
               name="content"
               rows="10"
-              variant="standard"
+              variant="outlined"
               InputProps={{ sx: { background: theme.palette.background.paper } }}
               InputLabelProps={{ shrink: true }}
               slotProps={{

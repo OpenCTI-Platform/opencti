@@ -222,7 +222,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 onSubmit={handleSubmitField}
                 textFieldProps={{
                   label: t_i18n('Date of Birth'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (

@@ -8,7 +8,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from 'src/relay/environment';
 import * as Yup from 'yup';
@@ -223,7 +223,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -237,7 +237,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             textFieldProps={{
               label: t_i18n('Request For Information Date'),
               required: (mandatoryAttributes.includes('created')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}

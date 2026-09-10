@@ -4,10 +4,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
+import { CircleOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { InvestigationAddStixCoreObjectsLine_node$data } from '@components/workspaces/investigations/__generated__/InvestigationAddStixCoreObjectsLine_node.graphql';
 import { ListItemButton } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -17,6 +18,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,15 +30,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },
@@ -70,14 +64,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
       onClick={(event) => onToggleEntity(node, event)}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
-        {node.id in (addedElements || {}) ? (
-          <CheckCircleOutlined
-            classes={{ root: classes.icon }}
-            color="primary"
-          />
-        ) : (
-          <CircleOutlined classes={{ root: classes.icon }} />
-        )}
+        <Checkbox checked={node.id in (addedElements || {})} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type={node.entity_type} />

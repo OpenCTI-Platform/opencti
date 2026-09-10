@@ -1,5 +1,4 @@
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import Checkbox from '@mui/material/Checkbox';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -8,6 +7,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
+import { Checkbox } from '@filigran/design-system';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -17,15 +18,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 50,
     cursor: 'default',
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,
@@ -48,7 +41,9 @@ const CaseTemplateLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ 
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox
+          disabled={true}
+        />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />

@@ -1,26 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
 import Alert from '@mui/material/Alert';
-import makeStyles from '@mui/styles/makeStyles';
 import InputSliderField from '../../../../components/InputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 import { GenericContext } from '../model/GenericContextModel';
+import { layerInputVars } from '../../../../utils/fdsLayer';
 import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  alert: {
-    width: '100%',
-    marginTop: 20,
-    paddingBottom: 0,
-  },
-  message: {
-    width: '100%',
-    overflow: 'visible',
-    paddingBottom: 0,
-  },
-}));
 
 interface ConfidenceFieldProps {
   name?: string;
@@ -35,6 +20,7 @@ interface ConfidenceFieldProps {
   disabled?: boolean;
   custom_max_level?: number;
   helperText?: string;
+  disableTopMargin?: boolean;
 }
 
 const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
@@ -50,10 +36,10 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   disabled,
   custom_max_level,
   helperText,
+  disableTopMargin = false,
 }) => {
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
-  const classes = useStyles();
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
   const userEffectiveMaxConfidence = custom_max_level ?? getEffectiveConfidenceLevel(entityType);
 
@@ -78,12 +64,29 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
 
   return showAlert ? (
     <Alert
-      classes={{ root: classes.alert, message: classes.message }}
       severity="info"
       icon={false}
       variant="outlined"
-      style={{ position: 'relative' }}
+      // The alias ladder is anchored by the host panel; the block sits one step above it.
+      className="layer-3"
       aria-label={finalLabel}
+      sx={{
+        position: 'relative',
+        width: '100%',
+        marginTop: disableTopMargin ? 0 : '20px',
+        padding: '16px',
+        border: 'none',
+        borderRadius: 'var(--radius-sm)',
+        backgroundColor: 'var(--bg-elevation-default)',
+        // `--bg-input-default` resolves where it is DECLARED, on `:root`, so the layer class alone misses it.
+        ...layerInputVars,
+        // The alert's own message slot leads with 8px, which stacked on the padding above.
+        '& .MuiAlert-message': {
+          width: '100%',
+          overflow: 'visible',
+          padding: 0,
+        },
+      }}
     >
       {Slider}
     </Alert>

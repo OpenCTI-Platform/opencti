@@ -1,0 +1,27 @@
+# Design-system conformity for the wired zones: the generated token bridge must
+# not have been hand-edited, the theme files must still import it, and no
+# hardcoded value may return to a migrated zone.
+#
+# Blocking. `bridge-freshness` reports SKIPPED here rather than failing: it can
+# only be computed against a theme.css, and CI has neither the library
+# installed nor a sibling checkout. It becomes meaningful the day this product
+# installs @filigran/design-system.
+#
+# No `paths:` filter, on purpose — a required check that never runs leaves
+# unrelated PRs pending forever.
+name: FDS conformity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  conformity:
+    name: FDS conformity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node fds-migration/scripts/check-fds-conformity.mjs
