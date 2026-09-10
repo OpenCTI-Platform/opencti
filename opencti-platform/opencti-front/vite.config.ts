@@ -3,8 +3,11 @@ import react from '@vitejs/plugin-react';
 import relay from 'vite-plugin-relay';
 import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 
-// Handle ESM/CJS interop for vite-plugin-monaco-editor
-const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default;
+// Handle ESM/CJS interop for vite-plugin-monaco-editor. Vite's loader nests the callable
+// under `.default`; other loaders (knip's, for one) hand it over directly, so fall back to
+// the import itself rather than crashing on an undefined default.
+const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default
+  ?? monacoEditorPluginImport;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {

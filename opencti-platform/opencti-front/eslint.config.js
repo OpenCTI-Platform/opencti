@@ -160,6 +160,9 @@ export default defineConfig([
       'import/no-extraneous-dependencies': [
         'error',
         {
+          // `import type` hides an undeclared package behind a syntax the rule skips by
+          // default, which is how @mui/types and geojson went unnoticed.
+          includeTypes: true,
           devDependencies: [
             'src/utils/tests/*.{ts,tsx}',
             '**/*.test.{ts,tsx}',
