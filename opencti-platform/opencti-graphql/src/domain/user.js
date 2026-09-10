@@ -1096,6 +1096,9 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
+    if (input.key === 'api_tokens') {
+      throw ForbiddenAccess();
+    }
     if (userToUpdate.external && input.key === 'name') {
       throw FunctionalError('Name cannot be updated for external user', { userId });
     }
@@ -2075,9 +2078,9 @@ const authenticateUserByEmail = async (context, req, email) => {
 };
 
 export const authenticateUserByToken = async (context, req, token) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const hashedToken = await generateTokenHmac(token);
-  const user = platformUsers.get(hashedToken);
+  const user = platformUsers.find((u) => u.api_tokens.some((t) => t.hash === hashedToken));
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
       throw ForbiddenAccess('You are not allowed to use API Access Tokens');

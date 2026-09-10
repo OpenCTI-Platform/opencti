@@ -9,7 +9,7 @@ import { authenticateUserByJWT, authenticateUserByToken, authenticateUserByUserI
 import { addUserToken, generateSecureToken } from '../../../src/modules/user/user-domain';
 import { testContext } from '../../utils/testQuery';
 import { isUserHasCapability } from '../../../src/utils/access';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { verifyXtmJwt, isOwnIssuer } from '../../../src/domain/xtm-auth';
 import { elLoadBy } from '../../../src/database/engine';
 import { generateTokenHmac } from '../../../src/modules/user/user-domain';
@@ -643,8 +643,7 @@ describe('authenticateUserByToken', () => {
     const cachedUser = buildCachedUser('token-user-1', {
       api_tokens: [{ hash: hashedToken, name: 'My Token', expires_at: futureDate }],
     });
-    const usersMap = new Map([[hashedToken, cachedUser]]);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([cachedUser] as any);
     vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
 
     const result = await authenticateUserByToken(mockContext, mockReq, 'plaintext-token');
@@ -661,8 +660,7 @@ describe('authenticateUserByToken', () => {
     const cachedUser = buildCachedUser('unlimited-user', {
       api_tokens: [{ hash: hashedToken, name: 'Unlimited Token', expires_at: null }],
     });
-    const usersMap = new Map([[hashedToken, cachedUser]]);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([cachedUser] as any);
     vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
 
     const result = await authenticateUserByToken(mockContext, mockReq, 'unlimited-plaintext');
@@ -678,8 +676,7 @@ describe('authenticateUserByToken', () => {
     const cachedUser = buildCachedUser('expired-user', {
       api_tokens: [{ hash: hashedToken, name: 'Expired Token', expires_at: pastDate }],
     });
-    const usersMap = new Map([[hashedToken, cachedUser]]);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([cachedUser] as any);
 
     await expect(
       authenticateUserByToken(mockContext, mockReq, 'expired-plaintext'),
@@ -689,8 +686,7 @@ describe('authenticateUserByToken', () => {
   it('should throw FunctionalError when no user matches the hashed token', async () => {
     vi.mocked(generateTokenHmac).mockResolvedValue('hashed-unknown');
 
-    const usersMap = new Map();
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([] as any);
 
     await expect(
       authenticateUserByToken(mockContext, mockReq, 'no-match-token'),
@@ -705,26 +701,25 @@ describe('authenticateUserByToken', () => {
     const cachedUser = buildCachedUser('nocap-user', {
       api_tokens: [{ hash: hashedToken, name: 'Token', expires_at: null }],
     });
-    const usersMap = new Map([[hashedToken, cachedUser]]);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([cachedUser] as any);
 
     await expect(
       authenticateUserByToken(mockContext, mockReq, 'nocap-plaintext'),
     ).rejects.toThrow('You are not allowed to use API Access Tokens');
   });
 
-  it('should throw FunctionalError when user has no api_tokens array and hash not comparable', async () => {
+  it('should throw FunctionalError when user has no api_tokens array matching the hash', async () => {
     const hashedToken = 'hashed-no-tokens';
     vi.mocked(generateTokenHmac).mockResolvedValue(hashedToken);
 
     const cachedUser = buildCachedUser('notokens-user', {
       api_tokens: [],
     });
-    const usersMap = new Map([[hashedToken, cachedUser]]);
-    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(usersMap as any);
+    // With list-based lookup, a user with an empty api_tokens array can never be matched by hash.
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([cachedUser] as any);
 
     await expect(
       authenticateUserByToken(mockContext, mockReq, 'notokens-plaintext'),
-    ).rejects.toThrow('Cannot identify user with not comparable token');
+    ).rejects.toThrow('Cannot identify user with token');
   });
 });

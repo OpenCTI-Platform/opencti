@@ -86,25 +86,15 @@ describe('User Domain - Authentication', async () => {
     vi.resetAllMocks();
 
     // Default mock implementation for cache
-    const usersMap = new Map();
-    usersMap.set('legacy-token-uuid', legacyUser); // Indexed by api_token (legacy behavior in buildStoreEntityMap)
-    usersMap.set(legacyUser.id, legacyUser);
-    usersMap.set(modernUser.id, modernUser);
-    usersMap.set(expiredUser.id, expiredUser);
+    const usersList = [legacyUser, modernUser, expiredUser];
 
-    // New: Hash indexing simulation (Story 2.2)
-    usersMap.set(newTokenHash, modernUser);
-    usersMap.set(expiredTokenHash, expiredUser);
-
-    // For hashed tokens, they are NOT in the map keys (usually, unless we index them? current implementation iterates values)
-
-    vi.spyOn(Cache, 'getEntitiesMapFromCache').mockImplementation(async (ctx, user, type) => {
+    vi.spyOn(Cache, 'getEntitiesListFromCache').mockImplementation(async (_ctx, _user, type) => {
       if (type === ENTITY_TYPE_USER) {
-        return usersMap;
+        return usersList as any;
       }
-      return new Map();
+      return [];
     });
-    vi.spyOn(Cache, 'getEntityFromCache').mockImplementation(async (ctx, user, type) => {
+    vi.spyOn(Cache, 'getEntityFromCache').mockImplementation(async (_ctx, _user, type) => {
       if (type === ENTITY_TYPE_SETTINGS) {
         return {
           id: 'settings',
@@ -153,9 +143,8 @@ describe('User Domain - Authentication', async () => {
     };
 
     // Mock update
-    const usersMap = new Map();
-    usersMap.set(boundaryHash, boundaryUser);
-    vi.spyOn(Cache, 'getEntitiesMapFromCache').mockResolvedValue(usersMap);
+    const usersList = [boundaryUser];
+    vi.spyOn(Cache, 'getEntitiesListFromCache').mockResolvedValue(usersList as any);
 
     await expect(authenticateUserByToken(context, mockReq, boundaryTokenValue))
       .rejects.toThrowError('Token expired');
@@ -163,28 +152,15 @@ describe('User Domain - Authentication', async () => {
 
   it('should reject revoked token (valid hash but removed from profile)', async () => {
     const revokedTokenValue = 'flgrn_octi_tkn_revoked';
-    const revokedHash = await generateTokenHmac(revokedTokenValue);
 
-    // Scenario: Token hash is in cache index (stale index?) OR just not found.
-    // If logic is "Find user by hash -> Check if token is in user.api_tokens", verify that flow.
-    // If logic is "Find user by hash -> User object is fresh", then if token is gone from user.api_tokens, it fails.
-
+    // If the token was revoked (removed from the list), the user simply won't be found by hash anymore.
     const userWithRevoked = { ...modernUser, api_tokens: [] }; // Token removed from list
-    const usersMap = new Map();
-    usersMap.set(revokedHash, userWithRevoked); // Index still points to user, but user data is updated
-    vi.spyOn(Cache, 'getEntitiesMapFromCache').mockResolvedValue(usersMap);
+    const usersList = [userWithRevoked];
+    vi.spyOn(Cache, 'getEntitiesListFromCache').mockResolvedValue(usersList as any);
 
-    // Should fail because find in api_tokens returns undefined
-    // Current implementation: if (matchingToken && matchingToken.expires_at)...
-    // Wait, if matchingToken is not found, what happens?
-    // It proceeds to "if (user) return internalAuthenticateUser".
-    // This is a SECURITY ISSUE if the hash index exists but the token is gone from the list.
-    // The previous implementation loop checked `userTokens.find`.
-    // The new O(1) implementation finds the user.
-    // We must ensure that we strictly match the token in the list.
-
+    // Since no user has this hash in api_tokens, authentication fails with the generic "not found" error.
     await expect(authenticateUserByToken(context, mockReq, revokedTokenValue))
-      .rejects.toThrowError('Cannot identify user with not comparable token'); // Logic check needed
+      .rejects.toThrowError('Cannot identify user with token');
   });
 
   it('should reject authentication if user lacks SETTINGS_SETACCESSTOKEN capability', async () => {
@@ -198,9 +174,8 @@ describe('User Domain - Authentication', async () => {
 
     noCapUser.api_tokens = [{ id: 't1', hash: validHash, name: 'T1', created_at: new Date().toISOString() }];
 
-    const usersMap = new Map();
-    usersMap.set(validHash, noCapUser);
-    vi.spyOn(Cache, 'getEntitiesMapFromCache').mockResolvedValue(usersMap);
+    const usersList = [noCapUser];
+    vi.spyOn(Cache, 'getEntitiesListFromCache').mockResolvedValue(usersList as any);
 
     await expect(authenticateUserByToken(context, mockReq, validTokenValue))
       .rejects.toThrowError('You are not allowed to use API Access Tokens');
