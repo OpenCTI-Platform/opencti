@@ -2,18 +2,18 @@ import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
+import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
 import {
+  batchEntitiesThroughRelations,
   type EntityOptions,
   findEntitiesIdsWithRelations,
   fullEntitiesList,
   fullRelationsList,
-  internalFindByIdsMapped,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
@@ -60,27 +60,8 @@ export const batchIsSubAttackPattern = async (context: AuthContext, user: AuthUs
   });
 };
 
-const batchEntitiesFromRelations = async (context: AuthContext, user: AuthUser, attackPatternsIds: string[], relationType: string, fromType: string) => {
-  const relations = await fullRelationsList<BasicStoreRelation>(context, user, relationType, { toId: attackPatternsIds, fromTypes: [fromType] });
-  const entitiesById = await internalFindByIdsMapped<BasicStoreEntity>(context, user, R.uniq(relations.map((relation) => relation.fromId)), { type: fromType });
-  const nodesByAttackPatternId = new Map<string, BasicStoreEntity[]>();
-  for (const relation of relations) {
-    const node = entitiesById[relation.fromId];
-    if (node) {
-      if (!nodesByAttackPatternId.has(relation.toId)) {
-        nodesByAttackPatternId.set(relation.toId, []);
-      }
-      nodesByAttackPatternId.get(relation.toId)!.push(node);
-    }
-  }
-  return attackPatternsIds.map((id) => {
-    const nodes = nodesByAttackPatternId.get(id) ?? [];
-    return buildPagination(0, null, nodes.map((node) => ({ node })), nodes.length);
-  });
-};
-
 export const batchSubAttackPatterns = async (context: AuthContext, user: AuthUser, attackPatternsIds: string[]) => {
-  return batchEntitiesFromRelations(context, user, attackPatternsIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+  return batchEntitiesThroughRelations<BasicStoreEntity>(context, user, attackPatternsIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const coursesOfActionPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
@@ -88,7 +69,7 @@ export const coursesOfActionPaginated = async (context: AuthContext, user: AuthU
 };
 
 export const batchCoursesOfAction = async (context: AuthContext, user: AuthUser, attackPatternsIds: string[]) => {
-  return batchEntitiesFromRelations(context, user, attackPatternsIds, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION);
+  return batchEntitiesThroughRelations<BasicStoreEntity>(context, user, attackPatternsIds, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION);
 };
 
 export const dataComponentsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {

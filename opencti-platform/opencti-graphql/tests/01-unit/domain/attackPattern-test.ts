@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
+import * as engine from '../../../src/database/engine';
 import { batchCoursesOfAction, batchSubAttackPatterns, childAttackPatternsPaginated, coursesOfActionPaginated, getAttackPatternsMatrix } from '../../../src/domain/attackPattern';
 import attackPatternResolvers from '../../../src/resolvers/attackPattern';
 import { RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../../../src/schema/stixCoreRelationship';
@@ -283,8 +284,13 @@ describe('Attack pattern nested connections batching', () => {
   });
 
   const mockRelations = (relations: Partial<BasicStoreRelation>[], entities: Partial<BasicStoreEntity>[]) => {
-    const relationsSpy = vi.spyOn(middlewareLoader, 'fullRelationsList').mockResolvedValue(relations as BasicStoreRelation[]);
-    vi.spyOn(middlewareLoader, 'internalFindByIdsMapped')
+    // fullRelationsList streams pages through the `callback` option (see batchEntitiesThroughRelations),
+    // so the mock must invoke it, like the real engine would for a single page.
+    const relationsSpy = vi.spyOn(engine, 'elList').mockImplementation(async (_context, _user, _indexName, opts: any) => {
+      await opts?.callback?.(relations);
+      return relations as BasicStoreRelation[];
+    });
+    vi.spyOn(engine, 'elFindByIds')
       .mockResolvedValue(Object.fromEntries(entities.map((entity) => [entity.id, entity])) as any);
     return relationsSpy;
   };
@@ -296,8 +302,20 @@ describe('Attack pattern nested connections batching', () => {
     await batchCoursesOfAction(testContext, ADMIN_USER, ['ap-1', 'ap-2']);
 
     expect(relationsSpy).toHaveBeenCalledTimes(2);
-    expect(relationsSpy).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, RELATION_SUBTECHNIQUE_OF, { toId: ['ap-1', 'ap-2'], fromTypes: [ENTITY_TYPE_ATTACK_PATTERN] });
-    expect(relationsSpy).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, RELATION_MITIGATES, { toId: ['ap-1', 'ap-2'], fromTypes: [ENTITY_TYPE_COURSE_OF_ACTION] });
+    expect(relationsSpy.mock.calls[0][3]).toMatchObject({
+      types: [RELATION_SUBTECHNIQUE_OF],
+      filters: { filters: expect.arrayContaining([
+        { key: ['toId'], values: ['ap-1', 'ap-2'] },
+        { key: ['fromTypes'], values: [ENTITY_TYPE_ATTACK_PATTERN] },
+      ]) },
+    });
+    expect(relationsSpy.mock.calls[1][3]).toMatchObject({
+      types: [RELATION_MITIGATES],
+      filters: { filters: expect.arrayContaining([
+        { key: ['toId'], values: ['ap-1', 'ap-2'] },
+        { key: ['fromTypes'], values: [ENTITY_TYPE_COURSE_OF_ACTION] },
+      ]) },
+    });
   });
 
   it('should return one connection per requested id, in order, skipping targets the user cannot read', async () => {
