@@ -93,10 +93,9 @@ describe('workflow-ordering: computeStateOrder', () => {
 
   it('bounds the DFS with a step cap and does not hang on a densely-connected acyclic graph', () => {
     // Complete DAG on 15 nodes (edges i -> j for every i < j) has 2^13 simple paths from s0 to
-    // s14 — far more than any reasonable step cap — so the cap must kick in and the call must
-    // still return promptly instead of exploring every path. With only 15 states, every one of
-    // them is still reached during the very first (deepest-first) descent, long before the cap is
-    // hit, so nothing here ends up null — the cap only bounds exploration of redundant paths.
+    // s14 — far more than any reasonable step cap. The topological longest-path computation is
+    // polynomial (no path enumeration, no cap), so it must still return promptly and, unlike the
+    // old simple-path-enumeration approach, every value must be its exact longest-path length.
     const nodeCount = 15;
     const transitions = [];
     for (let i = 0; i < nodeCount; i += 1) {
@@ -107,28 +106,67 @@ describe('workflow-ordering: computeStateOrder', () => {
     const order = computeStateOrder('s0', transitions);
     expect(order.size).toBe(nodeCount);
     expect(Array.from(order.values()).every((value) => value !== null)).toBe(true);
+    for (let i = 0; i < nodeCount; i += 1) {
+      expect(order.get(`s${i}`)).toBe(i);
+    }
   });
 
-  it('keeps real order values for states already computed before the step cap is hit, only nulling the states the cap prevented from ever being reached', () => {
-    // A short linear chain with an injected, artificially low step cap: the DFS visits each state
-    // once, in strictly increasing order, so hitting the cap partway through leaves a clean,
-    // deterministic boundary between "computed before the cap" and "never reached because of it".
-    const order = computeStateOrder('s0', [
-      { from: 's0', to: 's1' },
-      { from: 's1', to: 's2' },
-      { from: 's2', to: 's3' },
-      { from: 's3', to: 's4' },
-      { from: 's4', to: 's5' },
-    ], 3); // cap hit right after computing s0, s1, s2
-    // States computed before the cap was hit must keep their real, sequential order values — not
-    // be forced to null just because the cap is hit later on in the same computation.
-    expect(order.get('s0')).toBe(0);
-    expect(order.get('s1')).toBe(1);
+  it('computes exact topological order for every node of a dense DAG, not a step-cap-truncated approximation (regression, review r3971557516)', () => {
+    // Same 15-node complete DAG: s2 has an edge to s3 (and to every higher-indexed node), so its
+    // exact longest path from s0 must be 2, and s3's must be 3 — a path-enumeration approach with
+    // a step cap previously returned s2 = s3 = 1 here once the cap was hit before their longest
+    // paths were fully explored.
+    const nodeCount = 15;
+    const transitions = [];
+    for (let i = 0; i < nodeCount; i += 1) {
+      for (let j = i + 1; j < nodeCount; j += 1) {
+        transitions.push({ from: `s${i}`, to: `s${j}` });
+      }
+    }
+    const order = computeStateOrder('s0', transitions);
     expect(order.get('s2')).toBe(2);
-    // States the DFS never got to before the cap kicked in must be null.
-    expect(order.get('s3')).toBeNull();
-    expect(order.get('s4')).toBeNull();
-    expect(order.get('s5')).toBeNull();
+    expect(order.get('s3')).toBe(3);
+  });
+
+  it('detects every member of overlapping/nested cycles via strongly-connected-component membership, not just gray-node back-edges (regression, review r3971557511)', () => {
+    // Transitions A -> B, B -> A, A -> C, C -> B: a plain gray/black back-edge DFS starting at A
+    // marks {A, B} as cyclic when it hits the B->A back-edge, but by the time it explores A->C,
+    // B is already black, so C->B is never recognized as closing a cycle back into {A, B}. In
+    // reality, A, B, and C are all mutually reachable (C -> B -> A -> C) and must all be null.
+    const order = computeStateOrder('A', [
+      { from: 'A', to: 'B' },
+      { from: 'B', to: 'A' },
+      { from: 'A', to: 'C' },
+      { from: 'C', to: 'B' },
+    ]);
+    expect(order.get('A')).toBeNull();
+    expect(order.get('B')).toBeNull();
+    expect(order.get('C')).toBeNull();
+  });
+
+  it('does not null a state for a mere self-loop-free acyclic edge into an unrelated, separately-cyclic component', () => {
+    // 'initial' -> 'a' -> 'b' -> 'a' (cycle a<->b) and 'initial' -> 'c' -> 'd' (separate acyclic
+    // branch, no path back into the a/b cycle): only a and b are cyclic; c and d keep exact,
+    // non-null topological distances.
+    const order = computeStateOrder('initial', [
+      { from: 'initial', to: 'a' },
+      { from: 'a', to: 'b' },
+      { from: 'b', to: 'a' },
+      { from: 'initial', to: 'c' },
+      { from: 'c', to: 'd' },
+    ]);
+    expect(order.get('a')).toBeNull();
+    expect(order.get('b')).toBeNull();
+    expect(order.get('c')).toBe(1);
+    expect(order.get('d')).toBe(2);
+  });
+
+  it('nulls a single state with a direct self-loop even though its SCC has only one member', () => {
+    const order = computeStateOrder('initial', [
+      { from: 'initial', to: 'looping' },
+      { from: 'looping', to: 'looping' },
+    ]);
+    expect(order.get('looping')).toBeNull();
   });
 });
 
