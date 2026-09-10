@@ -41,6 +41,7 @@ import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
 } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCreationHeaderButtons';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -192,6 +193,14 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       name
       description
       security_platform_type
+    }
+    ... on SecurityCoverage {
+      name
+      description
+    }
+    ... on SecurityCoverageResult {
+      name
+      description
     }
     ... on Sector {
       name
@@ -474,7 +483,7 @@ export interface StixCoreRelationshipCreationFromEntityForm {
   killChainPhases: FieldOption[];
   objectMarking: FieldOption[];
   externalReferences: FieldOption[];
-  coverage_information?: Array<{ coverage_name: string; coverage_score: number }>;
+  coverage_information?: Array<CoverageInformation>;
 }
 
 export interface TargetEntity {

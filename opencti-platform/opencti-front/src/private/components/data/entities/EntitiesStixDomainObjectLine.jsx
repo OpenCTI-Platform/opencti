@@ -185,6 +185,13 @@ export const entitiesFragment = graphql`
       name
       description
     }
+    ... on SecurityCoverageResult {
+      name
+      description
+      resultOf {
+        id
+      }
+    }
     ... on CourseOfAction {
       name
       description

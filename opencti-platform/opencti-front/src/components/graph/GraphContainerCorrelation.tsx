@@ -227,6 +227,12 @@ const graphContainerCorrelationObjectsFragment = graphql`
             ... on Case {
               name
             }
+            ... on SecurityCoverage {
+              name
+            }
+            ... on SecurityCoverageResult {
+              name
+            }
             ... on Incident {
               name
               first_seen

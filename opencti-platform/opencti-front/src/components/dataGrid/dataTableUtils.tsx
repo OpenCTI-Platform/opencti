@@ -6,7 +6,7 @@ import { useTheme } from '@mui/styles';
 import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps } from './dataTableTypes';
@@ -263,6 +263,32 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: true,
     render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
+  },
+  coverage_last_modified_date: {
+    id: 'coverage_last_modified_date',
+    label: 'Coverage Last modified date',
+    percentWidth: 16,
+    isSortable: false,
+    render: ({ updated_at }, { fldt }) => (updated_at ? fldt(updated_at) : '-'),
+  },
+  coverage: {
+    id: 'coverage',
+    label: 'Coverage Score',
+    percentWidth: 11,
+    isSortable: false,
+    render: ({ coverage_information }, { t_i18n }) => (
+      coverage_information?.length
+        ? (
+            <SecurityCoverageScores
+              coverage_information={coverage_information}
+              variant="header"
+            />
+          ) : (
+            <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
+              <span style={{ width: '100%' }}>-</span>
+            </Tooltip>
+          )
+    ),
   },
   created: {
     id: 'created',
@@ -1063,6 +1089,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ secondary_motivations }) => {
       return defaultRender(secondary_motivations);
     },
+  },
+  security_coverage_result_name: {
+    id: 'security_coverage_result_name',
+    label: 'Security Coverage Result Name',
+    percentWidth: 12,
+    isSortable: false,
+    render: ({ from }) => defaultRender(from?.name),
   },
   security_platform_type: {
     id: 'security_platform_type',

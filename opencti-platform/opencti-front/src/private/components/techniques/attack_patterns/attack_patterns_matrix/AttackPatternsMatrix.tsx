@@ -8,6 +8,7 @@ import { AttackPatternsMatrixQuery } from '@components/techniques/attack_pattern
 import Loader from '../../../../../components/Loader';
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 export interface AttackPatternsMatrixProps {
   attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][];
@@ -19,7 +20,7 @@ export interface AttackPatternsMatrixProps {
   entityType: string;
   inPaper?: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
+  coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
 }
 
