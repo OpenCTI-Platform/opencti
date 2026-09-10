@@ -278,7 +278,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <Button
           type="button"
           sx={buttonStyles}
-          onClick={onCLick}
+          onClick={onClick}
         >
           <strong>
             {label}
@@ -357,7 +357,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <Button
           type="button"
           sx={buttonStyles}
-          onClick={onCLick}
+          onClick={onClick}
         >
           <strong>
             {label}
@@ -375,7 +375,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <Button
         type="button"
         sx={buttonStyles}
-        onClick={onCLick}
+        onClick={onClick}
       >
         <strong>
           {label}
