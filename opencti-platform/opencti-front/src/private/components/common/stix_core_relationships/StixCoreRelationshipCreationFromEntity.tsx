@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
+import { KnowledgeBarRefreshEvent } from '@components/common/bulk/useForceUpdate';
 import Drawer from '@components/common/drawer/Drawer';
 import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import {
@@ -654,6 +655,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     if (typeof onCreate === 'function') {
       onCreate();
     }
+    // Update the knowledge bar counters
+    dispatchEvent(new CustomEvent(KnowledgeBarRefreshEvent));
     return true;
   };
 
