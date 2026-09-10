@@ -15,14 +15,10 @@ export type SliderFieldProps = FieldProps<string> & {
   max?: number;
   step?: number;
   showBounds?: boolean;
-  /** Paints the filled range and thumb, used to reflect the value's scale level (confidence/likelihood). */
+  /** Paints the filled range and thumb, used to reflect the value's scale level */
   color?: string;
   onChange?: (name: string, value: string) => void;
   onSubmit?: (name: string, value: string) => void;
-  /**
-   * The pivot's `onFocus`, which OpenCTI uses to publish the collaborative editing context
-   * rather than for anything visual.
-   */
   onFocus?: (name: string) => void;
 };
 
@@ -48,10 +44,9 @@ const SliderField = ({
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
   const currentValue = value === null || value === undefined || value === '' ? min : Number(value);
-  // The DS Slider has no `required` flag, so the asterisk is carried on the label like the other form fields.
+  // The asterisk is carried on the label like the other form fields.
   const finalLabel = label != null && required ? <>{label} *</> : label;
-  // The filled range and thumb read `var(--icon-highlight)`; overriding it on the wrapper cascades to them,
-  // so the track colour tracks the value's scale level.
+  // The track colour tracks the value's scale level.
   const wrapperStyle = {
     marginBottom: 16,
     ...containerstyle,
