@@ -6,7 +6,7 @@ import { statusDelete } from '../../../src/domain/status';
 import { findById as findSubTypeById } from '../../../src/domain/subType';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 import { validateSetting } from '../../../src/modules/entitySetting/entitySetting-validators';
-import { isStatusTemplateUsedInWorkflows } from '../../../src/modules/workflow/domain/workflow-domain';
+import { isStatusUsedInWorkflow } from '../../../src/modules/workflow/domain/workflow-domain';
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock('../../../src/modules/entitySetting/entitySetting-validators', () => ({
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
-  isStatusTemplateUsedInWorkflows: vi.fn(),
+  isStatusUsedInWorkflow: vi.fn(),
 }));
 
 vi.mock('../../../src/domain/subType', () => ({
@@ -52,7 +52,7 @@ describe('statusDelete', () => {
 
   it('should throw and not delete when the status is used in a published or draft workflow', async () => {
     (storeLoadById as any).mockResolvedValue({ id: 'status-id', template_id: 'tpl-a' });
-    (isStatusTemplateUsedInWorkflows as any).mockResolvedValue(true);
+    (isStatusUsedInWorkflow as any).mockResolvedValue(true);
 
     await expect(statusDelete({} as any, {} as any, 'Incident', 'status-id')).rejects.toThrow(
       'Cannot delete a status that is used in a published or draft workflow',
@@ -63,7 +63,7 @@ describe('statusDelete', () => {
 
   it('should delete when the status is not used in any workflow', async () => {
     (storeLoadById as any).mockResolvedValue({ id: 'status-id', template_id: 'tpl-a' });
-    (isStatusTemplateUsedInWorkflows as any).mockResolvedValue(false);
+    (isStatusUsedInWorkflow as any).mockResolvedValue(false);
 
     await statusDelete({} as any, {} as any, 'Incident', 'status-id');
 
@@ -78,7 +78,7 @@ describe('statusDelete', () => {
     await statusDelete({} as any, {} as any, 'Incident', 'status-id');
 
     expect(validateSetting).toHaveBeenCalledWith('Incident', 'workflow_configuration');
-    expect(isStatusTemplateUsedInWorkflows).not.toHaveBeenCalled();
+    expect(isStatusUsedInWorkflow).not.toHaveBeenCalled();
     expect(internalDeleteElementById).toHaveBeenCalled();
   });
 });

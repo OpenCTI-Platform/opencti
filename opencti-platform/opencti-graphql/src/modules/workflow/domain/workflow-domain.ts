@@ -1343,6 +1343,40 @@ export const cleanupEntityWorkflow = async (
   await deleteElementById(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
 };
 
+/**
+ * True if any of the given workflow versions (published/draft) has a state mapped to
+ * `statusTemplateId`. Shared by `isStatusTemplateUsedInWorkflows` (checked platform-wide) and
+ * `isStatusUsedInWorkflow` (checked against a single, specific workflow).
+ */
+const doAnyVersionsReferenceStatusTemplate = (
+  versions: Array<WorkflowVersion | null | undefined>,
+  statusTemplateId: string,
+): boolean => {
+  const definedVersions = versions.filter((v): v is WorkflowVersion => v !== undefined && v !== null);
+  for (const version of definedVersions) {
+    const content = version.content;
+    let parsed;
+    try {
+      parsed = typeof content === 'string' ? JSON.parse(content) : content;
+    } catch (_error) {
+      // Malformed content is not this function's concern; skip rather than false-positive.
+      continue;
+    }
+    const states: Array<{ statusId?: string }> = parsed?.states ?? [];
+    if (states.some((state) => state.statusId === statusTemplateId)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * True if `statusTemplateId` is mapped by a state in any workflow (published or draft) on the
+ * platform, regardless of entity type or scope. Appropriate when deleting the shared
+ * `StatusTemplate` itself, since any workflow referencing it would break. NOT appropriate for
+ * guarding the deletion of a single `Status`, which is specific to one entity type and scope —
+ * use `isStatusUsedInWorkflow` for that.
+ */
 export const isStatusTemplateUsedInWorkflows = async (
   context: AuthContext,
   user: AuthUser,
@@ -1354,25 +1388,49 @@ export const isStatusTemplateUsedInWorkflows = async (
     bypassDraftUser(user),
     [ENTITY_TYPE_WORKFLOW_DEFINITION],
   );
-  for (const workflow of workflows) {
-    // Check both published and draft versions
-    const versions = [workflow.published_version, workflow.draft_version].filter((v): v is WorkflowVersion => v !== undefined && v !== null);
-    for (const version of versions) {
-      const content = version.content;
-      let parsed;
-      try {
-        parsed = typeof content === 'string' ? JSON.parse(content) : content;
-      } catch (_error) {
-        // Malformed content is not this function's concern; skip rather than false-positive.
-        continue;
-      }
-      const states: Array<{ statusId?: string }> = parsed?.states ?? [];
-      if (states.some((state) => state.statusId === statusTemplateId)) {
-        return true;
-      }
-    }
+  return workflows.some((workflow) => doAnyVersionsReferenceStatusTemplate(
+    [workflow.published_version, workflow.draft_version],
+    statusTemplateId,
+  ));
+};
+
+/**
+ * True if this specific `Status` is referenced by the workflow mapping applicable to its own
+ * entity type and scope. A `Status` is specific to a `StatusTemplate`, an entity type, and a
+ * scope, so only the workflow actually wired to that entity type/scope can legitimately block
+ * its deletion — unlike `isStatusTemplateUsedInWorkflows`, which checks every workflow on the
+ * platform and would false-positive on unrelated entity types sharing the same template.
+ */
+export const isStatusUsedInWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+  status: BasicWorkflowStatus,
+): Promise<boolean> => {
+  if (status.scope === StatusScope.RequestAccess) {
+    return isStatusReferencedByRequestAccessWorkflow(context, user, status.id);
   }
-  return false;
+
+  const entitySetting = await getWorkflowConfig(context, user, status.type);
+  if (!entitySetting?.workflow_id) {
+    return false;
+  }
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+  const workflowDefinitionEntity = await storeLoadById(
+    executionContext,
+    executionUser,
+    entitySetting.workflow_id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ) as WorkflowDefinitionEntity | undefined;
+  if (!workflowDefinitionEntity) {
+    return false;
+  }
+
+  return doAnyVersionsReferenceStatusTemplate(
+    [workflowDefinitionEntity.published_version, workflowDefinitionEntity.draft_version],
+    status.template_id,
+  );
 };
 
 /**

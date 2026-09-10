@@ -19,6 +19,7 @@ import {
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
   isStatusTemplateUsedInWorkflows,
+  isStatusUsedInWorkflow,
   publishWorkflowDefinition,
   hasPublishedWorkflowDefinition,
   restorePublishedWorkflowDefinition,
@@ -382,6 +383,99 @@ describe('Workflow Domain', () => {
     const result = await isStatusTemplateUsedInWorkflows(mockContext, mockUser, 'status-template-id');
 
     expect(result).toBe(false);
+  });
+
+  describe('isStatusUsedInWorkflow', () => {
+    it('should check the request-access workflow mapping when the status scope is RequestAccess', async () => {
+      (fullEntitiesList as any).mockResolvedValue([
+        { request_access_workflow: { approved_workflow_id: 'status-id', declined_workflow_id: 'other-status-id' } },
+      ]);
+
+      const result = await isStatusUsedInWorkflow(mockContext, mockUser, {
+        id: 'status-id',
+        type: 'Incident',
+        scope: StatusScope.RequestAccess,
+        template_id: 'status-template-id',
+      } as any);
+
+      expect(result).toBe(true);
+      expect(findByType).not.toHaveBeenCalled();
+    });
+
+    it('should return false for a RequestAccess status not referenced by any entity setting', async () => {
+      (fullEntitiesList as any).mockResolvedValue([
+        { request_access_workflow: { approved_workflow_id: 'unrelated-status-id' } },
+      ]);
+
+      const result = await isStatusUsedInWorkflow(mockContext, mockUser, {
+        id: 'status-id',
+        type: 'Incident',
+        scope: StatusScope.RequestAccess,
+        template_id: 'status-template-id',
+      } as any);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false for a Global status when its entity type has no workflow configured', async () => {
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: null });
+
+      const result = await isStatusUsedInWorkflow(mockContext, mockUser, {
+        id: 'status-id',
+        type: 'Incident',
+        scope: StatusScope.Global,
+        template_id: 'status-template-id',
+      } as any);
+
+      expect(result).toBe(false);
+      expect(storeLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should return true for a Global status only when its own entity type workflow references the template', async () => {
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+      (storeLoadById as any).mockResolvedValue({
+        published_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: '{"states":[{"statusId":"status-template-id"}]}',
+          validation_errors: [],
+        },
+      });
+
+      const result = await isStatusUsedInWorkflow(mockContext, mockUser, {
+        id: 'status-id',
+        type: 'Incident',
+        scope: StatusScope.Global,
+        template_id: 'status-template-id',
+      } as any);
+
+      expect(result).toBe(true);
+      expect(storeLoadById).toHaveBeenCalledWith(mockContext, mockUser, 'workflow-id', 'WorkflowDefinition');
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+
+    it('should return false for a Global status when its own entity type workflow does not reference the template, even if another entity type does', async () => {
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+      (storeLoadById as any).mockResolvedValue({
+        published_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: '{"states":[{"statusId":"another-entity-template-id"}]}',
+          validation_errors: [],
+        },
+      });
+
+      const result = await isStatusUsedInWorkflow(mockContext, mockUser, {
+        id: 'status-id',
+        type: 'Report',
+        scope: StatusScope.Global,
+        template_id: 'status-template-id',
+      } as any);
+
+      expect(result).toBe(false);
+    });
   });
 
   // Tests for publishWorkflowDefinition
