@@ -82,7 +82,7 @@ const emitNewsFeedNumber = (count: number | null) => act(() => {
   subscriptionOnNext?.({ newsFeedsNumber: count === null ? null : { count } });
 });
 
-const getBadge = () => document.querySelector('.MuiBadge-badge');
+const getBadge = () => document.querySelector('[aria-label$="items"]');
 
 describe('NewsFeedPage', () => {
   beforeEach(() => {
@@ -146,12 +146,12 @@ describe('NewsFeedPage', () => {
 
   it('hides the badge when there is no unread news feed item', () => {
     renderPage({ unreadCount: 0 });
-    expect(getBadge()).toHaveClass('MuiBadge-invisible');
+    expect(getBadge()).not.toBeInTheDocument();
   });
 
   it('hides the badge when the platform is not registered', () => {
     renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_registration_status: 'not_registered' }, unreadCount: 4 });
-    expect(getBadge()).toHaveClass('MuiBadge-invisible');
+    expect(getBadge()).not.toBeInTheDocument();
   });
 
   it('hides the disconnected banner when the platform is registered', () => {
@@ -173,7 +173,7 @@ describe('NewsFeedPage', () => {
 
   it('hides the badge when the user unsubscribed from all news feed types', () => {
     renderPage({ me: { id: 'user-1', unsubscribed_news_feed_types: ['*'] }, unreadCount: 4 });
-    expect(getBadge()).toHaveClass('MuiBadge-invisible');
+    expect(getBadge()).not.toBeInTheDocument();
   });
 
   it('prefers the live count over the count of the query', () => {
@@ -185,7 +185,7 @@ describe('NewsFeedPage', () => {
   it('hides the badge when the live count drops to zero', () => {
     renderPage({ unreadCount: 4 });
     emitNewsFeedNumber(0);
-    expect(getBadge()).toHaveClass('MuiBadge-invisible');
+    expect(getBadge()).not.toBeInTheDocument();
   });
 
   it('falls back to the count of the query when the live count is empty', () => {
@@ -197,7 +197,7 @@ describe('NewsFeedPage', () => {
   it('ignores the live count when the platform is not registered', () => {
     renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_registration_status: 'not_registered' }, unreadCount: 0 });
     emitNewsFeedNumber(9);
-    expect(getBadge()).toHaveClass('MuiBadge-invisible');
+    expect(getBadge()).not.toBeInTheDocument();
   });
 
   it('updates the unsubscribed news feed types of the user when the settings are submitted', async () => {

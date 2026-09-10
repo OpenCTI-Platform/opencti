@@ -6,8 +6,8 @@ import XtmHubDisconnectedBanner from './XtmHubDisconnectedBanner';
 
 const mockNavigate = vi.fn();
 
-vi.mock('react-router', async () => {
-  const actual = await vi.importActual('react-router-dom');
+vi.mock('react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-router')>();
   return {
     ...actual,
     useNavigate: () => mockNavigate,
