@@ -256,6 +256,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
           exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
+          knowledgeEntityId={entityId}
           currentView={currentView}
           additionalHeaderToggleButtons={[...viewButtons]}
         />
