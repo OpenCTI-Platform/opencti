@@ -1,8 +1,10 @@
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, booleanConf, logApp } from '../config/conf';
 import { internalDeleteElementById } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
+import { notify } from '../database/redis';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { isStatusOrphaned } from '../modules/workflow/domain/workflow-domain';
+import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_STATUS } from '../schema/internalObject';
 import type { BasicWorkflowStatus } from '../types/store';
 import { executionContext, WORKFLOW_MANAGER_USER } from '../utils/access';
@@ -34,7 +36,8 @@ export const workflowStatusCleanupHandler = async () => {
     try {
       const stillOrphaned = await isStatusOrphaned(context, WORKFLOW_MANAGER_USER, status);
       if (stillOrphaned) {
-        await internalDeleteElementById(context, WORKFLOW_MANAGER_USER, status.id, ENTITY_TYPE_STATUS);
+        const { element: deleted } = await internalDeleteElementById(context, WORKFLOW_MANAGER_USER, status.id, ENTITY_TYPE_STATUS);
+        await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, WORKFLOW_MANAGER_USER);
       }
     } catch (e) {
       logApp.error('[OPENCTI-MODULE] Workflow status cleanup error', { cause: e, manager: 'WORKFLOW_STATUS_CLEANUP_MANAGER', id: status.id, errorCount });
