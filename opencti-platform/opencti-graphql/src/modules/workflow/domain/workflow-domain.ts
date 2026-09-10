@@ -1,43 +1,47 @@
 import { randomUUID } from 'node:crypto';
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
-import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
+import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
-import { resolveUserById } from '../../../domain/user';
+import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { createListTask } from '../../../domain/backgroundTask-common';
-import { type EditInput, FilterMode, FilterOperator } from '../../../generated/graphql';
-import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import { createStatus } from '../../../domain/status';
+import { resolveUserById } from '../../../domain/user';
+import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
+import { type EditInput, FilterMode, FilterOperator, StatusScope } from '../../../generated/graphql';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
-import type { BasicStoreCommon, BasicStoreEntity } from '../../../types/store';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
+import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
+import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
+import { now } from '../../../utils/format';
+import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { validateSetting } from '../../entitySetting/entitySetting-validators';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
-import { now } from '../../../utils/format';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../../entitySetting/entitySetting-types';
 import { addNotification } from '../../notification/notification-domain';
 import type { NotificationAddInput } from '../../notification/notification-types';
 import { WorkflowFactory } from '../engine/workflow-factory';
 import type { WorkflowSchema } from '../engine/workflow-schema';
-import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
-import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import {
   type AsyncActionSlot,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
   type TriggerResult,
   type WorkflowActionConfig,
+  type WorkflowDefinitionData,
   type WorkflowPendingTransition,
   type WorkflowSerializedState,
   type WorkflowSerializedTransition,
   type WorkflowValidationError,
 } from '../types/workflow-types';
-import { validateWorkflowDefinitionData, extractAllStatesFromDefinition } from '../workflow-validation';
-import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
-import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
+import { extractAllStatesFromDefinition, extractCanonicalStateIds, validateWorkflowDefinitionData } from '../workflow-validation';
+import { computeStateOrder } from './workflow-ordering';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -558,6 +562,197 @@ export const deleteWorkflowDefinition = async (
 };
 
 /**
+ * Ensures every canonical workflow state (StatusTemplate reference) has a matching `Status`
+ * record for this entity type in the Global scope, creating any that are missing and syncing the
+ * `order` of any that already exist.
+ *
+ * Uses `extractCanonicalStateIds` rather than iterating `definitionData.states` directly, since
+ * validation allows a state to be referenced only as `initialState` or a transition endpoint
+ * (from/to) without an explicit entry in `states`, as long as it resolves to an existing
+ * StatusTemplate — the engine registers those states too, so skipping them here would leave the
+ * full-status-mapping invariant unenforced for implicit states.
+ *
+ * The `order` sync is a self-healing backward-compatibility measure rather than a one-off
+ * migration: a `Status` published before ordering was computed from the transition graph (e.g.
+ * the built-in DraftWorkspace workflow) may carry a stale/default `order`. Every republish
+ * recomputes it here, so existing definitions naturally converge without requiring a migration.
+ *
+ * Only the Global scope is reconciled here — existing `Status` records in other scopes are
+ * left untouched.
+ */
+export const ensureFullStatusMapping = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  definitionData: WorkflowDefinitionData,
+): Promise<void> => {
+  const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
+  if (canonicalStateIds.size === 0) return;
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+
+  const existingStatuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['type'], values: [entityType] },
+        { key: ['scope'], values: [StatusScope.Global] },
+      ],
+      filterGroups: [],
+    },
+  });
+  const existingStatusByTemplateId = new Map(existingStatuses.map((status) => [status.template_id, status]));
+
+  const computedOrder = computeStateOrder(definitionData.initialState, definitionData.transitions);
+  // Manual fallback order only applies to states explicitly declared in `states`; implicit
+  // states (referenced only via initialState/transitions) have no manual override and default
+  // to 0 when the topological order is ambiguous.
+  const manualOrderByStatusId = new Map(
+    (definitionData.states ?? [])
+      .filter((state): state is WorkflowSerializedState & { statusId: string } => !!state.statusId)
+      .map((state) => [state.statusId, state.order]),
+  );
+
+  for (const statusId of canonicalStateIds) {
+    const order = computedOrder.get(statusId) ?? manualOrderByStatusId.get(statusId) ?? 0;
+    const existingStatus = existingStatusByTemplateId.get(statusId);
+    if (!existingStatus) {
+      await createStatus(executionContext, executionUser, entityType, {
+        template_id: statusId,
+        order,
+        scope: StatusScope.Global,
+      });
+    } else if (existingStatus.order !== order) {
+      await updateAttribute(executionContext, executionUser, existingStatus.id, ENTITY_TYPE_STATUS, [{ key: 'order', value: [order] }]);
+    }
+  }
+};
+
+// Grace period before an orphaned Status is eligible for hard deletion by the cleanup manager.
+const STATUS_DELETION_GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+/**
+ * True if any entity of `entityType` currently has its legacy `x_opencti_workflow_id` field
+ * pointing at this `Status`, either in the live index or inside any draft (across all drafts,
+ * not just one) — a `Status` referenced only from within a draft must not be deleted, since
+ * publishing that draft later would leave it pointing at a hard-deleted record.
+ */
+const isStatusReferencedByEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  statusId: string,
+): Promise<boolean> => {
+  const statusFilters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['x_opencti_workflow_id'], values: [statusId] }],
+    filterGroups: [],
+  };
+  const entities = await fullEntitiesList<any>(context, user, [entityType], { filters: statusFilters });
+  if (entities.length > 0) return true;
+
+  const draftEntities = await fullEntitiesList<any>(context, user, [entityType], {
+    indices: [READ_INDEX_DRAFT_OBJECTS],
+    filters: statusFilters,
+  });
+  return draftEntities.length > 0;
+};
+
+/**
+ * True if any EntitySetting's request-access workflow (approved/declined) references this
+ * `Status` id.
+ */
+const isStatusReferencedByRequestAccessWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+  statusId: string,
+): Promise<boolean> => {
+  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING]);
+  return entitySettings.some((setting) => (
+    setting.request_access_workflow?.approved_workflow_id === statusId
+    || setting.request_access_workflow?.declined_workflow_id === statusId
+  ));
+};
+
+/**
+ * On republish, marks `Status` records no longer mapped by any state (and unreferenced by any
+ * entity or request-access workflow) as `to_be_deleted_at` for later cleanup, and clears that
+ * mark on any `Status` a state maps back to.
+ */
+const reconcileOrphanedStatuses = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  oldDefinitionData: WorkflowDefinitionData,
+  newDefinitionData: WorkflowDefinitionData,
+): Promise<void> => {
+  const oldTemplateIds = new Set((oldDefinitionData.states ?? []).map((s) => s.statusId).filter((id): id is string => !!id));
+  const newTemplateIds = new Set((newDefinitionData.states ?? []).map((s) => s.statusId).filter((id): id is string => !!id));
+
+  const existingStatuses = await fullEntitiesList<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['type'], values: [entityType] },
+        { key: ['scope'], values: [StatusScope.Global] },
+      ],
+      filterGroups: [],
+    },
+  });
+
+  for (const status of existingStatuses) {
+    const stillMapped = newTemplateIds.has(status.template_id);
+
+    if (stillMapped) {
+      if (status.to_be_deleted_at) {
+        // Restore-vs-purge race: the state mapping to this Status was reintroduced before the
+        // cleanup manager purged it. Restoring wins.
+        await updateAttribute(context, user, status.id, ENTITY_TYPE_STATUS, [{ key: 'to_be_deleted_at', value: [null] }]);
+      }
+      continue;
+    }
+
+    const wasRemoved = oldTemplateIds.has(status.template_id);
+    if (!wasRemoved || status.to_be_deleted_at) {
+      // Not part of this definition's removed states (pre-existing, unrelated Status), or
+      // already marked for deletion by a previous republish — nothing to do.
+      continue;
+    }
+
+    const referencedByEntity = await isStatusReferencedByEntity(context, user, entityType, status.id);
+    if (referencedByEntity) continue;
+    const referencedByRequestAccess = await isStatusReferencedByRequestAccessWorkflow(context, user, status.id);
+    if (referencedByRequestAccess) continue;
+
+    const toBeDeletedAt = new Date(Date.now() + STATUS_DELETION_GRACE_PERIOD_MS);
+    await updateAttribute(context, user, status.id, ENTITY_TYPE_STATUS, [{ key: 'to_be_deleted_at', value: [toBeDeletedAt] }]);
+  }
+};
+
+/**
+ * Re-verifies whether a `Status` previously marked `to_be_deleted_at` is still orphaned, right
+ * before the cleanup manager hard-deletes it, since state can change during the grace window.
+ */
+export const isStatusOrphaned = async (
+  context: AuthContext,
+  user: AuthUser,
+  status: BasicWorkflowStatus,
+): Promise<boolean> => {
+  const definitionData = await getWorkflowDefinition(context, user, status.type, false);
+  const stillMapped = !!definitionData
+    && (definitionData.states ?? []).some((s: { statusId?: string }) => s.statusId === status.template_id);
+  if (stillMapped) return false;
+
+  const referencedByEntity = await isStatusReferencedByEntity(context, user, status.type, status.id);
+  if (referencedByEntity) return false;
+  const referencedByRequestAccess = await isStatusReferencedByRequestAccessWorkflow(context, user, status.id);
+  if (referencedByRequestAccess) return false;
+
+  return true;
+};
+
+/**
  * Publish the draft workflow definition (copy draft_version to published_version).
  */
 export const publishWorkflowDefinition = async (
@@ -592,11 +787,21 @@ export const publishWorkflowDefinition = async (
     throw FunctionalError('No draft version to publish', { entityType });
   }
 
-  // Check for validation errors
-  if (draftVersion.validation_errors && draftVersion.validation_errors.length > 0) {
+  // Re-validate at publish time rather than trusting the draft's stored `validation_errors`,
+  // which were computed at save time and can be stale (e.g. new validation rules added since, or
+  // DB state — like status templates — changed after the draft was last saved). Publishing an
+  // invalid definition (e.g. missing statusId, unreachable state) must be blocked here.
+  const freshValidationErrors = await validateWorkflowDefinitionData(
+    executionContext,
+    executionUser,
+    draftVersion.content,
+    entityType,
+    entitySetting.workflow_id,
+  );
+  if (freshValidationErrors.length > 0) {
     throw FunctionalError('Cannot publish workflow with validation errors', {
       entityType,
-      errorCount: draftVersion.validation_errors.length,
+      errorCount: freshValidationErrors.length,
     });
   }
 
@@ -655,6 +860,12 @@ export const publishWorkflowDefinition = async (
           }
         }
       }
+
+      // Republish orphan reconciliation: any Status no longer mapped by the new definition is
+      // marked for deferred deletion (grace period) unless still referenced by an entity or by a
+      // request-access workflow config; a Status still pending deletion that is reintroduced by
+      // the new definition has its pending mark cleared (restore wins over a concurrent purge).
+      await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef);
     }
   }
 
@@ -665,6 +876,19 @@ export const publishWorkflowDefinition = async (
     throw FunctionalError('Consistency error: Cannot publish draft_version that is not in all_versions', {
       draftVersionId: draftVersion.id,
     });
+  }
+
+  // Full-mapping invariant: every state in the definition being published must map to a real
+  // Status record, creating any missing ones before the definition is marked published.
+  let publishedDefinitionData: WorkflowDefinitionData | null = null;
+  try {
+    const rawContent = draftVersion.content;
+    publishedDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+  } catch (_) {
+    // Malformed content will already have failed validation earlier; nothing to reconcile here.
+  }
+  if (publishedDefinitionData) {
+    await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData);
   }
 
   // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
@@ -1130,6 +1354,40 @@ export const cleanupEntityWorkflow = async (
   await deleteElementById(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
 };
 
+/**
+ * True if any of the given workflow versions (published/draft) has a state mapped to
+ * `statusTemplateId`. Shared by `isStatusTemplateUsedInWorkflows` (checked platform-wide) and
+ * `isStatusUsedInWorkflow` (checked against a single, specific workflow).
+ */
+const doAnyVersionsReferenceStatusTemplate = (
+  versions: Array<WorkflowVersion | null | undefined>,
+  statusTemplateId: string,
+): boolean => {
+  const definedVersions = versions.filter((v): v is WorkflowVersion => v !== undefined && v !== null);
+  for (const version of definedVersions) {
+    const content = version.content;
+    let parsed;
+    try {
+      parsed = typeof content === 'string' ? JSON.parse(content) : content;
+    } catch (_error) {
+      // Malformed content is not this function's concern; skip rather than false-positive.
+      continue;
+    }
+    const states: Array<{ statusId?: string }> = parsed?.states ?? [];
+    if (states.some((state) => state.statusId === statusTemplateId)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * True if `statusTemplateId` is mapped by a state in any workflow (published or draft) on the
+ * platform, regardless of entity type or scope. Appropriate when deleting the shared
+ * `StatusTemplate` itself, since any workflow referencing it would break. NOT appropriate for
+ * guarding the deletion of a single `Status`, which is specific to one entity type and scope —
+ * use `isStatusUsedInWorkflow` for that.
+ */
 export const isStatusTemplateUsedInWorkflows = async (
   context: AuthContext,
   user: AuthUser,
@@ -1141,19 +1399,49 @@ export const isStatusTemplateUsedInWorkflows = async (
     bypassDraftUser(user),
     [ENTITY_TYPE_WORKFLOW_DEFINITION],
   );
-  for (const workflow of workflows) {
-    // Check both published and draft versions
-    const versions = [workflow.published_version, workflow.draft_version].filter((v): v is WorkflowVersion => v !== undefined && v !== null);
-    for (const version of versions) {
-      const content = version.content;
-      if (typeof content === 'string' && content.includes(statusTemplateId)) {
-        return true;
-      } else if (content && JSON.stringify(content).includes(statusTemplateId)) {
-        return true;
-      }
-    }
+  return workflows.some((workflow) => doAnyVersionsReferenceStatusTemplate(
+    [workflow.published_version, workflow.draft_version],
+    statusTemplateId,
+  ));
+};
+
+/**
+ * True if this specific `Status` is referenced by the workflow mapping applicable to its own
+ * entity type and scope. A `Status` is specific to a `StatusTemplate`, an entity type, and a
+ * scope, so only the workflow actually wired to that entity type/scope can legitimately block
+ * its deletion — unlike `isStatusTemplateUsedInWorkflows`, which checks every workflow on the
+ * platform and would false-positive on unrelated entity types sharing the same template.
+ */
+export const isStatusUsedInWorkflow = async (
+  context: AuthContext,
+  user: AuthUser,
+  status: BasicWorkflowStatus,
+): Promise<boolean> => {
+  if (status.scope === StatusScope.RequestAccess) {
+    return isStatusReferencedByRequestAccessWorkflow(context, user, status.id);
   }
-  return false;
+
+  const entitySetting = await getWorkflowConfig(context, user, status.type);
+  if (!entitySetting?.workflow_id) {
+    return false;
+  }
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+  const workflowDefinitionEntity = await storeLoadById(
+    executionContext,
+    executionUser,
+    entitySetting.workflow_id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ) as WorkflowDefinitionEntity | undefined;
+  if (!workflowDefinitionEntity) {
+    return false;
+  }
+
+  return doAnyVersionsReferenceStatusTemplate(
+    [workflowDefinitionEntity.published_version, workflowDefinitionEntity.draft_version],
+    status.template_id,
+  );
 };
 
 /**

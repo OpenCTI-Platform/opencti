@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
+import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 
 vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn().mockResolvedValue(null),
@@ -340,8 +340,8 @@ describe('Workflow Validation', () => {
     expect(errors.some((e) => e.type === 'ROOT_STATE_MISMATCH')).toBe(true);
   });
 
-  it('should handle states with name property', async () => {
-    const valid = {
+  it('should reject states with a name property but no statusId (canonical state-key normalization)', async () => {
+    const invalid = {
       initialState: 'existing-state',
       states: [
         { name: 'existing-state' },
@@ -351,7 +351,81 @@ describe('Workflow Validation', () => {
         { from: 'existing-state', to: 'in-progress', event: 'start' },
       ],
     };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors).toEqual([
+      { type: 'MISSING_STATUS_ID', message: expect.stringContaining('existing-state') },
+      { type: 'MISSING_STATUS_ID', message: expect.stringContaining('in-progress') },
+    ]);
+  });
+
+  it('should reject a declared state that is not reachable from initialState', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'in-progress' },
+        { statusId: 'orphan-state' },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+        // Self-loop so 'orphan-state' has an incoming transition (not a second root state) while
+        // remaining genuinely unreachable from initialState.
+        { from: 'orphan-state', to: 'orphan-state', event: 'self-loop' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors).toEqual([
+      { type: 'STATE_UNREACHABLE', message: expect.stringContaining('orphan-state') },
+    ]);
+  });
+
+  it('should accept a cyclic workflow graph without requiring a manual order on any state', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'in-progress' },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+        { from: 'in-progress', to: 'existing-state', event: 'reopen' },
+      ],
+    };
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
+    expect(errors).toEqual([]);
+  });
+
+  it('should accept a cyclic workflow graph when states carry a retrocompatible manual order (legacy definitions)', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state', order: 0 },
+        { statusId: 'in-progress', order: 1 },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+        { from: 'in-progress', to: 'existing-state', event: 'reopen' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
+    expect(errors).toEqual([]);
+  });
+
+  it('should not require a manual order for a state that is not entangled in any cycle even when the workflow graph has a cycle elsewhere', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'in-progress' },
+        { statusId: 'closed' },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start' },
+        { from: 'in-progress', to: 'existing-state', event: 'reopen' },
+        { from: 'existing-state', to: 'closed', event: 'close' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
     expect(errors).toEqual([]);
   });
 

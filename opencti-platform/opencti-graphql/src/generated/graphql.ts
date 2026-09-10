@@ -31145,6 +31145,7 @@ export type Status = {
   scope?: Maybe<StatusScope>;
   template?: Maybe<StatusTemplate>;
   template_id: Scalars['String']['output'];
+  to_be_deleted_at?: Maybe<Scalars['DateTime']['output']>;
   type: Scalars['String']['output'];
 };
 
@@ -38665,6 +38666,7 @@ export type WorkflowSerializedState = {
   __typename?: 'WorkflowSerializedState';
   onEnter?: Maybe<Array<WorkflowActionConfig>>;
   onExit?: Maybe<Array<WorkflowActionConfig>>;
+  order?: Maybe<Scalars['Int']['output']>;
   statusId: Scalars['String']['output'];
 };
 
@@ -51411,6 +51413,7 @@ export type StatusResolvers<ContextType = any, ParentType extends ResolversParen
   scope?: Resolver<Maybe<ResolversTypes['StatusScope']>, ParentType, ContextType>;
   template?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType>;
   template_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to_be_deleted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -53878,6 +53881,7 @@ export type WorkflowSchemaResolvers<ContextType = any, ParentType extends Resolv
 export type WorkflowSerializedStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedState'] = ResolversParentTypes['WorkflowSerializedState']> = ResolversObject<{
   onEnter?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   onExit?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
