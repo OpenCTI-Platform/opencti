@@ -25,7 +25,7 @@ import {
 } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { validateSetting } from '../modules/entitySetting/entitySetting-validators';
-import { isStatusTemplateUsedInWorkflows } from '../modules/workflow/domain/workflow-domain';
+import { isStatusTemplateUsedInWorkflows, isStatusUsedInWorkflow } from '../modules/workflow/domain/workflow-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import type { BasicStoreEntity, BasicWorkflowStatus, StoreEntity } from '../types/store';
@@ -207,7 +207,7 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
   validateSetting(subTypeId, 'workflow_configuration');
   const status = await storeLoadById<BasicWorkflowStatus>(context, user, statusId, ENTITY_TYPE_STATUS);
   if (status) {
-    const isUsedInWorkflow = await isStatusTemplateUsedInWorkflows(context, user, status.template_id);
+    const isUsedInWorkflow = await isStatusUsedInWorkflow(context, user, status);
     if (isUsedInWorkflow) {
       throw FunctionalError('Cannot delete a status that is used in a published or draft workflow');
     }
