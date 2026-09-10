@@ -17,6 +17,7 @@ import stixObservables from '../../data/stream-events/stream-event-stix2-observa
 
 import * as testers from '../../../src/utils/filtering/filtering-stix/stix-testers';
 import type { Filter } from '../../../src/generated/graphql';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 describe('Stix filter testers', () => {
   describe('by Markings (key=objectMarking)', () => {
@@ -1019,6 +1020,120 @@ describe('Stix filter testers', () => {
       expect(testers.testDescription(stixWithCMSTAR, filter)).toEqual(false);
       expect(testers.testDescription(stixObservableWithDescription, filter)).toEqual(false);
       expect(testers.testDescription(stixSightingWithoutDescription, filter)).toEqual(true);
+    });
+  });
+
+  describe('by SSVC attributes', () => {
+    describe('Exploitation (key=x_opencti_ssvc_exploitation)', () => {
+      const stixWithDirectField = { x_opencti_ssvc_exploitation: 'active' };
+      const stixWithExtensionField = { extensions: { [STIX_EXT_OCTI]: { ssvc_exploitation: 'poc' } } };
+      const stixWithoutField = { extensions: { [STIX_EXT_OCTI]: {} } };
+
+      it('should test positive for a stix object with matching filter using the direct field', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_exploitation'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['active'],
+        } as Filter;
+        expect(testers.testSsvcExploitation(stixWithDirectField, filter)).toEqual(true);
+        expect(testers.testSsvcExploitation(stixWithoutField, filter)).toEqual(false);
+      });
+
+      it('should test positive for a stix object with matching filter using the extension fallback field', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_exploitation'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['poc'],
+        } as Filter;
+        expect(testers.testSsvcExploitation(stixWithExtensionField, filter)).toEqual(true);
+      });
+
+      it('should test negative for a stix object with no matching filter', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_exploitation'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['none'],
+        } as Filter;
+        expect(testers.testSsvcExploitation(stixWithDirectField, filter)).toEqual(false);
+        expect(testers.testSsvcExploitation(stixWithExtensionField, filter)).toEqual(false);
+      });
+    });
+
+    describe('Automatable (key=x_opencti_ssvc_automatable)', () => {
+      const stixWithDirectField = { x_opencti_ssvc_automatable: 'yes' };
+      const stixWithExtensionField = { extensions: { [STIX_EXT_OCTI]: { ssvc_automatable: 'no' } } };
+      const stixWithoutField = { extensions: { [STIX_EXT_OCTI]: {} } };
+
+      it('should test positive for a stix object with matching filter using the direct field', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_automatable'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['yes'],
+        } as Filter;
+        expect(testers.testSsvcAutomatable(stixWithDirectField, filter)).toEqual(true);
+        expect(testers.testSsvcAutomatable(stixWithoutField, filter)).toEqual(false);
+      });
+
+      it('should test positive for a stix object with matching filter using the extension fallback field', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_automatable'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['no'],
+        } as Filter;
+        expect(testers.testSsvcAutomatable(stixWithExtensionField, filter)).toEqual(true);
+      });
+
+      it('should test negative for a stix object with no matching filter', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_automatable'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['yes'],
+        } as Filter;
+        expect(testers.testSsvcAutomatable(stixWithExtensionField, filter)).toEqual(false);
+      });
+    });
+
+    describe('Technical Impact (key=x_opencti_ssvc_technical_impact)', () => {
+      const stixWithDirectField = { x_opencti_ssvc_technical_impact: 'total' };
+      const stixWithExtensionField = { extensions: { [STIX_EXT_OCTI]: { ssvc_technical_impact: 'partial' } } };
+      const stixWithoutField = { extensions: { [STIX_EXT_OCTI]: {} } };
+
+      it('should test positive for a stix object with matching filter using the direct field', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_technical_impact'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['total'],
+        } as Filter;
+        expect(testers.testSsvcTechnicalImpact(stixWithDirectField, filter)).toEqual(true);
+        expect(testers.testSsvcTechnicalImpact(stixWithoutField, filter)).toEqual(false);
+      });
+
+      it('should test positive for a stix object with matching filter using the extension fallback field', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_technical_impact'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['partial'],
+        } as Filter;
+        expect(testers.testSsvcTechnicalImpact(stixWithExtensionField, filter)).toEqual(true);
+      });
+
+      it('should test negative for a stix object with no matching filter', () => {
+        const filter: Filter = {
+          key: ['x_opencti_ssvc_technical_impact'],
+          mode: 'or',
+          operator: 'eq',
+          values: ['total'],
+        } as Filter;
+        expect(testers.testSsvcTechnicalImpact(stixWithExtensionField, filter)).toEqual(false);
+      });
     });
   });
 });
