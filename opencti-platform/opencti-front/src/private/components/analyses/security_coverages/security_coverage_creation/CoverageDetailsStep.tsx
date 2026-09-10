@@ -8,7 +8,7 @@ import SwitchField from 'src/components/fields/SwitchField';
 import FormButtonContainer from 'src/components/common/form/FormButtonContainer';
 import { useFormatter } from 'src/components/i18n';
 import { SecurityCoverageFormValues, SecurityCoverageMode } from './SecurityCoverageCreation-types';
-import { CoverageInformationFieldAdd } from 'src/private/components/common/form/CoverageInformationField';
+import CoverageInformationField from '../../../common/form/CoverageInformationField';
 import CreatedByField from 'src/private/components/common/form/CreatedByField';
 import ObjectLabelField from 'src/private/components/common/form/ObjectLabelField';
 import ObjectMarkingField from 'src/private/components/common/form/ObjectMarkingField';
@@ -107,10 +107,9 @@ const CoverageDetailsStep = ({
       />
       {mode === SecurityCoverageMode.MANUAL && (
         <>
-          <CoverageInformationFieldAdd
+          <Field
+            component={CoverageInformationField}
             name="coverage_information"
-            values={values.coverage_information}
-            setFieldValue={setFieldValue}
           />
           <Field
             component={TextField}
