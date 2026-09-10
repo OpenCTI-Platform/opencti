@@ -23,14 +23,15 @@ vi.mock('react-relay', async (importOriginal) => {
     ...actual,
     useLazyLoadQuery: (...args: unknown[]) => mockUseLazyLoadQuery(...args),
     useFragment: (_: unknown, ref: unknown) => ref,
-    useSubscription: (config: { onNext: (data: unknown) => void }) => {
-      subscriptionOnNext = config.onNext;
-    },
   };
 });
 
 vi.mock('src/relay/environment', () => ({
   commitMutation: (...args: unknown[]) => mockCommitMutation(...args),
+  requestSubscription: (config: { onNext: (data: unknown) => void }) => {
+    subscriptionOnNext = config.onNext;
+    return { dispose: () => {} };
+  },
 }));
 
 vi.mock('@common/card/Card', () => ({
@@ -66,7 +67,6 @@ const renderPage = (options?: {
 }) => {
   const settings = options?.settings ?? REGISTERED_SETTINGS;
   mockUseLazyLoadQuery.mockReturnValue({
-    myUnreadNotificationsCount: 0,
     myUnreadNewsFeedsCount: options?.unreadCount ?? 0,
     settings,
   });
@@ -93,7 +93,7 @@ describe('NewsFeedPage', () => {
 
   it('renders the page title', () => {
     renderPage();
-    expect(screen.getByText('XTM Hub News Feed')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'XTM Hub News Feed' })).toBeInTheDocument();
   });
 
   it('renders both tabs', () => {

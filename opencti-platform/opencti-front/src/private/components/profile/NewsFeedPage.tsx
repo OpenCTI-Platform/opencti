@@ -4,13 +4,13 @@ import Typography from '@mui/material/Typography';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import React, { FunctionComponent, useMemo, useState } from 'react';
-import { graphql, useFragment, useLazyLoadQuery, useSubscription } from 'react-relay';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
+import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import { useFormatter } from 'src/components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useAuth from '../../../utils/hooks/useAuth';
-import { commitMutation } from 'src/relay/environment';
+import { commitMutation, requestSubscription } from 'src/relay/environment';
 import { NewsFeedPageNewsFeedNumberSubscription$data } from './__generated__/NewsFeedPageNewsFeedNumberSubscription.graphql';
 import { NewsFeedPageSettings_settings$key } from './__generated__/NewsFeedPageSettings_settings.graphql';
 import { NewsFeedPageFieldPatchMutation$variables } from './__generated__/NewsFeedPageFieldPatchMutation.graphql';
@@ -40,7 +40,6 @@ const newsFeedPageSettingsFragment = graphql`
 
 const newsFeedPageQuery = graphql`
   query NewsFeedPageQuery {
-    myUnreadNotificationsCount
     myUnreadNewsFeedsCount
     settings {
       ...NewsFeedPageSettings_settings
@@ -69,20 +68,28 @@ const NewsFeedPage: FunctionComponent = () => {
   const [activeTab, setActiveTab] = useState<'news-feed' | 'settings'>('news-feed');
   const [liveNewsFeedsCount, setLiveNewsFeedsCount] = useState<number | null>(null);
 
-  const newsFeedSubConfig = useMemo(() => ({
-    subscription: newsFeedNumberSubscription,
-    variables: {},
-    onNext: (response: NewsFeedPageNewsFeedNumberSubscription$data | null | undefined | unknown) => {
-      const count = response ? (response as NewsFeedPageNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
-      setLiveNewsFeedsCount(count ?? null);
-    },
-  }), []);
-  useSubscription(newsFeedSubConfig);
-
   const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
-  const unreadNewsFeedsCount = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds && liveNewsFeedsCount !== null
+  const handleNewNewsFeedNumber = useCallback((
+    response: NewsFeedPageNewsFeedNumberSubscription$data | null | undefined | unknown,
+  ) => {
+    const count = response ? (response as NewsFeedPageNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
+    setLiveNewsFeedsCount(count ?? null);
+  }, [setLiveNewsFeedsCount]);
+
+  const shouldSubscribeToNewsFeed = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds;
+  useEffect(() => {
+    if (!shouldSubscribeToNewsFeed) return undefined;
+    const sub = requestSubscription({
+      subscription: newsFeedNumberSubscription,
+      variables: {},
+      onNext: handleNewNewsFeedNumber,
+    });
+    return () => sub.dispose();
+  }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
+
+  const unreadNewsFeedsCount = shouldSubscribeToNewsFeed && liveNewsFeedsCount !== null
     ? liveNewsFeedsCount
-    : (isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds ? (data.myUnreadNewsFeedsCount ?? 0) : 0);
+    : (shouldSubscribeToNewsFeed ? (data.myUnreadNewsFeedsCount ?? 0) : 0);
 
   const handleSubmitField = (name: string, value: string[]) => {
     const variables: NewsFeedPageFieldPatchMutation$variables = {
