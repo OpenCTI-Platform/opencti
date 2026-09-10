@@ -257,17 +257,17 @@ const NoteForm = ({
                     entityType="Note"
                     containerStyle={fieldSpacingContainerStyle}
                   />
-                  <Field
-                    component={SliderField}
-                    name="likelihood"
-                    label={t_i18n('Likelihood')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
+                  <div style={fieldSpacingContainerStyle}>
+                    <Field
+                      component={SliderField}
+                      name="likelihood"
+                      label={t_i18n('Likelihood')}
+                    />
+                  </div>
                   <ObjectLabelField
                     name="objectLabel"
                     required={(mandatoryAttributes.includes('objectLabel'))}
-                    style={{ marginTop: 10, width: '100%' }}
+                    style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />
