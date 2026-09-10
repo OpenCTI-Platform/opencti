@@ -16,6 +16,7 @@ import {
   removeFrontendIdAndEmptyFiltersFromFilterGroupObject,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   serializeFilterGroupForBackend,
+  stixFilters,
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
   GqlFilterGroup,
@@ -1531,5 +1532,13 @@ describe('isDraftWorkspaceFilterGroup', () => {
   it('should return true when entity_type value is an object with id property', () => {
     const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
     expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+});
+
+describe('stixFilters', () => {
+  it('should include the SSVC filter keys', () => {
+    expect(stixFilters).toContain('x_opencti_ssvc_exploitation');
+    expect(stixFilters).toContain('x_opencti_ssvc_automatable');
+    expect(stixFilters).toContain('x_opencti_ssvc_technical_impact');
   });
 });
