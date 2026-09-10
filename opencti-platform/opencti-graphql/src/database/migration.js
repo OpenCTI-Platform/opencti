@@ -10,6 +10,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 
 import migrations, { filenames as migrationsFilenames } from '../migrations/*.{js,ts}';
 import { fullEntitiesThroughRelationsToList } from './middleware-loader';
+import { meterManager } from '../config/tracing';
+import { MigrationsMetricsRecorder } from './migration-metrics';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -91,6 +93,7 @@ const migrationStorage = {
 
 export const applyMigration = (context) => {
   const set = new MigrationSet(migrationStorage);
+  const metricsRecorder = new MigrationsMetricsRecorder(meterManager, set);
   return new Promise((resolve, reject) => {
     migrationStorage.load((err, state) => {
       if (err) {
@@ -121,14 +124,16 @@ export const applyMigration = (context) => {
         }
         set.addMigration(migration);
       }
-      // Start the set migration
+      // Start the migration set
       set.up((migrationError) => {
         if (migrationError) {
           logApp.error('Migration up error', { cause: migrationError });
+          metricsRecorder.record();
           reject(migrationError);
           return;
         }
         logMigration.info('[MIGRATION] Migration process completed');
+        metricsRecorder.record();
         resolve(state);
       });
     }).catch((reason) => {
