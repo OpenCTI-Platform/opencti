@@ -88,7 +88,7 @@ const settingsResolvers = {
     },
   },
   AppInfo: {
-    memory: getMemoryStatistics(),
+    memory: () => getMemoryStatistics(),
     dependencies: (_, __, context) => getApplicationDependencies(context),
   },
   SettingsMessage: {

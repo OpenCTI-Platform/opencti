@@ -67,6 +67,9 @@ RUN yarn build
 
 FROM base AS app
 
+ARG BUILD_COMMIT
+ENV BUILD_COMMIT="${BUILD_COMMIT}"
+
 RUN <<EOT
   set -euxo pipefail
 
