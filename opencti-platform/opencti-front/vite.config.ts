@@ -5,8 +5,10 @@ import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 import { spawn } from 'node:child_process';
 import * as path from 'node:path';
 
-// Handle ESM/CJS interop for vite-plugin-monaco-editor
-const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default;
+// ESM/CJS interop: Vite's loader nests the callable under `.default`, knip's hands it over
+// directly. Without the fallback knip cannot load this config at all.
+const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default
+  ?? monacoEditorPluginImport;
 
 const runRelayCompiler = () => new Promise<void>((resolve, reject) => {
   const relayProcess = spawn('yarn', ['relay'], {

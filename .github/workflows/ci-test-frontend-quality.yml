@@ -39,7 +39,7 @@ jobs:
             yarn build
             '
 
-    - name: Frontend type checking and linting
+    - name: Frontend type checking, linting and dependency check
       run: |
         docker run  \
           --name frontend-lint \
@@ -50,6 +50,9 @@ jobs:
             cd /home/workspace/opencti-platform/opencti-front
             yarn check-ts
             yarn lint
+            # --dependencies only: the wider knip report (unused files and exports) still has a
+            # large pre-existing backlog on both workspaces, so only declaration drift is enforced.
+            yarn knip --dependencies
             '
 
     - name: Accessible names of converted design-system fields
