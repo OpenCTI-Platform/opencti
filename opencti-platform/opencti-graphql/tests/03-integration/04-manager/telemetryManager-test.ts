@@ -128,7 +128,7 @@ describe('Telemetry manager test coverage', () => {
         await fetchTelemetryData(filigranTelemetryMeterManager);
         return filigranTelemetryMeterManager.sharedSavedFiltersCount === 1
           && filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount === 1;
-      }, 60000, { message: 'Shared saved filters telemetry counters were not updated in time' });
+      }, 3000, { message: 'Shared saved filters telemetry counters were not updated in time' });
 
       expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
       expect(filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount).toEqual(1);
@@ -180,7 +180,7 @@ describe('Telemetry manager test coverage', () => {
     // Those gauges are fed by fire-and-forget helpers, so poll until they land. Giving up
     // silently here would let the assertions below report a counter mismatch instead of the
     // actual cause.
-    await awaitUntilCondition(isRedisUpdatedCallback, 60000, { message: 'Redis telemetry gauges were not updated in time' });
+    await awaitUntilCondition(isRedisUpdatedCallback, 3000, { message: 'Redis telemetry gauges were not updated in time' });
 
     // WHEN data is fetched from elastic (platform wide gauges) and redis (user event gauge)
     await fetchTelemetryData(filigranTelemetryMeterManager);

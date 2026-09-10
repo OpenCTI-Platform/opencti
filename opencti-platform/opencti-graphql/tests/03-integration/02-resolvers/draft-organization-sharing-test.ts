@@ -206,7 +206,7 @@ describe.skip('Draft organization sharing', () => {
       expect(taskRes.data?.queryTaskAdd).toBeDefined();
       expect(taskRes.errors).toBeUndefined();
 
-      // Wait for task completion
+      // Wait for task completion. Budget unverified: this describe is skipped.
       await awaitUntilCondition(
         async () => {
           const tRes = await queryAsAdmin({
@@ -215,7 +215,7 @@ describe.skip('Draft organization sharing', () => {
           });
           return tRes.data?.backgroundTask.completed;
         },
-        10000000,
+        10000,
       );
 
       // 7. Test removing the restriction in Draft

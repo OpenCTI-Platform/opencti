@@ -40,10 +40,9 @@ const RULE_MUTATION = gql`
   }
 `;
 
-// Those two waits had no bound at all and could only end on the vitest timeout. The budgets
-// are deliberately generous, to be narrowed once the reported timings say what they really cost.
-const RULE_ACTIVATION_BUDGET = 300000;
-const RULE_STABILISATION_BUDGET = 120000;
+// Those two waits had no bound at all and could only end on the vitest timeout.
+const RULE_ACTIVATION_BUDGET = 10000;
+const RULE_STABILISATION_BUDGET = 15000;
 
 export const changeRule = async (ruleId, active) => {
   const start = new Date().getTime();

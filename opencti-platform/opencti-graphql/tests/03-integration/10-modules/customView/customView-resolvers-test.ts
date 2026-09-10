@@ -760,7 +760,7 @@ describe('CustomView resolvers', () => {
           const created = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
           const enabled = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
           return created === 5 && enabled === 1;
-        }, 5000, { message: 'Custom view telemetry gauges were not updated in time' });
+        }, 3000, { message: 'Custom view telemetry gauges were not updated in time' });
 
         expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED)).toBe(5);
         expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED)).toBe(1);

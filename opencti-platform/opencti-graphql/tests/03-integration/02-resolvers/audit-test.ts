@@ -155,7 +155,7 @@ describe('audits query', () => {
       });
       foundEdges = queryResult.data.audits.edges;
       return foundEdges.length > 0;
-    }, 20000, { message: 'No searchable startup Activity events found' });
+    }, 3000, { message: 'No searchable startup Activity events found' });
 
     expect(searchTerm).toBeDefined();
     expect(foundEdges.length).toBeGreaterThan(0);
@@ -186,7 +186,7 @@ describe('audits query', () => {
         });
         foundEdges = queryResult.data.audits.edges;
         return foundEdges.some((edge) => edge.node.entity_type === 'History');
-      }, 20000, { message: 'No searchable generated History event found' });
+      }, 3000, { message: 'No searchable generated History event found' });
 
       expect(foundEdges.some((edge) => edge.node.entity_type === 'History')).toBe(true);
     } finally {
@@ -222,7 +222,7 @@ describe('audits distribution query', () => {
         });
         distribution = queryResult.data.auditsDistribution ?? [];
         return distribution.some((item) => item?.entity?.id === report.id && item?.entity?.representative?.main === reportName);
-      }, 20000, { message: 'No auditsDistribution result found for created report' });
+      }, 10000, { message: 'No auditsDistribution result found for created report' });
 
       const reportDistribution = distribution.find((item) => item?.entity?.id === report.id);
       expect(reportDistribution).toBeDefined();

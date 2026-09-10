@@ -18,7 +18,9 @@ const TEST_COMPOSER_PUBLIC_KEY = '-----BEGIN RSA PUBLIC KEY-----\nMIICCgKCAgEAk8
 // Test configuration
 // The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer.
 // This enables authentic integration testing (assuming the XTM Composer is available in the CI) without the need to rewrite the test suite.
-const FORCE_POLLING = true; // Set to true for faster tests, false for realistic XTM Composer behavior
+// Set to true for faster tests, false for realistic XTM Composer behavior.
+// The wait budgets of the else branches are unverified: they never run while this is true.
+const FORCE_POLLING = true;
 
 // Mutations
 const REGISTER_CONNECTORS_MANAGER_MUTATION = gql`
@@ -399,7 +401,7 @@ describe('Connector Composer and Managed Connectors', () => {
             variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'started'; // Wait connector to be started
-        }, 1500);
+        }, 10000);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
@@ -438,7 +440,7 @@ describe('Connector Composer and Managed Connectors', () => {
             variables: { input: startRequestInput },
           });
           return startResult.data?.updateConnectorRequestedStatus.manager_requested_status === 'starting';
-        }, 2000);
+        }, 10000);
       }
 
       const startResult = await queryAsAdminWithSuccess({
@@ -459,7 +461,7 @@ describe('Connector Composer and Managed Connectors', () => {
             variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'started';
-        }, 1500);
+        }, 10000);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
@@ -495,7 +497,7 @@ describe('Connector Composer and Managed Connectors', () => {
             variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'stopped';
-        }, 1500);
+        }, 10000);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
@@ -528,7 +530,7 @@ describe('Connector Composer and Managed Connectors', () => {
             variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'stopped';
-        }, 1500);
+        }, 10000);
       }
 
       let connectorResult = await queryAsAdminWithSuccess({
@@ -559,7 +561,7 @@ describe('Connector Composer and Managed Connectors', () => {
             variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'started';
-        }, 1500);
+        }, 10000);
       }
 
       // Verify status
@@ -644,7 +646,7 @@ describe('Connector Composer and Managed Connectors', () => {
             variables: { id: logLevelConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'started';
-        }, 1500);
+        }, 10000);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
@@ -688,7 +690,7 @@ describe('Connector Composer and Managed Connectors', () => {
           const logs = logsResult.data?.connector.manager_connector_logs || [];
           const logStrings = logs.join('\n');
           return logStrings.includes('[XTM-Composer] Connector redeployed successfully'); // Wait for configuration change detection
-        }, 2000);
+        }, 10000);
       }
 
       // Query the connector logs to verify the redeploy happened
@@ -749,7 +751,7 @@ describe('Connector Composer and Managed Connectors', () => {
           const logStrings = logs.join('\n');
           const redeployCount = (logStrings.match(/Connector redeployed successfully/g) || []).length;
           return redeployCount === 2; // Wait for configuration change detection
-        }, 2000);
+        }, 10000);
       }
 
       // Query logs again
@@ -800,7 +802,7 @@ describe('Connector Composer and Managed Connectors', () => {
           const logStrings = logs.join('\n');
           const deployCount = (logStrings.match(/Connector deployed successfully/g) || []).length;
           return deployCount === 2; // Wait for configuration change detection
-        }, 2000);
+        }, 10000);
       }
 
       // Query logs one more time
@@ -839,7 +841,7 @@ describe('Connector Composer and Managed Connectors', () => {
           variables: { id: deploymentConnectorId },
         });
         return deleteResult.data?.deleteConnector === deploymentConnectorId;
-      }, 1500);
+      }, 3000);
 
       expect(deleteResult.data).toBeDefined();
       expect(deleteResult.data?.deleteConnector).toEqual(deploymentConnectorId);
@@ -1019,7 +1021,7 @@ describe('Connector Composer and Managed Connectors', () => {
               variables: { id },
             });
             return connectorResult.data?.connector.manager_current_status === 'started'; // Wait for each connector to start
-          }, 2000);
+          }, 3000);
 
           const finalResult = await queryAsAdminWithSuccess({
             query: GET_CONNECTOR_QUERY_CURRENT_STATUS,

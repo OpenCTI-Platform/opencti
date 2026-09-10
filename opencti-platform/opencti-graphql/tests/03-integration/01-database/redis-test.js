@@ -411,7 +411,7 @@ describe('Redis publishCacheResetEvent', () => {
 
       await awaitUntilCondition(
         async () => receivedEvents.some((e) => e.entityType === 'User'),
-        5000,
+        3000,
         { intervalMs: 10, message: 'No cache reset event received for User' },
       );
 
@@ -436,7 +436,7 @@ describe('Redis publishCacheResetEvent', () => {
 
       await awaitUntilCondition(
         async () => receivedEvents.some((e) => e.entityType === 'User') && receivedEvents.some((e) => e.entityType === 'Settings'),
-        5000,
+        3000,
         { intervalMs: 10, message: 'Cache reset events not received for both User and Settings' },
       );
 
