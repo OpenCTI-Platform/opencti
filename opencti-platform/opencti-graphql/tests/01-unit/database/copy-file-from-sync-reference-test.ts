@@ -6,6 +6,7 @@ const mockDeleteFileFromStorage = vi.fn();
 const mockIndexFileToDocument = vi.fn();
 const mockUnlock = vi.fn();
 const mockLockResources = vi.fn(async (..._args: unknown[]) => ({ unlock: mockUnlock }));
+const mockConnectorsForImport = vi.fn(async (..._args: unknown[]) => [] as unknown[]);
 
 vi.mock('../../../src/database/raw-file-storage', () => ({
   rawCopyFile: (...args: unknown[]) => mockRawCopyFile(...args),
@@ -23,6 +24,17 @@ vi.mock('../../../src/modules/internal/document/document-domain', () => ({
 vi.mock('../../../src/lock/master-lock', () => ({
   lockResources: (...args: unknown[]) => mockLockResources(...args),
 }));
+// triggerJobImport's very first step is looking up eligible connectors; returning none here
+// short-circuits the rest of uploadJobImport (createWork/pushToConnector/RabbitMQ) so this stays
+// a unit test, while still letting us assert whether the import-trigger path ran at all.
+vi.mock('../../../src/database/repository', () => ({
+  connectorsForImport: (...args: unknown[]) => mockConnectorsForImport(...args),
+}));
+// Real confidence-level control needs the full schema-attributes registry (entity type
+// registration) that isn't set up in this unit test; it's exercised in its own test suite.
+vi.mock('../../../src/utils/confidence-level', () => ({
+  controlUserConfidenceAgainstElement: () => true,
+}));
 
 const SYNC_ID = 'sync-id-1';
 const context = {} as never;
@@ -37,6 +49,8 @@ describe('copyFileFromSyncReference', () => {
     mockUnlock.mockReset();
     mockLockResources.mockReset();
     mockLockResources.mockImplementation(async () => ({ unlock: mockUnlock }));
+    mockConnectorsForImport.mockReset();
+    mockConnectorsForImport.mockImplementation(async () => []);
   });
 
   it('rejects a storage_key that does not belong to the calling sync, without touching S3', async () => {
@@ -192,5 +206,73 @@ describe('copyFileFromSyncReference', () => {
     expect(mockDeleteFileFromStorage).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content');
     // Lock must still be released even though the delete step failed.
     expect(mockUnlock).toHaveBeenCalledTimes(1);
+  });
+
+  it('triggers the import enrichment job for an import-eligible path, same as a direct upload', async () => {
+    mockGetFileSize.mockResolvedValue(10);
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+      noTriggerImport: false,
+      importContextEntities: [{ internal_id: 'entity-1', entity_type: 'Report' } as never],
+    });
+
+    expect(result).not.toBeNull();
+    expect(mockConnectorsForImport).toHaveBeenCalled();
+  });
+
+  it('does not trigger the import enrichment job when no_trigger_import is set', async () => {
+    mockGetFileSize.mockResolvedValue(10);
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+      noTriggerImport: true,
+      importContextEntities: [{ internal_id: 'entity-1' } as never],
+    });
+
+    expect(result).not.toBeNull();
+    expect(mockConnectorsForImport).not.toHaveBeenCalled();
+  });
+
+  it('does not trigger the import enrichment job outside an import-eligible path (e.g. embedded/)', async () => {
+    mockGetFileSize.mockResolvedValue(10);
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'embedded/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+      noTriggerImport: false,
+      importContextEntities: [{ internal_id: 'entity-1' } as never],
+    });
+
+    expect(result).not.toBeNull();
+    expect(mockConnectorsForImport).not.toHaveBeenCalled();
+  });
+
+  it('still returns the file as successful when the import trigger step itself fails', async () => {
+    // Same resilience contract as the delete-failure case above: the file is already copied and
+    // indexed, so a failure in the best-effort enrichment trigger must not turn this into a
+    // reported failure (the caller would otherwise retry against an already-consumed key).
+    mockGetFileSize.mockResolvedValue(10);
+    mockConnectorsForImport.mockRejectedValueOnce(new Error('ES unavailable'));
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+      noTriggerImport: false,
+      importContextEntities: [], // global-import branch: calls connectorsForImport directly, no confidence check in the way
+    });
+
+    expect(result).not.toBeNull();
+    expect(mockDeleteFileFromStorage).toHaveBeenCalled();
   });
 });

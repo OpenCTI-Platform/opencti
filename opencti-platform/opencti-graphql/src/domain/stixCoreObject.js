@@ -885,6 +885,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     let up;
     let untouched = false;
     if (fileRef) {
+      const jobImportContextEntities = importContextEntities?.length > 0 ? importContextEntities : [previous];
       up = await copyFileFromSyncReference(context, user, fileRef.sync_id, filePath, {
         storageKey: fileRef.storage_key,
         name: fileRef.name,
@@ -893,6 +894,8 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
         fileMarkings: file_markings,
         entityId: internalId,
         externalReferenceId: meta.external_reference_id,
+        noTriggerImport,
+        importContextEntities: jobImportContextEntities,
       });
       if (!up) {
         throw FunctionalError('Cannot copy referenced sync file', { syncId: fileRef.sync_id });

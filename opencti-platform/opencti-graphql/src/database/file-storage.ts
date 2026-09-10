@@ -420,9 +420,29 @@ export const copyFileFromSyncReference = async (
   user: AuthUser,
   syncId: string,
   filePath: string,
-  copyProps: { storageKey: string; name: string; mimeType?: string; version?: string; fileMarkings?: string[]; entityId: string; externalReferenceId?: string },
+  copyProps: {
+    storageKey: string;
+    name: string;
+    mimeType?: string;
+    version?: string;
+    fileMarkings?: string[];
+    entityId: string;
+    externalReferenceId?: string;
+    noTriggerImport?: boolean;
+    importContextEntities?: BasicStoreEntity[];
+  },
 ): Promise<LoadedFile | null> => {
-  const { storageKey, name, mimeType, version, fileMarkings = [], entityId, externalReferenceId } = copyProps;
+  const {
+    storageKey,
+    name,
+    mimeType,
+    version,
+    fileMarkings = [],
+    entityId,
+    externalReferenceId,
+    noTriggerImport = false,
+    importContextEntities = [],
+  } = copyProps;
   const validation = validateSyncInflightStorageKey(storageKey, syncId);
   if (!validation.valid) {
     // Deliberately not logging storageKey here: unlike the success path below (which only logs
@@ -478,6 +498,15 @@ export const copyFileFromSyncReference = async (
         logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId });
       } catch (deleteErr) {
         logApp.warn('[FILE STORAGE] Copied and indexed referenced sync file, but failed to delete the staged source (left for TTL cleanup backstop)', { cause: deleteErr, syncId, targetId });
+      }
+      try {
+        // Same gate uploadToStorage uses for its own noTriggerImport/import-path check.
+        const isImportEligiblePath = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
+        if (!noTriggerImport && isImportEligiblePath) {
+          await triggerJobImport(context, user, file, importContextEntities);
+        }
+      } catch (triggerErr) {
+        logApp.warn('[FILE STORAGE] Copied referenced sync file, but failed to trigger its import enrichment job', { cause: triggerErr, syncId, targetId });
       }
       return file;
     } catch (err) {

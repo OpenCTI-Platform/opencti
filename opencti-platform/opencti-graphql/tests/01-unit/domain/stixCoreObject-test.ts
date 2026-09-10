@@ -123,8 +123,19 @@ describe('stix core object domain import push ref (sync file reference mode)', (
       mimeType: 'application/pdf',
       fileMarkings: ['marking--1'],
       entityId: 'report--1',
+      noTriggerImport: undefined,
+      importContextEntities: [{ internal_id: 'report--1', entity_type: 'Report' }],
     });
     expect(unlock).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards no_trigger_import from the fileRef so enrichment is skipped on the copy path too', async () => {
+    const { copySpy } = setupImportPushRef();
+
+    await stixCoreObjectImportPushRef({}, { id: 'user--1' } as never, 'report--1', { ...fileRef, no_trigger_import: true });
+
+    const [, , , , calledCopyProps] = copySpy.mock.calls[0];
+    expect((calledCopyProps as { noTriggerImport?: boolean }).noTriggerImport).toEqual(true);
   });
 
   it('never derives the ownership-check sync_id from the storage_key itself - only from the caller-supplied fileRef.sync_id', async () => {
