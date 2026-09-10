@@ -47,6 +47,7 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import UserHistory from './UserHistory';
 import UserTokenList from './UserTokenList';
+import useTimeSeriesAxisFormatter from '../../../../utils/hooks/useTimeSeriesAxisFormatter';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -209,7 +210,8 @@ interface UserProps {
 }
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
-  const { t_i18n, nsdt, fsd, fldt, fd } = useFormatter();
+  const { t_i18n, nsdt, fldt, fd } = useFormatter();
+  const auditsAxisFormatter = useTimeSeriesAxisFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
   const killSessionDeletion = useDeletion({});
@@ -695,7 +697,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           areaChartOptions(
                             theme,
                             true,
-                            fsd,
+                            auditsAxisFormatter,
                             simpleNumberFormat,
                             undefined,
                           ) as ApexOptions

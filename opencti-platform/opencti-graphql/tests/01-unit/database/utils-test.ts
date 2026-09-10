@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
+import { afterEach, describe, expect, it } from 'vitest';
+import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries } from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { EditOperation } from '../../../src/generated/graphql';
 
@@ -178,5 +178,95 @@ describe('Function extractObjectsPirsFromInputs()', () => {
   it('should return empty array if not a container', () => {
     const { pir_ids } = extractObjectsPirsFromInputs(pirInputs, ENTITY_TYPE_MALWARE);
     expect(pir_ids).toEqual([]);
+  });
+});
+
+describe('Function fillTimeSeries()', () => {
+  // The process time zone must never leak into the emitted buckets: Elasticsearch
+  // aggregates on UTC calendar boundaries, and the front-end labels the returned
+  // instants as UTC. See https://github.com/OpenCTI-Platform/opencti/issues/12150
+  const SERVER_TIME_ZONES = ['UTC', 'Europe/Paris', 'America/New_York', 'Asia/Tokyo', 'Pacific/Kiritimati'];
+  const initialTimeZone = process.env.TZ;
+
+  const withTimeZone = <T>(timeZone: string, fn: () => T): T => {
+    process.env.TZ = timeZone;
+    return fn();
+  };
+
+  afterEach(() => {
+    // Assigning undefined would store the literal string 'undefined' and leave the
+    // process without a resolvable default zone for every later test.
+    if (initialTimeZone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = initialTimeZone;
+    }
+  });
+
+  // Home dashboard "Relationships created" widget, as seen on the 26th of August 2025:
+  // startDate = yearsAgo(1), endDate = lastDayOfThePreviousMonth(), interval = month.
+  const monthlyKeys = ['2024-08', '2024-09', '2024-10', '2024-11', '2024-12', '2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06', '2025-07'];
+  const monthlyData = monthlyKeys.map((date) => ({ date, value: 10000 }));
+  const monthlyStart = new Date('2024-08-26T00:00:00.000Z');
+  const monthlyEnd = new Date('2025-07-31T23:59:59.999Z');
+
+  it('should keep the last completed month on the axis', () => {
+    // Under a UTC runner the buggy implementation is indistinguishable from the fixed
+    // one, so this scenario has to be pinned to an offset server to stay a regression test.
+    const series = withTimeZone('Europe/Paris', () => fillTimeSeries(monthlyStart, monthlyEnd, 'month', monthlyData));
+    expect(series.length).toEqual(12);
+    expect(series[0]).toEqual({ date: '2024-08-01T00:00:00.000Z', value: 10000 });
+    expect(series[11]).toEqual({ date: '2025-07-01T00:00:00.000Z', value: 10000 });
+    expect(series.every((point) => point.value === 10000)).toBe(true);
+  });
+
+  it('should emit the same monthly series whatever the server time zone', () => {
+    const reference = withTimeZone('UTC', () => fillTimeSeries(monthlyStart, monthlyEnd, 'month', monthlyData));
+    SERVER_TIME_ZONES.forEach((timeZone) => {
+      const series = withTimeZone(timeZone, () => fillTimeSeries(monthlyStart, monthlyEnd, 'month', monthlyData));
+      expect(series, `time zone ${timeZone}`).toEqual(reference);
+    });
+  });
+
+  it('should align weekly buckets on UTC mondays whatever the server time zone', () => {
+    const start = new Date('2025-07-03T00:00:00.000Z'); // thursday
+    const end = new Date('2025-07-23T00:00:00.000Z'); // wednesday
+    SERVER_TIME_ZONES.forEach((timeZone) => {
+      const series = withTimeZone(timeZone, () => fillTimeSeries(start, end, 'week', [{ date: '2025-07-14', value: 42 }]));
+      expect(series, `time zone ${timeZone}`).toEqual([
+        { date: '2025-06-30T00:00:00.000Z', value: 0 },
+        { date: '2025-07-07T00:00:00.000Z', value: 0 },
+        { date: '2025-07-14T00:00:00.000Z', value: 42 },
+        { date: '2025-07-21T00:00:00.000Z', value: 0 },
+      ]);
+    });
+  });
+
+  it('should emit the same daily series whatever the server time zone', () => {
+    const start = new Date('2025-07-30T00:00:00.000Z');
+    const end = new Date('2025-08-02T23:59:59.999Z');
+    SERVER_TIME_ZONES.forEach((timeZone) => {
+      const series = withTimeZone(timeZone, () => fillTimeSeries(start, end, 'day', [{ date: '2025-08-01', value: 7 }]));
+      expect(series, `time zone ${timeZone}`).toEqual([
+        { date: '2025-07-30T00:00:00.000Z', value: 0 },
+        { date: '2025-07-31T00:00:00.000Z', value: 0 },
+        { date: '2025-08-01T00:00:00.000Z', value: 7 },
+        { date: '2025-08-02T00:00:00.000Z', value: 0 },
+      ]);
+    });
+  });
+
+  it('should emit the same hourly series whatever the server time zone', () => {
+    const start = new Date('2025-07-31T22:15:00.000Z');
+    const end = new Date('2025-08-01T01:00:00.000Z');
+    SERVER_TIME_ZONES.forEach((timeZone) => {
+      const series = withTimeZone(timeZone, () => fillTimeSeries(start, end, 'hour', [{ date: '2025-08-01 00:00:00', value: 3 }]));
+      expect(series, `time zone ${timeZone}`).toEqual([
+        { date: '2025-07-31T22:00:00.000Z', value: 0 },
+        { date: '2025-07-31T23:00:00.000Z', value: 0 },
+        { date: '2025-08-01T00:00:00.000Z', value: 3 },
+        { date: '2025-08-01T01:00:00.000Z', value: 0 },
+      ]);
+    });
   });
 });

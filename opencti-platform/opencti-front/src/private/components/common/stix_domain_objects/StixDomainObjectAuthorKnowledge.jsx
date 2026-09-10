@@ -20,6 +20,7 @@ import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import Loader from '../../../../components/Loader';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import useTimeSeriesAxisFormatter from '../../../../utils/hooks/useTimeSeriesAxisFormatter';
 
 const styles = (theme) => ({
   card: {
@@ -109,7 +110,8 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
   }
 `;
 
-const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectId, theme }) => {
+const StixDomainObjectAuthorKnowledge = ({ t, n, classes, stixDomainObjectId, theme }) => {
+  const timeSeriesAxisFormatter = useTimeSeriesAxisFormatter();
   const fallbackDates = useMemo(() => ({
     monthAgo: monthsAgo(1),
     yearAgo: yearsAgo(1),
@@ -289,7 +291,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
                       options={areaChartOptions(
                         theme,
                         true,
-                        fsd,
+                        timeSeriesAxisFormatter,
                         simpleNumberFormat,
                         undefined,
                       )}
