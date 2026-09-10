@@ -25,14 +25,14 @@ const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000
 
 const connectionName = (provider: string) => `${REDIS_PREFIX}${provider.replaceAll(' ', '_')}`;
 
-const redisOptions = async (provider: string, autoReconnect = false): Promise<RedisOptions> => {
+const redisOptions = async (provider: string, autoReconnect = false, tlsServername?: string): Promise<RedisOptions> => {
   const baseAuth = { username: conf.get('redis:username'), password: conf.get('redis:password') };
   const userPasswordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
     connectionName: connectionName(provider),
     keyPrefix: REDIS_PREFIX,
     ...userPasswordAuth,
-    tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
+    tls: USE_SSL ? { ...configureCA(REDIS_CA), ...(tlsServername ? { servername: tlsServername } : {}) } : undefined,
     retryStrategy: /* v8 ignore next */ (times) => {
       if (getStoppingState()) {
         return null;
@@ -72,7 +72,7 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 };
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
-  const redisOpts = await redisOptions(provider);
+  const redisOpts = await redisOptions(provider, false, conf.get('redis:tls_servername'));
   return {
     keyPrefix: REDIS_PREFIX,
     lazyConnect: true,
@@ -118,7 +118,8 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     const sentinelOpts = await sentinelOptions(provider, clusterNodes);
     client = new Redis(sentinelOpts);
   } else {
-    const singleOptions = await redisOptions(provider, autoReconnect);
+    const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
+    const singleOptions = await redisOptions(provider, autoReconnect, tlsServername);
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
