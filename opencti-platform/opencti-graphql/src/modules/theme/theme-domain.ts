@@ -15,6 +15,9 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { SYSTEM_USER } from '../../utils/access';
 import { DARK_DEFAULTS, LIGHT_DEFAULTS } from './theme-constants';
 
+export const THEME_DARK_ID = 'd8c7a49d-9afc-4bbb-a227-2ee7902b032e';
+export const THEME_LIGHT_ID = '30e5b39d-873d-4e55-af51-a6f8f9743858';
+
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityTheme>(context, user, id, ENTITY_TYPE_THEME);
 };
@@ -42,7 +45,7 @@ const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeNam
   return themes.edges.some((edge) => edge.node.name === themeName && edge.node.id !== excludeThemeId);
 };
 
-export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput) => {
+export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput & { internal_id?: string }) => {
   const themeFound = await checkExistingTheme(context, user, input.name);
 
   if (themeFound) {
@@ -50,6 +53,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
   }
 
   const themeToCreate = {
+    ...(input.internal_id ? { internal_id: input.internal_id } : {}),
     name: input.name,
     theme_background: input.theme_background,
     theme_paper: input.theme_paper,
