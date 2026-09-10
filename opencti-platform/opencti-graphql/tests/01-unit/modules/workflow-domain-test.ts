@@ -2236,6 +2236,25 @@ describe('getWorkflowInstance', () => {
     expect(result.scope).toBe('standard');
   });
 
+  it('falls back to entity.id when the loaded entity has no internal_id', async () => {
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', entity_type: 'Incident' }); // no internal_id
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: JSON.stringify({
+        initialState: 'draft',
+        states: [{ statusId: 'draft' }],
+        transitions: [],
+      }), validation_errors: [] } });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingTransition: null });
+
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(result).not.toBeNull();
+    expect(result.currentState).toBe('draft');
+  });
+
   it('returns pendingTransition: null when pendingTransition JSON is malformed', async () => {
     makeBaseSetup();
     (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]', pendingTransition: '{ bad json' });
