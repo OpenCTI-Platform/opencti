@@ -424,7 +424,14 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const { signal } = controller;
   const redlock = new Redlock([getClientLock()], { retryCount, retryDelay, retryJitter });
   // Get the lock
+  const acquireStart = performance.now(); // monotonic: immune to system clock adjustments
   let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
+  // A contended acquisition waits in silent retry polls (retry_delay) and emits no signal until full
+  // retry exhaustion throws a LOCK_ERROR. Expose the measured wait and the attempt count on the
+  // returned lock: recording is done by the caller (master-lock) in the MAIN process, because with
+  // app:child_locking_process this code runs in the lock child, where no metric exporter lives.
+  const acquireWaitMs = Math.round(performance.now() - acquireStart);
+  const acquireAttempts = lock.attempts.length;
   const queue = () => {
     timeout = setTimeout(
       () => {
@@ -467,6 +474,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   return {
     signal,
     extend,
+    acquireWaitMs,
+    acquireAttempts,
     unlock: async () => {
       // First, wait for an in-flight extension to finish.
       if (extension) {
