@@ -2143,6 +2143,14 @@ class OpenCTIStix2:
                 ],
             }
 
+    @staticmethod
+    def _is_restricted_identity(identity: Dict) -> bool:
+        """Detect the platform's restricted-access placeholder identity."""
+        return (
+            identity.get("name") == "Restricted"
+            and identity.get("identity_class") == "Restricted"
+        )
+
     def prepare_export(
         self,
         entity: Dict,
@@ -2172,6 +2180,7 @@ class OpenCTIStix2:
             not no_custom_attributes
             and "createdBy" in entity
             and entity["createdBy"] is not None
+            and not self._is_restricted_identity(entity["createdBy"])
         ):
             created_by = self.generate_export(entity=entity["createdBy"])
             if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
