@@ -79,9 +79,16 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   // is too late for validated fields (measured live 2026-09-01: every relationship with a
   // marked endpoint died BAD_USER_INPUT). Gated on worker origin; the collected ids ride the
   // context to the sequencer boundary. The mark never reaches validation, resolvers or storage.
-  if (req.headers['opencti-retry-number'] !== undefined && req.body?.variables) {
+  // An HTTP-batched request (allowBatchedHttpRequests) carries an ARRAY of operations in
+  // req.body and shares this ONE context: strip every operation's variables, so the
+  // collected member ids are the union over the batch (ops of a batch come from the same
+  // worker client, hence the same applicant; a cross-bundle union only widens member_wait).
+  if (req.headers['opencti-retry-number'] !== undefined && req.body) {
     const memberRefs = new Set();
-    stripMemberRefMarks(req.body.variables, memberRefs);
+    const operations = Array.isArray(req.body) ? req.body : [req.body];
+    operations.forEach((operation) => {
+      if (operation?.variables) stripMemberRefMarks(operation.variables, memberRefs);
+    });
     if (memberRefs.size > 0) executeContext.memberRefIds = memberRefs;
   }
   // region handle user
