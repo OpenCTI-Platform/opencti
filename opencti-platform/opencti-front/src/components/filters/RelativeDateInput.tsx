@@ -16,8 +16,6 @@ interface RelativeDateInputProps {
   valueOrder: number;
   dateInput: string[];
   setDateInput: (value: string[]) => void;
-  /** Only ONE field in the popover may claim focus. */
-  autoFocus?: boolean;
 }
 
 const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
@@ -28,7 +26,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   valueOrder,
   dateInput,
   setDateInput,
-  autoFocus = false,
 }) => {
   const { t_i18n } = useFormatter();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -106,7 +103,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         label={label}
         value={dateInput[valueOrder]}
         onChange={(event) => handleChangeValue(event.target.value)}
-        autoFocus={autoFocus}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
             handleChangeRangeDateFilter((event.target as HTMLInputElement).value);

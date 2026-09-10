@@ -189,6 +189,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
+                onClickCapture={(event) => event.stopPropagation()}
               >
                 <img
                   src={images[0].src}

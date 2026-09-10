@@ -147,7 +147,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
       const imageIndex = previewImages.findIndex((image) => image.src === resolvedUrl);
       const canOpenPreview = enableImagePreviewModal && imageIndex >= 0;
 
-      return (
+      const imageNode = (
         <img
           src={resolvedUrl}
           alt={alt || ''}
@@ -156,15 +156,30 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
             maxHeight: '200px',
             cursor: canOpenPreview ? 'zoom-in' : undefined,
           }}
+          {...imgProps}
+        />
+      );
+
+      if (!canOpenPreview) {
+        return imageNode;
+      }
+
+      return (
+        <button
+          type="button"
           onClick={(event) => {
-            if (!canOpenPreview) {
-              return;
-            }
             event.stopPropagation();
             setPreviewImageIndex(imageIndex);
           }}
-          {...imgProps}
-        />
+          style={{
+            border: 'none',
+            padding: 0,
+            background: 'none',
+            cursor: 'zoom-in',
+          }}
+        >
+          {imageNode}
+        </button>
       );
     },
   }), [enableImagePreviewModal, previewImages, resolveMarkdownImageUrl]);
@@ -267,7 +282,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   } else {
     markdownDisplayContent = (
       <>
-        <div onClick={(event) => browseLinkWarning(event)}>
+        <div onClickCapture={(event) => browseLinkWarning(event)}>
           {markdownRender}
         </div>
         <ExternalLinkPopover

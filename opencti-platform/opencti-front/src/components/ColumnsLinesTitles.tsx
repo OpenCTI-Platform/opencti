@@ -76,6 +76,14 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
           className={classes.sortableHeaderItem}
           style={{ width }}
           onClick={() => reverseBy(field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              reverseBy(field);
+            }
+          }}
         >
           <span>{t_i18n(label)}</span>
           {sortBy === field ? orderComponent : ''}

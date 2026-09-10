@@ -410,6 +410,14 @@ class StixSightingRelationshipCreation extends Component {
               key={sighting.node.id}
               className={classes.relation}
               onClick={this.handleSelectSighting.bind(this, sighting.node)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  this.handleSelectSighting(sighting.node);
+                }
+              }}
             >
               <div
                 className={classes.item}
@@ -517,6 +525,14 @@ class StixSightingRelationshipCreation extends Component {
             focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                this.handleChangeStep();
+              }
+            }}
           >
             <div
               className={classes.item}
