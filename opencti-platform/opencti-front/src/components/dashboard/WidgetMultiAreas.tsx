@@ -3,9 +3,9 @@ import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import React, { useMemo } from 'react';
 import type { Theme } from '../Theme';
-import { useFormatter } from '../i18n';
 import { areaChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
+import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
 interface WidgetMultiAreasProps {
   series: ApexAxisChartSeries;
@@ -23,17 +23,9 @@ const WidgetMultiAreas = ({
   onMounted,
 }: WidgetMultiAreasProps) => {
   const theme = useTheme<Theme>();
-  const { fsd, mtdy, yd } = useFormatter();
+  const formatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    let formatter = fsd;
-    if (interval === 'month' || interval === 'quarter') {
-      formatter = mtdy;
-    }
-    if (interval === 'year') {
-      formatter = yd;
-    }
-
     return areaChartOptions(
       theme,
       !interval || ['day', 'week'].includes(interval),
@@ -43,7 +35,7 @@ const WidgetMultiAreas = ({
       isStacked,
       hasLegend,
     ) as ApexOptions;
-  }, [theme, interval, isStacked, hasLegend]);
+  }, [theme, interval, formatter, isStacked, hasLegend]);
 
   return (
     <Chart
