@@ -9565,10 +9565,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:9.1.1":
-  version: 9.1.1
-  resolution: "nodemailer@npm:9.1.1"
-  checksum: 10c0/b213a2a906697a735f6eb21103629b7a77aeac297b6d843efd4588157999bf6d19381853ac1224e472f5a34aec2e2412444151a2c6ec6e8c52150afa3055039c
+"nodemailer@npm:10.0.0":
+  version: 10.0.0
+  resolution: "nodemailer@npm:10.0.0"
+  checksum: 10c0/917fb3a5c75e2a86917212c3e9083713a1e9c77abbddd7ab52c94deadd5fbd3ee4fe12ce5d87c7a7bc31dc5b8a29a09532872cf08c9bc489b0b0a3f0aa12aa8b
   languageName: node
   linkType: hard
 
@@ -10066,7 +10066,7 @@ __metadata:
     node-calls-python: "npm:1.13.0"
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.0"
-    nodemailer: "npm:9.1.1"
+    nodemailer: "npm:10.0.0"
     openai: "npm:7.10.0"
     openid-client: "npm:6.8.8"
     openid-clientv5: "npm:openid-client@5.7.1"
