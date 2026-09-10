@@ -171,6 +171,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                     'Organization',
                     'Individual',
                     'System',
+                    'SecurityPlatform',
                   ]}
                 />
               ),
