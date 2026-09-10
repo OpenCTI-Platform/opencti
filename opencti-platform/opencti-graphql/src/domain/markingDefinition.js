@@ -131,7 +131,12 @@ export const markingDefinitionDeleteAndUpdateGroups = async (context, user, mark
     const editShareableMarkingsPromises = [];
     groupsWithMarkingInShareableMarkings.forEach((group) => {
       const type = markingDefinition.definition_type;
-      const value = (group.max_shareable_markings ?? []).filter(({ type: t, value: v }) => t !== type && v !== 'none');
+      // Only drop the entry for the deleted marking's type. The query above only matches groups
+      // whose entry value equals the deleted marking id (never the 'none' sentinel), so filtering
+      // by type alone removes it. The previous `&& v !== 'none'` also wiped the 'none' ("not
+      // shareable") entries of every other type, silently making them shareable. This mirrors the
+      // add-path in updateGroupsAfterAddingMarking, which filters by type only.
+      const value = (group.max_shareable_markings ?? []).filter(({ type: t }) => t !== type);
       editShareableMarkingsPromises.push(groupEditField(context, user, group.id, [{ key: 'max_shareable_markings', value }]));
     });
     await Promise.all(editShareableMarkingsPromises);
