@@ -97,7 +97,10 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   };
 
   if (input.decay_points) {
-    input.decay_points.sort().reverse();
+    // Sort numerically in descending order. Array.prototype.sort() defaults to lexicographic
+    // ordering (e.g. [5, 40, 80] => [80, 5, 40]), which breaks computeNextScoreReactionDate's
+    // assumption that decay_points are in descending numeric order.
+    input.decay_points.sort((a, b) => b - a);
 
     // cannot use array.filter on a read-only array.
     for (let i = input.decay_points.length - 1; i >= 0; i -= 1) {
@@ -127,7 +130,9 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
 
   const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
   if (decayPointsInput) {
-    decayPointsInput.value.sort().reverse();
+    // Sort numerically in descending order (see createDecayRule): the default sort is
+    // lexicographic and would misorder multi-digit scores.
+    decayPointsInput.value.sort((a, b) => b - a);
 
     // cannot use array.filter on a read-only array.
     for (let i = decayPointsInput.value.length - 1; i >= 0; i -= 1) {
