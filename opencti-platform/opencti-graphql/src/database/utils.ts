@@ -183,6 +183,13 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
       dateFormat = 'YYYY';
       break;
     case 'quarter':
+      // Elasticsearch keys quarter buckets on the quarter start month, so both bounds
+      // must be truncated: a mid-quarter start would never match any key and flatten
+      // the whole series to zero.
+      dateFormat = 'YYYY-MM';
+      startDateParsed = startDateParsed.startOf(startOfInterval);
+      endDateParsed = endDateParsed.startOf(startOfInterval);
+      break;
     case 'month':
       dateFormat = 'YYYY-MM';
       break;

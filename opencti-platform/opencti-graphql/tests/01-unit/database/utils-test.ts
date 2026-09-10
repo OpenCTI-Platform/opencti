@@ -228,6 +228,32 @@ describe('Function fillTimeSeries()', () => {
     });
   });
 
+  it('should align quarterly buckets on the quarter start whatever the requested start date', () => {
+    // Elasticsearch keys quarter buckets on the quarter start month, so a start date
+    // falling mid-quarter must be truncated: otherwise no key ever matches and the
+    // chart silently flattens to zero instead of shifting.
+    const quarterlyData = [
+      { date: '2024-10', value: 1 },
+      { date: '2025-01', value: 2 },
+      { date: '2025-04', value: 3 },
+      { date: '2025-07', value: 4 },
+    ];
+    const end = new Date('2025-09-30T23:59:59.999Z');
+    const expected = [
+      { date: '2024-10-01T00:00:00.000Z', value: 1 },
+      { date: '2025-01-01T00:00:00.000Z', value: 2 },
+      { date: '2025-04-01T00:00:00.000Z', value: 3 },
+      { date: '2025-07-01T00:00:00.000Z', value: 4 },
+    ];
+    // Aligned on a quarter boundary, then mid-quarter, then on the last day of a quarter.
+    ['2024-10-01', '2024-11-15', '2024-12-31'].forEach((day) => {
+      SERVER_TIME_ZONES.forEach((timeZone) => {
+        const series = withTimeZone(timeZone, () => fillTimeSeries(new Date(`${day}T00:00:00.000Z`), end, 'quarter', quarterlyData));
+        expect(series, `start ${day} / time zone ${timeZone}`).toEqual(expected);
+      });
+    });
+  });
+
   it('should align weekly buckets on UTC mondays whatever the server time zone', () => {
     const start = new Date('2025-07-03T00:00:00.000Z'); // thursday
     const end = new Date('2025-07-23T00:00:00.000Z'); // wednesday
