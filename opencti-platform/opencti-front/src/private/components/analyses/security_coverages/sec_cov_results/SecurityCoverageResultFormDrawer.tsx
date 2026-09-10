@@ -32,6 +32,7 @@ const SecurityCoverageResultFormDrawer = () => {
             <SecurityCoverageResultFormDetails
               onCancel={close}
               onSubmit={(values) => {
+                console.log(values);
                 setFormDetails(values);
                 setActiveStep((a) => a + 1);
               }}

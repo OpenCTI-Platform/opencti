@@ -7,7 +7,7 @@ import TextField from '../../../../../components/TextField';
 import Button from '../../../../../components/common/button/Button';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { CoverageInformationFieldAdd } from '../../../common/form/CoverageInformationField';
+import CoverageInformationField from '../../../common/form/CoverageInformationField';
 
 export interface SecurityCoverageResultFormData {
   name: string;
@@ -57,7 +57,7 @@ const SecurityCoverageResultFormDetails = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ isValid, values, setFieldValue }) => (
+      {({ isValid }) => (
         <Form>
           <Field
             component={TextField}
@@ -67,10 +67,9 @@ const SecurityCoverageResultFormDetails = ({
             fullWidth={true}
             required
           />
-          <CoverageInformationFieldAdd
+          <Field
+            component={CoverageInformationField}
             name="coverageInformation"
-            values={values.coverageInformation}
-            setFieldValue={setFieldValue}
           />
           <Field
             component={DateTimePickerField}
