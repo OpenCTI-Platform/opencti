@@ -7,6 +7,7 @@ import { createStatus } from '../../../src/domain/status';
 import { resolveUserById } from '../../../src/domain/user';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { StatusScope } from '../../../src/generated/graphql';
+import { lockResources } from '../../../src/lock/master-lock';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
@@ -58,6 +59,10 @@ vi.mock('../../../src/modules/entitySetting/entitySetting-domain', () => ({
 
 vi.mock('../../../src/utils/draftContext', () => ({
   bypassDraftContext: vi.fn((context) => context),
+}));
+
+vi.mock('../../../src/lock/master-lock', () => ({
+  lockResources: vi.fn().mockResolvedValue({ unlock: vi.fn() }),
 }));
 
 vi.mock('../../../src/modules/workflow/workflow-validation', async (importOriginal) => {
@@ -383,6 +388,29 @@ describe('Workflow Domain', () => {
     const result = await isStatusTemplateUsedInWorkflows(mockContext, mockUser, 'status-template-id');
 
     expect(result).toBe(false);
+  });
+
+  it('should return true when status template id is only referenced via a transition endpoint (not declared in states)', async () => {
+    (fullEntitiesList as any).mockResolvedValue([
+      {
+        published_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: JSON.stringify({
+            initialState: 'status-a',
+            states: [{ statusId: 'status-a' }],
+            transitions: [{ from: 'status-a', to: 'status-template-id', event: 'next' }],
+          }),
+          validation_errors: [],
+        },
+        all_versions: [],
+      },
+    ]);
+
+    const result = await isStatusTemplateUsedInWorkflows(mockContext, mockUser, 'status-template-id');
+
+    expect(result).toBe(true);
   });
 
   describe('isStatusUsedInWorkflow', () => {
@@ -753,6 +781,57 @@ describe('Workflow Domain', () => {
     );
   });
 
+  it('should create a Status for a state referenced only as a transition endpoint (not declared in `states`)', async () => {
+    // Regression: templates 'tpl-a'/'tpl-b', initialState 'tpl-a', only 'tpl-a' declared in
+    // `states`, and a transition 'tpl-a' -> 'tpl-b'. Validation accepts 'tpl-b' as a transition
+    // endpoint backed by an existing StatusTemplate even though it has no entry in `states`, and
+    // the engine registers it as a state — so the full-status-mapping invariant must still create
+    // a Status for it.
+    const draftVersion = {
+      id: 'draft-version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        name: 'Test Workflow',
+        initialState: 'tpl-a',
+        states: [{ statusId: 'tpl-a' }],
+        transitions: [{ from: 'tpl-a', to: 'tpl-b', event: 'advance' }],
+      }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any)
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        draft_version: draftVersion,
+        all_versions: [draftVersion],
+      })
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        published_version: draftVersion,
+        draft_version: draftVersion,
+        all_versions: [draftVersion],
+      });
+
+    // Only tpl-a already has a Status record for this entity type/scope.
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 'status-a', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-a', order: 0 },
+    ]);
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(createStatus).toHaveBeenCalledTimes(1);
+    expect(createStatus).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'Incident',
+      { template_id: 'tpl-b', order: 1, scope: StatusScope.Global },
+    );
+  });
+
   it('should mark an orphaned Status for deletion when its state is removed and it is unreferenced', async () => {
     const publishedVersion = {
       id: 'pub-1',
@@ -830,7 +909,75 @@ describe('Workflow Domain', () => {
     );
   });
 
-  it('should not mark an orphaned Status for deletion when it is still referenced by an entity inside a draft', async () => {
+  it('should not mark an orphaned Status for deletion when its state is dropped from `states` but still referenced via a transition endpoint', async () => {
+    // Regression: tpl-b is removed from the `states` array but the transition to it is kept, so
+    // the workflow still uses tpl-b as an implicit state — it must not be treated as orphaned.
+    const publishedVersion = {
+      id: 'pub-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'tpl-a',
+        states: [{ statusId: 'tpl-a' }, { statusId: 'tpl-b' }],
+        transitions: [{ from: 'tpl-a', to: 'tpl-b', event: 'finish' }],
+      }),
+      validation_errors: [],
+    };
+    // Draft drops tpl-b's entry from `states` but keeps the transition referencing it.
+    const draftVersion = {
+      id: 'draft-1',
+      timestamp: '2024-01-02T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'tpl-a',
+        states: [{ statusId: 'tpl-a' }],
+        transitions: [{ from: 'tpl-a', to: 'tpl-b', event: 'finish' }],
+      }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any)
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        published_version: publishedVersion,
+        draft_version: draftVersion,
+        all_versions: [draftVersion, publishedVersion],
+      })
+      .mockResolvedValueOnce({
+        id: 'workflow-id',
+        name: 'Test Workflow',
+        published_version: draftVersion,
+        draft_version: null,
+        all_versions: [draftVersion, publishedVersion],
+      });
+
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
+      if (types[0] === ENTITY_TYPE_STATUS) {
+        return Promise.resolve([
+          { id: 'status-a-id', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-a', order: 0 },
+          { id: 'status-b-id', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-b', order: 1 },
+        ]);
+      }
+      if (types[0] === ENTITY_TYPE_ENTITY_SETTING) {
+        return Promise.resolve([]);
+      }
+      return Promise.resolve([]);
+    });
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(updateAttribute).not.toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'status-b-id',
+      ENTITY_TYPE_STATUS,
+      expect.arrayContaining([expect.objectContaining({ key: 'to_be_deleted_at' })]),
+    );
+  });
+
+  it('should throw when publishing removes a state whose status is still referenced by an entity inside a draft', async () => {
     const publishedVersion = {
       id: 'pub-1',
       timestamp: '2024-01-01T00:00:00Z',
@@ -855,21 +1002,13 @@ describe('Workflow Domain', () => {
     };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    (storeLoadById as any)
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: publishedVersion,
-        draft_version: draftVersion,
-        all_versions: [draftVersion, publishedVersion],
-      })
-      .mockResolvedValueOnce({
-        id: 'workflow-id',
-        name: 'Test Workflow',
-        published_version: draftVersion,
-        draft_version: null,
-        all_versions: [draftVersion, publishedVersion],
-      });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    });
 
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[], args: any) => {
       if (types[0] === ENTITY_TYPE_STATUS) {
@@ -883,7 +1022,7 @@ describe('Workflow Domain', () => {
       }
       if (types[0] === 'Incident') {
         // No entity in the live index references status-b-id, but a draft-only entity does —
-        // this must still block the orphan mark.
+        // this must still block the publish.
         if (args?.indices?.some((index: string) => index.includes('_draft_objects'))) {
           return Promise.resolve([{ id: 'draft-entity-id', x_opencti_workflow_id: 'status-b-id' }]);
         }
@@ -892,7 +1031,8 @@ describe('Workflow Domain', () => {
       return Promise.resolve([]);
     });
 
-    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+    await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident'))
+      .rejects.toThrow('Cannot publish workflow: the following statuses are still assigned to entities and cannot be removed.');
 
     expect(updateAttribute).not.toHaveBeenCalledWith(
       mockContext,
@@ -1198,6 +1338,60 @@ describe('Workflow Domain', () => {
       .rejects.toThrow('Cannot publish workflow: the following statuses are in use and cannot be removed');
   });
 
+  it('should throw when publishing removes an ending state whose status is still assigned to an entity (regression: draft compared against published, not itself)', async () => {
+    // Regression for the case where validateWorkflowDefinitionData's own "old" definition lookup
+    // resolves to the same draft being published (old === new), which would silently miss this.
+    // Published version: state-a -> state-b, state-b is an ending state (no outgoing transitions).
+    const publishedVersion = {
+      id: 'pub-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'state-a',
+        states: [{ statusId: 'state-a' }, { statusId: 'state-b' }],
+        transitions: [{ from: 'state-a', to: 'state-b', event: 'finish' }],
+      }),
+      validation_errors: [],
+    };
+    // Draft removes state-b entirely.
+    const draftVersion = {
+      id: 'draft-1',
+      timestamp: '2024-01-02T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'state-a',
+        states: [{ statusId: 'state-a' }],
+        transitions: [],
+      }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    });
+
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
+      if (types[0] === ENTITY_TYPE_STATUS) {
+        return Promise.resolve([
+          { id: 'status-b-id', type: 'Incident', scope: StatusScope.Global, template_id: 'state-b', order: 1 },
+        ]);
+      }
+      if (types[0] === 'Incident') {
+        // An Incident is still assigned to the removed status.
+        return Promise.resolve([{ id: 'incident-1', x_opencti_workflow_id: 'status-b-id' }]);
+      }
+      return Promise.resolve([]);
+    });
+
+    await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident'))
+      .rejects.toThrow('Cannot publish workflow: the following statuses are still assigned to entities and cannot be removed.');
+  });
+
   it('should allow publishing when removed state is an ending state', async () => {
     // Published version: state-a → state-b (state-b is terminal, no outgoing transitions)
     const publishedVersion = {
@@ -1244,12 +1438,90 @@ describe('Workflow Domain', () => {
       });
 
     // An instance is in the ending state state-b, but that should not block publication
-    (fullEntitiesList as any).mockResolvedValue([
-      { id: 'instance-1', workflow_id: 'workflow-id', currentState: 'state-b' },
-    ]);
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
+      if (types[0] === ENTITY_TYPE_WORKFLOW_INSTANCE) {
+        return Promise.resolve([{ id: 'instance-1', workflow_id: 'workflow-id', currentState: 'state-b' }]);
+      }
+      return Promise.resolve([]);
+    });
 
     const result = await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
     expect(result.published).toBe(true);
+  });
+
+  it('should acquire and release a lock shared with the workflow status cleanup manager during publish', async () => {
+    const draftVersion = {
+      id: 'draft-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({ initialState: 'state-a', states: [{ statusId: 'state-a' }], transitions: [] }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    const unlock = vi.fn();
+    (lockResources as any).mockResolvedValueOnce({ unlock });
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(lockResources).toHaveBeenCalledWith(['workflow-status-lifecycle:Incident']);
+    expect(unlock).toHaveBeenCalledOnce();
+  });
+
+  it('should release the lock even when publish throws', async () => {
+    const publishedVersion = {
+      id: 'pub-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'state-a',
+        states: [{ statusId: 'state-a' }, { statusId: 'state-b' }],
+        transitions: [{ from: 'state-a', to: 'state-b', event: 'finish' }],
+      }),
+      validation_errors: [],
+    };
+    const draftVersion2 = {
+      id: 'draft-2',
+      timestamp: '2024-01-02T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({ initialState: 'state-a', states: [{ statusId: 'state-a' }], transitions: [] }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion2,
+      all_versions: [draftVersion2, publishedVersion],
+    });
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
+      if (types[0] === ENTITY_TYPE_STATUS) {
+        return Promise.resolve([
+          { id: 'status-b-id', type: 'Incident', scope: StatusScope.Global, template_id: 'state-b', order: 1 },
+        ]);
+      }
+      if (types[0] === 'Incident') {
+        return Promise.resolve([{ id: 'incident-1', x_opencti_workflow_id: 'status-b-id' }]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const unlock = vi.fn();
+    (lockResources as any).mockResolvedValueOnce({ unlock });
+
+    await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow();
+
+    expect(unlock).toHaveBeenCalledOnce();
   });
 
   it('should update workflow with different draft and published versions', async () => {
@@ -1327,7 +1599,13 @@ describe('Workflow Domain', () => {
   });
 
   it('should validate consistency when publishing', async () => {
-    const draftVersion = { id: 'draft-1', timestamp: '2024-01-02', createdBy: 'user-1', content: '{}', validation_errors: [] };
+    const draftVersion = {
+      id: 'draft-1',
+      timestamp: '2024-01-02',
+      createdBy: 'user-1',
+      content: JSON.stringify({ initialState: 'open', states: [], transitions: [] }),
+      validation_errors: [],
+    };
 
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
     (storeLoadById as any)
@@ -1343,6 +1621,7 @@ describe('Workflow Domain', () => {
         draft_version: null,
         published_version: draftVersion,
       });
+    (fullEntitiesList as any).mockResolvedValue([]);
 
     const result = await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
     expect(result.published).toBe(true);

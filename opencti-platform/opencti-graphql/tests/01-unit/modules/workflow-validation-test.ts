@@ -685,6 +685,117 @@ describe('Workflow Validation', () => {
     expect(errors).toEqual([]);
   });
 
+  it('should return error for status in use when removing a state whose status is assigned to an entity', async () => {
+    // Reset mocks for this test
+    vi.mocked(middlewareLoader.storeLoadById).mockReset();
+    vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
+
+    // Old workflow: state-a → state-b.
+    vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
+      id: 'existing-workflow',
+      draft_version: {
+        id: 'v1', timestamp: '', createdBy: '',
+        content: JSON.stringify({
+          initialState: 'state-a',
+          states: [
+            { statusId: 'state-a' },
+            { statusId: 'state-b' },
+          ],
+          transitions: [
+            { from: 'state-a', to: 'state-b', event: 'proceed' },
+          ],
+        }),
+        validation_errors: [],
+      },
+    } as any);
+
+    vi.mocked(middlewareLoader.fullEntitiesList).mockImplementation(
+      async (_context: any, _user: any, entityTypes: any): Promise<any> => {
+        if (entityTypes.includes('WorkflowDefinition')) return [];
+        if (entityTypes.includes('WorkflowInstance')) return [];
+        // The removed state's Status record (per entity type / Global scope)
+        if (entityTypes.includes('Status')) {
+          return [{ id: 'status-record-b', template_id: 'state-b', type: 'Incident', scope: 'GLOBAL' }];
+        }
+        // An Incident currently assigned to that Status
+        if (entityTypes.includes('Incident')) {
+          return [{ id: 'incident-1', x_opencti_workflow_id: 'status-record-b' }];
+        }
+        return [];
+      },
+    );
+
+    // New workflow: remove state-b, whose Status is currently assigned to an Incident
+    const updated = {
+      initialState: 'state-a',
+      states: [{ statusId: 'state-a' }],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(
+      mockContext,
+      mockUser,
+      JSON.stringify(updated),
+      'Incident',
+      'existing-workflow',
+    );
+
+    expect(errors.some((e) => e.type === 'STATUS_IN_USE')).toBe(true);
+  });
+
+  it('should allow removing a state whose status is not assigned to any entity', async () => {
+    // Reset mocks for this test
+    vi.mocked(middlewareLoader.storeLoadById).mockReset();
+    vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
+
+    vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
+      id: 'existing-workflow',
+      draft_version: {
+        id: 'v1', timestamp: '', createdBy: '',
+        content: JSON.stringify({
+          initialState: 'state-a',
+          states: [
+            { statusId: 'state-a' },
+            { statusId: 'state-b' },
+          ],
+          transitions: [
+            { from: 'state-a', to: 'state-b', event: 'proceed' },
+          ],
+        }),
+        validation_errors: [],
+      },
+    } as any);
+
+    vi.mocked(middlewareLoader.fullEntitiesList).mockImplementation(
+      async (_context: any, _user: any, entityTypes: any): Promise<any> => {
+        if (entityTypes.includes('WorkflowDefinition')) return [];
+        if (entityTypes.includes('WorkflowInstance')) return [];
+        if (entityTypes.includes('Status')) {
+          return [{ id: 'status-record-b', template_id: 'state-b', type: 'Incident', scope: 'GLOBAL' }];
+        }
+        // No Incident references the removed Status
+        if (entityTypes.includes('Incident')) return [];
+        return [];
+      },
+    );
+
+    const updated = {
+      initialState: 'state-a',
+      states: [{ statusId: 'state-a' }],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(
+      mockContext,
+      mockUser,
+      JSON.stringify(updated),
+      'Incident',
+      'existing-workflow',
+    );
+
+    expect(errors.some((e) => e.type === 'STATUS_IN_USE')).toBe(false);
+  });
+
   it('should handle existing workflow with invalid JSON', async () => {
     // Reset mocks for this test
     vi.mocked(middlewareLoader.storeLoadById).mockReset();

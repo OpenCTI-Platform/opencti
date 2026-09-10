@@ -1,9 +1,10 @@
 import conf, { BUS_TOPICS, booleanConf, logApp } from '../config/conf';
 import { internalDeleteElementById } from '../database/middleware';
-import { fullEntitiesList } from '../database/middleware-loader';
+import { fullEntitiesList, internalLoadById } from '../database/middleware-loader';
 import { notify } from '../database/redis';
 import { FilterMode, FilterOperator } from '../generated/graphql';
-import { isStatusOrphaned } from '../modules/workflow/domain/workflow-domain';
+import { lockResources } from '../lock/master-lock';
+import { getWorkflowStatusLockKey, isStatusOrphaned } from '../modules/workflow/domain/workflow-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_STATUS } from '../schema/internalObject';
 import type { BasicWorkflowStatus } from '../types/store';
@@ -33,15 +34,27 @@ export const workflowStatusCleanupHandler = async () => {
   let errorCount = 0;
   for (let i = 0; i < candidates.length; i += 1) {
     const status = candidates[i];
+    // Share a lock with publishWorkflowDefinition so a concurrent republish cannot restore/recreate
+    // this Status (clearing its `to_be_deleted_at`) between our earlier list query and the delete
+    // below — clearing the mark does not cancel a deletion already in progress, so we must reload
+    // the Status and its deadline/usage under the lock, right before deleting.
+    const lock = await lockResources([getWorkflowStatusLockKey(status.type)]);
     try {
-      const stillOrphaned = await isStatusOrphaned(context, WORKFLOW_MANAGER_USER, status);
+      const freshStatus = await internalLoadById<BasicWorkflowStatus>(context, WORKFLOW_MANAGER_USER, status.id);
+      if (!freshStatus || !freshStatus.to_be_deleted_at || new Date(freshStatus.to_be_deleted_at) > new Date()) {
+        // Deletion mark was cleared or deadline pushed back by a republish while we were waiting for the lock.
+        continue;
+      }
+      const stillOrphaned = await isStatusOrphaned(context, WORKFLOW_MANAGER_USER, freshStatus);
       if (stillOrphaned) {
-        const { element: deleted } = await internalDeleteElementById(context, WORKFLOW_MANAGER_USER, status.id, ENTITY_TYPE_STATUS);
+        const { element: deleted } = await internalDeleteElementById(context, WORKFLOW_MANAGER_USER, freshStatus.id, ENTITY_TYPE_STATUS);
         await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, WORKFLOW_MANAGER_USER);
       }
     } catch (e) {
       logApp.error('[OPENCTI-MODULE] Workflow status cleanup error', { cause: e, manager: 'WORKFLOW_STATUS_CLEANUP_MANAGER', id: status.id, errorCount });
       errorCount += 1;
+    } finally {
+      await lock.unlock();
     }
   }
   logApp.debug('[OPENCTI-MODULE] Workflow status cleanup manager process complete', { count: candidates.length });

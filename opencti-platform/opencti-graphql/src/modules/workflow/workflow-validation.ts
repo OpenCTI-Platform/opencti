@@ -1,13 +1,14 @@
 import { z } from 'zod';
 import { ValidationError } from '../../config/errors';
 import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
-import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
+import { FilterMode, FilterOperator, StatusScope } from '../../generated/graphql';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { findUnreachableStates } from './domain/workflow-ordering';
+import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
@@ -41,7 +42,7 @@ export const workflowConditionConfigSchema = z.object({
 export const workflowSerializedStateSchema = z.object({
   statusId: z.string().max(255).optional(),
   name: z.string().max(255).optional(),
-  /** Manual fallback order, required only when topological order computation is ambiguous (a cycle). */
+  /** Legacy manual order, never required: the order is always derived automatically from the transition graph, including for cycles. */
   order: z.number().optional(),
   onEnter: z.array(workflowActionConfigSchema).optional(),
   onExit: z.array(workflowActionConfigSchema).optional(),
@@ -444,6 +445,47 @@ export const validateWorkflowDefinitionData = async (
                 path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
               });
             }
+          }
+        }
+
+        // Same guard, for entity types relying on the legacy per-entity Status record
+        // (Status.x_opencti_workflow_id) instead of WorkflowInstance.currentState — a removed
+        // state whose Status is still assigned to an entity must also block publish.
+        // `extractCanonicalStateIds` (not just `states[].statusId`) catches states used only via
+        // `initialState`/a transition endpoint.
+        const oldStatusIds = extractCanonicalStateIds(oldValidation.data);
+        const newStatusIds = extractCanonicalStateIds(validationResult.data);
+        const removedStatusIds = [...oldStatusIds].filter((sid) => !newStatusIds.has(sid));
+
+        if (removedStatusIds.length > 0) {
+          const removedStatuses = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_STATUS], {
+            filters: {
+              mode: FilterMode.And,
+              filters: [
+                { key: ['type'], values: [entityType] },
+                { key: ['scope'], values: [StatusScope.Global] },
+                { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
+              ],
+              filterGroups: [],
+            },
+          });
+
+          const statusesInUse: string[] = [];
+          const conflictingEntities: Array<{ id: string; entity_type: string }> = [];
+          for (const status of removedStatuses) {
+            const referencingEntities = await findEntitiesReferencingStatus(context, user, entityType, status.id);
+            if (referencingEntities.length > 0) {
+              statusesInUse.push(status.template_id);
+              conflictingEntities.push(...referencingEntities);
+            }
+          }
+
+          if (statusesInUse.length > 0) {
+            errors.push({
+              type: 'STATUS_IN_USE',
+              message: `Cannot remove statuses ${statusesInUse.join(', ')} that are currently assigned to entities`,
+              path: conflictingEntities,
+            });
           }
         }
       }

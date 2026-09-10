@@ -11,6 +11,7 @@ import { createStatus } from '../../../domain/status';
 import { resolveUserById } from '../../../domain/user';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { type EditInput, FilterMode, FilterOperator, StatusScope } from '../../../generated/graphql';
+import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
@@ -40,8 +41,9 @@ import {
   type WorkflowSerializedTransition,
   type WorkflowValidationError,
 } from '../types/workflow-types';
-import { extractAllStatesFromDefinition, validateWorkflowDefinitionData } from '../workflow-validation';
+import { extractAllStatesFromDefinition, extractCanonicalStateIds, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder } from './workflow-ordering';
+import { isStatusReferencedByEntity } from './workflow-status-usage';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -562,9 +564,15 @@ export const deleteWorkflowDefinition = async (
 };
 
 /**
- * Ensures every workflow state's `statusId` (StatusTemplate reference) has a matching `Status`
+ * Ensures every canonical workflow state (StatusTemplate reference) has a matching `Status`
  * record for this entity type in the Global scope, creating any that are missing and syncing the
  * `order` of any that already exist.
+ *
+ * Uses `extractCanonicalStateIds` rather than iterating `definitionData.states` directly, since
+ * validation allows a state to be referenced only as `initialState` or a transition endpoint
+ * (from/to) without an explicit entry in `states`, as long as it resolves to an existing
+ * StatusTemplate — the engine registers those states too, so skipping them here would leave the
+ * full-status-mapping invariant unenforced for implicit states.
  *
  * The `order` sync is a self-healing backward-compatibility measure rather than a one-off
  * migration: a `Status` published before ordering was computed from the transition graph (e.g.
@@ -580,8 +588,8 @@ export const ensureFullStatusMapping = async (
   entityType: string,
   definitionData: WorkflowDefinitionData,
 ): Promise<void> => {
-  const states = definitionData.states ?? [];
-  if (states.length === 0) return;
+  const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
+  if (canonicalStateIds.size === 0) return;
 
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
@@ -600,15 +608,12 @@ export const ensureFullStatusMapping = async (
 
   const computedOrder = computeStateOrder(definitionData.initialState, definitionData.transitions);
 
-  for (const state of states) {
-    if (!state.statusId) {
-      continue;
-    }
-    const order = computedOrder.get(state.statusId) ?? state.order ?? 0;
-    const existingStatus = existingStatusByTemplateId.get(state.statusId);
+  for (const statusId of canonicalStateIds) {
+    const order = computedOrder.get(statusId) ?? 0;
+    const existingStatus = existingStatusByTemplateId.get(statusId);
     if (!existingStatus) {
       await createStatus(executionContext, executionUser, entityType, {
-        template_id: state.statusId,
+        template_id: statusId,
         order,
         scope: StatusScope.Global,
       });
@@ -620,33 +625,6 @@ export const ensureFullStatusMapping = async (
 
 // Grace period before an orphaned Status is eligible for hard deletion by the cleanup manager.
 const STATUS_DELETION_GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-
-/**
- * True if any entity of `entityType` currently has its legacy `x_opencti_workflow_id` field
- * pointing at this `Status`, either in the live index or inside any draft (across all drafts,
- * not just one) — a `Status` referenced only from within a draft must not be deleted, since
- * publishing that draft later would leave it pointing at a hard-deleted record.
- */
-const isStatusReferencedByEntity = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityType: string,
-  statusId: string,
-): Promise<boolean> => {
-  const statusFilters = {
-    mode: FilterMode.And,
-    filters: [{ key: ['x_opencti_workflow_id'], values: [statusId] }],
-    filterGroups: [],
-  };
-  const entities = await fullEntitiesList<any>(context, user, [entityType], { filters: statusFilters });
-  if (entities.length > 0) return true;
-
-  const draftEntities = await fullEntitiesList<any>(context, user, [entityType], {
-    indices: [READ_INDEX_DRAFT_OBJECTS],
-    filters: statusFilters,
-  });
-  return draftEntities.length > 0;
-};
 
 /**
  * True if any EntitySetting's request-access workflow (approved/declined) references this
@@ -676,8 +654,8 @@ const reconcileOrphanedStatuses = async (
   oldDefinitionData: WorkflowDefinitionData,
   newDefinitionData: WorkflowDefinitionData,
 ): Promise<void> => {
-  const oldTemplateIds = new Set((oldDefinitionData.states ?? []).map((s) => s.statusId).filter((id): id is string => !!id));
-  const newTemplateIds = new Set((newDefinitionData.states ?? []).map((s) => s.statusId).filter((id): id is string => !!id));
+  const oldTemplateIds = extractCanonicalStateIds(oldDefinitionData as Parameters<typeof extractCanonicalStateIds>[0]);
+  const newTemplateIds = extractCanonicalStateIds(newDefinitionData as Parameters<typeof extractCanonicalStateIds>[0]);
 
   const existingStatuses = await fullEntitiesList<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], {
     filters: {
@@ -730,7 +708,7 @@ export const isStatusOrphaned = async (
 ): Promise<boolean> => {
   const definitionData = await getWorkflowDefinition(context, user, status.type, false);
   const stillMapped = !!definitionData
-    && (definitionData.states ?? []).some((s: { statusId?: string }) => s.statusId === status.template_id);
+    && extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]).has(status.template_id);
   if (stillMapped) return false;
 
   const referencedByEntity = await isStatusReferencedByEntity(context, user, status.type, status.id);
@@ -740,6 +718,13 @@ export const isStatusOrphaned = async (
 
   return true;
 };
+
+/**
+ * Lock key shared by `publishWorkflowDefinition` and the workflow status cleanup manager, so
+ * cleanup cannot hard-delete a `Status` while a republish is concurrently restoring/recreating it
+ * for the same entity type (and vice versa).
+ */
+export const getWorkflowStatusLockKey = (entityType: string): string => `workflow-status-lifecycle:${entityType}`;
 
 /**
  * Publish the draft workflow definition (copy draft_version to published_version).
@@ -794,100 +779,141 @@ export const publishWorkflowDefinition = async (
     });
   }
 
-  // Re-check at publish time: ensure the draft does not remove non-ending states that still have
-  // active workflow instances. The validation_errors on the draft were computed at save time and
-  // may be stale (instances may have moved into those states since the draft was saved).
-  if (workflowDefinitionEntity.published_version) {
-    let oldDef: any;
-    let newDef: any;
-    try {
-      const rawOld = workflowDefinitionEntity.published_version.content;
-      oldDef = typeof rawOld === 'string' ? JSON.parse(rawOld) : rawOld;
-      const rawNew = draftVersion.content;
-      newDef = typeof rawNew === 'string' ? JSON.parse(rawNew) : rawNew;
-    } catch (_) {
-      oldDef = null;
-      newDef = null;
-    }
+  // Hold a lock shared with the workflow status cleanup manager through reconciliation, full-status-
+  // mapping and the publication update below. Without it, cleanup could check a Status, a republish
+  // here could clear its deletion mark and recreate its mapping, and cleanup would still delete it
+  // based on its now-stale check — clearing `to_be_deleted_at` does not cancel a deletion in progress.
+  const lock = await lockResources([getWorkflowStatusLockKey(entityType)]);
+  try {
+    // Re-check at publish time: ensure the draft does not remove non-ending states that still have
+    // active workflow instances. The validation_errors on the draft were computed at save time and
+    // may be stale (instances may have moved into those states since the draft was saved).
+    if (workflowDefinitionEntity.published_version) {
+      let oldDef: any;
+      let newDef: any;
+      try {
+        const rawOld = workflowDefinitionEntity.published_version.content;
+        oldDef = typeof rawOld === 'string' ? JSON.parse(rawOld) : rawOld;
+        const rawNew = draftVersion.content;
+        newDef = typeof rawNew === 'string' ? JSON.parse(rawNew) : rawNew;
+      } catch (_) {
+        oldDef = null;
+        newDef = null;
+      }
 
-    if (oldDef && newDef) {
-      const oldStates = extractAllStatesFromDefinition(oldDef);
-      const newStates = extractAllStatesFromDefinition(newDef);
-      const removedStates = [...oldStates].filter((s) => !newStates.has(s));
+      if (oldDef && newDef) {
+        const oldStates = extractAllStatesFromDefinition(oldDef);
+        const newStates = extractAllStatesFromDefinition(newDef);
+        const removedStates = [...oldStates].filter((s) => !newStates.has(s));
 
-      if (removedStates.length > 0) {
-        // Ending states (no outgoing transitions) are safe to remove even with active instances.
-        const statesWithOutgoingTransitions = new Set<string>();
-        for (const transition of (oldDef.transitions ?? [])) {
-          const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
-          for (const s of fromStates) {
-            if (s && s !== '*') statesWithOutgoingTransitions.add(s);
+        if (removedStates.length > 0) {
+          // Ending states (no outgoing transitions) are safe to remove even with active instances.
+          const statesWithOutgoingTransitions = new Set<string>();
+          for (const transition of (oldDef.transitions ?? [])) {
+            const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+            for (const s of fromStates) {
+              if (s && s !== '*') statesWithOutgoingTransitions.add(s);
+            }
+          }
+          const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
+
+          if (nonEndingRemovedStates.length > 0) {
+            // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
+            // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
+            // Instead, we filter by currentState in ES and post-filter by workflow_id.
+            const instancesInRemovedStates = await fullEntitiesList<any>(executionContext, executionUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+              filters: {
+                mode: FilterMode.And,
+                filters: [
+                  { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
+                ],
+                filterGroups: [],
+              },
+            });
+            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
+
+            if (conflictingInstances.length > 0) {
+              throw FunctionalError(
+                'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
+                { removedStates: nonEndingRemovedStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
+              );
+            }
           }
         }
-        const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
 
-        if (nonEndingRemovedStates.length > 0) {
-          // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
-          // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
-          // Instead, we filter by currentState in ES and post-filter by workflow_id.
-          const instancesInRemovedStates = await fullEntitiesList<any>(executionContext, executionUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+        // Same guard as validation's STATUS_IN_USE, re-checked here against the correct baseline
+        // (published_version, not draftVersion): validateWorkflowDefinitionData above compares the
+        // draft against itself at publish time (its own DB lookup still finds draft_version, since
+        // it hasn't been cleared yet), so it can never catch a status removed by this same draft.
+        const oldStatusIds = extractCanonicalStateIds(oldDef as Parameters<typeof extractCanonicalStateIds>[0]);
+        const newStatusIds = extractCanonicalStateIds(newDef as Parameters<typeof extractCanonicalStateIds>[0]);
+        const removedStatusIds = [...oldStatusIds].filter((sid) => !newStatusIds.has(sid));
+
+        if (removedStatusIds.length > 0) {
+          const removedStatuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
             filters: {
               mode: FilterMode.And,
               filters: [
-                { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
+                { key: ['type'], values: [entityType] },
+                { key: ['scope'], values: [StatusScope.Global] },
+                { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
               ],
               filterGroups: [],
             },
           });
-          const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
 
-          if (conflictingInstances.length > 0) {
-            throw FunctionalError(
-              'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
-              { removedStates: nonEndingRemovedStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
-            );
+          for (const status of removedStatuses) {
+            const referencedByEntity = await isStatusReferencedByEntity(executionContext, executionUser, entityType, status.id);
+            if (referencedByEntity) {
+              throw FunctionalError(
+                'Cannot publish workflow: the following statuses are still assigned to entities and cannot be removed.',
+                { removedStatus: status.template_id, entityType: ENTITY_TYPE_STATUS },
+              );
+            }
           }
         }
+
+        // Republish orphan reconciliation: any Status no longer mapped by the new definition is
+        // marked for deferred deletion (grace period) unless still referenced by an entity or by a
+        // request-access workflow config; a Status still pending deletion that is reintroduced by
+        // the new definition has its pending mark cleared (restore wins over a concurrent purge).
+        await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef);
       }
-
-      // Republish orphan reconciliation: any Status no longer mapped by the new definition is
-      // marked for deferred deletion (grace period) unless still referenced by an entity or by a
-      // request-access workflow config; a Status still pending deletion that is reintroduced by
-      // the new definition has its pending mark cleared (restore wins over a concurrent purge).
-      await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef);
     }
-  }
 
-  // Validate consistency BEFORE publishing
-  const allVersions = workflowDefinitionEntity.all_versions || [];
-  const draftInHistory = allVersions.some((version: WorkflowVersion) => version.id === draftVersion.id);
-  if (!draftInHistory) {
-    throw FunctionalError('Consistency error: Cannot publish draft_version that is not in all_versions', {
-      draftVersionId: draftVersion.id,
-    });
-  }
+    // Validate consistency BEFORE publishing
+    const allVersions = workflowDefinitionEntity.all_versions || [];
+    const draftInHistory = allVersions.some((version: WorkflowVersion) => version.id === draftVersion.id);
+    if (!draftInHistory) {
+      throw FunctionalError('Consistency error: Cannot publish draft_version that is not in all_versions', {
+        draftVersionId: draftVersion.id,
+      });
+    }
 
-  // Full-mapping invariant: every state in the definition being published must map to a real
-  // Status record, creating any missing ones before the definition is marked published.
-  let publishedDefinitionData: WorkflowDefinitionData | null = null;
-  try {
-    const rawContent = draftVersion.content;
-    publishedDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
-  } catch (_) {
-    // Malformed content will already have failed validation earlier; nothing to reconcile here.
-  }
-  if (publishedDefinitionData) {
-    await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData);
-  }
+    // Full-mapping invariant: every state in the definition being published must map to a real
+    // Status record, creating any missing ones before the definition is marked published.
+    let publishedDefinitionData: WorkflowDefinitionData | null = null;
+    try {
+      const rawContent = draftVersion.content;
+      publishedDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+    } catch (_) {
+      // Malformed content will already have failed validation earlier; nothing to reconcile here.
+    }
+    if (publishedDefinitionData) {
+      await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData);
+    }
 
-  // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
-  // Copy draft_version to published_version and clear the draft (no more unpublished changes).
-  const updates: EditInput[] = [
-    { key: 'published_version', value: [draftVersion] },
-    { key: 'draft_version', value: [] },
-  ];
+    // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
+    // Copy draft_version to published_version and clear the draft (no more unpublished changes).
+    const updates: EditInput[] = [
+      { key: 'published_version', value: [draftVersion] },
+      { key: 'draft_version', value: [] },
+    ];
 
-  await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
+    await updateAttribute(executionContext, executionUser, workflowDefinitionEntity.id, ENTITY_TYPE_WORKFLOW_DEFINITION, updates);
+  } finally {
+    await lock.unlock();
+  }
 
   const updatedWorkflow = await storeLoadById(
     executionContext,
@@ -1344,9 +1370,12 @@ export const cleanupEntityWorkflow = async (
 };
 
 /**
- * True if any of the given workflow versions (published/draft) has a state mapped to
- * `statusTemplateId`. Shared by `isStatusTemplateUsedInWorkflows` (checked platform-wide) and
- * `isStatusUsedInWorkflow` (checked against a single, specific workflow).
+ * True if any of the given workflow versions (published/draft) uses `statusTemplateId` as a
+ * canonical state (`initialState`, a transition endpoint, or `states[].statusId`). Shared by
+ * `isStatusTemplateUsedInWorkflows` (platform-wide) and `isStatusUsedInWorkflow` (single workflow).
+ *
+ * Uses `extractCanonicalStateIds` instead of only `states[].statusId`, since a state can be
+ * used solely via `initialState`/a transition endpoint without a `states` entry.
  */
 const doAnyVersionsReferenceStatusTemplate = (
   versions: Array<WorkflowVersion | null | undefined>,
@@ -1362,8 +1391,13 @@ const doAnyVersionsReferenceStatusTemplate = (
       // Malformed content is not this function's concern; skip rather than false-positive.
       continue;
     }
-    const states: Array<{ statusId?: string }> = parsed?.states ?? [];
-    if (states.some((state) => state.statusId === statusTemplateId)) {
+    const definitionData = {
+      initialState: parsed?.initialState,
+      states: parsed?.states ?? [],
+      transitions: parsed?.transitions ?? [],
+    };
+    const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
+    if (canonicalStateIds.has(statusTemplateId)) {
       return true;
     }
   }

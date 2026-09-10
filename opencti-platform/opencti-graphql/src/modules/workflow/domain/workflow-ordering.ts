@@ -28,56 +28,56 @@ const buildAdjacency = (transitions: OrderingTransition[]): Map<string, Set<stri
   return adjacency;
 };
 
-// Workflow graphs are small (tens of states/transitions); this is a generous safety cap on the
-// total number of longest-simple-path DFS visits, bounding the otherwise potentially-exponential
-// exploration of a densely-connected graph.
-const MAX_ORDERING_DFS_STEPS = 5000;
-
 /**
- * Collects every state that lies on at least one cycle reachable from `initialState`, using a
- * white/gray/black DFS: a back-edge to a 'gray' node marks the whole stack segment as cyclic.
+ * Runs a DFS from `initialState` over the reachable subgraph and returns every "back edge": an
+ * edge that points to one of its own ancestors in the traversal (a state still `gray`, i.e. on
+ * the current DFS stack — including a self-loop, since a state is trivially its own ancestor
+ * while gray). Back edges are exactly the edges that close a cycle, however many cycles overlap
+ * or nest: removing them always leaves an acyclic graph, since a depth-first traversal can never
+ * reach one of its own ancestors through anything but a back edge.
+ *
+ * Edges are keyed as `${from}->${to}` since a state can appear as the source of both a back edge
+ * and a regular edge.
  */
-const statesOnCycles = (initialState: string, adjacency: Map<string, Set<string>>): Set<string> => {
-  const color = new Map<string, 'gray' | 'black'>();
-  const stack: string[] = [];
-  const onCycle = new Set<string>();
+const findBackEdges = (
+  initialState: string,
+  reachable: Set<string>,
+  adjacency: Map<string, Set<string>>,
+): Set<string> => {
+  const backEdges = new Set<string>();
+  const status = new Map<string, 'gray' | 'black'>();
 
-  const visit = (state: string) => {
-    color.set(state, 'gray');
-    stack.push(state);
-    (adjacency.get(state) ?? new Set<string>()).forEach((neighbor) => {
-      const neighborColor = color.get(neighbor);
-      if (neighborColor === 'gray') {
-        const ancestorIndex = stack.indexOf(neighbor);
-        for (let i = ancestorIndex; i < stack.length; i += 1) {
-          onCycle.add(stack[i]);
-        }
-      } else if (neighborColor === undefined) {
-        visit(neighbor);
+  const visit = (from: string) => {
+    status.set(from, 'gray');
+    (adjacency.get(from) ?? new Set<string>()).forEach((to) => {
+      if (!reachable.has(to)) return; // edge leaves the reachable set (e.g. unreachable target)
+      if (status.get(to) === 'gray') {
+        backEdges.add(`${from}->${to}`);
+      } else if (!status.has(to)) {
+        visit(to);
       }
     });
-    stack.pop();
-    color.set(state, 'black');
+    status.set(from, 'black');
   };
+
   visit(initialState);
-  return onCycle;
+  return backEdges;
 };
 
 /**
- * Computes a display/validation order for every state reachable from `initialState`: the length
- * of the longest simple path from `initialState` to it.
+ * Computes a display/validation order for every state reachable from `initialState`: its
+ * longest-path distance (counted in edges) from `initialState`.
  *
- * A state's value is `null` only if it lies on a cycle reachable from `initialState`, or if the
- * DFS never reached it before the step cap was hit. Callers must fall back to a manually supplied
- * `order` for any state whose value here is `null`.
+ * A cycle can never have every one of its edges strictly increasing (going around it always
+ * leads back to a smaller value), so one edge per cycle — the "back edge" found by
+ * `findBackEdges` — is left out of the distance computation. What remains is always a DAG, so a
+ * standard topological longest-path (Kahn's algorithm + DP) gives every reachable state an
+ * exact, deterministic value. There is no ambiguous case left to fall back to a manual order for.
  */
 export const computeStateOrder = (
   initialState: string,
   transitions: OrderingTransition[],
-  // Test-only injection point: lets unit tests deterministically exercise the step-cap fallback
-  // without needing a graph large/deep enough to hit the real MAX_ORDERING_DFS_STEPS.
-  maxSteps: number = MAX_ORDERING_DFS_STEPS,
-): Map<string, number | null> => {
+): Map<string, number> => {
   const adjacency = buildAdjacency(transitions);
 
   // Reachability (BFS) over all states from initialState — cycles do not block reachability.
@@ -94,39 +94,51 @@ export const computeStateOrder = (
     });
   }
 
-  const longestOrder = new Map<string, number>();
-  let steps = 0;
-  let capExceeded = false;
-  const dfs = (state: string, depth: number, pathVisited: Set<string>) => {
-    if (capExceeded) return;
-    steps += 1;
-    if (steps > maxSteps) {
-      capExceeded = true;
-      return;
-    }
-    const current = longestOrder.get(state);
-    if (current === undefined || depth > current) {
-      longestOrder.set(state, depth);
-    }
-    const neighbors = adjacency.get(state) ?? new Set<string>();
-    neighbors.forEach((neighbor) => {
-      if (capExceeded || pathVisited.has(neighbor)) return; // cycle back-edge on this path — stop this branch
-      const nextVisited = new Set(pathVisited);
-      nextVisited.add(neighbor);
-      dfs(neighbor, depth + 1, nextVisited);
-    });
-  };
-  dfs(initialState, 0, new Set([initialState]));
+  const backEdges = findBackEdges(initialState, reachable, adjacency);
+  const isUsableEdge = (from: string, to: string) => reachable.has(to) && !backEdges.has(`${from}->${to}`);
 
-  const cyclicStates = statesOnCycles(initialState, adjacency);
-  const result = new Map<string, number | null>();
-  // A state is null only if it's cycle-entangled, or if the DFS never computed an order for it
-  // (unreachable via any acyclic-terminating branch, or not yet visited when the step cap hit) —
-  // states that did get a real value before the cap was hit elsewhere keep that value.
-  reachable.forEach((state) => {
-    result.set(state, (cyclicStates.has(state) || !longestOrder.has(state)) ? null : (longestOrder.get(state) as number));
+  // Kahn's algorithm: topologically sort the reachable states, ignoring back edges.
+  const inDegree = new Map<string, number>();
+  reachable.forEach((state) => inDegree.set(state, 0));
+  reachable.forEach((from) => {
+    (adjacency.get(from) ?? new Set<string>()).forEach((to) => {
+      if (isUsableEdge(from, to)) inDegree.set(to, (inDegree.get(to) as number) + 1);
+    });
   });
-  return result;
+
+  const topoOrder: string[] = [];
+  const remainingInDegree = new Map(inDegree);
+  const queue: string[] = [];
+  remainingInDegree.forEach((degree, state) => {
+    if (degree === 0) queue.push(state);
+  });
+  while (queue.length > 0) {
+    const current = queue.shift() as string;
+    topoOrder.push(current);
+    (adjacency.get(current) ?? new Set<string>()).forEach((next) => {
+      if (!isUsableEdge(current, next)) return;
+      const remaining = (remainingInDegree.get(next) as number) - 1;
+      remainingInDegree.set(next, remaining);
+      if (remaining === 0) queue.push(next);
+    });
+  }
+
+  // Longest path (in edge count) from initialState, via DP over the topological order.
+  const order = new Map<string, number>();
+  order.set(initialState, 0);
+  topoOrder.forEach((current) => {
+    if (!order.has(current)) return; // not (yet) reached from initialState
+    const distance = order.get(current) as number;
+    (adjacency.get(current) ?? new Set<string>()).forEach((next) => {
+      if (!isUsableEdge(current, next)) return;
+      const candidate = distance + 1;
+      if (!order.has(next) || candidate > (order.get(next) as number)) {
+        order.set(next, candidate);
+      }
+    });
+  });
+
+  return order;
 };
 
 /**
