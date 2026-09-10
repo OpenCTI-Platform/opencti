@@ -11,6 +11,10 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { pushAll } from '../utils/arrayUtil';
 import type { BasicStoreObject, BasicStoreRelation } from '../types/store';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 const message = '[MIGRATION] Separate results data of Security Coverage into dedicated objects';
 
@@ -45,6 +49,8 @@ export const up = async (next: (error?: Error) => void) => {
       context,
       SYSTEM_USER,
       [RELATION_HAS_COVERED],
+      // filter out security platforms, not to be migrated.
+      { toTypes: [ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY, ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_TYPE_INDICATOR] },
     );
     logMigration.info(`${message} > ${allHasCoveredRelationships.length} Has-Covered relationships found`);
 
