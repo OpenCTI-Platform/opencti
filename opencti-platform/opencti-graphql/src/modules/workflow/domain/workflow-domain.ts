@@ -40,7 +40,7 @@ import {
   type WorkflowSerializedTransition,
   type WorkflowValidationError,
 } from '../types/workflow-types';
-import { extractAllStatesFromDefinition, validateWorkflowDefinitionData } from '../workflow-validation';
+import { extractAllStatesFromDefinition, extractCanonicalStateIds, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder } from './workflow-ordering';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
@@ -562,9 +562,15 @@ export const deleteWorkflowDefinition = async (
 };
 
 /**
- * Ensures every workflow state's `statusId` (StatusTemplate reference) has a matching `Status`
+ * Ensures every canonical workflow state (StatusTemplate reference) has a matching `Status`
  * record for this entity type in the Global scope, creating any that are missing and syncing the
  * `order` of any that already exist.
+ *
+ * Uses `extractCanonicalStateIds` rather than iterating `definitionData.states` directly, since
+ * validation allows a state to be referenced only as `initialState` or a transition endpoint
+ * (from/to) without an explicit entry in `states`, as long as it resolves to an existing
+ * StatusTemplate — the engine registers those states too, so skipping them here would leave the
+ * full-status-mapping invariant unenforced for implicit states.
  *
  * The `order` sync is a self-healing backward-compatibility measure rather than a one-off
  * migration: a `Status` published before ordering was computed from the transition graph (e.g.
@@ -580,8 +586,8 @@ export const ensureFullStatusMapping = async (
   entityType: string,
   definitionData: WorkflowDefinitionData,
 ): Promise<void> => {
-  const states = definitionData.states ?? [];
-  if (states.length === 0) return;
+  const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
+  if (canonicalStateIds.size === 0) return;
 
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
@@ -599,16 +605,21 @@ export const ensureFullStatusMapping = async (
   const existingStatusByTemplateId = new Map(existingStatuses.map((status) => [status.template_id, status]));
 
   const computedOrder = computeStateOrder(definitionData.initialState, definitionData.transitions);
+  // Manual fallback order only applies to states explicitly declared in `states`; implicit
+  // states (referenced only via initialState/transitions) have no manual override and default
+  // to 0 when the topological order is ambiguous.
+  const manualOrderByStatusId = new Map(
+    (definitionData.states ?? [])
+      .filter((state): state is WorkflowSerializedState & { statusId: string } => !!state.statusId)
+      .map((state) => [state.statusId, state.order]),
+  );
 
-  for (const state of states) {
-    if (!state.statusId) {
-      continue;
-    }
-    const order = computedOrder.get(state.statusId) ?? state.order ?? 0;
-    const existingStatus = existingStatusByTemplateId.get(state.statusId);
+  for (const statusId of canonicalStateIds) {
+    const order = computedOrder.get(statusId) ?? manualOrderByStatusId.get(statusId) ?? 0;
+    const existingStatus = existingStatusByTemplateId.get(statusId);
     if (!existingStatus) {
       await createStatus(executionContext, executionUser, entityType, {
-        template_id: state.statusId,
+        template_id: statusId,
         order,
         scope: StatusScope.Global,
       });
