@@ -11,6 +11,7 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
     statusId: String!
+    order: Int
     onEnter: [WorkflowActionConfig!]
     onExit: [WorkflowActionConfig!]
 }

@@ -1,12 +1,14 @@
 import { z } from 'zod';
 import { ValidationError } from '../../config/errors';
 import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
-import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
+import { FilterMode, FilterOperator, StatusScope } from '../../generated/graphql';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
+import { findUnreachableStates } from './domain/workflow-ordering';
+import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
@@ -40,6 +42,8 @@ export const workflowConditionConfigSchema = z.object({
 export const workflowSerializedStateSchema = z.object({
   statusId: z.string().max(255).optional(),
   name: z.string().max(255).optional(),
+  /** Manual fallback order, required only when topological order computation is ambiguous (a cycle). */
+  order: z.number().optional(),
   onEnter: z.array(workflowActionConfigSchema).optional(),
   onExit: z.array(workflowActionConfigSchema).optional(),
 });
@@ -73,6 +77,38 @@ export const extractAllStatesFromDefinition = (definition: z.infer<typeof workfl
 
   (definition.states ?? []).forEach((state) => {
     if (state.name) stateIds.add(state.name);
+    if (state.statusId) stateIds.add(state.statusId);
+  });
+
+  definition.transitions.forEach((transition) => {
+    if (transition.from !== null) {
+      const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+      fromStates.forEach((s) => {
+        if (s !== '*') stateIds.add(s);
+      });
+    }
+    if (transition.to !== null && transition.to !== '*') {
+      stateIds.add(transition.to);
+    }
+  });
+
+  return stateIds;
+};
+
+/**
+ * Canonical state IDs only: `initialState`, transition endpoints, and each state's `statusId`.
+ * Unlike `extractAllStatesFromDefinition`, this deliberately excludes bare `state.name` labels —
+ * `name` is a human-readable label, not an ID, so it must not be treated as a state ID for
+ * reachability purposes (name-only states without a `statusId` are already rejected elsewhere).
+ */
+export const extractCanonicalStateIds = (definition: z.infer<typeof workflowDefinitionSchema>): Set<string> => {
+  const stateIds = new Set<string>();
+
+  if (definition.initialState !== '*') {
+    stateIds.add(definition.initialState);
+  }
+
+  (definition.states ?? []).forEach((state) => {
     if (state.statusId) stateIds.add(state.statusId);
   });
 
@@ -327,6 +363,34 @@ export const validateWorkflowDefinitionData = async (
     }
   }
 
+  // Every declared state must resolve to a canonical StatusTemplate id (statusId), not a bare
+  // `name` — name-only states cannot be mapped onto a Status, so they are rejected here.
+  states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
+    if (state.name && !state.statusId) {
+      errors.push({
+        type: 'MISSING_STATUS_ID',
+        message: `State '${state.name}' must reference a status template (statusId); name-only states are not supported`,
+      });
+    }
+  });
+
+  // Reachability: every declared/referenced state must be reachable from initialState via some
+  // transition path. An unreachable state is a definition bug (it can never be entered), so it is
+  // always a hard error.
+  if (initialState !== '*') {
+    const allStateIds = [...extractCanonicalStateIds(validationResult.data)];
+    const unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
+    unreachableStates.forEach((stateId) => {
+      errors.push({
+        type: 'STATE_UNREACHABLE',
+        message: `State '${stateId}' is declared but not reachable from the initial state '${initialState}'`,
+      });
+    });
+
+    // Ordering is derived automatically from the transition graph (longest-simple-path) and is
+    // never required for validation.
+  }
+
   if (existingWorkflowId) {
     const existingWorkflow = await storeLoadById<any>(context, user, existingWorkflowId, ENTITY_TYPE_WORKFLOW_DEFINITION);
     if (existingWorkflow) {
@@ -381,6 +445,52 @@ export const validateWorkflowDefinitionData = async (
                 path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
               });
             }
+          }
+        }
+
+        // Same guard, for entity types that still rely on the legacy per-entity Status record
+        // (Status.x_opencti_workflow_id) instead of WorkflowInstance.currentState — a removed
+        // state whose Status is still assigned to an entity must also block publish. Computed
+        // from `states[].statusId` directly (not `removedStates`, which also mixes in bare
+        // `name` labels and transition endpoints) so a state dropped from `states` is caught
+        // even if its statusId lingers on as a transition endpoint elsewhere in the definition.
+        const oldStatusIds = new Set(
+          (oldValidation.data.states ?? []).map((s) => s.statusId).filter((sid): sid is string => !!sid),
+        );
+        const newStatusIds = new Set(
+          (validationResult.data.states ?? []).map((s) => s.statusId).filter((sid): sid is string => !!sid),
+        );
+        const removedStatusIds = [...oldStatusIds].filter((sid) => !newStatusIds.has(sid));
+
+        if (removedStatusIds.length > 0) {
+          const removedStatuses = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_STATUS], {
+            filters: {
+              mode: FilterMode.And,
+              filters: [
+                { key: ['type'], values: [entityType] },
+                { key: ['scope'], values: [StatusScope.Global] },
+                { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
+              ],
+              filterGroups: [],
+            },
+          });
+
+          const statusesInUse: string[] = [];
+          const conflictingEntities: Array<{ id: string; entity_type: string }> = [];
+          for (const status of removedStatuses) {
+            const referencingEntities = await findEntitiesReferencingStatus(context, user, entityType, status.id);
+            if (referencingEntities.length > 0) {
+              statusesInUse.push(status.template_id);
+              conflictingEntities.push(...referencingEntities);
+            }
+          }
+
+          if (statusesInUse.length > 0) {
+            errors.push({
+              type: 'STATUS_IN_USE',
+              message: `Cannot remove statuses ${statusesInUse.join(', ')} that are currently assigned to entities`,
+              path: conflictingEntities,
+            });
           }
         }
       }
