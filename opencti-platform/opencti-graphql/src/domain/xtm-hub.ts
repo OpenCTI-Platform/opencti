@@ -2,7 +2,7 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache'
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
+import { getHubBackendUrl, xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
 import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../generated/graphql';
 import { updateAttribute } from '../database/middleware';
 import { booleanConf, BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
@@ -105,6 +105,45 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
     ],
   );
   return { success: true };
+};
+
+export const autoRegisterOpenCTIOnStartup = async (
+  context: AuthContext,
+  user: AuthUser,
+  platformToken: string,
+): Promise<{ success: boolean }> => {
+  if (!platformToken) {
+    return { success: false };
+  }
+
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  if (settings.xtm_hub_registration_status === XtmHubRegistrationStatus.Registered) {
+    logApp.info('[XTMH][AUTO-REGISTER][BOOT] Skipping startup auto-registration: platform already registered');
+    return { success: false };
+  }
+
+  const hubUrl = getHubBackendUrl();
+  if (!hubUrl) {
+    logApp.warn('[XTMH][AUTO-REGISTER][BOOT] Skipping startup auto-registration: XTM Hub URL is not configured');
+    return { success: false };
+  }
+
+  const { isReachable } = await xtmHubClient.isBackendReachable();
+  if (!isReachable) {
+    logApp.warn('[XTMH][AUTO-REGISTER][BOOT] Skipping startup auto-registration: XTM Hub backend is unreachable');
+    return { success: false };
+  }
+
+  try {
+    const response = await autoRegisterOpenCTI(context, user, { platform_token: platformToken });
+    if (!response.success) {
+      logApp.warn('[XTMH][AUTO-REGISTER][BOOT] Startup auto-registration failed');
+    }
+    return response;
+  } catch (error) {
+    logApp.warn('[XTMH][AUTO-REGISTER][BOOT] Startup auto-registration failed with error', { error });
+    return { success: false };
+  }
 };
 
 const resetRegistration = async (context: AuthContext, user: AuthUser, settings: BasicStoreSettings) => {

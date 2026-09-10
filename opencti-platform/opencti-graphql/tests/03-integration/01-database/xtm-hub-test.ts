@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import * as cache from '../../../src/database/cache';
-import { autoRegisterOpenCTI, checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../../../src/domain/xtm-hub';
+import { autoRegisterOpenCTI, autoRegisterOpenCTIOnStartup, checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../../../src/domain/xtm-hub';
 import { testContext } from '../../utils/testQuery';
 import { HUB_REGISTRATION_MANAGER_USER } from '../../../src/utils/access';
 import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../../../src/generated/graphql';
@@ -370,6 +370,91 @@ describe('XTM hub', () => {
 
       await autoRegisterOpenCTI(testContext, HUB_REGISTRATION_MANAGER_USER, input);
       expect(settingsEditFieldSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('autoRegisterOpenCTIOnStartup', () => {
+    let autoRegisterSpy: MockInstance;
+    let isBackendReachableSpy: MockInstance;
+    let getEntityFromCacheSpy: MockInstance;
+    let getEntitiesListFromCacheSpy: MockInstance;
+    let settingsEditFieldSpy: MockInstance;
+    let confGetSpy: MockInstance;
+
+    beforeEach(() => {
+      autoRegisterSpy = vi.spyOn(xtmHubClient, 'autoRegister').mockResolvedValue({ success: true });
+      isBackendReachableSpy = vi.spyOn(xtmHubClient, 'isBackendReachable').mockResolvedValue({ isReachable: true });
+      getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue({
+        id: 'settings_id',
+        platform_url: 'https://opencti.local',
+        platform_title: 'OpenCTI',
+        xtm_hub_registration_status: XtmHubRegistrationStatus.Unregistered,
+      } as BasicStoreSettings);
+      getEntitiesListFromCacheSpy = vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([]);
+      settingsEditFieldSpy = vi.spyOn(settingsModule, 'settingsEditField').mockResolvedValue({});
+      confGetSpy = vi.spyOn(conf.default, 'get').mockImplementation((key: string | undefined) => {
+        if (key === 'xtm:xtmhub_url') return 'https://hub.filigran.io';
+        return undefined;
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should skip startup auto-registration when already registered', async () => {
+      getEntityFromCacheSpy.mockResolvedValue({
+        id: 'settings_id',
+        xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+      });
+
+      const result = await autoRegisterOpenCTIOnStartup(testContext, HUB_REGISTRATION_MANAGER_USER, 'test-token');
+
+      expect(result.success).toBe(false);
+      expect(isBackendReachableSpy).not.toHaveBeenCalled();
+      expect(autoRegisterSpy).not.toHaveBeenCalled();
+    });
+
+    it('should skip startup auto-registration when XTM Hub URL is not configured', async () => {
+      confGetSpy.mockImplementation((key: string) => {
+        if (key === 'xtm:xtmhub_url') return '';
+        return undefined;
+      });
+
+      const result = await autoRegisterOpenCTIOnStartup(testContext, HUB_REGISTRATION_MANAGER_USER, 'test-token');
+
+      expect(result.success).toBe(false);
+      expect(isBackendReachableSpy).not.toHaveBeenCalled();
+      expect(autoRegisterSpy).not.toHaveBeenCalled();
+    });
+
+    it('should skip startup auto-registration when XTM Hub backend is unreachable', async () => {
+      isBackendReachableSpy.mockResolvedValue({ isReachable: false });
+
+      const result = await autoRegisterOpenCTIOnStartup(testContext, HUB_REGISTRATION_MANAGER_USER, 'test-token');
+
+      expect(result.success).toBe(false);
+      expect(autoRegisterSpy).not.toHaveBeenCalled();
+      expect(settingsEditFieldSpy).not.toHaveBeenCalled();
+    });
+
+    it('should auto-register on startup when all guards pass', async () => {
+      const result = await autoRegisterOpenCTIOnStartup(testContext, HUB_REGISTRATION_MANAGER_USER, 'test-token');
+
+      expect(result.success).toBe(true);
+      expect(isBackendReachableSpy).toHaveBeenCalledOnce();
+      expect(autoRegisterSpy).toHaveBeenCalledWith(
+        {
+          platformId: 'settings_id',
+          platformToken: 'test-token',
+          platformUrl: 'https://opencti.local',
+          platformTitle: 'OpenCTI',
+        },
+        expect.any(String),
+        0,
+      );
+      expect(getEntitiesListFromCacheSpy).toHaveBeenCalled();
+      expect(settingsEditFieldSpy).toHaveBeenCalled();
     });
   });
 
