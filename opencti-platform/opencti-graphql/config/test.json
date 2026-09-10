@@ -110,6 +110,9 @@
   "ingestion_manager": {
     "enabled": false
   },
+  "telemetry_manager": {
+    "enabled": false
+  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"
