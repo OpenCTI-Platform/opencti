@@ -1,8 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import Paper from '@mui/material/Paper';
+import { Paper, Text } from '@filigran/design-system';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import Button from '@common/button/Button';
@@ -18,16 +17,10 @@ const XtmHubDisconnectedBanner = ({ unreachable = false }: XtmHubDisconnectedBan
 
   return (
     <Paper
-      variant="outlined"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 2,
-        flexWrap: 'wrap',
-        padding: '24px 20px',
-        borderRadius: 1,
-        marginTop: 3,
+      padding={24}
+      className="flex items-center justify-between gap-2 flex-wrap"
+      style={{
+        marginTop: 24,
         background: 'linear-gradient(90deg, #061527 0%, #0d2b4a 100%)',
         border: 'none',
       }}
@@ -35,15 +28,15 @@ const XtmHubDisconnectedBanner = ({ unreachable = false }: XtmHubDisconnectedBan
       <Stack>
         <Stack direction="row" spacing={1.5} alignItems="center">
           <LinkOffOutlinedIcon sx={{ color: '#ffffff' }} fontSize="small" />
-          <Typography sx={{ color: '#ffffff', fontWeight: 700, fontSize: 15, fontFamily: '"Geologica", sans-serif' }}>
+          <Text variant="content-base-bold" style={{ color: '#ffffff', fontSize: 15, fontFamily: '"Geologica", sans-serif' }}>
             {t_i18n('XTM Hub is disconnected')}
-          </Typography>
+          </Text>
         </Stack>
-        <Typography variant="body2" sx={{ color: alpha('#ffffff', 0.7) }}>
+        <Text variant="content-base" style={{ color: alpha('#ffffff', 0.7) }}>
           {unreachable
             ? t_i18n("XTM Hub is unreachable and connection can't be established")
             : t_i18n('Please connect your product so you can deploy resources')}
-        </Typography>
+        </Text>
       </Stack>
       {!unreachable && (
         <Button onClick={() => navigate('/redirect/connect-xtm-hub')}>

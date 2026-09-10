@@ -175,7 +175,7 @@ describe('NewsFeed', () => {
   it('renders the tags in lowercase in the tags column', () => {
     renderNewsFeed();
     renderColumn('tags', { tags: ['CTI', 'MALWARE'] });
-    expect(screen.getAllByLabelText('cti').length).toBeGreaterThan(0);
+    expect(screen.getByText('cti')).toBeInTheDocument();
     expect(screen.getByText('+1')).toBeInTheDocument();
     expect(screen.getByLabelText('malware')).toBeInTheDocument();
   });

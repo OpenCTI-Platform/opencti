@@ -1,9 +1,7 @@
 import Card from '@common/card/Card';
-import { Badge, Stack } from '@mui/material';
-import Typography from '@mui/material/Typography';
+import { Tabs, TabsList, TabsTrigger, Text } from '@filigran/design-system';
+import { Stack } from '@mui/material';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import Breadcrumbs from 'src/components/Breadcrumbs';
@@ -115,9 +113,9 @@ const NewsFeedPage: FunctionComponent = () => {
   return (
     <div>
       <Breadcrumbs elements={[{ label: t_i18n('XTM Hub News Feed'), current: true }]} />
-      <Typography variant="h2" sx={{ mt: 3, mb: 3 }}>
+      <Text variant="title-xl" className="mt-6 mb-6">
         {t_i18n('XTM Hub News Feed')}
-      </Typography>
+      </Text>
       {isXTMHubUnreachable ? (
         <div style={{ marginBottom: 20 }}>
           <XtmHubDisconnectedBanner unreachable />
@@ -127,29 +125,25 @@ const NewsFeedPage: FunctionComponent = () => {
           <XtmHubDisconnectedBanner />
         </div>
       )}
-      <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)}>
-        <Tab
-          value="news-feed"
-          sx={{ textTransform: 'none' }}
-          label={(
-            <Badge color="error" badgeContent={unreadNewsFeedsCount} max={99} invisible={unreadNewsFeedsCount === 0}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <CampaignOutlined fontSize="small" />
-                <span>{t_i18n('News feed')}</span>
-              </Stack>
-            </Badge>
-          )}
-        />
-        <Tab
-          value="settings"
-          sx={{ textTransform: 'none' }}
-          label={(
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <SettingsOutlinedIcon fontSize="small" />
-              <span>{t_i18n('Settings')}</span>
-            </Stack>
-          )}
-        />
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'news-feed' | 'settings')} panels="external">
+        <TabsList>
+          <TabsTrigger
+            value="news-feed"
+            icon={<CampaignOutlined fontSize="small" />}
+            badge={unreadNewsFeedsCount}
+            badgeMax={99}
+            badgeColor="error"
+            badgeInvisible={unreadNewsFeedsCount === 0}
+          >
+            {t_i18n('News feed')}
+          </TabsTrigger>
+          <TabsTrigger
+            value="settings"
+            icon={<SettingsOutlinedIcon fontSize="small" />}
+          >
+            {t_i18n('Settings')}
+          </TabsTrigger>
+        </TabsList>
       </Tabs>
       <div style={{ marginTop: 20 }}>
         {activeTab === 'news-feed' ? (

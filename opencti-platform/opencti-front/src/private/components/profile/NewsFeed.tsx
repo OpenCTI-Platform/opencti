@@ -1,11 +1,12 @@
 import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFeedLine_node.graphql';
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
-import { Alert, Stack, Tooltip, IconButton } from '@mui/material';
+import { Stack } from '@mui/material';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
+import IconButton from '@common/button/IconButton';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
-import { Link } from 'react-router';
 import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -177,18 +178,23 @@ const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> =
   if (!href) return null;
 
   return (
-    <Tooltip title={t_i18n('Open in XTM Hub')}>
-      <IconButton
-        component="a"
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        size="small"
-        aria-label={t_i18n('Open in XTM Hub')}
-        onClick={(e: React.MouseEvent) => e.stopPropagation()}
-      >
-        <OpenInNewOutlined fontSize="small" color="primary" />
-      </IconButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span style={{ display: 'inline-flex' }}>
+          <IconButton
+            component="a"
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="small"
+            aria-label={t_i18n('Open in XTM Hub')}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            <OpenInNewOutlined fontSize="small" color="primary" />
+          </IconButton>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{t_i18n('Open in XTM Hub')}</TooltipContent>
     </Tooltip>
   );
 };
@@ -238,8 +244,11 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       isSortable: true,
       render: ({ title }: NewsFeedLine_node$data) => (
         <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
-          <Tooltip title={title ?? ''}>
-            <span>{title ?? ''}</span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>{title ?? ''}</span>
+            </TooltipTrigger>
+            <TooltipContent>{title ?? ''}</TooltipContent>
           </Tooltip>
         </div>
       ),

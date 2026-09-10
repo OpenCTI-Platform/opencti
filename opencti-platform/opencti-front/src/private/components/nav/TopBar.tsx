@@ -1,6 +1,5 @@
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import { AccountCircleOutlined, AlarmOnOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
-import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
