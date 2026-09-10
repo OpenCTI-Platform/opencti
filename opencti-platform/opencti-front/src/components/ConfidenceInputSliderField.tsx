@@ -7,6 +7,7 @@ import TextField from './TextField';
 import SliderField from './fields/SliderField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
+import { useTheme } from '@mui/material/styles';
 
 interface InputSliderFieldProps {
   label: string;
@@ -41,6 +42,7 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
   maxLimit,
   helperText,
 }) => {
+  const theme = useTheme();
   const {
     marks: defaultMarks,
     scale,
@@ -108,14 +110,14 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
         <Field
           component={SliderField}
           name={name}
-          min={min}
-          max={max}
+          minLabel={min}
+          maxLabel={max}
           showBounds={false}
           disabled={finalDisabled}
           ariaLabel={label}
           color={currentLevel.level.color}
           onSubmit={onSubmit}
-          containerstyle={{ marginTop: 16 }}
+          containerstyle={{ marginTop: theme.spacing(2) }}
         />
         {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
       </>
@@ -161,13 +163,13 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
       <Field
         component={SliderField}
         name={name}
-        min={min}
-        max={max}
+        minLabel={min}
+        maxLabel={max}
         showBounds={false}
         disabled={disabled}
         ariaLabel={label}
         color={currentLevel.level.color}
-        containerstyle={{ marginTop: 16 }}
+        containerstyle={{ marginTop: theme.spacing(2) }}
       />
       {helperText && <FormHelperText sx={{ marginBottom: 1 }}>{helperText}</FormHelperText>}
     </>

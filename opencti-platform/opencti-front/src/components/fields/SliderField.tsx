@@ -1,18 +1,17 @@
 import React, { ReactNode, useCallback } from 'react';
-import { Slider } from '@filigran/design-system';
+import { Slider, SliderProps } from '@filigran/design-system';
 import { FieldProps, useField } from 'formik';
 import { isNilField } from '../../utils/utils';
 
-export type SliderFieldProps = FieldProps<string> & {
+export type SliderFieldProps = FieldProps<string> & SliderProps & {
   label?: ReactNode;
   ariaLabel?: string;
-  helpertext?: ReactNode;
   required?: boolean;
   disabled?: boolean;
   containerstyle?: React.CSSProperties;
   className?: string;
-  min?: number;
-  max?: number;
+  minLabel?: number;
+  maxLabel?: number;
   step?: number;
   showBounds?: boolean;
   /** Paints the filled range and thumb, used to reflect the value's scale level */
@@ -27,13 +26,13 @@ const SliderField = ({
   field: { name, value },
   label,
   ariaLabel,
-  helpertext,
+  helperText,
   required = false,
   disabled,
   containerstyle,
   className,
-  min = 0,
-  max = 100,
+  minLabel = 0,
+  maxLabel = 100,
   step = 1,
   showBounds = false,
   color,
@@ -43,7 +42,7 @@ const SliderField = ({
 }: SliderFieldProps) => {
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
-  const currentValue = value === null || value === undefined || value === '' ? min : Number(value);
+  const currentValue = value === null || value === undefined || value === '' ? minLabel : Number(value);
   // The asterisk is carried on the label like the other form fields.
   const finalLabel = label != null && required ? <>{label} *</> : label;
   // The track colour tracks the value's scale level.
@@ -76,15 +75,15 @@ const SliderField = ({
         value={[currentValue]}
         onValueChange={handleValueChange}
         onValueCommit={handleValueCommit}
-        min={min}
-        max={max}
+        min={minLabel}
+        max={maxLabel}
         step={step}
         disabled={disabled}
         name={name}
         label={finalLabel}
         showBounds={showBounds}
         aria-label={ariaLabel ?? (typeof label === 'string' ? label : 'slider input')}
-        helperText={showError ? meta.error : helpertext}
+        helperText={showError ? meta.error : helperText}
       />
     </div>
   );
