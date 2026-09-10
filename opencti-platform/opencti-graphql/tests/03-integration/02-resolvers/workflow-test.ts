@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { loadEntity } from '../../../src/database/middleware';
 import { findHistory } from '../../../src/domain/log';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
@@ -982,7 +982,9 @@ describe('Workflow projection onto legacy Status field (Report)', () => {
     await queryAsAdmin({
       query: gql`
         mutation ReportDeleteForWorkflowTest($id: ID!) {
-          reportDelete(id: $id)
+          reportEdit(id: $id) {
+            delete
+          }
         }
       `,
       variables: { id: reportInternalId },
@@ -998,10 +1000,18 @@ describe('Workflow projection onto legacy Status field (Report)', () => {
     expect(result.data.report.status.id).toBeDefined();
   });
 
-  it('should deny workflowInstance access to a user without KNOWLEDGE_KNUPDATE', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+  it('should allow workflowInstance read access to a user without KNOWLEDGE_KNUPDATE, like the legacy status field', async () => {
+    const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
       query: REPORT_WORKFLOW_INSTANCE_AUTH_QUERY,
       variables: { id: reportInternalId },
+    });
+    expect(result.data.report.workflowInstance.currentState).toBe('open');
+  });
+
+  it('should deny triggerWorkflowEvent to a user without KNOWLEDGE_KNUPDATE', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: { entityId: reportInternalId, eventName: 'validate_event' },
     });
   });
 

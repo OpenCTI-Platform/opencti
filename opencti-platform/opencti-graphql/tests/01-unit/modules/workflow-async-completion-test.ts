@@ -641,4 +641,131 @@ describe('reportWorkflowAsyncActionResult', () => {
       );
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Additional edge-case coverage
+  // ---------------------------------------------------------------------------
+
+  it('sets pendingStatus=error with a stringified message when a syncAction throws a non-Error value', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [{ type: 'throwingStringAction', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).throwingStringAction = vi.fn().mockRejectedValue('plain string failure');
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const calls = (updateAttribute as any).mock.calls;
+    const lastPatches = calls[calls.length - 1][4];
+    expect(lastPatches.find((p: any) => p.key === 'pendingError')?.value[0]).toContain('plain string failure');
+  });
+
+  it('sets pendingStatus=error with a stringified message when an onEnter action throws a non-Error value', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      onEnterActions: [{ type: 'throwingStringOnEnter', params: {} }],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (ActionRegistry as any).throwingStringOnEnter = vi.fn().mockRejectedValue('plain string onEnter failure');
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const calls = (updateAttribute as any).mock.calls;
+    const lastPatches = calls[calls.length - 1][4];
+    expect(lastPatches.find((p: any) => p.key === 'pendingError')?.value[0]).toContain('plain string onEnter failure');
+  });
+
+  it('starts a fresh history when the instance history is malformed JSON', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt), history: '{ not valid json' }),
+    );
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    const history = JSON.parse(patches.find((p: any) => p.key === 'history')?.value[0] ?? '[]');
+    expect(history).toHaveLength(1);
+    expect(history[0].event).toBe('submit');
+  });
+
+  it('starts a fresh history when the instance history is empty/falsy', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt), history: '' }),
+    );
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    const history = JSON.parse(patches.find((p: any) => p.key === 'history')?.value[0] ?? '[]');
+    expect(history).toHaveLength(1);
+    expect(history[0].event).toBe('submit');
+  });
+
+  it('includes the comment in the new history entry when the transition has one', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [],
+      comment: 'looks good to me',
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    const [, , , , patches] = (updateAttribute as any).mock.calls[0];
+    const history = JSON.parse(patches.find((p: any) => p.key === 'history')?.value[0] ?? '[]');
+    expect(history[history.length - 1].comment).toBe('looks good to me');
+  });
+
+  it('passes runtimeParams through to actions, defaulting to {} when absent', async () => {
+    const pt = makePendingTransition({
+      asyncActions: [
+        { id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' },
+      ],
+      syncActions: [{ type: 'captureRuntimeParams', params: {} }],
+      runtimeParams: undefined,
+    });
+    (storeLoadById as any).mockResolvedValue(
+      makeInstance({ pendingTransition: JSON.stringify(pt) }),
+    );
+    let capturedRuntimeParams: any;
+    (ActionRegistry as any).captureRuntimeParams = vi.fn().mockImplementation((ctx: any) => {
+      capturedRuntimeParams = ctx.runtimeParams;
+    });
+    (updateAttribute as any).mockResolvedValue({});
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    expect(capturedRuntimeParams).toEqual({});
+  });
 });
