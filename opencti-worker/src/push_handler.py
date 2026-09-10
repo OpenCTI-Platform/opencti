@@ -14,6 +14,7 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
+from http_pool import tune_session_pool
 from ingest_pools import ChunkEntry, ChunkJob, get_ingest_pools, submit_bundle_atomic
 
 # Chunked-path timing telemetry (user ask 2026-09-07): where a bundle's wall time
@@ -133,6 +134,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             ssl_verify=self.ssl_verify,
             provider="worker/" + __version__,
         )
+        # study 0011: the default 10-connection pool IS the per-process ceiling (env-gated)
+        tune_session_pool(self.api.session, self.api.app_logger)
         # s9.11: the wave width is a pure shaping choice; the thread budget is a
         # process-wide resource shared across handlers (see get_shared_bundle_executor).
         self.wave_width = max(1, self.bundle_wave_width or self.bundle_parallelism)
