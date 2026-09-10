@@ -42,6 +42,7 @@ import {
 } from '../types/workflow-types';
 import { extractAllStatesFromDefinition, extractCanonicalStateIds, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder } from './workflow-ordering';
+import { isStatusReferencedByEntity } from './workflow-status-usage';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -631,33 +632,6 @@ export const ensureFullStatusMapping = async (
 
 // Grace period before an orphaned Status is eligible for hard deletion by the cleanup manager.
 const STATUS_DELETION_GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-
-/**
- * True if any entity of `entityType` currently has its legacy `x_opencti_workflow_id` field
- * pointing at this `Status`, either in the live index or inside any draft (across all drafts,
- * not just one) — a `Status` referenced only from within a draft must not be deleted, since
- * publishing that draft later would leave it pointing at a hard-deleted record.
- */
-const isStatusReferencedByEntity = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityType: string,
-  statusId: string,
-): Promise<boolean> => {
-  const statusFilters = {
-    mode: FilterMode.And,
-    filters: [{ key: ['x_opencti_workflow_id'], values: [statusId] }],
-    filterGroups: [],
-  };
-  const entities = await fullEntitiesList<any>(context, user, [entityType], { filters: statusFilters });
-  if (entities.length > 0) return true;
-
-  const draftEntities = await fullEntitiesList<any>(context, user, [entityType], {
-    indices: [READ_INDEX_DRAFT_OBJECTS],
-    filters: statusFilters,
-  });
-  return draftEntities.length > 0;
-};
 
 /**
  * True if any EntitySetting's request-access workflow (approved/declined) references this
