@@ -92,9 +92,12 @@ describe('stix core object domain import push ref (sync file reference mode)', (
     vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never);
     vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue(undefined as never);
     const copySpy = vi.spyOn(fileStorage, 'copyFileFromSyncReference').mockResolvedValue({
-      id: 'import/Report/report--1/report.pdf',
-      name: 'report.pdf',
-      metaData: { version: '2024-01-01T00:00:00.000Z', mimetype: 'application/pdf', file_markings: ['marking--1'] },
+      upload: {
+        id: 'import/Report/report--1/report.pdf',
+        name: 'report.pdf',
+        metaData: { version: '2024-01-01T00:00:00.000Z', mimetype: 'application/pdf', file_markings: ['marking--1'] },
+      },
+      untouched: false,
     } as never);
     return { copySpy, unlock };
   };

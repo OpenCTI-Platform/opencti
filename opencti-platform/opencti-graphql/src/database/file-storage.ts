@@ -397,22 +397,10 @@ export const guessMimeType = (fileId: string): string => {
 };
 
 /**
- * Completes a sync file-reference transfer: server-side copies a validated sync/inflight
- * object into its final storage path and indexes it, using metadata resolved from the local
- * bundle (never inherited from the staged object, which is untrusted remote data).
- *
- * Security model: the platform cannot use the caller's authenticated identity to prove "this
- * is really sync <syncId>'s own worker" -- every opencti-worker process shares one platform-wide
- * token across every connector/sync it processes, so there is no distinct per-sync identity to
- * check against. The actual security boundary is storageKey itself: it must be an unguessable,
- * single-use, cryptographically random token (see syncManager.js's remoteFileId), never one
- * derived from data an unrelated caller could also know (e.g. a hash of the remote file's URI).
- * validateSyncInflightStorageKey only re-confirms storageKey and syncId are consistent with each
- * other; that check alone is NOT authorization, since both are supplied together by the same
- * caller -- it exists to catch accidental cross-sync path mistakes, not a malicious caller who
- * deliberately crafts a matching pair. Real security uses the deleted-on-success semantics below:
- * a storageKey stops being valid the instant it's consumed once, so knowledge of a live one is
- * exactly as sensitive as a one-time bearer token.
+ * Server-side copies a validated sync/inflight object to its final storage path and indexes it.
+ * Security: storageKey is a single-use, unguessable token (see syncManager.js's remoteFileId) --
+ * that's the actual access control, not the caller's identity (all workers share one platform
+ * token) or sync_id (only cross-checked for consistency, not authorization on its own).
  * Deletes the sync/inflight source on success, so the TTL janitor (f3) stays a pure backstop.
  */
 export const copyFileFromSyncReference = async (
@@ -431,7 +419,7 @@ export const copyFileFromSyncReference = async (
     noTriggerImport?: boolean;
     importContextEntities?: BasicStoreEntity[];
   },
-): Promise<LoadedFile | null> => {
+): Promise<{ upload: LoadedFile; untouched: boolean } | null> => {
   const {
     storageKey,
     name,
@@ -445,18 +433,13 @@ export const copyFileFromSyncReference = async (
   } = copyProps;
   const validation = validateSyncInflightStorageKey(storageKey, syncId);
   if (!validation.valid) {
-    // Deliberately not logging storageKey here: unlike the success path below (which only logs
-    // it after deleteFileFromStorage has run), a rejected key is still live/unconsumed. Logging
-    // it would hand an attacker's stolen-but-misapplied key straight into the application logs.
+    // Not logging storageKey: a rejected key is still live/unconsumed.
     logApp.warn('[FILE STORAGE] Rejected sync file reference copy: invalid or unauthorized storage_key', { syncId, reason: validation.reason });
     return null;
   }
-  // Claim the key before touching S3. Validation alone is a check-then-act race: without an
-  // atomic claim, two concurrent callers presenting the same (e.g. leaked) storage_key could
-  // both pass validation and both successfully copy before either reaches deleteFileFromStorage,
-  // silently defeating the "single-use" guarantee. retryCount: 0 means a losing racer fails
-  // immediately instead of queueing behind the winner -- it should treat the key as already
-  // consumed, not wait around to try again once the source is gone.
+  // Claim the key before touching S3, to avoid two concurrent callers with the same (e.g. leaked)
+  // key both passing validation and both copying. retryCount: 0 -- a loser fails immediately,
+  // it should not wait around for the source to disappear.
   let lock;
   try {
     lock = await lockResources([`sync-inflight-copy:${validation.normalizedKey}`], { retryCount: 0 });
@@ -474,6 +457,18 @@ export const copyFileFromSyncReference = async (
       targetId = `${getDraftFilePrefix(draftContext)}${targetId}`;
     }
     try {
+      // Re-sync of an already-attached file (e.g. entity updated, whole object re-sent): skip
+      // the copy if this path is already at this version, otherwise x_opencti_files wouldn't
+      // actually change and the stream-event build would throw on an empty diff.
+      const currentFile = await documentFindById(context, user, targetId);
+      if (currentFile && utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(version ?? now()))) {
+        try {
+          await deleteFileFromStorage(validation.normalizedKey);
+        } catch (deleteErr) {
+          logApp.warn('[FILE STORAGE] Referenced sync file already up to date, but failed to delete the staged source (left for TTL cleanup backstop)', { cause: deleteErr, syncId, targetId });
+        }
+        return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
+      }
       await rawCopyFile(validation.normalizedKey, targetId);
       const fileSize = await getFileSize(user, targetId);
       const file: LoadedFile = {
@@ -508,7 +503,7 @@ export const copyFileFromSyncReference = async (
       } catch (triggerErr) {
         logApp.warn('[FILE STORAGE] Copied referenced sync file, but failed to trigger its import enrichment job', { cause: triggerErr, syncId, targetId });
       }
-      return file;
+      return { upload: file, untouched: false };
     } catch (err) {
       // Not logging storageKey: whichever step failed here (copy, size, index), the staging
       // source was never reached/consumed, so the key is still live.

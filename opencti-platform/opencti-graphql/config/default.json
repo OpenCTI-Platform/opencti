@@ -321,8 +321,8 @@
     "lock_key": "sync_manager_lock",
     "interval": 10000,
     "file_fetch_timeout": 300000,
-    "file_reference_mode_enabled": false,
-    "file_reference_mode_size_threshold_kb": 5000
+    "file_reference_mode_enabled": true,
+    "file_reference_mode_size_threshold_kb": 1000
   },
   "ingestion_manager": {
     "enabled": true,

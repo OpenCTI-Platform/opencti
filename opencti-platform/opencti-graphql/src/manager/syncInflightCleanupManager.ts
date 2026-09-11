@@ -9,11 +9,9 @@ const SCHEDULE_TIME = conf.get('sync_inflight_cleanup_manager:interval') || 3600
 const INFLIGHT_TTL_MS = conf.get('sync_inflight_cleanup_manager:ttl') || 86400000; // 24 hours
 
 /**
- * Backstop only: the happy path (copyFileFromSyncReference, see f6) deletes its own
- * sync/inflight/ key right after a successful server-side copy, so this should rarely find
- * anything. This sweep only exists to clean up crashed/abandoned transfers. Files under
- * sync/inflight/ are never indexed in ES, so this lists raw S3 keys directly and compares
- * against the S3 LastModified timestamp instead of going through the domain/ES layer.
+ * Backstop only: copyFileFromSyncReference deletes its own sync/inflight/ key right after a
+ * successful copy, so this should rarely find anything. Only exists to sweep crashed/abandoned
+ * transfers. These keys are never indexed in ES, so this lists raw S3 keys directly.
  */
 export const syncInflightCleanupHandler = async () => {
   const prefix = `${SYNC_INFLIGHT_STORAGE_PATH}/`;

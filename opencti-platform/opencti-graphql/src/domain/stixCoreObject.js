@@ -886,7 +886,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     let untouched = false;
     if (fileRef) {
       const jobImportContextEntities = importContextEntities?.length > 0 ? importContextEntities : [previous];
-      up = await copyFileFromSyncReference(context, user, fileRef.sync_id, filePath, {
+      const copyResult = await copyFileFromSyncReference(context, user, fileRef.sync_id, filePath, {
         storageKey: fileRef.storage_key,
         name: fileRef.name,
         mimeType: fileRef.mime_type,
@@ -897,9 +897,10 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
         noTriggerImport,
         importContextEntities: jobImportContextEntities,
       });
-      if (!up) {
+      if (!copyResult) {
         throw FunctionalError('Cannot copy referenced sync file', { syncId: fileRef.sync_id });
       }
+      ({ upload: up, untouched } = copyResult);
     } else {
       ({ upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities }));
     }
@@ -995,9 +996,8 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   }
 };
 
-// Thin ref-mode entry point, mirrors the file-upload/fileRef branch already handled inside
-// stixCoreObjectImportPush -- kept separate so the GraphQL resolver signatures stay distinct
-// per mutation (importPush vs importPushRef), matching the existing pattern.
+// Thin ref-mode entry point: separate resolver signature (importPush vs importPushRef), same
+// underlying logic via the fileRef branch in stixCoreObjectImportPush.
 export const stixCoreObjectImportPushRef = async (context, user, id, fileRef) => {
   return stixCoreObjectImportPush(context, user, id, null, { fileRef });
 };

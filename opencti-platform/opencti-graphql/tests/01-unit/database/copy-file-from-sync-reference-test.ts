@@ -4,6 +4,7 @@ const mockRawCopyFile = vi.fn();
 const mockGetFileSize = vi.fn();
 const mockDeleteFileFromStorage = vi.fn();
 const mockIndexFileToDocument = vi.fn();
+const mockFindById = vi.fn(async (..._args: unknown[]) => undefined as unknown);
 const mockUnlock = vi.fn();
 const mockLockResources = vi.fn(async (..._args: unknown[]) => ({ unlock: mockUnlock }));
 const mockConnectorsForImport = vi.fn(async (..._args: unknown[]) => [] as unknown[]);
@@ -19,7 +20,7 @@ vi.mock('../../../src/modules/internal/document/document-domain', () => ({
   indexFileToDocument: (...args: unknown[]) => mockIndexFileToDocument(...args),
   allFilesForPaths: vi.fn(),
   deleteDocumentIndex: vi.fn(),
-  findById: vi.fn(),
+  findById: (...args: unknown[]) => mockFindById(...args),
 }));
 vi.mock('../../../src/lock/master-lock', () => ({
   lockResources: (...args: unknown[]) => mockLockResources(...args),
@@ -46,6 +47,8 @@ describe('copyFileFromSyncReference', () => {
     mockGetFileSize.mockReset();
     mockDeleteFileFromStorage.mockReset();
     mockIndexFileToDocument.mockReset();
+    mockFindById.mockReset();
+    mockFindById.mockImplementation(async () => undefined);
     mockUnlock.mockReset();
     mockLockResources.mockReset();
     mockLockResources.mockImplementation(async () => ({ unlock: mockUnlock }));
@@ -95,9 +98,58 @@ describe('copyFileFromSyncReference', () => {
       }),
     }));
     expect(mockDeleteFileFromStorage).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content');
-    expect(result?.id).toEqual('import/Report/entity-1/report.pdf');
+    expect(result?.upload.id).toEqual('import/Report/entity-1/report.pdf');
+    expect(result?.untouched).toEqual(false);
     expect(mockLockResources).toHaveBeenCalledWith(['sync-inflight-copy:sync/inflight/sync-id-1/remote-file-1/content'], { retryCount: 0 });
     expect(mockUnlock).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips the copy and marks the result untouched when the target already has this version (re-sync of an already-attached file)', async () => {
+    // Reproduces the real-world case that surfaced this bug: an entity whose file was already
+    // fully copied/attached gets re-sent (e.g. an unrelated field changed, so the whole object --
+    // including its file ref -- is re-processed by the destination). Without this guard,
+    // stixCoreObjectImportPush would try to rebuild x_opencti_files identically to what's already
+    // there, and jsonpatch would see no diff, throwing "...valid previous patch".
+    mockFindById.mockResolvedValue({
+      internal_id: 'import/Report/entity-1/report.pdf',
+      metaData: { version: '2024-01-01T00:00:00.000Z', mimetype: 'application/pdf' },
+    });
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      mimeType: 'application/pdf',
+      version: '2024-01-01T00:00:00.000Z',
+      entityId: 'entity-1',
+    });
+
+    expect(result?.untouched).toEqual(true);
+    expect(mockRawCopyFile).not.toHaveBeenCalled();
+    expect(mockIndexFileToDocument).not.toHaveBeenCalled();
+    // The now-redundant staged source is still consumed, so it doesn't linger for the TTL backstop.
+    expect(mockDeleteFileFromStorage).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content');
+  });
+
+  it('still copies when the target exists but at an older version', async () => {
+    mockGetFileSize.mockResolvedValue(1234);
+    mockFindById.mockResolvedValue({
+      internal_id: 'import/Report/entity-1/report.pdf',
+      metaData: { version: '2023-01-01T00:00:00.000Z', mimetype: 'application/pdf' },
+    });
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      mimeType: 'application/pdf',
+      version: '2024-01-01T00:00:00.000Z',
+      entityId: 'entity-1',
+    });
+
+    expect(result?.untouched).toEqual(false);
+    expect(mockRawCopyFile).toHaveBeenCalled();
+    expect(mockIndexFileToDocument).toHaveBeenCalled();
   });
 
   it('does not delete the staged source when the copy itself fails', async () => {
@@ -127,7 +179,7 @@ describe('copyFileFromSyncReference', () => {
 
     const [, targetId] = mockRawCopyFile.mock.calls[0];
     expect(targetId).toEqual('import/Report/entity-1/passwd');
-    expect(result?.id).toEqual('import/Report/entity-1/passwd');
+    expect(result?.upload.id).toEqual('import/Report/entity-1/passwd');
   });
 
   it('cannot be replayed: a storage_key already consumed once is gone from S3, so a second attempt fails', async () => {
@@ -201,7 +253,7 @@ describe('copyFileFromSyncReference', () => {
     });
 
     expect(result).not.toBeNull();
-    expect(result?.id).toEqual('import/Report/entity-1/report.pdf');
+    expect(result?.upload.id).toEqual('import/Report/entity-1/report.pdf');
     expect(mockIndexFileToDocument).toHaveBeenCalled();
     expect(mockDeleteFileFromStorage).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content');
     // Lock must still be released even though the delete step failed.

@@ -37,10 +37,8 @@ const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_000;
-// Below this size, inline the file as base64 even when reference mode is enabled: the extra
-// staging-upload + copy + delete round-trips aren't worth it for small files, which is the
-// only thing reference mode exists to avoid holding in memory/queue.
-// Configured in KB (human-readable, e.g. 5000) rather than raw bytes, then converted once here.
+// Below this size, keep inlining base64 even with reference mode on -- not worth the extra
+// staging round-trips for small files. Configured in KB, converted to bytes once here.
 const FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB = conf.get('sync_manager:file_reference_mode_size_threshold_kb') || 5_000;
 const FILE_REFERENCE_MODE_SIZE_THRESHOLD = FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB * 1024;
 
@@ -173,21 +171,15 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
         logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
         continue;
       }
-      // Reference mode: stream the bytes straight into our own bucket instead of buffering
-      // them as base64 in the event JSON. Worker resolves x_opencti_storage_key later (issue #17896).
-      // The path segment is a fresh cryptographically random token, not derived from fileUri (which
-      // is not secret -- it can appear in bundle content, logs, etc). This makes storage_key itself
-      // the real bearer-capability: nothing about the platform's own authenticated-caller identity
-      // can distinguish "the legitimate sync worker" from any other caller with edit rights on some
-      // entity (workers share one platform-wide token across every connector/sync), so knowledge of
-      // this exact, unguessable, single-use key is what actually gates the copy -- not sync_id, which
-      // is only cross-checked against the key's own prefix and must never be treated as authorization
-      // on its own.
+      // Reference mode: stream bytes straight into our own bucket instead of buffering them
+      // as base64 in the event JSON. storage_key is a fresh random token (not derived from
+      // fileUri, which isn't secret) -- it's the actual access control for the later copy,
+      // since all workers share one platform token and sync_id alone isn't authorization.
       if (ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE) {
         const { data: fileStream, headers } = await httpClient.get(fetchUri, { responseType: 'stream' });
         const contentLength = Number(headers?.['content-length']);
-        // Unknown/invalid content-length is treated as "large": we must never buffer an
-        // unbounded stream in memory just to measure it.
+        // Unknown/invalid content-length is treated as "large": never buffer an unbounded
+        // stream in memory just to measure it.
         const isBelowThreshold = Number.isFinite(contentLength) && contentLength <= FILE_REFERENCE_MODE_SIZE_THRESHOLD;
         if (isBelowThreshold) {
           const chunks = [];
