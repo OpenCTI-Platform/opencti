@@ -415,6 +415,87 @@ class ExternalReference:
             )
             return None
 
+    def add_file_ref(self, **kwargs):
+        """Attach a file to this External-Reference by copying it from a location already
+        staged in storage, instead of uploading its bytes through this call.
+
+        :param id: the External-Reference id
+        :type id: str
+        :param storage_key: the storage key where the file was staged
+        :type storage_key: str
+        :param file_name: the file name to attach
+        :type file_name: str
+        :param sync_id: the id of the synchronizer that staged the file. Defaults to the
+            connector ID of the queue currently being processed.
+        :type sync_id: str
+        :param fileMarkings: list of marking definition IDs for the file
+        :type fileMarkings: list
+        :param version: version datetime
+        :type version: str
+        :param mime_type: MIME type of the file
+        :type mime_type: str
+        :param no_trigger_import: whether to skip triggering import
+        :type no_trigger_import: bool
+        :param embedded: whether the file is embedded
+        :type embedded: bool
+        :return: File upload result
+        :rtype: dict or None
+        """
+        id = kwargs.get("id", None)
+        storage_key = kwargs.get("storage_key", None)
+        file_name = kwargs.get("file_name", None)
+        sync_id = kwargs.get("sync_id", None) or self.opencti.get_connector_id()
+        file_markings = kwargs.get("fileMarkings", None)
+        version = kwargs.get("version", None)
+        mime_type = kwargs.get("mime_type", None)
+        no_trigger_import = kwargs.get("no_trigger_import", False)
+        embedded = kwargs.get("embedded", False)
+        if (
+            id is not None
+            and storage_key is not None
+            and file_name is not None
+            and sync_id is not None
+        ):
+            query = """
+                mutation ExternalReferenceEditImportPushRef($id: ID!, $fileRef: FileRefInput!) {
+                    externalReferenceEdit(id: $id) {
+                        importPushRef(fileRef: $fileRef) {
+                            id
+                            name
+                        }
+                    }
+                }
+             """
+            self.opencti.app_logger.info(
+                "Attaching a referenced sync file in External-Reference",
+                {"file": file_name, "id": id},
+            )
+            return self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "fileRef": {
+                        "sync_id": sync_id,
+                        "storage_key": storage_key,
+                        "name": file_name,
+                        "mime_type": mime_type,
+                        "version": version,
+                        "file_markings": file_markings,
+                        "no_trigger_import": (
+                            no_trigger_import
+                            if isinstance(no_trigger_import, bool)
+                            else no_trigger_import == "True"
+                        ),
+                        "embedded": embedded,
+                    },
+                },
+            )
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_external_reference] Missing parameters: id, storage_key, file_name or sync_id"
+            )
+            return None
+
     def update_field(self, **kwargs):
         """Update an External Reference object field.
 

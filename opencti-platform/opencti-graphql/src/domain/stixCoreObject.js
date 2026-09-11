@@ -58,7 +58,7 @@ import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
+import { copyFileFromSyncReference, defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
@@ -836,15 +836,39 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
   return uploadedFile;
 };
 
+const acquireImportedFile = async (context, user, previous, file, fileRef, filePath, meta, opts) => {
+  const { file_markings, noTriggerImport, importContextEntities } = opts;
+  if (!fileRef) {
+    return uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities });
+  }
+  const jobImportContextEntities = importContextEntities?.length > 0 ? importContextEntities : [previous];
+  const copyResult = await copyFileFromSyncReference(context, user, fileRef.sync_id, filePath, {
+    storageKey: fileRef.storage_key,
+    name: fileRef.name,
+    mimeType: fileRef.mime_type,
+    version: meta.version,
+    fileMarkings: file_markings,
+    entityId: previous.internal_id,
+    externalReferenceId: meta.external_reference_id,
+    noTriggerImport,
+    importContextEntities: jobImportContextEntities,
+  });
+  if (!copyResult) {
+    throw FunctionalError('Cannot copy referenced sync file', { syncId: fileRef.sync_id });
+  }
+  return copyResult;
+};
+
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
+  const { fileRef } = args;
   const {
-    noTriggerImport,
-    version: fileVersion,
-    fileMarkings: file_markings,
+    noTriggerImport = fileRef?.no_trigger_import,
+    version: fileVersion = fileRef?.version,
+    fileMarkings: file_markings = fileRef?.file_markings,
     importContextEntities,
     fromTemplate = false,
-    embedded = false,
+    embedded = fileRef?.embedded ?? false,
     fintelTemplateId,
   } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
@@ -862,7 +886,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     // Lock the participants that will be merged
     lock = await lockResources(participantIds);
     const { internal_id: internalId } = previous;
-    const { filename } = await file;
+    const filename = fileRef ? fileRef.name : (await file).filename;
     const entitySetting = await getEntitySettingFromCache(context, previous.entity_type);
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
     let prefix = 'import';
@@ -881,7 +905,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities });
+    const { upload: up, untouched } = await acquireImportedFile(context, user, previous, file, fileRef, filePath, meta, { file_markings, noTriggerImport, importContextEntities });
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications
@@ -972,6 +996,10 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   } finally {
     if (lock) await lock.unlock();
   }
+};
+
+export const stixCoreObjectImportPushRef = async (context, user, id, fileRef) => {
+  return stixCoreObjectImportPush(context, user, id, null, { fileRef });
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
