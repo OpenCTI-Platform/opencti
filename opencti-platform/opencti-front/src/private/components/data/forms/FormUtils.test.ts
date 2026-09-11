@@ -31,13 +31,13 @@ const baseBuilderData: FormBuilderData = {
 
 describe('validateFormSchemaMappings', () => {
   it('returns null when mainEntityFieldMode is not parsed and no additional entities use parsed mode', () => {
-    const data = { ...baseBuilderData, mainEntityFieldMode: 'multiple', additionalEntities: [] };
+    const data: FormBuilderData = { ...baseBuilderData, mainEntityFieldMode: 'multiple', additionalEntities: [] };
 
     expect(validateFormSchemaMappings(data)).toBeNull();
   });
 
   it('returns a main-entity-mapping error when mainEntityFieldMode is parsed but mainEntityParseFieldMapping is missing', () => {
-    const data = {
+    const data: FormBuilderData = {
       ...baseBuilderData,
       mainEntityFieldMode: 'parsed',
       mainEntityParseFieldMapping: undefined,
@@ -48,7 +48,7 @@ describe('validateFormSchemaMappings', () => {
   });
 
   it('returns null when mainEntityFieldMode is parsed and mainEntityParseFieldMapping is set', () => {
-    const data = {
+    const data: FormBuilderData = {
       ...baseBuilderData,
       mainEntityFieldMode: 'parsed',
       mainEntityParseFieldMapping: 'pattern',
@@ -59,7 +59,7 @@ describe('validateFormSchemaMappings', () => {
   });
 
   it('returns an additional-entity-mappings error listing labels of additional entities missing parseFieldMapping', () => {
-    const data = {
+    const data: FormBuilderData = {
       ...baseBuilderData,
       mainEntityFieldMode: 'multiple',
       additionalEntities: [
@@ -97,7 +97,7 @@ describe('validateFormSchemaMappings', () => {
   });
 
   it('prioritizes the main-entity-mapping error over additional-entity-mappings errors', () => {
-    const data = {
+    const data: FormBuilderData = {
       ...baseBuilderData,
       mainEntityFieldMode: 'parsed',
       mainEntityParseFieldMapping: undefined,
