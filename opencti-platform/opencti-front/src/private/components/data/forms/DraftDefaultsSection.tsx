@@ -1,18 +1,6 @@
 import { ExpandMore } from '@mui/icons-material';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, Switch, TextField, Typography } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { Field, Formik, useFormikContext } from 'formik';
 import React, { useEffect, useRef } from 'react';
 import { useFormatter } from '../../../../components/i18n';
@@ -117,7 +105,6 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
           />
         )}
         label={t_i18n('Create as draft by default')}
-        style={{ marginTop: 20, display: 'block' }}
       />
 
       {formData.isDraftByDefault && (
@@ -129,18 +116,25 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
             />
           )}
           label={t_i18n('Allow users to uncheck draft mode')}
-          style={{ marginTop: 20, display: 'block' }}
         />
       )}
 
-      <Accordion variant="outlined" style={{ marginTop: 20 }}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
+      <Accordion
+        variant="outlined"
+        disableGutters
+        sx={{
+          backgroundColor: 'transparent',
+          border: '1px solid var(--border-elevation-subtle)',
+          borderRadius: '4px',
+        }}
+      >
+        <AccordionSummary expandIcon={<ExpandMore />}>
+          <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
           {/* Draft Name Section */}
           <Typography variant="h6" gutterBottom>{t_i18n('Draft Name')}</Typography>
-          <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+          <Box style={{ paddingTop: 10 }}>
             <FormControlLabel
               control={(
                 <Switch
@@ -165,17 +159,17 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
             )}
             <TextField
               fullWidth
-              variant="standard"
+              variant="outlined"
               label={t_i18n('Default name')}
               value={formData.draftDefaults?.name?.defaultValue || ''}
               onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
-              style={{ marginBottom: 20 }}
+              className="mb-5"
             />
           </Box>
 
           {/* Draft Description Section */}
           <Typography variant="h6" gutterBottom>{t_i18n('Draft Description')}</Typography>
-          <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+          <Box style={{ paddingTop: 10 }}>
             <FormControlLabel
               control={(
                 <Switch
@@ -200,7 +194,7 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
             )}
             <TextField
               fullWidth
-              variant="standard"
+              variant="outlined"
               label={t_i18n('Default description')}
               multiline
               rows={3}
@@ -229,7 +223,7 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
               <>
                 {/* Draft Assignees Section */}
                 <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <Box style={{ paddingTop: 10 }}>
                   <FormControlLabel
                     control={(
                       <Switch
@@ -261,7 +255,7 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
 
                 {/* Draft Participants Section */}
                 <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <Box style={{ paddingTop: 10 }}>
                   <FormControlLabel
                     control={(
                       <Switch
@@ -293,7 +287,7 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
 
                 {/* Draft Author Section */}
                 <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <Box style={{ paddingTop: 10 }}>
                   <FormControlLabel
                     control={(
                       <Switch
@@ -319,32 +313,34 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
                   <Box
                     style={formData.draftDefaults?.author?.type === 'static'
                       ? {
-                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          border: '1px solid var(--border-elevation-subtle)',
                           borderRadius: 4,
                           padding: '12px',
                           marginBottom: 20,
                         }
                       : { marginBottom: 20 }}
                   >
-                    <FormControl fullWidth variant="standard" style={{ marginBottom: formData.draftDefaults?.author?.type === 'static' ? 8 : 0 }}>
-                      <InputLabel>{t_i18n('Default author source')}</InputLabel>
-                      <Select
-                        value={formData.draftDefaults?.author?.type || 'none'}
-                        onChange={(e) => {
-                          const currentAuthorDefaults = formData.draftDefaults?.author;
-                          handleFieldChange('draftDefaults.author', {
-                            type: e.target.value,
-                            isEditable: currentAuthorDefaults?.isEditable ?? false,
-                            isRequired: currentAuthorDefaults?.isRequired ?? false,
-                          });
-                        }}
-                        label={t_i18n('Default author source')}
-                      >
-                        <MenuItem value="none">{t_i18n('None (no author specified)')}</MenuItem>
-                        <MenuItem value="main_entity_author">{t_i18n('Main entity author (reuse the same author)')}</MenuItem>
-                        <MenuItem value="static">{t_i18n('Specific Author')}</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <Select
+                      value={formData.draftDefaults?.author?.type || 'none'}
+                      onValueChange={(value) => {
+                        const currentAuthorDefaults = formData.draftDefaults?.author;
+                        handleFieldChange('draftDefaults.author', {
+                          type: value,
+                          isEditable: currentAuthorDefaults?.isEditable ?? false,
+                          isRequired: currentAuthorDefaults?.isRequired ?? false,
+                        });
+                      }}
+                    >
+                      <SelectLabel>{t_i18n('Default author source')}</SelectLabel>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent aria-label={t_i18n('Default author source')}>
+                        <SelectItem value="none">{t_i18n('None (no author specified)')}</SelectItem>
+                        <SelectItem value="main_entity_author">{t_i18n('Main entity author (reuse the same author)')}</SelectItem>
+                        <SelectItem value="static">{t_i18n('Specific Author')}</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {formData.draftDefaults?.author?.type === 'static' && (
                       <CreatedByField
                         name="authorDefaultIdentity"
@@ -393,7 +389,7 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
                 />
 
                 {formData.draftDefaults?.authorizedMembers?.enabled && (
-                  <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                  <Box style={{ paddingTop: 10 }}>
                     <FormControlLabel
                       control={(
                         <Switch
@@ -456,8 +452,8 @@ const DraftDefaultsSection: React.FC<DraftDefaultsSectionProps> = ({ formData, h
               </>
             )}
           </Formik>
-          </AccordionDetails>
-        </Accordion>
+        </AccordionDetails>
+      </Accordion>
     </>
   );
 };
