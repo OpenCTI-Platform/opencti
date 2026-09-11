@@ -5,15 +5,11 @@ import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
-import { isStixDomainObjectContainer, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
-import { isEmptyField, isNotEmptyField } from '../../database/utils';
+import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { isNotEmptyField } from '../../database/utils';
 import { detectObservableType, refangValues } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
-import { DOC_INCORRECT_OBSERVABLE_FORMAT, FunctionalError } from '../../config/errors';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { checkObservableSyntax } from '../../utils/syntax';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { transformSpecialFields, convertFieldType } from './form-fields-converter';
+import { transformSpecialFields } from './form-fields-converter';
 import { completeEntity } from './form-entity-builder';
 import { loadFormEntity } from './form-utils';
 import { materializeEntityFromFields } from './form-entity-materializer';
@@ -279,35 +275,21 @@ export const buildAdditionalEntities = async (
       if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
         if (isNotEmptyField(values[`additional_${additionalEntity.id}_groups`])) {
           for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
-            let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
-            for (let i = 0; i < additionalEntityFields.length; i += 1) {
-              const field = additionalEntityFields[i];
-              const fieldValue = (field.isReadOnly && !isBypass)
-                ? field.defaultValue
-                : values[`additional_${additionalEntity.id}_groups`][index2][field.name];
-              const convertedValue = convertFieldType(fieldValue, field);
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
-            }
-            newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
-            if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
-              newAdditionalEntity.is_family = true;
-            }
-            if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
-              newAdditionalEntity.context = 'form';
-            }
-            newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-            if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
-              if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                  type: newAdditionalEntity.entity_type,
-                  input: newAdditionalEntity,
-                  doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
-                });
-              }
-            }
-            const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
+            const additionalEntityInstance = await materializeEntityFromFields(
+              context,
+              user,
+              additionalEntityType,
+              additionalEntityFields,
+              (field) => values[`additional_${additionalEntity.id}_groups`][index2][field.name],
+              {
+                applyFields: true,
+                skipEmptyFieldValues: false,
+                isBypass,
+                applyTypeDefaults: true,
+                errorLabel: `Observable ${additionalEntity.label} is not correctly formatted`,
+              },
+            );
+            const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntityInstance);
             bundle.objects.push(stixAdditionalEntity);
             if (additionalEntitiesMap[additionalEntity.id]) {
               additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
@@ -320,52 +302,36 @@ export const buildAdditionalEntities = async (
         if (isNotEmptyField(values[`additional_${additionalEntity.id}_parsed`])) {
           const refangedAdditionalParsed = refangValues(values[`additional_${additionalEntity.id}_parsed`]);
           for (let index2 = 0; index2 < refangedAdditionalParsed.length; index2 += 1) {
-            let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
+            const seedEntity: Partial<StoreEntity> = {};
             if (additionalEntity.parseFieldMapping === 'pattern' && additionalEntity.autoConvertToStixPattern) {
               const observableValue = refangedAdditionalParsed[index2];
               const observableType = detectObservableType(observableValue);
               const pattern = await createStixPattern(context, user, observableType, observableValue);
-              newAdditionalEntity[additionalEntity.parseFieldMapping] = pattern;
-              newAdditionalEntity.pattern_type = 'stix';
-              newAdditionalEntity.name = observableValue;
-              newAdditionalEntity.x_opencti_main_observable_type = observableType;
+              Object.assign(seedEntity, {
+                [additionalEntity.parseFieldMapping]: pattern,
+                pattern_type: 'stix',
+                name: observableValue,
+                x_opencti_main_observable_type: observableType,
+              });
             } else {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              newAdditionalEntity[additionalEntity.parseFieldMapping] = refangedAdditionalParsed[index2];
+              Object.assign(seedEntity, { [additionalEntity.parseFieldMapping]: refangedAdditionalParsed[index2] });
             }
-            if (values[`additional_${additionalEntity.id}_fields`]) {
-              for (let i = 0; i < additionalEntityFields.length; i += 1) {
-                const field = additionalEntityFields[i];
-                const fieldValue = (field.isReadOnly && !isBypass)
-                  ? field.defaultValue
-                  : values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
-                if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-                  const convertedValue = convertFieldType(fieldValue, field);
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-expect-error
-                  newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
-                }
-              }
-              newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
-            }
-            if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
-              newAdditionalEntity.is_family = true;
-            }
-            if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
-              newAdditionalEntity.context = 'form';
-            }
-            newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-            if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
-              if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                  type: newAdditionalEntity.entity_type,
-                  input: newAdditionalEntity,
-                  doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
-                });
-              }
-            }
-            const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
+            const additionalEntityInstance = await materializeEntityFromFields(
+              context,
+              user,
+              additionalEntityType,
+              additionalEntityFields,
+              (field) => values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName],
+              {
+                seedEntity,
+                applyFields: Boolean(values[`additional_${additionalEntity.id}_fields`]),
+                skipEmptyFieldValues: true,
+                isBypass,
+                applyTypeDefaults: true,
+                errorLabel: `Observable ${additionalEntity.label} is not correctly formatted`,
+              },
+            );
+            const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntityInstance);
             bundle.objects.push(stixAdditionalEntity);
             if (additionalEntitiesMap[additionalEntity.id]) {
               additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
@@ -382,37 +348,21 @@ export const buildAdditionalEntities = async (
             return isNotEmptyField(value);
           });
           if (additionalEntity.required || hasAnyFieldFilled) {
-            let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
-            for (let i = 0; i < additionalEntityFields.length; i += 1) {
-              const field = additionalEntityFields[i];
-              const fieldValue = (field.isReadOnly && !isBypass)
-                ? field.defaultValue
-                : entityData[field.name];
-              if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-                const convertedValue = convertFieldType(fieldValue, field);
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-expect-error
-                newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
-              }
-            }
-            newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
-            if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
-              newAdditionalEntity.is_family = true;
-            }
-            if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
-              newAdditionalEntity.context = 'form';
-            }
-            newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-            if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
-              if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                  type: newAdditionalEntity.entity_type,
-                  input: newAdditionalEntity,
-                  doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
-                });
-              }
-            }
-            const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
+            const additionalEntityInstance = await materializeEntityFromFields(
+              context,
+              user,
+              additionalEntityType,
+              additionalEntityFields,
+              (field) => entityData[field.name],
+              {
+                applyFields: true,
+                skipEmptyFieldValues: true,
+                isBypass,
+                applyTypeDefaults: true,
+                errorLabel: `Observable ${additionalEntity.label} is not correctly formatted`,
+              },
+            );
+            const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntityInstance);
             bundle.objects.push(stixAdditionalEntity);
             if (additionalEntitiesMap[additionalEntity.id]) {
               additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
