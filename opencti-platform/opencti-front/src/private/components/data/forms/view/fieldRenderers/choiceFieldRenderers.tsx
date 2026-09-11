@@ -1,9 +1,7 @@
 import type React from 'react';
 import { Field } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import SelectField from '../../../../../../components/fields/SelectField';
+import ComboboxField from '../../../../../../components/ComboboxField';
+import SelectFieldFds, { SelectItem } from '../../../../../../components/fields/SelectFieldFds';
 import OpenVocabField from '../../../../common/form/OpenVocabField';
 import TypesField from '@components/observations/TypesField';
 import { getVocabularyMappingByAttribute } from '../../../../../../utils/vocabularyMapping';
@@ -18,22 +16,22 @@ const renderSelectField = ({ field, fieldPrefix, t_i18n }: FieldRendererContext)
 
   return (
     <Field
-      component={SelectField}
+      component={SelectFieldFds}
       name={fieldName}
       label={displayLabel}
       fullWidth={true}
       required={field.isMandatory}
       containerstyle={fieldSpacingContainerStyle}
-      variant="standard"
+      variant="outlined"
       helpertext={field.description}
     >
-      <MenuItem value="">
+      <SelectItem value="">
         <em>{noneLabel}</em>
-      </MenuItem>
+      </SelectItem>
       {field.options?.map((option) => (
-        <MenuItem key={option.value} value={option.value}>
+        <SelectItem key={option.value} value={option.value}>
           {option.label}
-        </MenuItem>
+        </SelectItem>
       ))}
     </Field>
   );
@@ -45,30 +43,16 @@ const renderMultiselectField = ({ field, fieldPrefix }: FieldRendererContext): R
 
   return (
     <Field
-      component={SelectField}
+      component={ComboboxField}
       name={fieldName}
       label={displayLabel}
-      fullWidth={true}
-      multiple={true}
+      multiple
       required={field.isMandatory}
-      containerstyle={fieldSpacingContainerStyle}
-      variant="standard"
+      style={fieldSpacingContainerStyle}
       helpertext={field.description}
-      renderValue={(selected: string[]) => (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {selected.map((value) => {
-            const option = field.options?.find((o) => o.value === value);
-            return <Chip key={value} label={option?.label || value} />;
-          })}
-        </Box>
-      )}
-    >
-      {field.options?.map((option) => (
-        <MenuItem key={option.value} value={option.value}>
-          {option.label}
-        </MenuItem>
-      ))}
-    </Field>
+      options={(field.options ?? []).map((o) => o.value)}
+      getOptionLabel={(value: string) => field.options?.find((o) => o.value === value)?.label || value}
+    />
   );
 };
 

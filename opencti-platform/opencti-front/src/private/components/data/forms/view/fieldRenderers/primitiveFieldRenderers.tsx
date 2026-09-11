@@ -1,7 +1,6 @@
 import type React from 'react';
 import { Field, FieldInputProps, FormikProps } from 'formik';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@filigran/design-system';
 import TextField from '../../../../../../components/TextField';
 import MarkdownField from '../../../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../../../components/fields/SwitchField';
@@ -21,7 +20,7 @@ const renderTextField = ({ field, fieldPrefix }: FieldRendererContext): React.Re
       fullWidth={true}
       required={field.isMandatory}
       helperText={field.description}
-      style={fieldSpacingContainerStyle}
+      className="mt-5"
     />
   );
 };
@@ -55,7 +54,7 @@ const renderNumberField = ({ field, fieldPrefix }: FieldRendererContext): React.
       fullWidth={true}
       required={field.isMandatory}
       helperText={field.description}
-      style={fieldSpacingContainerStyle}
+      className="mt-5"
     />
   );
 };
@@ -67,19 +66,20 @@ const renderCheckboxField = ({ field, fieldPrefix }: FieldRendererContext): Reac
   return (
     <Field name={fieldName}>
       {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
-        <FormControlLabel
-          control={(
-            <Checkbox
-              {...formikField}
-              checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
-              onChange={(e) => {
-                form.setFieldValue(fieldName, e.target.checked);
-              }}
-            />
-          )}
-          label={displayLabel}
-          style={fieldSpacingContainerStyle}
-        />
+        // Only `name` and `onBlur` are taken off the Formik field here: spreading it whole would also hand
+        // the library box Formik's own `value` and `onChange`, which the Radix root reads as form props and
+        // which no longer describe how this control reports a change.
+        <div style={fieldSpacingContainerStyle}>
+          <Checkbox
+            name={formikField.name}
+            onBlur={formikField.onBlur}
+            checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
+            onCheckedChange={(checked) => {
+              form.setFieldValue(fieldName, checked === true);
+            }}
+            label={displayLabel}
+          />
+        </div>
       )}
     </Field>
   );
@@ -118,7 +118,7 @@ const renderDefaultField = ({ field, fieldPrefix }: FieldRendererContext): React
       fullWidth={true}
       required={field.isMandatory}
       helperText={field.description}
-      style={fieldSpacingContainerStyle}
+      className="mt-5"
     />
   );
 };

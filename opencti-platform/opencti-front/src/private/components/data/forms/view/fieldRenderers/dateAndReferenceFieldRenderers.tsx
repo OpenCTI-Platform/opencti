@@ -25,7 +25,7 @@ const renderDateField = ({
       textFieldProps={{
         label: displayLabel,
         required: field.isMandatory,
-        variant: 'standard',
+        variant: 'outlined',
         fullWidth: true,
         style: fieldSpacingContainerStyle,
         helperText: field.description,
@@ -49,7 +49,7 @@ const renderDatetimeField = ({
       textFieldProps={{
         label: displayLabel,
         required: field.isMandatory,
-        variant: 'standard',
+        variant: 'outlined',
         fullWidth: true,
         style: fieldSpacingContainerStyle,
         helperText: field.description,
