@@ -1,4 +1,5 @@
 import { assertUserMergeHandlersAreValid, registerUserMergeHandler } from './userMerge-registry';
+import { userMergeFiltersHandler } from './userMerge-filtersHandler';
 import { userMergeHistoryHandler } from './userMerge-historyHandler';
 import { userMergeIndividualHandler } from './userMerge-individualHandler';
 import { userMergeOperationalRelationsHandler } from './userMerge-operationalRelationsHandler';
@@ -19,6 +20,7 @@ export const registerUserMergeHandlers = (): void => {
   // authenticate and create new references while the following handlers move the existing ones.
   registerUserMergeHandler(userMergeSourceDisableHandler);
   registerUserMergeHandler(userMergeScalarHandler);
+  registerUserMergeHandler(userMergeFiltersHandler);
   registerUserMergeHandler(userMergeHistoryHandler);
   registerUserMergeHandler(userMergePublicSharingHandler);
   registerUserMergeHandler(userMergeRightsHandler);
