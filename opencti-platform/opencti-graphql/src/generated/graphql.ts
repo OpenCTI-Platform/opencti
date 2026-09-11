@@ -33306,6 +33306,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -33396,6 +33397,7 @@ export type StixSightingRelationshipAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
@@ -52176,6 +52178,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;

@@ -3009,7 +3009,7 @@ export const updateAttribute = async <T extends StoreObject>(
   // Validate custom field values against their definitions (mandatory / min-max / select options)
   const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
   if (customFieldValuesInput) {
-    await validateCustomFieldValues(context, user, customFieldValuesInput.value ?? [], type);
+    await validateCustomFieldValues(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
   }
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);

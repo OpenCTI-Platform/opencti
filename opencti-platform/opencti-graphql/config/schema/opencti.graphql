@@ -14381,6 +14381,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input StixSightingRelationshipAddInput {
   # StixRelationship
@@ -14407,6 +14408,7 @@ input StixSightingRelationshipAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## StixRefRelationships

@@ -9145,6 +9145,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 
 input StixSightingRelationshipAddInput {
@@ -9170,6 +9171,7 @@ input StixSightingRelationshipAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum StixRefRelationshipsOrdering {

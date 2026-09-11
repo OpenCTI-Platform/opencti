@@ -16,10 +16,6 @@ import type { CaseIncidentAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 import { FilterMode } from '../../../generated/graphql';
-import { validateCustomFieldValues } from '../../customField/custom-field-validator';
-import type { CustomFieldValue } from '../../customField/custom-field-types';
-import { enforceEnableFeatureFlag } from '../../../utils/access';
-import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
