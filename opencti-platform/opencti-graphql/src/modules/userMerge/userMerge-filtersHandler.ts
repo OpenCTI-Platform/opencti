@@ -7,7 +7,7 @@ import {
   type UserMergeRightsAlert,
   USER_MERGE_TARGET_INDICES,
 } from './userMerge-handler';
-import { remapUserInSerializedFilters } from './userMerge-filterRemap';
+import { remapUserInJsonString } from './userMerge-jsonRemap';
 import {
   USER_MERGE_FILTER_ACKNOWLEDGED_ROWS,
   USER_MERGE_FILTER_TARGETS,
@@ -124,13 +124,13 @@ export const rewriteUserInPirCriteria = (
     if (typeof raw !== 'string' || !raw.includes(sourceId)) {
       return criterion;
     }
-    const result = remapUserInSerializedFilters(raw, sourceId, targetId);
+    const result = remapUserInJsonString(raw, sourceId, targetId);
     if (!result.changed) {
       rejection = result.parsed ? 'textual' : 'unparsable';
       return criterion;
     }
     changed = true;
-    return { ...criterion, filters: result.filters };
+    return { ...criterion, filters: result.json };
   });
   if (!changed) {
     return rejection;
@@ -149,11 +149,11 @@ const rewriteField = (
   if (typeof raw !== 'string' || !raw.includes(sourceId)) {
     return undefined;
   }
-  const result = remapUserInSerializedFilters(raw, sourceId, targetId);
+  const result = remapUserInJsonString(raw, sourceId, targetId);
   if (!result.changed) {
     return result.parsed ? 'textual' : 'unparsable';
   }
-  return { candidate, doc: { [target.path]: result.filters }, mergedCriteria: 0 };
+  return { candidate, doc: { [target.path]: result.json }, mergedCriteria: 0 };
 };
 
 /**
