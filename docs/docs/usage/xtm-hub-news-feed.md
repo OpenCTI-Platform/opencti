@@ -16,37 +16,38 @@ These notifications help you quickly detect new content and decide whether to im
 
 ## How do I do it?
 
-### 1. Register your platform to XTM Hub
+### 1. Connect your platform to XTM Hub
 
-Your OpenCTI platform must be registered to XTM Hub before you can receive News Feed notifications.
+Your OpenCTI platform must be connected to XTM Hub before you can receive News Feed notifications.
 
-Follow the registration steps in [XTM Hub registration](../administration/hub.md).
+Follow the connection steps in [XTM Hub connection](../administration/hub.md).
 
-After registration, OpenCTI automatically receives notifications when new content is published on XTM Hub.
+After connecting, OpenCTI automatically receives notifications when new content is published on XTM Hub every hour.
+
+Old news feed items are deleted after 6 months.
 
 ![News Feed toast](assets/news-feed-toast.png)
 
 ### 2. View all News Feed items
 
-1. Click the bell icon in the top-right corner.
-2. Open the notifications page.
-3. Review XTM Hub News Feed items in your notification list.
+1. Click the megaphone icon in the top-right corner.
+2. Review XTM Hub News Feed items in the **News feed** tab.
 
 ![News Feed notifications page](assets/news-feed-datatable.png)
 
 !!! note
-    News Feed notifications are automatically marked as read when you open the News Feed notifications page.
+    News Feed items are automatically marked as read when you open the News Feed page.
 
 ### 3. Update your News Feed preferences
 
-1. Open your user menu in the top-right corner.
-2. Open your profile.
+1. Click the megaphone icon in the top-right corner.
+2. Switch to the **Settings** tab.
 3. Update your News Feed preferences.
 
 ![News Feed preferences in profile page](assets/news-feed-update-preferences.png)
 
-!!! warning
-    If you disable all feeds in your preferences, you no longer receive XTM Hub News Feed notifications and the News Feed notifications page is hidden.
+!!! note
+    The News Feed page is always accessible, even if you disable all feeds in your preferences. If you disable all feeds, you no longer receive XTM Hub News Feed notifications.
 
 ## Example
 
