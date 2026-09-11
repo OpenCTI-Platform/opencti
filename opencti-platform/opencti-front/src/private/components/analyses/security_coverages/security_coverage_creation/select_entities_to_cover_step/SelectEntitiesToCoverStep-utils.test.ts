@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { buildCoveredEntitiesFilters, buildEntitiesSelection } from './SelectEntitiesToCoverStep-utils';
-import { HAS_COVERED_TARGETS_TYPES, StixCoreObjectNode } from '../SecurityCoverageCreation-types';
+import { HAS_COVERED_TARGETS_TYPES } from '../SecurityCoverageCreation-types';
 
-const containerEntity: StixCoreObjectNode = {
+const containerEntity = {
   id: 'report-1',
   entity_type: 'Report',
   parent_types: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Container'],
   created_at: '2026-01-01T00:00:00.000Z',
 };
 
-const nonContainerEntity: StixCoreObjectNode = {
+const nonContainerEntity = {
   id: 'intrusion-set-1',
   entity_type: 'Intrusion-Set',
   parent_types: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],

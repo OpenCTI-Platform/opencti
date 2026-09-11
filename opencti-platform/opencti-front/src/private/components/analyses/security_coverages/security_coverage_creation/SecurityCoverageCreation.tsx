@@ -21,9 +21,10 @@ import { useNavigate } from 'react-router';
 import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
 import ChooseModeStep from './ChooseModeStep';
 import SelectCoveredEntityStep from './SelectCoveredEntityStep';
-import { SecurityCoverageFormValues, SecurityCoverageMode, SelectedEntities, StepKey, StixCoreObjectNode } from './SecurityCoverageCreation-types';
+import { SecurityCoverageFormValues, SecurityCoverageMode, SelectedEntities, StepKey } from './SecurityCoverageCreation-types';
 import CoverageDetailsStep from './CoverageDetailsStep';
 import SelectEntitiesToCoverStep from './select_entities_to_cover_step/SelectEntitiesToCoverStep';
+import { SecurityCoverageCreationPreselectedEntityQuery$data } from './__generated__/SecurityCoverageCreationPreselectedEntityQuery.graphql';
 
 interface ConnectorsQueryProps {
   connectors?: Array<{
@@ -146,8 +147,10 @@ const securityCoveragePreselectedEntityQuery = graphql`
   }
 `;
 
+type SelectedEntity = SecurityCoverageCreationPreselectedEntityQuery$data['stixCoreObject'] | null;
+
 interface SecurityCoverageFormInnerProps extends SecurityCoverageFormProps {
-  preSelectedEntity: StixCoreObjectNode | null;
+  preSelectedEntity: SelectedEntity;
   shouldRedirect?: boolean;
 }
 
@@ -170,7 +173,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   // Stepper state - if we have a preselected entity, start at step 0 (choose type)
   const [activeStep, setActiveStep] = useState<StepKey>(StepKey.MODE);
   const [mode, setMode] = useState<SecurityCoverageMode | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<StixCoreObjectNode | null>(preSelectedEntity);
+  const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(preSelectedEntity);
 
   // When we have a preselected entity, we skip the "Select entity" step
   const steps = [
@@ -194,16 +197,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     } else {
       setActiveStep(newMode === SecurityCoverageMode.MANUAL ? StepKey.TESTED_ENTITIES : StepKey.COVERAGE_DETAILS);
     }
-  };
-
-  const handleSelectEntity = (entity: StixCoreObjectNode, setFieldValue: (field: string, value: unknown) => void) => {
-    setSelectedEntity(entity);
-    // Update the form name with the selected entity's representative name
-    if (entity.representative?.main || entity.name) {
-      setFieldValue('name', entity.representative?.main || entity.name);
-    }
-    // Automatically move to the select covered entities step (if manual mode) or coverage details otherwise
-    setActiveStep(mode === SecurityCoverageMode.MANUAL ? StepKey.TESTED_ENTITIES : StepKey.COVERAGE_DETAILS);
   };
 
   const [entitiesToCover, setEntitiesToCover] = useState<SelectedEntities | null>(null);
@@ -294,8 +287,11 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   };
 
   // Use entity name from preselected entity or fallback to provided name
-  const defaultName = preSelectedEntity?.representative?.main || preSelectedEntity?.name || preSelectedEntityName || inputValue || '';
-  const defaultLabels = (preSelectedEntity?.objectLabel ?? []).map((label) => ({ value: label.id, label: label.value }));
+  const defaultName = preSelectedEntity?.representative?.main || preSelectedEntityName || inputValue || '';
+  const defaultLabels = (preSelectedEntity?.objectLabel ?? []).flatMap((label) => {
+    if (!label.value) return [];
+    return ({ value: label.id, label: label.value });
+  });
 
   const initialValues = useDefaultValues<SecurityCoverageFormValues>(
     'Security-Coverage',
@@ -339,8 +335,15 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         // Select Entity to Cover (when creation from security coverage view, either manual or automated case)
         return (
           <SelectCoveredEntityStep
-            onSelectEntity={(entity) => handleSelectEntity(entity, setFieldValue)}
-            selectedEntity={selectedEntity}
+            onSelectEntity={(entity) => {
+              setSelectedEntity(entity);
+              // Update the form name with the selected entity's representative name
+              if (entity.representative?.main) {
+                setFieldValue('name', entity.representative?.main);
+              }
+              // Automatically move to the select covered entities step (if manual mode) or coverage details otherwise
+              setActiveStep(mode === SecurityCoverageMode.MANUAL ? StepKey.TESTED_ENTITIES : StepKey.COVERAGE_DETAILS);
+            }}
           />
         );
 
@@ -422,37 +425,24 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
       <QueryRenderer
         query={securityCoveragePreselectedEntityQuery}
         variables={{ id: preSelectedEntityId }}
-        render={({ props: queryProps }: { props: { stixCoreObject: StixCoreObjectNode | null } | null }) => {
+        render={({ props: queryProps }: { props: SecurityCoverageCreationPreselectedEntityQuery$data | null }) => {
           if (!queryProps || !queryProps.stixCoreObject) {
             return <Loader variant={LoaderVariant.inElement} />;
           }
 
-          return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={queryProps.stixCoreObject} shouldRedirect={true} />;
+          return (
+            <SecurityCoverageCreationFormInner
+              {...props}
+              preSelectedEntity={queryProps.stixCoreObject}
+              shouldRedirect={true}
+            />
+          );
         }}
       />
     );
   }
 
   return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={null} />;
-};
-
-const SecurityCoverageCreationWrapper: FunctionComponent<{ updater: (store: RecordSourceSelectorProxy, key: string) => void; onClose?: () => void }> = ({ updater, onClose }) => {
-  return (
-    <QueryRenderer
-      query={securityCoverageConnectorsQuery}
-      variables={{}}
-      render={({ props }: { props: ConnectorsQueryProps | null }) => {
-        const connectors = props?.connectors || [];
-        const hasConnector = connectors.some((connector) => {
-          return connector.active
-            && connector.connector_type === 'INTERNAL_ENRICHMENT'
-            && connector.connector_scope
-            && connector.connector_scope.some((scope: string) => scope.toLowerCase() === 'security-coverage');
-        });
-        return <SecurityCoverageCreationForm updater={updater} onClose={onClose} hasEnrichmentConnectors={hasConnector} />;
-      }}
-    />
-  );
 };
 
 const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps> = ({
@@ -464,10 +454,6 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
     'Pagination__securityCoverages',
     paginationOptions,
     'securityCoverageAdd',
-    null,
-    null,
-    null,
-    null,
   );
 
   const CreateSecurityCoverageControlledDial = (props: DrawerControlledDialProps) => (
@@ -479,7 +465,29 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
       title={t_i18n('Create a security coverage')}
       controlledDial={CreateSecurityCoverageControlledDial}
     >
-      {({ onClose }) => <SecurityCoverageCreationWrapper updater={updater} onClose={onClose} />}
+      {({ onClose }) => (
+        <QueryRenderer
+          query={securityCoverageConnectorsQuery}
+          variables={{}}
+          render={({ props }: { props: ConnectorsQueryProps | null }) => {
+            const connectors = props?.connectors || [];
+            const hasConnector = connectors.some((connector) => {
+              return connector.active
+                && connector.connector_type === 'INTERNAL_ENRICHMENT'
+                && connector.connector_scope
+                && connector.connector_scope.some((scope: string) => scope.toLowerCase() === 'security-coverage');
+            });
+
+            return (
+              <SecurityCoverageCreationForm
+                updater={updater}
+                onClose={onClose}
+                hasEnrichmentConnectors={hasConnector}
+              />
+            );
+          }}
+        />
+      )}
     </Drawer>
   );
 };
