@@ -22,6 +22,7 @@ import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LO
 interface SelectEntitiesToCoverStepProps {
   coveredEntity: { parent_types: readonly string[]; id: string };
   onSelectEntities: (selection: SelectedEntities | null) => void;
+  onPrevious?: () => void;
 }
 
 export const selectEntitiesToCoverStepLinesQuery = graphql`
@@ -130,6 +131,7 @@ const DATA_COLUMNS = {
 const SelectEntitiesToCoverStep = ({
   coveredEntity,
   onSelectEntities,
+  onPrevious,
 }: SelectEntitiesToCoverStepProps) => {
   const { t_i18n } = useFormatter();
 
@@ -202,6 +204,11 @@ const SelectEntitiesToCoverStep = ({
         />
       )}
       <FormButtonContainer>
+        { onPrevious && (
+          <Button onClick={() => onPrevious()}>
+            {t_i18n('Previous')}
+          </Button>
+        )}
         <Button onClick={() => onSelectEntities(selection)}>
           {t_i18n('Next')}
         </Button>
