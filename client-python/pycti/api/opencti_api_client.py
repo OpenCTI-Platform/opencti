@@ -343,9 +343,6 @@ class OpenCTIApiClient:
         # Keep track of draft context
         self.draft_id = ""
 
-        # Keep track of which connector/synchronizer queue is currently being processed,
-        # so file-reference uploads (issue #17896) can assert ownership independently of
-        # any data received in the message content itself.
         self.connector_id = None
 
         # Check if openCTI is available
@@ -521,11 +518,6 @@ class OpenCTIApiClient:
 
     def get_connector_id(self):
         """Get the ID of the connector/synchronizer queue currently being processed.
-
-        This is local-only (never sent as a request header): it is used to populate
-        FileRefInput.sync_id when forwarding a staged sync file reference (issue #17896)
-        instead of uploading base64 content, so ownership is asserted from the worker's own
-        trusted queue identity rather than from data parsed out of the message content.
 
         :return: the current connector ID or None if not set
         :rtype: str or None

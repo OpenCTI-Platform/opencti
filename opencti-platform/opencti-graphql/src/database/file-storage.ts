@@ -151,7 +151,6 @@ export const loadFile = async (
       throw FunctionalError('File path not specified');
     }
     const pathForPermissionChecks = fileS3Path.replace(/^draft\/[^/]+\//, '');
-    // 00. Sync inflight files are an internal transfer buffer, never user-readable regardless of capability
     if (pathForPermissionChecks.startsWith(SYNC_INFLIGHT_STORAGE_PATH)) {
       if (opts.dontThrow) {
         return undefined;
@@ -396,50 +395,106 @@ export const guessMimeType = (fileId: string): string => {
   return mimeType;
 };
 
-/**
- * Server-side copies a validated sync/inflight object to its final storage path and indexes it.
- * Security: storageKey is a single-use, unguessable token (see syncManager.js's remoteFileId) --
- * that's the actual access control, not the caller's identity (all workers share one platform
- * token) or sync_id (only cross-checked for consistency, not authorization on its own).
- * Deletes the sync/inflight source on success, so the TTL janitor (f3) stays a pure backstop.
- */
+export interface SyncFileReferenceCopyProps {
+  storageKey: string;
+  name: string;
+  mimeType?: string;
+  version?: string;
+  fileMarkings?: string[];
+  entityId: string;
+  externalReferenceId?: string;
+  noTriggerImport?: boolean;
+  importContextEntities?: BasicStoreEntity[];
+}
+
+const resolveSyncCopyTargetId = (context: AuthContext, user: AuthUser, filePath: string, name: string) => {
+  const truncatedName = `${truncate(path.parse(name).name, 200, false)}${truncate(path.parse(name).ext, 10, false)}`;
+  const draftContext = getDraftContext(context, user);
+  const prefix = draftContext ? getDraftFilePrefix(draftContext) : '';
+  return { truncatedName, targetId: `${prefix}${filePath}/${truncatedName.toLowerCase()}` };
+};
+
+const findUntouchedSyncFile = async (context: AuthContext, user: AuthUser, targetId: string, version?: string): Promise<LoadedFile | null> => {
+  const currentFile = await documentFindById(context, user, targetId);
+  if (currentFile && utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(version ?? now()))) {
+    return { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile;
+  }
+  return null;
+};
+
+const deleteStagedSyncFile = async (storageKey: string, syncId: string, targetId: string): Promise<boolean> => {
+  try {
+    await deleteFileFromStorage(storageKey);
+    return true;
+  } catch (deleteErr) {
+    logApp.warn('[FILE STORAGE] Failed to delete staged sync file source (left for TTL cleanup backstop)', { cause: deleteErr, syncId, targetId });
+    return false;
+  }
+};
+
+const copyAndIndexSyncFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  storageKey: string,
+  targetId: string,
+  truncatedName: string,
+  copyProps: SyncFileReferenceCopyProps,
+): Promise<LoadedFile> => {
+  const { mimeType, version, fileMarkings = [], entityId, externalReferenceId } = copyProps;
+  await rawCopyFile(storageKey, targetId);
+  const fileSize = await getFileSize(user, targetId);
+  const file: LoadedFile = {
+    id: targetId,
+    name: truncatedName,
+    size: fileSize,
+    information: '',
+    lastModified: new Date(),
+    lastModifiedSinceMin: sinceNowInMinutes(new Date()),
+    metaData: {
+      version: version ?? now(),
+      mimetype: mimeType ?? guessMimeType(targetId),
+      entity_id: entityId,
+      file_markings: fileMarkings,
+      ...(externalReferenceId ? { external_reference_id: externalReferenceId } : {}),
+    },
+    uploadStatus: 'complete',
+  };
+  await indexFileToDocument(context, file);
+  return file;
+};
+
+const triggerSyncFileImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  filePath: string,
+  file: LoadedFile,
+  syncId: string,
+  noTriggerImport: boolean,
+  importContextEntities: BasicStoreEntity[],
+) => {
+  try {
+    const isImportEligiblePath = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
+    if (!noTriggerImport && isImportEligiblePath) {
+      await triggerJobImport(context, user, file, importContextEntities);
+    }
+  } catch (triggerErr) {
+    logApp.warn('[FILE STORAGE] Copied referenced sync file, but failed to trigger its import enrichment job', { cause: triggerErr, syncId, targetId: file.id });
+  }
+};
+
 export const copyFileFromSyncReference = async (
   context: AuthContext,
   user: AuthUser,
   syncId: string,
   filePath: string,
-  copyProps: {
-    storageKey: string;
-    name: string;
-    mimeType?: string;
-    version?: string;
-    fileMarkings?: string[];
-    entityId: string;
-    externalReferenceId?: string;
-    noTriggerImport?: boolean;
-    importContextEntities?: BasicStoreEntity[];
-  },
+  copyProps: SyncFileReferenceCopyProps,
 ): Promise<{ upload: LoadedFile; untouched: boolean } | null> => {
-  const {
-    storageKey,
-    name,
-    mimeType,
-    version,
-    fileMarkings = [],
-    entityId,
-    externalReferenceId,
-    noTriggerImport = false,
-    importContextEntities = [],
-  } = copyProps;
+  const { storageKey, name, noTriggerImport = false, importContextEntities = [] } = copyProps;
   const validation = validateSyncInflightStorageKey(storageKey, syncId);
   if (!validation.valid) {
-    // Not logging storageKey: a rejected key is still live/unconsumed.
     logApp.warn('[FILE STORAGE] Rejected sync file reference copy: invalid or unauthorized storage_key', { syncId, reason: validation.reason });
     return null;
   }
-  // Claim the key before touching S3, to avoid two concurrent callers with the same (e.g. leaked)
-  // key both passing validation and both copying. retryCount: 0 -- a loser fails immediately,
-  // it should not wait around for the source to disappear.
   let lock;
   try {
     lock = await lockResources([`sync-inflight-copy:${validation.normalizedKey}`], { retryCount: 0 });
@@ -447,69 +502,22 @@ export const copyFileFromSyncReference = async (
     logApp.warn('[FILE STORAGE] Rejected sync file reference copy: storage_key is already being consumed', { syncId });
     return null;
   }
+  const { truncatedName, targetId } = resolveSyncCopyTargetId(context, user, filePath, name);
   try {
-    // name is remote-controlled (comes from the synced entity's file extension); never trust it
-    // raw in a storage key. Same basename-only sanitization as upload() for identical files/ names.
-    const truncatedName = `${truncate(path.parse(name).name, 200, false)}${truncate(path.parse(name).ext, 10, false)}`;
-    let targetId = `${filePath}/${truncatedName.toLowerCase()}`;
-    const draftContext = getDraftContext(context, user);
-    if (draftContext) {
-      targetId = `${getDraftFilePrefix(draftContext)}${targetId}`;
+    const untouchedFile = await findUntouchedSyncFile(context, user, targetId, copyProps.version);
+    if (untouchedFile) {
+      await deleteStagedSyncFile(validation.normalizedKey, syncId, targetId);
+      return { upload: untouchedFile, untouched: true };
     }
-    try {
-      // Re-sync of an already-attached file (e.g. entity updated, whole object re-sent): skip
-      // the copy if this path is already at this version, otherwise x_opencti_files wouldn't
-      // actually change and the stream-event build would throw on an empty diff.
-      const currentFile = await documentFindById(context, user, targetId);
-      if (currentFile && utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(version ?? now()))) {
-        try {
-          await deleteFileFromStorage(validation.normalizedKey);
-        } catch (deleteErr) {
-          logApp.warn('[FILE STORAGE] Referenced sync file already up to date, but failed to delete the staged source (left for TTL cleanup backstop)', { cause: deleteErr, syncId, targetId });
-        }
-        return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
-      }
-      await rawCopyFile(validation.normalizedKey, targetId);
-      const fileSize = await getFileSize(user, targetId);
-      const file: LoadedFile = {
-        id: targetId,
-        name: truncatedName,
-        size: fileSize,
-        information: '',
-        lastModified: new Date(),
-        lastModifiedSinceMin: sinceNowInMinutes(new Date()),
-        metaData: {
-          version: version ?? now(),
-          mimetype: mimeType ?? guessMimeType(targetId),
-          entity_id: entityId,
-          file_markings: fileMarkings,
-          ...(externalReferenceId ? { external_reference_id: externalReferenceId } : {}),
-        },
-        uploadStatus: 'complete',
-      };
-      await indexFileToDocument(context, file);
-      try {
-        await deleteFileFromStorage(validation.normalizedKey);
-        logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId });
-      } catch (deleteErr) {
-        logApp.warn('[FILE STORAGE] Copied and indexed referenced sync file, but failed to delete the staged source (left for TTL cleanup backstop)', { cause: deleteErr, syncId, targetId });
-      }
-      try {
-        // Same gate uploadToStorage uses for its own noTriggerImport/import-path check.
-        const isImportEligiblePath = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
-        if (!noTriggerImport && isImportEligiblePath) {
-          await triggerJobImport(context, user, file, importContextEntities);
-        }
-      } catch (triggerErr) {
-        logApp.warn('[FILE STORAGE] Copied referenced sync file, but failed to trigger its import enrichment job', { cause: triggerErr, syncId, targetId });
-      }
-      return { upload: file, untouched: false };
-    } catch (err) {
-      // Not logging storageKey: whichever step failed here (copy, size, index), the staging
-      // source was never reached/consumed, so the key is still live.
-      logApp.error('[FILE STORAGE] Cannot copy referenced sync file in S3', { cause: err, syncId, targetId });
-      return null;
+    const file = await copyAndIndexSyncFile(context, user, validation.normalizedKey, targetId, truncatedName, copyProps);
+    if (await deleteStagedSyncFile(validation.normalizedKey, syncId, targetId)) {
+      logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId });
     }
+    await triggerSyncFileImport(context, user, filePath, file, syncId, noTriggerImport, importContextEntities);
+    return { upload: file, untouched: false };
+  } catch (err) {
+    logApp.error('[FILE STORAGE] Cannot copy referenced sync file in S3', { cause: err, syncId, targetId });
+    return null;
   } finally {
     await lock.unlock();
   }

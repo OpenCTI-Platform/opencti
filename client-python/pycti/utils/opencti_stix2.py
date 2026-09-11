@@ -1328,9 +1328,6 @@ class OpenCTIStix2:
         files_markings = []
         no_trigger_import = []
         embedded_flags = []
-        # Files already staged in storage by the sync manager (issue #17896) are attached
-        # in a follow-up call once the entity exists (see below), since none of the create
-        # mutations accept a fileRefs argument (only Upload for inline base64 files).
         files_to_attach_by_ref = []
         for file_obj in x_opencti_files:
             data = None
@@ -1466,8 +1463,6 @@ class OpenCTIStix2:
         files_markings = []
         no_trigger_import = []
         embedded_flags = []
-        # Files already staged in storage by the sync manager (issue #17896) are attached
-        # in a follow-up call once the entity exists (see below).
         files_to_attach_by_ref = []
         for file_obj in x_opencti_files:
             data = None
@@ -3013,10 +3008,6 @@ class OpenCTIStix2:
     def _get_add_file_ref_handler(self, item_type):
         """Resolve the add_file_ref method for the given STIX item type.
 
-        Mirrors the dispatch already used for add_file: Stix-Cyber-Observable and
-        External-Reference have their own edit mutation namespace, everything else
-        (Stix-Domain-Object and friends) shares the generic one.
-
         :param item_type: the STIX object's "type" value
         :type item_type: str
         :return: bound add_file_ref method
@@ -3029,11 +3020,7 @@ class OpenCTIStix2:
         return self.opencti.stix_domain_object.add_file_ref
 
     def attach_referenced_sync_files(self, item_type, item_id, files_to_attach_by_ref):
-        """Attach files already staged in storage (issue #17896) to an entity.
-
-        Used right after creation, since creation mutations don't accept a fileRefs
-        argument (only Upload) -- see apply_patch_files for the equivalent update-time path,
-        which every entity already goes through the same way for base64 files.
+        """Attach files already staged in storage to an entity.
 
         :param item_type: the STIX object's "type" value, used to pick the right mutation
         :type item_type: str
@@ -3094,8 +3081,6 @@ class OpenCTIStix2:
                         embedded=file.get("embedded", False),
                     )
                 elif "x_opencti_storage_key" in file:
-                    # File already staged in storage by the sync manager (issue #17896):
-                    # copy it into place instead of round-tripping its bytes as base64.
                     files_to_attach_by_ref.append(file)
             self.attach_referenced_sync_files(
                 item["type"], item_id, files_to_attach_by_ref

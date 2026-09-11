@@ -836,6 +836,29 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
   return uploadedFile;
 };
 
+const acquireImportedFile = async (context, user, previous, file, fileRef, filePath, meta, opts) => {
+  const { file_markings, noTriggerImport, importContextEntities } = opts;
+  if (!fileRef) {
+    return uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities });
+  }
+  const jobImportContextEntities = importContextEntities?.length > 0 ? importContextEntities : [previous];
+  const copyResult = await copyFileFromSyncReference(context, user, fileRef.sync_id, filePath, {
+    storageKey: fileRef.storage_key,
+    name: fileRef.name,
+    mimeType: fileRef.mime_type,
+    version: meta.version,
+    fileMarkings: file_markings,
+    entityId: previous.internal_id,
+    externalReferenceId: meta.external_reference_id,
+    noTriggerImport,
+    importContextEntities: jobImportContextEntities,
+  });
+  if (!copyResult) {
+    throw FunctionalError('Cannot copy referenced sync file', { syncId: fileRef.sync_id });
+  }
+  return copyResult;
+};
+
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
   const { fileRef } = args;
@@ -873,7 +896,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       prefix = 'embedded';
     }
     const filePath = `${prefix}/${previous.entity_type}/${internalId}`;
-    // 01. Upload the file (from a direct upload, or by copying a previously staged sync file reference)
+    // 01. Upload the file
     const meta = { version: fileVersion?.toISOString() };
     if (fromTemplate && fintelTemplateId) {
       meta.fintel_template_id = fintelTemplateId;
@@ -882,28 +905,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    let up;
-    let untouched = false;
-    if (fileRef) {
-      const jobImportContextEntities = importContextEntities?.length > 0 ? importContextEntities : [previous];
-      const copyResult = await copyFileFromSyncReference(context, user, fileRef.sync_id, filePath, {
-        storageKey: fileRef.storage_key,
-        name: fileRef.name,
-        mimeType: fileRef.mime_type,
-        version: meta.version,
-        fileMarkings: file_markings,
-        entityId: internalId,
-        externalReferenceId: meta.external_reference_id,
-        noTriggerImport,
-        importContextEntities: jobImportContextEntities,
-      });
-      if (!copyResult) {
-        throw FunctionalError('Cannot copy referenced sync file', { syncId: fileRef.sync_id });
-      }
-      ({ upload: up, untouched } = copyResult);
-    } else {
-      ({ upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities }));
-    }
+    const { upload: up, untouched } = await acquireImportedFile(context, user, previous, file, fileRef, filePath, meta, { file_markings, noTriggerImport, importContextEntities });
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications
@@ -996,8 +998,6 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   }
 };
 
-// Thin ref-mode entry point: separate resolver signature (importPush vs importPushRef), same
-// underlying logic via the fileRef branch in stixCoreObjectImportPush.
 export const stixCoreObjectImportPushRef = async (context, user, id, fileRef) => {
   return stixCoreObjectImportPush(context, user, id, null, { fileRef });
 };

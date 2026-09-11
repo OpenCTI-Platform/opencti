@@ -277,11 +277,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
 
     def add_file_ref(self, **kwargs):
         """Attach a file to this Observable by copying it from a location already staged
-        in storage (issue #17896), instead of uploading its bytes through this call.
-
-        Used for files received via platform-to-platform synchronization: the sync manager
-        streams the file straight into the receiving platform's own storage ahead of time, and
-        this only needs to point at it.
+        in storage, instead of uploading its bytes through this call.
 
         :param id: the Stix-Cyber-Observable id
         :type id: str
@@ -289,9 +285,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         :type storage_key: str
         :param file_name: the file name to attach
         :type file_name: str
-        :param sync_id: the id of the synchronizer that staged the file, used by the platform
-            to verify storage_key really belongs to this transfer. Defaults to the connector ID
-            of the queue currently being processed (see OpenCTIApiClient.set_connector_id).
+        :param sync_id: the id of the synchronizer that staged the file. Defaults to the
+            connector ID of the queue currently being processed.
         :type sync_id: str
         :param fileMarkings: list of marking definition IDs for the file
         :type fileMarkings: list

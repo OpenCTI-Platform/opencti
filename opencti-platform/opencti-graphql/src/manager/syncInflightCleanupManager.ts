@@ -8,11 +8,6 @@ const SYNC_INFLIGHT_CLEANUP_MANAGER_KEY = conf.get('sync_inflight_cleanup_manage
 const SCHEDULE_TIME = conf.get('sync_inflight_cleanup_manager:interval') || 3600000; // 1 hour
 const INFLIGHT_TTL_MS = conf.get('sync_inflight_cleanup_manager:ttl') || 86400000; // 24 hours
 
-/**
- * Backstop only: copyFileFromSyncReference deletes its own sync/inflight/ key right after a
- * successful copy, so this should rarely find anything. Only exists to sweep crashed/abandoned
- * transfers. These keys are never indexed in ES, so this lists raw S3 keys directly.
- */
 export const syncInflightCleanupHandler = async () => {
   const prefix = `${SYNC_INFLIGHT_STORAGE_PATH}/`;
   const cutoff = Date.now() - INFLIGHT_TTL_MS;
@@ -50,8 +45,6 @@ const SYNC_INFLIGHT_CLEANUP_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: SYNC_INFLIGHT_CLEANUP_MANAGER_KEY,
   },
-  // Only relevant once ref-mode transfers can actually happen; no point sweeping an S3
-  // prefix that will always be empty when the feature it backstops is disabled.
   enabledByConfig: SYNC_INFLIGHT_CLEANUP_MANAGER_ENABLED && ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE,
   enabledToStart(): boolean {
     return this.enabledByConfig;

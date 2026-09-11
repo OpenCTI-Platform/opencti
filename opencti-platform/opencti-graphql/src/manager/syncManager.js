@@ -37,8 +37,6 @@ const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_000;
-// Below this size, keep inlining base64 even with reference mode on -- not worth the extra
-// staging round-trips for small files. Configured in KB, converted to bytes once here.
 const FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB = conf.get('sync_manager:file_reference_mode_size_threshold_kb') || 5_000;
 const FILE_REFERENCE_MODE_SIZE_THRESHOLD = FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB * 1024;
 
@@ -171,15 +169,9 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
         logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
         continue;
       }
-      // Reference mode: stream bytes straight into our own bucket instead of buffering them
-      // as base64 in the event JSON. storage_key is a fresh random token (not derived from
-      // fileUri, which isn't secret) -- it's the actual access control for the later copy,
-      // since all workers share one platform token and sync_id alone isn't authorization.
       if (ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE) {
         const { data: fileStream, headers } = await httpClient.get(fetchUri, { responseType: 'stream' });
         const contentLength = Number(headers?.['content-length']);
-        // Unknown/invalid content-length is treated as "large": never buffer an unbounded
-        // stream in memory just to measure it.
         const isBelowThreshold = Number.isFinite(contentLength) && contentLength <= FILE_REFERENCE_MODE_SIZE_THRESHOLD;
         if (isBelowThreshold) {
           const chunks = [];

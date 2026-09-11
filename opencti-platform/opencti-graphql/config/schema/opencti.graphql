@@ -9558,10 +9558,7 @@ input StixFileAddInput {
   embedded: [Boolean]
   upsertOperations: [EditInput!]
 }
-# Reference to a file already staged in storage (issue #17896), used instead of Upload
-# when the caller (e.g. a sync worker) has already placed the bytes via a server-side copy.
 input FileRefInput {
-  # Caller-supplied; only checked for consistency with storage_key, not an ownership guarantee.
   sync_id: ID!
   storage_key: String!
   name: String!
