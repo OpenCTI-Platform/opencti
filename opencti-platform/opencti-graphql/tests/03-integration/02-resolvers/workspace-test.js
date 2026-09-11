@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
@@ -331,6 +331,201 @@ describe('Workspace resolver standard behavior', () => {
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: queryResult.data.workspaceDuplicate.id },
+    });
+  });
+
+  const DUPLICATE_QUERY = gql`
+    mutation duplicateWorkspace($input: WorkspaceDuplicateInput!) {
+      workspaceDuplicate(input: $input) {
+        id
+        entity_type
+        name
+        type
+        description
+        manifest
+        tags
+        investigated_entities_ids
+        authorizedMembers {
+          id
+          access_right
+        }
+      }
+    }
+  `;
+
+  describe('Investigation duplication', () => {
+    let investigationId;
+
+    beforeAll(async () => {
+      const createResult = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'investigation',
+            name: 'Investigation to duplicate',
+            description: 'an investigation with content to duplicate',
+            tags: ['duplication-test'],
+            investigated_entities_ids: ['fake-investigated-entity-id'],
+          },
+        },
+      });
+      investigationId = createResult.data.workspaceAdd.id;
+      // grant view access to the disinformation analyst so it can duplicate it
+      await queryAsAdmin({
+        query: UPDATE_MEMBERS_QUERY,
+        variables: {
+          id: investigationId,
+          input: [
+            { id: ADMIN_USER.id, access_right: 'admin' },
+            { id: USER_DISINFORMATION_ANALYST.id, access_right: 'view' },
+          ],
+        },
+      });
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: investigationId } });
+    });
+
+    it('should duplicate an investigation and copy its investigated entities for an authorized user', async () => {
+      const queryResult = await queryAsUser(USER_DISINFORMATION_ANALYST, {
+        query: DUPLICATE_QUERY,
+        variables: {
+          input: {
+            id: investigationId,
+            type: 'investigation',
+            name: 'Investigation duplicated',
+          },
+        },
+      });
+
+      expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
+      expect(queryResult.data.workspaceDuplicate.type).toBe('investigation');
+      expect(queryResult.data.workspaceDuplicate.name).toBe('Investigation duplicated');
+      expect(queryResult.data.workspaceDuplicate.description).toBe('an investigation with content to duplicate');
+      expect(queryResult.data.workspaceDuplicate.tags).toEqual(['duplication-test']);
+      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toEqual(['fake-investigated-entity-id']);
+      expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
+      expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
+
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: queryResult.data.workspaceDuplicate.id },
+      });
+    });
+
+    it('should reject investigation duplication for a user without the Create/Update investigations capability', async () => {
+      // USER_EDITOR only has EXPLORE_EXUPDATE (dashboard) capabilities, not INVESTIGATION_INUPDATE
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: DUPLICATE_QUERY,
+        variables: {
+          input: {
+            id: investigationId,
+            type: 'investigation',
+            name: 'Investigation duplicated by an unauthorized user',
+          },
+        },
+      });
+    });
+
+    it('should reject investigation duplication for a user with the capability but no access to the source investigation', async () => {
+      // USER_DISINFORMATION_ANALYST has INVESTIGATION_INUPDATE globally but is not granted access to this specific investigation
+      const notSharedResult = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'investigation',
+            name: 'Investigation not shared',
+            investigated_entities_ids: ['fake-investigated-entity-id'],
+          },
+        },
+      });
+      const notSharedInvestigationId = notSharedResult.data.workspaceAdd.id;
+
+      await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, {
+        query: DUPLICATE_QUERY,
+        variables: {
+          input: {
+            id: notSharedInvestigationId,
+            type: 'investigation',
+            name: 'Investigation duplicated without access',
+          },
+        },
+      });
+
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: notSharedInvestigationId } });
+    });
+  });
+
+  describe('Dashboard duplication (id-based, regression for the new per-type capability check)', () => {
+    let dashboardId;
+
+    beforeAll(async () => {
+      const createResult = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'dashboard',
+            name: 'Dashboard to duplicate via id',
+            description: 'a dashboard with content to duplicate',
+            tags: ['duplication-test'],
+          },
+        },
+      });
+      dashboardId = createResult.data.workspaceAdd.id;
+      // grant view access to non-admin users so they can duplicate it
+      await queryAsAdmin({
+        query: UPDATE_MEMBERS_QUERY,
+        variables: {
+          id: dashboardId,
+          input: [
+            { id: ADMIN_USER.id, access_right: 'admin' },
+            { id: USER_EDITOR.id, access_right: 'view' },
+            { id: USER_CONNECTOR.id, access_right: 'view' },
+          ],
+        },
+      });
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: dashboardId } });
+    });
+
+    it('should still allow a user with EXPLORE_EXUPDATE to duplicate a dashboard', async () => {
+      const queryResult = await queryAsUser(USER_EDITOR, {
+        query: DUPLICATE_QUERY,
+        variables: {
+          input: {
+            id: dashboardId,
+            type: 'dashboard',
+            name: 'Dashboard duplicated via id',
+          },
+        },
+      });
+
+      expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
+      expect(queryResult.data.workspaceDuplicate.type).toBe('dashboard');
+      expect(queryResult.data.workspaceDuplicate.description).toBe('a dashboard with content to duplicate');
+      expect(queryResult.data.workspaceDuplicate.tags).toEqual(['duplication-test']);
+
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: queryResult.data.workspaceDuplicate.id },
+      });
+    });
+
+    it('should reject dashboard duplication for a user without EXPLORE_EXUPDATE', async () => {
+      // USER_CONNECTOR has neither EXPLORE_EXUPDATE nor INVESTIGATION_INUPDATE
+      await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
+        query: DUPLICATE_QUERY,
+        variables: {
+          input: {
+            id: dashboardId,
+            type: 'dashboard',
+            name: 'Dashboard duplicated by an unauthorized user',
+          },
+        },
+      });
     });
   });
 
