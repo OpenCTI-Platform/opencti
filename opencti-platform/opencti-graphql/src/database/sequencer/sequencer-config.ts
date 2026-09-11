@@ -25,6 +25,12 @@ export interface SequencerConfig {
   // the write (no reject-twice-then-silent-drop): the edge is recorded as a pending ref and
   // re-asserted when the target lands. Design: work-kb note opencti-strip-and-reconcile-design.
   stripReconcile: boolean;
+  // Rung 5 increment 1: warm the NEXT batch's identity-map entries (elFindByIds + diff
+  // basis) while the CURRENT batch awaits its commit bulk. The loop is wall-saturated but
+  // await-bound (~97% wall, ~65% CPU measured 2026-09-10): the commit await is free time.
+  // Warm-up only: per-batch state (absence cache, dedup prefetch) is NOT computed ahead,
+  // and the end-of-batch evict/clear still runs after the warm, wiping anything stale.
+  resolveAhead: boolean;
   pendingRefExpiryS: number;
   // s9.8.2 bounded member wait: plan passes spent waiting for a declared in-bundle member
   // before the ref is declared dead. With strip_reconcile on, a dead strip is recorded and
@@ -58,6 +64,7 @@ const readConfig = (): SequencerConfig => {
     // prefetch window (plan 0009 §8.8); default = v2 (hard endpoint deps only).
     parkSoftRefs: booleanConf('app:ingestion_sequencer:park_soft_refs', false),
     stripReconcile: booleanConf('app:ingestion_sequencer:strip_reconcile', false),
+    resolveAhead: booleanConf('app:ingestion_sequencer:resolve_ahead', false),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
     origin: conf.get('app:ingestion_sequencer:origin') ?? 'worker',

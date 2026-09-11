@@ -138,12 +138,7 @@ const deriveNestedMetaIds = (input: Record<string, any>): { type: string; id: st
 };
 
 // C2 pre-resolution: two steps, both as SYSTEM_USER under a sequencer-owned context.
-const preResolveBatch = async (batch: SequencerIntent[]) => {
-  const t0 = Date.now();
-  const context = executionContext('sequencer', SYSTEM_USER);
-  // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
-  sequencerIdentityMap.clearAbsent();
-  dedupPrefetch.clear();
+const collectBatchResolveIds = (batch: SequencerIntent[]) => {
   const typedIds = new Map<string, Set<string>>();
   const untypedIds = new Set<string>();
   const entityCandidateIds = new Set<string>();
@@ -167,6 +162,61 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
     intent.referencedIds.forEach((id) => untypedIds.add(id));
     deriveNestedMetaIds(intent.input).forEach(({ type, id }) => addTyped(type, id));
   });
+  return { typedIds, untypedIds, entityCandidateIds };
+};
+
+// Rung 5 increment 1 (resolve-ahead): warm the identity map for a set of intents grabbed
+// from the queue while the CURRENT batch awaits its commit bulk. WARM-UP ONLY: no absence
+// marking and no dedup prefetch (both are per-batch state, wiped by the running batch's
+// end-of-batch clears), and any entry made stale by the running batch is removed right
+// after by its evict(writtenIds). Reads happen pre-refresh: an entity the running batch
+// is creating resolves as a miss here and simply re-resolves next cycle (defer path).
+const warmResolveAhead = async (batch: SequencerIntent[]) => {
+  const t0 = Date.now();
+  const context = executionContext('sequencer', SYSTEM_USER);
+  const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
+  const typedMisses: string[] = [];
+  const typedTypes = new Set<string>();
+  typedIds.forEach((ids, type) => {
+    ids.forEach((id) => {
+      if (!sequencerIdentityMap.hasBare(id)) {
+        typedMisses.push(id);
+        typedTypes.add(type);
+      }
+    });
+  });
+  if (typedMisses.length > 0) {
+    const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes), searchCaller: 'sequencer_resolve_ahead' }) as any[];
+    sequencerIdentityMap.ingestBare(hits);
+    sequencerMetrics.esOp('search');
+  }
+  const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
+  if (untypedMisses.length > 0) {
+    const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses, { searchCaller: 'sequencer_resolve_ahead' }) as any[];
+    sequencerIdentityMap.ingestBare(hits);
+    sequencerMetrics.esOp('search');
+  }
+  if (withRefsLoader) {
+    const targetIds = new Set<string>();
+    entityCandidateIds.forEach((id) => {
+      if (sequencerIdentityMap.hasBare(id)) targetIds.add(id);
+    });
+    if (targetIds.size > 0) {
+      const loaded = await withRefsLoader(context, SYSTEM_USER, Array.from(targetIds));
+      loaded.forEach((element) => sequencerIdentityMap.ingestWithRefs(element));
+      sequencerMetrics.esOp('search', 3);
+    }
+  }
+  sequencerMetrics.phase('resolve_ahead', (Date.now() - t0) / 1000);
+};
+
+const preResolveBatch = async (batch: SequencerIntent[]) => {
+  const t0 = Date.now();
+  const context = executionContext('sequencer', SYSTEM_USER);
+  // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
+  sequencerIdentityMap.clearAbsent();
+  dedupPrefetch.clear();
+  const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
   const typedMisses: string[] = [];
   const typedTypes = new Set<string>();
   typedIds.forEach((ids, type) => {
@@ -423,6 +473,9 @@ const runBatchLoop = async () => {
   };
   let parked: ParkedIntent[] = [];
   let rootFailureSamples = 0; // s9.9.3 bounded root-attribution sampling
+  // resolve-ahead: intents grabbed from the queue during the previous batch's commit,
+  // their identity-map entries already warmed; they enter this cycle's batch first-class
+  let carried: SequencerIntent[] = [];
   for (;;) {
     // 1. assemble: one deferred intent per target lane first; when nothing at all is
     // pending, wait for an arrival or the nearest parking deadline (never re-plan a pure
@@ -435,6 +488,8 @@ const runBatchLoop = async () => {
       if (head) batch.push(head);
       if (lane.length === 0) deferredByTarget.delete(laneKey);
     }
+    carried.forEach((intent) => batch.push(intent));
+    carried = [];
     if (batch.length === 0 && queue.size() === 0) {
       const nearestDeadline = parked.length > 0
         ? Math.min(...parked.map((p) => p.deadline)) : null;
@@ -612,6 +667,7 @@ const runBatchLoop = async () => {
     const strippedInputs: StrippedRefInput[] = [];
     const buffer = new SequencerWriteBuffer();
     const pendings: PendingResolution[] = [];
+    let aheadGrab: Promise<SequencerIntent[]> | null = null;
     setCurrentWriteBuffer(buffer);
     try {
       // s9.9 failure-aware execution: a consumer whose in-batch producer failed (or was
@@ -656,6 +712,29 @@ const runBatchLoop = async () => {
         if (!ok) failedAt[i] = true;
       }
       setCurrentWriteBuffer(null); // flush must not re-buffer
+      // resolve-ahead: while the commit bulk awaits ES, grab the queued intents of the
+      // NEXT batch and warm their identity-map entries. The grab happens now (post-apply)
+      // so nothing mutates the lanes; the warm's staleness is neutralized by this batch's
+      // evict(writtenIds)/clearAbsent in the finally, which runs AFTER the await below.
+      if (SEQUENCER_CONFIG.resolveAhead) {
+        aheadGrab = (async () => {
+          const grabbed: SequencerIntent[] = [];
+          while (grabbed.length < SEQUENCER_CONFIG.maxBatchSize) {
+            const next = queue.tryPop();
+            if (!next) break;
+            sequencerMetrics.queueWait((Date.now() - next.arrivedAt) / 1000);
+            grabbed.push(next);
+          }
+          if (grabbed.length > 0) {
+            try {
+              await warmResolveAhead(grabbed);
+            } catch (err) {
+              logApp.error('[SEQUENCER] resolve-ahead warm failed, batch resolves normally', { cause: err });
+            }
+          }
+          return grabbed;
+        })();
+      }
       try {
         const tFlush = Date.now();
         if (buffer.indexCalls.length > 0 || buffer.updateOps.length > 0) {
@@ -701,6 +780,10 @@ const runBatchLoop = async () => {
         });
       }
     } finally {
+      // resolve-ahead intents are recovered FIRST (they were popped off the queue and must
+      // never be lost), and BEFORE the evict/clear below so any stale warm entry for an
+      // id this batch wrote is wiped right after the warm completed.
+      if (aheadGrab) carried = await aheadGrab;
       setCurrentWriteBuffer(null);
       setCurrentBatchLock(null);
       if (writtenIds.length > 0) sequencerIdentityMap.evict(writtenIds, 'write');
