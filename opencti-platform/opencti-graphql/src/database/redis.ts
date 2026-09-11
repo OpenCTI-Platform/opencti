@@ -372,9 +372,20 @@ export const delEditContext = async (user: AuthUser, instanceId: string) => {
   const listIds = [`context:instance:${instanceId}`, `context:user:${user.id}`];
   return delKeyWithList(`edit:${instanceId}:${user.id}`, listIds);
 };
+export const fetchUserContextIds = async (userId: string) => {
+  return getClientBase().zrange(`context:user:${userId}`, 0, -1);
+};
 export const delUserContext = async (user: AuthUser) => {
-  const contextIds = await getClientBase().zrange(`context:user:${user.id}`, 0, -1);
-  return Promise.all(contextIds.map((id) => getClientBase().del(id)));
+  const contextIds = await fetchUserContextIds(user.id);
+  // Deleting the `edit:` key alone leaves its member in both sorted sets, and nothing prunes
+  // `context:user:*` by score the way `keysFromList` does for the instance side — so the user
+  // would keep being reported as holding locks it has already released.
+  const suffix = `:${user.id}`;
+  await Promise.all(contextIds.map((id) => {
+    const instanceId = id.slice('edit:'.length, id.length - suffix.length);
+    return delKeyWithList(id, [`context:instance:${instanceId}`, `context:user:${user.id}`]);
+  }));
+  return contextIds;
 };
 // endregion
 
