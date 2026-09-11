@@ -262,6 +262,11 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertReportToStix(REPORT_INSTANCE);
     expect(result).toEqual(EXPECTED_REPORT);
   });
+  it('should convert Report with epoch published date', async () => {
+    const reportWithEpoch = { ...REPORT_INSTANCE, published: '1970-01-01T00:00:00.000Z' };
+    const result = convertReportToStix(reportWithEpoch as any);
+    expect(result.published).toEqual('1970-01-01T00:00:00.000Z');
+  });
   it('should convert Note', async () => {
     const result = convertNoteToStix(NOTE_INSTANCE);
     expect(result).toEqual(EXPECTED_NOTE);
