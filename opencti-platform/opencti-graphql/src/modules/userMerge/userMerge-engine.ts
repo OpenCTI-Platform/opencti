@@ -1,8 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
-import type { AuthContext } from '../../types/user';
-import { handlerDryRun, planDivergence, planFingerprint, type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerOutcome } from './userMerge-handler';
+import { resolveUserById } from '../../domain/user';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { userMergeProjectRights, userMergeRightsLabels, userMergeRightsOf } from './userMerge-rights';
+import {
+  handlerDryRun,
+  planDivergence,
+  planFingerprint,
+  type UserMergeHandler,
+  type UserMergeHandlerContext,
+  type UserMergeHandlerOutcome,
+  type UserMergeRightsProjection,
+} from './userMerge-handler';
 import { readJournalEntries, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { userMergeHandlers } from './userMerge-registry';
@@ -73,6 +83,45 @@ const assertBlockingAlertsAcknowledged = (outcomes: UserMergeHandlerOutcome[], o
 };
 
 /**
+ * Both users and the projected rights, read from the store.
+ *
+ * Read through the domain resolver rather than the user cache: the cache is refreshed
+ * asynchronously, so a merge started right after a rights change would decide on a stale
+ * projection. Aborts on a missing user rather than degrading. Every blocking alert of the
+ * feature — public exposure, authorized member management, individual ownership — is derived
+ * from these values, so a handler coping with a missing projection would skip its security
+ * checks while the merge carried on.
+ */
+const readRightsProjection = async (
+  context: AuthContext,
+  sourceId: string,
+  targetId: string,
+  options: UserMergeOptions,
+): Promise<{ sourceUser: AuthUser; targetUser: AuthUser; rights: UserMergeRightsProjection }> => {
+  const sourceUser = await resolveUserById(context, sourceId);
+  const targetUser = await resolveUserById(context, targetId);
+  if (!sourceUser || !targetUser) {
+    throw UnsupportedError('Cannot resolve the rights of the users to merge', {
+      source_id: sourceId,
+      target_id: targetId,
+      missing: !sourceUser ? 'source' : 'target',
+    });
+  }
+  const source = userMergeRightsOf(sourceUser);
+  const target = userMergeRightsOf(targetUser);
+  return {
+    sourceUser,
+    targetUser,
+    rights: {
+      source,
+      target,
+      projected: userMergeProjectRights(source, target, options.rightsStrategy),
+      labels: userMergeRightsLabels(sourceUser, targetUser),
+    },
+  };
+};
+
+/**
  * Two full passes, never interleaved.
  *
  * Every handler computes first, the complete report is produced, and only then does any
@@ -104,7 +153,8 @@ export const executeUserMerge = async (
   };
   try {
     const handlers = userMergeHandlers();
-    const handlerContext: UserMergeHandlerContext = { context, sourceId, targetId, options };
+    const projection = await readRightsProjection(context, sourceId, targetId, options);
+    const handlerContext: UserMergeHandlerContext = { context, sourceId, targetId, options, ...projection };
     const journalInput = { mergeId, sourceId, targetId };
 
     const dryOutcomes: UserMergeHandlerOutcome[] = [];

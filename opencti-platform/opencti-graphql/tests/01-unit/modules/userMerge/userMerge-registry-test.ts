@@ -17,10 +17,15 @@ import {
 import { UserMergeRightsStrategy } from '../../../../src/modules/userMerge/userMerge-types';
 import { INDEX_DELETED_OBJECTS, READ_INDEX_DRAFT_OBJECTS } from '../../../../src/database/utils';
 
+const EMPTY_RIGHTS = { markings: [], organizations: [], capabilities: [], groups: [] };
+
 const handlerContext = {
   context: {} as never,
   sourceId: 'source',
   targetId: 'target',
+  sourceUser: { internal_id: 'source' } as never,
+  targetUser: { internal_id: 'target' } as never,
+  rights: { source: EMPTY_RIGHTS, target: EMPTY_RIGHTS, projected: EMPTY_RIGHTS, labels: {} },
   options: { dryRun: true, rightsStrategy: UserMergeRightsStrategy.Strict, acknowledgeExposureChange: false },
 } as UserMergeHandlerContext;
 

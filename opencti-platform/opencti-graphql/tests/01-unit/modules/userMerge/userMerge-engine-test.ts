@@ -13,6 +13,15 @@ vi.mock('../../../../src/modules/userMerge/userMerge-journal', () => ({
   readJournalEntries: async () => [],
 }));
 
+const storedUsers = new Map<string, unknown>([
+  ['source-id', { internal_id: 'source-id', allowed_marking: [], organizations: [], capabilities: [] }],
+  ['target-id', { internal_id: 'target-id', allowed_marking: [], organizations: [], capabilities: [] }],
+]);
+
+vi.mock('../../../../src/domain/user', () => ({
+  resolveUserById: async (_context: unknown, id: string) => storedUsers.get(id),
+}));
+
 const { executeUserMerge } = await import('../../../../src/modules/userMerge/userMerge-engine');
 const { registerUserMergeHandler } = await import('../../../../src/modules/userMerge/userMerge-registry');
 
@@ -134,6 +143,18 @@ describe('userMerge engine', () => {
     expect(result.status).toEqual(UserMergeStatus.Failed);
     expect(result.id).toBeDefined();
     expect(result.message).toEqual('elasticsearch is down');
+  });
+
+  it('should fail rather than run without the resolved rights of both users', async () => {
+    registerUserMergeHandler(mockHandler('handler-a'));
+    const result = await executeUserMerge(
+      {} as never,
+      'source-id',
+      'unknown-id',
+      { dryRun: false, rightsStrategy: UserMergeRightsStrategy.Strict, acknowledgeExposureChange: false },
+    );
+    expect(result.status).toEqual(UserMergeStatus.Failed);
+    expect(result.message).toEqual('Cannot resolve the rights of the users to merge');
   });
 
   it('should succeed with an empty report when no handler is registered', async () => {
