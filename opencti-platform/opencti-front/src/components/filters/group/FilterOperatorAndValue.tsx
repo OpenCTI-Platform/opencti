@@ -188,6 +188,9 @@ export interface FilterOperatorAndValueProps {
   /** Hides the value editor entirely: used when the value is displayed by another component
    * (e.g. FilterRowCompositeValue for 'regardingOf' / 'dynamicRegardingOf' filters). */
   hideValue?: boolean;
+  /** Shows relative-date shortcuts (Last 7 days, ...) on the From field of a `within` date
+   * filter. Only makes sense in the nested-filter-group row layout, not the root chip popover. */
+  showRelativeDateShortcuts?: boolean;
 }
 
 /**
@@ -213,6 +216,7 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
   dataTestIds,
   hideOperator = false,
   hideValue = false,
+  showRelativeDateShortcuts = false,
 }) => {
   const { t_i18n } = useFormatter();
   const { typesWithFintelTemplates } = useAttributes();
@@ -522,10 +526,12 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
         const values = computedValues.length > 0 ? computedValues : DEFAULT_WITHIN_FILTER_VALUES;
         return (
           <DateRangeFilter
+            key={values.join('|')}
             filter={filter}
             filterKey={filterKey}
             filterValues={values}
             helpers={helpers}
+            showRelativeDateShortcuts={showRelativeDateShortcuts}
           />
         );
       }

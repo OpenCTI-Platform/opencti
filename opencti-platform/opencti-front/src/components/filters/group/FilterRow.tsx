@@ -123,6 +123,7 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
         valueWrapperStyle={isDateRangeValue ? { flex: '1 1 auto', minWidth: 0, display: 'flex', gap: 1 } : { flex: '1 1 auto', minWidth: 0 }}
         dataTestIds={{ operator: 'filter-row-operator-select', value: 'filter-row-value' }}
         hideValue={isCompositeRegardingOf}
+        showRelativeDateShortcuts={isDateRangeValue}
       />
       {isCompositeRegardingOf && (
         <Box data-testid="filter-row-value" sx={{ flex: '1 1 auto', minWidth: 0 }}>
