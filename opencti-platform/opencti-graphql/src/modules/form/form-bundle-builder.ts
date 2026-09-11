@@ -16,6 +16,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { transformSpecialFields, convertFieldType } from './form-fields-converter';
 import { completeEntity } from './form-entity-builder';
 import { loadFormEntity } from './form-utils';
+import { materializeEntityFromFields } from './form-entity-materializer';
 
 /**
  * Input fields coming from the entity-creation mutations that must NOT be copied
@@ -152,112 +153,73 @@ export const buildMainStixEntities = async (
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
       for (let index = 0; index < values.mainEntityGroups.length; index += 1) {
-        let mainEntity = { entity_type: mainEntityType } as StoreEntity;
-        for (let i = 0; i < mainEntityFields.length; i += 1) {
-          const field = mainEntityFields[i];
-          const fieldValue = (field.isReadOnly && !isBypass)
-            ? field.defaultValue
-            : values.mainEntityGroups[index][field.name];
-          const convertedValue = convertFieldType(fieldValue, field);
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          mainEntity[field.attributeMapping.attributeName] = convertedValue;
-        }
-        mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
-        if (mainEntityType === ENTITY_TYPE_MALWARE && isEmptyField(mainEntity.is_family)) {
-          mainEntity.is_family = true;
-        }
-        if (mainEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(mainEntity.context)) {
-          mainEntity.context = 'form';
-        }
-        mainEntity = completeEntity(mainEntityType, mainEntity);
-        if (isStixCyberObservable(mainEntity.entity_type)) {
-          if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
-            throw FunctionalError('Main entity observable is not correctly formatted', {
-              type: mainEntity.entity_type,
-              input: mainEntity,
-              doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
-            });
-          }
-        }
+        const mainEntity = await materializeEntityFromFields(
+          context,
+          user,
+          mainEntityType,
+          mainEntityFields,
+          (field) => values.mainEntityGroups[index][field.name],
+          {
+            applyFields: true,
+            skipEmptyFieldValues: false,
+            isBypass,
+            applyTypeDefaults: true,
+            errorLabel: 'Main entity observable is not correctly formatted',
+          },
+        );
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
     } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
       const refangedMainEntityParsed = refangValues(values.mainEntityParsed);
       for (let index = 0; index < refangedMainEntityParsed.length; index += 1) {
-        let mainEntity = { entity_type: mainEntityType } as StoreEntity;
+        const seedEntity: Partial<StoreEntity> = {};
         if (schema.mainEntityParseFieldMapping === 'pattern' && schema.mainEntityAutoConvertToStixPattern) {
           const observableValue = refangedMainEntityParsed[index];
           const observableType = detectObservableType(observableValue);
           const pattern = await createStixPattern(context, user, observableType, observableValue);
-          mainEntity[schema.mainEntityParseFieldMapping] = pattern;
-          mainEntity.pattern_type = 'stix';
-          mainEntity.name = observableValue;
-          mainEntity.x_opencti_main_observable_type = observableType;
+          Object.assign(seedEntity, {
+            [schema.mainEntityParseFieldMapping]: pattern,
+            pattern_type: 'stix',
+            name: observableValue,
+            x_opencti_main_observable_type: observableType,
+          });
         } else {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          mainEntity[schema.mainEntityParseFieldMapping] = refangedMainEntityParsed[index];
+          Object.assign(seedEntity, { [String(schema.mainEntityParseFieldMapping)]: refangedMainEntityParsed[index] });
         }
-        if (values.mainEntityFields) {
-          const additionalMainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-          for (let i = 0; i < additionalMainEntityFields.length; i += 1) {
-            const field = additionalMainEntityFields[i];
-            const fieldValue = (field.isReadOnly && !isBypass)
-              ? field.defaultValue
-              : values.mainEntityFields[field.attributeMapping.attributeName];
-            if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-              const convertedValue = convertFieldType(fieldValue, field);
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              mainEntity[field.attributeMapping.attributeName] = convertedValue;
-            }
-          }
-          mainEntity = await transformSpecialFields(context, user, mainEntity, additionalMainEntityFields, false);
-        }
-        if (mainEntityType === ENTITY_TYPE_MALWARE && isEmptyField(mainEntity.is_family)) {
-          mainEntity.is_family = true;
-        }
-        if (mainEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(mainEntity.context)) {
-          mainEntity.context = 'form';
-        }
-        mainEntity = completeEntity(mainEntityType, mainEntity);
-        if (isStixCyberObservable(mainEntity.entity_type)) {
-          if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
-            throw FunctionalError('Main entity observable is not correctly formatted', {
-              type: mainEntity.entity_type,
-              input: mainEntity,
-              doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
-            });
-          }
-        }
+        const mainEntity = await materializeEntityFromFields(
+          context,
+          user,
+          mainEntityType,
+          mainEntityFields,
+          (field) => values.mainEntityFields[field.attributeMapping.attributeName],
+          {
+            seedEntity,
+            applyFields: Boolean(values.mainEntityFields),
+            skipEmptyFieldValues: true,
+            isBypass,
+            applyTypeDefaults: true,
+            errorLabel: 'Main entity observable is not correctly formatted',
+          },
+        );
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
     } else {
-      let mainEntity = { entity_type: mainEntityType } as StoreEntity;
-      for (let i = 0; i < mainEntityFields.length; i += 1) {
-        const field = mainEntityFields[i];
-        const fieldValue = (field.isReadOnly && !isBypass)
-          ? field.defaultValue
-          : values[field.name];
-        const convertedValue = convertFieldType(fieldValue, field);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        mainEntity[field.attributeMapping.attributeName] = convertedValue;
-      }
-      mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
-      mainEntity = completeEntity(mainEntityType, mainEntity);
-      if (isStixCyberObservable(mainEntity.entity_type)) {
-        if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
-          throw FunctionalError('Main entity observable is not correctly formatted', {
-            type: mainEntity.entity_type,
-            input: mainEntity,
-            doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT,
-          });
-        }
-      }
+      const mainEntity = await materializeEntityFromFields(
+        context,
+        user,
+        mainEntityType,
+        mainEntityFields,
+        (field) => values[field.name],
+        {
+          applyFields: true,
+          skipEmptyFieldValues: false,
+          isBypass,
+          applyTypeDefaults: false,
+          errorLabel: 'Main entity observable is not correctly formatted',
+        },
+      );
       mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
       mainEntityStixId = mainEntity.standard_id;
     }
