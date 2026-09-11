@@ -80,14 +80,21 @@ export const addSecurityCoverageResult = async (
     throw FunctionalError('Security coverage not found', { securityCoverageResultInput });
   }
 
-  const input = {
-    ...securityCoverageResultInput,
-  };
+  const {
+    add_related_entities,
+    ...input
+  } = securityCoverageResultInput;
+
   if (!securityCoverageResultInput.name) {
     input.name = `Result of ${securityCoverage.name}`;
   }
   const noEnrichOnUpdate = await isFromConnectorWork(context, user);
   const result = await internalCreateSecurityCoverageResult(context, user, input, noEnrichOnUpdate);
+
+  if (add_related_entities) {
+    await createHasCoveredRelTask(context, user, result.id, add_related_entities);
+  }
+
   return notify(
     BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].ADDED_TOPIC,
     result,

@@ -1,5 +1,5 @@
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
-import { HAS_COVERED_TARGETS_TYPES, SelectedEntities, StixCoreObjectNode } from '../SecurityCoverageCreation-types';
+import { HAS_COVERED_TARGETS_TYPES, SelectedEntities } from '../SecurityCoverageCreation-types';
 
 export const LOCAL_STORAGE_KEY = 'SelectEntitiesToCoverStep';
 
@@ -16,7 +16,9 @@ export const INITIAL_VALUES = {
 /**
  * Mandatory filters restricting the list to the entities the backend receives.
  */
-export const buildCoveredEntitiesFilters = (coveredEntity: StixCoreObjectNode): FilterGroup['filters'] => {
+export const buildCoveredEntitiesFilters = (
+  coveredEntity: { parent_types: readonly string[]; id: string },
+): FilterGroup['filters'] => {
   const typeFilter = {
     key: 'entity_type',
     values: HAS_COVERED_TARGETS_TYPES,
