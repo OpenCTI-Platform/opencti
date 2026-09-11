@@ -117,6 +117,9 @@ describe('userMerge history queries', () => {
 });
 
 describe('userMerge history handler', () => {
+  it('should declare the register version so a stale handler is refused at boot', () => {
+  });
+
   it('should read and write the same paths', () => {
     expect(userMergeHistoryHandler.reads).toEqual(userMergeHistoryHandler.writes);
   });

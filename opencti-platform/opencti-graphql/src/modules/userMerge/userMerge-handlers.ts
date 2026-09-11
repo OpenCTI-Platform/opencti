@@ -5,6 +5,7 @@ import { userMergeOperationalRelationsHandler } from './userMerge-operationalRel
 import { userMergePublicSharingHandler } from './userMerge-publicSharingHandler';
 import { userMergeRightsHandler } from './userMerge-rightsHandler';
 import { userMergeScalarHandler } from './userMerge-scalarHandler';
+import { userMergeSourceDisableHandler } from './userMerge-sourceDisableHandler';
 
 /**
  * Single registration point, and the only place the handler set is validated.
@@ -13,6 +14,9 @@ import { userMergeScalarHandler } from './userMerge-scalarHandler';
  * registry can put it back in a known state. Validation runs last, on the complete set.
  */
 export const registerUserMergeHandlers = (): void => {
+  // Registration order is execution order. The source is disabled first, so that it cannot
+  // authenticate and create new references while the following handlers move the existing ones.
+  registerUserMergeHandler(userMergeSourceDisableHandler);
   registerUserMergeHandler(userMergeScalarHandler);
   registerUserMergeHandler(userMergeHistoryHandler);
   registerUserMergeHandler(userMergePublicSharingHandler);
