@@ -30753,6 +30753,7 @@ export type SecurityCoverageResultToStixArgs = {
 };
 
 export type SecurityCoverageResultAddInput = {
+  add_related_entities?: InputMaybe<SecurityCoverageSelectedEntitiesInput>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   coverage_last_result?: InputMaybe<Scalars['DateTime']['input']>;

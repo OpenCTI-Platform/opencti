@@ -16339,6 +16339,7 @@ input SecurityCoverageResultAddInput {
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
 }
 
 input AskSendOtpInput {

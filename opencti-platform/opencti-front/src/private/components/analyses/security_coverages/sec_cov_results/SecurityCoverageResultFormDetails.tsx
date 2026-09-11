@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-import { DialogActions } from '@mui/material';
 import { CoverageInformation } from '../SecurityCoverage-types';
 import { useFormatter } from '../../../../../components/i18n';
 import { Field, Form, Formik } from 'formik';
@@ -8,6 +7,7 @@ import Button from '../../../../../components/common/button/Button';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import CoverageInformationField from '../../../common/form/CoverageInformationField';
+import FormButtonContainer from '@common/form/FormButtonContainer';
 
 export interface SecurityCoverageResultFormData {
   name: string;
@@ -19,11 +19,13 @@ export interface SecurityCoverageResultFormData {
 interface SecurityCoverageResultFormDetailsProps {
   onSubmit: (values: SecurityCoverageResultFormData) => void;
   onCancel: () => void;
+  initValues?: SecurityCoverageResultFormData;
 }
 
 const SecurityCoverageResultFormDetails = ({
   onSubmit,
   onCancel,
+  initValues,
 }: SecurityCoverageResultFormDetailsProps) => {
   const { t_i18n } = useFormatter();
 
@@ -42,7 +44,7 @@ const SecurityCoverageResultFormDetails = ({
     ).min(1, t_i18n('At least one coverage metric is required')),
   });
 
-  const initialValues: SecurityCoverageResultFormData = {
+  const initialValues: SecurityCoverageResultFormData = initValues ?? {
     name: '',
     validFrom: null,
     validTo: null,
@@ -88,7 +90,7 @@ const SecurityCoverageResultFormDetails = ({
             }}
           />
 
-          <DialogActions>
+          <FormButtonContainer>
             <Button variant="secondary" onClick={onCancel}>
               {t_i18n('Cancel')}
             </Button>
@@ -98,7 +100,7 @@ const SecurityCoverageResultFormDetails = ({
             >
               {t_i18n('Next')}
             </Button>
-          </DialogActions>
+          </FormButtonContainer>
         </Form>
       )}
     </Formik>
