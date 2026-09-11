@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
@@ -13,6 +14,10 @@ import TextList from '@common/text/TextList';
 const DataSourceDetailsFragment = graphql`
   fragment DataSourceDetails_dataSource on DataSource {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     x_mitre_platforms
@@ -64,6 +69,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
             </Label>
             <TextList list={data.collection_layers} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
           <Grid item xs={12}>
             <DataSourceDataComponents dataSource={data} />
           </Grid>

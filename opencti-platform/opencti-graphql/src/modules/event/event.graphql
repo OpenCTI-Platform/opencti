@@ -146,6 +146,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 # Ordering
@@ -219,6 +220,7 @@ input EventAddInput {
     noTriggerImport: [Boolean]
     embedded: [Boolean]
     upsertOperations: [EditInput!]
+    customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

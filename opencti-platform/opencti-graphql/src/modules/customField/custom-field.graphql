@@ -11,14 +11,8 @@ type CustomFieldValue {
 }
 
 input CustomFieldValueAddInput {
-  field_id: ID!
   field_name: String!
-  int_value: Int
-  string_value: String
-  boolean_value: Boolean
-  date_value: DateTime
-  select_value: String
-  select_values: [String!]
+  value: [Any]!
 }
 
 # Per-entity-type settings of a custom field definition (mandatory / default value are per entity type - US.2)
@@ -47,6 +41,7 @@ type CustomFieldDefinition implements InternalObject & BasicObject {
   multiple: Boolean!
   # Common optional
   description: String
+  aliases: [String!]
   # Integer-specific
   min_value: Int
   max_value: Int
@@ -93,6 +88,7 @@ type Query {
 input CustomFieldDefinitionAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   label: String! @constraint(minLength: 2, format: "not-blank")
+  aliases: [String!]
   field_type: String!
   entity_types: [String!]
   multiple: Boolean

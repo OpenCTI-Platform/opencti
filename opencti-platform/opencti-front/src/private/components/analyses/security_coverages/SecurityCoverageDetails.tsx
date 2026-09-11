@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -23,6 +24,10 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     external_uri
@@ -91,6 +96,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
               </FieldOrEmpty>
             </List>
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
           <Grid item xs={12}>
             <SecurityCoverageSecurityPlatforms securityCoverage={data} />
           </Grid>

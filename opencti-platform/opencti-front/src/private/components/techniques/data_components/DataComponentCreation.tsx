@@ -4,7 +4,10 @@ import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { DataComponentsLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import { Stack } from '@mui/material';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -141,6 +144,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     const allNames = splitMultilines(values.name);
     const variables: DataComponentCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -183,6 +187,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
 
   return (
     <Formik<DataComponentAddInput>
+      entityType={DATA_COMPONENT_TYPE}
       initialValues={initialValues}
       validationSchema={dataComponentValidator}
       validateOnChange={true}
@@ -286,6 +291,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

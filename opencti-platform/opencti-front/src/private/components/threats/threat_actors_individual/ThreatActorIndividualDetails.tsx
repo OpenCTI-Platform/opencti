@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -22,6 +23,10 @@ const ThreatActorIndividualDetailsFragment = graphql`
   fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual
   {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     first_seen
     last_seen
     description
@@ -215,6 +220,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             list={data.personal_motivations}
           />
         </Grid>
+        <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
       </Grid>
     </Card>
   );

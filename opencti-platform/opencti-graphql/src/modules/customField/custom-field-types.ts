@@ -14,12 +14,12 @@ export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'd
 export interface CustomFieldValue {
   field_id: string;
   field_name: string;
-  int_value?: number;
-  string_value?: string;
-  boolean_value?: boolean;
-  date_value?: string;
-  select_value?: string;
-  select_values?: string[];
+  int_value?: number | null;
+  string_value?: string | null;
+  boolean_value?: boolean | null;
+  date_value?: string | null;
+  select_value?: string | null;
+  select_values?: string[] | null;
 }
 
 // Per-entity-type settings of a custom field definition.

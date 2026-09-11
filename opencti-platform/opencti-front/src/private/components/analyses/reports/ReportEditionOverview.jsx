@@ -21,6 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -349,6 +350,13 @@ const ReportEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
             required={mandatoryAttributes.includes('objectMarking')}
           />
+          <CustomFieldValuesEdition
+            entityType={report.entity_type}
+            entityId={report.id}
+            values={report.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             {enableReferences && (
               <CommitMessage
@@ -371,6 +379,7 @@ export default createFragmentContainer(ReportEditionOverviewComponent, {
   report: graphql`
     fragment ReportEditionOverview_report on Report {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       description
       report_types

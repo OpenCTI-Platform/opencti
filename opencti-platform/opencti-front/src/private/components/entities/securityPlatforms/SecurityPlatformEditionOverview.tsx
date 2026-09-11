@@ -19,6 +19,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { useFormatter } from '../../../../components/i18n';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -269,6 +270,13 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={securityPlatform.entity_type}
+            entityId={securityPlatform.id}
+            values={securityPlatform.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -289,6 +297,7 @@ export default createFragmentContainer(SecurityPlatformEditionOverview, {
   securityPlatform: graphql`
     fragment SecurityPlatformEditionOverview_securityPlatform on SecurityPlatform {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       description
       security_platform_type
       standard_id

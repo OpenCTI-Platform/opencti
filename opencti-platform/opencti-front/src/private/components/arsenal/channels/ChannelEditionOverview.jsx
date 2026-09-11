@@ -19,6 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const channelMutationFieldPatch = graphql`
@@ -273,6 +274,13 @@ const ChannelEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={channel.entity_type}
+            entityId={channel.id}
+            values={channel.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             {enableReferences && (
               <CommitMessage
@@ -295,6 +303,7 @@ export default createFragmentContainer(ChannelEditionOverviewComponent, {
   channel: graphql`
     fragment ChannelEditionOverview_channel on Channel {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       channel_types
       description
