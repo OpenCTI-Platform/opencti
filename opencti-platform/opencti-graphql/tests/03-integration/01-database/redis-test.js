@@ -32,6 +32,7 @@ import {
   setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { awaitUntilCondition } from '../../utils/testQueryHelper';
 
 const ingestionHistoryKey = (feedId) => `ingestion-${feedId}-history`;
 
@@ -408,13 +409,11 @@ describe('Redis publishCacheResetEvent', () => {
     try {
       await publishCacheResetEvent('User');
 
-      const timeout = 5000;
-      const start = Date.now();
-      while (!receivedEvents.some((e) => e.entityType === 'User') && Date.now() - start < timeout) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, 10);
-        });
-      }
+      await awaitUntilCondition(
+        async () => receivedEvents.some((e) => e.entityType === 'User'),
+        3000,
+        { intervalMs: 10, message: 'No cache reset event received for User' },
+      );
 
       expect(receivedEvents.length).toBeGreaterThanOrEqual(1);
       const userEvent = receivedEvents.find((e) => e.entityType === 'User');
@@ -435,16 +434,11 @@ describe('Redis publishCacheResetEvent', () => {
       await publishCacheResetEvent('User');
       await publishCacheResetEvent('Settings');
 
-      const timeout = 5000;
-      const start = Date.now();
-      while (
-        (!receivedEvents.some((e) => e.entityType === 'User') || !receivedEvents.some((e) => e.entityType === 'Settings'))
-        && Date.now() - start < timeout
-      ) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, 10);
-        });
-      }
+      await awaitUntilCondition(
+        async () => receivedEvents.some((e) => e.entityType === 'User') && receivedEvents.some((e) => e.entityType === 'Settings'),
+        3000,
+        { intervalMs: 10, message: 'Cache reset events not received for both User and Settings' },
+      );
 
       expect(receivedEvents.length).toBeGreaterThanOrEqual(2);
       expect(receivedEvents.some((e) => e.entityType === 'User')).toBe(true);

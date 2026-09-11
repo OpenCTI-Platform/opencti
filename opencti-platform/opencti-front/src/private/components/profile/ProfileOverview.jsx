@@ -34,7 +34,6 @@ import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
-import ProfileOverviewNewsFeed from './ProfileOverviewNewsFeed';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
 
@@ -483,13 +482,6 @@ const ProfileOverviewComponent = (props) => {
           <HomeDashboardSettings />
         </Card>
       ) : null}
-      {settings.xtm_hub_registration_status === 'registered' && settings.xtm_hub_available_news_feed_types?.length > 0 && (
-        <ProfileOverviewNewsFeed
-          availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
-          unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
-          onSubmitField={handleSubmitField}
-        />
-      )}
       <Card title={t('Authentication')}>
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
@@ -659,8 +651,6 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
       platform_notifier_auto_trigger_assignee
-      xtm_hub_registration_status
-      xtm_hub_available_news_feed_types
     }
   `,
 });

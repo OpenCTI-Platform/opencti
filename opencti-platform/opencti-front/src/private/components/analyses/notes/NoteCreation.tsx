@@ -268,19 +268,19 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             entityType="Note"
             containerStyle={fieldSpacingContainerStyle}
           />
-          <Field
-            component={SliderField}
-            name="likelihood"
-            required={(mandatoryAttributes.includes('likelihood'))}
-            label={t_i18n('Likelihood')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
+          <div style={fieldSpacingContainerStyle}>
+            <Field
+              component={SliderField}
+              name="likelihood"
+              required={(mandatoryAttributes.includes('likelihood'))}
+              label={t_i18n('Likelihood')}
+            />
+          </div>
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
-              style={{ marginTop: 10 }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
           )}

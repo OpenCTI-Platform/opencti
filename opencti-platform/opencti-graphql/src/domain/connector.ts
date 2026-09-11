@@ -137,7 +137,8 @@ export const updateConnectorWithConnectorInfo = async (
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
   }
-  await patchAttribute(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  const { element } = await patchAttribute<BasicStoreEntityConnector>(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  return element;
 };
 
 export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
@@ -149,8 +150,8 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   const scopes = connectorEntity.connector_scope ? connectorEntity.connector_scope.split(',') : [];
   await registerConnectorQueues(connectorEntity.id, connectorEntity.name, connectorEntity.connector_type, scopes);
 
-  await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
-  return storeLoadById(context, user, id, 'Connector').then((data) => completeConnector(data));
+  const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
+  return completeConnector(updatedConnector);
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
@@ -164,7 +165,7 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
-  return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+  return completeConnector(element);
 };
 interface RegisterOptions {
   built_in?: boolean;

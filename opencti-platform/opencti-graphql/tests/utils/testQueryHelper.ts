@@ -6,6 +6,7 @@ import { ApolloServer } from '@apollo/server';
 import createSchema from '../../src/graphql/schema';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
+import { wait } from '../../src/database/utils';
 import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
@@ -279,32 +280,77 @@ export const unSetOrganization = async () => {
   expect(settingsResult.platform_organization).toBeUndefined();
 };
 
+const AWAIT_MIN_INTERVAL = 200;
+const AWAIT_MAX_INTERVAL = 2000;
+const AWAIT_TARGET_POLLS = 20;
+
 /**
+ * Polling interval derived from the budget, so callers only have to express how long they
+ * accept to wait. Aiming at AWAIT_TARGET_POLLS attempts keeps short budgets responsive and
+ * long ones cheap, and the bounds avoid both a busy loop and a wait that overshoots the
+ * budget on its first sleep.
+ */
+const intervalForBudget = (budgetMs: number) => {
+  const target = Math.round(budgetMs / AWAIT_TARGET_POLLS);
+  return Math.min(AWAIT_MAX_INTERVAL, Math.max(AWAIT_MIN_INTERVAL, target));
+};
+
+/** First stack frame outside this helper, so every measurement is attributable. */
+const resolveCallSite = () => {
+  const frames = new Error().stack?.split('\n').slice(1) ?? [];
+  const frame = frames.find((f) => !f.includes('testQueryHelper'));
+  return frame?.match(/([\w.-]+\.(?:ts|js):\d+:\d+)/)?.[1] ?? 'unknown';
+};
+
+interface AwaitUntilConditionOptions {
+  /** Message added to the error when the budget is exhausted. */
+  message?: string;
+  /** Forces the polling interval in ms instead of deriving it from the budget. */
+  intervalMs?: number;
+  /** Expected result of the condition. */
+  expectToBeTrue?: boolean;
+}
+
+/**
+ * Waits until a condition holds, within a time budget.
+ *
+ * Every call reports how much of its budget it actually consumed, so the budgets can be set
+ * from observed timings rather than from guesses.
+ *
  * @param conditionPromise A function checking if the condition is verified.
- * @param sleepTimeBetweenLoop Time to wait between each loop in ms.
- * @param loopCount Max loop to do.
- * @param expectToBeTrue The expecting result of the condition.
- * @param message Message to display when condition is not met
+ * @param budgetMs How long polling may go on, in ms. A poll is only started while the budget
+ *                holds, so the budget bounds when polls start, not the total duration: a poll
+ *                already in flight is never interrupted. Always stated by the caller: what a
+ *                wait is allowed to cost is a decision of the test, never a default.
+ * @param options Message, forced polling interval, expected result.
  */
 export const awaitUntilCondition = async (
   conditionPromise: () => Promise<boolean>,
-  sleepTimeBetweenLoop = 1000,
-  loopCount = 10,
-  expectToBeTrue = true,
-  message: string = '',
+  budgetMs: number,
+  options: AwaitUntilConditionOptions = {},
 ) => {
-  let isConditionOk = await conditionPromise();
-  let loopCurrent = 0;
+  const { message = '', expectToBeTrue = true } = options;
+  const intervalMs = options.intervalMs ?? intervalForBudget(budgetMs);
+  const callSite = resolveCallSite();
+  const startTime = Date.now();
 
-  while (!isConditionOk === expectToBeTrue && loopCurrent < loopCount) {
-    await new Promise((resolve) => setTimeout(resolve, sleepTimeBetweenLoop));
+  let isConditionOk = await conditionPromise();
+  let polls = 1;
+
+  while (!isConditionOk === expectToBeTrue && Date.now() - startTime + intervalMs <= budgetMs) {
+    await wait(intervalMs);
     isConditionOk = await conditionPromise();
-    loopCurrent += 1;
+    polls += 1;
   }
+
+  const elapsed = Date.now() - startTime;
+  const share = Math.round((elapsed / budgetMs) * 100);
 
   if (!isConditionOk === expectToBeTrue) {
-    throw new Error(`Condition not met after ${loopCount} attempts - ${message}`);
+    throw new Error(`Condition not met after ${elapsed}ms (budget ${budgetMs}ms, ${polls} polls) at ${callSite} - ${message}`);
   }
+
+  logApp.info(`[TEST-AWAIT] ${callSite} met in ${elapsed}ms (${share}% of ${budgetMs}ms budget, ${polls} polls)`);
 };
 
 const serverFromUser = new ApolloServer<AuthContext>({

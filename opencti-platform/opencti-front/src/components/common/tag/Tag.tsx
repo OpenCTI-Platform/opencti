@@ -15,7 +15,7 @@ export interface TagProps {
   deleteTabIndex?: number;
   maxWidth?: number | string;
   icon?: React.ReactElement;
-  tooltipTitle?: string;
+  tooltipTitle?: React.ReactNode;
   disableTooltip?: boolean;
   labelTextTransform?: 'capitalize' | 'uppercase' | 'lowercase' | 'none';
   className?: string;

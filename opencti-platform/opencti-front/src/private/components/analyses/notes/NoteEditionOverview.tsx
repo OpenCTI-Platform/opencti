@@ -230,25 +230,22 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             editContext={context}
             variant="edit"
           />
-          <Field
-            component={SliderField}
-            name="likelihood"
-            required={(mandatoryAttributes.includes('likelihood'))}
-            type="number"
-            label={t_i18n('Likelihood')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-            onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="likelihood" />
-            }
-          />
+          <div style={fieldSpacingContainerStyle}>
+            <Field
+              component={SliderField}
+              name="likelihood"
+              required={(mandatoryAttributes.includes('likelihood'))}
+              label={t_i18n('Likelihood')}
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              helperText={<SubscriptionFocus context={context} fieldName="likelihood" />}
+            />
+          </div>
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
-              style={{ marginTop: 10, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               onChange={editor.changeCreated}
             />

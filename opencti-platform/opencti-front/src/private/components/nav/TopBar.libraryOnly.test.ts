@@ -19,6 +19,7 @@ const ALLOWED: Record<string, string> = {
   // Retired by: a library icon set covering the bar's glyphs.
   AccountCircleOutlined: 'glyph',
   AlarmOnOutlined: 'glyph',
+  CampaignOutlined: 'glyph',
   NotificationsOutlined: 'glyph',
   FileUploadOutlined: 'glyph',
   RadarOutlined: 'glyph',

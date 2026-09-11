@@ -1651,7 +1651,7 @@ types. Same gap, same round. Full list: `LocationField`,
 
 **A regression I caused, and the reason is worth keeping.**
 
-`InputSliderField` (confidence, score) renders ONE value twice: a number input
+`ConfidenceInputSliderField` (confidence, score) renders ONE value twice: a number input
 labelled with the field's label, and a select of the scale's marks. Under MUI the
 select had no accessible name at all — its `labelId` pointed at an element that
 does not exist — so I gave the converted trigger `aria-label={label}`, reasoning

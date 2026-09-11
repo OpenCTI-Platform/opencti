@@ -198,7 +198,7 @@ inside a closing PR.
 
 ### Slider — 4 on MUI
 
-`frontier`. `InputSliderField.tsx:112,166`, `SliderField.tsx:58`,
+`frontier`. `ConfidenceInputSliderField.tsx:112,166`, `SliderField.tsx:58`,
 `StixCoreObjectOpinionsRadarDialog.tsx:196`. No gap: Radix's Slider root gives
 `onValueCommit`, the equivalent of MUI's `onChangeCommitted` these sites use.
 The work is per-site — value shape (`number` vs `number[]`) and the `sx` track

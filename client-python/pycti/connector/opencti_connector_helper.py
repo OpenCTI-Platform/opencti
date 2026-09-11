@@ -1064,9 +1064,9 @@ class PingAlive(threading.Thread):
                     else None
                 )
                 if initial_state != remote_state:
-                    self.set_state(result["connector_state"])
+                    self.set_state(remote_state)
                     self.connector_logger.info(
-                        "Connector state has been remotely reset",
+                        "Connector state has been remotely updated",
                         {"state": self.get_state()},
                     )
 
