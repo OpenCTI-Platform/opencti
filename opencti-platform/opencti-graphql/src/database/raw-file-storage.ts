@@ -349,3 +349,16 @@ export const rawListObjects = async (directory: string, recursive: boolean, cont
   }
   return s3Client.send(new s3.ListObjectsV2Command(requestParams));
 };
+
+export const getStorageUsedSize = async (): Promise<number> => {
+  let totalSize = 0;
+  let truncated = true;
+  let continuationToken: string | undefined;
+  while (truncated) {
+    const response = await rawListObjects('', true, continuationToken);
+    totalSize += (response.Contents ?? []).reduce((sum, object) => sum + (object.Size ?? 0), 0);
+    truncated = response.IsTruncated ?? false;
+    continuationToken = truncated ? response.NextContinuationToken : undefined;
+  }
+  return totalSize;
+};
