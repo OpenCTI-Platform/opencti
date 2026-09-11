@@ -95,7 +95,7 @@ vi.mock('lru-cache', () => {
 });
 
 import { updateExpectationsNumber } from '../../../src/domain/work';
-import { buildSplitMessages, getConnectorQueueSize, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
+import { buildSplitMessages, getConnectorQueueSize, metrics, pushBundleToWorker, pushToConnector } from '../../../src/database/rabbitmq';
 
 describe('rabbitmq: metrics', () => {
   const context = {};
@@ -617,5 +617,42 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
 
     expect(updateExpectationsNumber).not.toHaveBeenCalled();
     expect(mockChannelPublish).not.toHaveBeenCalled();
+  });
+});
+
+describe('rabbitmq: send() retry cap on persistently nacked publish', () => {
+  const context = {};
+  const user = {};
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockConnection.createConfirmChannel.mockImplementation((cb: (err: unknown, channel: unknown) => void) => cb(null, mockChannel));
+  });
+
+  it('gives up and throws instead of retrying forever when every publish is nacked', async () => {
+    // Every publish attempt is nacked by the broker (e.g. queue congested / resource alarm).
+    mockChannelPublish.mockImplementation((_exchange, _routingKey, _content, _options, callback) => {
+      callback(new Error('message nacked'));
+      return true;
+    });
+    const message = { type: 'bundle', content: Buffer.from(JSON.stringify({ id: 'bundle--1', type: 'bundle', objects: [{ id: 'malware--a' }] }), 'utf-8').toString('base64'), work_id: 'work-1' };
+
+    await expect(pushBundleToWorker(context, user, 'connector-1', message)).rejects.toThrow(/RabbitMQ send failed after max retries/);
+
+    // Bounded: not an infinite loop.
+    expect(mockChannelPublish.mock.calls.length).toBeGreaterThan(1);
+    expect(mockChannelPublish.mock.calls.length).toBeLessThan(50);
+  });
+
+  it('resolves normally once the broker starts acking again within the retry budget', async () => {
+    let callCount = 0;
+    mockChannelPublish.mockImplementation((_exchange, _routingKey, _content, _options, callback) => {
+      callCount += 1;
+      callback(callCount < 3 ? new Error('message nacked') : null);
+      return true;
+    });
+
+    await expect(pushToConnector('connector-1', { type: 'event' })).resolves.not.toThrow();
+    expect(callCount).toBe(3);
   });
 });
