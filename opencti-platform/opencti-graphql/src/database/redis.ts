@@ -771,6 +771,29 @@ export const redisClearTelemetryGauge = async (gaugeName: string) => {
 };
 // endregion - telemetry gauges
 
+// region - platform usage metrics cluster cache
+// Usage metrics are expensive to compute (full bucket scan, engine stats), so the
+// value is shared cluster wide instead of being recomputed on every node.
+const PLATFORM_USAGE_METRICS_KEY = 'platform_usage_metrics';
+
+export const redisGetPlatformUsageMetrics = async (): Promise<object | null> => {
+  const raw = await getClientBase().get(PLATFORM_USAGE_METRICS_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    logApp.error('[HEALTH] Platform usage metrics in Redis could not be parsed', { raw });
+    return null;
+  }
+};
+
+export const redisSetPlatformUsageMetrics = async (metrics: object, ttlSeconds: number) => {
+  await getClientBase().set(PLATFORM_USAGE_METRICS_KEY, JSON.stringify(metrics), 'EX', ttlSeconds);
+};
+// endregion - platform usage metrics cluster cache
+
 // region - manager stream state
 const MANAGER_EVENT_STATE_KEY = 'manager_stream_state_';
 export const redisSetManagerEventState = async (managerName: string, event_state_id: string) => {

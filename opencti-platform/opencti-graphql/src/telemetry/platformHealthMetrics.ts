@@ -4,7 +4,7 @@ import { meterManager } from '../config/tracing';
 import { getEngineUsedSize, isEngineAlive } from '../database/engine';
 import { getStorageUsedSize, isStorageAlive } from '../database/raw-file-storage';
 import { getQueueConsumersByType, rabbitMQIsAlive } from '../database/rabbitmq';
-import { redisIsAlive } from '../database/redis';
+import { lockResource, redisGetPlatformUsageMetrics, redisIsAlive, redisSetPlatformUsageMetrics } from '../database/redis';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
 export const HEALTH_DEPENDENCIES = ['elasticsearch', 'storage', 'rabbitmq', 'redis'] as const;
@@ -26,11 +26,13 @@ export interface PlatformHealthStatus {
   initialized: boolean;
   isHealthy: boolean;
   failures: string[];
+  dependencies: Record<HealthDependency, boolean>;
 }
 
 const CHECK_TIMEOUT_MS = 15_000;
-const DEFAULT_CONNECTIVITY_INTERVAL_MS = 30_000;
+const DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS = 30_000;
 const DEFAULT_USAGE_METRICS_INTERVAL_MS = 300_000;
+const USAGE_METRICS_LOCK = 'platform-usage-metrics';
 
 const buildInitialStatuses = (): Record<HealthDependency, DependencyStatus> => {
   return HEALTH_DEPENDENCIES.reduce((statuses, dependency) => {
@@ -42,8 +44,9 @@ const buildInitialUsageMetrics = (): PlatformUsageMetrics => ({ es_used_size: nu
 
 let dependencyStatuses = buildInitialStatuses();
 let usageMetrics: PlatformUsageMetrics = buildInitialUsageMetrics();
-let connectivityInterval: NodeJS.Timeout | null = null;
+let dependencyCheckInterval: NodeJS.Timeout | null = null;
 let usageMetricsInterval: NodeJS.Timeout | null = null;
+let usageMetricsTtlSeconds = DEFAULT_USAGE_METRICS_INTERVAL_MS / 1000;
 let gaugesRegistered = false;
 
 const dependencyProbes: Record<HealthDependency, () => Promise<unknown>> = {
@@ -74,7 +77,7 @@ export const buildHealthFailures = (statuses: Record<HealthDependency, Dependenc
     .map((dependency) => `${dependency}: ${statuses[dependency].error ?? 'unavailable'}`);
 };
 
-export const refreshConnectivityMetrics = async (): Promise<void> => {
+export const refreshDependencyStatus = async (): Promise<void> => {
   await Promise.all(HEALTH_DEPENDENCIES.map(async (dependency) => {
     try {
       await withTimeout(dependencyProbes[dependency](), `Timeout checking ${dependency} health`);
@@ -82,7 +85,7 @@ export const refreshConnectivityMetrics = async (): Promise<void> => {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       dependencyStatuses[dependency] = { isAlive: false, error: message, checkedAt: Date.now() };
-      logApp.error('[HEALTH] Dependency connectivity check failed', { dependency, cause: error });
+      logApp.error('[HEALTH] Dependency check failed', { dependency, cause: error });
     }
   }));
 };
@@ -101,13 +104,65 @@ const collectUsageMetric = async <K extends keyof PlatformUsageMetrics>(
   }
 };
 
-export const refreshUsageMetrics = async (): Promise<void> => {
+const refreshUsageMetrics = async (): Promise<void> => {
   const context = executionContext('health_monitoring');
   await Promise.all([
     collectUsageMetric('es_used_size', () => getEngineUsedSize()),
     collectUsageMetric('s3_used_size', () => getStorageUsedSize()),
     collectUsageMetric('queue_consumers', () => getQueueConsumersByType(context, SYSTEM_USER)),
   ]);
+};
+
+const isNullableNumber = (value: unknown): value is number | null => value === null || typeof value === 'number';
+
+// Redis holds whatever the node that won the last collection wrote, so the payload is
+// validated before being adopted rather than trusted to still match the current shape.
+export const parseCachedUsageMetrics = (cached: unknown): PlatformUsageMetrics | null => {
+  if (cached === null || typeof cached !== 'object') {
+    return null;
+  }
+  const { es_used_size, s3_used_size, queue_consumers } = cached as Record<keyof PlatformUsageMetrics, unknown>;
+  if (!isNullableNumber(es_used_size) || !isNullableNumber(s3_used_size)) {
+    return null;
+  }
+  if (queue_consumers !== null && (typeof queue_consumers !== 'object' || !Object.values(queue_consumers as object).every((count) => typeof count === 'number'))) {
+    return null;
+  }
+  return { es_used_size, s3_used_size, queue_consumers: queue_consumers as Record<string, number> | null };
+};
+
+const readSharedUsageMetrics = async (): Promise<PlatformUsageMetrics | null> => {
+  return parseCachedUsageMetrics(await redisGetPlatformUsageMetrics());
+};
+
+// Collection is expensive (full bucket scan, engine stats) and its result is cluster wide,
+// so nodes share a single Redis value: the first node to take the lock computes it for
+// everyone else, and the others simply adopt the cached payload on their next cycle.
+export const syncUsageMetrics = async (): Promise<void> => {
+  const cached = await readSharedUsageMetrics();
+  if (cached !== null) {
+    usageMetrics = cached;
+    return;
+  }
+  let lock;
+  try {
+    lock = await lockResource([USAGE_METRICS_LOCK], { retryCount: 0, automaticExtension: false });
+  } catch {
+    // Another node is already collecting: keep the values from the previous cycle.
+    return;
+  }
+  try {
+    // Re-read under the lock: a node may have published between our read and our acquisition.
+    const published = await readSharedUsageMetrics();
+    if (published !== null) {
+      usageMetrics = published;
+      return;
+    }
+    await refreshUsageMetrics();
+    await redisSetPlatformUsageMetrics(usageMetrics, usageMetricsTtlSeconds);
+  } finally {
+    await lock.unlock();
+  }
 };
 
 const registerHealthGauges = () => {
@@ -159,7 +214,10 @@ const registerHealthGauges = () => {
 export const getPlatformHealthStatus = (): PlatformHealthStatus => {
   const initialized = HEALTH_DEPENDENCIES.every((dependency) => dependencyStatuses[dependency].checkedAt !== null);
   const failures = buildHealthFailures(dependencyStatuses);
-  return { initialized, isHealthy: initialized && failures.length === 0, failures };
+  const dependencies = HEALTH_DEPENDENCIES.reduce((states, dependency) => {
+    return { ...states, [dependency]: dependencyStatuses[dependency].isAlive };
+  }, {} as Record<HealthDependency, boolean>);
+  return { initialized, isHealthy: initialized && failures.length === 0, failures, dependencies };
 };
 
 export const getPlatformUsageMetrics = (): PlatformUsageMetrics => {
@@ -168,37 +226,40 @@ export const getPlatformUsageMetrics = (): PlatformUsageMetrics => {
 };
 
 export const startPlatformHealthMonitor = async (): Promise<void> => {
-  if (connectivityInterval) {
+  if (dependencyCheckInterval) {
     return; // Already running
   }
   registerHealthGauges();
-  const connectivityIntervalMs = conf.get('app:health_monitoring:connectivity_interval') ?? DEFAULT_CONNECTIVITY_INTERVAL_MS;
+  const dependencyCheckIntervalMs = conf.get('app:health_monitoring:dependency_check_interval') ?? DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS;
   const usageMetricsIntervalMs = conf.get('app:health_monitoring:usage_metrics_interval') ?? DEFAULT_USAGE_METRICS_INTERVAL_MS;
+  // Expiring the shared value with the collection interval is what makes exactly one
+  // node recompute per cycle, the others reading the still valid payload.
+  usageMetricsTtlSeconds = Math.max(1, Math.round(usageMetricsIntervalMs / 1000));
   // Awaited so the health endpoint exposes a meaningful state as soon as the API accepts traffic.
-  await refreshConnectivityMetrics();
-  connectivityInterval = setInterval(() => {
-    refreshConnectivityMetrics().catch((error) => {
-      logApp.error('[HEALTH] Connectivity metrics refresh failed', { cause: error });
+  await refreshDependencyStatus();
+  dependencyCheckInterval = setInterval(() => {
+    refreshDependencyStatus().catch((error) => {
+      logApp.error('[HEALTH] Dependency status refresh failed', { cause: error });
     });
-  }, connectivityIntervalMs);
+  }, dependencyCheckIntervalMs);
   if (usageMetricsIntervalMs > 0) {
     // Usage metrics are expensive (full bucket scan), so they are never awaited on the startup path.
     usageMetricsInterval = setInterval(() => {
-      refreshUsageMetrics().catch((error) => {
+      syncUsageMetrics().catch((error) => {
         logApp.error('[HEALTH] Usage metrics refresh failed', { cause: error });
       });
     }, usageMetricsIntervalMs);
-    refreshUsageMetrics().catch((error) => {
+    syncUsageMetrics().catch((error) => {
       logApp.error('[HEALTH] Usage metrics refresh failed', { cause: error });
     });
   }
-  logApp.info('[HEALTH] Platform health monitoring started', { connectivityIntervalMs, usageMetricsIntervalMs });
+  logApp.info('[HEALTH] Platform health monitoring started', { dependencyCheckIntervalMs, usageMetricsIntervalMs });
 };
 
 export const stopPlatformHealthMonitor = (): void => {
-  if (connectivityInterval) {
-    clearInterval(connectivityInterval);
-    connectivityInterval = null;
+  if (dependencyCheckInterval) {
+    clearInterval(dependencyCheckInterval);
+    dependencyCheckInterval = null;
   }
   if (usageMetricsInterval) {
     clearInterval(usageMetricsInterval);
