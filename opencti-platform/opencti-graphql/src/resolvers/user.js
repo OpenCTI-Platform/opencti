@@ -27,6 +27,7 @@ import {
   otpUserDeactivation,
   otpUserGeneration,
   otpUserLogin,
+  resolveUserById,
   roleAddRelation,
   roleCapabilities,
   roleCleanContext,
@@ -212,8 +213,15 @@ const userResolvers = {
   },
   Subscription: {
     me: {
-      resolve: /* v8 ignore next */ (payload, _, context) => {
-        return buildCompleteUser(context, payload.instance);
+      resolve: /* v8 ignore next */ async (payload, _, context) => {
+        // The event carries the user as it was when the edit was published. The same user may
+        // have been edited again before the event is delivered (entering a draft and exiting it,
+        // for instance), and the client applies the payloads as they arrive: sending the
+        // snapshot would roll the client back to a state the user has already left (#18112).
+        // Resolve the current user instead, and only fall back to the snapshot when the user is
+        // no longer resolvable.
+        const currentUser = await resolveUserById(context, payload.instance.id);
+        return currentUser ?? buildCompleteUser(context, payload.instance);
       },
       subscribe: /* v8 ignore next */ (_, __, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_USER];
