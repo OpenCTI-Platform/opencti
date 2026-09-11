@@ -7,16 +7,12 @@ import SecurityCoverageEntityLine from '../SecurityCoverageEntityLine';
 import Loader, { LoaderVariant } from 'src/components/Loader';
 import { graphql } from 'react-relay';
 import useFiltersState from 'src/utils/filters/useFiltersState';
-import { StixCoreObjectNode } from './SecurityCoverageCreation-types';
+import { SelectCoveredEntityStepQuery$data } from './__generated__/SelectCoveredEntityStepQuery.graphql';
+
+type StixCoreObjectNode = NonNullable<SelectCoveredEntityStepQuery$data['stixCoreObjects']>['edges'][number]['node'];
 
 interface SelectCoveredEntityStepProps {
   onSelectEntity: (entity: StixCoreObjectNode) => void;
-  selectedEntity: StixCoreObjectNode | null;
-}
-interface EntitiesQueryProps {
-  stixCoreObjects?: {
-    edges: Array<{ node: StixCoreObjectNode }>;
-  };
 }
 
 // Query for fetching entities to be covered
@@ -139,11 +135,9 @@ const initialFilters = {
   ],
 };
 
-const SelectCoveredEntityStep = (
-  {
-    onSelectEntity,
-    selectedEntity,
-  }: SelectCoveredEntityStepProps) => {
+const SelectCoveredEntityStep = ({
+  onSelectEntity,
+}: SelectCoveredEntityStepProps) => {
   // Entity selection state - not persisted to local storage or URL
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
@@ -197,7 +191,7 @@ const SelectCoveredEntityStep = (
         <QueryRenderer
           query={securityCoverageEntitiesQuery}
           variables={queryPaginationOptions}
-          render={(renderProps: { props: EntitiesQueryProps | null }) => {
+          render={(renderProps: { props: SelectCoveredEntityStepQuery$data | null }) => {
             const { props } = renderProps;
             if (!props || !props.stixCoreObjects) {
               return <Loader variant={LoaderVariant.inElement} />;
@@ -219,7 +213,6 @@ const SelectCoveredEntityStep = (
                 onToggleEntity={onSelectEntity}
                 onLabelClick={helpers.handleAddSingleValueFilter}
                 redirectionMode={undefined}
-                selectedEntity={selectedEntity}
               />
             );
           }}

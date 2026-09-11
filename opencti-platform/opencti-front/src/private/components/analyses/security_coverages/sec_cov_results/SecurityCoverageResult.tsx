@@ -28,6 +28,7 @@ interface SecurityCoverageResultComponentProps {
 
 const fragment = graphql`
   fragment SecurityCoverageResultFragment on SecurityCoverage {
+    ...SecurityCoverageResultFormDrawerFragment
     id
     results {
       id
@@ -367,7 +368,10 @@ const SecurityCoverageResultComponent = ({
           contextFilters={contextFilters}
           rootRef={tableRootRef ?? undefined}
           additionalHeaderButtons={[
-            <SecurityCoverageResultFormDrawer key="scr-form" />,
+            <SecurityCoverageResultFormDrawer
+              key="scr-form"
+              data={securityCoverage}
+            />,
             <Tooltip
               key="security-coverage-result-global-information-tooltip"
               title={t_i18n('The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions')}

@@ -9,7 +9,7 @@ import { DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
 import { graphql } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
-import { HAS_COVERED_TARGETS_TYPES, SelectedEntities, StixCoreObjectNode } from '../SecurityCoverageCreation-types';
+import { HAS_COVERED_TARGETS_TYPES, SelectedEntities } from '../SecurityCoverageCreation-types';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from 'src/components/common/button/Button';
 import { useFormatter } from 'src/components/i18n';
@@ -20,7 +20,7 @@ import useEntityToggle from 'src/utils/hooks/useEntityToggle';
 import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LOCAL_STORAGE_KEY } from './SelectEntitiesToCoverStep-utils';
 
 interface SelectEntitiesToCoverStepProps {
-  coveredEntity: StixCoreObjectNode;
+  coveredEntity: { parent_types: readonly string[]; id: string };
   onSelectEntities: (selection: SelectedEntities | null) => void;
 }
 
@@ -127,16 +127,32 @@ const DATA_COLUMNS = {
   objectMarking: { percentWidth: 15 },
 };
 
-const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEntitiesToCoverStepProps) => {
+const SelectEntitiesToCoverStep = ({
+  coveredEntity,
+  onSelectEntities,
+}: SelectEntitiesToCoverStepProps) => {
   const { t_i18n } = useFormatter();
 
-  const { viewStorage: { filters, searchTerm }, helpers, paginationOptions } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery$variables>(
+  const {
+    viewStorage: { filters, searchTerm },
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     INITIAL_VALUES,
     true,
   );
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, HAS_COVERED_TARGETS_TYPES);
-  const { selectedElements, deSelectedElements, selectAll } = useEntityToggle<StixCoreObjectNode>(LOCAL_STORAGE_KEY);
+
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
+    filters,
+    HAS_COVERED_TARGETS_TYPES,
+  );
+
+  const {
+    selectedElements,
+    deSelectedElements,
+    selectAll,
+  } = useEntityToggle(LOCAL_STORAGE_KEY);
 
   const contextFilters: FilterGroup = {
     mode: 'and',
