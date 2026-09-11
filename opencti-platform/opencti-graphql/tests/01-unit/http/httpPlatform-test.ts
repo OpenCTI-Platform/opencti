@@ -138,6 +138,8 @@ describe('httpPlatform: shouldIncludeHealthDetails function', () => {
 });
 
 describe('httpPlatform: /health details behavior', () => {
+  const allDependenciesUp = { elasticsearch: true, storage: true, rabbitmq: true, redis: true };
+
   const buildResponse = () => {
     const res: any = {};
     res.set = vi.fn().mockReturnValue(res);
@@ -175,7 +177,7 @@ describe('httpPlatform: /health details behavior', () => {
       }
       return undefined;
     });
-    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({ initialized: true, isHealthy: true, failures: [] });
+    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({ initialized: true, isHealthy: true, failures: [], dependencies: allDependenciesUp });
     vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({
       es_used_size: 10,
       s3_used_size: 20,
@@ -192,6 +194,7 @@ describe('httpPlatform: /health details behavior', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith({
       status: 'success',
+      dependencies: allDependenciesUp,
       es_used_size: 10,
       s3_used_size: 20,
       queue_consumers: { EXTERNAL_IMPORT: 3, INTERNAL_ENRICHMENT: 2 },
@@ -208,6 +211,7 @@ describe('httpPlatform: /health details behavior', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith({
       status: 'success',
+      dependencies: allDependenciesUp,
       es_used_size: null,
       s3_used_size: null,
       queue_consumers: null,
@@ -219,6 +223,7 @@ describe('httpPlatform: /health details behavior', () => {
       initialized: true,
       isHealthy: false,
       failures: ['redis: Redis seems down'],
+      dependencies: { ...allDependenciesUp, redis: false },
     });
     const healthHandler = await setupHealthHandler();
     const res = buildResponse();
@@ -229,8 +234,33 @@ describe('httpPlatform: /health details behavior', () => {
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'redis: Redis seems down' });
   });
 
+  it('should name the failing dependencies on a 503 when details=true', async () => {
+    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({
+      initialized: true,
+      isHealthy: false,
+      failures: ['redis: Redis seems down'],
+      dependencies: { ...allDependenciesUp, redis: false },
+    });
+    const healthHandler = await setupHealthHandler();
+    const res = buildResponse();
+
+    await healthHandler?.({ query: { health_access_key: 'secret', details: 'true' } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({
+      status: 'error',
+      error: 'redis: Redis seems down',
+      dependencies: { elasticsearch: true, storage: true, rabbitmq: true, redis: false },
+    });
+  });
+
   it('should return 503 while the health monitor has not collected any state yet', async () => {
-    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({ initialized: false, isHealthy: false, failures: [] });
+    vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({
+      initialized: false,
+      isHealthy: false,
+      failures: [],
+      dependencies: { elasticsearch: false, storage: false, rabbitmq: false, redis: false },
+    });
     const healthHandler = await setupHealthHandler();
     const res = buildResponse();
 

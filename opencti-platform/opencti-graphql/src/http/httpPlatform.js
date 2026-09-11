@@ -588,14 +588,16 @@ const createApp = async (app, schema) => {
         const { health_access_key: access_key } = req.query;
         if (configAccessKey === 'public' || configAccessKey === access_key) {
           // State is refreshed by the platform health monitor, never probed per request.
-          const { initialized, isHealthy, failures } = getPlatformHealthStatus();
+          const { initialized, isHealthy, failures, dependencies } = getPlatformHealthStatus();
+          // Naming which dependency is down is disclosure, so it follows the same gate as the usage metrics.
+          const withDetails = shouldIncludeHealthDetails(configAccessKey, req.query?.details);
           if (!initialized) {
             res.status(503).send({ status: 'error', error: 'Health monitoring not initialized yet' });
           } else if (!isHealthy) {
-            res.status(503).send({ status: 'error', error: failures.join(', ') });
-          } else if (shouldIncludeHealthDetails(configAccessKey, req.query?.details)) {
+            res.status(503).send({ status: 'error', error: failures.join(', '), ...(withDetails ? { dependencies } : {}) });
+          } else if (withDetails) {
             const { es_used_size, s3_used_size, queue_consumers } = getPlatformUsageMetrics();
-            res.status(200).send({ status: 'success', es_used_size, s3_used_size, queue_consumers });
+            res.status(200).send({ status: 'success', dependencies, es_used_size, s3_used_size, queue_consumers });
           } else {
             res.status(200).send({ status: 'success' });
           }

@@ -29,7 +29,9 @@ The following metrics are exposed by the OpenCTI API.
 
 ## Platform Health Metrics
 
-A background monitor refreshes the health metrics periodically, so scraping them never triggers a request to a dependency. The same collected state answers the `/health` endpoint, which therefore never probes ElasticSearch, S3, RabbitMQ or Redis per request. Configure both refresh intervals with `app:health_monitoring:connectivity_interval` and `app:health_monitoring:usage_metrics_interval` (see [Configuration](configuration.md)).
+A background monitor refreshes the health metrics periodically, so scraping them never triggers a request to a dependency. The same collected state answers the `/health` endpoint, which therefore never probes ElasticSearch, S3, RabbitMQ or Redis per request. Configure both refresh intervals with `app:health_monitoring:dependency_check_interval` and `app:health_monitoring:usage_metrics_interval` (see [Configuration](configuration.md)).
+
+Dependency checks run on every node, so each node reports the connectivity it observes itself. Usage metrics are cluster wide instead: collecting them is expensive (full bucket scan, engine stats), so the nodes coordinate through a Redis lock and share the result. A single node computes the value per interval and the others read it, which keeps every node reporting the same figure.
 
 A usage metric that cannot be collected is not exported, instead of being exported as `0`.
 
