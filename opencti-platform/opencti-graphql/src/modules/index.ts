@@ -174,3 +174,7 @@ import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
 // endregion
+
+// region modules static init
+import './userMerge/userMerge-init';
+// endregion
