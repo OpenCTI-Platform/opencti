@@ -71,6 +71,39 @@ export const generateEntityId = () => `entity-${Date.now()}-${Math.random().toSt
  */
 export const generateRelationshipId = () => `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+export interface FormSchemaMappingError {
+  type: 'main-entity-mapping' | 'additional-entity-mappings';
+  missingLabels?: string[];
+}
+
+export const validateFormSchemaMappings = (
+  formBuilderData: FormBuilderData,
+): FormSchemaMappingError | null => {
+  if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
+    return { type: 'main-entity-mapping' };
+  }
+
+  const missingLabels = formBuilderData.additionalEntities
+    .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
+    .map((entity) => entity.label);
+  if (missingLabels.length > 0) {
+    return { type: 'additional-entity-mappings', missingLabels };
+  }
+
+  return null;
+};
+
+export const formatFormSchemaMappingError = (
+  error: FormSchemaMappingError,
+  t_i18n: (message: string) => string,
+): string => {
+  if (error.type === 'main-entity-mapping') {
+    return t_i18n('Map parsed values to attribute is required when using parsed mode');
+  }
+
+  return t_i18n('Map parsed values to attribute is required for: ') + (error.missingLabels ?? []).join(', ');
+};
+
 /**
  * Get available field types based on entity attributes
  * @param entityType The entity type to check
