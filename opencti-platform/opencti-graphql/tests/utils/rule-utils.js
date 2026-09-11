@@ -2,11 +2,11 @@ import { expect } from 'vitest';
 import gql from 'graphql-tag';
 import { topEntitiesOrRelationsList } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
+import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import { internalFindByIds, internalLoadById, topEntitiesList } from '../../src/database/middleware-loader';
 import { testContext } from './testQuery';
-import { queryAsAdmin } from './testQueryHelper';
+import { awaitUntilCondition, queryAsAdmin } from './testQueryHelper';
 import { fetchStreamInfo } from '../../src/database/stream/stream-handler';
 import { logApp } from '../../src/config/conf';
 import { TASK_TYPE_RULE } from '../../src/domain/backgroundTask-common';
@@ -40,13 +40,16 @@ const RULE_MUTATION = gql`
   }
 `;
 
+// Those two waits had no bound at all and could only end on the vitest timeout.
+const RULE_ACTIVATION_BUDGET = 10000;
+const RULE_STABILISATION_BUDGET = 15000;
+
 export const changeRule = async (ruleId, active) => {
   const start = new Date().getTime();
   // Change the status
   await queryAsAdmin({ query: RULE_MUTATION, variables: { id: ruleId, enable: active } });
   // Wait for rule to finish activation
-  let ruleActivated = false;
-  while (ruleActivated !== true) {
+  await awaitUntilCondition(async () => {
     // Handle tasks
     const tasks = await topEntitiesList(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK]);
     const ruleActivationTask = tasks.filter((t) => t.type === TASK_TYPE_RULE && t.rule === ruleId && t.enable === active);
@@ -68,21 +71,20 @@ export const changeRule = async (ruleId, active) => {
     });
     const doneWorks = works.filter((t) => t.status !== 'complete').length === 0;
     // Final status
-    ruleActivated = doneProvision && doneWorks;
-    await wait(1000);
-  }
+    return doneProvision && doneWorks;
+  }, RULE_ACTIVATION_BUDGET, { intervalMs: 1000, message: `Rule ${ruleId} did not finish its activation` });
   // Wait all events to be consumed
   let stableCount = 1;
-  while (stableCount < 3) {
+  await awaitUntilCondition(async () => {
     const innerInfo = await fetchStreamInfo();
     const ruleManagerInfo = await getManagerInfo(testContext, SYSTEM_USER);
-    await wait(2000);
     const lastEventDate = new Date(parseInt(innerInfo.lastEventId.split('-').at(0), 10));
     const managerEventDate = new Date(parseInt(ruleManagerInfo.lastEventId.split('-').at(0), 10));
     if (managerEventDate >= lastEventDate) {
       stableCount += 1;
     }
-  }
+    return stableCount >= 3;
+  }, RULE_STABILISATION_BUDGET, { intervalMs: 2000, message: `Rule ${ruleId} stream did not stabilise` });
   const stop = new Date().getTime() - start;
   logApp.info(`[TEST] Rule ${ruleId} ${active ? 'activated' : 'disabled'} in ${stop} ms`);
 };
