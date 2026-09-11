@@ -1,10 +1,8 @@
-import Card from '@common/card/Card';
 import { ListItem, ListItemText, Switch } from '@mui/material';
-import { useFormatter } from '../../../components/i18n';
-import Box from '@mui/material/Box';
-import { isKnownNewsFeedType } from '../../../utils/NewsFeed';
+import { useFormatter } from 'src/components/i18n';
+import { isKnownNewsFeedType } from 'src/utils/NewsFeed';
 
-interface Props {
+interface NewsFeedSettingsProps {
   availableNewsFeedTypes?: string[];
   unsubscribedNewsFeedTypes?: string[];
   onSubmitField: (name: string, value: string[]) => void;
@@ -14,11 +12,11 @@ const isAllUnsubscribed = (unsubscribed: string[]): boolean => {
   return unsubscribed?.includes('*') ?? false;
 };
 
-const ProfileOverviewNewsFeed = ({
+const NewsFeedSettings = ({
   availableNewsFeedTypes = [],
   unsubscribedNewsFeedTypes = [],
   onSubmitField,
-}: Props) => {
+}: NewsFeedSettingsProps) => {
   const { t_i18n } = useFormatter();
   const allUnsubscribed = isAllUnsubscribed(unsubscribedNewsFeedTypes);
 
@@ -34,21 +32,25 @@ const ProfileOverviewNewsFeed = ({
     onSubmitField('unsubscribed_news_feed_types', next);
   };
 
+  const shouldDisplayItemsList = !allUnsubscribed && availableNewsFeedTypes.length > 0;
+
   return (
-    <Card title={t_i18n('XTM Hub News Feed')}>
+    <div>
       <ListItem
-        divider={!allUnsubscribed}
-        sx={allUnsubscribed ? { padding: '0' } : { padding: '0 0 10px 0' }}
+        divider={shouldDisplayItemsList}
+        sx={!shouldDisplayItemsList ? { padding: '0' } : { padding: '0 0 10px 0' }}
       >
-        <ListItemText primary={t_i18n('Enable News Feed notifications')} />
+        <ListItemText
+          primary={t_i18n('Enable News Feed notifications')}
+          slotProps={{ primary: { fontWeight: 'bold' } }}
+        />
         <Switch
           checked={!allUnsubscribed}
           onChange={handleGlobalToggle}
         />
       </ListItem>
       {!allUnsubscribed && availableNewsFeedTypes.map((feedType) => (
-        <ListItem key={feedType} sx={{ padding: '10px 0 0 0', opacity: 0.8 }}>
-          <Box component="span" sx={{ mr: 1, ml: 1 }}>•</Box>
+        <ListItem key={feedType} dense sx={{ padding: '4px 20px 0 20px', opacity: 0.8 }}>
           <ListItemText secondary={isKnownNewsFeedType(feedType) ? t_i18n(feedType) : t_i18n('Unsupported type')} />
           <Switch
             checked={!unsubscribedNewsFeedTypes?.includes(feedType)}
@@ -56,8 +58,8 @@ const ProfileOverviewNewsFeed = ({
           />
         </ListItem>
       ))}
-    </Card>
+    </div>
   );
 };
 
-export default ProfileOverviewNewsFeed;
+export default NewsFeedSettings;
