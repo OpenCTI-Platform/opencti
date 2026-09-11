@@ -40,6 +40,8 @@ export interface FieldRendererContext {
   fieldPrefix?: string;
   useGridLayout?: boolean;
   getNestedValue: (obj: Record<string, unknown>, path: string) => unknown;
+  // Optional so earlier consumers that do not need translation are not forced to supply it; the producer always populates it.
+  t_i18n?: (content: string) => string;
 }
 
 export type FieldRenderer = (context: FieldRendererContext) => React.ReactNode;
