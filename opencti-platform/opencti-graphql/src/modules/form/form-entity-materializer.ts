@@ -21,6 +21,26 @@ export interface MaterializeOptions {
   errorLabel: string;
 }
 
+/**
+ * Builds a MaterializeOptions object from the common defaults shared by every
+ * form-bundle-builder call site (applyFields: true, skipEmptyFieldValues: false,
+ * applyTypeDefaults: true), plus the per-call-site overrides (errorLabel is always
+ * required since it is unique to each branch; other fields diverge deliberately
+ * between branches and must be passed explicitly when they differ from the default —
+ * do not change a branch's overrides to "simplify" this call, each divergence encodes
+ * real, intentional per-branch behavior).
+ */
+export const buildMaterializeOptions = (
+  isBypass: boolean,
+  overrides: Partial<Omit<MaterializeOptions, 'isBypass'>> & Pick<MaterializeOptions, 'errorLabel'>,
+): MaterializeOptions => ({
+  applyFields: true,
+  skipEmptyFieldValues: false,
+  applyTypeDefaults: true,
+  isBypass,
+  ...overrides,
+});
+
 export const materializeEntityFromFields = async (
   context: AuthContext,
   user: AuthUser,

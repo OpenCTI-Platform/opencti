@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { materializeEntityFromFields } from '../../../../src/modules/form/form-entity-materializer';
+import { buildMaterializeOptions, materializeEntityFromFields } from '../../../../src/modules/form/form-entity-materializer';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
 import type { FormFieldDefinition } from '../../../../src/modules/form/form-types';
@@ -279,5 +279,39 @@ describe('materializeEntityFromFields', () => {
         errorLabel: 'Main entity observable is not correctly formatted',
       },
     )).rejects.toThrow('Main entity observable is not correctly formatted');
+  });
+});
+
+describe('buildMaterializeOptions', () => {
+  it('applies the shared defaults (applyFields, skipEmptyFieldValues=false, applyTypeDefaults) plus isBypass and errorLabel', () => {
+    expect(buildMaterializeOptions(false, { errorLabel: 'boom' })).toEqual({
+      applyFields: true,
+      skipEmptyFieldValues: false,
+      applyTypeDefaults: true,
+      isBypass: false,
+      errorLabel: 'boom',
+    });
+  });
+
+  it('forwards isBypass separately from the overrides', () => {
+    expect(buildMaterializeOptions(true, { errorLabel: 'boom' }).isBypass).toBe(true);
+  });
+
+  it('lets per-call-site overrides win over the shared defaults', () => {
+    const seedEntity = { id: 'seed' };
+    expect(buildMaterializeOptions(false, {
+      seedEntity,
+      applyFields: false,
+      skipEmptyFieldValues: true,
+      applyTypeDefaults: false,
+      errorLabel: 'custom label',
+    })).toEqual({
+      seedEntity,
+      applyFields: false,
+      skipEmptyFieldValues: true,
+      applyTypeDefaults: false,
+      isBypass: false,
+      errorLabel: 'custom label',
+    });
   });
 });

@@ -12,7 +12,7 @@ import { createStixPattern } from '../../python/pythonBridge';
 import { transformSpecialFields } from './form-fields-converter';
 import { completeEntity } from './form-entity-builder';
 import { loadFormEntity } from './form-utils';
-import { materializeEntityFromFields } from './form-entity-materializer';
+import { buildMaterializeOptions, materializeEntityFromFields } from './form-entity-materializer';
 
 /**
  * Input fields coming from the entity-creation mutations that must NOT be copied
@@ -155,13 +155,9 @@ export const buildMainStixEntities = async (
           mainEntityType,
           mainEntityFields,
           (field) => values.mainEntityGroups[index][field.name],
-          {
-            applyFields: true,
-            skipEmptyFieldValues: false,
-            isBypass,
-            applyTypeDefaults: true,
+          buildMaterializeOptions(isBypass, {
             errorLabel: 'Main entity observable is not correctly formatted',
-          },
+          }),
         );
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
@@ -189,14 +185,12 @@ export const buildMainStixEntities = async (
           mainEntityType,
           mainEntityFields,
           (field) => values.mainEntityFields[field.attributeMapping.attributeName],
-          {
+          buildMaterializeOptions(isBypass, {
             seedEntity,
             applyFields: Boolean(values.mainEntityFields),
             skipEmptyFieldValues: true,
-            isBypass,
-            applyTypeDefaults: true,
             errorLabel: 'Main entity observable is not correctly formatted',
-          },
+          }),
         );
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
@@ -208,13 +202,10 @@ export const buildMainStixEntities = async (
         mainEntityType,
         mainEntityFields,
         (field) => values[field.name],
-        {
-          applyFields: true,
-          skipEmptyFieldValues: false,
-          isBypass,
+        buildMaterializeOptions(isBypass, {
           applyTypeDefaults: false,
           errorLabel: 'Main entity observable is not correctly formatted',
-        },
+        }),
       );
       mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
       mainEntityStixId = mainEntity.standard_id;
@@ -281,13 +272,9 @@ export const buildAdditionalEntities = async (
               additionalEntityType,
               additionalEntityFields,
               (field) => values[`additional_${additionalEntity.id}_groups`][index2][field.name],
-              {
-                applyFields: true,
-                skipEmptyFieldValues: false,
-                isBypass,
-                applyTypeDefaults: true,
+              buildMaterializeOptions(isBypass, {
                 errorLabel: `Observable ${additionalEntity.label} is not correctly formatted`,
-              },
+              }),
             );
             const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntityInstance);
             bundle.objects.push(stixAdditionalEntity);
@@ -322,14 +309,12 @@ export const buildAdditionalEntities = async (
               additionalEntityType,
               additionalEntityFields,
               (field) => values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName],
-              {
+              buildMaterializeOptions(isBypass, {
                 seedEntity,
                 applyFields: Boolean(values[`additional_${additionalEntity.id}_fields`]),
                 skipEmptyFieldValues: true,
-                isBypass,
-                applyTypeDefaults: true,
                 errorLabel: `Observable ${additionalEntity.label} is not correctly formatted`,
-              },
+              }),
             );
             const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntityInstance);
             bundle.objects.push(stixAdditionalEntity);
@@ -354,13 +339,10 @@ export const buildAdditionalEntities = async (
               additionalEntityType,
               additionalEntityFields,
               (field) => entityData[field.name],
-              {
-                applyFields: true,
+              buildMaterializeOptions(isBypass, {
                 skipEmptyFieldValues: true,
-                isBypass,
-                applyTypeDefaults: true,
                 errorLabel: `Observable ${additionalEntity.label} is not correctly formatted`,
-              },
+              }),
             );
             const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntityInstance);
             bundle.objects.push(stixAdditionalEntity);
