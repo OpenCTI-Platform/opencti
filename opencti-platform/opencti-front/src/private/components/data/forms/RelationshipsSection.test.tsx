@@ -1,6 +1,9 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import type { ThemeOptions } from '@mui/material/styles';
 import { describe, expect, it, vi } from 'vitest';
+import ThemeDark from '../../../../components/ThemeDark';
 import type { FormBuilderData } from './Form.d';
 import RelationshipsSection from './RelationshipsSection';
 
@@ -74,15 +77,13 @@ const renderSection = (
     updateFormData: vi.fn(),
     handleRemoveRelationship: vi.fn(),
     handleAddRelationship: vi.fn(),
-    tabPanelClassName: 'tab-panel',
-    relationshipGroupClassName: 'relationship-group',
-    fieldGroupClassName: 'field-group',
-    fieldHeaderClassName: 'field-header',
-    fieldTitleClassName: 'field-title',
-    addButtonClassName: 'add-button',
     ...overrides,
   };
-  render(<RelationshipsSection {...props} />);
+  render(
+    <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+      <RelationshipsSection {...props} />
+    </ThemeProvider>,
+  );
   return props;
 };
 

@@ -45,9 +45,6 @@ const renderSection = (overrides: Partial<MainEntitySectionProps> = {}) => {
     fieldsByEntity: { main_entity: [] },
     renderField: vi.fn(),
     handleAddField: vi.fn(),
-    tabPanelClassName: 'tab-panel',
-    alertClassName: 'alert',
-    addButtonClassName: 'add-button',
     ...overrides,
   };
 

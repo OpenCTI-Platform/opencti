@@ -7,6 +7,7 @@ import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import type { AdditionalEntity, EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import { getInitialMandatoryFields } from './FormUtils';
+import useStyles from './useFormSchemaEditorStyles';
 
 export interface AdditionalEntitiesSectionProps {
   formData: FormBuilderData;
@@ -19,10 +20,6 @@ export interface AdditionalEntitiesSectionProps {
   renderField: (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => React.ReactNode;
   handleAddField: (entityId: string, entityType: string) => void;
   handleAddAdditionalEntity: () => void;
-  tabPanelClassName: string;
-  entitySectionClassName: string;
-  entityHeaderClassName: string;
-  addButtonClassName: string;
 }
 
 const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
@@ -36,11 +33,8 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
   renderField,
   handleAddField,
   handleAddAdditionalEntity,
-  tabPanelClassName,
-  entitySectionClassName,
-  entityHeaderClassName,
-  addButtonClassName,
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const renderAdditionalEntity = (entity: AdditionalEntity, index: number) => {
@@ -50,8 +44,8 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
     const displayLabel = entity.label || `${t_i18n('Additional Entity')} ${index + 1}`;
 
     return (
-      <Stack key={entity.id} className={entitySectionClassName} gap={2}>
-        <div className={entityHeaderClassName}>
+      <Stack key={entity.id} className={classes.entitySection} gap={2}>
+        <div className={classes.entityHeader}>
           <Typography variant="h6">
             {displayLabel}
           </Typography>
@@ -325,6 +319,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
                 variant="secondary"
                 startIcon={<Add />}
                 onClick={() => handleAddField(entity.id, entity.entityType)}
+                className={classes.addButton}
               >
                 {t_i18n('Add field')}
               </Button>
@@ -345,7 +340,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
               variant="secondary"
               startIcon={<Add />}
               onClick={() => handleAddField(entity.id, entity.entityType)}
-              className={addButtonClassName}
+              className={classes.addButton}
             >
               {t_i18n('Add field')}
             </Button>
@@ -356,7 +351,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
   };
 
   return (
-    <div className={tabPanelClassName}>
+    <div className={classes.tabPanel}>
       <Stack gap={1}>
         {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
         <div>
@@ -364,7 +359,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
             variant="secondary"
             startIcon={<Add />}
             onClick={handleAddAdditionalEntity}
-            className={addButtonClassName}
+            className={classes.addButton}
           >
             {t_i18n('Add additional entity')}
           </Button>

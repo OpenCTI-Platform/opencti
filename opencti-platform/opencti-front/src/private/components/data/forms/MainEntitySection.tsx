@@ -6,6 +6,7 @@ import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import type { EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import DraftDefaultsSection from './DraftDefaultsSection';
+import useStyles from './useFormSchemaEditorStyles';
 
 export interface MainEntitySectionProps {
   formData: FormBuilderData;
@@ -18,9 +19,6 @@ export interface MainEntitySectionProps {
   fieldsByEntity: Record<string, FormFieldAttribute[]>;
   renderField: (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => React.ReactNode;
   handleAddField: (entityId: string, entityType: string) => void;
-  tabPanelClassName: string;
-  alertClassName: string;
-  addButtonClassName: string;
 }
 
 const MainEntitySection: React.FC<MainEntitySectionProps> = ({
@@ -34,14 +32,12 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
   fieldsByEntity,
   renderField,
   handleAddField,
-  tabPanelClassName,
-  alertClassName,
-  addButtonClassName,
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   return (
-    <Stack gap={2} className={tabPanelClassName}>
+    <Stack gap={2} className={classes.tabPanel}>
       <Select
         value={formData.mainEntityType}
         onValueChange={(value) => handleMainEntityTypeChange(value)}
@@ -257,7 +253,7 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
           return (
             <Alert
               severity="info"
-              className={alertClassName}
+              className={classes.alert}
               sx={{
                 marginTop: 2.5,
                 backgroundColor: 'transparent',
@@ -271,7 +267,7 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
         if (formData.mainEntityFieldMode === 'parsed' && formData.mainEntityMultiple) {
           return (
             <>
-              <Alert severity="info" className={alertClassName} style={{ marginTop: 20 }}>
+              <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
                 {t_i18n('Parsed mode enabled. Users can enter multiple values in a single field. Additional fields can be defined that will apply to all created entities.')}
               </Alert>
               {formData.mainEntityParseFieldMapping && (
@@ -288,7 +284,7 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
                     variant="secondary"
                     startIcon={<Add />}
                     onClick={() => handleAddField('main_entity', formData.mainEntityType)}
-                    className={addButtonClassName}
+                    className={classes.addButton}
                   >
                     {t_i18n('Add field')}
                   </Button>
@@ -309,6 +305,7 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
                 variant="secondary"
                 startIcon={<Add />}
                 onClick={() => handleAddField('main_entity', formData.mainEntityType)}
+                className={classes.addButton}
               >
                 {t_i18n('Add field')}
               </Button>

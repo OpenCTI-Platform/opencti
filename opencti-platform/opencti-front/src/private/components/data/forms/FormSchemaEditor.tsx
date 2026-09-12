@@ -1,8 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
-import makeStyles from '@mui/styles/makeStyles';
 import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { AdditionalEntity, EntityRelationship, EntitySettings, FormBuilderData, FormFieldAttribute } from './Form.d';
 import {
@@ -18,49 +16,7 @@ import AdditionalEntitiesSection from './AdditionalEntitiesSection';
 import MainEntitySection from './MainEntitySection';
 import RelationshipsSection from './RelationshipsSection';
 import useFieldRenderer from './useFieldRenderer';
-
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    marginTop: 20,
-  },
-  tabPanel: {
-    marginTop: 20,
-  },
-  entitySection: {
-    padding: 20,
-    border: '1px solid var(--border-elevation-subtle)',
-    borderRadius: 4,
-  },
-  entityHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  fieldGroup: {
-    padding: 15,
-    borderRadius: 4,
-    border: '1px solid var(--border-elevation-subtle)',
-  },
-  fieldHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  fieldTitle: {
-    fontWeight: 600,
-    fontSize: 14,
-  },
-  relationshipGroup: {
-    padding: 15,
-    borderRadius: 4,
-    border: '1px solid var(--border-elevation-subtle)',
-  },
-  addButton: {
-    marginTop: 10,
-  },
-  alert: {
-    marginBottom: 20,
-  },
-}));
+import useStyles from './useFormSchemaEditorStyles';
 
 export interface FormSchemaEditorProps {
   initialValues?: FormBuilderData;
@@ -408,9 +364,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     handleMoveFieldUp,
     handleMoveFieldDown,
     handleRemoveField,
-    fieldGroupClassName: classes.fieldGroup,
-    fieldHeaderClassName: classes.fieldHeader,
-    fieldTitleClassName: classes.fieldTitle,
   });
 
   return (
@@ -434,9 +387,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             fieldsByEntity={fieldsByEntity}
             renderField={renderField}
             handleAddField={handleAddField}
-            tabPanelClassName={classes.tabPanel}
-            alertClassName={classes.alert}
-            addButtonClassName={classes.addButton}
           />
         </TabsContent>
 
@@ -452,10 +402,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             renderField={renderField}
             handleAddField={handleAddField}
             handleAddAdditionalEntity={handleAddAdditionalEntity}
-            tabPanelClassName={classes.tabPanel}
-            entitySectionClassName={classes.entitySection}
-            entityHeaderClassName={classes.entityHeader}
-            addButtonClassName={classes.addButton}
           />
         </TabsContent>
 
@@ -467,12 +413,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               updateFormData={updateFormData}
               handleRemoveRelationship={handleRemoveRelationship}
               handleAddRelationship={handleAddRelationship}
-              tabPanelClassName={classes.tabPanel}
-              relationshipGroupClassName={classes.relationshipGroup}
-              fieldGroupClassName={classes.fieldGroup}
-              fieldHeaderClassName={classes.fieldHeader}
-              fieldTitleClassName={classes.fieldTitle}
-              addButtonClassName={classes.addButton}
             />
           )}
         </TabsContent>

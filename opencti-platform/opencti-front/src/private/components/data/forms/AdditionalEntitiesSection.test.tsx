@@ -49,10 +49,6 @@ const renderSection = (overrides: Partial<AdditionalEntitiesSectionProps> = {}) 
     renderField: vi.fn(),
     handleAddField: vi.fn(),
     handleAddAdditionalEntity: vi.fn(),
-    tabPanelClassName: 'tab-panel',
-    entitySectionClassName: 'entity-section',
-    entityHeaderClassName: 'entity-header',
-    addButtonClassName: 'add-button',
     ...overrides,
   };
 

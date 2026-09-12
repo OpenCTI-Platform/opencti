@@ -9,6 +9,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import type { EntityRelationship, FormBuilderData, FormFieldAttribute, RelationshipTypeOption } from './Form.d';
 import { generateFieldId } from './FormUtils';
+import useStyles from './useFormSchemaEditorStyles';
 
 export interface RelationshipsSectionProps {
   formData: FormBuilderData;
@@ -16,12 +17,6 @@ export interface RelationshipsSectionProps {
   updateFormData: (updater: (prev: FormBuilderData) => FormBuilderData) => void;
   handleRemoveRelationship: (relationshipId: string) => void;
   handleAddRelationship: () => void;
-  tabPanelClassName: string;
-  relationshipGroupClassName: string;
-  fieldGroupClassName: string;
-  fieldHeaderClassName: string;
-  fieldTitleClassName: string;
-  addButtonClassName: string;
 }
 
 const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
@@ -30,13 +25,8 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
   updateFormData,
   handleRemoveRelationship,
   handleAddRelationship,
-  tabPanelClassName,
-  relationshipGroupClassName,
-  fieldGroupClassName,
-  fieldHeaderClassName,
-  fieldTitleClassName,
-  addButtonClassName,
 }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
 
@@ -93,9 +83,9 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
     const availableAttributes = getAvailableAttributesForType(field.type);
 
     return (
-      <Box key={field.id} className={fieldGroupClassName}>
-        <div className={fieldHeaderClassName}>
-          <Typography className={fieldTitleClassName}>
+      <Box key={field.id} className={classes.fieldGroup}>
+        <div className={classes.fieldHeader}>
+          <Typography className={classes.fieldTitle}>
             {field.label || t_i18n('New Field')}
           </Typography>
           <IconButton
@@ -218,9 +208,9 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
     }
 
     return (
-      <Stack key={relationship.id} className={relationshipGroupClassName} gap={2}>
-        <div className={fieldHeaderClassName}>
-          <Typography className={fieldTitleClassName}>
+      <Stack key={relationship.id} className={classes.relationshipGroup} gap={2}>
+        <div className={classes.fieldHeader}>
+          <Typography className={classes.fieldTitle}>
             {t_i18n('Relationship')} {index + 1}
           </Typography>
           <IconButton
@@ -351,20 +341,21 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
                     relationships: updatedRelationships,
                   }));
                 }}
-                className={addButtonClassName}
+                className={classes.addButton}
                 disabled={!relationship.relationshipType}
               >
                 {t_i18n('Add field')}
               </Button>
             </div>
           </div>
+
         )}
       </Stack>
     );
   };
 
   return (
-    <div className={tabPanelClassName}>
+    <div className={classes.tabPanel}>
       <Typography variant="h6" gutterBottom>
         {t_i18n('Relationships')}
       </Typography>
@@ -373,7 +364,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
         variant="secondary"
         startIcon={<Add />}
         onClick={handleAddRelationship}
-        className={addButtonClassName}
+        className={classes.addButton}
       >
         {t_i18n('Add relationship')}
       </Button>

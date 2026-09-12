@@ -72,9 +72,6 @@ const renderField = (
     handleMoveFieldUp: vi.fn(),
     handleMoveFieldDown: vi.fn(),
     handleRemoveField: vi.fn(),
-    fieldGroupClassName: 'field-group',
-    fieldHeaderClassName: 'field-header',
-    fieldTitleClassName: 'field-title',
     ...overrides,
   };
   const { hook } = testRenderHook(() => useFieldRenderer(params));
@@ -135,9 +132,6 @@ describe('useFieldRenderer', () => {
       handleMoveFieldUp,
       handleMoveFieldDown,
       handleRemoveField: vi.fn(),
-      fieldGroupClassName: 'field-group',
-      fieldHeaderClassName: 'field-header',
-      fieldTitleClassName: 'field-title',
     };
     const { hook } = testRenderHook(() => useFieldRenderer(params));
     testRender(hook.result.current(firstField, 0, 'Report', [firstField, secondField]));

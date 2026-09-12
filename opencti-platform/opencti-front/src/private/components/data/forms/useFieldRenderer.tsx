@@ -7,6 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import { FIELD_TYPES, getAttributesForEntityType as getAttributesUtil, getAvailableFieldTypes } from './FormUtils';
+import useStyles from './useFormSchemaEditorStyles';
 
 interface UseFieldRendererParams {
   formData: FormBuilderData;
@@ -15,9 +16,6 @@ interface UseFieldRendererParams {
   handleMoveFieldUp: (entityId: string, fieldId: string) => void;
   handleMoveFieldDown: (entityId: string, fieldId: string) => void;
   handleRemoveField: (fieldId: string) => void;
-  fieldGroupClassName: string;
-  fieldHeaderClassName: string;
-  fieldTitleClassName: string;
 }
 
 const useFieldRenderer = ({
@@ -27,10 +25,8 @@ const useFieldRenderer = ({
   handleMoveFieldUp,
   handleMoveFieldDown,
   handleRemoveField,
-  fieldGroupClassName,
-  fieldHeaderClassName,
-  fieldTitleClassName,
 }: UseFieldRendererParams) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const renderField = (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => {
@@ -147,9 +143,9 @@ const useFieldRenderer = ({
     }
 
     return (
-      <Stack key={field.id} className={fieldGroupClassName} gap={1}>
-        <div className={fieldHeaderClassName}>
-          <Typography className={fieldTitleClassName}>
+      <Stack key={field.id} className={classes.fieldGroup} gap={1}>
+        <div className={classes.fieldHeader}>
+          <Typography className={classes.fieldTitle}>
             {field.isMandatory ? `${t_i18n('Field')} ${index + 1} (${t_i18n('Mandatory')})` : `${t_i18n('Field')} ${index + 1}`}
           </Typography>
           <div style={{ display: 'flex', alignItems: 'center' }}>
