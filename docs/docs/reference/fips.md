@@ -53,7 +53,9 @@ Alternatively, you can use a [Stunnel](https://www.stunnel.org/) TLS endpoint to
 
 ### S3 Bucket / MinIO
 
-If you cannot use an S3 endpoint already deployed in your FIPS 140 compliant environment, MinIO provides [FIPS 140 compliant Docker images](https://hub.docker.com/r/minio/minio/tags?page=1&name=fips) which then are very easy to deploy within your environment.
+MinIO used to provide FIPS 140 compliant Docker images, but the project has been archived and Docker Hub no longer serves the `minio/minio` repository. Silo ([pgsty/silo](https://github.com/pgsty/silo)), the community-maintained fork of MinIO used by the OpenCTI development and CI stacks, does not publish FIPS-validated builds either.
+
+In a FIPS 140 compliant environment, use an S3 endpoint that is already validated, for example the [AWS S3 FIPS endpoints](https://aws.amazon.com/compliance/fips/) or the object storage service of your platform, rather than a self-deployed MinIO or Silo container.
 
 ## OpenCTI stack
 
