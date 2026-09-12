@@ -2429,9 +2429,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mistralai/mistralai@npm:2.6.4":
-  version: 2.6.4
-  resolution: "@mistralai/mistralai@npm:2.6.4"
+"@mistralai/mistralai@npm:2.7.0":
+  version: 2.7.0
+  resolution: "@mistralai/mistralai@npm:2.7.0"
   dependencies:
     "@opentelemetry/semantic-conventions": "npm:^1.40.0"
     ws: "npm:^8.18.0"
@@ -2451,7 +2451,7 @@ __metadata:
       optional: true
     "@opentelemetry/sdk-trace-base":
       optional: true
-  checksum: 10c0/eb8b9e5a17da8f9abaf7703e2b75cd7fa2e0e83f77766632580f4bb5984973fa05646bfbac133255c54c6618ce2d64e0c80eecd081aad79e5c71b7329c905c9e
+  checksum: 10c0/15ef729770a5662b4cfd6af70f1e42ebf94fed2ea4c3aa2323a0c8d7b5ab474227fec4fe7943369dd965d57e2fa49fffe1487441d803a963d5bab340e90e30cb
   languageName: node
   linkType: hard
 
@@ -9910,7 +9910,7 @@ __metadata:
     "@langchain/openai": "npm:1.5.11"
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
-    "@mistralai/mistralai": "npm:2.6.4"
+    "@mistralai/mistralai": "npm:2.7.0"
     "@noble/ed25519": "npm:3.2.0"
     "@node-saml/passport-saml": "npm:5.1.0"
     "@opensearch-project/opensearch": "npm:3.6.0"
