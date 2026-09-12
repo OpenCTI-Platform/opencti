@@ -29,4 +29,14 @@ describe('fieldRendererRegistry', () => {
     registerFieldRenderer('custom-type', rendererB);
     expect(fieldRendererRegistry['custom-type']).toBe(rendererB);
   });
+
+  it('does not resolve inherited Object.prototype members for unknown field types', () => {
+    // A plain {} registry would return the inherited `constructor`/`toString`/`valueOf`
+    // functions for these lookups instead of undefined, causing the dispatcher's
+    // `fieldRendererRegistry[field.type] ?? fieldRendererRegistry.default` fallback
+    // to silently invoke the wrong function instead of falling back to `default`.
+    expect(fieldRendererRegistry.constructor).toBeUndefined();
+    expect(fieldRendererRegistry.toString).toBeUndefined();
+    expect(fieldRendererRegistry.valueOf).toBeUndefined();
+  });
 });
