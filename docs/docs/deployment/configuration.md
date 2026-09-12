@@ -234,13 +234,13 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 | Parameter           | Environment variable | Default value  | Description                                                                                                                                                                                                                 |
 |:--------------------|:---------------------|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Minio as an S3 Bucket Service. |
+| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Silo as an S3 Bucket Service.  |
 | minio:port          | MINIO__PORT          | 9000           | Port of the S3 Service. For AWS Bucket S3 over HTTPS, this value can be changed (usually __443__).                                                                                                                          |
 | minio:use_ssl       | MINIO__USE_SSL       | `false`        | Indicates whether the S3 Service has TLS enabled. For AWS Bucket S3 over HTTPS, this value could be `true`.                                                                                                                 |
 | minio:access_key    | MINIO__ACCESS_KEY    | ChangeMe       | Access key for the S3 Service.                                                                                                                                                                                              |
 | minio:secret_key    | MINIO__SECRET_KEY    | ChangeMe       | Secret key for the S3 Service.                                                                                                                                                                                              |
 | minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                            |
-| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Minio as an S3 Bucket Service.                                                                                                 |
+| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Silo as an S3 Bucket Service.                                                                                                  |
 | minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `minio:access_key` and `minio:secret_key` parameters are not necessary.                                                          |
 
 !!! note "Using a proxy for AWS S3"
@@ -398,7 +398,7 @@ JSON version:
 }
 ```
 
-Another example for MinIo (S3) using certificate:
+Another example for the S3 storage (`minio` section) using certificate:
 
 Environment variables:
 ```yaml
