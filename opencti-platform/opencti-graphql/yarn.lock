@@ -2358,16 +2358,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.5.11":
-  version: 1.5.11
-  resolution: "@langchain/openai@npm:1.5.11"
+"@langchain/openai@npm:1.5.12":
+  version: 1.5.12
+  resolution: "@langchain/openai@npm:1.5.12"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^7.5.0"
+    openai: "npm:^7.10.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.9
-  checksum: 10c0/680316346de85c85f7d700552d08981b57f49fea76556f5870c17ad253545b0e2bf53a9dd3f84446197672ea47a2f2e928c4efdb25d323f8fac7c34560e89924
+    "@langchain/core": ^1.2.10
+  checksum: 10c0/7835720df353158edb5bb33ebd3fefc7269132eeb60b2ddb22a8de9f889436bcc4679708422e6dcb667af1a5e129a07c54baf494d2d0ac3e624db030cbf29278
   languageName: node
   linkType: hard
 
@@ -9831,7 +9831,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.13.0":
+"openai@npm:7.13.0, openai@npm:^7.10.0":
   version: 7.13.0
   resolution: "openai@npm:7.13.0"
   peerDependencies:
@@ -9858,33 +9858,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^7.5.0":
-  version: 7.9.0
-  resolution: "openai@npm:7.9.0"
-  peerDependencies:
-    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
-    "@smithy/hash-node": ">=4.3.0 <5"
-    "@smithy/signature-v4": ">=5.4.0 <6"
-    undici: ">=5 <9"
-    ws: ^8.21.0
-    zod: ^3.25 || ^4.0
-  peerDependenciesMeta:
-    "@aws-sdk/credential-provider-node":
-      optional: true
-    "@smithy/hash-node":
-      optional: true
-    "@smithy/signature-v4":
-      optional: true
-    undici:
-      optional: true
-    ws:
-      optional: true
-    zod:
-      optional: true
-  checksum: 10c0/10edfdbfc690571adad4f331e0993a8da86bbe2a558376aec15519bb2eb709aeba2e58046f16d17271ac55ec503b5aa3eab6b7f44890afbc325b9944150b2517
-  languageName: node
-  linkType: hard
-
 "opencti-graphql@workspace:.":
   version: 0.0.0-use.local
   resolution: "opencti-graphql@workspace:."
@@ -9907,7 +9880,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.2.9"
     "@langchain/mistralai": "npm:1.2.0"
-    "@langchain/openai": "npm:1.5.11"
+    "@langchain/openai": "npm:1.5.12"
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:2.7.0"
