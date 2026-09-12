@@ -4,9 +4,8 @@ import { Alert, FormControlLabel, Stack, Switch, Typography } from '@mui/materia
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import type { EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
+import type { EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import DraftDefaultsSection from './DraftDefaultsSection';
-import type { FormSchemaEditorProps } from './FormSchemaEditor';
 
 export interface MainEntitySectionProps {
   formData: FormBuilderData;
@@ -15,7 +14,7 @@ export interface MainEntitySectionProps {
   entityTypes: EntityTypeOption[];
   handleMainEntityTypeChange: (value: string) => void;
   isContainer: boolean;
-  entitySettings: FormSchemaEditorProps['entitySettings'];
+  entitySettings: EntitySettings;
   fieldsByEntity: Record<string, FormFieldAttribute[]>;
   renderField: (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => React.ReactNode;
   handleAddField: (entityId: string, entityType: string) => void;

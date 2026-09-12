@@ -4,7 +4,7 @@ import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } 
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
-import type { AdditionalEntity, EntityRelationship, FormBuilderData, FormFieldAttribute } from './Form.d';
+import type { AdditionalEntity, EntityRelationship, EntitySettings, FormBuilderData, FormFieldAttribute } from './Form.d';
 import {
   buildEntityTypes,
   CONTAINER_TYPES,
@@ -64,24 +64,7 @@ const useStyles = makeStyles<Theme>(() => ({
 
 export interface FormSchemaEditorProps {
   initialValues?: FormBuilderData;
-  entitySettings: {
-    edges: ReadonlyArray<{
-      node: {
-        id?: string;
-        target_type: string;
-        mandatoryAttributes?: ReadonlyArray<string>;
-        attributesDefinitions?: ReadonlyArray<{
-          type: string;
-          name: string;
-          label?: string | null;
-          mandatory: boolean;
-          multiple?: boolean | null;
-          upsert?: boolean;
-          defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
-        }>;
-      };
-    }>;
-  };
+  entitySettings: EntitySettings;
   onChange?: (values: FormBuilderData) => void;
   onSchemaChange?: (schema: string) => void;
 }

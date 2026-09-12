@@ -5,9 +5,8 @@ import { FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/mat
 import { IconButton, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import type { AdditionalEntity, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
+import type { AdditionalEntity, EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import { getInitialMandatoryFields } from './FormUtils';
-import type { FormSchemaEditorProps } from './FormSchemaEditor';
 
 export interface AdditionalEntitiesSectionProps {
   formData: FormBuilderData;
@@ -16,7 +15,7 @@ export interface AdditionalEntitiesSectionProps {
   entityTypes: EntityTypeOption[];
   fieldsByEntity: Record<string, FormFieldAttribute[]>;
   handleRemoveAdditionalEntity: (entityId: string) => void;
-  entitySettings: FormSchemaEditorProps['entitySettings'];
+  entitySettings: EntitySettings;
   renderField: (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => React.ReactNode;
   handleAddField: (entityId: string, entityType: string) => void;
   handleAddAdditionalEntity: () => void;
