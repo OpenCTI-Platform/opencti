@@ -1557,9 +1557,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/maplibre-gl-style-spec@npm:^26.4.1":
-  version: 26.4.1
-  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.4.1"
+"@maplibre/maplibre-gl-style-spec@npm:^26.4.2":
+  version: 26.4.2
+  resolution: "@maplibre/maplibre-gl-style-spec@npm:26.4.2"
   dependencies:
     "@mapbox/jsonlint-lines-primitives": "npm:^2.0.3"
     "@mapbox/unitbezier": "npm:^1.0.0"
@@ -1571,7 +1571,7 @@ __metadata:
     gl-style-format: dist/gl-style-format.mjs
     gl-style-migrate: dist/gl-style-migrate.mjs
     gl-style-validate: dist/gl-style-validate.mjs
-  checksum: 10c0/dcb1b6ffc1b58a34b0faf79ceea97d8fe3b8fa7b158a67499c105db254e86c32daf9cf9a4172f07429206478e885b2d79ba6ed0230891c05d2dcd4514b535f5b
+  checksum: 10c0/46e816876e2e59b3e82971c41af183b92188ed6d3d25216b12c183a9e4f5f1bf5f612639a080db05d198940722a002948264e45c27e051da0c965cc4ffa5af73
   languageName: node
   linkType: hard
 
@@ -5801,6 +5801,15 @@ __metadata:
   dependencies:
     require-from-string: "npm:^2.0.2"
   checksum: 10c0/fdddea4aa4120a34285486f2267526cd9298b6e8b773ad25e765d4f104b6d7437ab4ba542e6939e3ac834a7570bcf121ee2cf6d3ae7cd7082c4b5bedc8f271e1
+  languageName: node
+  linkType: hard
+
+"bidi-js@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "bidi-js@npm:1.1.0"
+  dependencies:
+    require-from-string: "npm:^2.0.2"
+  checksum: 10c0/b608addec6bd6e5d1c0cc7b6116002d589c6e666966503aca2aa7b2f61717ecaaeb0ac1a16c1374d61ee757de4f2f24017312a70781f5c4b127ffab54a2f7187
   languageName: node
   linkType: hard
 
@@ -10467,19 +10476,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.8.0":
-  version: 6.8.0
-  resolution: "maplibre-gl@npm:6.8.0"
+"maplibre-gl@npm:6.9.0":
+  version: 6.9.0
+  resolution: "maplibre-gl@npm:6.9.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
     "@mapbox/unitbezier": "npm:^1.0.0"
     "@mapbox/vector-tile": "npm:^3.0.0"
     "@maplibre/geojson-vt": "npm:^6.1.1"
-    "@maplibre/maplibre-gl-style-spec": "npm:^26.4.1"
+    "@maplibre/maplibre-gl-style-spec": "npm:^26.4.2"
     "@maplibre/mlt": "npm:^1.2.1"
     "@maplibre/vt-pbf": "npm:^4.3.2"
     "@types/geojson": "npm:^7946.0.16"
+    bidi-js: "npm:^1.1.0"
     earcut: "npm:^3.2.3"
     gl-matrix: "npm:^3.4.4"
     kdbush: "npm:^4.1.0"
@@ -10488,7 +10498,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10c0/e6f2b021059425bfdcc0d6233e67f6fbb3e84ac97c572c5faaab791982c6f5070aa7761f3bb8855275967e35b48efbda455b42031c8ff6b51d6b6fc0c4023577
+  checksum: 10c0/235ce06922aaf06e64275f1d4749e110b5956a8c5f93b856162f97aa50d1fe9a8a271d57917131c284cd0fb2eec0887f6c3d075d2737733f7c3e8e82d9480ede
   languageName: node
   linkType: hard
 
@@ -11914,7 +11924,7 @@ __metadata:
     json5: "npm:2.2.3"
     knip: "npm:6.34.0"
     license-checker-rseidelsohn: "npm:5.0.1"
-    maplibre-gl: "npm:6.8.0"
+    maplibre-gl: "npm:6.9.0"
     markdown-to-jsx: "npm:9.10.2"
     marked: "npm:18.0.12"
     mdi-material-ui: "npm:7.9.4"
