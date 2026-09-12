@@ -32,7 +32,7 @@ services:
   minio:
     container_name: minio
     profiles: ["backend"]
-    image: minio/minio:latest
+    image: pgsty/silo:latest
     networks:
       - runner-docker-network
     ports:
