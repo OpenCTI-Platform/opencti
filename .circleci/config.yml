@@ -7,7 +7,7 @@ jobs:
   build_pycti:
     working_directory: ~/repo
     docker:
-      - image: cimg/python:3.13
+      - image: cimg/python:3.14
     steps:
       - checkout
       - run:
@@ -50,7 +50,7 @@ jobs:
   deploy_pycti:
     working_directory: ~/repo
     docker:
-      - image: cimg/python:3.13
+      - image: cimg/python:3.14
     steps:
       - checkout
       - attach_workspace:
