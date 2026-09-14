@@ -4,6 +4,7 @@ import itertools
 import json
 import threading
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from typing import Any, Dict, List, Literal, Optional, Union
@@ -14,6 +15,12 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
+from chunk_transport import (
+    CHUNK_ROUTING_SUFFIX,
+    ChunkCapture,
+    ChunkPublisher,
+    ChunkQueueUnavailable,
+)
 from graphql_batch import install_graphql_batcher
 from http_pool import tune_session_pool
 from ingest_pools import ChunkEntry, ChunkJob, get_ingest_pools, submit_bundle_atomic
@@ -125,6 +132,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     # in flight. No effect on V1 (the barrier is stronger) nor on other bundles'
     # chunks (cross-bundle admission keeps the pool saturated).
     ingest_dep_admission: bool = True
+    # Chunk-queue direct intake (kb note opencti-chunk-queue-direct-intake-design): the
+    # bundle path CAPTURES pycti's mutations and publishes them by chunk to the platform
+    # chunk queue instead of importing over HTTP (no ingest pool, no HTTP leg for objects).
+    # Requires the platform chunk intake manager; falls back to HTTP when no queue is bound.
+    chunk_queue: bool = False
 
     def __post_init__(self) -> None:
         self.api = OpenCTIApiClient(
@@ -158,6 +170,29 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             if self.ingest_pools > 0
             else None
         )
+        # Chunk-queue direct intake: capture transport on this handler's client + one
+        # confirmed publisher channel; the writer identity travels as an id, never a token.
+        self.chunk_capture: Optional[ChunkCapture] = None
+        self.chunk_publisher: Optional[ChunkPublisher] = None
+        self.chunk_user_id: Optional[str] = None
+        if self.chunk_queue:
+            self.chunk_capture = ChunkCapture(self.api)
+            prefix = self.push_routing.split("push_routing_", 1)[0]
+            self.chunk_publisher = ChunkPublisher(
+                self.pika_parameters,
+                self.push_exchange,
+                f"{prefix}{CHUNK_ROUTING_SUFFIX}",
+                self.logger,
+            )
+            self.chunk_user_id = self.api.query("query Me { me { id } }")["data"]["me"]["id"]
+            self.logger.info(
+                "Chunk queue transport enabled",
+                {
+                    "routing_key": self.chunk_publisher.routing_key,
+                    "chunk_size": self.ingest_chunk_size,
+                    "user_id": self.chunk_user_id,
+                },
+            )
 
     def send_bundle_to_specific_queue(
         self,
@@ -418,6 +453,102 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         self.send_too_large_to_dead_letter(data, too_large_items_bundles)
         return imported_items
 
+    # region chunk-queue direct intake
+    def chunk_eligible(self, data: Dict[str, Any]) -> bool:
+        # The chunk message carries applicant/work/draft. The other header-borne contexts
+        # (playbook, event, synchronized upsert, previous standard) are out of the POC
+        # scope and keep the HTTP path, so their semantics stay exactly today's.
+        return not any(
+            data.get(key)
+            for key in ("playbook_id", "event_id", "synchronized", "previous_standard")
+        )
+
+    def publish_bundle_chunks(
+        self,
+        content: Dict[str, Any],
+        data: Dict[str, Any],
+        work_id: Any,
+        types: Any,
+    ) -> Optional[List[Any]]:
+        """Split + mark + CAPTURE pycti's mutations, then ONE rabbit message per chunk.
+
+        Returns None when the chunk queue is unavailable and nothing was published (the
+        caller falls back to the HTTP path); raises after a partial publish so the bundle
+        message is requeued and replayed (at-least-once, duplicates absorbed by upsert).
+        """
+        assert self.chunk_capture is not None and self.chunk_publisher is not None
+        t_start = time.monotonic()
+        update = data.get("update", False)
+        event_version = content.get("x_opencti_event_version")
+        stix2_splitter = OpenCTIStix2Splitter()
+        expectations, _, bundles = stix2_splitter.split_bundle_with_expectations(
+            content, False, event_version
+        )
+        if work_id is not None:
+            work_alive = self.api.work.add_expectations(work_id, expectations)
+            if not work_alive:
+                return []
+        member_ids = {obj["id"] for obj in content.get("objects", []) if "id" in obj}
+        for mini_bundle in bundles:
+            for obj in mini_bundle.get("objects", []):
+                self.mark_member_refs(obj, member_ids)
+        too_large_items_bundles: List[Any] = []
+        # work_id=None on purpose: pycti's per-object report_expectation is a mutation too
+        # and would be captured; the platform manager reports in process instead.
+        with self.chunk_capture.capture() as operations:
+            for mini_bundle in bundles:
+                _, too_large = self.api.stix2.import_bundle_from_json(
+                    json.dumps(mini_bundle), update, types, None, self.objects_max_refs
+                )
+                too_large_items_bundles.extend(too_large)
+        # An object that yielded no mutation (unknown type, filtered out) would never be
+        # reported by the manager: report it here so the work's expectations stay exact.
+        if work_id is not None:
+            captured_ids = {operation.get("object_id") for operation in operations}
+            for mini_bundle in bundles:
+                for obj in mini_bundle.get("objects", []):
+                    if obj.get("id") not in captured_ids:
+                        self.api.work.report_expectation(work_id, None)
+        size = max(1, self.ingest_chunk_size)
+        base = {
+            "v": 1,
+            "user_id": self.chunk_user_id,
+            "applicant_id": data.get("applicant_id"),
+            "work_id": work_id,
+            "draft_id": data.get("draft_id"),
+        }
+        published = 0
+        try:
+            for index in range(0, len(operations), size):
+                self.chunk_publisher.publish(
+                    {
+                        **base,
+                        "chunk_id": str(uuid.uuid4()),
+                        "operations": operations[index : index + size],
+                    }
+                )
+                published += 1
+        except ChunkQueueUnavailable as err:
+            if published == 0:
+                self.logger.error(
+                    "Chunk queue unavailable, HTTP path for this bundle",
+                    {"error": str(err)},
+                )
+                return None
+            raise
+        self.send_too_large_to_dead_letter(data, too_large_items_bundles)
+        self.logger.debug(
+            "Bundle published as chunks",
+            {
+                "objects": len(operations),
+                "chunks": published,
+                "elapsed_ms": round((time.monotonic() - t_start) * 1000, 1),
+            },
+        )
+        return []
+
+    # endregion
+
     def import_bundle_chunked(
         self,
         content: Dict[str, Any],
@@ -599,12 +730,22 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 if "objects" not in content or len(content["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 objects_count = len(content["objects"])
+                # Chunk-queue direct intake (WORKER_CHUNK_QUEUE): the bundle path publishes
+                # captured mutations by chunk; None = chunk queue unavailable, fall back to
+                # the HTTP paths below for this message.
+                chunked_items = (
+                    self.publish_bundle_chunks(content, data, work_id, types)
+                    if self.chunk_queue and self.chunk_eligible(data)
+                    else None
+                )
                 # POC (plan 0009 P3): inline when the platform flagged it, or when the
                 # worker knob is on and the message actually carries several objects.
                 inline = objects_count > 1 and (
                     data.get("bundle_inline", False) or self.bundle_inline
                 )
-                if inline:
+                if chunked_items is not None:
+                    imported_items = chunked_items
+                elif inline:
                     if self.pools is not None:
                         imported_items = self.import_bundle_chunked(
                             content, data, work_id, types

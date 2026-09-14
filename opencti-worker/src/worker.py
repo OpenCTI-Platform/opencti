@@ -209,6 +209,15 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             False,
             default=True,
         )
+        # Chunk-queue direct intake (kb note opencti-chunk-queue-direct-intake-design):
+        # publish captured mutations by chunk to the platform chunk queue, no HTTP import.
+        self.chunk_queue = get_config_variable(
+            "WORKER_CHUNK_QUEUE",
+            ["worker", "chunk_queue"],
+            config,
+            False,
+            default=False,
+        )
         self.opencti_api_requests_timeout = get_config_variable(
             "OPENCTI_REQUESTS_TIMEOUT",
             ["opencti", "requests_timeout"],
@@ -412,6 +421,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             ingest_pool_queue_bound=self.ingest_pool_queue_bound,
                             ingest_pipelined=self.ingest_pipelined,
                             ingest_dep_admission=self.ingest_dep_admission,
+                            chunk_queue=self.chunk_queue,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]
