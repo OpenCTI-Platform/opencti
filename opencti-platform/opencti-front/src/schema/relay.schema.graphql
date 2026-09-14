@@ -13092,6 +13092,7 @@ input WorkspaceAddInput {
 }
 
 input WorkspaceDuplicateInput {
+  id: ID
   type: String!
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
