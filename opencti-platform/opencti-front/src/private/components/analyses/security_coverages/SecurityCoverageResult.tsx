@@ -177,6 +177,9 @@ const securityCoverageResultLineFragment = graphql`
             ... on Task {
                 name
             }
+            ... on SecurityPlatform {
+                name
+            }
             ...on Artifact {
                 observable_value
             }
