@@ -355,9 +355,16 @@ describe('Workspace resolver standard behavior', () => {
 
   describe('Investigation duplication', () => {
     let investigationId;
-    const investigatedEntityId = 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c';
+    let investigatedEntityId;
 
     beforeAll(async () => {
+      const disinformationAnalystId = await getUserIdByEmail(USER_DISINFORMATION_ANALYST.email);
+      const investigatedEntity = await elLoadById(
+        testContext,
+        ADMIN_USER,
+        'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c',
+      );
+      investigatedEntityId = investigatedEntity.internal_id;
       const createResult = await queryAsAdmin({
         query: CREATE_QUERY,
         variables: {
@@ -378,7 +385,7 @@ describe('Workspace resolver standard behavior', () => {
           id: investigationId,
           input: [
             { id: ADMIN_USER.id, access_right: 'admin' },
-            { id: USER_DISINFORMATION_ANALYST.id, access_right: 'view' },
+            { id: disinformationAnalystId, access_right: 'view' },
           ],
         },
       });
@@ -433,7 +440,7 @@ describe('Workspace resolver standard behavior', () => {
       expect(queryResult.data.workspaceDuplicate.name).toBe('Investigation duplicated without id');
       expect(queryResult.data.workspaceDuplicate.description).toBe('standalone investigation duplicate');
       expect(queryResult.data.workspaceDuplicate.tags).toEqual(['standalone-test']);
-      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toEqual([]);
+      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toBeNull();
 
       await queryAsAdmin({
         query: DELETE_QUERY,
@@ -488,6 +495,7 @@ describe('Workspace resolver standard behavior', () => {
     let dashboardId;
 
     beforeAll(async () => {
+      const editorId = await getUserIdByEmail(USER_EDITOR.email);
       const createResult = await queryAsAdmin({
         query: CREATE_QUERY,
         variables: {
@@ -507,7 +515,7 @@ describe('Workspace resolver standard behavior', () => {
           id: dashboardId,
           input: [
             { id: ADMIN_USER.id, access_right: 'admin' },
-            { id: USER_EDITOR.id, access_right: 'view' },
+            { id: editorId, access_right: 'view' },
             { id: USER_CONNECTOR.id, access_right: 'view' },
           ],
         },

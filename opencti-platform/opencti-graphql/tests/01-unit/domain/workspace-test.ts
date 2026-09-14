@@ -110,7 +110,7 @@ describe('duplicateWorkspace', () => {
   });
 
   it('rejects a missing source before checking capabilities or creating', async () => {
-    vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue(undefined);
+    vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue(undefined as any);
 
     await expect(duplicateWorkspace(context, user, duplicateInput as any)).rejects.toThrow();
     expect(access.isUserHasCapability).not.toHaveBeenCalled();
