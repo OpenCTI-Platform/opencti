@@ -525,6 +525,61 @@ export const planSubmission = async (
   return { bundle, mainEntityStixId, finalIsDraft, draftPlan };
 };
 
+export interface SubmissionResult {
+  success: boolean;
+  bundleId: string;
+  message: string;
+  entityId: string | undefined;
+}
+
+export const commitSubmission = async (
+  context: AuthContext,
+  user: AuthUser,
+  formId: string,
+  plan: SubmissionPlan,
+): Promise<SubmissionResult> => {
+  const { bundle, mainEntityStixId, finalIsDraft, draftPlan } = plan;
+  try {
+    const connectorId = connectorIdFromIngestId(formId);
+    const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
+    const workName = `Form submission @ ${now()}`;
+    const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
+
+    const stixBundle = JSON.stringify(bundle);
+    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+
+    let draftId = null;
+    if (finalIsDraft && draftPlan) {
+      const draft = await addDraftWorkspace(context, SYSTEM_USER, draftPlan.draftInput);
+      draftId = draft.id;
+      // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
+      await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
+    }
+    await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
+      type: 'bundle',
+      applicant_id: user.id,
+      content,
+      work_id: work.id,
+      draft_id: draftId,
+      update: true,
+      no_split: true,
+    });
+
+    logApp.info('[FORM] Bundle sent to connector queue', { formId, workId: work.id, bundleId: bundle.id });
+    await addFormIntakeSubmittedCount();
+
+    return {
+      success: true,
+      bundleId: bundle.id,
+      message: 'Form submitted successfully and sent for processing',
+      entityId: finalIsDraft ? draftId ?? undefined : mainEntityStixId,
+    };
+  } catch (error) {
+    logApp.error('[FORM] Error sending bundle to connector queue', { error });
+    throw FunctionalError('Failed to process form submission', { cause: error });
+  }
+};
+
 // Submit a form and convert to STIX bundle
 export const formSubmit = async (
   context: AuthContext,
