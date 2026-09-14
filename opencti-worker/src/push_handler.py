@@ -20,6 +20,7 @@ from chunk_transport import (
     ChunkCapture,
     ChunkPublisher,
     ChunkQueueUnavailable,
+    build_chunks,
 )
 from graphql_batch import install_graphql_batcher
 from http_pool import tune_session_pool
@@ -519,12 +520,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         }
         published = 0
         try:
-            for index in range(0, len(operations), size):
+            for chunk_operations in build_chunks(operations, size):
                 self.chunk_publisher.publish(
                     {
                         **base,
                         "chunk_id": str(uuid.uuid4()),
-                        "operations": operations[index : index + size],
+                        "operations": chunk_operations,
                     }
                 )
                 published += 1
@@ -537,6 +538,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 return None
             raise
         self.send_too_large_to_dead_letter(data, too_large_items_bundles)
+        # The objects counter feeds the bench throughput KPI (and the worker's own stats):
+        # on this path an object is "processed" when its operations are published. Objects =
+        # mini-bundles, not operations (pycti emits several mutations for an object with
+        # labels, external references or kill chain phases).
+        self.bundles_global_counter.add(len(bundles))
         self.logger.debug(
             "Bundle published as chunks",
             {
