@@ -4830,7 +4830,6 @@
   "There are not any configurations set yet": "目前尚未设置任何配置",
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "平台中有两个内置通知器：用户界面和默认邮件发送器。它们不可配置，您可以在这里创建您的自定义通知器。",
   "Therefore all pieces of knowledge which are not explicitly shared with any organization won't be accessible to user(s) not member of the platform organization.": "因此，所有未明确与任何组织共享的知识，非平台组织成员的用户都将无法访问。",
-  "Therefore all pieces of knowledge which are not explicitly shared with any organization won\\'t be accessible to user(s) not member of the platform organization.": "因此，所有未明确与任何组织共享的知识都不会被非平台组织成员的用户访问。",
   "These defaults pre-fill the export modal but can be overridden at export time.": "这些默认设置会预先填充导出弹窗，但在导出时可以覆盖。",
   "These template emails are only used for one time email, not for notifications or dissemination.": "这些模板电子邮件只用于一次性电子邮件，不用于通知或传播。",
   "Thinking it through": "深思熟虑",

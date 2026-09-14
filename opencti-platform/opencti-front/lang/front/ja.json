@@ -4830,7 +4830,6 @@
   "There are not any configurations set yet": "まだ設定がありません",
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "プラットフォームには、ユーザーインターフェイスとデフォルトメーラーの2つの組み込み通知機能があります。これらは構成できず、ここでカスタムのものを作成できます。",
   "Therefore all pieces of knowledge which are not explicitly shared with any organization won't be accessible to user(s) not member of the platform organization.": "したがって、どの組織とも明示的に共有されていない知識はすべて、プラットフォーム組織のメンバーではないユーザーからはアクセスできません。",
-  "Therefore all pieces of knowledge which are not explicitly shared with any organization won\\'t be accessible to user(s) not member of the platform organization.": "したがって、どの組織とも明示的に共有されていないすべての知識は、プラットフォーム組織のメンバーでないユーザーからアクセスできない。",
   "These defaults pre-fill the export modal but can be overridden at export time.": "これらのデフォルト設定は、エクスポートモーダルに事前に入力されますが、エクスポート時に上書きすることができます。",
   "These template emails are only used for one time email, not for notifications or dissemination.": "これらのテンプレートメールは1回のみ使用され、通知や配信には使用されません。",
   "Thinking it through": "よく考えてみる",
