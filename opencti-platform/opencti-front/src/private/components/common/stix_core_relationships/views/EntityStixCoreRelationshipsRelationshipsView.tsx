@@ -341,6 +341,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
         type="stix-core-relationship"
+        knowledgeEntityId={entityId}
       />
 
       {allowCreation && (
