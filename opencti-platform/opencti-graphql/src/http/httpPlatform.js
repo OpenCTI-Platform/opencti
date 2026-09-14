@@ -30,6 +30,7 @@ import initHttpMaps from './httpMaps';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { checkDraftInContext } from './httpServer-draft';
 import {
   extractRefererPathFromReq,
   setCookieError,
@@ -225,6 +226,9 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve the file.
+      await checkDraftInContext(context);
       const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
@@ -247,6 +251,9 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve the file.
+      await checkDraftInContext(context);
       const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
@@ -291,6 +298,9 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve entities/files.
+      await checkDraftInContext(context);
       const element = await internalLoadById(context, context.user, id);
 
       const file = `embedded/${element.entity_type}/${id}/${filename}`;
@@ -323,6 +333,9 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve the file.
+      await checkDraftInContext(context);
       const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       const { mimetype } = data.metaData;
@@ -351,6 +364,9 @@ const createApp = async (app, schema) => {
         res.sendStatus(403);
         return;
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve the file.
+      await checkDraftInContext(context);
       const file = decodeStoragePath(req.params.file);
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
