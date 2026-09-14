@@ -455,6 +455,16 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         return imported_items
 
     # region chunk-queue direct intake
+    @staticmethod
+    def carries_files(node: Any) -> bool:
+        if isinstance(node, dict):
+            if node.get("x_opencti_files") or node.get("x_opencti_file"):
+                return True
+            return any(PushHandler.carries_files(v) for v in node.values())
+        if isinstance(node, list):
+            return any(PushHandler.carries_files(v) for v in node)
+        return False
+
     def chunk_eligible(self, data: Dict[str, Any]) -> bool:
         # The chunk message carries applicant/work/draft. The other header-borne contexts
         # (playbook, event, synchronized upsert, previous standard) are out of the POC
@@ -479,6 +489,13 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         """
         assert self.chunk_capture is not None and self.chunk_publisher is not None
         t_start = time.monotonic()
+        # Objects carrying files (x_opencti_files on the object OR nested in its external
+        # references) become multipart uploads in pycti (File objects in the variables) that
+        # a queue message cannot carry: the whole bundle keeps the HTTP path. Out of the POC
+        # scope, logged so the share is known.
+        if any(self.carries_files(obj) for obj in content.get("objects", [])):
+            self.logger.info("Bundle carries files, HTTP path for this bundle")
+            return None
         update = data.get("update", False)
         event_version = content.get("x_opencti_event_version")
         stix2_splitter = OpenCTIStix2Splitter()
@@ -518,16 +535,29 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             "work_id": work_id,
             "draft_id": data.get("draft_id"),
         }
-        published = 0
+        # Serialize EVERY chunk before publishing ANY: a value the queue cannot carry (a
+        # multipart File that escaped the guard above) must send the whole bundle to the
+        # HTTP path, never publish half of it.
+        chunk_messages: List[Dict[str, Any]] = []
         try:
             for chunk_operations in build_chunks(operations, size):
-                self.chunk_publisher.publish(
-                    {
-                        **base,
-                        "chunk_id": str(uuid.uuid4()),
-                        "operations": chunk_operations,
-                    }
-                )
+                message = {
+                    **base,
+                    "chunk_id": str(uuid.uuid4()),
+                    "operations": chunk_operations,
+                }
+                json.dumps(message)
+                chunk_messages.append(message)
+        except TypeError as err:
+            self.logger.warning(
+                "Bundle not serializable as chunks, HTTP path for this bundle",
+                {"error": str(err)},
+            )
+            return None
+        published = 0
+        try:
+            for message in chunk_messages:
+                self.chunk_publisher.publish(message)
                 published += 1
         except ChunkQueueUnavailable as err:
             if published == 0:

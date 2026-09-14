@@ -171,7 +171,17 @@ class ChunkCapture:
         if echo_id:
             captured["echo_id"] = echo_id
         buffer.append(captured)
+        # The echo carries the SCALAR input fields back on top of the ids: pycti reads some
+        # of them after a create (vocabularies: `name`). Lists and objects are NOT echoed:
+        # for relationship inputs (objectLabel, objectMarking, killChainPhases...) pycti
+        # post-processes the API's response shape (lists of dicts), and the input's lists
+        # of ids crash that post-processing (gate 11: 210 TypeErrors).
         echo = {
+            **{
+                k: v
+                for k, v in payload.items()
+                if isinstance(k, str) and isinstance(v, (str, int, float, bool))
+            },
             "id": stix_id or echo_id,
             "standard_id": stix_id or echo_id,
             "entity_type": payload.get("type", "Unknown"),
