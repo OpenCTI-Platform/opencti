@@ -18,7 +18,7 @@ These notifications help you quickly detect new content and decide whether to im
 
 ### 1. Connect your platform to XTM Hub
 
-Your OpenCTI platform must be connected to XTM Hub before you can receive News Feed notifications.
+Your OpenCTI product must be connected to XTM Hub before you can receive News Feed notifications.
 
 Follow the connection steps in [XTM Hub connection](../administration/hub.md).
 

@@ -34,7 +34,7 @@ To disconnect your product, follow these steps:
     - If your product is already connected, you will have the option to disconnect it.
 
 2. **Disconnecting Process:**
-    - This action will remove the link between your OpenCTI product and the XTM Hub, thus disabling access to the XTM hub features.
+    - This action will remove the link between your OpenCTI product and the XTM Hub, thus disabling access to the XTM Hub features.
     - Go to the XTM Hub settings page and click on the "Disconnect" button.
 
 3. **Reconnection:**
