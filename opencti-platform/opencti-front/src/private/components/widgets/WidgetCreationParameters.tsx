@@ -978,8 +978,7 @@ const WidgetCreationParameters = () => {
 
           const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filters ?? undefined);
           const entityTypeFromFilters = entityTypeFilters.length === 1 ? entityTypeFilters[0] : undefined;
-          const entityType = entityTypeFromFilters
-            ?? (host.kind === 'fintelTemplate' ? host.fintelEntityType : undefined);
+          const entityType = entityTypeFromFilters;
           const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
           const selectedColumns = [...(columns ?? defaultWidgetColumnsByType)];
           const availableColumns = mergeAvailableAndSelectedColumns(
