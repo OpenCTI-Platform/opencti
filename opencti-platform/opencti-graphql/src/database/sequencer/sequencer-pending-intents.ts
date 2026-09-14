@@ -246,7 +246,11 @@ const sweepOnce = async () => {
   let expired = 0;
   try {
     const now = Date.now();
-    const aged = [...byId.values()].filter((r) => now - r.updated_at > SWEEP_MIN_AGE_MS);
+    // Exponential backoff per record (30 s, 60 s, 120 s ... capped at 30 min): a target
+    // that never comes (first A/B: a core of 364 records re-submitted every minute, each
+    // costing a park + an apply) must not tax every sweep the same way.
+    const backoffMs = (record: PendingIntentRecord) => Math.min(SWEEP_MIN_AGE_MS * 2 ** record.attempts, 30 * 60_000);
+    const aged = [...byId.values()].filter((r) => now - r.updated_at > backoffMs(r));
     for (let i = 0; i < aged.length; i += 1) {
       const record = aged[i];
       if (now - record.created_at > SEQUENCER_CONFIG.pendingRefExpiryS * 1000) {
