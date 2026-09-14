@@ -22,6 +22,22 @@ from pika.exceptions import AMQPError, NackError, UnroutableError
 
 CHUNK_ROUTING_SUFFIX = "chunk_intake_routing"
 ECHO_PREFIX = "echo--"
+# Scalar input fields pycti may read back from a create response (vocabularies: name,
+# category; labels: value; kill chain phases; external references). Never relationship
+# fields (createdBy, objectMarking...): pycti expects objects there, not the input's ids.
+ECHO_SCALAR_FIELDS = (
+    "name",
+    "value",
+    "category",
+    "description",
+    "kill_chain_name",
+    "phase_name",
+    "x_opencti_order",
+    "source_name",
+    "url",
+    "external_id",
+    "color",
+)
 
 
 class ChunkQueueUnavailable(Exception):
@@ -125,17 +141,27 @@ class ChunkCapture:
         cache = getattr(stix2, "mapping_cache", None)
         if cache is None:
             return
-        stale = [
-            key
-            for key, value in list(cache.items())
-            if isinstance(value, dict)
-            and str(value.get("id", "")).startswith(ECHO_PREFIX)
-        ]
-        for key in stale:
+        # With a push prefetch above 1 a handler imports two bundles at once on the same
+        # client: snapshot the keys and read each value on its own so a concurrent write
+        # never turns into "dictionary changed size during iteration" (A/B attempt 4: 12
+        # bundles nacked that way); a snapshot that still races is simply retried.
+        for _attempt in range(3):
             try:
-                del cache[key]
-            except KeyError:
-                pass
+                keys = list(cache.keys())
+                break
+            except RuntimeError:
+                keys = None
+        if keys is None:
+            return
+        for key in keys:
+            value = cache.get(key)
+            if isinstance(value, dict) and str(value.get("id", "")).startswith(
+                ECHO_PREFIX
+            ):
+                try:
+                    del cache[key]
+                except KeyError:
+                    pass
 
     def _query(
         self,
@@ -171,16 +197,16 @@ class ChunkCapture:
         if echo_id:
             captured["echo_id"] = echo_id
         buffer.append(captured)
-        # The echo carries the SCALAR input fields back on top of the ids: pycti reads some
-        # of them after a create (vocabularies: `name`). Lists and objects are NOT echoed:
-        # for relationship inputs (objectLabel, objectMarking, killChainPhases...) pycti
-        # post-processes the API's response shape (lists of dicts), and the input's lists
-        # of ids crash that post-processing (gate 11: 210 TypeErrors).
+        # The echo carries a WHITELIST of scalar input fields back on top of the ids: pycti
+        # reads some of them after a create (vocabularies: `name`). Nothing else: pycti
+        # post-processes the relationship fields of a response as OBJECTS (createdBy["id"],
+        # objectLabel as a list of dicts...), and echoing the input's ids there crashes it
+        # (gate 11: 210 TypeErrors on lists; A/B attempt 4: 105k on createdBy strings).
         echo = {
             **{
-                k: v
-                for k, v in payload.items()
-                if isinstance(k, str) and isinstance(v, (str, int, float, bool))
+                k: payload[k]
+                for k in ECHO_SCALAR_FIELDS
+                if isinstance(payload.get(k), (str, int, float, bool))
             },
             "id": stix_id or echo_id,
             "standard_id": stix_id or echo_id,
