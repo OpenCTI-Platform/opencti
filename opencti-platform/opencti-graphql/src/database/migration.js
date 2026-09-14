@@ -11,6 +11,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import migrations, { filenames as migrationsFilenames } from '../migrations/*.{js,ts}';
 import { fullEntitiesThroughRelationsToList } from './middleware-loader';
 
+export const MIGRATION_STATUS_ID = 'abd390e1-9e50-42d0-8673-f15db7cb4223';
+
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
     return rawName.substring(2);

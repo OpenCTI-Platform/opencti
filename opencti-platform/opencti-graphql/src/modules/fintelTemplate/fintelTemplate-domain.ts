@@ -39,6 +39,13 @@ import { fintelTemplateVariableNameChecker } from '../../utils/syntax';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { lockResources } from '../../lock/master-lock';
 
+export const FINTEL_TEMPLATE_EXEC_SUMMARY_REPORT_ID = '884ab08d-6dd7-48cc-a51d-0fd19b63b6fa';
+export const FINTEL_TEMPLATE_EXEC_SUMMARY_GROUPING_ID = '2804d4e6-172d-4a02-8a2c-b123ea564038';
+export const FINTEL_TEMPLATE_INCIDENT_RESPONSE_ID = '86ba38ec-b99a-48e2-a9cc-b98efda43838';
+export const FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_INCIDENT_ID = '68d2d29a-876c-4964-a928-7d6dae07f321';
+export const FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFI_ID = 'ecd6d91e-ea9b-489f-b355-31a7e784ec86';
+export const FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFT_ID = '041091db-effd-4b5a-93eb-afec84be3a3f';
+
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
 // (don't forget to check the capa if it's not done via a @auth in graphql of your function)
@@ -338,16 +345,16 @@ export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser,
 };
 
 export const initFintelTemplates = async (context: AuthContext, user: AuthUser) => {
-  const builtInTemplatesInputs = [
-    generateFintelTemplateExecutiveSummary('Report'),
-    generateFintelTemplateExecutiveSummary('Grouping'),
-    fintelTemplateIncidentResponse,
-    generateFintelTemplateExecutiveSummary('Case-Incident'),
-    generateFintelTemplateExecutiveSummary('Case-Rfi'),
-    generateFintelTemplateExecutiveSummary('Case-Rft'),
+  const builtInTemplatesInputs: (FintelTemplateAddInput & { internal_id: string })[] = [
+    { ...generateFintelTemplateExecutiveSummary('Report'), internal_id: FINTEL_TEMPLATE_EXEC_SUMMARY_REPORT_ID },
+    { ...generateFintelTemplateExecutiveSummary('Grouping'), internal_id: FINTEL_TEMPLATE_EXEC_SUMMARY_GROUPING_ID },
+    { ...fintelTemplateIncidentResponse, internal_id: FINTEL_TEMPLATE_INCIDENT_RESPONSE_ID },
+    { ...generateFintelTemplateExecutiveSummary('Case-Incident'), internal_id: FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_INCIDENT_ID },
+    { ...generateFintelTemplateExecutiveSummary('Case-Rfi'), internal_id: FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFI_ID },
+    { ...generateFintelTemplateExecutiveSummary('Case-Rft'), internal_id: FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFT_ID },
   ];
   // add id to fintel template widgets
-  const finalInputs: FintelTemplateAddInput[] = builtInTemplatesInputs.map((input) => ({
+  const finalInputs = builtInTemplatesInputs.map((input) => ({
     ...input,
     template_content: input.template_content ?? '',
     fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
