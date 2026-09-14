@@ -7,7 +7,7 @@ const {
   mockFindCatalogBySourceUri,
   mockFindCatalogByCatalogId,
   mockFindCatalogContractsByCatalogId,
-  mockFindCatalogs,
+  mockFindAllCatalogsExcluding,
   mockInsertCatalogContracts,
   mockUpdateCatalogContracts,
   mockDeleteCatalogContracts,
@@ -22,7 +22,7 @@ const {
   mockFindCatalogBySourceUri: vi.fn(),
   mockFindCatalogByCatalogId: vi.fn(),
   mockFindCatalogContractsByCatalogId: vi.fn(),
-  mockFindCatalogs: vi.fn(),
+  mockFindAllCatalogsExcluding: vi.fn(),
   mockInsertCatalogContracts: vi.fn(),
   mockUpdateCatalogContracts: vi.fn(),
   mockDeleteCatalogContracts: vi.fn(),
@@ -63,7 +63,7 @@ vi.mock('../../../../src/modules/catalog/catalog-repository', () => ({
   findCatalogBySourceUri: mockFindCatalogBySourceUri,
   findCatalogByCatalogId: mockFindCatalogByCatalogId,
   findCatalogContractsByCatalogId: mockFindCatalogContractsByCatalogId,
-  findCatalogs: mockFindCatalogs,
+  findAllCatalogsExcluding: mockFindAllCatalogsExcluding,
   insertCatalogContracts: mockInsertCatalogContracts,
   updateCatalogContracts: mockUpdateCatalogContracts,
   deleteCatalogContracts: mockDeleteCatalogContracts,
@@ -119,7 +119,7 @@ describe('catalog-sync-domain', () => {
     mockFindCatalogBySourceUri.mockResolvedValue(undefined);
     mockFindCatalogByCatalogId.mockResolvedValue(undefined);
     mockFindCatalogContractsByCatalogId.mockResolvedValue(new Map());
-    mockFindCatalogs.mockResolvedValue([]);
+    mockFindAllCatalogsExcluding.mockResolvedValue([]);
     mockListCatalogContractLogos.mockResolvedValue(new Set());
     mockInsertCatalogContracts.mockResolvedValue(undefined);
     mockUpdateCatalogContracts.mockResolvedValue(undefined);
@@ -133,7 +133,7 @@ describe('catalog-sync-domain', () => {
     const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
     expect(result).toEqual(['embedded-catalog']);
     expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'embedded', uri: 'embedded' }, undefined);
-    expect(mockFindCatalogs).toHaveBeenCalled();
+    expect(mockFindAllCatalogsExcluding).toHaveBeenCalled();
   });
 
   it('should include custom sources and deduplicate by uri', async () => {
@@ -226,7 +226,7 @@ describe('catalog-sync-domain', () => {
     });
     const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
     expect(result).toEqual(['embedded-catalog']);
-    expect(mockFindCatalogs).not.toHaveBeenCalled();
+    expect(mockFindAllCatalogsExcluding).not.toHaveBeenCalled();
     expect(mockDeleteCatalogs).not.toHaveBeenCalled();
   });
 });
