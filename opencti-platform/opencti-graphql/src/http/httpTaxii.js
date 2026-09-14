@@ -44,7 +44,7 @@ const errorConverter = (e) => {
   };
 };
 
-const checkAuthenticationFromRequest = async (req, res) => {
+export const checkAuthenticationFromRequest = async (req, res) => {
   // noinspection UnnecessaryLocalVariableJS
   const context = await createAuthenticatedContext(req, res, 'taxii');
   if (!context.user) {
