@@ -4745,6 +4745,7 @@
   "The custom view {name} is currently set as default. Do you want to replace it?": "現在、カスタムビュー {name} がデフォルトとして設定されています。これを置き換えますか？",
   "The custom view has been duplicated. You can manage it": "カスタムビューが複製されました。管理できるよ",
   "The dashboard has been duplicated. You can manage it": "ダッシュボードが複製されました。管理できるよ",
+  "The investigation has been duplicated. You can manage it": "調査が複製されました。管理できます",
   "the dedicated page": "専用ページ",
   "The default groups are:": "デフォルトのグループは以下の通り：",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "このカタログからコネクタを展開するには、Enterprise Edition のライセンスが必要です。",

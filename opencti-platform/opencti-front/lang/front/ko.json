@@ -4745,6 +4745,7 @@
   "The custom view {name} is currently set as default. Do you want to replace it?": "현재 {name} 사용자 정의 보기가 기본값으로 설정되어 있습니다. 이를 변경하시겠습니까?",
   "The custom view has been duplicated. You can manage it": "사용자 지정 보기가 중복되었습니다. 관리할 수 있습니다",
   "The dashboard has been duplicated. You can manage it": "대시보드가 복제되었습니다. 관리할 수 있습니다",
+  "The investigation has been duplicated. You can manage it": "조사가 복제되었습니다. 관리할 수 있습니다",
   "the dedicated page": "전용 페이지",
   "The default groups are:": "기본 그룹은 다음과 같습니다:",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "이 카탈로그에서 커넥터를 배포하려면 Enterprise Edition 라이선스가 필요합니다.",
