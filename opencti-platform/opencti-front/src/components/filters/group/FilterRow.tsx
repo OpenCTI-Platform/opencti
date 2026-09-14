@@ -1,4 +1,3 @@
-import Box from '@mui/material/Box';
 import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import { FunctionComponent } from 'react';
@@ -16,7 +15,6 @@ import {
   FilterOperatorAndValue,
   useFilterEditorState,
 } from './FilterOperatorAndValue';
-import FilterRowCompositeValue from './FilterRowCompositeValue';
 
 // Re-exported for backward compatibility with existing call sites (e.g. FilterChipPopover),
 // the actual implementation now lives in FilterOperatorAndValue.tsx (moved there to break the
@@ -88,10 +86,6 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
   // untouched call site of `FilterOperatorAndValue`) keeps them stacked. Computed here, not inside
   // `FilterOperatorAndValue`, so the two callers can't affect each other.
   const isDateRangeValue = getFilterDefinitionFromFilterKeysMap(filter.key, filterKeysMap)?.type === 'date' && filter.operator === 'within';
-  // Too complex for the 3-column layout (2 subfilters, one of which is itself a nested filter
-  // group editor): displayed as a compact clickable summary opening a popover instead. See
-  // FilterRowCompositeValue.
-  const isCompositeRegardingOf = filter.key === 'regardingOf' || filter.key === 'dynamicRegardingOf';
 
   return (
     <div style={{ display: 'flex', alignItems: 'stretch', gap: 8, width: '100%' }}>
@@ -122,22 +116,8 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
         operatorWrapperStyle={{ flex: '0 0 18%' }}
         valueWrapperStyle={isDateRangeValue ? { flex: '1 1 auto', minWidth: 0, display: 'flex', gap: 1 } : { flex: '1 1 auto', minWidth: 0 }}
         dataTestIds={{ operator: 'filter-row-operator-select', value: 'filter-row-value' }}
-        hideValue={isCompositeRegardingOf}
         showRelativeDateShortcuts={isDateRangeValue}
       />
-      {isCompositeRegardingOf && (
-        <Box data-testid="filter-row-value" sx={{ flex: '1 1 auto', minWidth: 0 }}>
-          <FilterRowCompositeValue
-            filter={filter}
-            helpers={helpers}
-            state={state}
-            filtersRepresentativesMap={filtersRepresentativesMap}
-            entityTypes={entityTypes}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            host={host}
-          />
-        </Box>
-      )}
       <IconButton
         priority="tertiary"
         variant="destructive"

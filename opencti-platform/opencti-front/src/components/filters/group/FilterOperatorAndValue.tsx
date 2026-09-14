@@ -36,6 +36,7 @@ import BasicFilterInput from '../BasicFilterInput';
 import DateRangeFilter from '../DateRangeFilter';
 import FilterFiltersInput from '../FilterFiltersInput';
 import { FilterRepresentative } from '../FiltersModel';
+import FilterRowCompositeValue from './FilterRowCompositeValue';
 
 export const AUTOCOMPLETE_KEY_ACTIONS: { [k: string]: AutocompleteChangeReason | AutocompleteInputChangeReason } = {
   SELECT_OPTION: 'selectOption',
@@ -238,6 +239,10 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
   const isOperatorRequiringValue = !NO_VALUES_FILTER_OPERATORS.includes(filterOperator);
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
+  // 'regardingOf' / 'dynamicRegardingOf' are composite filters (relationship_type + id/dynamic
+  // subfilters). Only the main call (no subKey) gets the extra inline columns; recursive calls
+  // for the subfilters themselves (subKey set, from here or from CompositeRegardingOfEditor) don't.
+  const isCompositeRegardingOf = !subKey && (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf');
   const finalFilterDefinition = useFilterDefinition(filterKey, entityTypes, subKey);
 
   const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
@@ -619,10 +624,57 @@ export const FilterOperatorAndValue: FunctionComponent<FilterOperatorAndValuePro
       {dataTestIds?.operator
         ? <div data-testid={dataTestIds.operator} style={operatorWrapperStyle}>{operatorElement}</div>
         : operatorWrapperStyle ? <div style={operatorWrapperStyle}>{operatorElement}</div> : operatorElement}
-      {!hideValue && (
+      {!hideValue && !isCompositeRegardingOf && (
         dataTestIds?.value
           ? <Box data-testid={dataTestIds.value} sx={valueWrapperStyle}>{valueElement}</Box>
           : valueWrapperStyle ? <Box sx={valueWrapperStyle}>{valueElement}</Box> : valueElement
+      )}
+      {isCompositeRegardingOf && (
+        <>
+          <Box data-testid="filter-row-relationship-type" sx={{ flex: '0 0 22%', minWidth: 0 }}>
+            <FilterOperatorAndValue
+              filter={filter}
+              filterKey={filterKey}
+              helpers={helpers}
+              state={state}
+              filtersRepresentativesMap={filtersRepresentativesMap}
+              entityTypes={entityTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              host={host}
+              subKey="relationship_type"
+              hideOperator
+            />
+          </Box>
+          {filterKey === 'regardingOf' && (
+            <Box data-testid="filter-row-value" sx={{ flex: '1 1 auto', minWidth: 0 }}>
+              <FilterOperatorAndValue
+                filter={filter}
+                filterKey={filterKey}
+                helpers={helpers}
+                state={state}
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                entityTypes={entityTypes}
+                availableRelationFilterTypes={availableRelationFilterTypes}
+                host={host}
+                subKey="id"
+                hideOperator
+              />
+            </Box>
+          )}
+          {filterKey === 'dynamicRegardingOf' && filter && (
+            <Box data-testid="filter-row-value" sx={{ flex: '1 1 auto', minWidth: 0 }}>
+              <FilterRowCompositeValue
+                filter={filter}
+                helpers={helpers}
+                state={state}
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                entityTypes={entityTypes}
+                availableRelationFilterTypes={availableRelationFilterTypes}
+                host={host}
+              />
+            </Box>
+          )}
+        </>
       )}
     </>
   );

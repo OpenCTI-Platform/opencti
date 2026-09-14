@@ -3,14 +3,12 @@ import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { FunctionComponent, useState } from 'react';
 import { Filter, handleFilterHelpers } from '../../../utils/filters/filtersHelpers-types';
-import { useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../utils/fdsLayer';
 import type { WidgetHost } from '../../../utils/widget/widget';
-import { useFormatter } from '../../i18n';
 import { FilterRepresentative } from '../FiltersModel';
-import FilterValues from '../FilterValues';
-import CompositeRegardingOfEditor from './CompositeRegardingOfEditor';
-import { FilterEditorState } from './FilterOperatorAndValue';
+import FilterValuesForDynamicSubKey from '../FilterValuesForDynamicSubKey';
+import { FilterEditorState, FilterOperatorAndValue } from './FilterOperatorAndValue';
 
 export interface FilterRowCompositeValueProps {
   filter: Filter;
@@ -23,11 +21,11 @@ export interface FilterRowCompositeValueProps {
 }
 
 /**
- * Compact, non-editable-looking summary of a 'regardingOf' / 'dynamicRegardingOf' filter, displayed
- * in place of the usual value editor of a FilterRow (too complex for the 3-column row layout).
- * Clicking it opens a popover with the same composite editor as the root filter chip, so the
- * behaviour and displayed labels never drift apart from the root filter line.
- * Deliberately not a chip: a chip reads as a piece of data, not as an action trigger.
+ * Read-only value of the 'dynamic' subfilter of a 'dynamicRegardingOf' filter, displayed in the
+ * nested-group row (the 'relationship_type' subfilter has its own column next to this one, so it
+ * is not shown here). Same 'Dynamic filter' chip + hover tooltip as the root-level filter string
+ * (FilterValues / FilterValuesForDynamicSubKey), so the two never drift apart. Clicking it opens a
+ * popover with just the nested filter-group editor for that 'dynamic' subfilter.
  */
 const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> = ({
   filter,
@@ -38,11 +36,10 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
   availableRelationFilterTypes,
   host,
 }) => {
-  const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const filterDefinition = useFilterDefinition(filter.key, entityTypes);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const filterLabel = t_i18n(filterDefinition?.label ?? filter.key);
+  const dynamicValue = filter.values.find((f) => f.key === 'dynamic')?.values?.[0];
+  const hasDynamicValue = isFilterGroupNotEmpty(dynamicValue);
 
   return (
     <>
@@ -64,13 +61,7 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
           },
         }}
       >
-        <FilterValues
-          label={filterLabel}
-          currentFilter={filter}
-          filtersRepresentativesMap={filtersRepresentativesMap}
-          entityTypes={entityTypes}
-          host={host}
-        />
+        {hasDynamicValue && <FilterValuesForDynamicSubKey filterValue={dynamicValue} />}
       </Box>
       <Popover
         open={!!anchorEl}
@@ -81,11 +72,11 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
           paper: {
             elevation: 1,
             className: fdsLayerClass(FILTER_POPOVER_LAYER),
-            sx: { ...filterPopoverPaperSx, marginTop: '10px' },
+            sx: { ...filterPopoverPaperSx, marginTop: '10px', minWidth: 250, padding: 1 },
           },
         }}
       >
-        <CompositeRegardingOfEditor
+        <FilterOperatorAndValue
           filter={filter}
           filterKey={filter.key}
           helpers={helpers}
@@ -94,6 +85,8 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
           entityTypes={entityTypes}
           availableRelationFilterTypes={availableRelationFilterTypes}
           host={host}
+          subKey="dynamic"
+          hideOperator
         />
       </Popover>
     </>
