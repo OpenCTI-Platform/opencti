@@ -355,6 +355,7 @@ describe('Workspace resolver standard behavior', () => {
 
   describe('Investigation duplication', () => {
     let investigationId;
+    const investigatedEntityId = 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c';
 
     beforeAll(async () => {
       const createResult = await queryAsAdmin({
@@ -365,7 +366,7 @@ describe('Workspace resolver standard behavior', () => {
             name: 'Investigation to duplicate',
             description: 'an investigation with content to duplicate',
             tags: ['duplication-test'],
-            investigated_entities_ids: ['fake-investigated-entity-id'],
+            investigated_entities_ids: [investigatedEntityId],
           },
         },
       });
@@ -404,9 +405,35 @@ describe('Workspace resolver standard behavior', () => {
       expect(queryResult.data.workspaceDuplicate.name).toBe('Investigation duplicated');
       expect(queryResult.data.workspaceDuplicate.description).toBe('an investigation with content to duplicate');
       expect(queryResult.data.workspaceDuplicate.tags).toEqual(['duplication-test']);
-      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toEqual(['fake-investigated-entity-id']);
+      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toEqual([investigatedEntityId]);
       expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
       expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
+
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: queryResult.data.workspaceDuplicate.id },
+      });
+    });
+
+    it('should duplicate an investigation without an id input', async () => {
+      const queryResult = await queryAsUser(USER_DISINFORMATION_ANALYST, {
+        query: DUPLICATE_QUERY,
+        variables: {
+          input: {
+            type: 'investigation',
+            name: 'Investigation duplicated without id',
+            description: 'standalone investigation duplicate',
+            tags: ['standalone-test'],
+          },
+        },
+      });
+
+      expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
+      expect(queryResult.data.workspaceDuplicate.type).toBe('investigation');
+      expect(queryResult.data.workspaceDuplicate.name).toBe('Investigation duplicated without id');
+      expect(queryResult.data.workspaceDuplicate.description).toBe('standalone investigation duplicate');
+      expect(queryResult.data.workspaceDuplicate.tags).toEqual(['standalone-test']);
+      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toEqual([]);
 
       await queryAsAdmin({
         query: DELETE_QUERY,
@@ -511,6 +538,18 @@ describe('Workspace resolver standard behavior', () => {
       await queryAsAdmin({
         query: DELETE_QUERY,
         variables: { id: queryResult.data.workspaceDuplicate.id },
+      });
+    });
+
+    it('should reject duplication for an unknown workspace type', async () => {
+      await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, {
+        query: DUPLICATE_QUERY,
+        variables: {
+          input: {
+            type: 'unknown_type',
+            name: 'Duplication with unknown type',
+          },
+        },
       });
     });
 
