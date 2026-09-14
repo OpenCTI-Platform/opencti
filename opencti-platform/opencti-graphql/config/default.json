@@ -330,7 +330,8 @@
     "lock_key": "chunk_intake_manager_lock",
     "interval": 10000,
     "queue_name": "chunk_intake",
-    "prefetch": 8
+    "prefetch": 8,
+    "max_transient_attempts": 20
   },
   "publisher_manager": {
     "enabled": true,

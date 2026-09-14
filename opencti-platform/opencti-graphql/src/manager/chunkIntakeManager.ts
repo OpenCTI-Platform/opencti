@@ -22,6 +22,7 @@ import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
 import { reportExpectation } from '../domain/work';
 import { getEntityFromCache } from '../database/cache';
+import { wait } from '../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreSettings } from '../types/settings';
@@ -33,6 +34,31 @@ const CHUNK_INTAKE_MANAGER_ENABLED = booleanConf('chunk_intake_manager:enabled',
 const CHUNK_INTAKE_MANAGER_KEY = conf.get('chunk_intake_manager:lock_key') || 'chunk_intake_manager_lock';
 const SCHEDULE_TIME = Number(conf.get('chunk_intake_manager:interval') ?? 10000);
 const PREFETCH = Number(conf.get('chunk_intake_manager:prefetch') ?? 8);
+const MAX_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:max_transient_attempts') ?? 20);
+
+// Chunk-level failure policy. A chunk fails as a whole for two very different reasons that
+// must not share a fate. STRUCTURAL (poison): the failure is a property of the message
+// itself (unparsable, no operations, a writer that no longer exists) and every redelivery
+// would fail identically, so the chunk goes to the dead-letter queue at once. TRANSIENT:
+// anything else (ES or redis unavailable, lock timeout, restart mid-chunk) is requeued,
+// never dead-lettered: a thirty-second outage must not cost data. Requeues are bounded
+// (attempt count per chunk, exponential backoff while HOLDING the prefetch slot, which
+// doubles as backpressure during the outage) so a misclassified failure cannot loop
+// forever: past the cap the chunk is dead-lettered loudly. Per-object failures never reach
+// this policy: the sequencer parks, defers and reports them, and the chunk is acked.
+export class ChunkPoisonError extends Error {
+  readonly reason: string;
+
+  constructor(message: string, reason: string) {
+    super(message);
+    this.name = 'ChunkPoisonError';
+    this.reason = reason;
+  }
+}
+
+// Attempts of currently failing chunks only: cleared on ack or dead-letter, so the map
+// stays tiny (memory-only: a restart resets the count, the cap still bounds the total).
+const transientAttempts = new Map<string, number>();
 
 interface ChunkMessage {
   v?: number;
@@ -115,9 +141,13 @@ export const createChunkContext = async (message: ChunkMessage, operations: Chun
   // The message names the writer (the worker's own user, or the applicant it impersonates):
   // no token ever travels through the queue.
   const userId = message.applicant_id || message.user_id;
-  const user: AuthUser = userId
-    ? await authenticateUserByUserId(context, req, userId)
-    : userWithOrigin(req, SYSTEM_USER);
+  let user: AuthUser;
+  try {
+    user = userId ? await authenticateUserByUserId(context, req, userId) : userWithOrigin(req, SYSTEM_USER);
+  } catch (e: any) {
+    // The writer named by the message is gone or invalid: no redelivery can change that.
+    throw new ChunkPoisonError(`Chunk writer cannot be resolved (${userId}): ${e.message}`, 'unknown_writer');
+  }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user = user;
   context.user_otp_validated = true;
@@ -163,6 +193,8 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     controls.deadLetter();
     return;
   }
+  // A chunk without an id (hand-published) is keyed by its payload head: same policy.
+  const attemptKey = message.chunk_id ?? payload.slice(0, 128);
   try {
     const { context, user } = await createChunkContext(message, operations);
     // One in-flight operation per object of the chunk, like an HTTP-batched body: ordering
@@ -179,21 +211,31 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
       await reportChunkOutcome(context, user, message, operations[index], results[index]);
     }
     controls.ack();
+    transientAttempts.delete(attemptKey);
     chunksCounter?.add(1, { outcome: 'acked' });
     chunkSeconds?.record((Date.now() - start) / 1000);
   } catch (e: any) {
-    // Chunk-level failure (auth, unknown document, platform error): retry once, then dead
-    // letter. Per-object failures never reach here: the sequencer parks, defers and reports
-    // them internally, and requeuing a chunk for one dead object would replay the rest.
-    if (controls.redelivered) {
-      logApp.error('[CHUNK-INTAKE] Chunk failed twice, dead lettering', { cause: e, chunk_id: message.chunk_id });
-      chunksCounter?.add(1, { outcome: 'dead_letter', reason: 'failed' });
+    if (e instanceof ChunkPoisonError) {
+      logApp.error('[CHUNK-INTAKE] Poison chunk, dead lettering', { cause: e, chunk_id: message.chunk_id, reason: e.reason });
+      chunksCounter?.add(1, { outcome: 'dead_letter', reason: e.reason });
+      transientAttempts.delete(attemptKey);
       controls.deadLetter();
-    } else {
-      logApp.warn('[CHUNK-INTAKE] Chunk failed, requeueing once', { cause: e, chunk_id: message.chunk_id });
-      chunksCounter?.add(1, { outcome: 'retried' });
-      controls.retry();
+      return;
     }
+    const attempts = (transientAttempts.get(attemptKey) ?? 0) + 1;
+    if (attempts > MAX_TRANSIENT_ATTEMPTS) {
+      logApp.error('[CHUNK-INTAKE] Chunk failed past the transient retry cap, dead lettering', { cause: e, chunk_id: message.chunk_id, attempts });
+      chunksCounter?.add(1, { outcome: 'dead_letter', reason: 'transient_cap' });
+      transientAttempts.delete(attemptKey);
+      controls.deadLetter();
+      return;
+    }
+    transientAttempts.set(attemptKey, attempts);
+    const backoffMs = Math.min(1000 * 2 ** (attempts - 1), 30000);
+    logApp.warn('[CHUNK-INTAKE] Chunk failed, requeueing after backoff', { cause: e, chunk_id: message.chunk_id, attempts, backoffMs, redelivered: controls.redelivered });
+    chunksCounter?.add(1, { outcome: 'retried' });
+    await wait(backoffMs);
+    controls.retry();
   }
 };
 
