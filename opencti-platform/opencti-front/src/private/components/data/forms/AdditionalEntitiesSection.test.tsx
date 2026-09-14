@@ -38,6 +38,7 @@ const renderSection = (overrides: Partial<AdditionalEntitiesSectionProps> = {}) 
       additionalEntities: [baseEntity],
     },
     handleFieldChange: vi.fn(),
+    toggleParsedMode: vi.fn(),
     updateFormData: vi.fn(),
     entityTypes: [
       { value: 'Indicator', label: 'Indicator' },

@@ -13,6 +13,7 @@ interface UseFieldRendererParams {
   formData: FormBuilderData;
   entityTypes: EntityTypeOption[];
   handleFieldChange: (path: string, value: unknown) => void;
+  renameField: (fieldId: string, label: string) => void;
   handleMoveFieldUp: (entityId: string, fieldId: string) => void;
   handleMoveFieldDown: (entityId: string, fieldId: string) => void;
   handleRemoveField: (fieldId: string) => void;
@@ -22,6 +23,7 @@ const useFieldRenderer = ({
   formData,
   entityTypes,
   handleFieldChange,
+  renameField,
   handleMoveFieldUp,
   handleMoveFieldDown,
   handleRemoveField,
@@ -300,9 +302,7 @@ const useFieldRenderer = ({
             onChange={(e) => {
               const label = e.target.value;
               // Auto-generate name from label
-              const name = label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-              handleFieldChange(`fields.${fieldIndex}.label`, label);
-              handleFieldChange(`fields.${fieldIndex}.name`, name || field.id); // Use field.id as fallback
+              renameField(field.id, label);
             }}
             className="mt-2"
           />

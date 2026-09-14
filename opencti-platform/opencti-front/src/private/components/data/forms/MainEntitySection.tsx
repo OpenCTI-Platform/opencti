@@ -11,6 +11,7 @@ import useStyles from './useFormSchemaEditorStyles';
 export interface MainEntitySectionProps {
   formData: FormBuilderData;
   handleFieldChange: (path: string, value: unknown) => void;
+  toggleParsedMode: (entityId: string | 'main') => void;
   updateFormData: (updater: (prev: FormBuilderData) => FormBuilderData) => void;
   entityTypes: EntityTypeOption[];
   handleMainEntityTypeChange: (value: string) => void;
@@ -24,6 +25,7 @@ export interface MainEntitySectionProps {
 const MainEntitySection: React.FC<MainEntitySectionProps> = ({
   formData,
   handleFieldChange,
+  toggleParsedMode,
   updateFormData,
   entityTypes,
   handleMainEntityTypeChange,
@@ -110,7 +112,7 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
       {formData.mainEntityMultiple && !formData.mainEntityLookup && (
         <Select
           value={formData.mainEntityFieldMode}
-          onValueChange={(value) => handleFieldChange('mainEntityFieldMode', value)}
+          onValueChange={() => toggleParsedMode('main')}
         >
           <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>
           <SelectTrigger className="w-full">

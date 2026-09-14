@@ -12,6 +12,7 @@ import useStyles from './useFormSchemaEditorStyles';
 export interface AdditionalEntitiesSectionProps {
   formData: FormBuilderData;
   handleFieldChange: (path: string, value: unknown) => void;
+  toggleParsedMode: (entityId: string | 'main') => void;
   updateFormData: (updater: (prev: FormBuilderData) => FormBuilderData) => void;
   entityTypes: EntityTypeOption[];
   fieldsByEntity: Record<string, FormFieldAttribute[]>;
@@ -25,6 +26,7 @@ export interface AdditionalEntitiesSectionProps {
 const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
   formData,
   handleFieldChange,
+  toggleParsedMode,
   updateFormData,
   entityTypes,
   fieldsByEntity,
@@ -184,7 +186,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
         {entity.multiple && !entity.lookup && (
           <Select
             value={entity.fieldMode}
-            onValueChange={(value) => handleFieldChange(`additionalEntities.${entityIndex}.fieldMode`, value)}
+            onValueChange={() => toggleParsedMode(entity.id)}
           >
             <div>
               <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>

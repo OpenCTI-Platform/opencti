@@ -3,19 +3,12 @@ import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } 
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { AdditionalEntity, EntityRelationship, EntitySettings, FormBuilderData, FormFieldAttribute } from './Form.d';
-import {
-  buildEntityTypes,
-  CONTAINER_TYPES,
-  convertFormBuilderDataToSchema,
-  generateEntityId,
-  generateFieldId,
-  generateRelationshipId,
-  getInitialMandatoryFields,
-} from './FormUtils';
+import { buildEntityTypes, CONTAINER_TYPES, convertFormBuilderDataToSchema, generateFieldId, generateRelationshipId, getInitialMandatoryFields } from './FormUtils';
 import AdditionalEntitiesSection from './AdditionalEntitiesSection';
 import MainEntitySection from './MainEntitySection';
 import RelationshipsSection from './RelationshipsSection';
 import useFieldRenderer from './useFieldRenderer';
+import { useFormBuilderOperations } from './useFormBuilderOperations';
 import useStyles from './useFormSchemaEditorStyles';
 
 export interface FormSchemaEditorProps {
@@ -107,6 +100,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const updateFormData = useCallback((updater: (prev: FormBuilderData) => FormBuilderData) => {
     setFormData((prev) => updater(prev));
   }, []);
+  const { renameField, toggleParsedMode, addAdditionalEntity } = useFormBuilderOperations(updateFormData);
 
   const mainEntityInfo = entityTypes.find((e) => e.value === formData.mainEntityType);
   const isContainer = mainEntityInfo?.isContainer || false;
@@ -239,26 +233,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     }));
   };
 
-  const handleAddAdditionalEntity = () => {
-    const newEntity: AdditionalEntity = {
-      id: generateEntityId(),
-      entityType: 'Attack-Pattern',
-      multiple: false,
-      minAmount: 0,
-      required: false,
-      lookup: false,
-      label: '',
-      fieldMode: 'multiple',
-      parseField: 'text',
-      parseMode: 'comma',
-    };
-
-    updateFormData((prev) => ({
-      ...prev,
-      additionalEntities: [...prev.additionalEntities, newEntity],
-    }));
-  };
-
   const handleAddRelationship = () => {
     const newRelationship: EntityRelationship = {
       id: generateRelationshipId(),
@@ -361,6 +335,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     formData,
     entityTypes,
     handleFieldChange,
+    renameField,
     handleMoveFieldUp,
     handleMoveFieldDown,
     handleRemoveField,
@@ -379,6 +354,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <MainEntitySection
             formData={formData}
             handleFieldChange={handleFieldChange}
+            toggleParsedMode={toggleParsedMode}
             updateFormData={updateFormData}
             entityTypes={entityTypes}
             handleMainEntityTypeChange={handleMainEntityTypeChange}
@@ -394,6 +370,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <AdditionalEntitiesSection
             formData={formData}
             handleFieldChange={handleFieldChange}
+            toggleParsedMode={toggleParsedMode}
             updateFormData={updateFormData}
             entityTypes={entityTypes}
             fieldsByEntity={fieldsByEntity}
@@ -401,7 +378,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             entitySettings={entitySettings}
             renderField={renderField}
             handleAddField={handleAddField}
-            handleAddAdditionalEntity={handleAddAdditionalEntity}
+            handleAddAdditionalEntity={() => addAdditionalEntity('Attack-Pattern')}
           />
         </TabsContent>
 

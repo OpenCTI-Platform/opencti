@@ -34,6 +34,7 @@ const renderSection = (overrides: Partial<MainEntitySectionProps> = {}) => {
   const props: MainEntitySectionProps = {
     formData: baseFormData,
     handleFieldChange: vi.fn(),
+    toggleParsedMode: vi.fn(),
     updateFormData: vi.fn(),
     entityTypes: [
       { value: 'Report', label: 'Report' },
