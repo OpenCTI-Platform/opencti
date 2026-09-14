@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { elDeleteInstances, elIndex, elIndexElements } from '../../../../src/database/engine';
-import { internalFindByIdsMapped } from '../../../../src/database/middleware-loader';
-import { deleteCatalogContracts, updateCatalogContracts, upsertCatalog } from '../../../../src/modules/catalog/catalog-repository';
+import { fullEntitiesList, internalFindByIdsMapped } from '../../../../src/database/middleware-loader';
+import { deleteCatalogContracts, findAllCatalogs, findAllCatalogsExcluding, updateCatalogContracts, upsertCatalog } from '../../../../src/modules/catalog/catalog-repository';
 import {
   type BasicStoreEntityCatalog,
   type BasicStoreEntityCatalogContract,
@@ -11,6 +11,7 @@ import {
   ENTITY_TYPE_CATALOG_CONTRACT,
 } from '../../../../src/modules/catalog/catalog-types';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../../src/database/utils';
+import { FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/engine', () => ({
@@ -43,6 +44,53 @@ describe('catalog repository', () => {
     vi.mocked(internalFindByIdsMapped).mockResolvedValue({
       [contractId]: existingContract,
     });
+  });
+
+  it('should find all catalogs without filters', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([]);
+
+    await findAllCatalogs(context, user);
+
+    expect(fullEntitiesList).toHaveBeenCalledWith(
+      context,
+      user,
+      [ENTITY_TYPE_CATALOG],
+      {
+        indices: [READ_INDEX_INTERNAL_OBJECTS],
+        filters: null,
+      },
+    );
+  });
+
+  it('should find catalogs excluding the specified catalog ids', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([]);
+
+    await findAllCatalogsExcluding(context, user, ['catalog-1', 'catalog-2']);
+
+    expect(fullEntitiesList).toHaveBeenCalledWith(
+      context,
+      user,
+      [ENTITY_TYPE_CATALOG],
+      {
+        indices: [READ_INDEX_INTERNAL_OBJECTS],
+        filters: {
+          filters: [
+            {
+              key: ['catalog_id'],
+              values: ['catalog-1'],
+              operator: FilterOperator.NotEq,
+            },
+            {
+              key: ['catalog_id'],
+              values: ['catalog-2'],
+              operator: FilterOperator.NotEq,
+            },
+          ],
+          filterGroups: [],
+          mode: FilterMode.And,
+        },
+      },
+    );
   });
 
   it('should upsert a new catalog on the write alias when no existing catalog is provided', async () => {
