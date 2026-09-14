@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Filter, FilterGroup, FilterValue } from './filtersHelpers-types';
-import { DEFAULT_WITHIN_FILTER_VALUES } from './filtersUtils';
+import { DEFAULT_WITHIN_FILTER_VALUES, mapFilterGroupTree } from './filtersUtils';
 
 type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup;
@@ -14,11 +14,11 @@ type FiltersLocalStorageUtilProps<U> = {
  * Non-mutating: a new tree is built, the input (possibly frozen) is never touched.
  */
 const updateFilters = (filters: FilterGroup, updateFn: (filter: Filter) => Filter): FilterGroup => {
-  return {
-    ...filters,
-    filters: (filters.filters ?? []).map(updateFn),
-    filterGroups: (filters.filterGroups ?? []).map((group) => updateFilters(group, updateFn)),
-  } as FilterGroup;
+  return mapFilterGroupTree(filters, (group) => ({
+    ...group,
+    filters: (group.filters ?? []).map(updateFn),
+    filterGroups: group.filterGroups ?? [],
+  }));
 };
 
 /**
@@ -31,18 +31,10 @@ export const updateGroupById = (
   groupId: string | undefined,
   updater: (group: FilterGroup) => FilterGroup,
 ): FilterGroup => {
-  if (groupId === undefined || filterGroup.id === groupId) {
+  if (groupId === undefined) { // undefined targets the root group
     return updater(filterGroup);
   }
-  const subGroups = filterGroup.filterGroups ?? [];
-  const newSubGroups = subGroups.map((group) => updateGroupById(group, groupId, updater));
-  if (newSubGroups.every((group, index) => group === subGroups[index])) {
-    return filterGroup;
-  }
-  return {
-    ...filterGroup,
-    filterGroups: newSubGroups,
-  };
+  return mapFilterGroupTree(filterGroup, (group) => (group.id === groupId ? updater(group) : group));
 };
 
 export const handleAddFilterWithEmptyValueUtil = ({ filters, filter, groupId }: FiltersLocalStorageUtilProps<{
@@ -87,20 +79,12 @@ export const addFilterGroupUtil = ({ filters, parentGroupId }: FiltersLocalStora
 export const removeFilterGroupUtil = ({ filters, groupId }: FiltersLocalStorageUtilProps<{
   groupId: string;
 }>): FilterGroup => {
-  if (filters.id === groupId) { // the root group can't be removed
-    return filters;
-  }
-  const subGroups = filters.filterGroups ?? [];
-  const keptSubGroups = subGroups
-    .filter((group) => group.id !== groupId)
-    .map((group) => removeFilterGroupUtil({ filters: group, groupId }));
-  if (keptSubGroups.length === subGroups.length && keptSubGroups.every((group, index) => group === subGroups[index])) {
-    return filters;
-  }
-  return {
-    ...filters,
-    filterGroups: keptSubGroups,
-  };
+  // the root group can't be removed: only sub-groups are filtered out, at every level
+  return mapFilterGroupTree(filters, (group) => {
+    const subGroups = group.filterGroups ?? [];
+    const keptSubGroups = subGroups.filter((subGroup) => subGroup.id !== groupId);
+    return keptSubGroups.length === subGroups.length ? group : { ...group, filterGroups: keptSubGroups };
+  });
 };
 
 /**
@@ -202,11 +186,11 @@ export const handleRemoveRepresentationFilterUtil = ({ filters, id, value }: Fil
     : f));
 };
 
-const removeFilterFromTree = (filterGroup: FilterGroup, id: string): FilterGroup => ({
-  ...filterGroup,
-  filters: (filterGroup.filters ?? []).filter((f) => f.id !== id),
-  filterGroups: (filterGroup.filterGroups ?? []).map((group) => removeFilterFromTree(group, id)),
-});
+const removeFilterFromTree = (filterGroup: FilterGroup, id: string): FilterGroup => mapFilterGroupTree(filterGroup, (group) => ({
+  ...group,
+  filters: (group.filters ?? []).filter((f) => f.id !== id),
+  filterGroups: group.filterGroups ?? [],
+}));
 
 export const handleRemoveFilterUtil = ({ filters, id }: FiltersLocalStorageUtilProps<{ id: string }>): FilterGroup => {
   return removeFilterFromTree(filters, id);

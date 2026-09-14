@@ -1,35 +1,16 @@
 import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import Box from '@mui/material/Box';
 import { FunctionComponent } from 'react';
 import { Filter, handleFilterHelpers } from '../../../utils/filters/filtersHelpers-types';
-import {
-  FilterSearchContext,
-  getDefaultFilterObject,
-  getFilterDefinitionFromFilterKeysMap,
-  useBuildFilterKeysMapFromEntityType,
-} from '../../../utils/filters/filtersUtils';
+import { FilterSearchContext, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
 import type { WidgetHost } from '../../../utils/widget/widget';
 import { useFormatter } from '../../i18n';
 import { FilterRepresentative } from '../FiltersModel';
-import {
-  FilterOperatorAndValue,
-  useFilterEditorState,
-} from './FilterOperatorAndValue';
-
-// Re-exported for backward compatibility with existing call sites (e.g. FilterChipPopover),
-// the actual implementation now lives in FilterOperatorAndValue.tsx (moved there to break the
-// circular import FilterRow -> FilterRowCompositeValue -> CompositeRegardingOfEditor -> FilterRow).
-export {
-  AUTOCOMPLETE_KEY_ACTIONS,
-  OperatorKeyValues,
-  useFilterEditorState,
-  FilterOperatorAndValue,
-} from './FilterOperatorAndValue';
-export type {
-  FilterEditorInputValue,
-  FilterEditorState,
-  FilterOperatorAndValueProps,
-} from './FilterOperatorAndValue';
+import FilterOperatorSelect from './FilterOperatorSelect';
+import FilterRowCompositeValue from './FilterRowCompositeValue';
+import FilterValueInput from './FilterValueInput';
+import useFilterEditorState from './useFilterEditorState';
 
 export interface FilterRowProps {
   filter: Filter;
@@ -82,14 +63,26 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
     helpers.handleChangeFilterKey(filter.id ?? '', getDefaultFilterObject(newKey, newDefinition, undefined, filter.mode));
   };
 
-  // Only this nested-group row lays 'From'/'To' side by side; the filter chip popover (its own,
-  // untouched call site of `FilterOperatorAndValue`) keeps them stacked. Computed here, not inside
-  // `FilterOperatorAndValue`, so the two callers can't affect each other.
+  // Only this nested-group row lays 'From'/'To' side by side; the filter chip popover keeps them
+  // stacked. Computed here, not inside the value editor, so the two callers can't affect each other.
   const isDateRangeValue = getFilterDefinitionFromFilterKeysMap(filter.key, filterKeysMap)?.type === 'date' && filter.operator === 'within';
+  // 'regardingOf' / 'dynamicRegardingOf' are composite filters (relationship_type + id/dynamic
+  // subfilters): this row lays their subfilters out as extra columns instead of a single value.
+  const isCompositeRegardingOf = filter.key === 'regardingOf' || filter.key === 'dynamicRegardingOf';
+
+  const sharedValueProps = {
+    filter,
+    helpers,
+    state,
+    filtersRepresentativesMap,
+    entityTypes,
+    availableRelationFilterTypes,
+    host,
+  };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'stretch', gap: 8, width: '100%' }}>
-      <div data-testid="filter-row-key-select" style={{ flex: '0 0 22%' }}>
+    <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1, width: '100%' }}>
+      <Box data-testid="filter-row-key-select" sx={{ flex: '0 0 22%' }}>
         <Select value={filter.key} onValueChange={handleChangeKey}>
           <SelectTrigger id={`filter-row-key-${filter.id}`} aria-label={t_i18n('Filter name')} style={{ width: '100%' }}>
             <SelectValue />
@@ -100,24 +93,43 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
             ))}
           </SelectContent>
         </Select>
-      </div>
-      <FilterOperatorAndValue
-        filter={filter}
-        filterKey={filter.key}
-        helpers={helpers}
-        state={state}
-        filtersRepresentativesMap={filtersRepresentativesMap}
-        entityTypes={entityTypes}
-        availableRelationFilterTypes={availableRelationFilterTypes}
-        host={host}
-        operatorLabel={t_i18n('Condition')}
-        operatorTriggerId={`filter-row-operator-${filter.id}`}
-        operatorStyle={{ width: '100%' }}
-        operatorWrapperStyle={{ flex: '0 0 18%' }}
-        valueWrapperStyle={isDateRangeValue ? { flex: '1 1 auto', minWidth: 0, display: 'flex', gap: 1 } : { flex: '1 1 auto', minWidth: 0 }}
-        dataTestIds={{ operator: 'filter-row-operator-select', value: 'filter-row-value' }}
-        showRelativeDateShortcuts={isDateRangeValue}
-      />
+      </Box>
+      <Box data-testid="filter-row-operator-select" sx={{ flex: '0 0 18%' }}>
+        <FilterOperatorSelect
+          filter={filter}
+          filterKey={filter.key}
+          helpers={helpers}
+          setInputValues={state.setInputValues}
+          entityTypes={entityTypes}
+          label={t_i18n('Condition')}
+          triggerId={`filter-row-operator-${filter.id}`}
+          style={{ width: '100%' }}
+        />
+      </Box>
+      {!isCompositeRegardingOf && (
+        <Box
+          data-testid="filter-row-value"
+          sx={isDateRangeValue ? { flex: '1 1 auto', minWidth: 0, display: 'flex', gap: 1 } : { flex: '1 1 auto', minWidth: 0 }}
+        >
+          <FilterValueInput
+            {...sharedValueProps}
+            filterKey={filter.key}
+            showRelativeDateShortcuts={isDateRangeValue}
+          />
+        </Box>
+      )}
+      {isCompositeRegardingOf && (
+        <>
+          <Box data-testid="filter-row-relationship-type" sx={{ flex: '1 1 0', minWidth: 0 }}>
+            <FilterValueInput {...sharedValueProps} filterKey={filter.key} subKey="relationship_type" />
+          </Box>
+          <Box data-testid="filter-row-value" sx={{ flex: '1 1 0', minWidth: 0 }}>
+            {filter.key === 'regardingOf'
+              ? <FilterValueInput {...sharedValueProps} filterKey={filter.key} subKey="id" />
+              : <FilterRowCompositeValue {...sharedValueProps} />}
+          </Box>
+        </>
+      )}
       <IconButton
         priority="tertiary"
         variant="destructive"
@@ -126,7 +138,7 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({
         aria-label={t_i18n('Delete')}
         icon={<CloseOutlined fontSize="small" />}
       />
-    </div>
+    </Box>
   );
 };
 

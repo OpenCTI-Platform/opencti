@@ -308,7 +308,7 @@
       "files": [
         "opencti-platform/opencti-front/src/components/list_lines/ListLines.jsx",
         "opencti-platform/opencti-front/src/components/dataGrid/components/DataTableHeaders.tsx",
-        "opencti-platform/opencti-front/src/components/filters/group/FilterOperatorAndValue.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterEntityAutocomplete.tsx",
         "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContainer.tsx",
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
         "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",

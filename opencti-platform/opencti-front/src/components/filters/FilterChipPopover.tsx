@@ -7,7 +7,9 @@ import type { WidgetHost } from '../../utils/widget/widget';
 import { FilterRepresentative } from './FiltersModel';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import CompositeRegardingOfEditor from './group/CompositeRegardingOfEditor';
-import { FilterOperatorAndValue, useFilterEditorState } from './group/FilterRow';
+import FilterOperatorSelect from './group/FilterOperatorSelect';
+import FilterValueInput from './group/FilterValueInput';
+import useFilterEditorState from './group/useFilterEditorState';
 
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../utils/fdsLayer';
 
@@ -52,8 +54,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterOperator = filter?.operator ?? '';
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
 
-  // The whole editing logic (local state, operator select, value editors) lives in FilterRow,
-  // so the popover and the filter group panel can never drift apart.
+  // The editing primitives (local state, operator select, value editors) are shared with the
+  // filter group panel, so the popover and the panel can never drift apart.
   const state = useFilterEditorState({
     filter,
     entityTypes,
@@ -64,18 +66,29 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   });
 
   const displayOperatorAndFilter = (fKey: string, subKey?: string, disabled = false) => (
-    <FilterOperatorAndValue
-      filter={filter}
-      filterKey={fKey}
-      helpers={helpers}
-      state={state}
-      filtersRepresentativesMap={filtersRepresentativesMap}
-      entityTypes={entityTypes}
-      availableRelationFilterTypes={availableRelationFilterTypes}
-      host={host}
-      subKey={subKey}
-      disabled={disabled}
-    />
+    <>
+      <FilterOperatorSelect
+        filter={filter}
+        filterKey={fKey}
+        helpers={helpers}
+        setInputValues={state.setInputValues}
+        entityTypes={entityTypes}
+        subKey={subKey}
+        disabled={disabled}
+      />
+      <FilterValueInput
+        filter={filter}
+        filterKey={fKey}
+        helpers={helpers}
+        state={state}
+        filtersRepresentativesMap={filtersRepresentativesMap}
+        entityTypes={entityTypes}
+        availableRelationFilterTypes={availableRelationFilterTypes}
+        host={host}
+        subKey={subKey}
+        disabled={disabled}
+      />
+    </>
   );
 
   return (

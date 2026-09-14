@@ -37,17 +37,38 @@ export const emptyFilterGroup: FilterGroup = Object.freeze({
 }) as FilterGroup;
 
 /**
+ * The single recursion over a filter group tree: bottom-up, non-mutating, frozen-input safe.
+ * `transform` is called on every group of the tree, deepest first, and always receives a group
+ * whose sub-groups have already been transformed.
+ * Identity is preserved: when neither `transform` nor the recursion changes anything, the very
+ * same object is returned, so a state setter built on it does not trigger a re-render/url re-sync.
+ * /!\ Not used by the serialization helpers (`stripFilterIds`, `pruneEmptyFiltersAndGroups`):
+ * those rebuild groups from a property whitelist in a load-bearing order, which is the opposite
+ * of the spread-and-patch done here.
+ */
+export const mapFilterGroupTree = (
+  filterGroup: FilterGroup,
+  transform: (group: FilterGroup) => FilterGroup,
+): FilterGroup => {
+  const subGroups = filterGroup.filterGroups ?? [];
+  const newSubGroups = subGroups.map((group) => mapFilterGroupTree(group, transform));
+  const subGroupsChanged = newSubGroups.some((group, index) => group !== subGroups[index]);
+  return transform(subGroupsChanged ? { ...filterGroup, filterGroups: newSubGroups } : filterGroup);
+};
+
+/**
  * Deep copy of a filter group, so that no array instance is shared with the source.
  * Used when a shared/frozen filter group (typically emptyFilterGroup) is injected in a state.
  */
-export const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => ({
-  ...filterGroup,
-  filters: (filterGroup.filters ?? []).map((filter) => ({
+export const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => mapFilterGroupTree(filterGroup, (group) => ({
+  ...group,
+  filters: (group.filters ?? []).map((filter) => ({
     ...filter,
     values: [...(filter.values ?? [])],
   })),
-  filterGroups: (filterGroup.filterGroups ?? []).map(cloneFilterGroup),
-});
+  // rebuilt unconditionally: a leaf group would otherwise keep the source (possibly frozen) array
+  filterGroups: [...(group.filterGroups ?? [])],
+}));
 
 /**
  * Assigns a FRONTEND-ONLY uuid `id` to the given filter group and to every nested group that does
@@ -61,19 +82,10 @@ export const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => ({
  * /!\ Must only be called on state entry points (state initialization, setFilters), never in a
  * render-derived value: new uuids on every render would cause endless history.replaceState churn.
  */
-export const ensureFilterGroupIds = (filterGroup: FilterGroup): FilterGroup => {
-  const subGroups = filterGroup.filterGroups ?? [];
-  const newSubGroups = subGroups.map((group) => ensureFilterGroupIds(group));
-  const subGroupsChanged = newSubGroups.some((group, index) => group !== subGroups[index]);
-  if (filterGroup.id && !subGroupsChanged) {
-    return filterGroup;
-  }
-  return {
-    ...filterGroup,
-    id: filterGroup.id ?? uuid(),
-    filterGroups: newSubGroups,
-  };
-};
+export const ensureFilterGroupIds = (filterGroup: FilterGroup): FilterGroup => mapFilterGroupTree(
+  filterGroup,
+  (group) => (group.id ? group : { ...group, id: uuid() }),
+);
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -582,13 +594,13 @@ export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | unde
 //  these functions are used to sanitize the keys inside filters before serialization and saving into backend
 //  This is due to format inconsistencies between back and front formats and will be unnecessary once fixed.
 
-export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup => ({
-  ...filterGroup,
-  filters: (filterGroup.filters || []).filter(
+export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup => mapFilterGroupTree(filterGroup, (group) => ({
+  ...group,
+  filters: (group.filters || []).filter(
     (filter) => Array.isArray(filter.values) && filter.values.length > 0,
   ),
-  filterGroups: (filterGroup.filterGroups || []).map((group) => sanitizeFiltersStructure(group)),
-});
+  filterGroups: group.filterGroups || [],
+}));
 
 /**
  * Normalizes a FilterGroup for backend persistence:

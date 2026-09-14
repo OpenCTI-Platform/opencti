@@ -8,7 +8,8 @@ import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../..
 import type { WidgetHost } from '../../../utils/widget/widget';
 import { FilterRepresentative } from '../FiltersModel';
 import FilterValuesForDynamicSubKey from '../FilterValuesForDynamicSubKey';
-import { FilterEditorState, FilterOperatorAndValue } from './FilterOperatorAndValue';
+import FilterValueInput from './FilterValueInput';
+import { FilterEditorState } from './useFilterEditorState';
 
 export interface FilterRowCompositeValueProps {
   filter: Filter;
@@ -76,7 +77,7 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
           },
         }}
       >
-        <FilterOperatorAndValue
+        <FilterValueInput
           filter={filter}
           filterKey={filter.key}
           helpers={helpers}
@@ -86,7 +87,6 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
           availableRelationFilterTypes={availableRelationFilterTypes}
           host={host}
           subKey="dynamic"
-          hideOperator
         />
       </Popover>
     </>

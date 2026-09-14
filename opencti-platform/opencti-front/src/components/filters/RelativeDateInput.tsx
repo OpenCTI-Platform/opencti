@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import TextField from '@mui/material/TextField';
-import MuiIconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import { IconButton } from '@filigran/design-system';
 import Popover from '@mui/material/Popover';
 import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -56,7 +57,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
 
   useEffect(() => {
     setDraft(dateInput[valueOrder]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateInput[valueOrder]]);
 
   const generateErrorMessage = (values: string[]) => {
@@ -126,14 +126,13 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   const isAbsoluteMode = isValidDate(committedValue);
 
   const shortcutsButton = showShortcuts && (
-    <MuiIconButton
-      size="small"
-      edge="end"
+    <IconButton
+      size="sm"
+      priority="tertiary"
       onClick={(event) => setShortcutsAnchorEl(event.currentTarget)}
       aria-label="relative date shortcuts"
-    >
-      <ScheduleOutlined fontSize="small" />
-    </MuiIconButton>
+      icon={<ScheduleOutlined fontSize="small" />}
+    />
   );
   const shortcutsPopover = showShortcuts && (
     <Popover
@@ -182,7 +181,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   const displayValue = !isEditing && isValidDate(draft) ? smhd(draft) : draft;
 
   return (
-    <div ref={fieldContainerRef} style={{ display: 'flex', flex: 1, minWidth: 0 }}>
+    <div ref={fieldContainerRef} style={{ display: 'flex', flex: 1, minWidth: 0, alignItems: 'center' }}>
       <TextField
         variant="outlined"
         size="small"
@@ -210,14 +209,15 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         slotProps={{
           input: {
             endAdornment: (
-              <MuiIconButton
-                size="small"
-                edge="end"
-                onClick={() => setIsDatePickerOpen(true)}
-                aria-label="open date picker"
-              >
-                <CalendarIcon fontSize="small" />
-              </MuiIconButton>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <IconButton
+                  size="md"
+                  priority="tertiary"
+                  onClick={() => setIsDatePickerOpen(true)}
+                  aria-label="open date picker"
+                  icon={<CalendarIcon fontSize="medium" />}
+                />
+              </Box>
             ),
           },
         }}

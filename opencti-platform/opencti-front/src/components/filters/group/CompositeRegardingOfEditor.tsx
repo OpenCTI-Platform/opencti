@@ -5,7 +5,9 @@ import { useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import type { WidgetHost } from '../../../utils/widget/widget';
 import { useFormatter } from '../../i18n';
 import { FilterRepresentative } from '../FiltersModel';
-import { FilterEditorState, FilterOperatorAndValue } from './FilterOperatorAndValue';
+import FilterOperatorSelect from './FilterOperatorSelect';
+import FilterValueInput from './FilterValueInput';
+import { FilterEditorState } from './useFilterEditorState';
 
 export interface CompositeRegardingOfEditorProps {
   filter?: Filter;
@@ -63,19 +65,31 @@ const CompositeRegardingOfEditor: FunctionComponent<CompositeRegardingOfEditorPr
   }
 
   const displayOperatorAndFilter = (subKey: string, disabled: boolean, hideOperator = false) => (
-    <FilterOperatorAndValue
-      filter={filter}
-      filterKey={filterKey}
-      helpers={helpers}
-      state={state}
-      filtersRepresentativesMap={filtersRepresentativesMap}
-      entityTypes={entityTypes}
-      availableRelationFilterTypes={availableRelationFilterTypes}
-      host={host}
-      subKey={subKey}
-      disabled={disabled}
-      hideOperator={hideOperator}
-    />
+    <>
+      {!hideOperator && (
+        <FilterOperatorSelect
+          filter={filter}
+          filterKey={filterKey}
+          helpers={helpers}
+          setInputValues={state.setInputValues}
+          entityTypes={entityTypes}
+          subKey={subKey}
+          disabled={disabled}
+        />
+      )}
+      <FilterValueInput
+        filter={filter}
+        filterKey={filterKey}
+        helpers={helpers}
+        state={state}
+        filtersRepresentativesMap={filtersRepresentativesMap}
+        entityTypes={entityTypes}
+        availableRelationFilterTypes={availableRelationFilterTypes}
+        host={host}
+        subKey={subKey}
+        disabled={disabled}
+      />
+    </>
   );
 
   return (
