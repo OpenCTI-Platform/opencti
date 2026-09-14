@@ -1,6 +1,82 @@
 import * as Yup from 'yup';
 import { FormSchemaDefinition, FormFieldDefinition } from '../Form.d';
 
+export interface DraftFieldPolicy {
+  visible: boolean;
+  initialized: boolean;
+  required: boolean;
+  validationRequired: boolean;
+}
+
+export interface DraftPolicy {
+  name: DraftFieldPolicy;
+  description: DraftFieldPolicy;
+  objectAssignee: DraftFieldPolicy;
+  objectParticipant: DraftFieldPolicy;
+  author: DraftFieldPolicy & { clearable: boolean };
+  authorizedMembers: DraftFieldPolicy;
+}
+
+export const computeDraftPolicy = (
+  draftDefaults: FormSchemaDefinition['draftDefaults'] | undefined,
+  isBypass: boolean,
+): DraftPolicy => {
+  const name = draftDefaults?.name;
+  const description = draftDefaults?.description;
+  const objectAssignee = draftDefaults?.objectAssignee;
+  const objectParticipant = draftDefaults?.objectParticipant;
+  const author = draftDefaults?.author;
+  const authorizedMembers = draftDefaults?.authorizedMembers;
+
+  return {
+    name: {
+      visible: !!(name && (isBypass || name.isEditable)),
+      initialized: !!(name && (name.isEditable || isBypass || name.defaultValue)),
+      required: !!name?.isRequired,
+      validationRequired: !isBypass && !!(name?.isEditable && name?.isRequired),
+    },
+    description: {
+      visible: !!(description && (isBypass || description.isEditable)),
+      initialized: !!(description && (description.isEditable || isBypass || description.defaultValue)),
+      required: !!description?.isRequired,
+      validationRequired: !isBypass && !!(description?.isEditable && description?.isRequired),
+    },
+    objectAssignee: {
+      visible: !!(objectAssignee && (isBypass || objectAssignee.isEditable)),
+      initialized: !!(objectAssignee && (objectAssignee.isEditable || isBypass || (objectAssignee.defaults?.length ?? 0) > 0)),
+      required: !!objectAssignee?.isRequired,
+      validationRequired: !isBypass && !!(objectAssignee?.isEditable && objectAssignee?.isRequired),
+    },
+    objectParticipant: {
+      visible: !!(objectParticipant && (isBypass || objectParticipant.isEditable)),
+      initialized: !!(objectParticipant && (objectParticipant.isEditable || isBypass || (objectParticipant.defaults?.length ?? 0) > 0)),
+      required: !!objectParticipant?.isRequired,
+      validationRequired: !isBypass && !!(objectParticipant?.isEditable && objectParticipant?.isRequired),
+    },
+    author: {
+      visible: !!(author && (isBypass || author.isEditable)),
+      initialized: !!(author && (
+        (author.type === 'static' && author.defaultValue)
+        || author.isEditable
+        || isBypass
+      )),
+      required: !!(author?.isRequired && author.type !== 'main_entity_author'),
+      validationRequired: !isBypass && !!(
+        author?.isEditable
+        && author?.isRequired
+        && author.type === 'none'
+      ),
+      clearable: author?.type === 'main_entity_author',
+    },
+    authorizedMembers: {
+      visible: !!(authorizedMembers?.enabled && (isBypass || authorizedMembers.isEditable)),
+      initialized: !!authorizedMembers?.enabled,
+      required: !isBypass && !!(authorizedMembers?.enabled && authorizedMembers?.isRequired),
+      validationRequired: !isBypass && !!(authorizedMembers?.enabled && authorizedMembers?.isRequired),
+    },
+  };
+};
+
 const getYupValidationForField = (
   field: FormFieldDefinition,
   t_i18n: (key: string) => string,
