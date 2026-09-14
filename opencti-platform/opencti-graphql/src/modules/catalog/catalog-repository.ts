@@ -1,9 +1,9 @@
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
+import { FunctionalError } from '../../config/errors';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
-import { fullEntitiesList } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIdsMapped } from '../../database/middleware-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
-import type { BasicStoreBase } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type BasicStoreEntityCatalogContract,
@@ -39,8 +39,16 @@ export const findCatalogBySourceUri = async (
   return catalog;
 };
 
-export const upsertCatalog = async (_context: AuthContext, _user: AuthUser, update: CatalogUpsert) => {
-  await elIndex(INDEX_INTERNAL_OBJECTS, {
+export const upsertCatalog = async (
+  _context: AuthContext,
+  _user: AuthUser,
+  update: CatalogUpsert,
+  currentCatalog?: BasicStoreEntityCatalog,
+) => {
+  // Reuse the existing document's physical index when updating so the write lands
+  // on the same index as the current document instead of the write alias, which
+  // could resolve to a different physical index (e.g. after an ILM rollover).
+  await elIndex(currentCatalog?._index ?? INDEX_INTERNAL_OBJECTS, {
     ...update,
     entity_type: ENTITY_TYPE_CATALOG,
   });
@@ -72,6 +80,29 @@ export const deleteCatalogs = async (context: AuthContext, catalogEntities: Basi
 /**
  * Catalog contracts data accessors & mutators
  */
+
+const resolveCatalogContractsByIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+) => {
+  const contractsById = await internalFindByIdsMapped<BasicStoreEntityCatalogContract>(
+    context,
+    user,
+    ids,
+    {
+      type: ENTITY_TYPE_CATALOG_CONTRACT,
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      baseData: true,
+      mapWithAllIds: true,
+    },
+  );
+  const missingIds = ids.filter((id) => !contractsById[id]);
+  if (missingIds.length > 0) {
+    throw FunctionalError('Catalog contracts not found', { ids: missingIds });
+  }
+  return ids.map((id) => contractsById[id]);
+};
 
 export const findCatalogContractsByCatalogId = async (
   context: AuthContext,
@@ -227,10 +258,15 @@ export const updateCatalogContracts = async (
   user: AuthUser,
   updates: CatalogContractUpdate[],
 ) => {
+  const existingContracts = await resolveCatalogContractsByIds(
+    context,
+    user,
+    updates.map((update) => update.internal_id),
+  );
   // We can use bulk `index` as we provide the entire documents
-  const contractsToIndex = updates.map((update) => ({
+  const contractsToIndex = updates.map((update, index) => ({
     ...update,
-    _index: INDEX_INTERNAL_OBJECTS,
+    _index: existingContracts[index]._index,
     entity_type: ENTITY_TYPE_CATALOG_CONTRACT,
   }));
   if (updates.length > 0) {
@@ -253,18 +289,19 @@ export const updateCatalogContracts = async (
 
 export const deleteCatalogContracts = async (
   context: AuthContext,
-  _user: AuthUser,
+  user: AuthUser,
   deletions: CatalogContractDeletion[],
 ) => {
-  const docs = deletions.map((deletion) => ({
-    _index: INDEX_INTERNAL_OBJECTS,
-    _id: deletion.idToDelete,
-  } as BasicStoreBase));
+  const contracts = await resolveCatalogContractsByIds(
+    context,
+    user,
+    deletions.map((deletion) => deletion.idToDelete),
+  );
   if (deletions.length > 0) {
     logApp.debug('[OPENCTI-MODULE] Deleting catalog contracts', {
       module: 'catalog',
       count: deletions.length,
     });
   }
-  await elDeleteInstances(context, docs);
+  await elDeleteInstances(context, contracts);
 };
