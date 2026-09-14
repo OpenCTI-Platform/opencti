@@ -586,90 +586,14 @@ export const formSubmit = async (
   user: AuthUser,
   input: FormSubmissionInput,
   isDraft: boolean = false,
-): Promise<any> => {
+): Promise<SubmissionResult> => {
   const form = await findById(context, user, input.formId);
   if (!form) {
     throw FunctionalError('Form not found', { id: input.formId });
   }
 
-  // eslint-disable-next-line no-useless-assignment
-  let values = {} as Record<string, any>;
-  try {
-    values = JSON.parse(input.values);
-  } catch (error) {
-    throw FunctionalError('Cannot read values', { error });
-  }
-
-  const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
-
-  // Enforce draft settings from schema
-  let finalIsDraft = isDraft;
-  if (schema.isDraftByDefault === true) {
-    if (schema.allowDraftOverride === false) {
-      finalIsDraft = true;
-    }
-  }
-
-  const isBypass = isUserHasCapability(user, BYPASS);
-  validateFormSubmission(schema, values, isBypass);
-  const bundle: any = {
-    type: 'bundle',
-    id: `bundle--${uuidv4()}`,
-    spec_version: '2.1',
-    objects: [],
-  };
-
-  const { mainEntityType } = schema;
-
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
-
-  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
-
-  await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
-  wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
-  logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
-
-  try {
-    const connectorId = connectorIdFromIngestId(form.id);
-    const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
-    const workName = `Form submission @ ${now()}`;
-    const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
-
-    const stixBundle = JSON.stringify(bundle);
-    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-
-    let draftId = null;
-    if (finalIsDraft) {
-      const { draftInput } = buildDraftPlan(form.name, schema, values, user, isBypass);
-      const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
-      draftId = draft.id;
-      // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
-      await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
-    }
-    await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
-      type: 'bundle',
-      applicant_id: user.id,
-      content,
-      work_id: work.id,
-      draft_id: draftId,
-      update: true,
-      no_split: true,
-    });
-
-    logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
-
-    await addFormIntakeSubmittedCount();
-
-    return {
-      success: true,
-      bundleId: bundle.id,
-      message: 'Form submitted successfully and sent for processing',
-      entityId: finalIsDraft ? draftId : mainEntityStixId,
-    };
-  } catch (error) {
-    logApp.error('[FORM] Error sending bundle to connector queue', { error });
-    throw FunctionalError('Failed to process form submission', { cause: error });
-  }
+  const plan = await planSubmission(context, user, form, input, isDraft);
+  return commitSubmission(context, user, form.id, plan);
 };
 
 export const generateFormExportConfiguration = async (
