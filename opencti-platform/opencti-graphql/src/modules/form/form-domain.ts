@@ -533,55 +533,7 @@ export const formSubmit = async (
 
     let draftId = null;
     if (finalIsDraft) {
-      let createdBy: string | null = null;
-      const {
-        finalDraftName,
-        finalDraftDescription,
-        finalDraftAssignees,
-        finalDraftParticipants,
-      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
-
-      // Apply draft defaults for author
-      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
-      const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
-      const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
-      if (canOverrideDraftAuthor && values.draftAuthor) {
-        createdBy = normalizeOptionId(values.draftAuthor) || null;
-      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
-        // User explicitly cleared the field; it's editable and not required → honour the opt-out
-        // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
-        createdBy = null;
-      } else if (schema.draftDefaults?.author) {
-        if (schema.draftDefaults.author.type === 'static') {
-          createdBy = schema.draftDefaults.author.defaultValue || null;
-        } else if (schema.draftDefaults.author.type === 'main_entity_author') {
-          createdBy = resolveMainEntityAuthorFromValues(schema, values);
-        } else if (schema.draftDefaults.author.type === 'none') {
-          createdBy = null;
-        }
-      }
-
-      // Apply explicit authorized members from form submission
-      // Bypass users can always override; non-bypass users can override when the field is editable
-      const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
-      let authorized_members: MemberAccessInput[] = [];
-      if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
-      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
-      }
-
-      const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
-        name: finalDraftName,
-      };
-      if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
-      if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
-      if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
-      if (createdBy) draftInput.createdBy = createdBy;
-      if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
-      // Form intake configuration must override customization mandatory attributes.
-      draftInput.bypassMandatoryAttributes = true;
-
+      const { draftInput } = buildDraftPlan(form.name, schema, values, user, isBypass);
       const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
       draftId = draft.id;
       // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
