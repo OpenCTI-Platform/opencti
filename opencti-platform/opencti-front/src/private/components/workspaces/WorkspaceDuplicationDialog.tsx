@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
+import { FunctionComponent, UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -65,15 +65,24 @@ const WorkspaceDuplicationDialog: FunctionComponent<
   const workspace = useFragment(workspaceDuplicationFragment, data);
   const isInvestigation = workspace.type === 'investigation';
 
-  const duplicatedDashboardInitialName = useMemo(
+  const duplicatedWorkspaceInitialName = useMemo(
     () => `${workspace.name} - ${t_i18n('copy')}`,
     [t_i18n, workspace.name],
   );
-  const [newName, setNewName] = useState(duplicatedDashboardInitialName);
+  const [newName, setNewName] = useState(duplicatedWorkspaceInitialName);
+  const wasDisplayed = useRef(false);
+
+  useEffect(() => {
+    if (displayDuplicate && !wasDisplayed.current) {
+      setNewName(duplicatedWorkspaceInitialName);
+    }
+    wasDisplayed.current = displayDuplicate;
+  }, [displayDuplicate, duplicatedWorkspaceInitialName]);
+
   const [commitDuplicatedWorkspaceCreation] = useApiMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
     workspaceDuplicationDialogDuplicatedWorkspaceCreation,
   );
-  const submitDashboardDuplication = (
+  const submitWorkspaceDuplication = (
     e: UIEvent,
     submittedWorkspace: WorkspaceDuplicationDialogFragment$data,
   ) => {
@@ -89,9 +98,11 @@ const WorkspaceDuplicationDialog: FunctionComponent<
       updater: (store) => updater && updater(store),
       onError: (error) => {
         handleError(error);
+        setDuplicating(false);
       },
       onCompleted: (result) => {
         handleCloseDuplicate();
+        setDuplicating(false);
         const isDashboardView = !paginationOptions;
         if (isDashboardView) {
           const workspaceType = isInvestigation ? 'investigations' : 'dashboards';
@@ -115,7 +126,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
 
   const handleSubmitDuplicate = (e: UIEvent, submittedNewName: string) => {
     setDuplicating(true);
-    submitDashboardDuplication(e, { ...workspace, name: submittedNewName });
+    submitWorkspaceDuplication(e, { ...workspace, name: submittedNewName });
   };
 
   return (
@@ -128,10 +139,10 @@ const WorkspaceDuplicationDialog: FunctionComponent<
       <Input
         error={!newName ? t_i18n('This field is required') : undefined}
         autoFocus
-        id="duplicated_dashboard_name"
+        id="duplicated_workspace_name"
         label={t_i18n('New name')}
         type="text"
-        defaultValue={newName}
+        value={newName}
         onChange={(event) => {
           event.preventDefault();
           setNewName(event.target.value);
