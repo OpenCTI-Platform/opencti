@@ -6,7 +6,7 @@ import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { meterManager } from '../../config/tracing';
 
 export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred';
-export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events';
+export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events' | 'resolve_ahead';
 export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent';
 
 class SequencerMetrics {
