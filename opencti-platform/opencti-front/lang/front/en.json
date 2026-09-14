@@ -4785,6 +4785,7 @@
   "The custom view {name} is currently set as default. Do you want to replace it?": "The custom view {name} is currently set as default. Do you want to replace it?",
   "The custom view has been duplicated. You can manage it": "The custom view has been duplicated. You can manage it",
   "The dashboard has been duplicated. You can manage it": "The dashboard has been duplicated. You can manage it",
+  "The investigation has been duplicated. You can manage it": "The investigation has been duplicated. You can manage it",
   "the dedicated page": "the dedicated page",
   "The default groups are:": "The default groups are:",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "The deployment of connectors from this catalog requires an Enterprise Edition license.",

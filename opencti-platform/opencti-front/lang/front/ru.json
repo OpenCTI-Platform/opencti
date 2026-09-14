@@ -4785,6 +4785,7 @@
   "The custom view {name} is currently set as default. Do you want to replace it?": "В настоящее время в качестве вида по умолчанию установлен пользовательский вид {name}. Хотите его заменить?",
   "The custom view has been duplicated. You can manage it": "Пользовательское представление было продублировано. Вы можете управлять ею",
   "The dashboard has been duplicated. You can manage it": "Дашборд был продублирован. Вы можете управлять ею",
+  "The investigation has been duplicated. You can manage it": "Расследование было продублировано. Вы можете управлять им",
   "the dedicated page": "специальная страница",
   "The default groups are:": "По умолчанию используются следующие группы:",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "Для развертывания коннекторов из этого каталога требуется лицензия Enterprise Edition.",

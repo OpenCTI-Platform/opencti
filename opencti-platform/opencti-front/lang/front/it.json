@@ -4785,6 +4785,7 @@
   "The custom view {name} is currently set as default. Do you want to replace it?": "La vista personalizzata {name} è attualmente impostata come predefinita. Vuoi sostituirla?",
   "The custom view has been duplicated. You can manage it": "La vista personalizzata è stata duplicata. Puoi gestirla",
   "The dashboard has been duplicated. You can manage it": "La dashboard è stata duplicata. Puoi gestirla",
+  "The investigation has been duplicated. You can manage it": "L'indagine è stata duplicata. Puoi gestirla",
   "the dedicated page": "la pagina dedicata",
   "The default groups are:": "I gruppi predefiniti sono:",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "La distribuzione di connettori da questo catalogo richiede una licenza Enterprise Edition.",
