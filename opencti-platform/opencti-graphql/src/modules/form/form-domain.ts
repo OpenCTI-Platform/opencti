@@ -473,6 +473,58 @@ export const buildDraftPlan = (
   return { draftInput };
 };
 
+export interface SubmissionPlan {
+  bundle: any;
+  mainEntityStixId: string | undefined;
+  finalIsDraft: boolean;
+  draftPlan: DraftPlan | null;
+}
+
+export const planSubmission = async (
+  context: AuthContext,
+  user: AuthUser,
+  form: BasicStoreEntityForm,
+  input: FormSubmissionInput,
+  isDraft: boolean,
+): Promise<SubmissionPlan> => {
+  // eslint-disable-next-line no-useless-assignment
+  let values = {} as Record<string, any>;
+  try {
+    values = JSON.parse(input.values);
+  } catch (error) {
+    throw FunctionalError('Cannot read values', { error });
+  }
+
+  const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
+
+  let finalIsDraft = isDraft;
+  if (schema.isDraftByDefault === true) {
+    if (schema.allowDraftOverride === false) {
+      finalIsDraft = true;
+    }
+  }
+
+  const isBypass = isUserHasCapability(user, BYPASS);
+  validateFormSubmission(schema, values, isBypass);
+  const bundle: any = {
+    type: 'bundle',
+    id: `bundle--${uuidv4()}`,
+    spec_version: '2.1',
+    objects: [],
+  };
+
+  const { mainEntityType } = schema;
+  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
+  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
+  await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
+  wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
+  logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
+
+  const draftPlan = finalIsDraft ? buildDraftPlan(form.name, schema, values, user, isBypass) : null;
+
+  return { bundle, mainEntityStixId, finalIsDraft, draftPlan };
+};
+
 // Submit a form and convert to STIX bundle
 export const formSubmit = async (
   context: AuthContext,
