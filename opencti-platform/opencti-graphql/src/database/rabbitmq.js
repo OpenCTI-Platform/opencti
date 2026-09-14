@@ -791,6 +791,102 @@ export const getRabbitMQVersion = (context) => {
     .catch(/* v8 ignore next */ () => 'Disconnected');
 };
 
+// region chunk intake (POC chunk-queue direct intake)
+// One queue carrying ONE message per worker chunk (an array of GraphQL ingestion operations),
+// consumed in process by the chunk intake manager: no worker thread pool, no HTTP leg. Manual
+// ack: a chunk is acked only once every one of its operations reached a terminal state, which
+// for sequencer writes means after the batch commit. Poison chunks go to the existing
+// dead-letter queue instead of being requeued forever.
+export const CHUNK_INTAKE_QUEUE_ID = conf.get('chunk_intake_manager:queue_name') || 'chunk_intake';
+export const chunkIntakeQueue = () => `${RABBIT_QUEUE_PREFIX}${CHUNK_INTAKE_QUEUE_ID}`;
+export const chunkIntakeRouting = () => `${RABBIT_QUEUE_PREFIX}${CHUNK_INTAKE_QUEUE_ID}_routing`;
+
+export const registerChunkIntakeQueue = async () => {
+  return amqpExecute(async (channel) => {
+    const assertExchange = util.promisify(channel.assertExchange).bind(channel);
+    await assertExchange(WORKER_EXCHANGE, 'direct', { durable: true });
+    const assertQueue = util.promisify(channel.assertQueue).bind(channel);
+    await assertQueue(chunkIntakeQueue(), {
+      exclusive: false,
+      durable: true,
+      autoDelete: false,
+      arguments: {
+        name: 'Chunk intake',
+        'x-queue-type': QUEUE_TYPE,
+        'x-dead-letter-exchange': CONNECTOR_EXCHANGE,
+        'x-dead-letter-routing-key': listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID),
+      },
+    });
+    const bindQueue = util.promisify(channel.bindQueue).bind(channel);
+    await bindQueue(chunkIntakeQueue(), WORKER_EXCHANGE, chunkIntakeRouting(), {});
+    return true;
+  });
+};
+
+/**
+ * Consume the chunk intake queue with manual acks.
+ * prefetch is the ONE flow-control valve of this architecture: prefetch x chunk size = the
+ * intents offered to the sequencer loop at any time (replaces the worker's pf/CS/pool knobs).
+ * The handler receives (payload, controls) where controls carries ack / retry / deadLetter and
+ * the broker's redelivered flag, so the caller owns the poison policy.
+ */
+export const consumeChunkIntakeQueue = async (prefetch, handler) => {
+  const connOptions = getConnectionOptions();
+  const queue = chunkIntakeQueue();
+  let alive = true;
+  const conn = await new Promise((resolve, reject) => {
+    amqp.connect(amqpUri(), connOptions, (err, connection) => (err ? reject(err) : resolve(connection)));
+  });
+  conn.on('error', (err) => {
+    alive = false;
+    logApp.error('[CHUNK-INTAKE] Connection error', { cause: err });
+  });
+  conn.on('close', () => {
+    alive = false;
+    logApp.warn('[CHUNK-INTAKE] Connection closed');
+  });
+  const channel = await new Promise((resolve, reject) => {
+    conn.createChannel((err, ch) => (err ? reject(err) : resolve(ch)));
+  });
+  channel.on('error', (err) => {
+    alive = false;
+    logApp.error('[CHUNK-INTAKE] Channel error', { cause: err });
+  });
+  channel.on('close', () => {
+    alive = false;
+  });
+  channel.prefetch(prefetch);
+  await new Promise((resolve, reject) => {
+    channel.consume(queue, (message) => {
+      if (message === null) {
+        return;
+      }
+      const controls = {
+        redelivered: message.fields?.redelivered === true,
+        ack: () => channel.ack(message),
+        retry: () => channel.nack(message, false, true),
+        deadLetter: () => channel.nack(message, false, false),
+      };
+      // Never await here: prefetch is what bounds the in-flight chunks.
+      handler(message.content.toString(), controls);
+    }, { noAck: false }, (err) => (err ? reject(err) : resolve(true)));
+  });
+  return {
+    queue,
+    alive: () => alive,
+    close: async () => {
+      alive = false;
+      try {
+        channel.close();
+      } catch (_e) { /* already closing */ }
+      try {
+        conn.close();
+      } catch (_e) { /* already closing */ }
+    },
+  };
+};
+// endregion
+
 export const consumeQueue = async (context, connectorId, connectionSetterCallback, callback) => {
   const cfg = connectorConfig(connectorId);
   const listenQueue = cfg.listen;

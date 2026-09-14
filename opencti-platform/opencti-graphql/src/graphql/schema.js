@@ -270,7 +270,15 @@ const { rateLimitDirectiveTypeDefs, rateLimitDirectiveTransformer } = rateLimitD
 });
 schemaTypeDefs.push(rateLimitDirectiveTypeDefs);
 
+// POC chunk-queue direct intake (kb note opencti-chunk-queue-direct-intake-design): the chunk
+// intake manager executes ingestion operations IN PROCESS (graphql.execute) and must run them
+// against the very schema the HTTP API serves. Memoized so the two callers share one instance
+// instead of building (and holding) a second executable schema.
+let schemaInstance = null;
 const createSchema = () => {
+  if (schemaInstance) {
+    return schemaInstance;
+  }
   const resolvers = mergeResolvers(schemaResolvers);
   const { authDirectiveTransformer } = authDirectiveBuilder('auth');
   let schema = makeExecutableSchema({
@@ -281,7 +289,8 @@ const createSchema = () => {
   schema = constraintDirectiveDocumentation()(schema);
   schema = rateLimitDirectiveTransformer(authDirectiveTransformer(schema));
   schema = makeFeatureFlagDirectiveTransformer()(schema);
-  return schema;
+  schemaInstance = schema;
+  return schemaInstance;
 };
 
 export default createSchema;

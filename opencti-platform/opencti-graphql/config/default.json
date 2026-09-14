@@ -325,6 +325,13 @@
     "interval": 60000,
     "deleted_retention_days": 7
   },
+  "chunk_intake_manager": {
+    "enabled": false,
+    "lock_key": "chunk_intake_manager_lock",
+    "interval": 10000,
+    "queue_name": "chunk_intake",
+    "prefetch": 8
+  },
   "publisher_manager": {
     "enabled": true,
     "lock_key": "publisher_manager_lock",
