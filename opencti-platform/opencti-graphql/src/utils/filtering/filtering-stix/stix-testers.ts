@@ -464,19 +464,19 @@ export const testCvssScore = (stix: any, filter: Filter, changeContext?: { filte
 };
 
 export const testCvssSeverity = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: string | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI].cvss_base_severity ?? null;
+  const stixValue: string | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI]?.cvss_base_severity ?? null;
   const value = stixValue ? [stixValue] : [];
   return testStringFilter(filter, value, changeContext);
 };
 
 export const testSsvcExploitation = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: string | null = stix.x_opencti_ssvc_exploitation ?? stix.extensions?.[STIX_EXT_OCTI].ssvc_exploitation ?? null;
+  const stixValue: string | null = stix.x_opencti_ssvc_exploitation ?? stix.extensions?.[STIX_EXT_OCTI]?.ssvc_exploitation ?? null;
   const value = stixValue ? [stixValue] : [];
   return testStringFilter(filter, value, changeContext);
 };
 
 export const testSsvcAutomatable = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: string | null = stix.x_opencti_ssvc_automatable ?? stix.extensions?.[STIX_EXT_OCTI].ssvc_automatable ?? null;
+  const stixValue: string | null = stix.x_opencti_ssvc_automatable ?? stix.extensions?.[STIX_EXT_OCTI]?.ssvc_automatable ?? null;
   const value = stixValue ? [stixValue] : [];
   return testStringFilter(filter, value, changeContext);
 };
