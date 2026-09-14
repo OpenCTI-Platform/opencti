@@ -96,7 +96,7 @@ const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   listSx,
   selectedLabel,
 }) => (
-  <Box sx={{ flex: 2 }}>
+  <Box sx={{ flex: 1 }}>
     <Typography variant="h4">
       {`${t_i18n(selectedLabel)} (${value.length})`}
     </Typography>
@@ -140,7 +140,7 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   const col2Items = value.filter((_, i) => i % 2 === 1);
 
   return (
-    <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4">
         {`${t_i18n(selectedLabel)} (${value.length})`}
       </Typography>
