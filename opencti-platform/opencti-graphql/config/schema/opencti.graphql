@@ -281,6 +281,10 @@ type AppInfo {
   """
   version: String! @auth
   """
+  The source commit used to build OpenCTI
+  """
+  buildCommit: String @auth
+  """
   The OpenCTI api current memory usage
   """
   memory: AppMemory @auth(for: [SETTINGS_SETPARAMETERS])
