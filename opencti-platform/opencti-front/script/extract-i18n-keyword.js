@@ -4,7 +4,8 @@ import path from 'node:path';
 const srcDirectory = 'src';
 const englishTranslationFiles = 'lang/front/en.json';
 const jsxTsxFileExtensions = ['.jsx', '.tsx'];
-const searchPattern = /t_i18n\('([^']+)'\s*[,)]/g;
+const t_i18nPatternSource = String.raw`t_i18n\((['"])((?:\\.|(?!\1).)*)\1\s*[,)]`;
+const searchPattern = new RegExp(t_i18nPatternSource, 'g');
 const labelSearchPattern = /label:\s'(\w+)',/g;
 const labelExecPattern = /label:\s'(\w+)',/;
 const extractedValues = {};
@@ -13,8 +14,11 @@ const extractedValues = {};
 // and add them in opencti-front/lang/en.json
 
 const extractValueFromPattern = (pattern) => {
-  const match = /t_i18n\('([^']+)'\s*[,)]/.exec(pattern);
-  return match ? match[1] : null;
+  const match = new RegExp(t_i18nPatternSource).exec(pattern);
+  if (!match) return null;
+  const [, quote, value] = match;
+  // unescape the quote char that was escaped for JS syntax reasons only
+  return value.replace(new RegExp(`\\\\${quote}`, 'g'), quote);
 }
 
 const extractI18nValues = async (directory) => {
