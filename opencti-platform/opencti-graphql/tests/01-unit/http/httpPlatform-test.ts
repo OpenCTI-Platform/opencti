@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import nconf from 'nconf';
+import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMetrics';
 import createApp, {
   decodeStoragePath,
   sanitizeReferer,
@@ -10,7 +11,6 @@ import createApp, {
   handleStorageEncrypted,
   shouldIncludeHealthDetails,
 } from '../../../src/http/httpPlatform';
-import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMetrics';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
@@ -399,5 +399,83 @@ describe('httpPlatform: /health details behavior', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith({ status: 'success' });
     expect(usageMetricsSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('storage routes: draft authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const DENIED_CONTEXT = {
+    user: { id: 'user-b' },
+    draft_context: 'restricted-draft',
+  };
+  const DRAFT_ERROR = new Error('Draft restricted-draft cannot be found');
+
+  it('handleStorageGet refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageGet(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.attachment).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageView refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageView(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageViewEmbedded refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ 0: 'x', 1: 'entity-id', 2: 'y', 3: 'file.txt' });
+    const res = makeStorageRes();
+
+    await handleStorageViewEmbedded(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageHtml refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.md'] });
+    const res = makeStorageRes();
+
+    await handleStorageHtml(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageEncrypted refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageEncrypted(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
   });
 });
