@@ -110,18 +110,29 @@ const buildPendingEntities = (
   });
 };
 
-export const buildMainStixEntities = async (
-  context: AuthContext,
-  user: AuthUser,
-  schema: FormSchemaDefinition,
-  values: Record<string, any>,
-  mainEntityType: string,
-  isBypass: boolean = false,
-): Promise<{ mainStixEntities: any[]; mainEntityStixId: string | undefined }> => {
-  const mainStixEntities = [];
-  let mainEntityStixId;
+type MainEntitySourceMode = 'lookup' | 'multiple' | 'parsed' | 'default';
 
-  if (schema.mainEntityLookup) {
+interface MainEntitySourceContext {
+  context: AuthContext;
+  user: AuthUser;
+  schema: FormSchemaDefinition;
+  values: Record<string, any>;
+  mainEntityType: string;
+  isBypass: boolean;
+}
+
+interface MainEntitySourceResult {
+  mainStixEntities: any[];
+  mainEntityStixId: string | undefined;
+}
+
+type EntitySourceAdapter = (ctx: MainEntitySourceContext) => Promise<MainEntitySourceResult>;
+
+const entitySourceAdapters: Record<MainEntitySourceMode, EntitySourceAdapter> = {
+  lookup: async ({ context, user, values, mainEntityType }) => {
+    const mainStixEntities: any[] = [];
+    let mainEntityStixId: string | undefined;
+
     // Existing entities selected through the lookup (skipped when the user only created
     // on-the-fly entities: values.mainEntityLookup is then undefined).
     if (isNotEmptyField(values.mainEntityLookup)) {
@@ -145,74 +156,101 @@ export const buildMainStixEntities = async (
         mainEntityStixId = pendingEntity.standard_id;
       }
     }
-  } else {
+
+    return { mainStixEntities, mainEntityStixId };
+  },
+  multiple: async ({ context, user, schema, values, mainEntityType, isBypass }) => {
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-    if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
-      for (let index = 0; index < values.mainEntityGroups.length; index += 1) {
-        const mainEntity = await materializeEntityFromFields(
-          context,
-          user,
-          mainEntityType,
-          mainEntityFields,
-          (field) => values.mainEntityGroups[index][field.name],
-          buildMaterializeOptions(isBypass, {
-            errorLabel: 'Main entity observable is not correctly formatted',
-          }),
-        );
-        mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
-        mainEntityStixId = mainEntity.standard_id;
-      }
-    } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
-      const refangedMainEntityParsed = refangValues(values.mainEntityParsed);
-      for (let index = 0; index < refangedMainEntityParsed.length; index += 1) {
-        const seedEntity: Partial<StoreEntity> = {};
-        if (schema.mainEntityParseFieldMapping === 'pattern' && schema.mainEntityAutoConvertToStixPattern) {
-          const observableValue = refangedMainEntityParsed[index];
-          const observableType = detectObservableType(observableValue);
-          const pattern = await createStixPattern(context, user, observableType, observableValue);
-          Object.assign(seedEntity, {
-            [schema.mainEntityParseFieldMapping]: pattern,
-            pattern_type: 'stix',
-            name: observableValue,
-            x_opencti_main_observable_type: observableType,
-          });
-        } else {
-          Object.assign(seedEntity, { [String(schema.mainEntityParseFieldMapping)]: refangedMainEntityParsed[index] });
-        }
-        const mainEntity = await materializeEntityFromFields(
-          context,
-          user,
-          mainEntityType,
-          mainEntityFields,
-          (field) => values.mainEntityFields[field.attributeMapping.attributeName],
-          buildMaterializeOptions(isBypass, {
-            seedEntity,
-            applyFields: Boolean(values.mainEntityFields),
-            skipEmptyFieldValues: true,
-            errorLabel: 'Main entity observable is not correctly formatted',
-          }),
-        );
-        mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
-        mainEntityStixId = mainEntity.standard_id;
-      }
-    } else {
+    const mainStixEntities: any[] = [];
+    let mainEntityStixId: string | undefined;
+    for (let index = 0; index < values.mainEntityGroups.length; index += 1) {
       const mainEntity = await materializeEntityFromFields(
         context,
         user,
         mainEntityType,
         mainEntityFields,
-        (field) => values[field.name],
+        (field) => values.mainEntityGroups[index][field.name],
         buildMaterializeOptions(isBypass, {
-          applyTypeDefaults: false,
           errorLabel: 'Main entity observable is not correctly formatted',
         }),
       );
       mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
       mainEntityStixId = mainEntity.standard_id;
     }
-  }
+    return { mainStixEntities, mainEntityStixId };
+  },
+  parsed: async ({ context, user, schema, values, mainEntityType, isBypass }) => {
+    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mainStixEntities: any[] = [];
+    let mainEntityStixId: string | undefined;
+    const refangedMainEntityParsed = refangValues(values.mainEntityParsed);
+    for (let index = 0; index < refangedMainEntityParsed.length; index += 1) {
+      const seedEntity: Partial<StoreEntity> = {};
+      if (schema.mainEntityParseFieldMapping === 'pattern' && schema.mainEntityAutoConvertToStixPattern) {
+        const observableValue = refangedMainEntityParsed[index];
+        const observableType = detectObservableType(observableValue);
+        const pattern = await createStixPattern(context, user, observableType, observableValue);
+        Object.assign(seedEntity, {
+          [schema.mainEntityParseFieldMapping]: pattern,
+          pattern_type: 'stix',
+          name: observableValue,
+          x_opencti_main_observable_type: observableType,
+        });
+      } else {
+        Object.assign(seedEntity, { [String(schema.mainEntityParseFieldMapping)]: refangedMainEntityParsed[index] });
+      }
+      const mainEntity = await materializeEntityFromFields(
+        context,
+        user,
+        mainEntityType,
+        mainEntityFields,
+        (field) => values.mainEntityFields[field.attributeMapping.attributeName],
+        buildMaterializeOptions(isBypass, {
+          seedEntity,
+          applyFields: Boolean(values.mainEntityFields),
+          skipEmptyFieldValues: true,
+          errorLabel: 'Main entity observable is not correctly formatted',
+        }),
+      );
+      mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
+      mainEntityStixId = mainEntity.standard_id;
+    }
+    return { mainStixEntities, mainEntityStixId };
+  },
+  default: async ({ context, user, schema, values, mainEntityType, isBypass }) => {
+    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mainEntity = await materializeEntityFromFields(
+      context,
+      user,
+      mainEntityType,
+      mainEntityFields,
+      (field) => values[field.name],
+      buildMaterializeOptions(isBypass, {
+        applyTypeDefaults: false,
+        errorLabel: 'Main entity observable is not correctly formatted',
+      }),
+    );
+    return { mainStixEntities: [convertStoreToStix_2_1(mainEntity)], mainEntityStixId: mainEntity.standard_id };
+  },
+};
 
-  return { mainStixEntities, mainEntityStixId };
+const resolveMainEntitySourceMode = (schema: FormSchemaDefinition): MainEntitySourceMode => {
+  if (schema.mainEntityLookup) return 'lookup';
+  if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') return 'multiple';
+  if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') return 'parsed';
+  return 'default';
+};
+
+export const buildMainStixEntities = async (
+  context: AuthContext,
+  user: AuthUser,
+  schema: FormSchemaDefinition,
+  values: Record<string, any>,
+  mainEntityType: string,
+  isBypass: boolean = false,
+): Promise<MainEntitySourceResult> => {
+  const mode = resolveMainEntitySourceMode(schema);
+  return entitySourceAdapters[mode]({ context, user, schema, values, mainEntityType, isBypass });
 };
 
 export const buildAdditionalEntities = async (
