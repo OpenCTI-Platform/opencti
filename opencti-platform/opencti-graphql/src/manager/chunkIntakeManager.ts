@@ -16,7 +16,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
-import { executeChunkOperation, type ChunkOperation } from '../graphql/chunk-executor';
+import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
@@ -87,6 +87,7 @@ interface ChunkConsumer {
 // region metrics
 let chunksCounter: Counter | null = null;
 let operationsCounter: Counter | null = null;
+let objectsCounter: Counter | null = null;
 let chunkSeconds: Histogram | null = null;
 
 const registerChunkMetrics = () => {
@@ -101,6 +102,13 @@ const registerChunkMetrics = () => {
   operationsCounter = meter.createCounter('opencti_chunk_intake_operations_total', {
     valueType: ValueType.INT,
     description: 'Chunk operations by outcome (ok, error)',
+  });
+  // Objects, not operations: pycti emits several mutations for one STIX object (its labels,
+  // external references and kill chain phases are separate creates), so the throughput KPI
+  // needs the distinct object count per chunk.
+  objectsCounter = meter.createCounter('opencti_chunk_intake_objects_total', {
+    valueType: ValueType.INT,
+    description: 'Distinct STIX objects carried by executed chunks',
   });
   chunkSeconds = meter.createHistogram('opencti_chunk_intake_chunk_seconds', {
     valueType: ValueType.DOUBLE,
@@ -197,22 +205,46 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
   const attemptKey = message.chunk_id ?? payload.slice(0, 128);
   try {
     const { context, user } = await createChunkContext(message, operations);
-    // One in-flight operation per object of the chunk, like an HTTP-batched body: ordering
-    // inside the chunk is the sequencer's business, not the transport's.
-    const results = await Promise.all(operations.map(async (operation) => {
+    // Two phases. pycti pre-creates an object's labels, external references and kill
+    // chain phases through separate mutations and puts the ids the platform RETURNED into
+    // the object's input; on the capture transport those creates answered with echo ids,
+    // so their operations (the producers) run first and the real ids replace the echo ids
+    // in the remaining operations. Within a phase everything is in flight at once, like an
+    // HTTP-batched body: ordering inside the chunk is the sequencer's business.
+    const resolved = new Map<string, string>();
+    const runOperation = async (operation: ChunkOperation): Promise<string | undefined> => {
       try {
         const result = await executeChunkOperation(context, operation);
-        return result.errors?.length ? String(result.errors[0].message) : undefined;
+        if (result.errors?.length) {
+          return String(result.errors[0].message);
+        }
+        if (operation.echo_id) {
+          const root: any = result.data ? Object.values(result.data)[0] : undefined;
+          if (root?.id) resolved.set(operation.echo_id, String(root.id));
+        }
+        return undefined;
       } catch (e: any) {
         return String(e.message ?? e);
       }
-    }));
-    for (let index = 0; index < operations.length; index += 1) {
-      await reportChunkOutcome(context, user, message, operations[index], results[index]);
+    };
+    const producers = operations.filter((operation) => operation.echo_id);
+    const consumers = operations.filter((operation) => !operation.echo_id);
+    const producerErrors = await Promise.all(producers.map(runOperation));
+    if (resolved.size > 0) {
+      consumers.forEach((operation) => {
+        if (operation.variables) substituteEchoIds(operation.variables, resolved);
+      });
+    }
+    const consumerErrors = await Promise.all(consumers.map(runOperation));
+    const ordered = [...producers, ...consumers];
+    const results = [...producerErrors, ...consumerErrors];
+    for (let index = 0; index < ordered.length; index += 1) {
+      await reportChunkOutcome(context, user, message, ordered[index], results[index]);
     }
     controls.ack();
     transientAttempts.delete(attemptKey);
     chunksCounter?.add(1, { outcome: 'acked' });
+    objectsCounter?.add(new Set(operations.map((operation) => operation.object_id).filter((id) => !!id)).size);
     chunkSeconds?.record((Date.now() - start) / 1000);
   } catch (e: any) {
     if (e instanceof ChunkPoisonError) {

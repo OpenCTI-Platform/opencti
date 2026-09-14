@@ -21,7 +21,31 @@ export interface ChunkOperation {
   operationName?: string;
   // Optional, for diagnostics only: the STIX id the operation carries.
   object_id?: string;
+  // Set on a PRODUCER: a pycti pre-created sub-object (label, external reference, kill
+  // chain phase) whose platform id the following operations reference through this echo
+  // id. The manager executes producers first and substitutes the real ids.
+  echo_id?: string;
 }
+
+// Replace, in place, every string equal to a resolved echo id by the real platform id.
+export const substituteEchoIds = (value: any, resolved: Map<string, string>): any => {
+  if (typeof value === 'string') {
+    return resolved.get(value) ?? value;
+  }
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i += 1) {
+      value[i] = substituteEchoIds(value[i], resolved);
+    }
+    return value;
+  }
+  if (value !== null && typeof value === 'object') {
+    Object.keys(value).forEach((key) => {
+      value[key] = substituteEchoIds(value[key], resolved);
+    });
+    return value;
+  }
+  return value;
+};
 
 // pycti emits a small, stable set of ingestion mutations (~30 documents): the cache turns
 // parse + validate into a startup cost instead of a per-object one.
