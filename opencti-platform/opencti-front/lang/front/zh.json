@@ -4770,6 +4770,7 @@
   "The custom view {name} is currently set as default. Do you want to replace it?": "自定义视图 {name} 目前被设为默认。您要替换它吗？",
   "The custom view has been duplicated. You can manage it": "自定义视图已被复制。你可以管理它",
   "The dashboard has been duplicated. You can manage it": "仪表板已被复制。你可以管理它",
+  "The investigation has been duplicated. You can manage it": "调查已被复制。你可以管理它",
   "the dedicated page": "专用页面",
   "The default groups are:": "默认组别为",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "部署此目录中的连接器需要企业版许可证。",
