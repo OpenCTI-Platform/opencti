@@ -1,7 +1,8 @@
+import type { FilterGroup } from '@mistralai/mistralai/models/components';
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
-import { fullEntitiesList, internalFindByIdsMapped } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIdsMapped, type FilterGroupWithNested } from '../../database/middleware-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -54,8 +55,25 @@ export const upsertCatalog = async (
   });
 };
 
-export const findCatalogs = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
-  const filters = excludedIds?.length ? {
+export const findAllCatalogs = async (
+  context: AuthContext,
+  user: AuthUser,
+  filters?: FilterGroupWithNested,
+) => {
+  return fullEntitiesList<BasicStoreEntityCatalog>(
+    context,
+    user,
+    [ENTITY_TYPE_CATALOG],
+    { indices: [READ_INDEX_INTERNAL_OBJECTS], filters },
+  );
+};
+
+export const findAllCatalogsExcluding = async (
+  context: AuthContext,
+  user: AuthUser,
+  excludedIds: string[],
+) => {
+  const filters: FilterGroupWithNested = {
     filters: excludedIds.map((catalogId) => ({
       key: ['catalog_id'],
       values: [catalogId],
@@ -63,14 +81,8 @@ export const findCatalogs = async (context: AuthContext, user: AuthUser, exclude
     })),
     filterGroups: [],
     mode: FilterMode.And,
-  } : null;
-  const catalogs = await fullEntitiesList<BasicStoreEntityCatalog>(
-    context,
-    user,
-    [ENTITY_TYPE_CATALOG],
-    { indices: [READ_INDEX_INTERNAL_OBJECTS], filters },
-  );
-  return catalogs;
+  };
+  return findAllCatalogs(context, user, filters);
 };
 
 export const deleteCatalogs = async (context: AuthContext, catalogEntities: BasicStoreEntityCatalog[]) => {

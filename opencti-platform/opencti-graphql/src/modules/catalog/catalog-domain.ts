@@ -14,7 +14,7 @@ import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
-import { findCatalogByCatalogId, findCatalogs, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
+import { findAllCatalogs, findCatalogByCatalogId, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
 import { logApp } from '../../config/conf';
 
 const validatorCache = new Map<string, ValidateFunction>();
@@ -452,7 +452,7 @@ export const queryCatalogById = async (context: AuthContext, user: AuthUser, cat
 };
 
 export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
-  const catalogs = await findCatalogs(context, user);
+  const catalogs = await findAllCatalogs(context, user);
   const contracts = await Promise.all(catalogs.map((catalog) => findLatestCompatibleCatalogContractsByCatalogId(context, user, catalog.catalog_id)));
   const contractsTotalCount = contracts.reduce((total, contractsByCatalog) => total + contractsByCatalog.size, 0);
   logApp.debug('[OPENCTI-MODULE] Catalogs query resolved', {

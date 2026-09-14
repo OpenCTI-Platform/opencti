@@ -26,7 +26,7 @@ import {
   findCatalogContractsByCatalogId,
   findCatalogByCatalogId,
   findCatalogBySourceUri,
-  findCatalogs,
+  findAllCatalogsExcluding,
   insertCatalogContracts,
   updateCatalogContracts,
   upsertCatalog,
@@ -421,7 +421,7 @@ const initSyncSources = () => {
 };
 
 const cleanupObsoleteCatalogs = async (context: AuthContext, syncedCatalogs: string[]) => {
-  const obsoleteCatalogs = await findCatalogs(context, SYSTEM_USER, syncedCatalogs);
+  const obsoleteCatalogs = await findAllCatalogsExcluding(context, SYSTEM_USER, syncedCatalogs);
   if (obsoleteCatalogs.length) {
     // The app config changed resulting in a catalog not being synced anymore
     logApp.warn('[OPENCTI-MODULE] Deleting obsolete catalogs', {
