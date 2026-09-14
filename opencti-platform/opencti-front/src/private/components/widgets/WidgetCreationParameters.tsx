@@ -225,6 +225,17 @@ const WidgetCreationParameters = () => {
     setDataSelectionWithIndex(newSelection, index);
   };
 
+  const mergeAvailableAndSelectedColumns = (
+    availableColumns: WidgetColumn[],
+    selectedColumns: WidgetColumn[],
+  ) => {
+    const availableAttributes = new Set(availableColumns.map((column) => column.attribute));
+    const missingSelectedColumns = selectedColumns.filter(
+      (column) => !availableAttributes.has(column.attribute),
+    );
+    return [...availableColumns, ...missingSelectedColumns];
+  };
+
   const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
     const prevSelection = dataSelection[index];
     const entityType = host.kind === 'custom-view'
@@ -970,8 +981,11 @@ const WidgetCreationParameters = () => {
           const entityType = entityTypeFromFilters
             ?? (host.kind === 'fintelTemplate' ? host.fintelEntityType : undefined);
           const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
-          const availableColumns = getWidgetColumns(perspective, entityType, metricsDefinition || undefined);
           const selectedColumns = [...(columns ?? defaultWidgetColumnsByType)];
+          const availableColumns = mergeAvailableAndSelectedColumns(
+            getWidgetColumns(perspective, entityType, metricsDefinition || undefined),
+            selectedColumns,
+          );
 
           if (host.kind === 'fintelTemplate') {
             return (
