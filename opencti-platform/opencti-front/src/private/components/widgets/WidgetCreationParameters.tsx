@@ -35,7 +35,6 @@ import {
   getWidgetInterval,
 } from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
-import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
@@ -341,24 +340,6 @@ const WidgetCreationParameters = () => {
         </Grid>
       </Grid>
     );
-  };
-
-  const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
-    if (!filterGroup) return undefined;
-
-    const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filterGroup);
-    const hasSingleEntityType = entityTypeFilters.length === 1;
-    const otherFiltersLength = filterGroup.filters.filter((filter) => filter.key !== 'entity_type').length;
-
-    if (hasSingleEntityType && filterGroup.mode === 'and') {
-      return entityTypeFilters[0];
-    }
-
-    if (hasSingleEntityType && filterGroup.mode === 'or' && otherFiltersLength === 0) {
-      return entityTypeFilters[0];
-    }
-
-    return undefined;
   };
 
   return (
@@ -984,7 +965,8 @@ const WidgetCreationParameters = () => {
             return null;
           }
 
-          const entityTypeFromFilters = getEntityTypeFromFilters(filters);
+          const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filters ?? undefined);
+          const entityTypeFromFilters = entityTypeFilters.length === 1 ? entityTypeFilters[0] : undefined;
           const entityType = entityTypeFromFilters
             ?? (host.kind === 'fintelTemplate' ? host.fintelEntityType : undefined);
           const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
