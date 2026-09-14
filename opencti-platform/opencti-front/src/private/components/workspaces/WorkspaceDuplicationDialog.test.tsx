@@ -148,7 +148,7 @@ describe('WorkspaceDuplicationDialog', () => {
     expect(mocks.notifySuccess).not.toHaveBeenCalled();
   });
 
-  it('disables submission for an empty name and restores the source name on reopen', async () => {
+  it('disables submission for an empty name and preserves it on reopen', async () => {
     const { user, rerender, props } = renderDialog();
     const input = screen.getByRole('textbox');
     await user.clear(input);
@@ -159,7 +159,7 @@ describe('WorkspaceDuplicationDialog', () => {
     rerender(<WorkspaceDuplicationDialog {...props} displayDuplicate={false} />);
     rerender(<WorkspaceDuplicationDialog {...props} displayDuplicate={true} />);
 
-    expect(screen.getByRole('textbox')).toHaveValue('Source workspace - copy');
+    expect(screen.getByRole('textbox')).toHaveValue('');
   });
 
   it('keeps submission disabled while another duplication is running', () => {
