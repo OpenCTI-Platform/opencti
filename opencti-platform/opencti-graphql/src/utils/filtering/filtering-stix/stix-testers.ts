@@ -482,7 +482,7 @@ export const testSsvcAutomatable = (stix: any, filter: Filter, changeContext?: {
 };
 
 export const testSsvcTechnicalImpact = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: string | null = stix.x_opencti_ssvc_technical_impact ?? stix.extensions?.[STIX_EXT_OCTI].ssvc_technical_impact ?? null;
+  const stixValue: string | null = stix.x_opencti_ssvc_technical_impact ?? stix.extensions?.[STIX_EXT_OCTI]?.ssvc_technical_impact ?? null;
   const value = stixValue ? [stixValue] : [];
   return testStringFilter(filter, value, changeContext);
 };
