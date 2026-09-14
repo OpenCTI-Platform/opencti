@@ -42,7 +42,7 @@ const WidgetVerticalBars = ({
       hasLegend,
       'dataPoints',
     ) as ApexOptions;
-  }, [theme, interval, formatter, isStacked, hasLegend]);
+  }, [theme, formatter, isStacked, hasLegend]);
 
   return (
     <Chart
