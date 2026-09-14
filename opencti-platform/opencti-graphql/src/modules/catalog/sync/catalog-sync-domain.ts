@@ -342,7 +342,7 @@ const synchronizeCatalog = async (
       await updateCatalogContracts(context, user, catalogSyncDiff.contractsUpdates);
     }
     await deleteCatalogContracts(context, user, catalogSyncDiff.contractsDeletions);
-    await upsertCatalog(context, user, catalogSyncDiff.catalogUpsert);
+    await upsertCatalog(context, user, catalogSyncDiff.catalogUpsert, currentCatalog);
     const isNotNil = (str: string | null | undefined): str is string => Boolean(str);
     let usedLogos = catalogSyncDiff.contractsCreations.map(({ logo_uri }) => logo_uri).filter(isNotNil);
     usedLogos = usedLogos.concat(catalogSyncDiff.contractsUpdates.map(({ logo_uri }) => logo_uri).filter(isNotNil));
