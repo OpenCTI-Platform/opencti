@@ -57,5 +57,59 @@ export const useFormBuilderOperations = (
     }));
   }, [updateFormData]);
 
-  return { renameField, toggleParsedMode, addAdditionalEntity };
+  const updateRelationshipEntity = useCallback((
+    relationshipId: string,
+    side: 'fromEntity' | 'toEntity',
+    entityId: string,
+  ) => {
+    updateFormData((prev) => ({
+      ...prev,
+      relationships: prev.relationships.map((relationship) => (
+        relationship.id === relationshipId
+          ? {
+              ...relationship,
+              [side]: entityId,
+              relationshipType: relationship.relationshipType ? '' : relationship.relationshipType,
+            }
+          : relationship
+      )),
+    }));
+  }, [updateFormData]);
+
+  const updateRelationshipType = useCallback((
+    relationshipId: string,
+    relationshipType: string,
+  ) => {
+    updateFormData((prev) => ({
+      ...prev,
+      relationships: prev.relationships.map((relationship) => (
+        relationship.id === relationshipId
+          ? { ...relationship, relationshipType }
+          : relationship
+      )),
+    }));
+  }, [updateFormData]);
+
+  const toggleRelationshipRequired = useCallback((
+    relationshipId: string,
+    required: boolean,
+  ) => {
+    updateFormData((prev) => ({
+      ...prev,
+      relationships: prev.relationships.map((relationship) => (
+        relationship.id === relationshipId
+          ? { ...relationship, required }
+          : relationship
+      )),
+    }));
+  }, [updateFormData]);
+
+  return {
+    renameField,
+    toggleParsedMode,
+    addAdditionalEntity,
+    updateRelationshipEntity,
+    updateRelationshipType,
+    toggleRelationshipRequired,
+  };
 };

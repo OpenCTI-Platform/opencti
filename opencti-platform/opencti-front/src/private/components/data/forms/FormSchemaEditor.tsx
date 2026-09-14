@@ -100,7 +100,14 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const updateFormData = useCallback((updater: (prev: FormBuilderData) => FormBuilderData) => {
     setFormData((prev) => updater(prev));
   }, []);
-  const { renameField, toggleParsedMode, addAdditionalEntity } = useFormBuilderOperations(updateFormData);
+  const {
+    renameField,
+    toggleParsedMode,
+    addAdditionalEntity,
+    updateRelationshipEntity,
+    updateRelationshipType,
+    toggleRelationshipRequired,
+  } = useFormBuilderOperations(updateFormData);
 
   const mainEntityInfo = entityTypes.find((e) => e.value === formData.mainEntityType);
   const isContainer = mainEntityInfo?.isContainer || false;
@@ -388,6 +395,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               formData={formData}
               handleFieldChange={handleFieldChange}
               updateFormData={updateFormData}
+              updateRelationshipEntity={updateRelationshipEntity}
+              updateRelationshipType={updateRelationshipType}
+              toggleRelationshipRequired={toggleRelationshipRequired}
               handleRemoveRelationship={handleRemoveRelationship}
               handleAddRelationship={handleAddRelationship}
             />

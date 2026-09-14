@@ -112,4 +112,54 @@ describe('useFormBuilderOperations', () => {
     }));
     expect(getCurrent().additionalEntities[1].id).toMatch(/^entity-/);
   });
+
+  it('updates a relationship entity and clears an existing relationship type', () => {
+    const { result, getCurrent } = renderOperations();
+    const relationship = {
+      id: 'relationship-1',
+      fromEntity: 'main_entity',
+      toEntity: 'entity-1',
+      relationshipType: 'related-to',
+      required: false,
+    };
+    getCurrent().relationships.push(relationship);
+
+    act(() => result.current.updateRelationshipEntity('relationship-1', 'fromEntity', 'entity-2'));
+
+    expect(getCurrent().relationships).toContainEqual({
+      ...relationship,
+      fromEntity: 'entity-2',
+      relationshipType: '',
+    });
+  });
+
+  it('updates a relationship type', () => {
+    const { result, getCurrent } = renderOperations();
+    getCurrent().relationships.push({
+      id: 'relationship-1',
+      fromEntity: 'main_entity',
+      toEntity: 'entity-1',
+      relationshipType: '',
+      required: false,
+    });
+
+    act(() => result.current.updateRelationshipType('relationship-1', 'related-to'));
+
+    expect(getCurrent().relationships[0].relationshipType).toBe('related-to');
+  });
+
+  it('toggles relationship required state', () => {
+    const { result, getCurrent } = renderOperations();
+    getCurrent().relationships.push({
+      id: 'relationship-1',
+      fromEntity: 'main_entity',
+      toEntity: 'entity-1',
+      relationshipType: '',
+      required: false,
+    });
+
+    act(() => result.current.toggleRelationshipRequired('relationship-1', true));
+
+    expect(getCurrent().relationships[0].required).toBe(true);
+  });
 });

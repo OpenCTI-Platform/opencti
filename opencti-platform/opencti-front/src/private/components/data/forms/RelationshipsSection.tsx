@@ -15,6 +15,13 @@ export interface RelationshipsSectionProps {
   formData: FormBuilderData;
   handleFieldChange: (path: string, value: unknown) => void;
   updateFormData: (updater: (prev: FormBuilderData) => FormBuilderData) => void;
+  updateRelationshipEntity?: (
+    relationshipId: string,
+    side: 'fromEntity' | 'toEntity',
+    entityId: string,
+  ) => void;
+  updateRelationshipType?: (relationshipId: string, relationshipType: string) => void;
+  toggleRelationshipRequired?: (relationshipId: string, required: boolean) => void;
   handleRemoveRelationship: (relationshipId: string) => void;
   handleAddRelationship: () => void;
 }
@@ -23,12 +30,30 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
   formData,
   handleFieldChange,
   updateFormData,
+  updateRelationshipEntity,
+  updateRelationshipType,
+  toggleRelationshipRequired,
   handleRemoveRelationship,
   handleAddRelationship,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
+  const updateEntity = updateRelationshipEntity || ((relationshipId, side, entityId) => {
+    const relationshipIndex = formData.relationships.findIndex((relationship) => relationship.id === relationshipId);
+    handleFieldChange(`relationships.${relationshipIndex}.${side}`, entityId);
+    if (formData.relationships[relationshipIndex]?.relationshipType) {
+      handleFieldChange(`relationships.${relationshipIndex}.relationshipType`, '');
+    }
+  });
+  const updateType = updateRelationshipType || ((relationshipId, relationshipType) => {
+    const relationshipIndex = formData.relationships.findIndex((relationship) => relationship.id === relationshipId);
+    handleFieldChange(`relationships.${relationshipIndex}.relationshipType`, relationshipType);
+  });
+  const updateRequired = toggleRelationshipRequired || ((relationshipId, required) => {
+    const relationshipIndex = formData.relationships.findIndex((relationship) => relationship.id === relationshipId);
+    handleFieldChange(`relationships.${relationshipIndex}.required`, required);
+  });
 
   const renderRelationshipField = (field: FormFieldAttribute, index: number, relationshipIndex: number) => {
     const fieldPath = `relationships.${relationshipIndex}.fields.${index}`;
@@ -226,11 +251,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
         <Select
           value={relationship.fromEntity}
           onValueChange={(value) => {
-            handleFieldChange(`relationships.${relationshipIndex}.fromEntity`, value);
-            // Clear relationship type when from entity changes
-            if (relationship.relationshipType) {
-              handleFieldChange(`relationships.${relationshipIndex}.relationshipType`, '');
-            }
+            updateEntity(relationship.id, 'fromEntity', value);
           }}
         >
           <div>
@@ -251,11 +272,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
         <Select
           value={relationship.toEntity}
           onValueChange={(value) => {
-            handleFieldChange(`relationships.${relationshipIndex}.toEntity`, value);
-            // Clear relationship type when to entity changes
-            if (relationship.relationshipType) {
-              handleFieldChange(`relationships.${relationshipIndex}.relationshipType`, '');
-            }
+            updateEntity(relationship.id, 'toEntity', value);
           }}
         >
           <div>
@@ -275,7 +292,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
 
         <Select
           value={relationship.relationshipType}
-          onValueChange={(value) => handleFieldChange(`relationships.${relationshipIndex}.relationshipType`, value)}
+          onValueChange={(value) => updateType(relationship.id, value)}
           disabled={!relationship.fromEntity || !relationship.toEntity}
         >
           <div>
@@ -297,7 +314,7 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
           control={(
             <Switch
               checked={relationship.required || false}
-              onChange={(e) => handleFieldChange(`relationships.${relationshipIndex}.required`, e.target.checked)}
+              onChange={(e) => updateRequired(relationship.id, e.target.checked)}
             />
           )}
           label={t_i18n('Required')}
