@@ -33,6 +33,8 @@ import {
   setCurrentStripSink,
 } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
+import { deferIntents, fireResubmit, initPendingIntents, matchLandedIntents, pendingIntentsAccepting, registerPendingIntentsEsOps } from './sequencer-pending-intents';
+import { DeferredMissingReferenceError } from '../../config/errors';
 import { flushSequencerEvents } from '../stream/stream-handler';
 import { lockResources } from '../../lock/master-lock';
 import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-buffer';
@@ -453,6 +455,21 @@ const runBatchLoop = async () => {
     });
     await initPendingRefs();
   }
+  // retry-gap option 1: hard-ref retention store (used by intents whose context asks for it,
+  // today the chunk intake manager's)
+  registerPendingIntentsEsOps({
+    indexExists: (index) => elIndexExists(index),
+    createIndex: (index, mappingProperties) => elCreateIndex(index, mappingProperties),
+    bulk: async (body) => {
+      const esContext = executionContext('sequencer', SYSTEM_USER);
+      return elRawBulk(esContext, { body });
+    },
+    search: async (query) => {
+      const esContext = executionContext('sequencer', SYSTEM_USER);
+      return elRawSearch(esContext, SYSTEM_USER, null, query);
+    },
+  });
+  await initPendingIntents();
   logApp.info('[SEQUENCER] batch loop started');
   // Deferral lanes, RESIDUAL since P2 merge-fold (plan 0009 s9.7): same-target different-input
   // ENTITY writes now chain within one batch (each step diffing against the predecessor's
@@ -538,6 +555,11 @@ const runBatchLoop = async () => {
     parkedInBatch.forEach((p) => {
       if (p.deadline <= now) forceDirect.add(p.intent.id);
     });
+    // retry-gap option 1: creations to RETAIN (pending intents) instead of rejecting, settled
+    // after the apply phase, once persisted (a chunk ack must never outrun the recorded debt)
+    const deferrals: { intent: SequencerIntent; absorbed: SequencerIntent[]; missing: string[]; err: unknown }[] = [];
+    const hardRefIds = (intent: SequencerIntent): string[] => [intent.input.fromId, intent.input.toId]
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
     const t0 = Date.now();
     const plan = buildBatchPlan(batch, (id) => sequencerIdentityMap.resolveInternalId(id), forceDirect, {
       parkSoftRefs: SEQUENCER_CONFIG.parkSoftRefs,
@@ -556,9 +578,16 @@ const runBatchLoop = async () => {
     // NOW with the FINAL error code (distinct from MISSING_REFERENCE_ERROR on purpose):
     // pycti's retry classifier reports the object once and drops it, no retry budget burnt.
     plan.finalMissing.forEach(({ intent, missing }) => {
-      sequencerMetrics.intent('failed', intent.kind);
       sequencerMetrics.memberDead();
-      intent.reject(MissingReferenceFinalError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }));
+      const err = MissingReferenceFinalError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' });
+      // retry-gap option 1: a "dead" member is usually just LATE (verdict 31): retain the
+      // creation when the caller asked for it, it lands when the member does or expires visibly
+      if (intent.context?.deferMissingRefs && pendingIntentsAccepting()) {
+        deferrals.push({ intent, absorbed: [], missing, err });
+        return;
+      }
+      sequencerMetrics.intent('failed', intent.kind);
+      intent.reject(err);
     });
     // s9.10.2: dead SOFT member refs were stripped in the plan; the intents apply without
     // them. Counted per stripped id; first occurrences sampled for live diagnosis.
@@ -655,6 +684,15 @@ const runBatchLoop = async () => {
         });
         return;
       }
+      // retry-gap option 1: past its deadline, a creation still missing a hard reference is
+      // RETAINED (pending intents store) when the caller asked for it, instead of failing
+      // into a retry ladder that no longer exists on the chunk path
+      if (isMissingRef && leader.context?.deferMissingRefs && pendingIntentsAccepting()) {
+        const unresolved: unknown = (err as any)?.extensions?.data?.unresolvedIds ?? (err as any)?.data?.unresolvedIds;
+        const missing = Array.isArray(unresolved) && unresolved.length > 0 ? unresolved.map(String) : hardRefIds(leader);
+        deferrals.push({ intent: leader, absorbed, missing, err });
+        return;
+      }
       sequencerMetrics.intent('failed', leader.kind);
       leader.reject(err);
       // absorbed asserted the same input on the same target: they fail identically today
@@ -737,6 +775,26 @@ const runBatchLoop = async () => {
       }
       try {
         const tFlush = Date.now();
+        // retry-gap option 1: persist the retained creations BEFORE their promises settle
+        // (the chunk ack must never outrun the recorded debt); a store failure falls back to
+        // today's rejection, visibly
+        if (deferrals.length > 0) {
+          let retained = false;
+          try {
+            retained = await deferIntents(deferrals.map(({ intent, missing }) => ({ intent, missing })));
+          } catch (deferErr) {
+            logApp.error('[SEQUENCER] pending intents persistence failed, rejecting as today', { cause: deferErr });
+          }
+          deferrals.forEach(({ intent, absorbed, missing, err }) => {
+            const outcome = retained ? DeferredMissingReferenceError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }) : err;
+            sequencerMetrics.intent(retained ? 'retained' : 'failed', intent.kind);
+            intent.reject(outcome);
+            absorbed.forEach((a) => {
+              sequencerMetrics.intent(retained ? 'retained' : 'failed', a.kind);
+              a.reject(outcome);
+            });
+          });
+        }
         if (buffer.indexCalls.length > 0 || buffer.updateOps.length > 0) {
           const flushContext = executionContext('sequencer', SYSTEM_USER);
           await elFlushSequencerWrites(flushContext, SYSTEM_USER, buffer);
@@ -756,6 +814,10 @@ const runBatchLoop = async () => {
           const element = result?.element ?? result;
           const hits = matchCreatedElement(element);
           if (hits.length > 0) fireReconcile(hits);
+          // retry-gap option 1: a landed element may be the missing endpoint of retained
+          // creations: re-submit them through the boundary (fire-and-forget, sequential)
+          const landed = matchLandedIntents(element);
+          if (landed.length > 0) fireResubmit(landed);
         });
         pendings.forEach(({ leader, absorbed, result }) => {
           sequencerMetrics.intent('applied', leader.kind);

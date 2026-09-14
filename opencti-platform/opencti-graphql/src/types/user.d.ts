@@ -87,6 +87,9 @@ interface AuthContext {
   // POC ingestion sequencer (plan 0009 s9.8.3): in-bundle ref ids collected when the
   // ||M|| marks were stripped from this request's variables (httpAuthenticatedContext)
   memberRefIds?: Set<string>;
+  // POC chunk-queue intake (retry-gap option 1): a creation whose hard reference is still
+  // missing at apply time is RETAINED by the sequencer (pending intents) instead of rejected
+  deferMissingRefs?: boolean;
   req?: Express.Request;
   requestAbortSignal?: AbortSignal;
   blocked_for_lts_validation?: boolean;

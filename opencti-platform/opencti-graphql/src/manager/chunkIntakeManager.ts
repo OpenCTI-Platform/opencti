@@ -18,6 +18,8 @@ import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
 import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
+import { registerPendingIntentSettled } from '../database/sequencer/sequencer-pending-intents';
+import { SEQUENCER_DEFERRED_ERROR } from '../config/errors';
 import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
 import { reportExpectation } from '../domain/work';
@@ -35,6 +37,10 @@ const CHUNK_INTAKE_MANAGER_KEY = conf.get('chunk_intake_manager:lock_key') || 'c
 const SCHEDULE_TIME = Number(conf.get('chunk_intake_manager:interval') ?? 10000);
 const PREFETCH = Number(conf.get('chunk_intake_manager:prefetch') ?? 8);
 const MAX_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:max_transient_attempts') ?? 20);
+// Retry-gap option 1: a creation whose hard reference is still missing after its park
+// deadline is RETAINED by the sequencer (pending intents) and re-submitted when the
+// reference lands, instead of failing into a client retry ladder that this path removed.
+const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs', true);
 
 // Chunk-level failure policy. A chunk fails as a whole for two very different reasons that
 // must not share a fate. STRUCTURAL (poison): the failure is a property of the message
@@ -136,6 +142,7 @@ export const createChunkContext = async (message: ChunkMessage, operations: Chun
   context.req = req;
   context.workId = message.work_id;
   context.draft_context = message.draft_id;
+  context.deferMissingRefs = DEFER_MISSING_REFS;
   // ||M|| marks are transport-only: strip them for the WHOLE chunk before any coercion or
   // resolution, exactly as the HTTP edge does for a batched body. The union rides the context
   // to the sequencer boundary, where it classifies a missing ref as an in-chunk member.
@@ -165,21 +172,35 @@ export const createChunkContext = async (message: ChunkMessage, operations: Chun
   return { context: context as AuthContext, user };
 };
 
+// Outcome of one operation: ok, failed with an error, or RETAINED by the sequencer (its hard
+// reference is still missing: the creation is stored and re-submitted when the reference
+// lands, so it is neither an error nor a completion yet).
+interface OperationOutcome {
+  error?: string;
+  deferred?: boolean;
+}
+
 const reportChunkOutcome = async (
   context: AuthContext,
   user: AuthUser,
   message: ChunkMessage,
   operation: ChunkOperation,
-  error?: string,
+  outcome: OperationOutcome,
 ) => {
-  if (error) {
-    logApp.error('[CHUNK-INTAKE] Operation failed', { chunk_id: message.chunk_id, object_id: operation.object_id, error });
+  if (outcome.deferred) {
+    // the work expectation stays open: the pending intents store reports it when the
+    // creation lands or expires (registerPendingIntentSettled below)
+    operationsCounter?.add(1, { outcome: 'deferred' });
+    return;
   }
-  operationsCounter?.add(1, { outcome: error ? 'error' : 'ok' });
+  if (outcome.error) {
+    logApp.error('[CHUNK-INTAKE] Operation failed', { chunk_id: message.chunk_id, object_id: operation.object_id, error: outcome.error });
+  }
+  operationsCounter?.add(1, { outcome: outcome.error ? 'error' : 'ok' });
   // Work bookkeeping is now in process: pycti called reportExpectation over HTTP for EVERY
   // object (success included), which was the second HTTP call per object on the old path.
   if (message.work_id) {
-    await reportExpectation(context, user, message.work_id, error ? { error, source: 'chunk intake' } : undefined);
+    await reportExpectation(context, user, message.work_id, outcome.error ? { error: outcome.error, source: 'chunk intake' } : undefined);
   }
 };
 
@@ -212,19 +233,23 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     // in the remaining operations. Within a phase everything is in flight at once, like an
     // HTTP-batched body: ordering inside the chunk is the sequencer's business.
     const resolved = new Map<string, string>();
-    const runOperation = async (operation: ChunkOperation): Promise<string | undefined> => {
+    const runOperation = async (operation: ChunkOperation): Promise<OperationOutcome> => {
       try {
         const result = await executeChunkOperation(context, operation);
         if (result.errors?.length) {
-          return String(result.errors[0].message);
+          const first: any = result.errors[0];
+          if (first?.extensions?.code === SEQUENCER_DEFERRED_ERROR) {
+            return { deferred: true };
+          }
+          return { error: String(first.message) };
         }
         if (operation.echo_id) {
           const root: any = result.data ? Object.values(result.data)[0] : undefined;
           if (root?.id) resolved.set(operation.echo_id, String(root.id));
         }
-        return undefined;
+        return {};
       } catch (e: any) {
-        return String(e.message ?? e);
+        return { error: String(e.message ?? e) };
       }
     };
     const producers = operations.filter((operation) => operation.echo_id);
@@ -273,6 +298,13 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
 
 const chunkIntakeInitializer = async () => {
   registerChunkMetrics();
+  // Terminal outcome of a retained creation: meet the work expectation the chunk skipped
+  // (applied), or meet it with an error (expired / failed), so works stay exact.
+  registerPendingIntentSettled(async (record, error) => {
+    if (!record.work_id) return;
+    const settleContext = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
+    await reportExpectation(settleContext, SYSTEM_USER, record.work_id, error ? { error, source: 'chunk intake (retained creation)' } : undefined);
+  });
   await registerChunkIntakeQueue();
   const consumer: ChunkConsumer = await consumeChunkIntakeQueue(PREFETCH, (payload: string, controls: ChunkControls) => {
     processChunkMessage(payload, controls).catch((e) => {

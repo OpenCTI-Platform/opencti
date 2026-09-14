@@ -100,7 +100,8 @@
       "max_batch_bytes": 8388608,
       "gather_window_ms": 0,
       "park_deadline_ms": 5000,
-      "queue_max_intents": 2000,
+      "queue_max_intents": 10000,
+      "pending_intents_max": 200000,
       "queue_max_bytes": 67108864,
       "identity_map_size": 200000,
       "identity_map_ttl_s": 600,
@@ -331,7 +332,8 @@
     "interval": 10000,
     "queue_name": "chunk_intake",
     "prefetch": 8,
-    "max_transient_attempts": 20
+    "max_transient_attempts": 20,
+    "defer_missing_refs": true
   },
   "publisher_manager": {
     "enabled": true,

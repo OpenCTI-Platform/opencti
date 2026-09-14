@@ -5,7 +5,7 @@ import { ValueType } from '@opentelemetry/api';
 import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { meterManager } from '../../config/tracing';
 
-export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred';
+export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred' | 'retained';
 export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events' | 'resolve_ahead';
 export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent';
 
@@ -33,6 +33,8 @@ class SequencerMetrics {
   private eventsCoalesced: Counter | null = null;
 
   private pendingRefs: Counter | null = null;
+
+  private pendingIntents: Counter | null = null;
 
   private chainStepsCounter: Counter | null = null;
 
@@ -99,6 +101,10 @@ class SequencerMetrics {
     this.eventsCoalesced = meter.createCounter('opencti_sequencer_events_coalesced_total', {
       valueType: ValueType.INT,
       description: 'Update events merged into a per-entity batch event (E8, coalesce_update_events)',
+    });
+    this.pendingIntents = meter.createCounter('opencti_sequencer_pending_intents_total', {
+      valueType: ValueType.INT,
+      description: 'Retained creations (hard-ref retention) by event (deferred, redeferred, resubmitted, applied, expired, failed)',
     });
     this.pendingRefs = meter.createCounter('opencti_sequencer_pending_refs_total', {
       valueType: ValueType.INT,
@@ -175,6 +181,10 @@ class SequencerMetrics {
 
   sidewriteGrouped(count = 1) {
     this.sidewritesGrouped?.add(count);
+  }
+
+  pendingIntentEvent(event: 'deferred' | 'redeferred' | 'resubmitted' | 'applied' | 'expired' | 'failed' | 'pending', count = 1) {
+    this.pendingIntents?.add(count, { event });
   }
 
   pendingRefEvent(kind: 'stripped' | 'reconciled' | 'expired', count = 1) {

@@ -184,6 +184,17 @@ export const MissingReferenceFinalError = (data?: any) => error(MISSING_REF_FINA
   ...data,
 });
 
+// POC chunk-queue intake, retry-gap option 1 (2026-09-14): the creation is RETAINED in the
+// sequencer's pending intents store and re-submitted when its missing reference lands. The
+// caller must read it as accepted-later, not failed. The code deliberately avoids the
+// MISSING_REFERENCE_ERROR substring so no client retry ladder fires on it.
+export const SEQUENCER_DEFERRED_ERROR = 'SEQUENCER_DEFERRED';
+export const DeferredMissingReferenceError = (data?: any) => error(SEQUENCER_DEFERRED_ERROR, 'Creation deferred until its reference lands', {
+  http_status: 202,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const VALIDATION_ERROR = 'VALIDATION_ERROR';
 export const ValidationError = (message: string, field?: string | number, data?: any) => error(VALIDATION_ERROR, message, {
   http_status: 500,

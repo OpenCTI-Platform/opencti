@@ -106,6 +106,7 @@ import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { getCurrentStripSink, registerReconcileAssert } from './sequencer/sequencer-pending-refs';
+import { registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -4598,5 +4599,25 @@ registerReconcileAssert(async (record, targetId) => {
     toId: targetId,
     relationship_type: record.rel_type,
   });
+});
+// Retry-gap option 1 (2026-09-14): a RETAINED creation re-enters the boundary with its
+// recorded input under a fresh context that keeps asking for retention (a still-missing
+// reference re-defers it, same record). Worker origin is required for sequencer
+// eligibility: the memory record carries the original user; a rehydrated one (after a
+// restart) re-submits as SYSTEM_USER marked as worker origin (documented divergence).
+registerPendingIntentResubmit(async (record) => {
+  const resubmitContext = executionContext('sequencer_resubmit');
+  resubmitContext.deferMissingRefs = true;
+  resubmitContext.workId = record.work_id;
+  const resubmitUser: AuthUser = record.user ?? {
+    ...SYSTEM_USER,
+    origin: { ...(SYSTEM_USER.origin ?? {}), call_retry_number: 0 },
+  };
+  const input = JSON.parse(record.input_json);
+  const opts = record.opts_json ? JSON.parse(record.opts_json) : {};
+  if (record.kind === 'relation') {
+    return createRelation(resubmitContext, resubmitUser, input, opts);
+  }
+  return createEntity(resubmitContext, resubmitUser, input, record.type, opts);
 });
 // endregion
