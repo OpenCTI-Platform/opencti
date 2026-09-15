@@ -12,6 +12,14 @@ import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../../../widget/widgetUtils';
 
 type ListItem = object & { id: string };
+type DisplayScalar = string | number | boolean;
+type DisplayInputValue
+  = | DisplayScalar
+    | null
+    | undefined
+    | DisplayInputValue[]
+    | { [key: string]: DisplayInputValue };
+type NormalizedDisplayValue = DisplayScalar | DisplayScalar[];
 
 const resolveWorkflowPath = (attribute?: string | null) => {
   if (attribute === 'x_opencti_workflow_id') {
@@ -20,12 +28,12 @@ const resolveWorkflowPath = (attribute?: string | null) => {
   return attribute ?? '';
 };
 
-const hasDisplayableValue = (value: unknown) => {
+const hasDisplayableValue = (value: NormalizedDisplayValue | null | undefined) => {
   if (Array.isArray(value)) return value.length > 0;
   return value !== '' && value !== null && value !== undefined;
 };
 
-const normalizeObjectForDisplay = (value: unknown): unknown => {
+const normalizeObjectForDisplay = (value: DisplayInputValue): NormalizedDisplayValue => {
   if (Array.isArray(value)) {
     return value
       .flatMap((item) => {
@@ -36,7 +44,7 @@ const normalizeObjectForDisplay = (value: unknown): unknown => {
   }
 
   if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
+    const record = value as Record<string, DisplayInputValue>;
     const preferredKeys = ['name', 'value', 'definition', 'main', 'label'];
     for (const key of preferredKeys) {
       const normalized = normalizeObjectForDisplay(record[key]);
