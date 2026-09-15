@@ -520,7 +520,17 @@ export const planSubmission = async (
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
   logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
 
-  const draftPlan = finalIsDraft ? buildDraftPlan(form.name, schema, values, user, isBypass) : null;
+  let draftPlan: DraftPlan | null = null;
+  if (finalIsDraft) {
+    try {
+      draftPlan = buildDraftPlan(form.name, schema, values, user, isBypass);
+    } catch (error) {
+      // Preserve the same error surface as commitSubmission's queue-push failures below,
+      // since draft-plan building was part of that single try/catch before the split.
+      logApp.error('[FORM] Error sending bundle to connector queue', { error });
+      throw FunctionalError('Failed to process form submission', { cause: error });
+    }
+  }
 
   return { bundle, mainEntityStixId, finalIsDraft, draftPlan };
 };

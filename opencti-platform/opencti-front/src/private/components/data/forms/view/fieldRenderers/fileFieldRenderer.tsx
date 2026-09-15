@@ -14,8 +14,10 @@ const fileFieldStyles = {
   fileChip: { marginRight: 5, marginBottom: 5 },
 } as const;
 
-// Stays MUI: this value is a base64 payload ({ name, data, mime_type, size }), not a File,
-// so FileSelect cannot represent it — convert once the library accepts a stored-file value.
+// The raw upload widget (<input type="file"> + IconButton below) stays MUI/native: its
+// value is a base64 payload ({ name, data, mime_type, size }), not a File, so the design-system
+// FileSelect cannot represent it — convert once the library accepts a stored-file value.
+// The uploaded-file list below already renders with the design-system Chip.
 const renderFilesField = (context: FieldRendererContext): React.ReactNode => {
   const {
     field,

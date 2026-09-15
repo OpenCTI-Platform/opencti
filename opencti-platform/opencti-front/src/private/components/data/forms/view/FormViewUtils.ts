@@ -55,11 +55,9 @@ export const computeDraftPolicy = (
     },
     author: {
       visible: !!(author && (isBypass || author.isEditable)),
-      initialized: !!(author && (
-        (author.type === 'static' && author.defaultValue)
-        || author.isEditable
-        || isBypass
-      )),
+      // Note: caller (FormView.tsx) special-cases `type === 'static' && defaultValue` in its own
+      // branch before checking `initialized`, so that combination never reaches this clause.
+      initialized: !!(author && (author.isEditable || isBypass)),
       required: !!(author?.isRequired && author.type !== 'main_entity_author'),
       validationRequired: !isBypass && !!(
         author?.isEditable
