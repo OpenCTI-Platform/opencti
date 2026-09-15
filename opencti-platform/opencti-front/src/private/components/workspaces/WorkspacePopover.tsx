@@ -75,9 +75,9 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
 
   const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
 
-  const updater = (store: RecordSourceSelectorProxy, mutationField: string) => {
+  const updater = (store: RecordSourceSelectorProxy) => {
     if (paginationOptions) {
-      insertNode(store, 'Pagination_workspaces', paginationOptions, mutationField);
+      insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
     }
   };
 

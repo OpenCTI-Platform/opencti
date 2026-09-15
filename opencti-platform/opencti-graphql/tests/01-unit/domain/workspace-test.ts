@@ -5,7 +5,7 @@ import * as redis from '../../../src/database/redis';
 import * as access from '../../../src/utils/access';
 import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as containerDomain from '../../../src/domain/container';
-import { dashboardDuplicate, investigationDuplicate } from '../../../src/modules/workspace/workspace-domain';
+import { duplicateWorkspace } from '../../../src/modules/workspace/workspace-domain';
 
 const context = {} as any;
 const user = { id: 'user-id' } as any;
@@ -38,7 +38,9 @@ describe('workspace duplication', () => {
       description: 'source-description',
     } as any);
 
-    await dashboardDuplicate(context, user, duplicateInput);
+    await duplicateWorkspace(context, user, duplicateInput);
+
+    expect(middlewareLoader.storeLoadById).toHaveBeenCalledExactlyOnceWith(context, user, duplicateInput.id, 'Workspace');
 
     expect(containerDomain.filterUnwantedEntitiesOut).not.toHaveBeenCalled();
     expect(middleware.createEntity).toHaveBeenCalledWith(
@@ -69,7 +71,9 @@ describe('workspace duplication', () => {
     const filterSpy = vi.mocked(containerDomain.filterUnwantedEntitiesOut);
     filterSpy.mockResolvedValue(['visible-id']);
 
-    await investigationDuplicate(context, user, duplicateInput);
+    await duplicateWorkspace(context, user, duplicateInput);
+
+    expect(middlewareLoader.storeLoadById).toHaveBeenCalledExactlyOnceWith(context, user, duplicateInput.id, 'Workspace');
 
     expect(containerDomain.filterUnwantedEntitiesOut).toHaveBeenCalledWith({
       context,
@@ -100,7 +104,7 @@ describe('workspace duplication', () => {
     const filterSpy = vi.mocked(containerDomain.filterUnwantedEntitiesOut);
     filterSpy.mockResolvedValue([]);
 
-    await investigationDuplicate(context, user, duplicateInput);
+    await duplicateWorkspace(context, user, duplicateInput);
 
     expect(filterSpy).toHaveBeenCalledWith({ context, user, ids: [] });
     expect(middleware.createEntity).toHaveBeenCalledWith(
@@ -111,27 +115,27 @@ describe('workspace duplication', () => {
     );
   });
 
-  it.each([dashboardDuplicate, investigationDuplicate])('rejects a missing source before checking capabilities or creating (%s)', async (duplicate) => {
+  it('rejects a missing source before checking capabilities or creating', async () => {
     vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue(undefined as any);
 
-    await expect(duplicate(context, user, duplicateInput)).rejects.toThrow();
+    await expect(duplicateWorkspace(context, user, duplicateInput)).rejects.toThrow();
     expect(access.isUserHasCapability).not.toHaveBeenCalled();
     expect(middleware.createEntity).not.toHaveBeenCalled();
   });
 
   it.each([
-    ['investigation', dashboardDuplicate],
-    ['dashboard', investigationDuplicate],
-  ] as const)('rejects a %s source through %s', async (sourceType, duplicate) => {
+    ['investigation', 'EXPLORE_EXUPDATE'],
+    ['dashboard', 'INVESTIGATION_INUPDATE'],
+  ] as const)('rejects a %s source with only %s', async (sourceType, capability) => {
     vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({
       id: 'source-id',
       type: sourceType,
     } as any);
+    vi.mocked(access.isUserHasCapability).mockImplementation((_, requiredCapability) => requiredCapability === capability);
 
-    await expect(duplicate(context, user, duplicateInput)).rejects.toThrow();
+    await expect(duplicateWorkspace(context, user, duplicateInput)).rejects.toThrow();
 
     expect(containerDomain.filterUnwantedEntitiesOut).not.toHaveBeenCalled();
-    expect(access.isUserHasCapability).not.toHaveBeenCalled();
     expect(middleware.createEntity).not.toHaveBeenCalled();
   });
 
@@ -141,23 +145,23 @@ describe('workspace duplication', () => {
       type: 'unsupported',
     } as any);
 
-    await expect(dashboardDuplicate(context, user, duplicateInput)).rejects.toThrow();
+    await expect(duplicateWorkspace(context, user, duplicateInput)).rejects.toThrow();
 
     expect(access.isUserHasCapability).not.toHaveBeenCalled();
     expect(middleware.createEntity).not.toHaveBeenCalled();
   });
 
   it.each([
-    ['dashboard', dashboardDuplicate, 'EXPLORE_EXUPDATE'],
-    ['investigation', investigationDuplicate, 'INVESTIGATION_INUPDATE'],
-  ] as const)('rejects %s duplication when its capability is missing', async (sourceType, duplicate, capability) => {
+    ['dashboard', 'EXPLORE_EXUPDATE'],
+    ['investigation', 'INVESTIGATION_INUPDATE'],
+  ] as const)('rejects %s duplication when its capability is missing', async (sourceType, capability) => {
     vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({
       id: 'source-id',
       type: sourceType,
     } as any);
     vi.spyOn(access, 'isUserHasCapability').mockReturnValue(false);
 
-    await expect(duplicate(context, user, duplicateInput)).rejects.toThrow();
+    await expect(duplicateWorkspace(context, user, duplicateInput)).rejects.toThrow();
 
     expect(access.isUserHasCapability).toHaveBeenCalledWith(user, capability);
     expect(containerDomain.filterUnwantedEntitiesOut).not.toHaveBeenCalled();
