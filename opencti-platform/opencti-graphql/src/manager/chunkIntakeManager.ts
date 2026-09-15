@@ -30,6 +30,7 @@ import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
 import { reportExpectation } from '../domain/work';
 import { getEntityFromCache } from '../database/cache';
+import { isTransitoryError } from '../database/engine';
 import { wait } from '../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -47,6 +48,17 @@ const MAX_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:max_transie
 // deadline is RETAINED by the sequencer (pending intents) and re-submitted when the
 // reference lands, instead of failing into a client retry ladder that this path removed.
 const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs', true);
+// Per-OPERATION transient policy (depth campaign v2, 2026-09-14: a 240-rejection burst of the
+// ES search pool cost 34 indicators at prefetch 48, where pycti's ladder retried them on
+// HTTP). A transient engine error inside one operation (rejected execution, circuit breaker,
+// 429 / 503, connection resets) is retried in place with backoff while HOLDING the chunk's
+// prefetch slot (backpressure on the very pool that is saturating); past the cap the
+// operation is RETAINED (pending store, sweeper backoff) instead of being lost.
+const OP_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:op_transient_attempts') ?? 5);
+const OP_TRANSIENT_BACKOFF_MS = Number(conf.get('chunk_intake_manager:op_transient_backoff_ms') ?? 250);
+// Gate-only fault injection: the first N consumer operations of the process fail once with a
+// synthetic transient error (statusCode 429), so the retry path is exercised deterministically.
+let faultTransientBudget = Number(conf.get('chunk_intake_manager:fault_transient_ops') ?? 0);
 
 // Chunk-level failure policy. A chunk fails as a whole for two very different reasons that
 // must not share a fate. STRUCTURAL (poison): the failure is a property of the message
@@ -189,6 +201,14 @@ interface OperationOutcome {
   deferred?: boolean;
 }
 
+// A GraphQL error out of execute wraps the resolver's error as originalError; engine errors
+// carry their cause (shard failures included) under extensions.data. isTransitoryError walks
+// both shapes (status codes, connection codes, rejected execution / circuit breaker text).
+const isTransientOperationError = (err: any): boolean => isTransitoryError(err)
+  || isTransitoryError(err?.originalError)
+  || isTransitoryError(err?.originalError?.extensions?.data?.cause)
+  || isTransitoryError(err?.extensions?.data?.cause);
+
 const unresolvedIdsOf = (err: any): string[] => {
   const ids = err?.extensions?.data?.unresolvedIds ?? err?.originalError?.extensions?.data?.unresolvedIds ?? err?.data?.unresolvedIds;
   return Array.isArray(ids) ? ids.map(String) : [];
@@ -255,8 +275,38 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     // in the remaining operations. Within a phase everything is in flight at once, like an
     // HTTP-batched body: ordering inside the chunk is the sequencer's business.
     const resolved = new Map<string, string>();
-    const runOperation = async (operation: ChunkOperation): Promise<OperationOutcome> => {
+    // Transient engine error on a consumer: retry in place with backoff, then retain.
+    const transientOutcome = async (operation: ChunkOperation, err: any, attempt: number): Promise<OperationOutcome | null> => {
+      if (operation.echo_id || !isTransientOperationError(err)) return null;
+      if (attempt < OP_TRANSIENT_ATTEMPTS) {
+        const backoffMs = Math.min(OP_TRANSIENT_BACKOFF_MS * 2 ** attempt, 4000);
+        logApp.warn('[CHUNK-INTAKE] Operation retried (transient engine error)', {
+          chunk_id: message.chunk_id, object_id: operation.object_id, attempt: attempt + 1, backoffMs, cause: String(err?.message ?? err),
+        });
+        operationsCounter?.add(1, { outcome: 'transient_retry' });
+        await wait(backoffMs);
+        return { deferred: false }; // sentinel: retry
+      }
+      if (DEFER_MISSING_REFS && pendingIntentsAccepting()) {
+        const retained = await deferOperation({ operation, envelope: envelopeOf(message), user, missing: [] });
+        if (retained) {
+          logApp.warn('[CHUNK-INTAKE] Operation retained after transient retries (sweeper will re-execute)', {
+            chunk_id: message.chunk_id, object_id: operation.object_id, attempts: attempt, cause: String(err?.message ?? err),
+          });
+          return { deferred: true };
+        }
+      }
+      return null;
+    };
+    const runOperationOnce = async (operation: ChunkOperation, attempt: number): Promise<OperationOutcome> => {
       try {
+        if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
+          faultTransientBudget -= 1;
+          const synthetic: any = new Error('synthetic transient fault (chunk_intake_manager.fault_transient_ops)');
+          synthetic.name = 'ResponseError';
+          synthetic.meta = { statusCode: 429 };
+          throw synthetic;
+        }
         const result = await executeChunkOperation(context, operation);
         if (result.errors?.length) {
           const first: any = result.errors[0];
@@ -264,6 +314,8 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
           if (code === SEQUENCER_DEFERRED_ERROR) {
             return { deferred: true };
           }
+          const transient = await transientOutcome(operation, first, attempt);
+          if (transient) return transient;
           // A consumer refused for a missing reference before it reached the loop: retain
           // the operation (producers keep the error path: their consumers already ran).
           if (code === MISSING_REF_ERROR && !operation.echo_id && DEFER_MISSING_REFS && pendingIntentsAccepting()) {
@@ -284,7 +336,16 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         }
         return {};
       } catch (e: any) {
+        const transient = await transientOutcome(operation, e, attempt);
+        if (transient) return transient;
         return { error: String(e.message ?? e) };
+      }
+    };
+    // deferred === false is the retry sentinel of transientOutcome: loop until a real outcome
+    const runOperation = async (operation: ChunkOperation): Promise<OperationOutcome> => {
+      for (let attempt = 0; ; attempt += 1) {
+        const outcome = await runOperationOnce(operation, attempt);
+        if (outcome.deferred !== false) return outcome;
       }
     };
     const producers = operations.filter((operation) => operation.echo_id);
