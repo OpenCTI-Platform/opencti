@@ -102,6 +102,8 @@ import SettingsTaxonomiesPage from '../model/settingsTaxonomies.pageModel';
 import SettingsFileIndexingPage from '../model/settingsFileIndexing.pageModel';
 import SettingsFiligranExperiencePage from '../model/settingsFiligranExperience.pageModel';
 import CardPage from '../model/card.pageModel';
+import CitizenshipDocumentPage from '../model/citizenshipDocument.pageModel';
+import CitizenshipDocumentDetailsPage from '../model/citizenshipDocumentDetails.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -1383,6 +1385,45 @@ const navigateIndividual = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+const navigateCitizenshipDocument = async (page: Page) => {
+  const individualInitData = 'Citizenship document e2e';
+  const cardPage = new CardPage(page);
+  const citizenshipDocumentPage = new CitizenshipDocumentPage(page);
+  await citizenshipDocumentPage.navigateFromMenu();
+  await expect(citizenshipDocumentPage.getPage()).toBeVisible();
+  await expect(page.getByText(individualInitData)).toBeVisible();
+  await citizenshipDocumentPage.getItemFromList(individualInitData).click();
+
+  const citizenshipDocumentDetailsPage = new CitizenshipDocumentDetailsPage(page);
+  await expect(citizenshipDocumentDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await citizenshipDocumentDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('individual-knowledge')).toBeVisible();
+
+  // -- Content
+  await citizenshipDocumentDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await citizenshipDocumentDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Sightings
+  await citizenshipDocumentDetailsPage.tabs.goToSightingsTab();
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+
+  // -- Data
+  await citizenshipDocumentDetailsPage.tabs.goToDataTab();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
+
+  // -- History
+  await citizenshipDocumentDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
 const navigateRegion = async (page: Page) => {
   const regionInitData = 'Region e2e';
   const cardPage = new CardPage(page);
@@ -1815,6 +1856,8 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Entities', 'Systems');
   await leftBarPage.clickOnMenu('Entities', 'Individuals');
   await leftBarPage.expectBreadcrumb('Entities', 'Individuals');
+  await leftBarPage.clickOnMenu('Entities', 'Citizenship Documents');
+  await leftBarPage.expectBreadcrumb('Entities', 'Citizenship Documents');
 
   // Checking Locations menu
   await leftBarPage.clickOnMenu('Locations', 'Regions');
@@ -1959,6 +2002,7 @@ test.describe('Navigation available on CE', { tag: ['@ce'] }, () => {
     await navigateSecurityPlatform(page);
     await navigateSystem(page);
     await navigateIndividual(page);
+    await navigateCitizenshipDocument(page);
   });
 
   test('Check navigation on Locations menu', async ({ page }) => {
