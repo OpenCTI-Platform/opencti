@@ -111,6 +111,33 @@ describe('convertAggregateDistributions via distributionEntities (field=creator_
     expect(result[0].value).toBe(7);
     expect(result[0].entity).toBeNull();
   });
+
+  it('returns a restricted entity with a valid standard_id when access is denied', async () => {
+    vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(false);
+
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([
+      { label: ENTITY_ID_1, value: 4 },
+    ] as any);
+
+    const entity = {
+      ...makeEntity(ENTITY_ID_1, 'Secret Org'),
+      standard_id: 'identity--d4551de9-4b9c-570e-a51c-d3c321eb9a8d',
+    };
+    vi.mocked(engine.elFindByIds).mockResolvedValue({
+      [ENTITY_ID_1]: entity,
+    } as any);
+
+    const result = await distributionEntities(mockContext, accessModule.SYSTEM_USER, ['Threat-Actor'], {
+      field: 'creator_id',
+      limit: 10,
+      order: 'desc',
+    } as any);
+
+    expect(result[0].entity?.name).toBe('Restricted');
+    // standard_id must remain the real one: it's not sensitive content and must
+    // stay a valid STIX id for downstream consumers (e.g. STIX bundle export).
+    expect((result[0].entity as any)?.standard_id).toBe(entity.standard_id);
+  });
 });
 
 // ── distributionEntities name branch: lines 902-906 ──────────────────────────
