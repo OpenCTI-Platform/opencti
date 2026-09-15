@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
+import { FunctionComponent, UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -10,19 +10,18 @@ import { handleError, MESSAGING$ } from '../../../relay/environment';
 import stopEvent from '../../../utils/domEvent';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import {
-  WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation,
-  WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data,
-} from './__generated__/WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation.graphql';
+  WorkspaceDuplicationDialogWorkspaceDuplicateMutation,
+  WorkspaceDuplicationDialogWorkspaceDuplicateMutation$data,
+} from './__generated__/WorkspaceDuplicationDialogWorkspaceDuplicateMutation.graphql';
 import { WorkspaceDuplicationDialogFragment$data, WorkspaceDuplicationDialogFragment$key } from './__generated__/WorkspaceDuplicationDialogFragment.graphql';
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 import { Input } from '@filigran/design-system';
 
 const workspaceDuplicationFragment = graphql`
   fragment WorkspaceDuplicationDialogFragment on Workspace {
+    id
     name
     type
-    description
-    manifest
   }
 `;
 
@@ -33,16 +32,17 @@ interface WorkspaceDuplicationDialogProps {
   handleCloseDuplicate: () => void;
   setDuplicating: (value: boolean) => void;
   updater?: (
-    store: RecordSourceSelectorProxy<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data>,
+    store: RecordSourceSelectorProxy<WorkspaceDuplicationDialogWorkspaceDuplicateMutation$data>,
   ) => void;
   paginationOptions?: WorkspacesLinesPaginationQuery$variables;
 }
 
-const workspaceDuplicationDialogDuplicatedWorkspaceCreation = graphql`
-  mutation WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation(
-    $input: WorkspaceDuplicateInput!
+const duplicateWorkspaceMutation = graphql`
+  mutation WorkspaceDuplicationDialogWorkspaceDuplicateMutation(
+    $id: ID!
+    $name: String!
   ) {
-    workspaceDuplicate(input: $input) {
+    workspaceDuplicate(input: { id: $id, name: $name }) {
       id
       ...WorkspacesLine_node
     }
@@ -61,42 +61,56 @@ const WorkspaceDuplicationDialog: FunctionComponent<
 }) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceDuplicationFragment, data);
+  const isInvestigation = workspace.type === 'investigation';
 
-  const duplicatedDashboardInitialName = useMemo(
+  const duplicatedWorkspaceInitialName = useMemo(
     () => `${workspace.name} - ${t_i18n('copy')}`,
     [t_i18n, workspace.name],
   );
-  const [newName, setNewName] = useState(duplicatedDashboardInitialName);
-  const [commitDuplicatedWorkspaceCreation] = useApiMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
-    workspaceDuplicationDialogDuplicatedWorkspaceCreation,
-  );
-  const submitDashboardDuplication = (
+  const [newName, setNewName] = useState(duplicatedWorkspaceInitialName);
+  const wasDisplayed = useRef(false);
+
+  useEffect(() => {
+    if (displayDuplicate && !wasDisplayed.current) {
+      setNewName(duplicatedWorkspaceInitialName);
+    }
+    wasDisplayed.current = displayDuplicate;
+  }, [displayDuplicate, duplicatedWorkspaceInitialName]);
+
+  const [commitDuplicateWorkspace] = useApiMutation<WorkspaceDuplicationDialogWorkspaceDuplicateMutation>(duplicateWorkspaceMutation);
+  const submitWorkspaceDuplication = (
     e: UIEvent,
     submittedWorkspace: WorkspaceDuplicationDialogFragment$data,
   ) => {
     stopEvent(e);
-    commitDuplicatedWorkspaceCreation({
+    if (!['dashboard', 'investigation'].includes(submittedWorkspace.type ?? '')) {
+      setDuplicating(false);
+      return;
+    }
+    commitDuplicateWorkspace({
       variables: {
-        input: {
-          name: submittedWorkspace.name,
-          type: submittedWorkspace.type ?? '',
-          description: submittedWorkspace.description ?? '',
-          manifest: submittedWorkspace.manifest ?? '',
-        },
+        id: submittedWorkspace.id,
+        name: submittedWorkspace.name,
       },
-      updater: (store) => updater && updater(store),
+      updater,
       onError: (error) => {
         handleError(error);
+        setDuplicating(false);
       },
       onCompleted: (result) => {
         handleCloseDuplicate();
+        setDuplicating(false);
         const isDashboardView = !paginationOptions;
         if (isDashboardView) {
+          const duplicatedWorkspace = result.workspaceDuplicate;
+          const workspaceType = isInvestigation ? 'investigations' : 'dashboards';
           MESSAGING$.notifySuccess(
             <span>
-              {t_i18n('The dashboard has been duplicated. You can manage it')}{' '}
+              {isInvestigation
+                ? t_i18n('The investigation has been duplicated. You can manage it')
+                : t_i18n('The dashboard has been duplicated. You can manage it')}{' '}
               <Link
-                to={`/dashboard/workspaces/dashboards/${result.workspaceDuplicate?.id}`}
+                to={`/dashboard/workspaces/${workspaceType}/${duplicatedWorkspace?.id}`}
               >
                 {t_i18n('here')}
               </Link>
@@ -110,7 +124,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
 
   const handleSubmitDuplicate = (e: UIEvent, submittedNewName: string) => {
     setDuplicating(true);
-    submitDashboardDuplication(e, { ...workspace, name: submittedNewName });
+    submitWorkspaceDuplication(e, { ...workspace, name: submittedNewName });
   };
 
   return (
@@ -118,15 +132,15 @@ const WorkspaceDuplicationDialog: FunctionComponent<
       open={displayDuplicate}
       onClose={handleCloseDuplicate}
       fullWidth={true}
-      title={t_i18n('Duplicate the dashboard')}
+      title={isInvestigation ? t_i18n('Duplicate the investigation') : t_i18n('Duplicate the dashboard')}
     >
       <Input
         error={!newName ? t_i18n('This field is required') : undefined}
         autoFocus
-        id="duplicated_dashboard_name"
+        id="duplicated_workspace_name"
         label={t_i18n('New name')}
         type="text"
-        defaultValue={newName}
+        value={newName}
         onChange={(event) => {
           event.preventDefault();
           setNewName(event.target.value);
@@ -136,7 +150,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
         <Button variant="secondary" onClick={() => handleCloseDuplicate()}>{t_i18n('Cancel')}</Button>
         <Button
           onClick={(e) => handleSubmitDuplicate(e, newName)}
-          disabled={duplicating || !newName}
+          disabled={duplicating || !newName || !['dashboard', 'investigation'].includes(workspace.type ?? '')}
         >
           {t_i18n('Duplicate')}
         </Button>

@@ -16,7 +16,6 @@ import type {
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
-  WorkspaceDuplicateInput,
   WorkspaceObjectsArgs,
 } from '../../generated/graphql';
 import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -28,6 +27,7 @@ import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
+import { filterUnwantedEntitiesOut } from '../../domain/container';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
@@ -157,6 +157,7 @@ export const initializeAuthorizedMembers = (
   }
   return initializedAuthorizedMembers;
 };
+
 export const addWorkspace = async (
   context: AuthContext,
   user: AuthUser,
@@ -342,11 +343,26 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   return workspaceId;
 };
 
-export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
+const duplicateDashboard = async (
+  context: AuthContext,
+  user: AuthUser,
+  source: BasicStoreEntityWorkspace,
+  name: string,
+) => {
+  if (!isUserHasCapability(user, 'EXPLORE_EXUPDATE')) {
+    throw ForbiddenAccess();
+  }
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
+  const workspaceToCreate = {
+    type: 'dashboard',
+    name,
+    manifest: source.manifest,
+    tags: source.tags,
+    description: source.description,
+    restricted_members: authorizedMembers,
+  };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
-  const sanitizeElement = { ...input, manifest: undefined };
+  const sanitizeElement = { ...workspaceToCreate, manifest: undefined };
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -356,6 +372,59 @@ export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, i
     context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
+};
+
+const duplicateInvestigation = async (
+  context: AuthContext,
+  user: AuthUser,
+  source: BasicStoreEntityWorkspace,
+  name: string,
+) => {
+  if (!isUserHasCapability(user, 'INVESTIGATION_INUPDATE')) {
+    throw ForbiddenAccess();
+  }
+  const investigatedEntitiesIds = await filterUnwantedEntitiesOut({
+    context,
+    user,
+    ids: source.investigated_entities_ids ?? [],
+  });
+  const authorizedMembers = initializeAuthorizedMembers([], user);
+  const workspaceToCreate = {
+    type: 'investigation',
+    name,
+    manifest: source.manifest,
+    tags: source.tags,
+    description: source.description,
+    investigated_entities_ids: investigatedEntitiesIds,
+    restricted_members: authorizedMembers,
+  };
+  const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
+  const sanitizeElement = { ...workspaceToCreate, manifest: undefined };
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates ${created.type} workspace \`${created.name}\` from custom-named duplication`,
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
+};
+
+export const duplicateWorkspace = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: { id: string; name: string },
+) => {
+  const source = await findById(context, user, input.id);
+  switch (source?.type) {
+    case 'dashboard':
+      return duplicateDashboard(context, user, source, input.name);
+    case 'investigation':
+      return duplicateInvestigation(context, user, source, input.name);
+    default:
+      throw ForbiddenAccess();
+  }
 };
 
 export const workspaceImportWidgetConfiguration = async (

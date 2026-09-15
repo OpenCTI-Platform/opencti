@@ -13092,13 +13092,10 @@ input WorkspaceAddInput {
 }
 
 input WorkspaceDuplicateInput {
-  type: String!
+  id: ID!
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
-  description: String
-  manifest: String
-  tags: [String!]
 }
 
 input ImportConfigurationInput {

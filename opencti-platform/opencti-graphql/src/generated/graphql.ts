@@ -38780,11 +38780,8 @@ export type WorkspaceConnection = {
 };
 
 export type WorkspaceDuplicateInput = {
-  description?: InputMaybe<Scalars['String']['input']>;
-  manifest?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  tags?: InputMaybe<Array<Scalars['String']['input']>>;
-  type: Scalars['String']['input'];
 };
 
 export type WorkspaceEdge = {

@@ -83,11 +83,8 @@ input WorkspaceAddInput {
 }
 
 input WorkspaceDuplicateInput {
-    type: String!
+    id: ID!
     name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String
-    manifest: String
-    tags: [String!]
 }
 
 input ImportConfigurationInput {
