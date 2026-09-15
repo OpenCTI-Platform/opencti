@@ -25,7 +25,7 @@ import {
   registerPendingOperationExecute,
   type PendingOperationEnvelope,
 } from '../database/sequencer/sequencer-pending-intents';
-import { MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR } from '../config/errors';
+import { DatabaseError, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR } from '../config/errors';
 import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
 import { reportExpectation } from '../domain/work';
@@ -204,10 +204,37 @@ interface OperationOutcome {
 // A GraphQL error out of execute wraps the resolver's error as originalError; engine errors
 // carry their cause (shard failures included) under extensions.data. isTransitoryError walks
 // both shapes (status codes, connection codes, rejected execution / circuit breaker text).
+// isTransitoryError walks fixed paths only: an ES shard rejection surfaces as
+// DatabaseError('Find direct ids fail', { cause: EngineShardsError({ shards }) }) and its
+// shards.failures[].reason.type = es_rejected_execution_exception sits below every path it
+// reads (ref campaign w2 pf96: 103 indicators lost, 427 rejections, zero retries). Fallback:
+// the serialized error chain, bounded, matched on the engine's transient signatures.
+const TRANSIENT_SIGNATURES = /es_rejected_execution|circuit_breaking|too_many_requests|service_unavailable|rejected execution/i;
+const errorChainText = (err: any): string => {
+  const seen = new WeakSet<object>();
+  const safe = (value: any, depth: number): any => {
+    if (value === null || typeof value !== 'object' || depth > 12) return typeof value === 'string' ? value.slice(0, 500) : value;
+    if (seen.has(value)) return undefined;
+    seen.add(value);
+    if (Array.isArray(value)) return value.slice(0, 20).map((v) => safe(v, depth + 1));
+    const out: Record<string, any> = {};
+    Object.getOwnPropertyNames(value).forEach((key) => {
+      if (key === 'stack') return;
+      out[key] = safe(value[key], depth + 1);
+    });
+    return out;
+  };
+  try {
+    return JSON.stringify(safe({ err, original: err?.originalError, data: err?.extensions?.data, originalData: err?.originalError?.extensions?.data }, 0)).slice(0, 32768);
+  } catch {
+    return String(err?.message ?? err);
+  }
+};
 const isTransientOperationError = (err: any): boolean => isTransitoryError(err)
   || isTransitoryError(err?.originalError)
   || isTransitoryError(err?.originalError?.extensions?.data?.cause)
-  || isTransitoryError(err?.extensions?.data?.cause);
+  || isTransitoryError(err?.extensions?.data?.cause)
+  || TRANSIENT_SIGNATURES.test(errorChainText(err));
 
 const unresolvedIdsOf = (err: any): string[] => {
   const ids = err?.extensions?.data?.unresolvedIds ?? err?.originalError?.extensions?.data?.unresolvedIds ?? err?.data?.unresolvedIds;
@@ -302,10 +329,11 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
       try {
         if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
           faultTransientBudget -= 1;
-          const synthetic: any = new Error('synthetic transient fault (chunk_intake_manager.fault_transient_ops)');
-          synthetic.name = 'ResponseError';
-          synthetic.meta = { statusCode: 429 };
-          throw synthetic;
+          // the REAL shape of an ES shard rejection on the chunk path (ref campaign w2 pf96):
+          // DatabaseError('Find direct ids fail') wrapping EngineShardsError({ shards })
+          throw DatabaseError('Find direct ids fail (synthetic transient fault, chunk_intake_manager.fault_transient_ops)', {
+            cause: EngineShardsError({ shards: { total: 1, successful: 0, failed: 1, failures: [{ reason: { type: 'es_rejected_execution_exception', reason: 'rejected execution (synthetic)' } }] } }),
+          });
         }
         const result = await executeChunkOperation(context, operation);
         if (result.errors?.length) {
