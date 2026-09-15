@@ -1,20 +1,24 @@
 import { useMemo, useRef, useState } from 'react';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import {
+  addFilterGroupUtil,
   handleAddFilterWithEmptyValueUtil,
   handleAddRepresentationFilterUtil,
   handleAddSingleValueFilterUtil,
+  handleChangeFilterKeyUtil,
   handleChangeOperatorFiltersUtil,
   handleChangeRepresentationFilterUtil,
+  removeFilterGroupUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
   handleReplaceFilterValuesUtil,
+  handleSwitchGlobalModeUtil,
   handleSwitchLocalModeUtil,
 } from './filtersManageStateUtil';
-import { emptyFilterGroup } from './filtersUtils';
+import { cloneFilterGroup, emptyFilterGroup, ensureFilterGroupIds, extractAllFilters } from './filtersUtils';
 
 const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, defaultClearFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
-  const [filtersState, setFiltersState] = useState<FilterGroup>(initFilters ?? emptyFilterGroup);
+  const [filtersState, setFiltersState] = useState<FilterGroup>(() => ensureFilterGroupIds(cloneFilterGroup(initFilters ?? emptyFilterGroup)));
 
   const latestAddFilterIdRef = useRef<string | undefined>(undefined);
 
@@ -23,14 +27,24 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
     getLatestAddFilterId: (): string | undefined => {
       return latestAddFilterIdRef.current;
     },
-    handleAddFilterWithEmptyValue: (filter: Filter) => {
-      latestAddFilterIdRef.current = filter.id;
-      setFiltersState((prevState) => handleAddFilterWithEmptyValueUtil({ filters: prevState ?? emptyFilterGroup, filter }));
+    handleAddFilterWithEmptyValue: (filter: Filter, groupId?: string) => {
+      // when the filter is added in a non-root group, there is no chip in the root chip line to
+      // anchor the popover on: reset the anchor.
+      latestAddFilterIdRef.current = groupId ? undefined : filter.id;
+      setFiltersState((prevState) => handleAddFilterWithEmptyValueUtil({ filters: prevState ?? emptyFilterGroup, filter, groupId }));
+    },
+    handleAddFilterGroup: (parentGroupId?: string) => {
+      latestAddFilterIdRef.current = undefined;
+      setFiltersState((prevState) => addFilterGroupUtil({ filters: prevState ?? emptyFilterGroup, parentGroupId }));
+    },
+    handleRemoveFilterGroup: (groupId: string) => {
+      latestAddFilterIdRef.current = undefined;
+      setFiltersState((prevState) => removeFilterGroupUtil({ filters: prevState ?? emptyFilterGroup, groupId }));
     },
     handleAddRepresentationFilter: (id: string, value: string | null) => {
       if (value === null) { // handle clicking on 'no label' in entities list
         setFiltersState((prevState) => {
-          const findCorrespondingFilter = prevState?.filters.find((f) => id === f.id);
+          const findCorrespondingFilter = extractAllFilters(prevState ?? emptyFilterGroup).find((f) => id === f.id);
           if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
             latestAddFilterIdRef.current = id;
             return handleChangeOperatorFiltersUtil({
@@ -54,13 +68,17 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
       latestAddFilterIdRef.current = undefined;
       setFiltersState((prevState) => handleReplaceFilterValuesUtil({ filters: prevState, id, values }));
     },
+    handleChangeFilterKey: (id: string, newFilter: Filter) => {
+      latestAddFilterIdRef.current = undefined;
+      setFiltersState((prevState) => handleChangeFilterKeyUtil({ filters: prevState, id, newFilter }));
+    },
     handleChangeOperatorFilters: (id: string, operator: string) => {
       latestAddFilterIdRef.current = undefined;
       setFiltersState((prevState) => handleChangeOperatorFiltersUtil({ filters: prevState, id, operator }));
     },
     handleClearAllFilters: () => {
       latestAddFilterIdRef.current = undefined;
-      setFiltersState({ ...defaultClearFilters });
+      setFiltersState(ensureFilterGroupIds(cloneFilterGroup(defaultClearFilters)));
     },
     handleRemoveFilterById: (id: string) => {
       latestAddFilterIdRef.current = undefined;
@@ -70,12 +88,9 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
       latestAddFilterIdRef.current = undefined;
       setFiltersState((prevState) => handleRemoveRepresentationFilterUtil({ filters: prevState, id, value }));
     },
-    handleSwitchGlobalMode: () => {
+    handleSwitchGlobalMode: (groupId?: string) => {
       latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => ({
-        ...prevState,
-        mode: prevState.mode === 'and' ? 'or' : 'and',
-      }));
+      setFiltersState((prevState) => handleSwitchGlobalModeUtil({ filters: prevState, groupId }));
     },
     handleSwitchLocalMode: (filter: Filter) => {
       latestAddFilterIdRef.current = undefined;

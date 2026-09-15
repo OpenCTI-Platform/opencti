@@ -7,7 +7,6 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import { useFormatter } from './i18n';
 import { entityTypesFilters, filterOperatorsWithIcon, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { displayEntityTypeForTranslation, truncate } from '../utils/String';
-import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 /**
@@ -99,15 +98,6 @@ const TaskFilterValue = ({
           </span>
         );
       })}
-      {filters.filterGroups
-        && filters.filterGroups.length > 0 && (
-        <ImbricatedFilterGroupDisplay
-          filtersRepresentativesMap={filtersRepresentativesMap}
-          filterObj={filters}
-          filterMode={filters.mode}
-          filterStyle={CHIP_STYLE}
-        />
-      )}
     </>
   );
 };

@@ -1,7 +1,12 @@
 import { dissoc, mergeLeft, pipe, split } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
+import { isFilterGroupFormatCorrect, stripFilterIds } from './filters/filtersUtils';
 
-const buildParamsFromHistory = (params) => {
+// Stringify a filter group for the url, removing the frontend-only ids at any depth.
+// Values that are not filter groups are stringified as before.
+const stringifyFiltersForUrl = (filters) => JSON.stringify(isFilterGroupFormatCorrect(filters) ? stripFilterIds(filters) : filters);
+
+export const buildParamsFromHistory = (params) => {
   let urlParams = pipe(
     dissoc('graphData'),
     dissoc('openTimeField'),
@@ -34,13 +39,13 @@ const buildParamsFromHistory = (params) => {
   if (params.filters) {
     urlParams = {
       ...urlParams,
-      filters: JSON.stringify(params.filters),
+      filters: stringifyFiltersForUrl(params.filters),
     };
   }
   if (params.timeLineFilters) {
     urlParams = {
       ...urlParams,
-      timeLineFilters: JSON.stringify(params.timeLineFilters),
+      timeLineFilters: stringifyFiltersForUrl(params.timeLineFilters),
     };
   }
   if (params.zoom) {

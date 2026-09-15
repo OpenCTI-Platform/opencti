@@ -308,7 +308,7 @@
       "files": [
         "opencti-platform/opencti-front/src/components/list_lines/ListLines.jsx",
         "opencti-platform/opencti-front/src/components/dataGrid/components/DataTableHeaders.tsx",
-        "opencti-platform/opencti-front/src/components/filters/FilterChipPopover.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterEntityAutocomplete.tsx",
         "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContainer.tsx",
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
         "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
@@ -338,6 +338,54 @@
       "reason": "night-2 visual pass: the `Add filter` picker. It never HOLDS a value -- picking an option adds a filter and the field empties -- so `value` is a literal null and ONLY a keystroke may write the input: in single mode the library answers a pick with setInputValue(getOptionLabel(option), \"select\"), and accepting that programmatic write left the field reading \"Label\" after the filter was added, so filling the same text a second time fired no input event and never reopened the panel. The name rides on `placeholder` + aria-label under `labelPosition=\"none\"`: the library renders labels ABOVE the control, and this one shares a flex row with an unlabelled search field. Covered by ListFilters.picker.test.tsx, which mirrors filters.pageModel's two-pass sequence.",
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "nested filter group support: the recursive group editor's own floating panel (inline mode, in-flow Box, and the disablePortal Popper fallback) both wrap FilterGroupPanel in the library Paper, padding={0} — the panel's own Stack owns the internal spacing.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/FilterIconButtonContainer.tsx"
+      ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the group mode picker (AND/OR) in the recursive group editor, and the per-condition operator picker it renders for each filter row.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/group/FilterGroupPanel.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterRow.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterOperatorSelect.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the group/condition delete controls (destructive, tertiary) in the recursive group editor and each filter row.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/group/FilterGroupPanel.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterRow.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the relationships-perspective info tooltip in the widget creation dialog uses the library Text (variant content-compact-bold) for its section headings, replacing a bare <strong>.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationDataSelection.tsx"
       ]
     }
   ]

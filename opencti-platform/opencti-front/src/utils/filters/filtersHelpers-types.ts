@@ -3,6 +3,10 @@
 export type FilterValue = any;
 
 export type FilterGroup = {
+  // FRONTEND-ONLY stable uuid, used to address a group in a nested filter tree (add a filter in it,
+  // switch its and/or mode, delete it). It is never accepted by the backend `FilterGroup` input:
+  // every serialization path goes through stripFilterIds() which removes it recursively.
+  id?: string;
   mode: string;
   filters: Filter[];
   filterGroups: FilterGroup[];
@@ -23,16 +27,20 @@ export type HandleOperatorFilter = (
 ) => void;
 
 export interface handleFilterHelpers {
-  handleSwitchGlobalMode: () => void;
+  handleSwitchGlobalMode: (groupId?: string) => void;
   handleSwitchLocalMode: (filter: Filter) => void;
   handleRemoveRepresentationFilter: (id: string, valueId: string | Filter | undefined | null) => void;
   handleRemoveFilterById: (id: string) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
   handleAddRepresentationFilter: (id: string, valueId: string | null) => void;
-  handleAddFilterWithEmptyValue: (filter: Filter) => void;
+  handleAddFilterWithEmptyValue: (filter: Filter, groupId?: string) => void;
+  handleAddFilterGroup: (parentGroupId?: string) => void;
+  handleRemoveFilterGroup: (groupId: string) => void;
   handleClearAllFilters: (filters?: Filter[]) => void;
   getLatestAddFilterId: () => string | undefined;
   handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
   handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => void;
+  /** Replaces key/values/operator of an existing filter in-place, keeping its id and position. */
+  handleChangeFilterKey: (id: string, newFilter: Filter) => void;
 }
