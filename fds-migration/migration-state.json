@@ -339,6 +339,54 @@
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
       ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "nested filter group support: the recursive group editor's own floating panel (inline mode, in-flow Box, and the disablePortal Popper fallback) both wrap FilterGroupPanel in the library Paper, padding={0} — the panel's own Stack owns the internal spacing.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/FilterIconButtonContainer.tsx"
+      ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the group mode picker (AND/OR) in the recursive group editor, and the per-condition operator picker it renders for each filter row.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/group/FilterGroupPanel.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterRow.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterOperatorSelect.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the group/condition delete controls (destructive, tertiary) in the recursive group editor and each filter row.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/group/FilterGroupPanel.tsx",
+        "opencti-platform/opencti-front/src/components/filters/group/FilterRow.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the relationships-perspective info tooltip in the widget creation dialog uses the library Text (variant content-compact-bold) for its section headings, replacing a bare <strong>.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationDataSelection.tsx"
+      ]
     }
   ]
 }
