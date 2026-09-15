@@ -2404,7 +2404,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2); // the reports published in the last 3 years: report1, report2, report4, report5
+    expect(queryResult.data.reports.edges.length).toEqual(4); // the reports published in the last 3 years: report1, report2, report4, report5
   });
   it('should list entities according filters with only_eq_to operator', async () => {
     // only_eq_to operator with several filter keys: not supported
