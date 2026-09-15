@@ -7,6 +7,8 @@ interface InternalLock {
   signal: AbortSignal;
   extend: () => Promise<void>;
   unlock: () => Promise<void>;
+  acquireWaitMs?: number;
+  acquireAttempts?: number;
 }
 
 const activeLocks: Map<string, InternalLock> = new Map<string, InternalLock>();
@@ -28,7 +30,15 @@ initializeOnlyRedisLockClient().then(() => {
         const lock = await lockResource(data.ids, options);
         activeLocks.set(data.operation, lock);
         if (process.send) {
-          process.send({ operation: data.operation, type: data.type, success: true });
+          // Ship the acquisition measures to the parent: metrics are recorded there (master-lock),
+          // this child process has no metric exporter.
+          process.send({
+            operation: data.operation,
+            type: data.type,
+            success: true,
+            acquireWaitMs: lock.acquireWaitMs,
+            acquireAttempts: lock.acquireAttempts,
+          });
         }
       } catch (err) {
         if (process.send) {
