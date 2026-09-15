@@ -7,6 +7,7 @@ import { WorkspaceDuplicationDialogFragment$key } from './__generated__/Workspac
 
 const mocks = vi.hoisted(() => ({
   commit: vi.fn(),
+  investigationCommit: vi.fn(),
   handleError: vi.fn(),
   notifySuccess: vi.fn(),
   translate: (value: string) => value,
@@ -26,7 +27,7 @@ vi.mock('../../../components/i18n', () => ({
 }));
 
 vi.mock('../../../utils/hooks/useApiMutation', () => ({
-  default: () => [mocks.commit],
+  default: (mutation: unknown) => [JSON.stringify(mutation).includes('investigationDuplicate') ? mocks.investigationCommit : mocks.commit],
 }));
 
 vi.mock('../../../relay/environment', () => ({
@@ -77,9 +78,6 @@ describe('WorkspaceDuplicationDialog', () => {
     id: 'workspace-id',
     name: 'Source workspace',
     type: 'dashboard',
-    description: 'description',
-    manifest: null,
-    investigated_entities_ids: null,
   };
 
   const renderDialog = (overrides = {}) => {
@@ -108,12 +106,14 @@ describe('WorkspaceDuplicationDialog', () => {
     expect(props.setDuplicating).toHaveBeenCalledWith(true);
     expect(mocks.commit).toHaveBeenCalledWith(expect.objectContaining({
       variables: {
-        input: { id: 'workspace-id', name: 'Copied dashboard', type: 'dashboard' },
+        id: 'workspace-id',
+        name: 'Copied dashboard',
       },
     }));
+    expect(mocks.investigationCommit).not.toHaveBeenCalled();
 
     const mutation = mocks.commit.mock.calls[0][0];
-    mutation.onCompleted({ workspaceDuplicate: { id: 'duplicated-id' } }, null);
+    mutation.onCompleted({ dashboardDuplicate: { id: 'duplicated-id' } }, null);
 
     expect(props.handleCloseDuplicate).toHaveBeenCalledOnce();
     expect(props.setDuplicating).toHaveBeenLastCalledWith(false);
@@ -141,11 +141,47 @@ describe('WorkspaceDuplicationDialog', () => {
     expect(screen.getByRole('dialog', { name: 'Duplicate the investigation' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Duplicate' }));
-    const mutation = mocks.commit.mock.calls[0][0];
-    mutation.onCompleted({ workspaceDuplicate: { id: 'duplicated-investigation-id' } }, null);
+    expect(mocks.investigationCommit).toHaveBeenCalledWith(expect.objectContaining({
+      variables: { id: 'workspace-id', name: 'Source workspace - copy' },
+    }));
+    expect(mocks.commit).not.toHaveBeenCalled();
+    const mutation = mocks.investigationCommit.mock.calls[0][0];
+    mutation.onCompleted({ investigationDuplicate: { id: 'duplicated-investigation-id' } }, null);
 
     expect(props.handleCloseDuplicate).toHaveBeenCalledOnce();
     expect(mocks.notifySuccess).not.toHaveBeenCalled();
+  });
+
+  it.each(['dashboard', 'investigation'])('links to the duplicated %s using its mutation response', async (type) => {
+    const { user } = renderDialog({ data: { ...workspace, type } });
+    await user.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+    const commit = type === 'investigation' ? mocks.investigationCommit : mocks.commit;
+    commit.mock.calls[0][0].onCompleted({ [`${type}Duplicate`]: { id: 'duplicated-id' } }, null);
+    testRender(mocks.notifySuccess.mock.calls[0][0]);
+
+    expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute('href', `/dashboard/workspaces/${type}s/duplicated-id`);
+  });
+
+  it.each(['dashboard', 'investigation'])('passes the %s response field to the updater', async (type) => {
+    const updater = vi.fn();
+    const { user } = renderDialog({ data: { ...workspace, type }, updater });
+    await user.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+    const commit = type === 'investigation' ? mocks.investigationCommit : mocks.commit;
+    const store = {};
+    commit.mock.calls[0][0].updater(store);
+
+    expect(updater).toHaveBeenCalledWith(store, `${type}Duplicate`);
+  });
+
+  it('does not duplicate an unsupported workspace type', async () => {
+    const { user } = renderDialog({ data: { ...workspace, type: 'unsupported' } });
+    const button = screen.getByRole('button', { name: 'Duplicate' });
+    expect(button).toBeDisabled();
+    await user.click(button);
+    expect(mocks.commit).not.toHaveBeenCalled();
+    expect(mocks.investigationCommit).not.toHaveBeenCalled();
   });
 
   it('disables submission for an empty name and restores the source name on reopen', async () => {
