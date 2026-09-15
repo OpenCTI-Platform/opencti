@@ -26,14 +26,9 @@ import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
-import { utcDate } from '../../../src/utils/format';
+import { monthsAgo, yearsAgo } from '../../../src/utils/format';
 
 // File to test dynamic filtering with different keys, operators, modes, combinations
-
-// Publication dates and date filter bounds are relative to the execution date,
-// so that filters using relative dates (ex: 'now-3y') always give the same result.
-const monthsAgo = (months) => utcDate().subtract(months, 'months').toISOString();
-const yearsAgo = (years) => utcDate().subtract(years, 'years').toISOString();
 
 // test queries involving dynamic filters
 
@@ -577,18 +572,6 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
   });
   it('should list entities according to filters: complex filter combination with groups and filters imbrication', async () => {
-    // (confidence > 50)
-    // OR
-    //    [(confidence > 15)
-    //    AND
-    //        [(report_types != internal-report)
-    //        OR
-    //            (report_types = (internal-report OR threat-report)
-    //            AND
-    //            marking = marking2
-    //            )
-    //        ]
-    //    ]
     const queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
