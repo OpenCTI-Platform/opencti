@@ -505,6 +505,38 @@ describe('buildMainStixEntities', () => {
   });
 });
 
+describe('buildMainStixEntities entity-source adapters', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isStixCyberObservable).mockReturnValue(false);
+  });
+
+  it('routes to the lookup adapter when schema.mainEntityLookup is set and values.mainEntityLookup is present', async () => {
+    vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'report--entity-1' } as any);
+
+    const schema = makeSchema({ mainEntityLookup: true });
+    const values = { mainEntityLookup: 'entity-1' };
+
+    const result = await buildMainStixEntities(context, user, schema, values, 'Report', false);
+
+    expect(result.mainStixEntities).toHaveLength(1);
+    expect(result.mainEntityStixId).toBe('report--entity-1');
+  });
+
+  it('routes to the default adapter when mainEntityLookup is not set and mainEntityMultiple is false', async () => {
+    const schema = makeSchema({
+      mainEntityMultiple: false,
+      fields: [makeField()],
+    });
+    const values = { name: 'Report A' };
+
+    const result = await buildMainStixEntities(context, user, schema, values, 'Report', false);
+
+    expect(result.mainStixEntities).toHaveLength(1);
+    expect(result.mainEntityStixId).toBeDefined();
+  });
+});
+
 // ─── buildAdditionalEntities ──────────────────────────────────────────────────
 
 describe('buildAdditionalEntities', () => {

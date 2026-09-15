@@ -410,18 +410,83 @@ export const resolveAuthorizedMembersForDraft = (
   return Array.from(authorizedMembersMap.values());
 };
 
-// Submit a form and convert to STIX bundle
-export const formSubmit = async (
-  context: AuthContext,
+export interface DraftPlan {
+  draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean };
+}
+
+export const buildDraftPlan = (
+  formName: string,
+  schema: FormSchemaDefinition,
+  values: Record<string, any>,
   user: AuthUser,
-  input: FormSubmissionInput,
-  isDraft: boolean = false,
-): Promise<any> => {
-  const form = await findById(context, user, input.formId);
-  if (!form) {
-    throw FunctionalError('Form not found', { id: input.formId });
+  isBypass: boolean = false,
+): DraftPlan => {
+  let createdBy: string | null = null;
+  const {
+    finalDraftName,
+    finalDraftDescription,
+    finalDraftAssignees,
+    finalDraftParticipants,
+  } = resolveDraftFieldDefaults(formName, values, schema.draftDefaults, isBypass);
+
+  // Apply draft defaults for author
+  const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+  const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
+  const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
+  if (canOverrideDraftAuthor && values.draftAuthor) {
+    createdBy = normalizeOptionId(values.draftAuthor) || null;
+  } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
+    // User explicitly cleared the field; it's editable and not required → honour the opt-out
+    // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
+    createdBy = null;
+  } else if (schema.draftDefaults?.author) {
+    if (schema.draftDefaults.author.type === 'static') {
+      createdBy = schema.draftDefaults.author.defaultValue || null;
+    } else if (schema.draftDefaults.author.type === 'main_entity_author') {
+      createdBy = resolveMainEntityAuthorFromValues(schema, values);
+    } else if (schema.draftDefaults.author.type === 'none') {
+      createdBy = null;
+    }
   }
 
+  // Apply explicit authorized members from form submission
+  // Bypass users can always override; non-bypass users can override when the field is editable
+  const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
+  let authorized_members: MemberAccessInput[] = [];
+  if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
+    authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
+  } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
+    authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
+  }
+
+  const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
+    name: finalDraftName,
+  };
+  if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
+  if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
+  if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
+  if (createdBy) draftInput.createdBy = createdBy;
+  if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
+  // Form intake configuration must override customization mandatory attributes.
+  draftInput.bypassMandatoryAttributes = true;
+
+  return { draftInput };
+};
+
+export interface SubmissionPlan {
+  bundle: any;
+  mainEntityStixId: string | undefined;
+  finalIsDraft: boolean;
+  draftPlan: DraftPlan | null;
+}
+
+export const planSubmission = async (
+  context: AuthContext,
+  user: AuthUser,
+  form: BasicStoreEntityForm,
+  input: FormSubmissionInput,
+  isDraft: boolean,
+): Promise<SubmissionPlan> => {
   // eslint-disable-next-line no-useless-assignment
   let values = {} as Record<string, any>;
   try {
@@ -432,7 +497,6 @@ export const formSubmit = async (
 
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
 
-  // Enforce draft settings from schema
   let finalIsDraft = isDraft;
   if (schema.isDraftByDefault === true) {
     if (schema.allowDraftOverride === false) {
@@ -450,17 +514,43 @@ export const formSubmit = async (
   };
 
   const { mainEntityType } = schema;
-
   const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
-
   const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
-
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
   logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
 
+  let draftPlan: DraftPlan | null = null;
+  if (finalIsDraft) {
+    try {
+      draftPlan = buildDraftPlan(form.name, schema, values, user, isBypass);
+    } catch (error) {
+      // Preserve the same error surface as commitSubmission's queue-push failures below,
+      // since draft-plan building was part of that single try/catch before the split.
+      logApp.error('[FORM] Error sending bundle to connector queue', { error });
+      throw FunctionalError('Failed to process form submission', { cause: error });
+    }
+  }
+
+  return { bundle, mainEntityStixId, finalIsDraft, draftPlan };
+};
+
+export interface SubmissionResult {
+  success: boolean;
+  bundleId: string;
+  message: string;
+  entityId: string | undefined;
+}
+
+export const commitSubmission = async (
+  context: AuthContext,
+  user: AuthUser,
+  formId: string,
+  plan: SubmissionPlan,
+): Promise<SubmissionResult> => {
+  const { bundle, mainEntityStixId, finalIsDraft, draftPlan } = plan;
   try {
-    const connectorId = connectorIdFromIngestId(form.id);
+    const connectorId = connectorIdFromIngestId(formId);
     const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
     const workName = `Form submission @ ${now()}`;
     const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
@@ -469,57 +559,8 @@ export const formSubmit = async (
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
 
     let draftId = null;
-    if (finalIsDraft) {
-      let createdBy: string | null = null;
-      const {
-        finalDraftName,
-        finalDraftDescription,
-        finalDraftAssignees,
-        finalDraftParticipants,
-      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
-
-      // Apply draft defaults for author
-      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
-      const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
-      const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
-      if (canOverrideDraftAuthor && values.draftAuthor) {
-        createdBy = normalizeOptionId(values.draftAuthor) || null;
-      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
-        // User explicitly cleared the field; it's editable and not required → honour the opt-out
-        // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
-        createdBy = null;
-      } else if (schema.draftDefaults?.author) {
-        if (schema.draftDefaults.author.type === 'static') {
-          createdBy = schema.draftDefaults.author.defaultValue || null;
-        } else if (schema.draftDefaults.author.type === 'main_entity_author') {
-          createdBy = resolveMainEntityAuthorFromValues(schema, values);
-        } else if (schema.draftDefaults.author.type === 'none') {
-          createdBy = null;
-        }
-      }
-
-      // Apply explicit authorized members from form submission
-      // Bypass users can always override; non-bypass users can override when the field is editable
-      const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
-      let authorized_members: MemberAccessInput[] = [];
-      if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
-      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
-      }
-
-      const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
-        name: finalDraftName,
-      };
-      if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
-      if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
-      if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
-      if (createdBy) draftInput.createdBy = createdBy;
-      if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
-      // Form intake configuration must override customization mandatory attributes.
-      draftInput.bypassMandatoryAttributes = true;
-
-      const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
+    if (finalIsDraft && draftPlan) {
+      const draft = await addDraftWorkspace(context, SYSTEM_USER, draftPlan.draftInput);
       draftId = draft.id;
       // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
       await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
@@ -534,20 +575,35 @@ export const formSubmit = async (
       no_split: true,
     });
 
-    logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
-
+    logApp.info('[FORM] Bundle sent to connector queue', { formId, workId: work.id, bundleId: bundle.id });
     await addFormIntakeSubmittedCount();
 
     return {
       success: true,
       bundleId: bundle.id,
       message: 'Form submitted successfully and sent for processing',
-      entityId: finalIsDraft ? draftId : mainEntityStixId,
+      entityId: finalIsDraft ? draftId ?? undefined : mainEntityStixId,
     };
   } catch (error) {
     logApp.error('[FORM] Error sending bundle to connector queue', { error });
     throw FunctionalError('Failed to process form submission', { cause: error });
   }
+};
+
+// Submit a form and convert to STIX bundle
+export const formSubmit = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: FormSubmissionInput,
+  isDraft: boolean = false,
+): Promise<SubmissionResult> => {
+  const form = await findById(context, user, input.formId);
+  if (!form) {
+    throw FunctionalError('Form not found', { id: input.formId });
+  }
+
+  const plan = await planSubmission(context, user, form, input, isDraft);
+  return commitSubmission(context, user, form.id, plan);
 };
 
 export const generateFormExportConfiguration = async (

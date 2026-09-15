@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { convertFormBuilderDataToSchema, getAttributesForEntityType, getInitialMandatoryFields, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import {
+  convertFormBuilderDataToSchema,
+  formatFormSchemaMappingError,
+  getAttributesForEntityType,
+  getInitialMandatoryFields,
+  normalizeDraftAuthorizedMembersDefaults,
+  validateFormSchemaMappings,
+} from './FormUtils';
 import type { FormBuilderData } from './Form.d';
 import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
@@ -21,6 +28,117 @@ const baseBuilderData: FormBuilderData = {
   relationships: [],
   active: true,
 };
+
+describe('validateFormSchemaMappings', () => {
+  it('returns null when mainEntityFieldMode is not parsed and no additional entities use parsed mode', () => {
+    const data: FormBuilderData = { ...baseBuilderData, mainEntityFieldMode: 'multiple', additionalEntities: [] };
+
+    expect(validateFormSchemaMappings(data)).toBeNull();
+  });
+
+  it('returns a main-entity-mapping error when mainEntityFieldMode is parsed but mainEntityParseFieldMapping is missing', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'parsed',
+      mainEntityParseFieldMapping: undefined,
+      additionalEntities: [],
+    };
+
+    expect(validateFormSchemaMappings(data)).toEqual({ type: 'main-entity-mapping' });
+  });
+
+  it('returns null when mainEntityFieldMode is parsed and mainEntityParseFieldMapping is set', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'parsed',
+      mainEntityParseFieldMapping: 'pattern',
+      additionalEntities: [],
+    };
+
+    expect(validateFormSchemaMappings(data)).toBeNull();
+  });
+
+  it('returns an additional-entity-mappings error listing labels of additional entities missing parseFieldMapping', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'multiple',
+      additionalEntities: [
+        {
+          id: 'a1',
+          entityType: 'IPv4-Addr',
+          label: 'IP Address',
+          multiple: false,
+          fieldMode: 'parsed',
+          parseFieldMapping: undefined,
+        },
+        {
+          id: 'a2',
+          entityType: 'Domain-Name',
+          label: 'Domain',
+          multiple: false,
+          fieldMode: 'parsed',
+          parseFieldMapping: 'value',
+        },
+        {
+          id: 'a3',
+          entityType: 'Url',
+          label: 'URL',
+          multiple: false,
+          fieldMode: 'multiple',
+          parseFieldMapping: undefined,
+        },
+      ],
+    };
+
+    expect(validateFormSchemaMappings(data)).toEqual({
+      type: 'additional-entity-mappings',
+      missingLabels: ['IP Address'],
+    });
+  });
+
+  it('prioritizes the main-entity-mapping error over additional-entity-mappings errors', () => {
+    const data: FormBuilderData = {
+      ...baseBuilderData,
+      mainEntityFieldMode: 'parsed',
+      mainEntityParseFieldMapping: undefined,
+      additionalEntities: [
+        {
+          id: 'a1',
+          entityType: 'IPv4-Addr',
+          label: 'IP Address',
+          multiple: false,
+          fieldMode: 'parsed',
+          parseFieldMapping: undefined,
+        },
+      ],
+    };
+
+    expect(validateFormSchemaMappings(data)).toEqual({ type: 'main-entity-mapping' });
+  });
+});
+
+describe('formatFormSchemaMappingError', () => {
+  const t_i18n = (message: string) => `translated:${message}`;
+
+  it('formats a main-entity-mapping error with the translated message', () => {
+    expect(formatFormSchemaMappingError({ type: 'main-entity-mapping' }, t_i18n))
+      .toBe('translated:Map parsed values to attribute is required when using parsed mode');
+  });
+
+  it('translates the additional-entity prefix and appends one raw label', () => {
+    expect(formatFormSchemaMappingError({
+      type: 'additional-entity-mappings',
+      missingLabels: ['IP Address'],
+    }, t_i18n)).toBe('translated:Map parsed values to attribute is required for: IP Address');
+  });
+
+  it('translates the additional-entity prefix and appends multiple raw labels', () => {
+    expect(formatFormSchemaMappingError({
+      type: 'additional-entity-mappings',
+      missingLabels: ['IP Address', 'Domain'],
+    }, t_i18n)).toBe('translated:Map parsed values to attribute is required for: IP Address, Domain');
+  });
+});
 
 describe('normalizeDraftAuthorizedMembersDefaults', () => {
   it('should migrate legacy rules to normalized authorized member options', () => {
