@@ -26,9 +26,13 @@ import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
-import { monthsAgo, yearsAgo } from '../../../src/utils/format';
+import { monthsAgo, utcDate, yearsAgo } from '../../../src/utils/format';
 
 // File to test dynamic filtering with different keys, operators, modes, combinations
+
+// Converting monthsAgo and yearsAgo to iso string to be used in tests
+const isoMonthsAgo = (months) => utcDate(monthsAgo(months)).toISOString();
+const isoYearsAgo = (years) => utcDate(yearsAgo(years)).toISOString();
 
 // test queries involving dynamic filters
 
@@ -175,7 +179,7 @@ describe('Complex filters combinations for elastic queries', () => {
         name: 'Report1',
         stix_id: report1StixId,
         description: 'Report1 description',
-        published: monthsAgo(6),
+        published: isoMonthsAgo(6),
         objectMarking: [marking1StixId, marking2StixId],
         report_types: ['threat-report'],
         confidence: 10,
@@ -187,7 +191,7 @@ describe('Complex filters combinations for elastic queries', () => {
         stix_id: report2StixId,
         description: 'Report2 description',
         lang: 'Report1',
-        published: monthsAgo(12),
+        published: isoMonthsAgo(12),
         objectMarking: [marking2StixId],
         report_types: ['threat-report', 'internal-report'],
         confidence: 20,
@@ -197,7 +201,7 @@ describe('Complex filters combinations for elastic queries', () => {
       input: {
         name: 'Report3',
         stix_id: report3StixId,
-        published: yearsAgo(10),
+        published: isoYearsAgo(10),
         report_types: ['internal-report'],
         confidence: 30,
       },
@@ -207,7 +211,7 @@ describe('Complex filters combinations for elastic queries', () => {
         name: 'Report4',
         description: '', // empty string
         stix_id: report4StixId,
-        published: monthsAgo(12),
+        published: isoMonthsAgo(12),
         objectMarking: [marking2StixId, marking1StixId, marking3StixId],
         confidence: 40,
       },
@@ -217,7 +221,7 @@ describe('Complex filters combinations for elastic queries', () => {
         name: 'Report5',
         description: null,
         stix_id: report5StixId,
-        published: monthsAgo(1),
+        published: isoMonthsAgo(1),
         report_types: ['threat-report', 'internal-report'],
         objectMarking: [],
         confidence: 11,
@@ -368,13 +372,13 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'gt',
-              values: [monthsAgo(9)],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
             {
               key: 'published',
               operator: 'lt',
-              values: [yearsAgo(5)],
+              values: [isoYearsAgo(5)],
               mode: 'or',
             },
           ],
@@ -397,13 +401,13 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'gt',
-              values: [monthsAgo(9)],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
             {
               key: 'published',
               operator: 'lt',
-              values: [yearsAgo(5)],
+              values: [isoYearsAgo(5)],
               mode: 'or',
             },
           ],
@@ -475,7 +479,7 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'lt',
-              values: [monthsAgo(9)],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
           ],
@@ -497,7 +501,7 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'lt',
-              values: [monthsAgo(9)],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
           ],
@@ -555,7 +559,7 @@ describe('Complex filters combinations for elastic queries', () => {
                 {
                   key: 'published',
                   operator: 'lt',
-                  values: [monthsAgo(9)],
+                  values: [isoMonthsAgo(9)],
                   mode: 'or',
                 },
               ],
@@ -2374,7 +2378,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'and',
           filters: [{
             key: 'published',
-            values: [monthsAgo(18), monthsAgo(3)],
+            values: [isoMonthsAgo(18), isoMonthsAgo(3)],
             operator: 'within',
             mode: 'or',
           }],
