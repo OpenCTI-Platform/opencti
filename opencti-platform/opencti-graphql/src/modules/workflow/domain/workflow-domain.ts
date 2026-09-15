@@ -201,6 +201,7 @@ const notifyWorkflowTransitionComment = async (
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
+  completed?: boolean;
   history: string;
   pendingStatus?: string | null;
   pendingError?: string | null;
@@ -830,7 +831,7 @@ export const publishWorkflowDefinition = async (
                 filterGroups: [],
               },
             });
-            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
+            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id && !inst.completed);
 
             if (conflictingInstances.length > 0) {
               throw FunctionalError(
@@ -1117,6 +1118,9 @@ export const getAllowedTransitions = async (
 
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = options?.instanceEntity ?? await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  if (instanceEntity?.completed) {
+    return [];
+  }
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
@@ -1192,6 +1196,10 @@ export const triggerWorkflowEvent = async (
     const executionUser = bypassDraftUser(user);
 
     const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+
+    if (instanceEntity.completed) {
+      return { success: false, reason: 'Workflow has already completed' };
+    }
 
     // 3. Lock check: reject new events while a transition is already pending
     if (instanceEntity.pendingStatus === 'pending') {
@@ -1270,12 +1278,14 @@ export const triggerWorkflowEvent = async (
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
       const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
-      const targetStateDef = definitionData.states?.find((s: any) => s.statusId === toStateId);
+      const completesWorkflow = targetTransitionForSync != null && targetTransitionForSync.to == null;
+      const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
       const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
 
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
         toState: toStateId,
+        ...(completesWorkflow ? { completesWorkflow: true } : {}),
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
@@ -1314,12 +1324,14 @@ export const triggerWorkflowEvent = async (
       user_id: user.id,
       timestamp: new Date().toISOString(),
       event: eventName,
+      ...(result.workflowCompleted ? { completed: true } : {}),
       ...(comment ? { comment } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'currentState', value: [newState] },
       { key: 'history', value: [JSON.stringify(history)] },
+      ...(result.workflowCompleted ? [{ key: 'completed', value: [true] }] : []),
     ]);
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);

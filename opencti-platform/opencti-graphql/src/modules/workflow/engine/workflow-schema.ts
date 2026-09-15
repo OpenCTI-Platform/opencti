@@ -25,7 +25,7 @@ export interface SerializedState {
  */
 export interface SerializedTransition {
   from: string; // ID of the source StatusTemplate
-  to: string; // ID of the destination StatusTemplate
+  to?: string | null; // No destination means the workflow completes without changing status.
   event: string;
   comment?: string;
   /** Phase 1: async background task actions. Run before syncActions. */

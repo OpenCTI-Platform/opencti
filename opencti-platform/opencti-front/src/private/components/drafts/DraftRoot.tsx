@@ -17,11 +17,10 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getCurrentTab } from '../../../utils/tabUtils';
 import { useFormatter } from '../../../components/i18n';
-import { MESSAGING$ } from '../../../relay/environment';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
-import useSwitchDraft from './useSwitchDraft';
+import useAutoEnterDraft from './useAutoEnterDraft';
 import useDraftCommentPopup from './useDraftCommentPopup';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
@@ -137,21 +136,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
 
   const { showCommentPopup, handleClose } = useDraftCommentPopup(draftId, draft.workflowInstance?.lastHistoryEntry);
 
-  // switch to draft
-  const { enterDraft } = useSwitchDraft();
-
-  useEffect(() => {
-    if (!isDraftReadOnly && (!draftContext || draftContext.id !== draftId)) {
-      enterDraft(draftId, {
-        onCompleted: () => {
-          MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
-        },
-        onError: (error) => {
-          MESSAGING$.notifyRelayError(error);
-        },
-      });
-    }
-  }, [draftContext, draftId, enterDraft, isDraftReadOnly, t_i18n]);
+  useAutoEnterDraft(draftId, isDraftReadOnly);
 
   useEffect(() => {
     // Refresh

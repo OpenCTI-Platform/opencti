@@ -10,12 +10,14 @@ const {
   mockCommit,
   mockCommitClear,
   mockNotifySuccess,
+  mockNotifyError,
   mockExitDraft,
   mockNavigate,
 } = vi.hoisted(() => ({
   mockCommit: vi.fn(),
   mockCommitClear: vi.fn(),
   mockNotifySuccess: vi.fn(),
+  mockNotifyError: vi.fn(),
   mockExitDraft: vi.fn(),
   mockNavigate: vi.fn(),
 }));
@@ -64,7 +66,7 @@ vi.mock('../../../../components/i18n', () => ({
 }));
 
 vi.mock('../../../../relay/environment', () => ({
-  MESSAGING$: { notifySuccess: mockNotifySuccess, notifyError: vi.fn() },
+  MESSAGING$: { notifySuccess: mockNotifySuccess, notifyError: mockNotifyError },
 }));
 
 // ---------------------------------------------------------------------------
@@ -271,6 +273,22 @@ describe('useTransitionWizard – handleValidateDraft', () => {
 describe('useTransitionWizard – fireTransition response handling', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('surfaces a rejected transition instead of silently leaving the user waiting', () => {
+    const { result } = renderWizard();
+    act(() => {
+      result.current.handleTransition('submit', [], null, false, false);
+    });
+    const [{ onCompleted }] = mockCommit.mock.calls[0];
+    act(() => {
+      onCompleted({
+        triggerWorkflowEvent: { success: false, reason: 'Workflow execution failed', executionStatus: null },
+      });
+    });
+    expect(mockNotifyError).toHaveBeenCalledWith('Workflow execution failed');
+    expect(mockNotifySuccess).not.toHaveBeenCalled();
+    expect(mockExitDraft).not.toHaveBeenCalled();
   });
 
   it('calls notifySuccess and does NOT navigate when executionStatus is pending', () => {
