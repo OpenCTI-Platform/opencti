@@ -252,7 +252,11 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
             </Typography>
             <List sx={{ ...listSx, flex: 1 }}>
               {availableColumns.map((column) => (
-                <ListItem disablePadding key={column.attribute} sx={{ height: 42 }}>
+                <ListItem
+                  disablePadding
+                  key={column.attribute}
+                  sx={{ height: 42, paddingLeft: theme.spacing(2) }}
+                >
                   <Checkbox
                     checked={value.some((col) => col.attribute === column.attribute)}
                     onCheckedChange={() => handleToggleColumn(column.attribute)}
