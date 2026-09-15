@@ -10220,6 +10220,11 @@ export type GetMetrics = {
   total?: Maybe<Scalars['String']['output']>;
 };
 
+export type GlobalExportSelectionInput = {
+  entityType: Scalars['String']['input'];
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
 export type Group = BasicObject & InternalObject & {
   __typename?: 'Group';
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
@@ -26108,6 +26113,7 @@ export type QueryFormsArgs = {
 
 export type QueryGlobalConfigurationExportArgs = {
   entityTypes: Array<Scalars['String']['input']>;
+  selections?: InputMaybe<Array<GlobalExportSelectionInput>>;
 };
 
 
@@ -41000,6 +41006,7 @@ export type ResolversTypes = ResolversObject<{
   Format: Format;
   FormsOrdering: FormsOrdering;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
+  GlobalExportSelectionInput: GlobalExportSelectionInput;
   Group: ResolverTypeWrapper<BasicGroupEntity>;
   GroupAddInput: GroupAddInput;
   GroupConnection: ResolverTypeWrapper<Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['GroupEdge']>>> }>;
@@ -42133,6 +42140,7 @@ export type ResolversParentTypes = ResolversObject<{
   FormSubmissionInput: FormSubmissionInput;
   FormSubmissionResponse: FormSubmissionResponse;
   GetMetrics: GetMetrics;
+  GlobalExportSelectionInput: GlobalExportSelectionInput;
   Group: BasicGroupEntity;
   GroupAddInput: GroupAddInput;
   GroupConnection: Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupEdge']>>> };

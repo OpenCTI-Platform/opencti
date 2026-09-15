@@ -14,36 +14,6 @@ export interface GlobalExportBundleCategory {
 
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
-    key: 'ingestion',
-    label: 'Ingestion',
-    kind: 'children',
-    items: [
-      { key: 'Playbook', label: 'Playbooks' },
-      { key: 'Form', label: 'Forms' },
-    ],
-  },
-  {
-    key: 'Workspace',
-    label: 'Custom Dashboards',
-    kind: 'flat',
-  },
-  {
-    key: 'CustomView',
-    label: 'Custom Views',
-    kind: 'flat',
-  },
-  {
-    key: 'Feed',
-    label: 'Feeds',
-    kind: 'children',
-    items: [
-      { key: 'IngestionCsv', label: 'CSV Feeds' },
-      { key: 'IngestionTaxii', label: 'Taxii Feeds' },
-      { key: 'IngestionJson', label: 'JSON Feeds' },
-      { key: 'IngestionRss', label: 'RSS Feeds' },
-    ],
-  },
-  {
     key: 'FintelTemplate',
     label: 'Fintel Templates',
     kind: 'flat',
