@@ -35,6 +35,8 @@ Redis should be turned to cluster mode:
 - "REDIS__HOSTNAMES=[\"node1:6379\", \"node2:6379\", ...]"
 ```
 
+When TLS is enabled, OpenCTI validates each cluster node certificate against the node address by default. Set `REDIS__TLS_SERVERNAME` when every node certificate uses the same Subject Alternative Name (SAN), such as a shared cluster hostname or wildcard.
+
 !!! note "Compatibility"
     
     OpenCTI is also compatible with ElastiCache, MemoryStore and AWS / GCP / Azure native services based on the Redis protocol.
