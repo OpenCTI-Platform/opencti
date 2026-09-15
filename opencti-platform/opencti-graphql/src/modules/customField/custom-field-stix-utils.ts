@@ -142,7 +142,7 @@ export const buildCustomFieldStixFilterTester = (customFieldDefinition: BasicSto
       case 'string':
       case 'select':
       case 'multi_select':
-        return testStringFilter(filter, customFieldStixValue, changeContext);
+        return testStringFilter(filter, Array.isArray(customFieldStixValue) ? customFieldStixValue : [customFieldStixValue], changeContext);
       case 'integer':
         return testNumericFilter(filter, customFieldStixValue, changeContext);
       case 'boolean':

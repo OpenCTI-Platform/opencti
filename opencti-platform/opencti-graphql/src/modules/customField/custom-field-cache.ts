@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldEntityTypeSetting, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type CustomFieldType } from './custom-field-types';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import type { TypeAttribute } from '../../generated/graphql';
+import { FunctionalError } from '../../config/errors';
 
 // ----- Custom field definitions read through the platform generic cache -----
 // Registered like any other cached entity type in cacheManager.ts (writeCacheForEntity),
@@ -77,7 +78,7 @@ export const getCustomFieldValueField = (fieldType: CustomFieldType): string => 
     case 'multi_select':
       return 'select_values';
     default:
-      return 'string_value';
+      throw FunctionalError('Unknown custom field type', { fieldType });
   }
 };
 // get all dynamic schema attributes for a given type
