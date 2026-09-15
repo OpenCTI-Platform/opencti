@@ -158,6 +158,16 @@ export const initializeAuthorizedMembers = (
   }
   return initializedAuthorizedMembers;
 };
+
+const hasWorkspaceDuplicationCapability = (user: AuthUser, workspaceType: string) => {
+  const capabilityByWorkspaceType: Record<string, string> = {
+    investigation: 'INVESTIGATION_INUPDATE',
+    dashboard: 'EXPLORE_EXUPDATE',
+  };
+  const capability = capabilityByWorkspaceType[workspaceType];
+  return capability !== undefined && isUserHasCapability(user, capability);
+};
+
 export const addWorkspace = async (
   context: AuthContext,
   user: AuthUser,
@@ -344,33 +354,29 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
 };
 
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
-  let sourceFields: Pick<WorkspaceDuplicateInput, 'type' | 'manifest' | 'tags' | 'description'> & { investigated_entities_ids?: Array<string> } = input;
-  if (input.id) {
-    const source = await findById(context, user, input.id);
-    if (!source) {
-      throw ForbiddenAccess();
-    }
-    let investigatedEntitiesIds;
-    if (source.type === 'investigation') {
-      // mirror investigationAddFromContainer: never copy references the duplicating user can't access
-      investigatedEntitiesIds = await filterUnwantedEntitiesOut({ context, user, ids: source.investigated_entities_ids ?? [] });
-    }
-    sourceFields = {
-      type: source.type,
-      manifest: source.manifest,
-      tags: source.tags,
-      description: source.description,
-      ...(source.type === 'investigation' ? { investigated_entities_ids: investigatedEntitiesIds } : {}),
-    };
+  const source = input.id ? await findById(context, user, input.id) : undefined;
+  if (input.id && !source) {
+    throw ForbiddenAccess();
   }
-  // check capabilities according to workspace type
-  let hasCapa;
-  if (sourceFields.type === 'investigation') {
-    hasCapa = isUserHasCapability(user, 'INVESTIGATION_INUPDATE');
-  } else if (sourceFields.type === 'dashboard') {
-    hasCapa = isUserHasCapability(user, 'EXPLORE_EXUPDATE');
-  }
-  if (!hasCapa) {
+  const sourceFields = source
+    ? {
+        type: source.type,
+        manifest: source.manifest,
+        tags: source.tags,
+        description: source.description,
+        ...(source.type === 'investigation'
+          ? {
+              // mirror investigationAddFromContainer: never copy references the duplicating user can't access
+              investigated_entities_ids: await filterUnwantedEntitiesOut({
+                context,
+                user,
+                ids: source.investigated_entities_ids ?? [],
+              }),
+            }
+          : {}),
+      }
+    : input;
+  if (!hasWorkspaceDuplicationCapability(user, sourceFields.type)) {
     throw ForbiddenAccess();
   }
   const authorizedMembers = initializeAuthorizedMembers([], user);
