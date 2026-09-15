@@ -359,6 +359,7 @@ describe('Workspace resolver standard behavior', () => {
 
     beforeAll(async () => {
       const disinformationAnalystId = await getUserIdByEmail(USER_DISINFORMATION_ANALYST.email);
+      const editorId = await getUserIdByEmail(USER_EDITOR.email);
       const investigatedEntity = await elLoadById(
         testContext,
         ADMIN_USER,
@@ -378,7 +379,7 @@ describe('Workspace resolver standard behavior', () => {
         },
       });
       investigationId = createResult.data.workspaceAdd.id;
-      // grant view access to the disinformation analyst so it can duplicate it
+      // Grant source access independently from capabilities so rejection tests isolate capability checks.
       await queryAsAdmin({
         query: UPDATE_MEMBERS_QUERY,
         variables: {
@@ -386,6 +387,7 @@ describe('Workspace resolver standard behavior', () => {
           input: [
             { id: ADMIN_USER.id, access_right: 'admin' },
             { id: disinformationAnalystId, access_right: 'view' },
+            { id: editorId, access_right: 'edit' },
           ],
         },
       });
