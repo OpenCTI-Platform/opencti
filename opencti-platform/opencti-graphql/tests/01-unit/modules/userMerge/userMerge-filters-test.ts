@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { remapUserInFilterGroup, remapUserInSerializedFilters } from '../../../../src/modules/userMerge/userMerge-filterRemap';
+import { remapUserInJsonValue, remapUserInJsonString } from '../../../../src/modules/userMerge/userMerge-jsonRemap';
 import {
   USER_MERGE_FILTER_ACKNOWLEDGED_ROWS,
   USER_MERGE_FILTER_TARGETS,
@@ -23,26 +23,26 @@ const filterGroup = (values: unknown[], key = 'creator_id') => JSON.stringify({
 
 describe('userMerge filter remapping', () => {
   it('should rewrite the source id where it is a filter value', () => {
-    const result = remapUserInSerializedFilters(filterGroup([SOURCE]), SOURCE, TARGET);
+    const result = remapUserInJsonString(filterGroup([SOURCE]), SOURCE, TARGET);
     expect(result.changed).toBe(true);
     expect(result.parsed).toBe(true);
     expect(result.counters).toEqual({ rewritten: 1, deduplicated: 0 });
-    expect(JSON.parse(result.filters).filters[0].values).toEqual([TARGET]);
+    expect(JSON.parse(result.json).filters[0].values).toEqual([TARGET]);
   });
 
   it('should leave the other users of the same filter alone', () => {
-    const result = remapUserInSerializedFilters(filterGroup([OTHER, SOURCE]), SOURCE, TARGET);
-    expect(JSON.parse(result.filters).filters[0].values).toEqual([OTHER, TARGET]);
+    const result = remapUserInJsonString(filterGroup([OTHER, SOURCE]), SOURCE, TARGET);
+    expect(JSON.parse(result.json).filters[0].values).toEqual([OTHER, TARGET]);
   });
 
   // A filter naming both users must not end up holding the target id twice: computePirScore
   // divides by the sum of every criterion weight, and the UI keys its filter chips by value.
   it('should collapse the repetition the rewrite creates, whichever order the two ids are in', () => {
-    const forward = remapUserInSerializedFilters(filterGroup([SOURCE, TARGET]), SOURCE, TARGET);
-    expect(JSON.parse(forward.filters).filters[0].values).toEqual([TARGET]);
+    const forward = remapUserInJsonString(filterGroup([SOURCE, TARGET]), SOURCE, TARGET);
+    expect(JSON.parse(forward.json).filters[0].values).toEqual([TARGET]);
     expect(forward.counters.deduplicated).toEqual(1);
-    const backward = remapUserInSerializedFilters(filterGroup([TARGET, SOURCE]), SOURCE, TARGET);
-    expect(JSON.parse(backward.filters).filters[0].values).toEqual([TARGET]);
+    const backward = remapUserInJsonString(filterGroup([TARGET, SOURCE]), SOURCE, TARGET);
+    expect(JSON.parse(backward.json).filters[0].values).toEqual([TARGET]);
     expect(backward.counters.deduplicated).toEqual(1);
   });
 
@@ -50,16 +50,16 @@ describe('userMerge filter remapping', () => {
   // collapsed too, rather than leaving the list half-cleaned.
   it('should collapse a repetition that predated the rewrite', () => {
     const raw = filterGroup([TARGET, TARGET, SOURCE]);
-    const result = remapUserInSerializedFilters(raw, SOURCE, TARGET);
-    expect(JSON.parse(result.filters).filters[0].values).toEqual([TARGET]);
+    const result = remapUserInJsonString(raw, SOURCE, TARGET);
+    expect(JSON.parse(result.json).filters[0].values).toEqual([TARGET]);
     expect(result.counters.deduplicated).toEqual(2);
   });
 
   it('should leave a list it did not rewrite untouched, repetition included', () => {
     const raw = filterGroup([TARGET, TARGET]);
-    const result = remapUserInSerializedFilters(raw, SOURCE, TARGET);
+    const result = remapUserInJsonString(raw, SOURCE, TARGET);
     expect(result.changed).toBe(false);
-    expect(result.filters).toEqual(raw);
+    expect(result.json).toEqual(raw);
   });
 
   it('should reach the values nested in a sub-group', () => {
@@ -68,21 +68,21 @@ describe('userMerge filter remapping', () => {
       filters: [],
       filterGroups: [{ mode: 'or', filters: [{ key: ['creator_id'], values: [SOURCE], operator: 'eq', mode: 'or' }], filterGroups: [] }],
     });
-    const result = remapUserInSerializedFilters(raw, SOURCE, TARGET);
-    expect(JSON.parse(result.filters).filterGroups[0].filters[0].values).toEqual([TARGET]);
+    const result = remapUserInJsonString(raw, SOURCE, TARGET);
+    expect(JSON.parse(result.json).filterGroups[0].filters[0].values).toEqual([TARGET]);
   });
 
   // regardingOf and dynamicFrom carry filter objects as values, not plain ids.
   it('should reach the values nested in a composite key', () => {
     const raw = filterGroup([{ key: 'creator_id', values: [SOURCE] }], 'regardingOf');
-    const result = remapUserInSerializedFilters(raw, SOURCE, TARGET);
-    expect(JSON.parse(result.filters).filters[0].values[0].values).toEqual([TARGET]);
+    const result = remapUserInJsonString(raw, SOURCE, TARGET);
+    expect(JSON.parse(result.json).filters[0].values[0].values).toEqual([TARGET]);
   });
 
   it('should say nothing changed when the id is absent', () => {
     const raw = filterGroup([OTHER]);
-    const result = remapUserInSerializedFilters(raw, SOURCE, TARGET);
-    expect(result).toEqual({ filters: raw, changed: false, parsed: true, counters: { rewritten: 0, deduplicated: 0 } });
+    const result = remapUserInJsonString(raw, SOURCE, TARGET);
+    expect(result).toEqual({ json: raw, changed: false, parsed: true, counters: { rewritten: 0, deduplicated: 0 } });
   });
 
   // A filter combining the user with a numeric or boolean criterion — confidence, score, revoked.
@@ -95,33 +95,33 @@ describe('userMerge filter remapping', () => {
       ],
       filterGroups: [],
     });
-    const result = remapUserInSerializedFilters(raw, SOURCE, TARGET);
+    const result = remapUserInJsonString(raw, SOURCE, TARGET);
     expect(result.changed).toBe(true);
-    const filters = JSON.parse(result.filters).filters;
+    const filters = JSON.parse(result.json).filters;
     expect(filters[0].values).toEqual([TARGET]);
     expect(filters[1].values).toEqual([50, true, null]);
   });
 
   // The two are reported apart by the handler, because they call for opposite follow-ups.
   it('should tell an unreadable filter from one mentioning the id as free text', () => {
-    const broken = remapUserInSerializedFilters(`{ not json ${SOURCE}`, SOURCE, TARGET);
+    const broken = remapUserInJsonString(`{ not json ${SOURCE}`, SOURCE, TARGET);
     expect(broken).toMatchObject({ changed: false, parsed: false });
-    const textual = remapUserInSerializedFilters(filterGroup([`created by ${SOURCE}`], 'name'), SOURCE, TARGET);
+    const textual = remapUserInJsonString(filterGroup([`created by ${SOURCE}`], 'name'), SOURCE, TARGET);
     expect(textual).toMatchObject({ changed: false, parsed: true });
   });
 
   it('should be a no-op on replay', () => {
-    const once = remapUserInSerializedFilters(filterGroup([SOURCE]), SOURCE, TARGET);
-    const twice = remapUserInSerializedFilters(once.filters, SOURCE, TARGET);
+    const once = remapUserInJsonString(filterGroup([SOURCE]), SOURCE, TARGET);
+    const twice = remapUserInJsonString(once.json, SOURCE, TARGET);
     expect(twice.changed).toBe(false);
-    expect(twice.filters).toEqual(once.filters);
+    expect(twice.json).toEqual(once.json);
   });
 
   it('should remap an already parsed filter group without serializing it', () => {
     const parsed = { mode: 'and', filters: [{ key: ['creator_id'], values: [SOURCE] }], filterGroups: [] };
-    const result = remapUserInFilterGroup(parsed, SOURCE, TARGET);
+    const result = remapUserInJsonValue(parsed, SOURCE, TARGET);
     expect(result.changed).toBe(true);
-    expect(result.filterGroup.filters[0].values).toEqual([TARGET]);
+    expect(result.payload.filters[0].values).toEqual([TARGET]);
   });
 });
 
