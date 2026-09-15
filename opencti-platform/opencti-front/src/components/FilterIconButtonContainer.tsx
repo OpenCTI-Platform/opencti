@@ -64,6 +64,12 @@ interface FilterIconButtonContainerProps {
   filterChipsParams: FilterChipsParameter;
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
   availableFilterKeys?: string[];
+  /**
+   * When true, the nested filter group editor is rendered in the normal document flow
+   * (a plain Box) instead of a floating `Popper`. Used in contexts where a floating panel
+   * would overflow its container without resizing it, e.g. the widget creation dialog.
+   */
+  inline?: boolean;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -92,6 +98,7 @@ const FilterIconButtonContainer: FunctionComponent<
   filterChipsParams,
   setFilterChipsParams,
   availableFilterKeys,
+  inline,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -110,7 +117,7 @@ const FilterIconButtonContainer: FunctionComponent<
   const oldItemRefToPopover = useRef(null);
   const filterLineRef = useRef<HTMLDivElement | null>(null);
   const [openedGroupId, setOpenedGroupId] = useState<string | undefined>(undefined);
-  const chipRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const chipRefs = useRef<Record<string, HTMLSpanElement | null>>({});
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const panelFilterKeys = availableFilterKeys ?? Array.from(filterKeysMap.keys());
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
@@ -446,7 +453,30 @@ const FilterIconButtonContainer: FunctionComponent<
           />
         )}
       </Box>
-      {helpers && (
+      {helpers && inline && openedGroup && (
+        // Inline mode: rendered in the normal document flow (no floating Popper) so the
+        // parent container grows with it instead of being overflowed. Used in contexts
+        // that cannot resize themselves around a floating panel, e.g. the widget creation dialog.
+        <Box sx={{ width: '100%', marginTop: 1 }}>
+          <Paper padding={0} style={{ width: '100%' }}>
+            <Box sx={{ padding: 2 }}>
+              <FilterGroupPanel
+                group={openedGroup}
+                helpers={helpers}
+                availableFilterKeys={panelFilterKeys}
+                entityTypes={entityTypes}
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                availableEntityTypes={availableEntityTypes}
+                availableRelationshipTypes={availableRelationshipTypes}
+                availableRelationFilterTypes={availableRelationFilterTypes}
+                searchContext={searchContext}
+                host={host}
+              />
+            </Box>
+          </Paper>
+        </Box>
+      )}
+      {helpers && !inline && (
         <Popper
           open={Boolean(openedGroup)}
           anchorEl={filterLineRef.current}

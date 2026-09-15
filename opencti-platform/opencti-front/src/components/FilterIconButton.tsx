@@ -31,6 +31,7 @@ export interface FilterIconButtonProps {
   availableRelationshipTypes?: string[];
   host?: WidgetHost;
   hasSavedFilters?: boolean;
+  inline?: boolean;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -63,6 +64,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   filterChipsParams,
   setFilterChipsParams,
   availableFilterKeys,
+  inline,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -99,6 +101,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             filterChipsParams={filterChipsParams}
             setFilterChipsParams={setFilterChipsParams}
             availableFilterKeys={availableFilterKeys}
+            inline={inline}
           />
         </React.Suspense>
       )}
@@ -136,6 +139,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   availableRelationshipTypes,
   host,
   hasSavedFilters,
+  inline,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = (value: boolean) => {
@@ -180,6 +184,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         filterChipsParams={filterChipsParams}
         setFilterChipsParams={setFilterChipsParams}
         availableFilterKeys={availableFilterKeys}
+        inline={inline}
       />
     );
   }
