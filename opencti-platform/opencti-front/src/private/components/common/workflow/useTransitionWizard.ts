@@ -64,6 +64,10 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: U
     commit({
       variables: { entityId, eventName, runtimeParams, comment },
       onCompleted: (response) => {
+        if (response.triggerWorkflowEvent?.success === false) {
+          MESSAGING$.notifyError(response.triggerWorkflowEvent.reason || t_i18n('Error'));
+          return;
+        }
         const newTimestamp = response.triggerWorkflowEvent?.instance?.lastHistoryEntry?.timestamp;
         if (newTimestamp && draftId) {
           window.localStorage.setItem(`${DRAFT_COMMENT_SEEN_PREFIX}${draftId}`, newTimestamp);

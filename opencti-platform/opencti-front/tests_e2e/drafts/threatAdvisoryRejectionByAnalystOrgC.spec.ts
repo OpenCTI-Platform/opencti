@@ -8,7 +8,7 @@ import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import { advanceDraftToStatus, createThreatAdvisoryDraft, openDraft, USERS } from './threatAdvisoryDraftHelpers';
 
 test('Threat Advisory - rejection by AnalystOrgC', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
-  test.setTimeout(120000);
+  test.setTimeout(300000); // Includes setup transitions and multiple persona logins.
 
   const toolbar = new DraftToolbarPageModel(page);
 

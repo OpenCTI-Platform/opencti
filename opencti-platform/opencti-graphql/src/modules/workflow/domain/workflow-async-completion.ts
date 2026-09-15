@@ -125,7 +125,7 @@ export const reportWorkflowAsyncActionResult = async (
   }
 
   // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block)
-  for (const actionConfig of (pendingTransition.onEnterActions ?? [])) {
+  for (const actionConfig of (pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [])) {
     const actionFn = ActionRegistry[actionConfig.type];
     if (!actionFn) {
       logApp.error('[workflow-async-completion] Unknown onEnter action type', { type: actionConfig.type });
@@ -164,6 +164,7 @@ export const reportWorkflowAsyncActionResult = async (
     timestamp: new Date().toISOString(),
     event: pendingTransition.event,
     completedAt: new Date().toISOString(),
+    ...(pendingTransition.completesWorkflow ? { completed: true } : {}),
     ...(pendingTransition.comment ? { comment: pendingTransition.comment } : {}),
   });
 
@@ -173,6 +174,7 @@ export const reportWorkflowAsyncActionResult = async (
     { key: 'pendingStatus', value: [null] },
     { key: 'pendingError', value: [null] },
     { key: 'pendingTransition', value: [null] },
+    ...(pendingTransition.completesWorkflow ? [{ key: 'completed', value: [true] }] : []),
   ]);
 
   logApp.info('[workflow-async-completion] Transition completed', {

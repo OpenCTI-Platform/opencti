@@ -6,10 +6,17 @@ import WorkflowEditionDrawerPageModel from '../model/workflow/workflowEditionDra
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import { restoreAdminSession } from '../restoreAdminSession';
 import { restrictOrganizationVisibility } from '../dataForTesting/organization.data';
+import { authenticateAdminApi, waitForUserCapabilities } from '../dataForTesting/session.data';
+
+// Hooks receive a separate timeout budget, so even a timed-out setup restores retry/downstream auth.
+test.afterEach(async ({ page }) => {
+  await restoreAdminSession(page);
+});
 
 test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@workflow'] }, async ({ page, request }) => {
   test.setTimeout(300000);
 
+  await authenticateAdminApi(request);
   // Restrict OrgA's identity before logging out of the admin session. This fixture needs
   // ACCESS_RESTRICTION_CAN_USE, unlike the shared initialization used by other CI jobs.
   await restrictOrganizationVisibility(request, 'OrgA', ['OrgA', 'OrgC']);
@@ -23,6 +30,13 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@wo
   await page.goto('/');
   await topBar.logout();
   await loginForm.login('managerorgc@filigran.test', 'managerorgc');
+  await waitForUserCapabilities(page.request, 'managerorgc@filigran.test', [
+    'SETTINGS_SETCUSTOMIZATION',
+    'SETTINGS_SETSTATUSTEMPLATES',
+    'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+  ]);
+  // Reload the authenticated shell with the same effective permissions we just observed.
+  await page.reload();
   // A previous, interrupted test run may have left this user stuck in a draft context.
   await toolbar.exitDraftIfPresent();
 
@@ -165,7 +179,4 @@ test('Build and publish the Threat Advisory draft workflow', { tag: ['@ee', '@wo
     await expect(page.locator('.MuiSnackbar-root')).toHaveText(/Workflow successfully published/);
     await expect(workflowEditor.getPublishButton()).toHaveText('Published');
   });
-
-  // logout() above destroys the shared admin session server-side - restore it for downstream specs.
-  await restoreAdminSession(page);
 });

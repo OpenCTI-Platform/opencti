@@ -1,5 +1,6 @@
 import { APIRequestContext } from '@playwright/test';
 import { expect } from '../fixtures/baseFixtures';
+import { executeGraphql } from './query-utils';
 
 export const getOrganizations = () => `
   query {
@@ -24,9 +25,13 @@ interface OrganizationNode {
 }
 
 const getOrganizationNodes = async (request: APIRequestContext): Promise<OrganizationNode[]> => {
-  const response = await request.post('/graphql', { data: { query: getOrganizations() } });
-  const responseData = JSON.parse((await response.body()).toString());
-  return responseData.data.organizations.edges.map((e: { node: OrganizationNode }) => e.node);
+  const { organizations } = await executeGraphql<{
+    organizations: { edges: { node: OrganizationNode }[] } | null;
+  }>(request, 'Get fixture organizations', getOrganizations());
+  if (!organizations) {
+    throw new Error('Get fixture organizations failed: organizations is null');
+  }
+  return organizations.edges.map(({ node }) => node);
 };
 
 const addOrganization = (input: AddOrganizationInput) => `
@@ -45,7 +50,7 @@ export const addOrganizations = async (request: APIRequestContext, organizations
 
   await Promise.all(organizations.map(async (organization) => {
     if (!existingOrganizations.includes(organization.name)) {
-      await request.post('/graphql', { data: { query: addOrganization(organization) } });
+      await executeGraphql(request, `Create organization ${organization.name}`, addOrganization(organization));
     }
   }));
 };
@@ -75,17 +80,23 @@ const editAuthorizedMembers = (id: string, adminId: string, viewerIds: string[])
 /** Restricts an organization's own visibility to only the given viewer organizations (plus the current API user, required by the backend's admin-presence validation). */
 export const restrictOrganizationVisibility = async (request: APIRequestContext, organizationName: string, viewerOrganizationNames: string[]) => {
   const nodes = await getOrganizationNodes(request);
-  const targetId = nodes.find((n) => n.name === organizationName)!.id;
-  const viewerIds = viewerOrganizationNames.map((name) => nodes.find((n) => n.name === name)!.id);
-  const meResponse = await request.post('/graphql', { data: { query: getMe() } });
-  const meResponseData = JSON.parse((await meResponse.body()).toString());
-  const adminId = meResponseData.data.me.id;
-  const response = await request.post('/graphql', { data: { query: editAuthorizedMembers(targetId, adminId, viewerIds) } });
-  const responseData = JSON.parse((await response.body()).toString());
-  if (responseData.errors) {
-    throw new Error(`restrictOrganizationVisibility failed: ${JSON.stringify(responseData.errors)}`);
-  }
-  const authorizedMembers = responseData.data.stixDomainObjectEdit.editAuthorizedMembers.authorized_members;
+  const organizationId = (name: string) => {
+    const node = nodes.find((n) => n.name === name);
+    if (!node) {
+      throw new Error(`Cannot restrict organization visibility: organization "${name}" was not found`);
+    }
+    return node.id;
+  };
+  const targetId = organizationId(organizationName);
+  const viewerIds = viewerOrganizationNames.map(organizationId);
+  const { me } = await executeGraphql<{ me: { id: string } }>(request, 'Read fixture admin', getMe());
+  const adminId = me.id;
+  const responseData = await executeGraphql<{
+    stixDomainObjectEdit: {
+      editAuthorizedMembers: { authorized_members: { member_id: string; access_right: string }[] };
+    };
+  }>(request, 'restrictOrganizationVisibility', editAuthorizedMembers(targetId, adminId, viewerIds));
+  const authorizedMembers = responseData.stixDomainObjectEdit.editAuthorizedMembers.authorized_members;
   const expectedMembers = [
     { member_id: adminId, access_right: 'admin' },
     ...viewerIds.map((memberId) => ({ member_id: memberId, access_right: 'use' })),
