@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
+import { FunctionComponent, UIEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -70,6 +70,14 @@ const WorkspaceDuplicationDialog: FunctionComponent<
     [t_i18n, workspace.name],
   );
   const [newName, setNewName] = useState(duplicatedWorkspaceInitialName);
+  const wasDisplayed = useRef(false);
+
+  useEffect(() => {
+    if (displayDuplicate && !wasDisplayed.current) {
+      setNewName(duplicatedWorkspaceInitialName);
+    }
+    wasDisplayed.current = displayDuplicate;
+  }, [displayDuplicate, duplicatedWorkspaceInitialName]);
 
   const [commitDuplicatedWorkspaceCreation] = useApiMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
     workspaceDuplicationDialogDuplicatedWorkspaceCreation,
@@ -134,7 +142,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
         id="duplicated_workspace_name"
         label={t_i18n('New name')}
         type="text"
-        defaultValue={newName}
+        value={newName}
         onChange={(event) => {
           event.preventDefault();
           setNewName(event.target.value);
