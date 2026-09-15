@@ -76,6 +76,10 @@ let isIntentionalClose = false; // Flag to prevent reconnection during intention
 const RECONNECT_INITIAL_DELAY = 1000; // 1 second
 const RECONNECT_MAX_DELAY = 30000; // 30 seconds max
 const RECONNECT_MULTIPLIER = 2; // Exponential backoff
+// Cap on send() retries: without this, a persistently nacked publish (e.g. broker
+// resource alarm on an oversized queue) blocks its caller forever instead of failing.
+// 20 attempts with the backoff above is ~8 minutes of retrying before giving up.
+const SEND_MAX_ATTEMPTS = 20;
 
 /**
  * Create a new connection to RabbitMQ with automatic reconnection
@@ -454,17 +458,27 @@ const amqpExecute = async (execute) => {
  * In rare edge cases around connection failures, duplicate delivery
  * is possible (at-least-once semantics). Consumers should be idempotent.
  *
+ * Retries are capped (SEND_MAX_ATTEMPTS): a persistently nacked publish throws instead of
+ * retrying forever, so a single stuck message can't block its caller indefinitely (e.g. a
+ * congested queue nacking every publish). Each call keeps its own attempt/delay counters,
+ * so concurrent callers retrying against different (or the same) queues don't interfere.
+ *
  * Not exported on purpose: callers must go through pushToConnector or pushBundleToWorker.
  */
 const send = async (exchangeName, routingKey, message) => {
   let attemptNumber = 0;
   let retryDelay = RECONNECT_INITIAL_DELAY;
 
-  while (true) {
+  while (attemptNumber < SEND_MAX_ATTEMPTS) {
     try {
       return await sendPersistent(exchangeName, routingKey, message);
     } catch (err) {
-      logApp.warn(`[RABBITMQ] Send failed (attempt ${++attemptNumber}), retrying in ${retryDelay}ms`, { cause: err, exchangeName, routingKey });
+      attemptNumber += 1;
+      if (attemptNumber === SEND_MAX_ATTEMPTS) {
+        logApp.error(`[RABBITMQ] Send failed after ${attemptNumber} attempts, giving up`, { cause: err, exchangeName, routingKey });
+        throw DatabaseError('RabbitMQ send failed after max retries', { cause: err, exchangeName, routingKey });
+      }
+      logApp.warn(`[RABBITMQ] Send failed (attempt ${attemptNumber}), retrying in ${retryDelay}ms`, { cause: err, exchangeName, routingKey });
 
       // If channel was lost, wait for reconnection before retry
       if (!persistentChannel) {
