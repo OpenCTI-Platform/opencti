@@ -1,5 +1,5 @@
 import type React from 'react';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import InputLabel from '@mui/material/InputLabel';
@@ -109,7 +109,7 @@ const renderFilesField = (context: FieldRendererContext): React.ReactNode => {
           {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
             <Chip
               key={index}
-              label={file.name}
+              label={file.name ?? ''}
               onDelete={() => handleFileRemove(index)}
               style={fileFieldStyles.fileChip}
             />

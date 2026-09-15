@@ -93,7 +93,7 @@ describe('file field renderer', () => {
   it('renders existing files as removable chips and uses the bare field name on removal', async () => {
     const setFieldValue = vi.fn();
     const values = { metadata: { attachments: [{ name: 'report.pdf', data: 'encoded' }] } };
-    const { container, user } = renderFilesField({}, {
+    const { user } = renderFilesField({}, {
       values,
       fieldPrefix: 'metadata',
       setFieldValue,
@@ -106,10 +106,10 @@ describe('file field renderer', () => {
     });
 
     expect(screen.getByText('report.pdf')).toBeTruthy();
-    const deleteIcon = container.querySelector<HTMLElement>('.MuiChip-deleteIcon');
+    const deleteIcon = screen.getByRole('button', { name: 'Remove report.pdf' });
     expect(deleteIcon).toBeTruthy();
 
-    await user.click(deleteIcon as HTMLElement);
+    await user.click(deleteIcon);
 
     expect(setFieldValue).toHaveBeenCalledWith('attachments', []);
   });

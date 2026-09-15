@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
+// fds:keep-mui Switch predates this PR; main-entity toggles still use MUI here.
 import { Alert, FormControlLabel, Stack, Switch, Typography } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import React from 'react';

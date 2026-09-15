@@ -1,4 +1,5 @@
 import { ExpandMore } from '@mui/icons-material';
+// fds:keep-mui Switch/TextField predate this PR; draft-defaults fields still use MUI here.
 import { Accordion, AccordionDetails, AccordionSummary, Box, FormControlLabel, Switch, TextField, Typography } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { Field, Formik, useFormikContext } from 'formik';
