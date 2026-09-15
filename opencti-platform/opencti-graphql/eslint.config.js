@@ -99,6 +99,22 @@ export default defineConfig([
       'no-await-in-loop': 'off',
       'import/no-import-module-exports': 'off',
       'import/prefer-default-export': 'off',
+      // Catches imports of packages this workspace does not declare. Without it they resolve
+      // only because something else hoisted them into the tree, and break far from the cause.
+      // includeTypes is on because `import type` hides the same problem behind a syntax the
+      // rule skips by default.
+      'import/no-extraneous-dependencies': ['error', {
+        includeTypes: true,
+        devDependencies: [
+          'tests/**',
+          'script/**',
+          'builder/**',
+          'knip.ts',
+          'vitest.config*.ts',
+          'eslint.config.js',
+        ],
+        optionalDependencies: false,
+      }],
       'arrow-body-style': 'off',
       'object-curly-newline': 'off',
 
