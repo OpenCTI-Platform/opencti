@@ -24,6 +24,8 @@ class SequencerMetrics {
 
   private queueDepthGauge: Gauge | null = null;
 
+  private queueBytesGauge: Gauge | null = null;
+
   private queueWaitSeconds: Histogram | null = null;
 
   private esOps: Counter | null = null;
@@ -84,6 +86,12 @@ class SequencerMetrics {
     this.queueDepthGauge = meter.createGauge('opencti_sequencer_queue_depth', {
       valueType: ValueType.INT,
       description: 'Intents queued at batch formation time',
+    });
+    // queue_max_bytes was blind (2026-09-15): the count bound is visible through the depth
+    // gauge, the bytes bound was not. Deep prefetch rungs (past 128) need both.
+    this.queueBytesGauge = meter.createGauge('opencti_sequencer_queue_bytes', {
+      valueType: ValueType.INT,
+      description: 'Bytes of intents queued (queue_max_bytes is the bound)',
     });
     this.queueWaitSeconds = meter.createHistogram('opencti_sequencer_queue_wait_seconds', {
       valueType: ValueType.DOUBLE,
@@ -169,6 +177,10 @@ class SequencerMetrics {
 
   queueDepth(depth: number) {
     this.queueDepthGauge?.record(depth);
+  }
+
+  queueBytes(bytes: number) {
+    this.queueBytesGauge?.record(bytes);
   }
 
   queueWait(seconds: number) {

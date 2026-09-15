@@ -69,6 +69,7 @@ export class SequencerQueue {
     this.bytes += intent.sizeBytes;
     this.indexAdd(intent);
     sequencerMetrics.queueDepth(this.count);
+    sequencerMetrics.queueBytes(this.bytes);
   }
 
   private pop(): SequencerIntent | undefined {
@@ -90,6 +91,7 @@ export class SequencerQueue {
         this.bytes -= intent.sizeBytes;
         this.indexRemove(intent);
         sequencerMetrics.queueDepth(this.count);
+        sequencerMetrics.queueBytes(this.bytes);
         const waiter = this.slotWaiters.shift();
         if (waiter) waiter();
         return intent;
@@ -180,6 +182,8 @@ export class SequencerQueue {
         this.count += 1;
         this.bytes += next.sizeBytes;
         this.indexAdd(next);
+        sequencerMetrics.queueDepth(this.count);
+        sequencerMetrics.queueBytes(this.bytes);
         break;
       }
       batch.push(next);
