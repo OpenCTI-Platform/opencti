@@ -101,7 +101,7 @@ const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
 }) => (
   <Box sx={{ flex: selectedPaneFlex }}>
     <Typography variant="h4">
-      {`${t_i18n(selectedLabel)} (${value.length})`}
+      {`${selectedLabel} (${value.length})`}
     </Typography>
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="col_1">
@@ -146,7 +146,7 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   return (
     <Box sx={{ flex: selectedPaneFlex, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4">
-        {`${t_i18n(selectedLabel)} (${value.length})`}
+        {`${selectedLabel} (${value.length})`}
       </Typography>
       <DragDropContext onDragEnd={handleDragEnd}>
         <Box sx={{
@@ -206,9 +206,9 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const titleLabel = labels?.title ?? 'Customize attributes';
-  const availableLabel = labels?.available ?? 'Available attributes';
-  const selectedLabel = labels?.selected ?? 'Selected attributes';
+  const titleLabel = labels?.title ?? t_i18n('Customize attributes');
+  const availableLabel = labels?.available ?? t_i18n('Available attributes');
+  const selectedLabel = labels?.selected ?? t_i18n('Selected attributes');
 
   const { handleDragEndSingleColumn, handleDragEndDoubleColumns, handleToggleColumn, formatColumnName } = useWidgetColumnsCustomization(
     availableColumns,
@@ -225,7 +225,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   return (
     <Accordion sx={{ width: '100%' }} defaultExpanded>
       <AccordionSummary>
-        <Typography>{t_i18n(titleLabel)}</Typography>
+        <Typography>{titleLabel}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
 
@@ -248,7 +248,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4">
-              {`${t_i18n(availableLabel)} (${availableColumns.length})`}
+              {`${availableLabel} (${availableColumns.length})`}
             </Typography>
             <List sx={{ ...listSx, flex: 1 }}>
               {availableColumns.map((column) => (
