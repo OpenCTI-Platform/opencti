@@ -986,9 +986,9 @@ const WidgetCreationParameters = () => {
                 onChange={(newColumns) => setColumns(index, newColumns)}
                 selectedPaneFlex={1}
                 labels={{
-                  title: 'Customize columns',
-                  available: 'Available columns',
-                  selected: 'Selected columns',
+                  title: t_i18n('Customize columns'),
+                  available: t_i18n('Available columns'),
+                  selected: t_i18n('Selected columns'),
                 }}
               />
             );
