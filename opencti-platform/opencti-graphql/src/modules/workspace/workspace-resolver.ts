@@ -1,7 +1,6 @@
 import {
   addWorkspace,
-  dashboardDuplicate,
-  investigationDuplicate,
+  duplicateWorkspace,
   findWorkspacePaginated,
   findById,
   generateWidgetExportConfiguration,
@@ -49,11 +48,8 @@ const workspaceResolvers: Resolvers = {
     workspaceAdd: (_, { input }, context) => {
       return addWorkspace(context, context.user, input);
     },
-    dashboardDuplicate: (_, { input }, context) => {
-      return dashboardDuplicate(context, context.user, input);
-    },
-    investigationDuplicate: (_, { input }, context) => {
-      return investigationDuplicate(context, context.user, input);
+    workspaceDuplicate: (_, { input }, context) => {
+      return duplicateWorkspace(context, context.user, input);
     },
     workspaceDelete: (_, { id }, context) => {
       return workspaceDelete(context, context.user, id);
