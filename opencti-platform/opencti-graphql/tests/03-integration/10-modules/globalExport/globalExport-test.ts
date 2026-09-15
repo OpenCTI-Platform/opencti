@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { ZipArchive } from 'archiver';
+import { ZipArchive } from 'archiver';
 import {
   exportCategory,
   exportCustomViewsCategory,
@@ -31,6 +31,7 @@ import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGE
 import { ENTITY_TYPE_WORKSPACE } from '../../../../src/modules/workspace/workspace-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../../../../src/modules/customView/customView-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../../../../src/modules/fintelTemplate/fintelTemplate-types';
+import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 
 const createFakeArchive = () => ({ append: vi.fn() }) as unknown as ZipArchive;
 
@@ -386,6 +387,220 @@ describe('Global configuration export', () => {
       expect(buffer.includes(Buffer.from('settings/language.json'))).toBe(true);
       expect(buffer.includes(Buffer.from('settings/messages.json'))).toBe(true);
       expect(buffer.includes(Buffer.from('entity_settings/hidden_entity_types.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
+    });
+  });
+  describe('id-based partial export (buildIdFilterGroup)', () => {
+    it('should restrict playbook export to the given ids only', async () => {
+      const all = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_PLAYBOOK], {});
+      expect(Array.isArray(all)).toBe(true);
+      if (all.length === 0) return;
+
+      const target = all[0];
+      const archive = createFakeArchive();
+      const count = await exportPlaybooksCategory(testContext, ADMIN_USER, archive, [target.id]);
+
+      expect(count).toBe(1);
+      expect(archive.append).toHaveBeenCalledTimes(1);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(new RegExp(`^playbooks/playbook-.+-${target.id}\\.json$`));
+    });
+
+    it('should export nothing when given ids that do not match any playbook', async () => {
+      const archive = createFakeArchive();
+      const count = await exportPlaybooksCategory(testContext, ADMIN_USER, archive, ['not-a-real-id']);
+
+      expect(count).toBe(0);
+      expect(archive.append).not.toHaveBeenCalled();
+    });
+
+    it('should behave like "no filter" when ids is an empty array', async () => {
+      const withoutFilterArchive = createFakeArchive();
+      const withoutFilterCount = await exportFormsCategory(testContext, ADMIN_USER, withoutFilterArchive);
+
+      const emptyIdsArchive = createFakeArchive();
+      const emptyIdsCount = await exportFormsCategory(testContext, ADMIN_USER, emptyIdsArchive, []);
+
+      expect(emptyIdsCount).toBe(withoutFilterCount);
+    });
+
+    it('should restrict form export to the given ids only', async () => {
+      const all = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_FORM], {});
+      if (all.length === 0) return;
+
+      const target = all[0];
+      const archive = createFakeArchive();
+      const count = await exportFormsCategory(testContext, ADMIN_USER, archive, [target.id]);
+
+      expect(count).toBe(1);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(new RegExp(`^form_intakes/form-.+-${target.id}\\.json$`));
+    });
+
+    it('should restrict custom views export to the given ids only', async () => {
+      const all = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_CUSTOM_VIEW], {});
+      if (all.length === 0) return;
+
+      const target = all[0];
+      const archive = createFakeArchive();
+      const count = await exportCustomViewsCategory(testContext, ADMIN_USER, archive, [target.id]);
+
+      expect(count).toBe(1);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(new RegExp(`^custom_views/custom-view-.+-${target.id}\\.json$`));
+    });
+
+    it('should restrict fintel templates export to the given ids only', async () => {
+      const all = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_FINTEL_TEMPLATE], {});
+      if (all.length === 0) return;
+
+      const target = all[0];
+      const archive = createFakeArchive();
+      const count = await exportFintelTemplatesCategory(testContext, ADMIN_USER, archive, [target.id]);
+
+      expect(count).toBe(1);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(new RegExp(`^fintel_templates/fintel-template-.+-${target.id}\\.json$`));
+    });
+
+    it('should restrict CSV ingestion feed export to the given ids only', async () => {
+      const all = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_INGESTION_CSV], {});
+      if (all.length === 0) return;
+
+      const target = all[0];
+      const archive = createFakeArchive();
+      const count = await exportIngestionCsvCategory(testContext, ADMIN_USER, archive, [target.id]);
+
+      expect(count).toBe(1);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(new RegExp(`^ingestion/feeds/feed-csv/feed-csv-.+-${target.id}\\.json$`));
+    });
+
+    it('should restrict dashboard export to a given dashboard id', async () => {
+      const allWorkspaces = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_WORKSPACE], {});
+      const dashboards = allWorkspaces.filter((w) => w.type === 'dashboard');
+      if (dashboards.length === 0) return;
+
+      const target = dashboards[0];
+      const archive = createFakeArchive();
+      const count = await exportDashboardsCategory(testContext, ADMIN_USER, archive, [target.id]);
+
+      expect(count).toBe(1);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(new RegExp(`^dashboards/dash-.+-${target.id}\\.json$`));
+    });
+
+    // Regression test for the in-memory "type === 'dashboard'" filter combined with
+    // the ES-level id filter: a non-dashboard workspace must be excluded even when
+    // explicitly requested by id.
+    it('should exclude a matched non-dashboard workspace even when explicitly requested by id', async () => {
+      const allWorkspaces = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_WORKSPACE], {});
+      const nonDashboard = allWorkspaces.find((w) => w.type !== 'dashboard');
+      if (!nonDashboard) return;
+
+      const archive = createFakeArchive();
+      const count = await exportDashboardsCategory(testContext, ADMIN_USER, archive, [nonDashboard.id]);
+
+      expect(count).toBe(0);
+      expect(archive.append).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('exportCategory dispatch with ids', () => {
+    it('should forward ids to the underlying category export when dispatching', async () => {
+      const all = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_FORM], {});
+      if (all.length === 0) return;
+      const target = all[0];
+
+      const archive = createFakeArchive();
+      const count = await exportCategory(testContext, ADMIN_USER, ENTITY_TYPE_FORM, archive, [target.id]);
+
+      expect(count).toBe(1);
+      expect(archive.append).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('generateGlobalConfigurationExport - access control', () => {
+    it('should throw ForbiddenAccess when the user does not have the BYPASS capability', async () => {
+      const restrictedUser = { ...ADMIN_USER, capabilities: [] } as unknown as typeof ADMIN_USER;
+
+      await expect(
+        generateGlobalConfigurationExport(testContext, restrictedUser, [ENTITY_TYPE_FORM]),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('generateGlobalConfigurationExport - meta.json content', () => {
+    it('should embed accurate meta.json (version, author, deduplicated entity_types, counts)', async () => {
+      const appendSpy = vi.spyOn(ZipArchive.prototype, 'append');
+
+      await generateGlobalConfigurationExport(testContext, ADMIN_USER, [
+        ENTITY_TYPE_PLAYBOOK,
+        ENTITY_TYPE_FORM,
+        ENTITY_TYPE_PLAYBOOK, // duplicate on purpose
+      ]);
+
+      const metaCall = appendSpy.mock.calls.find(([, options]) => options?.name === 'meta.json');
+      expect(metaCall).toBeDefined();
+
+      const meta = JSON.parse(metaCall![0] as string);
+      expect(meta.generated_by).toBe(ADMIN_USER.id);
+      expect(meta.entity_types).toEqual([ENTITY_TYPE_PLAYBOOK, ENTITY_TYPE_FORM]); // deduplicated, order preserved
+      expect(typeof meta.generated_at).toBe('string');
+      expect(new Date(meta.generated_at).toString()).not.toBe('Invalid Date');
+      expect(meta.counts).toHaveProperty(ENTITY_TYPE_PLAYBOOK);
+      expect(meta.counts).toHaveProperty(ENTITY_TYPE_FORM);
+      expect(meta.requested_counts).toEqual({});
+
+      appendSpy.mockRestore();
+    });
+
+    it('should populate requested_counts only for entity_types with an explicit id selection', async () => {
+      const forms = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_FORM], {});
+      if (forms.length === 0) return;
+      const target = forms[0];
+
+      const appendSpy = vi.spyOn(ZipArchive.prototype, 'append');
+
+      await generateGlobalConfigurationExport(
+        testContext,
+        ADMIN_USER,
+        [ENTITY_TYPE_FORM, ENTITY_TYPE_PLAYBOOK],
+        [{ entityType: ENTITY_TYPE_FORM, ids: [target.id] }],
+      );
+
+      const metaCall = appendSpy.mock.calls.find(([, options]) => options?.name === 'meta.json');
+      const meta = JSON.parse(metaCall![0] as string);
+
+      expect(meta.requested_counts).toEqual({ [ENTITY_TYPE_FORM]: 1 });
+      expect(meta.counts[ENTITY_TYPE_FORM]).toBe(1);
+
+      appendSpy.mockRestore();
+    });
+
+    it('should ignore a selection whose ids array is empty', async () => {
+      const appendSpy = vi.spyOn(ZipArchive.prototype, 'append');
+
+      await generateGlobalConfigurationExport(
+        testContext,
+        ADMIN_USER,
+        [ENTITY_TYPE_FORM],
+        [{ entityType: ENTITY_TYPE_FORM, ids: [] }],
+      );
+
+      const metaCall = appendSpy.mock.calls.find(([, options]) => options?.name === 'meta.json');
+      const meta = JSON.parse(metaCall![0] as string);
+
+      expect(meta.requested_counts).toEqual({});
+
+      appendSpy.mockRestore();
+    });
+
+    it('should produce a valid zip containing only meta.json when entityTypes is empty', async () => {
+      const base64 = await generateGlobalConfigurationExport(testContext, ADMIN_USER, []);
+      const buffer = Buffer.from(base64, 'base64');
+
+      expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
       expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
     });
   });
