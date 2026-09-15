@@ -548,6 +548,7 @@ export const ENABLED_FILE_INDEX_MANAGER = booleanConf('file_index_manager:enable
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
 export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
+export const ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE = booleanConf('sync_manager:file_reference_mode_enabled', false);
 export const ENABLED_INGESTION_MANAGER = booleanConf('ingestion_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);

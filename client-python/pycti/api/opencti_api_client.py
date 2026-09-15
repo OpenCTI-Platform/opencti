@@ -343,6 +343,8 @@ class OpenCTIApiClient:
         # Keep track of draft context
         self.draft_id = ""
 
+        self.connector_id = None
+
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
             raise ValueError(
@@ -513,6 +515,22 @@ class OpenCTIApiClient:
         :type event_id: str
         """
         self.request_headers["opencti-event-id"] = event_id
+
+    def get_connector_id(self):
+        """Get the ID of the connector/synchronizer queue currently being processed.
+
+        :return: the current connector ID or None if not set
+        :rtype: str or None
+        """
+        return self.connector_id
+
+    def set_connector_id(self, connector_id):
+        """Set the ID of the connector/synchronizer queue currently being processed.
+
+        :param connector_id: the ID of the connector or synchronizer
+        :type connector_id: str
+        """
+        self.connector_id = connector_id
 
     def get_draft_id(self):
         """Get the current draft ID.

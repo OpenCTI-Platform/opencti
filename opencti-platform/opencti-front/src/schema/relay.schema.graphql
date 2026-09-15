@@ -6760,6 +6760,17 @@ input StixFileAddInput {
   upsertOperations: [EditInput!]
 }
 
+input FileRefInput {
+  sync_id: ID!
+  storage_key: String!
+  name: String!
+  mime_type: String
+  version: DateTime
+  file_markings: [String]
+  no_trigger_import: Boolean
+  embedded: Boolean
+}
+
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID!
   standard_id: String!
@@ -9798,6 +9809,7 @@ type ExternalReferenceEditMutations {
   askEnrichment(connectorId: ID!): Work
   askEnrichments(connectorIds: [ID!]!): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File
+  importPushRef(fileRef: FileRefInput!): File
 }
 
 type KillChainPhaseEditMutations {
@@ -9857,6 +9869,7 @@ type StixCoreObjectEditMutations {
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
+  importPushRef(fileRef: FileRefInput!): File
   uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
@@ -9881,6 +9894,7 @@ type StixDomainObjectEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
+  importPushRef(fileRef: FileRefInput!): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
@@ -10107,6 +10121,7 @@ type StixCyberObservableEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable
   promoteToIndicator: Indicator
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File
+  importPushRef(fileRef: FileRefInput!): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean
   promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.8]. Use `promoteToIndicator`.")

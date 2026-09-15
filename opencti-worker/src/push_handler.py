@@ -104,6 +104,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             self.api.set_draft_id(data.get("draft_id"))
             self.api.set_synchronized_upsert_header(data.get("synchronized", False))
             self.api.set_previous_standard_header(data.get("previous_standard"))
+            # Local-only (not an HTTP header): lets pycti's add_file_ref default its
+            # sync_id to this queue's own trusted connector_id, matching the
+            # sync/inflight staging path the platform used, instead of trusting a
+            # value read from the message content.
+            self.api.set_connector_id(self.connector_id)
             work_id = data.get("work_id")
             self.api.set_work_id(work_id)
 
