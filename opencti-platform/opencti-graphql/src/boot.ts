@@ -9,7 +9,19 @@ import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 
 // region platform start and stop
+// Track the in-flight startup so a shutdown signal received while the platform is still
+// starting (e.g. during a hot-reload restart) can wait for it to settle instead of killing
+// the process mid-initialization. Doing so guarantees resources such as the platform init
+// lock are always released through their normal try/finally instead of being left stale
+// in Redis until their TTL expires.
+let platformStartPromise: Promise<void> | undefined;
+
 export const platformStart = async () => {
+  platformStartPromise = doPlatformStart();
+  await platformStartPromise;
+};
+
+const doPlatformStart = async () => {
   const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
   try {
@@ -92,6 +104,15 @@ process.on('unhandledRejection', (reason: Error) => {
         setStoppingState(true);
         logApp.info(`[OPENCTI] ${signal} signal received, stopping OpenCTI`);
         try {
+          // If the platform is still starting (e.g. a hot-reload restart raced with the
+          // previous instance's initialization), wait for it to settle first so resources
+          // such as the platform init lock are released through their normal try/finally
+          // instead of being abandoned mid-acquisition until their TTL expires.
+          if (platformStartPromise) {
+            await platformStartPromise.catch(() => {
+              // Startup already logs and handles its own failures; nothing more to do here.
+            });
+          }
           await platformStop();
           process.exit(0);
         } catch (e) {
