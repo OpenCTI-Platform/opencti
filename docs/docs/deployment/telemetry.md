@@ -22,6 +22,34 @@ The following metrics are exposed by the OpenCTI API.
 | `opencti_api_latency` | Histogram | Measures the latency of API query execution. | Milliseconds |
 | `opencti_api_direct_bulk` | Gauge | Measures the size of bulks for direct ingestion (fast path). | Count |
 | `opencti_api_side_bulk` | Gauge | Measures the size of bulks for absorption impacts (worker path). | Count |
+| `opencti_dependency_up` | Gauge | Reports the connectivity state of a platform dependency: `1` when the dependency answers, `0` when it fails. | Boolean |
+| `opencti_elasticsearch_used_size_bytes` | Gauge | Reports the total ElasticSearch/OpenSearch primary store size, replicas excluded. | Bytes |
+| `opencti_storage_used_size_bytes` | Gauge | Reports the total size of the objects stored in the S3/MinIO bucket. | Bytes |
+| `opencti_queue_consumers` | Gauge | Reports the number of active consumers on the push queues, per connector type. | Count |
+
+## Platform Health Metrics
+
+A background monitor refreshes the health metrics periodically, so scraping them never triggers a request to a dependency. The same collected state answers the `/health` endpoint, which therefore never probes ElasticSearch, S3, RabbitMQ or Redis per request. Configure both refresh intervals with `app:health_monitoring:dependency_check_interval` and `app:health_monitoring:usage_metrics_interval` (see [Configuration](configuration.md)).
+
+Dependency checks run on every node, so each node reports the connectivity it observes itself. Usage metrics are cluster wide instead: collecting them is expensive (full bucket scan, engine stats), so the nodes coordinate through a Redis lock and share the result. A single node computes the value per interval and the others read it, which keeps every node reporting the same figure.
+
+A usage metric that cannot be collected is not exported, instead of being exported as `0`.
+
+The platform reports raw consumer counts per connector type and does not aggregate them into an ingestion capacity value. Consumers of the metric decide how to combine the types that are relevant to them.
+
+### Dependency Metrics Attributes
+Applies to: `opencti_dependency_up`
+
+| Attribute | Description | Example |
+|:---|:---|:---|
+| `dependency` | The monitored platform dependency. | `elasticsearch`, `storage`, `rabbitmq`, `redis` |
+
+### Queue Consumers Metrics Attributes
+Applies to: `opencti_queue_consumers`
+
+| Attribute | Description | Example |
+|:---|:---|:---|
+| `connector_type` | The connector type declared on the push queue. Queues without a declared type are reported as `UNKNOWN`. | `EXTERNAL_IMPORT`, `INTERNAL_ENRICHMENT`, `INTERNAL_IMPORT_FILE`, `INTERNAL_EXPORT_FILE` |
 
 ## Metric Attributes
 

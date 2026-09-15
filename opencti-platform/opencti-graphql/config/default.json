@@ -87,6 +87,10 @@
       }
     },
     "health_access_key": "ChangeMe",
+    "health_monitoring": {
+      "dependency_check_interval": 30000,
+      "usage_metrics_interval": 300000
+    },
     "request_timeout": 1200000,
     "keep_alive_timeout": 65000,
     "session_timeout": 1200000,
