@@ -984,7 +984,7 @@ const WidgetCreationParameters = () => {
                 defaultColumns={defaultWidgetColumnsByType}
                 value={selectedColumns}
                 onChange={(newColumns) => setColumns(index, newColumns)}
-                selectedPaneFlex={1}
+                selectedPanelFlex={1}
                 labels={{
                   title: t_i18n('Customize columns'),
                   available: t_i18n('Available columns'),
