@@ -55,10 +55,11 @@ import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
 import { extractStixRepresentative } from '../../../database/stix-representative';
 import { type AuthorizedMember, isUserInAuthorizedMember } from '../../access';
-import type { AuthUser } from '../../../types/user';
+import type { AuthContext, AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
 import type { PirInformation } from '../../../modules/pir/pir-types';
 import { pushAll } from '../../arrayUtil';
+import { getCustomFieldsStixFilterTesters } from '../../../modules/customField/custom-field-stix-utils';
 
 // -----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -490,7 +491,7 @@ export const testDescription = (stix: any, filter: Filter, changeContext?: { fil
 /**
  * TODO: This mapping could be given by the schema, like we do with stix converters
  */
-export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
+const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   // basic keys
   [IDS_FILTER]: testIds,
   [ASSIGNEE_FILTER]: testAssignee,
@@ -535,4 +536,9 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [RELATION_TO_FILTER]: testRelationTo,
   [RELATION_TO_TYPES_FILTER]: testRelationToTypes,
   [REPRESENTATIVE_FILTER]: testRepresentative,
+};
+
+export const getFullFilterKeyTestersMap = async (context: AuthContext, user: AuthUser): Promise<Record<string, TesterFunction>> => {
+  const customFieldTestersMap = await getCustomFieldsStixFilterTesters(context, user);
+  return { ...customFieldTestersMap, ...FILTER_KEY_TESTERS_MAP };
 };

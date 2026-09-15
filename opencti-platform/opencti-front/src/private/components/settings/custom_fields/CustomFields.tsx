@@ -75,6 +75,7 @@ export const CustomFieldsLineFragment = graphql`
     id
     name
     label
+    aliases
     field_type
     entity_types
   }
@@ -123,10 +124,28 @@ const CustomFields = () => {
       percentWidth: 20,
       render: (data: CustomFieldsLine_node$data) => defaultRender(data.label),
     },
+    aliases: {
+      id: 'aliases',
+      label: 'Aliases',
+      percentWidth: 20,
+      isSortable: false,
+      render: (data: CustomFieldsLine_node$data) => (
+        <FieldOrEmpty source={data.aliases}>
+          <TagsOverflow
+            items={data.aliases ?? []}
+            getKey={(alias) => alias}
+            getLabel={(alias) => alias}
+            renderTag={(alias) => (
+              <Chip key={alias} label={alias} style={{ marginRight: 5 }} />
+            )}
+          />
+        </FieldOrEmpty>
+      ),
+    },
     entity_types: {
       id: 'entity_types',
       label: 'Used in',
-      percentWidth: 38,
+      percentWidth: 24,
       isSortable: false,
       render: (data: CustomFieldsLine_node$data) => (
         <FieldOrEmpty source={data.entity_types}>
@@ -154,7 +173,7 @@ const CustomFields = () => {
     name: {
       id: 'name',
       label: 'Technical name',
-      percentWidth: 26,
+      percentWidth: 20,
     },
   };
 

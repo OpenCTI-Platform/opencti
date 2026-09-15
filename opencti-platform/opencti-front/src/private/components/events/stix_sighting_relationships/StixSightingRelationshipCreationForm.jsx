@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRightAlt } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
@@ -21,6 +21,8 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CustomFieldsFormik from '../../common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '../../common/custom_fields/CustomFieldValuesCreation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -136,7 +138,8 @@ const StixSightingRelationshipCreationForm = ({
   );
 
   return (
-    <Formik
+    <CustomFieldsFormik
+      entityType={STIX_SIGHTING_TYPE}
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={stixSightingRelationshipValidator}
@@ -317,6 +320,7 @@ const StixSightingRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               {typeof handleResetSelection === 'function' && (
                 // A wrapper, not `sx`: the product Button falls back to MUI when given one.
@@ -347,7 +351,7 @@ const StixSightingRelationshipCreationForm = ({
           </div>
         </Form>
       )}
-    </Formik>
+    </CustomFieldsFormik>
   );
 };
 

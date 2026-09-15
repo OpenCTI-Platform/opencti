@@ -41,6 +41,7 @@ import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
+import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidgetColumns';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -225,6 +226,29 @@ const WidgetCreationParameters = () => {
     const newSelection = { ...prevSelection, columns: newColumns };
     setDataSelectionWithIndex(newSelection, index);
   };
+
+  // Resolves the single entity type targeted by a filter group (same heuristic as used
+  // below to enable per-entity-type list columns), used to fetch the applicable custom
+  // field columns. Hooks are called with a fixed, entityType-independent call count here
+  // (once for the "list" columns picker, once for the "custom-attributes" columns picker)
+  // to respect the rules of hooks regardless of how many data selections a widget has.
+  const getSingleEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
+    if (!filterGroup) return undefined;
+    const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filterGroup);
+    const hasSingleEntityType = entityTypeFilters.length === 1;
+    const otherFiltersLength = filterGroup?.filters?.filter((filter) => filter.key !== 'entity_type')?.length;
+    if (filterGroup.mode === 'and' && hasSingleEntityType && otherFiltersLength >= 0) {
+      return entityTypeFilters[0];
+    }
+    if (filterGroup.mode === 'or' && hasSingleEntityType && otherFiltersLength === 0) {
+      return entityTypeFilters[0];
+    }
+    return undefined;
+  };
+  const listEntityType = getSingleEntityTypeFromFilters(dataSelection[0]?.filters);
+  const { columns: listCustomFieldColumns, loading: listCustomFieldColumnsLoading } = useCustomFieldWidgetColumns(listEntityType);
+  const customAttributesEntityType = host.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
+  const { columns: customAttributesCustomFieldColumns, loading: customAttributesCustomFieldColumnsLoading } = useCustomFieldWidgetColumns(customAttributesEntityType);
 
   const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
     const prevSelection = dataSelection[index];
@@ -989,18 +1013,19 @@ const WidgetCreationParameters = () => {
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}
-                  availableColumns={getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined)}
+                  availableColumns={[...getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined), ...listCustomFieldColumns]}
                   defaultColumns={defaultWidgetColumnsByType}
                   value={[...(columns ?? defaultWidgetColumnsByType)]}
                   onChange={(newColumns) => setColumns(index, newColumns)}
+                  isAvailableColumnsLoading={listCustomFieldColumnsLoading}
                 />
               );
             }
             return null;
           })}
         {getCurrentCategory(type) === 'custom-attributes' && (() => {
-          const entityType = host.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
-          const allColumns = getCustomAttributesColumns(entityType);
+          const entityType = customAttributesEntityType;
+          const allColumns = [...getCustomAttributesColumns(entityType), ...customAttributesCustomFieldColumns];
           return (
             <WidgetCustomAttributesColumnsInput
               layout={dataSelection[0]?.layout ?? '1'}
@@ -1009,6 +1034,7 @@ const WidgetCreationParameters = () => {
               defaultColumns={getDefaultCustomAttributesColumns(entityType)}
               value={[...(dataSelection[0]?.columns ?? allColumns)]}
               onChange={(newColumns) => setColumns(0, newColumns)}
+              isAvailableColumnsLoading={customAttributesCustomFieldColumnsLoading}
             />
           );
         })()}
