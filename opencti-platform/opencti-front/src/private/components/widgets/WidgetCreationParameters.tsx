@@ -23,7 +23,7 @@ import { isNotEmptyField } from 'src/utils/utils';
 import { capitalizeFirstLetter } from 'src/utils/String';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from 'src/components/i18n';
-import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
+import { findFiltersFromKeys, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
 import {
@@ -40,6 +40,7 @@ import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
+import { getEntityTypeFromFilters, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -223,17 +224,6 @@ const WidgetCreationParameters = () => {
     const prevSelection = dataSelection[index];
     const newSelection = { ...prevSelection, columns: newColumns };
     setDataSelectionWithIndex(newSelection, index);
-  };
-
-  const mergeAvailableAndSelectedColumns = (
-    availableColumns: WidgetColumn[],
-    selectedColumns: WidgetColumn[],
-  ) => {
-    const availableAttributes = new Set(availableColumns.map((column) => column.attribute));
-    const missingSelectedColumns = selectedColumns.filter(
-      (column) => !availableAttributes.has(column.attribute),
-    );
-    return [...availableColumns, ...missingSelectedColumns];
   };
 
   const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
@@ -976,15 +966,15 @@ const WidgetCreationParameters = () => {
             return null;
           }
 
-          const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filters ?? undefined);
-          const entityTypeFromFilters = entityTypeFilters.length === 1 ? entityTypeFilters[0] : undefined;
-          const entityType = entityTypeFromFilters;
+          const entityType = getEntityTypeFromFilters(filters);
           const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
           const selectedColumns = [...(columns ?? defaultWidgetColumnsByType)];
-          const availableColumns = mergeAvailableAndSelectedColumns(
-            getWidgetColumns(perspective, entityType, metricsDefinition || undefined),
-            selectedColumns,
-          );
+          const availableColumns = host.kind === 'fintelTemplate'
+            ? mergeAvailableAndSelectedColumns(
+                getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined),
+                selectedColumns,
+              )
+            : getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined);
 
           if (host.kind === 'fintelTemplate') {
             return (
