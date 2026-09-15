@@ -64,7 +64,9 @@ const OP_TRANSIENT_BACKOFF_MS = Number(conf.get('chunk_intake_manager:op_transie
 // This bounds the number of operations between their execution start and the moment the
 // sequencer boundary has queued their intent (or the operation settled): the concurrent
 // pre-loop engine lookups are capped at any moment, the depth offered to the loop is not.
-const PRE_LOOP_CONCURRENCY = Number(conf.get('chunk_intake_manager:pre_loop_concurrency') ?? 64);
+// Default 32 (permit probe 2026-09-15, w1 prefetch 128): 64 left 405 search rejections and 61
+// retries at intake start, 32 and 16 left none; 32 at 300.4 obj/s (= 64), 16 at 293.5.
+const PRE_LOOP_CONCURRENCY = Number(conf.get('chunk_intake_manager:pre_loop_concurrency') ?? 32);
 let preLoopInUse = 0;
 const preLoopWaiters: (() => void)[] = [];
 const acquirePreLoop = async (): Promise<boolean> => {
