@@ -1,13 +1,12 @@
-import React, { FunctionComponent, useState, ChangeEvent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import TextField from '@mui/material/TextField';
+import { Input, Checkbox } from '@filigran/design-system';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
@@ -74,20 +73,20 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     });
   };
 
-  const handleToggleFlatCategory = (categoryKey: string) => (event: ChangeEvent<HTMLInputElement>) => {
-    setCheckedCategoryItems((prev) => ({ ...prev, [categoryKey]: event.target.checked ? [categoryKey] : [] }));
+  const handleToggleFlatCategory = (categoryKey: string) => (checked: boolean | 'indeterminate') => {
+    setCheckedCategoryItems((prev) => ({ ...prev, [categoryKey]: checked === true ? [categoryKey] : [] }));
   };
 
-  const handleToggleCategoryAll = (categoryKey: string, allKeys: string[]) => (event: ChangeEvent<HTMLInputElement>) => {
-    setCheckedCategoryItems((prev) => ({ ...prev, [categoryKey]: event.target.checked ? allKeys : [] }));
+  const handleToggleCategoryAll = (categoryKey: string, allKeys: string[]) => (checked: boolean | 'indeterminate') => {
+    setCheckedCategoryItems((prev) => ({ ...prev, [categoryKey]: checked === true ? allKeys : [] }));
   };
 
-  const handleToggleCategoryItem = (categoryKey: string, itemKey: string) => (event: ChangeEvent<HTMLInputElement>) => {
+  const handleToggleCategoryItem = (categoryKey: string, itemKey: string) => (checked: boolean | 'indeterminate') => {
     setCheckedCategoryItems((prev) => {
       const current = prev[categoryKey] ?? [];
       return {
         ...prev,
-        [categoryKey]: event.target.checked ? [...current, itemKey] : current.filter((k) => k !== itemKey),
+        [categoryKey]: checked === true ? [...current, itemKey] : current.filter((k) => k !== itemKey),
       };
     });
   };
@@ -180,7 +179,7 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
                   <Accordion key={category.key} disableGutters expanded={false} sx={{ ...accordionSx, opacity: 0.5 }}>
                     <AccordionSummary sx={{ cursor: 'default' }}>
                       <FormControlLabel
-                        control={<Checkbox disabled checked={false} />}
+                        control={<Checkbox disabled checked={false} style={{ marginRight: 10, marginLeft: 10 }} />}
                         label={<Typography fontWeight="bold">{t_i18n(category.label)}</Typography>}
                       />
                     </AccordionSummary>
@@ -193,7 +192,7 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
                 return (
                   <Box key={category.key} sx={{ ...accordionSx, px: 2, py: 1.5 }}>
                     <FormControlLabel
-                      control={<Checkbox checked={checked} onChange={handleToggleFlatCategory(category.key)} />}
+                      control={<Checkbox checked={checked} onCheckedChange={handleToggleFlatCategory(category.key)} style={{ marginRight: 10, marginLeft: 10 }} />}
                       label={<Typography fontWeight="bold">{t_i18n(category.label)}</Typography>}
                     />
                   </Box>
@@ -212,9 +211,9 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
                       onClick={(e) => e.stopPropagation()}
                       control={(
                         <Checkbox
-                          checked={allChecked}
-                          indeterminate={someChecked}
-                          onChange={handleToggleCategoryAll(category.key, items.map((item) => item.key))}
+                          checked={someChecked ? 'indeterminate' : allChecked}
+                          style={{ marginRight: 10, marginLeft: 10 }}
+                          onCheckedChange={handleToggleCategoryAll(category.key, items.map((item) => item.key))}
                         />
                       )}
                       label={(
@@ -231,7 +230,8 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
                         control={(
                           <Checkbox
                             checked={checked.includes(item.key)}
-                            onChange={handleToggleCategoryItem(category.key, item.key)}
+                            onCheckedChange={handleToggleCategoryItem(category.key, item.key)}
+                            style={{ marginRight: 10, marginLeft: 10 }}
                           />
                         )}
                         label={t_i18n(item.label)}
@@ -257,10 +257,8 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
               </Box>
             </Alert>
 
-            <TextField
+            <Input
               label={t_i18n('Bundle name')}
-              variant="standard"
-              fullWidth
               value={bundleName}
               onChange={(e) => setBundleName(e.target.value)}
             />
