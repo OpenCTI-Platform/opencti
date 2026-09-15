@@ -1,8 +1,6 @@
 import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
-import { useTheme } from '@mui/styles';
-import { Theme } from '../../../components/Theme';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
@@ -38,7 +36,6 @@ interface WidgetFiltersProps {
 }
 
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const [filters, helpers] = useFiltersState(dataSelection.filters);
@@ -226,6 +223,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 availableEntityTypes={availableEntityTypes}
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
+                type={perspective === 'relationships' ? 'relationships' : undefined}
               />
               {isSavedFiltersAccessible && (
                 <>
@@ -312,14 +310,39 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         )}
       </Box>
 
-      <Box sx={{ paddingTop: 1 }}>
+      <Box sx={{ paddingTop: 4 }}>
+        {perspective === 'relationships'
+          && (dataSelection.filters_id || isFilterGroupNotEmpty(filters))
+          && (
+            <div style={{ marginTop: 8, marginBottom: 4 }}>
+              {t_i18n('Relationship filters: these filters apply to the relationships between the result of any dynamic source or dynamic target filters ')}
+            </div>
+          )
+        }
+        {isSavedFiltersMode ? (
+          <WidgetSavedFilterChips
+            filterId={dataSelection.filters_id}
+            entityTypes={searchContext.entityTypes}
+          />
+        ) : (
+          <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+            searchContext={searchContext}
+            availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
+            entityTypes={searchContext.entityTypes}
+            host={host}
+            inline
+          />
+        )}
+
         {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
           || (!isSavedDynamicFromMode && isFilterGroupNotEmpty(filtersDynamicFrom)))
-        && (
-          <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
-          </div>
-        )
+          && (
+            <div style={{ marginTop: 8, marginBottom: 4 }}>
+              {t_i18n('Dynamic source filters: These filters apply a pre-query to the source entity of the relationship, max limit is 5000')}
+            </div>
+          )
         }
         {isSavedDynamicFromMode ? (
           <WidgetSavedFilterChips
@@ -345,11 +368,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
         {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
           || (!isSavedDynamicToMode && isFilterGroupNotEmpty(filtersDynamicTo)))
-        && (
-          <div style={{ marginTop: 8, color: theme.palette.success.main, marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
-          </div>
-        )
+          && (
+            <div style={{ marginTop: 8, marginBottom: 4 }}>
+              {t_i18n('Dynamic target filters: These filters apply a pre-query to the target entity of the relationship, max limit is 5000')}
+            </div>
+          )
         }
         {isSavedDynamicToMode ? (
           <WidgetSavedFilterChips
@@ -373,30 +396,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           />
         )}
 
-        {perspective === 'relationships'
-          && (dataSelection.filters_id || isFilterGroupNotEmpty(filters))
-          && (
-            <div style={{ marginTop: 8, marginBottom: 4 }}>
-              {t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}
-            </div>
-          )
-        }
-        {isSavedFiltersMode ? (
-          <WidgetSavedFilterChips
-            filterId={dataSelection.filters_id}
-            entityTypes={searchContext.entityTypes}
-          />
-        ) : (
-          <FilterIconButton
-            filters={filters}
-            helpers={helpers}
-            searchContext={searchContext}
-            availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
-            entityTypes={searchContext.entityTypes}
-            host={host}
-            inline
-          />
-        )}
       </Box>
     </>
   );

@@ -3,7 +3,7 @@ import Button from '@common/button/Button';
 import { FilterListOutlined, LibraryAddOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
-import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
+import { RayEndArrow, RayStartArrow, RelationManyToMany } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
@@ -97,6 +97,12 @@ const ListFilters = ({
         icon: <RayEndArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic target filters'),
         placeholder: t_i18n('Dynamic target filters'),
+        color: 'primary',
+      };
+      case 'relationships': return {
+        icon: <RelationManyToMany fontSize="medium" />,
+        tooltip: t_i18n('Relationship filters'),
+        placeholder: t_i18n('Relationship filters'),
         color: 'primary',
       };
       default: return {
