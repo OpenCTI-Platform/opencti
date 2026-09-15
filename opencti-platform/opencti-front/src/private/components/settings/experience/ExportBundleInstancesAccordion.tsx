@@ -4,14 +4,9 @@ import Typography from '@mui/material/Typography';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import TextField from '@mui/material/TextField';
-import CircularProgress from '@mui/material/CircularProgress';
-import Button from '@mui/material/Button';
-import InputAdornment from '@mui/material/InputAdornment';
+import { Checkbox, Radio, RadioGroup, Input, Spinner } from '@filigran/design-system';
+import Button from '@common/button/Button';
 import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import type { SxProps } from '@mui/material/styles';
@@ -99,15 +94,15 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
     }
   };
 
-  const handleModeRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onModeChange(event.target.value as InstanceSelectionMode);
-    if (event.target.value === 'partial' && !loadedOnce) {
+  const handleModeRadioChange = (value: string) => {
+    onModeChange(value as InstanceSelectionMode);
+    if (value === 'partial' && !loadedOnce) {
       loadEntities('', null, false);
     }
   };
 
-  const handleSummaryToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onModeChange(event.target.checked ? 'all' : 'none');
+  const handleSummaryToggle = (checked: boolean | 'indeterminate') => {
+    onModeChange(checked === true ? 'all' : 'none');
   };
 
   const summaryLabel = (() => {
@@ -124,52 +119,42 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
           onClick={(e) => e.stopPropagation()}
           control={(
             <Checkbox
-              checked={mode !== 'none'}
-              indeterminate={mode === 'partial'}
-              onChange={handleSummaryToggle}
+              checked={mode === 'partial' ? 'indeterminate' : mode !== 'none'}
+              onCheckedChange={handleSummaryToggle}
+              style={{ marginRight: 10, marginLeft: 10 }}
             />
           )}
           label={<Typography fontWeight="bold">{summaryLabel}</Typography>}
         />
       </AccordionSummary>
-      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', paddingLeft: 5, paddingTop: 0, marginTop: -1 }}>
-        <RadioGroup value={mode === 'none' ? 'none' : mode} onChange={handleModeRadioChange}>
-          <FormControlLabel value="all" control={<Radio size="small" />} label={t_i18n('Export all')} />
-          <FormControlLabel value="partial" control={<Radio size="small" />} label={t_i18n('Select specific elements')} />
+      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', paddingLeft: 5, marginTop: -1 }}>
+        <RadioGroup value={mode === 'none' ? 'none' : mode} onValueChange={handleModeRadioChange}>
+          <FormControlLabel value="all" control={<Radio value="all" style={{ marginRight: 10 }} />} label={t_i18n('Export all')} />
+          <FormControlLabel value="partial" control={<Radio value="partial" style={{ marginRight: 10 }} />} label={t_i18n('Select specific elements')} />
         </RadioGroup>
 
         {mode === 'partial' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
-            <TextField
+            <Input
               value={search}
               onChange={handleSearchChange}
               placeholder={t_i18n('Search...')}
-              variant="standard"
-              fullWidth
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchOutlined fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
+              startIcon={<SearchOutlined fontSize="small" />}
             />
             {globalCount !== null && (
               <Typography variant="caption" color="textSecondary">
                 {`${selectedIds.length} ${t_i18n('selected')} / ${globalCount} ${t_i18n('total')}`}
               </Typography>
             )}
-            <Box sx={{ maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               {items.map((item) => (
                 <FormControlLabel
                   key={item.id}
                   control={(
                     <Checkbox
-                      size="small"
                       checked={selectedIds.includes(item.id)}
-                      onChange={(e) => onToggleId(item.id, e.target.checked)}
+                      onCheckedChange={(checked) => onToggleId(item.id, checked === true)}
+                      style={{ marginLeft: 15, marginRight: 10 }}
                     />
                   )}
                   label={item.name}
@@ -182,11 +167,11 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
               )}
               {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
-                  <CircularProgress size={20} />
+                  <Spinner size="sm" />
                 </Box>
               )}
               {hasNextPage && !loading && (
-                <Button size="small" onClick={handleLoadMore} sx={{ alignSelf: 'flex-start' }}>
+                <Button size="small" onClick={handleLoadMore} sx={{ alignSelf: 'flex-start', mt: 2 }}>
                   {t_i18n('Load more')}
                 </Button>
               )}
