@@ -1137,6 +1137,28 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, malware03.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
   });
+  it('should merging user be added as creator of the merged entity', async () => {
+    // Unique suffix to avoid colliding with leftover data from a previous failed run
+    const suffix = generateInternalId();
+    // 01. Target and source both created by admin
+    const target = await createThreat({ name: `THREAT_CREATOR_MERGE_TARGET_${suffix}` }, ADMIN_USER);
+    const source = await createThreat({ name: `THREAT_CREATOR_MERGE_SOURCE_${suffix}` }, ADMIN_USER);
+    // 02. Merge performed by a different user
+    const mergingActor = buildStandardUser([], [], [], 100);
+    let loadedThreat;
+    try {
+      const merged = await mergeEntities(testContext, mergingActor, target.internal_id, [source.internal_id]);
+      loadedThreat = await storeLoadById(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+      // 03. The user performing the merge must be recorded as a creator of the resulting entity
+      expect(loadedThreat.creator_id).toContain(mergingActor.id);
+      expect(loadedThreat.creator_id).toContain(ADMIN_USER.id);
+    } finally {
+      // Cleanup
+      if (loadedThreat) {
+        await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+      }
+    }
+  });
   it('should upsert multiple threat actors that need merging when using lower confidence', async () => {
     // 01. Create Threat by admin
     const updateUpsert01 = {
