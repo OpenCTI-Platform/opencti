@@ -50,7 +50,8 @@ Click on the button to create a new strategy. Only the following strategies will
 - OpenID
 - SAML
 
-Each configuration has some mandatory fields. Once these are provided, you will be able to create your configuration. Providing a group mapping or an org mapping is not mandatory to create your authentication.
+Each configuration has some mandatory fields. Once these are provided, you will be able to create your configuration.
+Providing a group mapping or an org mapping is not mandatory to create your authentication.
 
 By default, a created authentication will be enabled, meaning it will be visible on your login screen. You can update this behavior by toggling off the field in the creation form.
 
