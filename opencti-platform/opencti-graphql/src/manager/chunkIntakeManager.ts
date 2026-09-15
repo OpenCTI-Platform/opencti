@@ -56,6 +56,34 @@ const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs'
 // operation is RETAINED (pending store, sweeper backoff) instead of being lost.
 const OP_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:op_transient_attempts') ?? 5);
 const OP_TRANSIENT_BACKOFF_MS = Number(conf.get('chunk_intake_manager:op_transient_backoff_ms') ?? 250);
+// Pre-loop admission pacing (ref-b dissection, 2026-09-15): at intake start, prefetch x ~7
+// operations start in the same instant with nothing pacing them, and their pre-loop lookups
+// (domain pre-resolves, observable lookups) plus the cold identity map's first resolves
+// overflow the engine's search queue when nothing else throttles the platform (fewer workers
+// = less HTTP bookkeeping = a sharper wave: 1,633 rejections at w1 prefetch 128, none at w8).
+// This bounds the number of operations between their execution start and the moment the
+// sequencer boundary has queued their intent (or the operation settled): the concurrent
+// pre-loop engine lookups are capped at any moment, the depth offered to the loop is not.
+const PRE_LOOP_CONCURRENCY = Number(conf.get('chunk_intake_manager:pre_loop_concurrency') ?? 64);
+let preLoopInUse = 0;
+const preLoopWaiters: (() => void)[] = [];
+const acquirePreLoop = async (): Promise<boolean> => {
+  if (PRE_LOOP_CONCURRENCY <= 0) return false;
+  if (preLoopInUse < PRE_LOOP_CONCURRENCY) {
+    preLoopInUse += 1;
+    return false;
+  }
+  await new Promise<void>((resolve) => preLoopWaiters.push(resolve));
+  preLoopInUse += 1;
+  return true; // had to wait
+};
+const releasePreLoop = () => {
+  if (PRE_LOOP_CONCURRENCY <= 0) return;
+  preLoopInUse -= 1;
+  const next = preLoopWaiters.shift();
+  if (next) next();
+};
+
 // Gate-only fault injection: the first N consumer operations of the process fail once with a
 // synthetic transient error (statusCode 429), so the retry path is exercised deterministically.
 let faultTransientBudget = Number(conf.get('chunk_intake_manager:fault_transient_ops') ?? 0);
@@ -326,6 +354,17 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
       return null;
     };
     const runOperationOnce = async (operation: ChunkOperation, attempt: number): Promise<OperationOutcome> => {
+      // one pre-loop permit per attempt, released by the boundary hook (intent queued) or,
+      // for operations that never reach the loop, when the operation settles
+      const waited = await acquirePreLoop();
+      if (waited) operationsCounter?.add(1, { outcome: 'paced' });
+      let released = false;
+      const releaseOnce = () => {
+        if (released) return;
+        released = true;
+        releasePreLoop();
+      };
+      const opContext: AuthContext = PRE_LOOP_CONCURRENCY > 0 ? { ...context, onIntentQueued: releaseOnce } : context;
       try {
         if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
           faultTransientBudget -= 1;
@@ -335,7 +374,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
             cause: EngineShardsError({ shards: { total: 1, successful: 0, failed: 1, failures: [{ reason: { type: 'es_rejected_execution_exception', reason: 'rejected execution (synthetic)' } }] } }),
           });
         }
-        const result = await executeChunkOperation(context, operation);
+        const result = await executeChunkOperation(opContext, operation);
         if (result.errors?.length) {
           const first: any = result.errors[0];
           const code = first?.extensions?.code;
@@ -367,6 +406,8 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         const transient = await transientOutcome(operation, e, attempt);
         if (transient) return transient;
         return { error: String(e.message ?? e) };
+      } finally {
+        releaseOnce();
       }
     };
     // deferred === false is the retry sentinel of transientOutcome: loop until a real outcome
@@ -456,7 +497,7 @@ const chunkIntakeInitializer = async () => {
       logApp.error('[CHUNK-INTAKE] Unexpected chunk handling error', { cause: e });
     });
   });
-  logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', { queue: consumer.queue, prefetch: PREFETCH });
+  logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', { queue: consumer.queue, prefetch: PREFETCH, pre_loop_concurrency: PRE_LOOP_CONCURRENCY });
   return {
     consumer,
     shutdown: async () => {

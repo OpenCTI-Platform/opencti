@@ -90,6 +90,10 @@ interface AuthContext {
   // POC chunk-queue intake (retry-gap option 1): a creation whose hard reference is still
   // missing at apply time is RETAINED by the sequencer (pending intents) instead of rejected
   deferMissingRefs?: boolean;
+  // POC chunk intake: called once by the sequencer boundary when this context's intent has
+  // been accepted into the intake queue (end of the operation's pre-loop phase); the chunk
+  // manager uses it to release its pre-loop admission permit.
+  onIntentQueued?: () => void;
   req?: Express.Request;
   requestAbortSignal?: AbortSignal;
   blocked_for_lts_validation?: boolean;

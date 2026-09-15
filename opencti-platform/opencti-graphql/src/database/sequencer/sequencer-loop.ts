@@ -911,5 +911,13 @@ export const submitIntent = async (context: AuthContext, user: AuthUser, args: S
   ensureLoop();
   const intent = buildIntent({ ...args, user, context });
   await queue.put(intent);
+  // the caller's pre-loop phase ends here (chunk intake pacing, see chunkIntakeManager)
+  if (typeof context.onIntentQueued === 'function') {
+    try {
+      context.onIntentQueued();
+    } catch (e) {
+      logApp.warn('[SEQUENCER] onIntentQueued hook failed', { cause: e });
+    }
+  }
   return intent.promise;
 };
