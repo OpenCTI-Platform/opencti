@@ -338,11 +338,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
         {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
           || (!isSavedDynamicFromMode && isFilterGroupNotEmpty(filtersDynamicFrom)))
-          && (
-            <div style={{ marginTop: 8, marginBottom: 4 }}>
-              {t_i18n('Dynamic source filters: These filters apply a pre-query to the source entity of the relationship, max limit is 5000')}
-            </div>
-          )
+        && (
+          <div style={{ marginTop: 8, marginBottom: 4 }}>
+            {t_i18n('Dynamic source filters: These filters apply a pre-query to the source entity of the relationship, max limit is 5000')}
+          </div>
+        )
         }
         {isSavedDynamicFromMode ? (
           <WidgetSavedFilterChips
@@ -368,11 +368,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
         {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
           || (!isSavedDynamicToMode && isFilterGroupNotEmpty(filtersDynamicTo)))
-          && (
-            <div style={{ marginTop: 8, marginBottom: 4 }}>
-              {t_i18n('Dynamic target filters: These filters apply a pre-query to the target entity of the relationship, max limit is 5000')}
-            </div>
-          )
+        && (
+          <div style={{ marginTop: 8, marginBottom: 4 }}>
+            {t_i18n('Dynamic target filters: These filters apply a pre-query to the target entity of the relationship, max limit is 5000')}
+          </div>
+        )
         }
         {isSavedDynamicToMode ? (
           <WidgetSavedFilterChips

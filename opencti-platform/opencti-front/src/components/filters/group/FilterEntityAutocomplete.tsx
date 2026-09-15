@@ -277,6 +277,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
               <li
                 {...otherProps}
                 aria-disabled={disabledOptions}
+                aria-label={option.label}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -288,8 +289,8 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
                   pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
               >
-                {/* NOT `presentational`, deliberately — see fds-migration/MIGRATION-DECISIONS.md#filter-value-checkbox-role */}
-                <Checkbox checked={checked} disabled={disabledOptions} />
+                {/* NOT `presentational`, deliberately — see fds-migration/MIGRATION-DECISIONS.md#filter-value-checkbox-role. */}
+                <Checkbox checked={checked} disabled={disabledOptions} aria-label={option.label} />
                 <ItemIcon type={option.type} color={option.color} />
                 <span>
                   {option.label}
