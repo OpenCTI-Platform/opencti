@@ -58,37 +58,32 @@ export const hasWideTable = (content: string) => {
   return getMaxTableColumnCount(content) >= WIDE_TABLE_COLUMN_THRESHOLD;
 };
 
+const commonTableLayout: Omit<
+  CustomTableLayout,
+'paddingBottom' | 'paddingTop' | 'paddingLeft' | 'paddingRight'
+> = {
+  hLineColor: '#dcdde4',
+  vLineColor: '#dcdde4',
+  hLineWidth: () => 1,
+  vLineWidth: (i, { table }) => ((i === 0 || i === (table.widths ?? []).length) ? 1 : 0),
+};
+
+const createTableLayout = (padding: number): CustomTableLayout => ({
+  ...commonTableLayout,
+  paddingBottom: () => padding,
+  paddingTop: () => padding,
+  paddingLeft: () => padding,
+  paddingRight: () => padding,
+});
+
 export const defaultTableLayout: { [p: string]: CustomTableLayout } = {
   default: {
-    hLineColor: '#dcdde4',
-    vLineColor: '#dcdde4',
-    paddingBottom: () => 4,
-    paddingTop: () => 4,
+    ...createTableLayout(4),
     paddingLeft: () => 10,
     paddingRight: () => 10,
-    hLineWidth: () => 1,
-    vLineWidth: (i, { table }) => ((i === 0 || i === (table.widths ?? []).length) ? 1 : 0),
   },
-  compact: {
-    hLineColor: '#dcdde4',
-    vLineColor: '#dcdde4',
-    paddingBottom: () => 2,
-    paddingTop: () => 2,
-    paddingLeft: () => 2,
-    paddingRight: () => 2,
-    hLineWidth: () => 1,
-    vLineWidth: (i, { table }) => ((i === 0 || i === (table.widths ?? []).length) ? 1 : 0),
-  },
-  ultraCompact: {
-    hLineColor: '#dcdde4',
-    vLineColor: '#dcdde4',
-    paddingBottom: () => 1,
-    paddingTop: () => 1,
-    paddingLeft: () => 1,
-    paddingRight: () => 1,
-    hLineWidth: () => 1,
-    vLineWidth: (i, { table }) => ((i === 0 || i === (table.widths ?? []).length) ? 1 : 0),
-  },
+  compact: createTableLayout(2),
+  ultraCompact: createTableLayout(1),
 };
 
 export default setTableFullWidth;
