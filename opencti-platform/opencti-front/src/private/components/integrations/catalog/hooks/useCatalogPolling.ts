@@ -12,9 +12,9 @@ type UseCatalogPollingProps = {
 type RevisionByCatalogId = Map<string, string | null>;
 
 const toRevisionMap = (
-  revisions: ReadonlyArray<{ id: string; revision: string | null }> | null | undefined,
+  revisions: ReadonlyArray<{ id: string; revision: string | null | undefined }> | null | undefined,
 ): RevisionByCatalogId => {
-  return new Map((revisions ?? []).map((entry) => [entry.id, entry.revision]));
+  return new Map((revisions ?? []).map((entry) => [entry.id, entry.revision ?? null]));
 };
 
 const haveRevisionsChanged = (baseline: RevisionByCatalogId, next: RevisionByCatalogId): boolean => {
@@ -56,11 +56,11 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
       }
       clearScheduledCheck();
       timeoutRef.current = setTimeout(() => {
-        void checkCatalogRevisions('interval');
+        void checkCatalogRevisions();
       }, CATALOG_POLLING_INTERVAL_MS);
     };
 
-    const checkCatalogRevisions = async (reason: 'seed' | 'interval' | 'visibility-resume') => {
+    const checkCatalogRevisions = async () => {
       if (isCheckInFlightRef.current || isUnmountedRef.current || document.hidden) {
         return;
       }
@@ -74,30 +74,15 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
 
         if (!baselineRef.current) {
           baselineRef.current = nextBaseline;
-          console.log('[CatalogPolling] baseline seeded', {
-            reason,
-            catalogsCount: nextBaseline.size,
-          });
           return;
         }
 
         if (!haveRevisionsChanged(baselineRef.current, nextBaseline)) {
-          console.log('[CatalogPolling] no revision change', {
-            reason,
-            catalogsCount: nextBaseline.size,
-          });
           return;
         }
 
-        console.log('[CatalogPolling] revision change detected, refreshing catalogs', {
-          reason,
-          catalogsCount: nextBaseline.size,
-        });
-
         await onCatalogRevisionsChanged();
         baselineRef.current = nextBaseline;
-      } catch (error) {
-        console.log('[CatalogPolling] revisions check failed', { reason, error });
       } finally {
         isCheckInFlightRef.current = false;
         scheduleNextCheck();
@@ -108,24 +93,21 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
       if (document.hidden) {
         wasPausedRef.current = true;
         clearScheduledCheck();
-        console.log('[CatalogPolling] polling paused (tab hidden)');
         return;
       }
       if (wasPausedRef.current) {
         wasPausedRef.current = false;
-        console.log('[CatalogPolling] polling resumed, checking now');
-        void checkCatalogRevisions('visibility-resume');
+        void checkCatalogRevisions();
       }
     };
 
     document.addEventListener('visibilitychange', onVisibilityChange);
-    void checkCatalogRevisions('seed');
+    void checkCatalogRevisions();
 
     return () => {
       isUnmountedRef.current = true;
       clearScheduledCheck();
       document.removeEventListener('visibilitychange', onVisibilityChange);
-      console.log('[CatalogPolling] stopped');
     };
   }, [enabled, onCatalogRevisionsChanged]);
 };

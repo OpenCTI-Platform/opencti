@@ -46,7 +46,15 @@ export const upsertCatalog = async (_context: AuthContext, _user: AuthUser, upda
   });
 };
 
-export const findCatalogs = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
+const findCatalogsInternal = async (
+  context: AuthContext,
+  user: AuthUser,
+  excludedIds?: string[],
+  options?: {
+    baseData?: boolean;
+    baseFields?: string[];
+  },
+) => {
   const filters = excludedIds?.length ? {
     filters: excludedIds.map((catalogId) => ({
       key: ['catalog_id'],
@@ -56,25 +64,7 @@ export const findCatalogs = async (context: AuthContext, user: AuthUser, exclude
     filterGroups: [],
     mode: FilterMode.And,
   } : null;
-  const catalogs = await fullEntitiesList<BasicStoreEntityCatalog>(
-    context,
-    user,
-    [ENTITY_TYPE_CATALOG],
-    { indices: [READ_INDEX_INTERNAL_OBJECTS], filters },
-  );
-  return catalogs;
-};
 
-export const findCatalogsRevisions = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
-  const filters = excludedIds?.length ? {
-    filters: excludedIds.map((catalogId) => ({
-      key: ['catalog_id'],
-      values: [catalogId],
-      operator: FilterOperator.NotEq,
-    })),
-    filterGroups: [],
-    mode: FilterMode.And,
-  } : null;
   const catalogs = await fullEntitiesList<BasicStoreEntityCatalog>(
     context,
     user,
@@ -82,10 +72,24 @@ export const findCatalogsRevisions = async (context: AuthContext, user: AuthUser
     {
       indices: [READ_INDEX_INTERNAL_OBJECTS],
       filters,
-      baseData: true,
-      baseFields: ['catalog_id', 'revision'],
+      ...(options?.baseData !== undefined ? { baseData: options.baseData } : {}),
+      ...(options?.baseFields ? { baseFields: options.baseFields } : {}),
     },
   );
+
+  return catalogs;
+};
+
+export const findCatalogs = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
+  return findCatalogsInternal(context, user, excludedIds);
+};
+
+export const findCatalogsRevisions = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
+  const catalogs = await findCatalogsInternal(context, user, excludedIds, {
+    baseData: true,
+    baseFields: ['catalog_id', 'revision'],
+  });
+
   return catalogs.map((catalog) => ({
     catalog_id: catalog.catalog_id,
     revision: catalog.revision,
