@@ -25,8 +25,15 @@ const setTableFullWidth = (content: string) => {
     if (nbColumns) {
       const isWideTable = nbColumns >= WIDE_TABLE_COLUMN_THRESHOLD;
       const isVeryWideTable = nbColumns >= VERY_WIDE_TABLE_COLUMN_THRESHOLD;
-      const layout = isVeryWideTable ? 'ultraCompact' : isWideTable ? 'compact' : 'default';
-      const fontSize = isVeryWideTable ? 8 : isWideTable ? 9 : undefined;
+      let layout: 'default' | 'compact' | 'ultraCompact' = 'default';
+      let fontSize: number | undefined;
+      if (isVeryWideTable) {
+        layout = 'ultraCompact';
+        fontSize = 8;
+      } else if (isWideTable) {
+        layout = 'compact';
+        fontSize = 9;
+      }
       const noWrap = isWideTable ? ', \'noWrap\':false' : '';
       const computedFontSize = typeof fontSize === 'number' ? `, 'fontSize':${fontSize}` : '';
       table.setAttribute(
