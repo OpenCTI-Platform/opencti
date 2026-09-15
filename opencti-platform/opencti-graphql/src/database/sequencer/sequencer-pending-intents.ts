@@ -11,6 +11,14 @@
 // population (byId + byTarget), ES store under the opencti* prefix (bench clean-state wipes
 // it), write-through, hydrated at loop start. Records carry the serialized input, so the
 // memory footprint is bounded by the cap below, not by the population's age.
+//
+// Two record kinds share the store. INTENTS (kind entity / relation) are retained by the
+// loop itself. OPERATIONS (kind operation) are retained by the chunk intake manager: a
+// GraphQL operation that failed MISSING_REFERENCE_ERROR OUTSIDE the loop (attempt 5 on
+// mix140k: `addIndicator` pre-resolves the input for the decay rules BEFORE createEntity,
+// so an author or marking still in flight rejects the indicator with no hook to catch it:
+// 30-197 indicators per run, growing with depth). The operation is re-executed in process
+// when a missing target lands, or by the sweeper; the same key / index / backoff / expiry.
 import { createHash } from 'node:crypto';
 import conf, { logApp } from '../../config/conf';
 import { SEQUENCER_DEFERRED_ERROR } from '../../config/errors';
@@ -23,19 +31,23 @@ import type { AuthUser } from '../../types/user';
 export const PENDING_INTENTS_INDEX = 'opencti_sequencer_pending_intents';
 const PENDING_INTENTS_MAX = Number(conf.get('app:ingestion_sequencer:pending_intents_max') ?? 200000);
 
+export type PendingRecordKind = IntentKind | 'operation';
+
 export interface PendingIntentRecord {
   id: string; // sha(kind|type|user|stable input): a re-deferral upserts, never duplicates
-  kind: IntentKind;
+  kind: PendingRecordKind;
   type: string;
-  input_json: string;
-  opts_json: string;
+  input_json: string; // intent: the domain input; operation: the GraphQL operation
+  opts_json: string; // intent: the creation opts; operation: the chunk envelope (writer, work, draft)
   user_id: string;
   work_id?: string;
   missing_refs: string[]; // the unresolved ids AS GIVEN (stix / standard ids)
   created_at: number;
   updated_at: number;
   attempts: number;
-  status: 'pending' | 'applied' | 'expired' | 'failed';
+  // handed = an operation re-executed and RETAINED AGAIN by the loop as an intent record,
+  // which now owns the work bookkeeping: terminal here, no work report from this record
+  status: 'pending' | 'applied' | 'expired' | 'failed' | 'handed';
   // Original AuthUser, MEMORY-ONLY: keeps the creator attribution of the re-submitted
   // creation; records rehydrated after a restart are re-submitted as SYSTEM_USER with a
   // worker origin (documented divergence, same as pending refs).
@@ -59,6 +71,17 @@ type Resubmit = (record: PendingIntentRecord) => Promise<any>;
 let resubmit: Resubmit | null = null;
 export const registerPendingIntentResubmit = (fn: Resubmit) => {
   resubmit = fn;
+};
+
+// Registered by the chunk intake manager: re-executes a retained OPERATION in process with a
+// fresh chunk context. applied = landed; handed = the loop retained it as an intent (its own
+// record continues); redeferred = a reference is still missing (the manager re-deferred the
+// record, attempts + 1); any throw = terminal failure.
+export type OperationExecuteOutcome = 'applied' | 'handed' | 'redeferred';
+type OperationExecute = (record: PendingIntentRecord) => Promise<OperationExecuteOutcome>;
+let operationExecute: OperationExecute | null = null;
+export const registerPendingOperationExecute = (fn: OperationExecute) => {
+  operationExecute = fn;
 };
 
 // Registered by the chunk intake manager: terminal outcome of a retained creation, used
@@ -176,6 +199,67 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
   return true;
 };
 
+// The chunk envelope a retained operation re-executes under (no token: the writer's id).
+export interface PendingOperationEnvelope {
+  user_id?: string;
+  applicant_id?: string;
+  work_id?: string;
+  draft_id?: string;
+  retry_number?: number;
+}
+
+export interface PendingOperation {
+  operation: { query: string; variables?: Record<string, any>; operationName?: string; object_id?: string };
+  envelope: PendingOperationEnvelope;
+  user: AuthUser;
+  missing: string[];
+}
+
+// Retain one OPERATION (chunk intake manager). Same upsert semantics as deferIntents: a
+// re-execution that misses again bumps attempts and refreshes the missing set. The record
+// type is the object's STIX type (diagnostics), the key covers the whole operation.
+export const deferOperation = async ({ operation, envelope, user, missing }: PendingOperation): Promise<boolean> => {
+  if (!esOps || byId.size >= PENDING_INTENTS_MAX) return false;
+  const now = Date.now();
+  const type = operation.object_id ? String(operation.object_id).split('--')[0] : 'operation';
+  const id = recordKey('operation', type, user.id, operation);
+  const existing = byId.get(id);
+  let record: PendingIntentRecord;
+  if (existing) {
+    memoryRemove(existing);
+    record = {
+      ...existing,
+      missing_refs: missing.length > 0 ? missing : existing.missing_refs,
+      updated_at: now,
+      attempts: existing.attempts + 1,
+      status: 'pending',
+      user,
+    };
+    sequencerMetrics.pendingIntentEvent('redeferred');
+  } else {
+    record = {
+      id,
+      kind: 'operation',
+      type,
+      input_json: JSON.stringify(operation),
+      opts_json: serializeOpts(envelope),
+      user_id: user.id,
+      work_id: envelope.work_id,
+      missing_refs: missing,
+      created_at: now,
+      updated_at: now,
+      attempts: 0,
+      status: 'pending',
+      user,
+    };
+    sequencerMetrics.pendingIntentEvent('deferred');
+  }
+  const { id: _id, user: _user, ...persisted } = record;
+  checkBulkResponse(await esOps.bulk([{ index: { _index: PENDING_INTENTS_INDEX, _id: record.id } }, persisted]), 'defer');
+  memoryAdd(record);
+  return true;
+};
+
 // Complete-index lookup, called for every committed element (O(1) per instance id).
 export const matchLandedIntents = (element: any): PendingIntentRecord[] => {
   if (byTarget.size === 0 || !element?.internal_id) return [];
@@ -195,7 +279,8 @@ const settle = async (record: PendingIntentRecord, status: PendingIntentRecord['
     checkBulkResponse(await esOps.bulk(body), 'settle');
   }
   sequencerMetrics.pendingIntentEvent(status);
-  if (settledHook) {
+  // handed: the loop's intent record owns the work bookkeeping from here
+  if (settledHook && status !== 'handed') {
     try {
       await settledHook(record, error);
     } catch (err) {
@@ -210,7 +295,23 @@ const settle = async (record: PendingIntentRecord, status: PendingIntentRecord['
 //     nothing to do here;
 //   - any other error: terminal and visible.
 const resubmitOne = async (record: PendingIntentRecord) => {
-  if (!byId.has(record.id) || !resubmit) return;
+  if (!byId.has(record.id)) return;
+  if (record.kind === 'operation') {
+    if (!operationExecute) return;
+    sequencerMetrics.pendingIntentEvent('resubmitted');
+    try {
+      const outcome = await operationExecute(record);
+      if (outcome === 'redeferred') return; // re-recorded by the manager (same key, attempts + 1)
+      if (byId.has(record.id)) await settle(record, outcome);
+    } catch (err: any) {
+      logApp.warn('[SEQUENCER] pending operation re-execution failed, terminal', {
+        id: record.id, type: record.type, missing: record.missing_refs, attempts: record.attempts, cause: String(err),
+      });
+      if (byId.has(record.id)) await settle(record, 'failed', String(err?.message ?? err));
+    }
+    return;
+  }
+  if (!resubmit) return;
   sequencerMetrics.pendingIntentEvent('resubmitted');
   try {
     await resubmit(record);

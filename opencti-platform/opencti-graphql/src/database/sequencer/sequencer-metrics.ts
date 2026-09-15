@@ -183,7 +183,7 @@ class SequencerMetrics {
     this.sidewritesGrouped?.add(count);
   }
 
-  pendingIntentEvent(event: 'deferred' | 'redeferred' | 'resubmitted' | 'applied' | 'expired' | 'failed' | 'pending', count = 1) {
+  pendingIntentEvent(event: 'deferred' | 'redeferred' | 'resubmitted' | 'applied' | 'expired' | 'failed' | 'handed' | 'pending', count = 1) {
     this.pendingIntents?.add(count, { event });
   }
 

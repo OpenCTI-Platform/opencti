@@ -18,8 +18,14 @@ import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
 import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
-import { registerPendingIntentSettled } from '../database/sequencer/sequencer-pending-intents';
-import { SEQUENCER_DEFERRED_ERROR } from '../config/errors';
+import {
+  deferOperation,
+  pendingIntentsAccepting,
+  registerPendingIntentSettled,
+  registerPendingOperationExecute,
+  type PendingOperationEnvelope,
+} from '../database/sequencer/sequencer-pending-intents';
+import { MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR } from '../config/errors';
 import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
 import { reportExpectation } from '../domain/work';
@@ -172,13 +178,29 @@ export const createChunkContext = async (message: ChunkMessage, operations: Chun
   return { context: context as AuthContext, user };
 };
 
-// Outcome of one operation: ok, failed with an error, or RETAINED by the sequencer (its hard
-// reference is still missing: the creation is stored and re-submitted when the reference
-// lands, so it is neither an error nor a completion yet).
+// Outcome of one operation: ok, failed with an error, or RETAINED (its hard reference is
+// still missing: the creation is stored and re-submitted when the reference lands, so it is
+// neither an error nor a completion yet). Two retention paths: the sequencer loop retains
+// the INTENT (SEQUENCER_DEFERRED), the manager retains the OPERATION when the reference
+// check failed OUTSIDE the loop (MISSING_REFERENCE_ERROR reaching the executor: a domain
+// pre-resolve such as addIndicator's, which the loop hooks never see).
 interface OperationOutcome {
   error?: string;
   deferred?: boolean;
 }
+
+const unresolvedIdsOf = (err: any): string[] => {
+  const ids = err?.extensions?.data?.unresolvedIds ?? err?.originalError?.extensions?.data?.unresolvedIds ?? err?.data?.unresolvedIds;
+  return Array.isArray(ids) ? ids.map(String) : [];
+};
+
+const envelopeOf = (message: ChunkMessage): PendingOperationEnvelope => ({
+  user_id: message.user_id,
+  applicant_id: message.applicant_id,
+  work_id: message.work_id,
+  draft_id: message.draft_id,
+  retry_number: message.retry_number,
+});
 
 const reportChunkOutcome = async (
   context: AuthContext,
@@ -238,8 +260,21 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         const result = await executeChunkOperation(context, operation);
         if (result.errors?.length) {
           const first: any = result.errors[0];
-          if (first?.extensions?.code === SEQUENCER_DEFERRED_ERROR) {
+          const code = first?.extensions?.code;
+          if (code === SEQUENCER_DEFERRED_ERROR) {
             return { deferred: true };
+          }
+          // A consumer refused for a missing reference before it reached the loop: retain
+          // the operation (producers keep the error path: their consumers already ran).
+          if (code === MISSING_REF_ERROR && !operation.echo_id && DEFER_MISSING_REFS && pendingIntentsAccepting()) {
+            const missing = unresolvedIdsOf(first);
+            const retained = await deferOperation({ operation, envelope: envelopeOf(message), user, missing });
+            if (retained) {
+              logApp.info('[CHUNK-INTAKE] Operation retained (missing reference outside the loop)', {
+                chunk_id: message.chunk_id, object_id: operation.object_id, missing,
+              });
+              return { deferred: true };
+            }
           }
           return { error: String(first.message) };
         }
@@ -304,6 +339,27 @@ const chunkIntakeInitializer = async () => {
     if (!record.work_id) return;
     const settleContext = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
     await reportExpectation(settleContext, SYSTEM_USER, record.work_id, error ? { error, source: 'chunk intake (retained creation)' } : undefined);
+  });
+  // Re-execution of a retained OPERATION: a fresh chunk context (the writer resolved from
+  // the envelope, so no SYSTEM_USER divergence after a restart), the same in-process
+  // executor. Outcomes: landed, handed to the loop (retained as an intent), still missing
+  // (re-deferred here, attempts + 1), or a terminal failure (thrown, visible).
+  registerPendingOperationExecute(async (record) => {
+    const operation: ChunkOperation = JSON.parse(record.input_json);
+    const envelope: PendingOperationEnvelope = record.opts_json ? JSON.parse(record.opts_json) : {};
+    const { context, user } = await createChunkContext({ ...envelope, chunk_id: `retained-${record.id}` }, [operation]);
+    const result = await executeChunkOperation(context, operation);
+    if (result.errors?.length) {
+      const first: any = result.errors[0];
+      const code = first?.extensions?.code;
+      if (code === SEQUENCER_DEFERRED_ERROR) return 'handed';
+      if (code === MISSING_REF_ERROR) {
+        await deferOperation({ operation, envelope, user, missing: unresolvedIdsOf(first) });
+        return 'redeferred';
+      }
+      throw new Error(String(first.message));
+    }
+    return 'applied';
   });
   await registerChunkIntakeQueue();
   const consumer: ChunkConsumer = await consumeChunkIntakeQueue(PREFETCH, (payload: string, controls: ChunkControls) => {
