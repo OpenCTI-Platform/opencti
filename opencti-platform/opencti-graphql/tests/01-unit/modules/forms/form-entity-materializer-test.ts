@@ -104,7 +104,7 @@ describe('materializeEntityFromFields', () => {
     );
 
     expect(entity.aliases).toEqual([]);
-    expect(entity.details).toEqual({});
+    expect((entity as unknown as Record<string, unknown>).details).toEqual({});
   });
 
   it('does not apply fields when applyFields is false, but still seeds and completes', async () => {
