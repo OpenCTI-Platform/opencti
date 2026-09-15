@@ -291,10 +291,20 @@ describe('Workspace resolver standard behavior', () => {
       config: {},
     });
 
+    const sourceResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: { input: { type: 'dashboard', name: 'Dashboard source with filters' } },
+    });
+    const sourceId = sourceResult.data.workspaceAdd.id;
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: sourceId, input: [{ key: 'manifest', value: [manifestWithFiltersId] }] },
+    });
+
     const queryResult = await queryAsAdmin({
       query: gql`
-        mutation duplicateWorkspace($input: WorkspaceDuplicateInput!) {
-          workspaceDuplicate(input: $input) {
+        mutation duplicateDashboard($id: ID!, $name: String!) {
+          dashboardDuplicate(input: { id: $id, name: $name }) {
             id
             entity_type
             name
@@ -306,23 +316,20 @@ describe('Workspace resolver standard behavior', () => {
         }
       `,
       variables: {
-        input: {
-          type: 'dashboard',
-          name: 'Dashboard to duplicate',
-          manifest: manifestWithFiltersId,
-        },
+        id: sourceId,
+        name: 'Dashboard to duplicate',
       },
     });
 
-    expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
-    expect(queryResult.data.workspaceDuplicate.name).toBe('Dashboard to duplicate');
-    expect(queryResult.data.workspaceDuplicate.entity_type).toBe('Workspace');
-    expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
-    expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
+    expect(queryResult.data.dashboardDuplicate.id).toBeDefined();
+    expect(queryResult.data.dashboardDuplicate.name).toBe('Dashboard to duplicate');
+    expect(queryResult.data.dashboardDuplicate.entity_type).toBe('Workspace');
+    expect(queryResult.data.dashboardDuplicate.authorizedMembers.length).toBe(1);
+    expect(queryResult.data.dashboardDuplicate.authorizedMembers[0].access_right).toBe('admin');
 
     // Verify filters_id is preserved in the duplicated manifest
     const duplicatedManifest = JSON.parse(
-      Buffer.from(queryResult.data.workspaceDuplicate.manifest, 'base64').toString('utf-8'),
+      Buffer.from(queryResult.data.dashboardDuplicate.manifest, 'base64').toString('utf-8'),
     );
     const widget = duplicatedManifest.widgets['widget-1'];
     expect(widget).toBeDefined();
@@ -330,13 +337,32 @@ describe('Workspace resolver standard behavior', () => {
 
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: queryResult.data.workspaceDuplicate.id },
+      variables: { id: queryResult.data.dashboardDuplicate.id },
     });
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: sourceId } });
   });
 
-  const DUPLICATE_QUERY = gql`
-    mutation duplicateWorkspace($input: WorkspaceDuplicateInput!) {
-      workspaceDuplicate(input: $input) {
+  const DUPLICATE_DASHBOARD_QUERY = gql`
+    mutation duplicateDashboard($id: ID!, $name: String!) {
+      dashboardDuplicate(input: { id: $id, name: $name }) {
+        id
+        entity_type
+        name
+        type
+        description
+        manifest
+        tags
+        authorizedMembers {
+          id
+          access_right
+        }
+      }
+    }
+  `;
+
+  const DUPLICATE_INVESTIGATION_QUERY = gql`
+    mutation duplicateInvestigation($id: ID!, $name: String!) {
+      investigationDuplicate(input: { id: $id, name: $name }) {
         id
         entity_type
         name
@@ -399,67 +425,55 @@ describe('Workspace resolver standard behavior', () => {
 
     it('should duplicate an investigation and copy its investigated entities for an authorized user', async () => {
       const queryResult = await queryAsUser(USER_DISINFORMATION_ANALYST, {
-        query: DUPLICATE_QUERY,
+        query: DUPLICATE_INVESTIGATION_QUERY,
         variables: {
-          input: {
-            id: investigationId,
-            type: 'investigation',
-            name: 'Investigation duplicated',
-          },
+          id: investigationId,
+          name: 'Investigation duplicated',
         },
       });
 
-      expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
-      expect(queryResult.data.workspaceDuplicate.type).toBe('investigation');
-      expect(queryResult.data.workspaceDuplicate.name).toBe('Investigation duplicated');
-      expect(queryResult.data.workspaceDuplicate.description).toBe('an investigation with content to duplicate');
-      expect(queryResult.data.workspaceDuplicate.tags).toEqual(['duplication-test']);
-      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toEqual([investigatedEntityId]);
-      expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
-      expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
+      expect(queryResult.data.investigationDuplicate.id).toBeDefined();
+      expect(queryResult.data.investigationDuplicate.type).toBe('investigation');
+      expect(queryResult.data.investigationDuplicate.name).toBe('Investigation duplicated');
+      expect(queryResult.data.investigationDuplicate.description).toBe('an investigation with content to duplicate');
+      expect(queryResult.data.investigationDuplicate.tags).toEqual(['duplication-test']);
+      expect(queryResult.data.investigationDuplicate.investigated_entities_ids).toEqual([investigatedEntityId]);
+      expect(queryResult.data.investigationDuplicate.authorizedMembers.length).toBe(1);
+      expect(queryResult.data.investigationDuplicate.authorizedMembers[0].access_right).toBe('admin');
 
       await queryAsAdmin({
         query: DELETE_QUERY,
-        variables: { id: queryResult.data.workspaceDuplicate.id },
+        variables: { id: queryResult.data.investigationDuplicate.id },
       });
     });
 
-    it('should duplicate an investigation without an id input', async () => {
+    it('should reject investigation duplication without an id input', async () => {
       const queryResult = await queryAsUser(USER_DISINFORMATION_ANALYST, {
-        query: DUPLICATE_QUERY,
+        query: DUPLICATE_INVESTIGATION_QUERY,
         variables: {
-          input: {
-            type: 'investigation',
-            name: 'Investigation duplicated without id',
-            description: 'standalone investigation duplicate',
-            tags: ['standalone-test'],
-          },
+          name: 'Investigation duplicated without id',
         },
       });
 
-      expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
-      expect(queryResult.data.workspaceDuplicate.type).toBe('investigation');
-      expect(queryResult.data.workspaceDuplicate.name).toBe('Investigation duplicated without id');
-      expect(queryResult.data.workspaceDuplicate.description).toBe('standalone investigation duplicate');
-      expect(queryResult.data.workspaceDuplicate.tags).toEqual(['standalone-test']);
-      expect(queryResult.data.workspaceDuplicate.investigated_entities_ids).toBeNull();
+      expect(queryResult.data).toBeUndefined();
+      expect(queryResult.errors[0].message).toContain('Variable "$id"');
+      expect(queryResult.errors[0].extensions.code).toBe('BAD_USER_INPUT');
+    });
 
-      await queryAsAdmin({
-        query: DELETE_QUERY,
-        variables: { id: queryResult.data.workspaceDuplicate.id },
+    it('should reject an investigation source through dashboardDuplicate', async () => {
+      await queryAsUserIsExpectedForbidden(ADMIN_USER, {
+        query: DUPLICATE_DASHBOARD_QUERY,
+        variables: { id: investigationId, name: 'Wrong source type' },
       });
     });
 
     it('should reject investigation duplication for a user without the Create/Update investigations capability', async () => {
       // USER_EDITOR only has EXPLORE_EXUPDATE (dashboard) capabilities, not INVESTIGATION_INUPDATE
       await queryAsUserIsExpectedForbidden(USER_EDITOR, {
-        query: DUPLICATE_QUERY,
+        query: DUPLICATE_INVESTIGATION_QUERY,
         variables: {
-          input: {
-            id: investigationId,
-            type: 'investigation',
-            name: 'Investigation duplicated by an unauthorized user',
-          },
+          id: investigationId,
+          name: 'Investigation duplicated by an unauthorized user',
         },
       });
     });
@@ -479,13 +493,10 @@ describe('Workspace resolver standard behavior', () => {
       const notSharedInvestigationId = notSharedResult.data.workspaceAdd.id;
 
       await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, {
-        query: DUPLICATE_QUERY,
+        query: DUPLICATE_INVESTIGATION_QUERY,
         variables: {
-          input: {
-            id: notSharedInvestigationId,
-            type: 'investigation',
-            name: 'Investigation duplicated without access',
-          },
+          id: notSharedInvestigationId,
+          name: 'Investigation duplicated without access',
         },
       });
 
@@ -530,49 +541,48 @@ describe('Workspace resolver standard behavior', () => {
 
     it('should still allow a user with EXPLORE_EXUPDATE to duplicate a dashboard', async () => {
       const queryResult = await queryAsUser(USER_EDITOR, {
-        query: DUPLICATE_QUERY,
+        query: DUPLICATE_DASHBOARD_QUERY,
         variables: {
-          input: {
-            id: dashboardId,
-            type: 'dashboard',
-            name: 'Dashboard duplicated via id',
-          },
+          id: dashboardId,
+          name: 'Dashboard duplicated via id',
         },
       });
 
-      expect(queryResult.data.workspaceDuplicate.id).toBeDefined();
-      expect(queryResult.data.workspaceDuplicate.type).toBe('dashboard');
-      expect(queryResult.data.workspaceDuplicate.description).toBe('a dashboard with content to duplicate');
-      expect(queryResult.data.workspaceDuplicate.tags).toEqual(['duplication-test']);
+      expect(queryResult.data.dashboardDuplicate.id).toBeDefined();
+      expect(queryResult.data.dashboardDuplicate.type).toBe('dashboard');
+      expect(queryResult.data.dashboardDuplicate.description).toBe('a dashboard with content to duplicate');
+      expect(queryResult.data.dashboardDuplicate.tags).toEqual(['duplication-test']);
 
       await queryAsAdmin({
         query: DELETE_QUERY,
-        variables: { id: queryResult.data.workspaceDuplicate.id },
+        variables: { id: queryResult.data.dashboardDuplicate.id },
       });
     });
 
-    it('should reject duplication for an unknown workspace type', async () => {
-      await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, {
-        query: DUPLICATE_QUERY,
+    it('should reject duplication for a missing source workspace', async () => {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: DUPLICATE_DASHBOARD_QUERY,
         variables: {
-          input: {
-            type: 'unknown_type',
-            name: 'Duplication with unknown type',
-          },
+          id: '00000000-0000-4000-8000-000000000000',
+          name: 'Duplication with missing source',
         },
+      });
+    });
+
+    it('should reject a dashboard source through investigationDuplicate', async () => {
+      await queryAsUserIsExpectedForbidden(ADMIN_USER, {
+        query: DUPLICATE_INVESTIGATION_QUERY,
+        variables: { id: dashboardId, name: 'Wrong source type' },
       });
     });
 
     it('should reject dashboard duplication for a user without EXPLORE_EXUPDATE', async () => {
       // USER_CONNECTOR has neither EXPLORE_EXUPDATE nor INVESTIGATION_INUPDATE
       await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
-        query: DUPLICATE_QUERY,
+        query: DUPLICATE_DASHBOARD_QUERY,
         variables: {
-          input: {
-            id: dashboardId,
-            type: 'dashboard',
-            name: 'Dashboard duplicated by an unauthorized user',
-          },
+          id: dashboardId,
+          name: 'Dashboard duplicated by an unauthorized user',
         },
       });
     });

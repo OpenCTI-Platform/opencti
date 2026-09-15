@@ -16,7 +16,6 @@ import type {
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
-  WorkspaceDuplicateInput,
   WorkspaceObjectsArgs,
 } from '../../generated/graphql';
 import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -157,15 +156,6 @@ export const initializeAuthorizedMembers = (
     });
   }
   return initializedAuthorizedMembers;
-};
-
-const hasWorkspaceDuplicationCapability = (user: AuthUser, workspaceType: string) => {
-  const capabilityByWorkspaceType: Record<string, string> = {
-    investigation: 'INVESTIGATION_INUPDATE',
-    dashboard: 'EXPLORE_EXUPDATE',
-  };
-  const capability = capabilityByWorkspaceType[workspaceType];
-  return capability !== undefined && isUserHasCapability(user, capability);
 };
 
 export const addWorkspace = async (
@@ -353,34 +343,67 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   return workspaceId;
 };
 
-export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
-  const source = input.id ? await findById(context, user, input.id) : undefined;
-  if (input.id && !source) {
+export const dashboardDuplicate = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: { id: string; name: string },
+) => {
+  const source = await findById(context, user, input.id);
+  if (!source || source.type !== 'dashboard') {
     throw ForbiddenAccess();
   }
-  const sourceFields = source
-    ? {
-        type: source.type,
-        manifest: source.manifest,
-        tags: source.tags,
-        description: source.description,
-        ...(source.type === 'investigation'
-          ? {
-              // mirror investigationAddFromContainer: never copy references the duplicating user can't access
-              investigated_entities_ids: await filterUnwantedEntitiesOut({
-                context,
-                user,
-                ids: source.investigated_entities_ids ?? [],
-              }),
-            }
-          : {}),
-      }
-    : input;
-  if (!hasWorkspaceDuplicationCapability(user, sourceFields.type)) {
+  if (!isUserHasCapability(user, 'EXPLORE_EXUPDATE')) {
     throw ForbiddenAccess();
   }
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  const workspaceToCreate = { ...sourceFields, name: input.name, restricted_members: authorizedMembers };
+  const workspaceToCreate = {
+    type: 'dashboard',
+    name: input.name,
+    manifest: source.manifest,
+    tags: source.tags,
+    description: source.description,
+    restricted_members: authorizedMembers,
+  };
+  const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
+  const sanitizeElement = { ...workspaceToCreate, manifest: undefined };
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates ${created.type} workspace \`${created.name}\` from custom-named duplication`,
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
+};
+
+export const investigationDuplicate = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: { id: string; name: string },
+) => {
+  const source = await findById(context, user, input.id);
+  if (!source || source.type !== 'investigation') {
+    throw ForbiddenAccess();
+  }
+  if (!isUserHasCapability(user, 'INVESTIGATION_INUPDATE')) {
+    throw ForbiddenAccess();
+  }
+  const investigatedEntitiesIds = await filterUnwantedEntitiesOut({
+    context,
+    user,
+    ids: source.investigated_entities_ids ?? [],
+  });
+  const authorizedMembers = initializeAuthorizedMembers([], user);
+  const workspaceToCreate = {
+    type: 'investigation',
+    name: input.name,
+    manifest: source.manifest,
+    tags: source.tags,
+    description: source.description,
+    investigated_entities_ids: investigatedEntitiesIds,
+    restricted_members: authorizedMembers,
+  };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   const sanitizeElement = { ...workspaceToCreate, manifest: undefined };
   await publishUserAction({
