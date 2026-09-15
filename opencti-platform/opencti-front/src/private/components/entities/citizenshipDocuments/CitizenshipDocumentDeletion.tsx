@@ -20,7 +20,7 @@ const CitizenshipDocumentDeletion = ({ id, isOpen, handleClose }: { id: string; 
   const { t_i18n } = useFormatter();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_CitizenshipDocument') },
+    values: { entity_type: t_i18n('entity_Citizenship-Document') },
   });
   const [commit] = useApiMutation(
     CitizenshipDocumentDeletionDeleteMutation,
@@ -51,7 +51,7 @@ const CitizenshipDocumentDeletion = ({ id, isOpen, handleClose }: { id: string; 
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this citizenshipDocument?')}
+      message={t_i18n('Do you want to delete this citizenship document?')}
     />
   );
 };

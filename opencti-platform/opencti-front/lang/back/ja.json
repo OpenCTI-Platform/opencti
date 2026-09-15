@@ -114,6 +114,8 @@
   "Channel types": "データソース",
   "Child": "子",
   "CISA KEV": "CISA KEV",
+  "Citizenship Document type": "市民権文書タイプ",
+  "Citizenship Document ID": "市民権文書参照識別子",
   "Client certificate authentication": "クライアント証明書認証",
   "ClientCertStrategy": "クライアント証明書戦略",
   "Collection": "認証タイプ",

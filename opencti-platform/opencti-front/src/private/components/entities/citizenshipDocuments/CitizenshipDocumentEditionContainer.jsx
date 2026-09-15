@@ -13,7 +13,7 @@ const CitizenshipDocumentEditionContainer = (props) => {
 
   return (
     <Drawer
-      title={t_i18n('Update a citizenship-Document')}
+      title={t_i18n('Update a citizenship document')}
       open={open}
       onClose={handleClose}
       context={editContext}

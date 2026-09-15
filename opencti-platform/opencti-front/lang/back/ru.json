@@ -114,6 +114,8 @@
   "Channel types": "Типы каналов",
   "Child": "Ребенок",
   "CISA KEV": "CISA KEV",
+  "Citizenship Document type": "Тип документа о гражданстве",
+  "Citizenship Document ID": "Идентификатор ссылки на документ о гражданстве",
   "Client certificate authentication": "Аутентификация по клиентскому сертификату",
   "ClientCertStrategy": "Client Cert Strategy",
   "Collection": "Коллекция",

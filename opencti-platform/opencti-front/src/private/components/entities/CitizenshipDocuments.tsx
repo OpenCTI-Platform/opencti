@@ -21,7 +21,7 @@ const LOCAL_STORAGE_KEY = 'citizenshipDocuments';
 const CitizenshipDocuments = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('CitizenshipDocuments | Entities'));
+  setTitle(t_i18n('Citizenship Documents | Entities'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitizenshipDocumentsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {

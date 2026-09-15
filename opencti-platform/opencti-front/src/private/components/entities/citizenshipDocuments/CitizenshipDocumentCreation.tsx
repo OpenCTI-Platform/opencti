@@ -247,7 +247,7 @@ export const CitizenshipDocumentCreationForm: FunctionComponent<CitizenshipDocum
               variant="standard"
               as="select"
               name="x_opencti_citizenship_document_type"
-              label={t_i18n('Document_type')}
+              label={t_i18n('Document type')}
               containerStyle={fieldSpacingContainerStyle}
               multiline={true}
               rows="4"
@@ -382,7 +382,7 @@ const CitizenshipDocumentCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t_i18n('Create a Citizenship Document')}
+      title={t_i18n('Create a citizenship document')}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateCitizenshipDocumentControlledDial}
     >

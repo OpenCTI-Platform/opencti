@@ -219,7 +219,7 @@ const CitizenshipDocumentEditionOverviewComponent = (props) => {
             variant="standard"
             as="select"
             name="x_opencti_citizenship_document_type"
-            label={t_i18n('Document_type')}
+            label={t_i18n('Document type')}
             multiple={false}
             rows="4"
             style={{ marginTop: 20 }}
