@@ -26,7 +26,7 @@ type WidgetCustomAttributesColumnsInputProps = {
     available?: string;
     selected?: string;
   };
-  selectedPaneFlex?: number;
+  selectedPanelFlex?: number;
 };
 
 type DraggableColumnItemProps = {
@@ -47,7 +47,7 @@ type ColumnLayoutProps = {
   theme: Theme;
   listSx: object;
   selectedLabel: string;
-  selectedPaneFlex: number;
+  selectedPanelFlex: number;
 };
 
 const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
@@ -97,9 +97,9 @@ const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   t_i18n,
   listSx,
   selectedLabel,
-  selectedPaneFlex,
+  selectedPanelFlex,
 }) => (
-  <Box sx={{ flex: selectedPaneFlex }}>
+  <Box sx={{ flex: selectedPanelFlex }}>
     <Typography variant="h4">
       {`${selectedLabel} (${value.length})`}
     </Typography>
@@ -138,13 +138,13 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   t_i18n,
   theme,
   selectedLabel,
-  selectedPaneFlex,
+  selectedPanelFlex,
 }) => {
   const col1Items = value.filter((_, i) => i % 2 === 0);
   const col2Items = value.filter((_, i) => i % 2 === 1);
 
   return (
-    <Box sx={{ flex: selectedPaneFlex, display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ flex: selectedPanelFlex, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4">
         {`${selectedLabel} (${value.length})`}
       </Typography>
@@ -202,7 +202,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   layout = '1',
   onLayoutChange,
   labels,
-  selectedPaneFlex = 2,
+  selectedPanelFlex = 2,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -273,7 +273,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
               theme={theme}
               listSx={listSx}
               selectedLabel={selectedLabel}
-              selectedPaneFlex={selectedPaneFlex}
+              selectedPanelFlex={selectedPanelFlex}
             />
           ) : (
             <SingleColumnLayout
@@ -285,7 +285,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
               theme={theme}
               listSx={listSx}
               selectedLabel={selectedLabel}
-              selectedPaneFlex={selectedPaneFlex}
+              selectedPanelFlex={selectedPanelFlex}
             />
           )}
         </Box>
