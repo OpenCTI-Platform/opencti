@@ -121,6 +121,19 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({
         </Stack>
       </Stack>
       <Stack sx={{ gap: 1 }}>
+        {group.filters.length === 0 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {`${t_i18n('No rule apply')} - `}
+            <Button
+              variant="tertiary"
+              onClick={handleAddCondition}
+              data-testid={`filter-group-add-condition-link-${groupId ?? 'root'}`}
+              sx={{ textDecoration: 'underline', padding: 0, minWidth: 'auto' }}
+            >
+              {t_i18n('add a filter rule')}
+            </Button>
+          </Box>
+        )}
         {group.filters.map((filter, index) => (
           <Fragment key={filter.id ?? `${filter.key}-${index}`}>
             {index !== 0 && (

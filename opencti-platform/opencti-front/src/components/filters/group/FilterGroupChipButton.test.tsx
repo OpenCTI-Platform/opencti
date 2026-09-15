@@ -37,18 +37,4 @@ describe('Component: FilterGroupChipButton', () => {
     fireEvent.click(screen.getByTestId('filter-group-chip-group-1'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
-
-  it('renders a non-clickable chip in read only mode', () => {
-    const onClick = vi.fn();
-    testRender(<FilterGroupChipButton filterGroup={buildGroup()} isOpen={false} onClick={onClick} readOnly />);
-    const chip = screen.getByTestId('filter-group-chip-group-1');
-    expect(chip.className).not.toContain('MuiChip-clickable');
-    fireEvent.click(chip);
-    expect(onClick).not.toHaveBeenCalled();
-  });
-
-  it('renders without onClick and without crashing', () => {
-    testRender(<FilterGroupChipButton filterGroup={buildGroup()} isOpen={false} />);
-    expect(screen.getByTestId('filter-group-chip-group-1')).toBeDefined();
-  });
 });

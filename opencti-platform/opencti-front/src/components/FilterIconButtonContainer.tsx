@@ -233,7 +233,6 @@ const FilterIconButtonContainer: FunctionComponent<
     };
   }
 
-  const isGroupPanelReadOnly = !helpers || variant === 'small' || variant === 'tag';
   const openedGroup = displayedFilterGroups.find((group) => group.id === openedGroupId);
 
   const handleClickAwayPanel = (event: MouseEvent | TouchEvent) => {
@@ -280,7 +279,6 @@ const FilterIconButtonContainer: FunctionComponent<
               }}
               filterGroup={group}
               isOpen={openedGroupId === group.id}
-              readOnly={isGroupPanelReadOnly}
               chipColor={chipColor}
               style={filterStyle}
               onClick={() => setOpenedGroupId((current) => (current === group.id ? undefined : group.id))}
