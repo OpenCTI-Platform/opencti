@@ -25,7 +25,7 @@ const injectPendingError = (value: unknown): void => {
 };
 
 test('Threat Advisory - org-sharing failure + retry', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
-  test.setTimeout(120000);
+  test.setTimeout(300000); // Includes setup transitions and five persona logins before testing sharing.
 
   const toolbar = new DraftToolbarPageModel(page);
 

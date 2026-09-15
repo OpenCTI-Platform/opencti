@@ -3,6 +3,26 @@ import { WorkflowDefinition } from '../../../src/modules/workflow/engine/workflo
 import { WorkflowInstance } from '../../../src/modules/workflow/engine/workflow-instance';
 
 describe('Workflow Engine', () => {
+  it.each([null, undefined])('completes a destination-less transition (%s) without losing its last status or re-entering it', async (to) => {
+    const onEnter = vi.fn();
+    const onExit = vi.fn();
+    const validate = vi.fn();
+    const definition = new WorkflowDefinition('initial');
+    definition.addState('reviewed', { onEnter: [onEnter], onExit: [onExit] });
+    definition.addTransition('reviewed', to, 'Validate', { onTransition: [validate] });
+    const instance = new WorkflowInstance(definition, 'reviewed', {});
+
+    expect(await instance.trigger('Validate')).toMatchObject({ success: true, workflowCompleted: true });
+    expect(instance.getCurrentState()).toBe('reviewed');
+    expect(instance.getHistory()[0]).toMatchObject({ from: 'reviewed', to: 'reviewed', event: 'Validate', success: true });
+    expect(onExit).toHaveBeenCalledOnce();
+    expect(onEnter).not.toHaveBeenCalled();
+    expect(instance.getAvailableEvents()).toEqual([]);
+    expect(instance.canTransition('Validate')).toBe(false);
+    expect(await instance.trigger('Validate')).toMatchObject({ success: false });
+    expect(validate).toHaveBeenCalledOnce();
+  });
+
   describe('Transition comments', () => {
     it('should record the comment defined on the transition in the history', async () => {
       const definition = new WorkflowDefinition('draft');
@@ -206,4 +226,3 @@ describe('Workflow Engine', () => {
     expect(context.pendingAsyncSlots).toHaveLength(1);
   });
 });
-

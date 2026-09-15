@@ -8,6 +8,7 @@ export class StateMachine<TContext extends Context = Context> {
   protected definition: MachineDefinition<TContext>;
   protected currentState: State;
   protected context: TContext;
+  protected completed = false;
 
   /**
    * Creates an instance of a state machine.
@@ -43,6 +44,7 @@ export class StateMachine<TContext extends Context = Context> {
    * Lists all events that can be triggered from the current state.
    */
   public getAvailableEvents(): Event[] {
+    if (this.completed) return [];
     const transitions = this.definition.getTransitions(this.currentState);
     return transitions.map((t) => t.event);
   }
@@ -72,6 +74,9 @@ export class StateMachine<TContext extends Context = Context> {
    * @returns a TriggerResult object indicating success or failure with a reason.
    */
   public async trigger(event: Event): Promise<TriggerResult> {
+    if (this.completed) {
+      return { success: false, reason: 'Workflow has already completed' };
+    }
     const transition = this.definition.getTransition(this.currentState, event);
 
     if (!transition) {
@@ -121,6 +126,12 @@ export class StateMachine<TContext extends Context = Context> {
       for (const effect of transition.onTransition) {
         await effect(this.context);
       }
+    }
+
+    // A terminal transition has no new status: retain the last real status for persistence.
+    if (transition.to == null) {
+      this.completed = true;
+      return { success: true, executionStatus: 'completed', workflowCompleted: true };
     }
 
     // Update state

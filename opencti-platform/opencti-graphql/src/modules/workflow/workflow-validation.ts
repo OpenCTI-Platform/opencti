@@ -375,7 +375,7 @@ export const validateWorkflowDefinitionData = async (
                 filterGroups: [],
               },
             });
-            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId);
+            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId && !inst.completed);
 
             if (conflictingInstances.length > 0) {
               errors.push({

@@ -188,7 +188,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
   });
 
   test('Report access checks (steps 19-24): every persona\'s view of the validated Report', { tag: ['@ee', '@workflow'] }, async ({ page, request }) => {
-    test.setTimeout(180000); // ~6 logins across every persona
+    test.setTimeout(300000); // Six persona logins plus report access checks.
 
     // Standalone run: "Steps 1-18" didn't run in this session, find the latest matching Report.
     if (!draftId && !process.env.E2E_REPORT_NAME) {

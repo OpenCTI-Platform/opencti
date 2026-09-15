@@ -452,7 +452,7 @@ describe('Workflow Validation', () => {
     expect(errors).toEqual([]);
   });
 
-  it('should return error for state in use when removing a non-ending state', async () => {
+  it.each([undefined, false, true])('reports a removed non-ending state as in use only for active instances (completed: %s)', async (completed) => {
     // Reset mocks for this test
     vi.mocked(middlewareLoader.storeLoadById).mockReset();
     vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
@@ -488,7 +488,7 @@ describe('Workflow Validation', () => {
         // Second call: WorkflowInstance (for state in use check)
         if (entityTypes.includes('WorkflowInstance')) {
           return [
-            { id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b' },
+            { id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b', completed },
           ];
         }
         return [];
@@ -510,8 +510,7 @@ describe('Workflow Validation', () => {
       'existing-workflow',
     );
 
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(true);
+    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(!completed);
   });
 
   it('should allow removing an ending state even if instances are in it', async () => {
