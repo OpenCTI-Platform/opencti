@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as cacheModule from '../../../../src/database/cache';
-import { validateCustomFieldValues } from '../../../../src/modules/customField/custom-field-validator';
+import { transformCustomFieldValueAddInput, validateCustomFieldValues } from '../../../../src/modules/customField/custom-field-validator';
 import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from '../../../../src/modules/customField/custom-field-types';
+import type { CustomFieldValueAddInput } from '../../../../src/generated/graphql';
 
 const CONTEXT = {} as any;
 const USER = { id: 'user-1' } as any;
@@ -227,5 +228,112 @@ describe('validateCustomFieldValues', () => {
       }));
       await expect(validate([])).resolves.not.toThrow();
     });
+  });
+
+  it('throws on an unknown field_type on the definition', async () => {
+    seed(makeDefinition({ field_type: 'unsupported' as any }));
+    const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'a' }];
+    await expect(validate(values)).rejects.toThrow('Unknown custom field type');
+  });
+});
+
+describe('transformCustomFieldValueAddInput', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const transform = (input: CustomFieldValueAddInput[]) => transformCustomFieldValueAddInput(CONTEXT, USER, input, ENTITY_TYPE);
+
+  it('returns an empty array when no custom field definitions exist for the entity type', async () => {
+    seed();
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['a'] } as any]);
+    expect(result).toEqual([]);
+  });
+
+  it('drops an input whose field_name does not match any definition (nor an alias)', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([{ field_name: 'x_opencti_cf_unknown', value: ['a'] } as any]);
+    expect(result).toEqual([]);
+  });
+
+  it('matches a definition through one of its aliases', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([{ field_name: 'x_opencti_cf_alias', value: ['hello'] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'hello' }]);
+  });
+
+  it('transforms an integer input', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'integer' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: [42] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 42 }]);
+  });
+
+  it('transforms a markdown input using the string_value channel', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'markdown' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['# Title'] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: '# Title' }]);
+  });
+
+  it('transforms a boolean input', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'boolean' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: [true] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', boolean_value: true }]);
+  });
+
+  it('transforms a date input', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'date' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['2026-01-01T00:00:00.000Z'] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-01-01T00:00:00.000Z' }]);
+  });
+
+  it('transforms a select input', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'select', select_options: ['a', 'b'] }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['a'] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', select_value: 'a' }]);
+  });
+
+  it('transforms a multi_select input, keeping the whole array', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'multi_select', select_options: ['a', 'b'] }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['a', 'b'] } as any]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', select_values: ['a', 'b'] }]);
+  });
+
+  it('drops an input whose value type does not match the definition (e.g. string for an integer field)', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'integer' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['not-a-number'] } as any]);
+    expect(result).toEqual([]);
+  });
+
+  it('drops a multi_select input containing a non-string value', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'multi_select', select_options: ['a', 'b'] }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: ['a', 42] } as any]);
+    expect(result).toEqual([]);
+  });
+
+  it('drops an input with more than one value for a single-valued type (e.g. integer)', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'integer' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: [1, 2] } as any]);
+    expect(result).toEqual([]);
+  });
+
+  it('throws on an unknown field_type on the matched definition', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'unsupported' as any }));
+    await expect(transform([{ field_name: 'x_opencti_cf_field', value: ['a'] } as any])).rejects.toThrow('Unknown custom field type');
+  });
+
+  it('processes multiple inputs, mixing valid, dropped and alias-matched entries', async () => {
+    seed(
+      makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_score', field_type: 'integer' }),
+      makeDefinition({ id: 'cf-2', name: 'x_opencti_cf_label', field_type: 'string' }),
+    );
+    const result = await transform([
+      { field_name: 'x_opencti_cf_score', value: [7] } as any,
+      { field_name: 'x_opencti_cf_label', value: ['test'] } as any,
+      { field_name: 'x_opencti_cf_missing', value: ['ignored'] } as any,
+    ]);
+    expect(result).toEqual([
+      { field_id: 'cf-1', field_name: 'x_opencti_cf_score', int_value: 7 },
+      { field_id: 'cf-2', field_name: 'x_opencti_cf_label', string_value: 'test' },
+    ]);
   });
 });
