@@ -87,8 +87,8 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Mode')}>
-            <SelectItem value="and">{t_i18n('AND')}</SelectItem>
-            <SelectItem value="or">{t_i18n('OR')}</SelectItem>
+            <SelectItem value="and">{t_i18n('and').toUpperCase()}</SelectItem>
+            <SelectItem value="or">{t_i18n('or').toUpperCase()}</SelectItem>
           </SelectContent>
         </Select>
         <Stack direction="row" alignItems="center" sx={{ gap: 1 }}>
@@ -139,7 +139,7 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({
             {index !== 0 && (
               <Box
                 data-testid="filter-group-mode-separator"
-                sx={{ textTransform: 'uppercase', fontWeight: 'bold', fontFamily: 'Consolas, monaco, monospace' }}
+                sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
               >
                 {t_i18n(mode)}
               </Box>
