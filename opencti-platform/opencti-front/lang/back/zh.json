@@ -543,6 +543,7 @@
   "Last event id": "最后一个事件 id",
   "Last execution": "最后一次执行",
   "Last execution date": "最后执行日期",
+  "Last execution status": "上次执行状态",
   "Last execution time (ms)": "上次执行时间（毫秒）",
   "Last ingestion run": "最后一次摄取运行",
   "Last modification date": "最后修改日期",

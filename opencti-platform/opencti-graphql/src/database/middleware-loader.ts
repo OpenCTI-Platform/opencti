@@ -555,6 +555,32 @@ export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreEn
   return pagination.edges[0]?.node;
 };
 
+export const batchEntitiesThroughRelations = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  targetIds: string[],
+  relationType: string,
+  fromType: string,
+): Promise<BasicConnection<T>[]> => {
+  const relations: { fromId: string; toId: string }[] = [];
+  await fullRelationsList<BasicStoreRelation>(context, user, relationType, {
+    toId: targetIds,
+    fromTypes: [fromType],
+    baseData: true,
+    callback: async (page) => {
+      page.forEach((relation) => relations.push({ fromId: relation.fromId, toId: relation.toId }));
+    },
+  });
+  const entitiesById = await internalFindByIdsMapped<T>(context, user, R.uniq(relations.map((relation) => relation.fromId)), { type: fromType });
+  const relationsByTargetId = R.groupBy((relation) => relation.toId, relations);
+  return targetIds.map((id) => {
+    const nodes = (relationsByTargetId[id] ?? [])
+      .map((relation) => entitiesById[relation.fromId])
+      .filter((node): node is T => !!node);
+    return buildPagination(0, null, nodes.map((node) => ({ node })), nodes.length);
+  });
+};
+
 export const countAllThings = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, args: ListFilter<T> = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   return elCount(context, user, indices, args);

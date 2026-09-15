@@ -543,6 +543,7 @@
   "Last event id": "ID dell'ultimo evento",
   "Last execution": "Ultima esecuzione",
   "Last execution date": "Data dell'ultima esecuzione",
+  "Last execution status": "Stato dell'ultima esecuzione",
   "Last execution time (ms)": "Tempo dell'ultima esecuzione (ms)",
   "Last ingestion run": "Ultima esecuzione dell'ingestione",
   "Last modification date": "Data dell'ultima modifica",

@@ -111,10 +111,22 @@ jobs:
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
-            yarn install
+            # Reuse deps/generated files already built in the filigran/builder image (builder-back stage)
+            # instead of re-running "yarn install" + "yarn build" (each independently, 3x per CI run).
+            cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
+            mkdir -p ./src/__generated__
+            cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+            # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
+            # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
+            # against the schema in this checkout, not a possibly-stale committed file.
+            cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
+            # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
+            # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
+            # is production bundle output nothing here touches - do not copy it wholesale.
+            mkdir -p ./build
+            cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
             apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
-            yarn build
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
 
@@ -249,10 +261,22 @@ jobs:
               wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
               mkdir -p ../../opencti-connectors/external-import/restore-files/src
               wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
-              yarn install
+              # Reuse deps/generated files already built in the filigran/builder image (builder-back stage)
+              # instead of re-running "yarn install" + "yarn get-connectors-manifest" (each independently, 3x per CI run).
+              cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
+              mkdir -p ./src/__generated__
+              cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+              # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
+              # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
+              # against the schema in this checkout, not a possibly-stale committed file.
+              cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
+              # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
+              # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
+              # is production bundle output nothing here touches - do not copy it wholesale.
+              mkdir -p ./build
+              cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
               apk add --no-cache git # required by pip to install pycti from a git reference
               yarn install:python
-              yarn get-connectors-manifest
               NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
           '
 
@@ -319,19 +343,28 @@ jobs:
           docker load --input /tmp/opencti-builder.tar   
           docker images
 
-    - name: Backend install and build
+    - name: Restore pre-built backend deps
+      # Reuse deps/generated files already built in the filigran/builder image (builder-back stage)
+      # instead of re-running "yarn install" + "yarn build" here (this used to be a dedicated build
+      # step, redundant with the other backend test jobs doing the exact same install+build).
       run: |
-        docker run --name backend-build \
+        docker run --rm \
           -v ${{ github.workspace }}:/home/workspace \
-          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
-          -e PYTHONUNBUFFERED=1  \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-graphql
-            yarn install
-            apk add --no-cache git # required by pip to install pycti from a git reference
-            yarn install:python
-            yarn build
+            cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
+            mkdir -p ./src/__generated__
+            cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+            # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
+            # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
+            # against the schema in this checkout, not a possibly-stale committed file.
+            cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
+            # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
+            # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
+            # is production bundle output nothing here touches - do not copy it wholesale.
+            mkdir -p ./build
+            cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
         '
 
     - name: Backend type checking and linting

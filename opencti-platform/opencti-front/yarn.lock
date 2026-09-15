@@ -3779,64 +3779,57 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/core@npm:6.8.0"
+"@rjsf/core@npm:6.10.0":
+  version: 6.10.0
+  resolution: "@rjsf/core@npm:6.10.0"
   dependencies:
-    lodash: "npm:^4.18.1"
-    lodash-es: "npm:^4.18.1"
     markdown-to-jsx: "npm:^9.8.2"
-    prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@rjsf/utils": ^6.8.0
+    "@rjsf/utils": ^6.10.0
     react: ">=18"
-  checksum: 10c0/dc79591f99f8fc93073820ae967dca82733db6e9c1fc7cb6cbeba54571308f8a2f914d0fb7ed874122832d808011006acd61743f527ef02cd3493e974fd8fa2c
+  checksum: 10c0/8672d201727c3b7d831358c68739262e5aaa7385e2b51c5bcc784f4e3571d2f10c0579026110342d341b7033f97d66f875450902c4cbb1eecf4b0de72f37512b
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/mui@npm:6.8.0"
+"@rjsf/mui@npm:6.10.0":
+  version: 6.10.0
+  resolution: "@rjsf/mui@npm:6.10.0"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
     "@mui/icons-material": ^7.0.0 || ^9.0.0
     "@mui/material": ^7.0.0 || ^9.0.0
-    "@rjsf/core": ^6.8.0
-    "@rjsf/utils": ^6.8.0
+    "@rjsf/core": ^6.10.0
+    "@rjsf/utils": ^6.10.0
     react: ">=18"
-  checksum: 10c0/5a4f21477cc820108f1fbd7d39bad64478e59e8be154baef2169c4ddef91b73e5e595482a0166c7628d0609c2852b2faa0a518bf822cefada658d5c1e55b68f7
+  checksum: 10c0/dbc71d28b2333d35fcd49647bbb441f1a5e02d942435f3ccb79b1e98222696df229a81b2e04b9ec97969ce380d3fd173cb1235227471992546b734a2472b652f
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/utils@npm:6.8.0"
+"@rjsf/utils@npm:6.10.0":
+  version: 6.10.0
+  resolution: "@rjsf/utils@npm:6.10.0"
   dependencies:
     "@x0k/json-schema-merge": "npm:^1.0.3"
     fast-equals: "npm:^6.0.0"
-    fast-uri: "npm:^4.1.2"
+    fast-uri: "npm:^4.1.4"
     jsonpointer: "npm:^5.0.1"
-    lodash: "npm:^4.18.1"
-    lodash-es: "npm:^4.18.1"
     react-is: "npm:^18.3.1"
   peerDependencies:
     react: ">=18"
-  checksum: 10c0/a18bff0ebfc509ac17ce7babaf25aeb5fedd2436103b3ea759b35fc0213f117d419986d8fb9035eb263b5ede5a74aafcb9195ddbd60fbbb1a74a4d3ae63a4625
+  checksum: 10c0/4126bd78868afb9a99cdd774b800c0dcdccc810ecc67c56013aae9b421fd210311a8571dc7452d750ef102186303fbb43a227448e5338befdd3a7f8088c5ceee
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv8@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/validator-ajv8@npm:6.8.0"
+"@rjsf/validator-ajv8@npm:6.10.0":
+  version: 6.10.0
+  resolution: "@rjsf/validator-ajv8@npm:6.10.0"
   dependencies:
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
-    lodash: "npm:^4.18.1"
-    lodash-es: "npm:^4.18.1"
   peerDependencies:
-    "@rjsf/utils": ^6.8.0
-  checksum: 10c0/84ef325ea1b1beb8e029513d05eecf8c6b7de868d60e603258305e450634aa1dcf117625961a83b3db13651569ab16dfc4105c200bf50e02dffa417174635114
+    "@rjsf/utils": ^6.10.0
+  checksum: 10c0/696bb2ea068e51528f2bea351d0bff66f517f141026b460212acd17c966a47b303cde142306708f108ea093a7cce2e180011272fe6fdb17f8da9f9f8ecffe8b3
   languageName: node
   linkType: hard
 
@@ -7881,7 +7874,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-uri@npm:^4.1.2":
+"fast-uri@npm:^4.1.4":
   version: 4.1.4
   resolution: "fast-uri@npm:4.1.4"
   checksum: 10c0/0e856c2891cfec34abe87563f202a5cad202b23f09514ddffa9b853463c7c81787ae80889dd90b83b7cbf5cc0e08cffbd69be602965c31ff351317aad54647a4
@@ -10286,7 +10279,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:4, lodash-es@npm:^4.17.15, lodash-es@npm:^4.17.21, lodash-es@npm:^4.18.1":
+"lodash-es@npm:4, lodash-es@npm:^4.17.15, lodash-es@npm:^4.17.21":
   version: 4.18.1
   resolution: "lodash-es@npm:4.18.1"
   checksum: 10c0/35d4dcf87ef07f8d090f409447575800108057e360b445f590d0d25d09e3d1e33a163d2fc100d4d072b0f901d5e2fc533cd7c4bfd8eeb38a06abec693823c8b8
@@ -10314,7 +10307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.18.1, lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.21, lodash@npm:^4.18.1":
+"lodash@npm:4.18.1, lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.21":
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: 10c0/757228fc68805c59789e82185135cf85f05d0b2d3d54631d680ca79ec21944ec8314d4533639a14b8bcfbd97a517e78960933041a5af17ecb693ec6eecb99a27
@@ -11852,10 +11845,10 @@ __metadata:
     "@mui/styles": "npm:6.5.0"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.62.1"
-    "@rjsf/core": "npm:6.8.0"
-    "@rjsf/mui": "npm:6.8.0"
-    "@rjsf/utils": "npm:6.8.0"
-    "@rjsf/validator-ajv8": "npm:6.8.0"
+    "@rjsf/core": "npm:6.10.0"
+    "@rjsf/mui": "npm:6.10.0"
+    "@rjsf/utils": "npm:6.10.0"
+    "@rjsf/validator-ajv8": "npm:6.10.0"
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:7.0.1"

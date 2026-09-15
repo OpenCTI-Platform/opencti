@@ -194,6 +194,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | redis:namespace            | REDIS__NAMESPACE            |               | Namespace (to use as prefix)                                                          |
 | redis:hostname             | REDIS__HOSTNAME             | localhost     | Hostname of the Redis Server                                                          |
 | redis:hostnames            | REDIS__HOSTNAMES            |               | Hostnames definition for Redis cluster or sentinel mode: a list of host:port objects. |
+| redis:tls_servername       | REDIS__TLS_SERVERNAME       |               | Optional shared server name used for TLS SNI and certificate validation. In cluster mode, leave empty to validate each node individually. |
 | redis:port                 | REDIS__PORT                 | 6379          | Port of the Redis Server                                                              |
 | redis:sentinel_master_name | REDIS__SENTINEL_MASTER_NAME |               | Name of your Redis Sentinel Master (mandatory in sentinel mode)                       |
 | redis:sentinel_username    | REDIS__SENTINEL_USERNAME    |               | Username to authenticate on Redis Sentinel                                            |
@@ -234,13 +235,13 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 | Parameter           | Environment variable | Default value  | Description                                                                                                                                                                                                                 |
 |:--------------------|:---------------------|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Minio as an S3 Bucket Service. |
+| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Silo as an S3 Bucket Service.  |
 | minio:port          | MINIO__PORT          | 9000           | Port of the S3 Service. For AWS Bucket S3 over HTTPS, this value can be changed (usually __443__).                                                                                                                          |
 | minio:use_ssl       | MINIO__USE_SSL       | `false`        | Indicates whether the S3 Service has TLS enabled. For AWS Bucket S3 over HTTPS, this value could be `true`.                                                                                                                 |
 | minio:access_key    | MINIO__ACCESS_KEY    | ChangeMe       | Access key for the S3 Service.                                                                                                                                                                                              |
 | minio:secret_key    | MINIO__SECRET_KEY    | ChangeMe       | Secret key for the S3 Service.                                                                                                                                                                                              |
 | minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                            |
-| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Minio as an S3 Bucket Service.                                                                                                 |
+| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Silo as an S3 Bucket Service.                                                                                                  |
 | minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `minio:access_key` and `minio:secret_key` parameters are not necessary.                                                          |
 
 !!! note "Using a proxy for AWS S3"
@@ -398,7 +399,7 @@ JSON version:
 }
 ```
 
-Another example for MinIo (S3) using certificate:
+Another example for the S3 storage (`minio` section) using certificate:
 
 Environment variables:
 ```yaml
@@ -525,6 +526,16 @@ Can be configured manually using the configuration file `config.yml` or through 
 | Parameter               | Environment variable    | Default value | Description                                                                                                                                                              |
 |:------------------------|:------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | worker:objects_max_refs | WORKER_OBJECTS_MAX_REFS | 0             | The refs amount threshold: if set to a value higher than 0, all objects that have a number of refs higher than this will be sent to a dead letter queue and not ingested |
+
+#### Missing-reference retry schedule
+
+When the platform rejects an object because a referenced entity is not ingested yet (`MISSING_REFERENCE_ERROR`), the worker waits and retries up to 4 times. By default it waits a flat random 1 to 3 seconds before each retry. The exponential schedule waits less on the first retry and more on the last ones (0.5 s, 1 s, 2 s, 4 s on average, with jitter), which fits the common case where the referenced entity lands a fraction of a second later. These settings are environment variables only (read by the `pycti` library, so they also apply to connectors importing bundles directly).
+
+| Parameter | Environment variable                      | Default value | Description                                                                                                      |
+|:----------|:------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------------------|
+| -         | OPENCTI_MISSING_REF_RETRY_EXPONENTIAL     | false         | Enable the exponential retry schedule for missing references (`true` / `false`)                                  |
+| -         | OPENCTI_MISSING_REF_RETRY_INITIAL_DELAY   | 0.5           | Exponential schedule only: average wait in seconds before the first retry (minimum 0)                            |
+| -         | OPENCTI_MISSING_REF_RETRY_FACTOR          | 2             | Exponential schedule only: multiplier applied to the wait at each retry (minimum 1, 1 = constant wait)           |
 
 #### Telemetry
 
