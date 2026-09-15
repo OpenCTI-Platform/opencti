@@ -88,7 +88,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     return (
       <>
         <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box data-testid="workflow-transitions-pending" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="caption" noWrap>
             {pendingTransition.event}
           </Typography>
@@ -119,7 +119,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     return (
       <>
         <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box data-testid="workflow-transitions-error" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip title={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}>
             <ErrorOutline color="error" fontSize="small" />
           </Tooltip>
@@ -151,56 +151,58 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   return (
     <>
       <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-      {workflowInstance.allowedTransitions.length < 3 ? (
-        <>
-          {workflowInstance.allowedTransitions.map((transition) => (
-            <Button
-              key={transition.event}
-              variant="primary"
-              onClick={() => handleTransition(
-                transition.event,
-                transition.actions ?? [],
-                transition.comment,
-                transition.requiresShareOrganizationInput,
-                transition.requiresUnshareOrganizationInput,
-              )}
-              disabled={approving}
-            >
-              {transition.event}
-            </Button>
-          ))}
-        </>
-      ) : (
-        <>
-          <Button
-            variant="primary"
-            onClick={handleOpen}
-            endIcon={<ArrowDropDownOutlined />}
-            disabled={approving}
-          >
-            {t_i18n('Next status')}
-          </Button>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+      <Box data-testid="workflow-transitions-actions" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {workflowInstance.allowedTransitions.length < 3 ? (
+          <>
             {workflowInstance.allowedTransitions.map((transition) => (
-              <MenuItem
+              <Button
                 key={transition.event}
-                onClick={() => {
-                  handleClose();
-                  handleTransition(
-                    transition.event,
-                    transition.actions ?? [],
-                    transition.comment,
-                    transition.requiresShareOrganizationInput,
-                    transition.requiresUnshareOrganizationInput,
-                  );
-                }}
+                variant="primary"
+                onClick={() => handleTransition(
+                  transition.event,
+                  transition.actions ?? [],
+                  transition.comment,
+                  transition.requiresShareOrganizationInput,
+                  transition.requiresUnshareOrganizationInput,
+                )}
+                disabled={approving}
               >
                 {transition.event}
-              </MenuItem>
+              </Button>
             ))}
-          </Menu>
-        </>
-      )}
+          </>
+        ) : (
+          <>
+            <Button
+              variant="primary"
+              onClick={handleOpen}
+              endIcon={<ArrowDropDownOutlined />}
+              disabled={approving}
+            >
+              {t_i18n('Next status')}
+            </Button>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+              {workflowInstance.allowedTransitions.map((transition) => (
+                <MenuItem
+                  key={transition.event}
+                  onClick={() => {
+                    handleClose();
+                    handleTransition(
+                      transition.event,
+                      transition.actions ?? [],
+                      transition.comment,
+                      transition.requiresShareOrganizationInput,
+                      transition.requiresUnshareOrganizationInput,
+                    );
+                  }}
+                >
+                  {transition.event}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        )}
+      </Box>
       {/* Step 1: org picker */}
       <Formik
         initialValues={{

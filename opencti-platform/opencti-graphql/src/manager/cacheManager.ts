@@ -233,15 +233,25 @@ const platformUsers = (context: AuthContext) => {
     return buildCompleteUsers(context, users);
   };
   const removeUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
-    return (values ?? []).filter((user) => user.internal_id !== instance.internal_id);
+    const index = values.findIndex((user) => user.internal_id === instance.internal_id);
+    if (index !== -1) {
+      values.splice(index, 1);
+    }
+    return values;
   };
   const refreshUsers = async (values: AuthUser[], instance: BasicStoreCommon | BasicStoreCommon[]) => {
     const users = Array.isArray(instance) ? instance : [instance];
     const userIds = users.map((u) => u.internal_id);
-    const refreshValues = (values ?? []).filter((user) => !userIds.includes(user.internal_id));
     const reloadedUsers = await loadUsers(userIds);
-    pushAll(refreshValues, reloadedUsers);
-    return refreshValues;
+    // Other user updates can finish during the reload. Merge into the shared array
+    // after awaiting, rather than replacing it with a snapshot of stale permissions.
+    for (let index = values.length - 1; index >= 0; index -= 1) {
+      if (userIds.includes(values[index].internal_id)) {
+        values.splice(index, 1);
+      }
+    }
+    pushAll(values, reloadedUsers);
+    return values;
   };
   const addUser = async (values: AuthUser[] | null, instance: BasicStoreCommon) => {
     if (values) { // If values not preloaded yet
@@ -251,7 +261,7 @@ const platformUsers = (context: AuthContext) => {
       }
       // If user not available (cluster mode)
       const user = await resolveUserById(context, instance.internal_id);
-      if (user) {
+      if (user && !values.some((current) => current.internal_id === user.internal_id)) {
         values.push(user);
       }
       return values;

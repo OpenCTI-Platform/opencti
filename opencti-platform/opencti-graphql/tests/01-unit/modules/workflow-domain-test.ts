@@ -510,7 +510,7 @@ describe('Workflow Domain', () => {
     );
   });
 
-  it('should throw when publishing removes a non-ending state currently in use', async () => {
+  it.each([undefined, false, true])('blocks removing a non-ending state only for active instances (completed: %s)', async (completed) => {
     // Published version: state-a → state-b → state-c (state-b has outgoing transition → non-ending)
     const publishedVersion = {
       id: 'pub-1',
@@ -552,11 +552,15 @@ describe('Workflow Domain', () => {
 
     // An instance is currently in state-b (the removed non-ending state)
     (fullEntitiesList as any).mockResolvedValue([
-      { id: 'instance-1', workflow_id: 'workflow-id', currentState: 'state-b' },
+      { id: 'instance-1', workflow_id: 'workflow-id', currentState: 'state-b', completed },
     ]);
 
-    await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident'))
-      .rejects.toThrow('Cannot publish workflow: the following statuses are in use and cannot be removed');
+    if (completed) {
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).resolves.toMatchObject({ published: true });
+    } else {
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident'))
+        .rejects.toThrow('Cannot publish workflow: the following statuses are in use and cannot be removed');
+    }
   });
 
   it('should allow publishing when removed state is an ending state', async () => {

@@ -95,7 +95,7 @@ test.describe('Force password change - navigation blocking', { tag: ['@ce', '@gr
     // Log in as the test user (clear existing session first)
     await page.context().clearCookies();
     await page.goto('/');
-    await loginPage.login(TEST_USER_EMAIL, TEST_USER_PASSWORD);
+    await loginPage.login(TEST_USER_EMAIL, TEST_USER_PASSWORD, { expectPasswordChange: true });
 
     // Should show the force password change form on the login page (not redirect)
     await expect(page.getByLabel('New password')).toBeVisible({ timeout: 30000 });
@@ -112,7 +112,7 @@ test.describe('Force password change - navigation blocking', { tag: ['@ce', '@gr
     // Log in as the test user (session will be created despite the error)
     await page.context().clearCookies();
     await page.goto('/');
-    await loginPage.login(TEST_USER_EMAIL, TEST_USER_PASSWORD);
+    await loginPage.login(TEST_USER_EMAIL, TEST_USER_PASSWORD, { expectPasswordChange: true });
 
     // Wait for force password change form to appear (session is now created)
     await expect(page.getByLabel('New password')).toBeVisible({ timeout: 30000 });

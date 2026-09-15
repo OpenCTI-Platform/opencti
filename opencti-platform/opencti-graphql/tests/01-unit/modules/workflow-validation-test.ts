@@ -148,16 +148,18 @@ describe('Workflow Validation', () => {
     expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
   });
 
-  it('should return error if transition to is null', async () => {
-    const invalid = {
+  it('should not flag a transition as unlinked when only to is null (terminal transition)', async () => {
+    const terminal = {
       initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+      ],
       transitions: [
-        { from: 'a', to: null, event: 'test' },
+        { from: 'existing-state', to: null, event: 'test' },
       ],
     };
-    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(terminal), 'Incident');
+    expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(false);
   });
 
   it('should return error if filter operator is invalid', async () => {
@@ -450,7 +452,7 @@ describe('Workflow Validation', () => {
     expect(errors).toEqual([]);
   });
 
-  it('should return error for state in use when removing a non-ending state', async () => {
+  it.each([undefined, false, true])('reports a removed non-ending state as in use only for active instances (completed: %s)', async (completed) => {
     // Reset mocks for this test
     vi.mocked(middlewareLoader.storeLoadById).mockReset();
     vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
@@ -486,7 +488,7 @@ describe('Workflow Validation', () => {
         // Second call: WorkflowInstance (for state in use check)
         if (entityTypes.includes('WorkflowInstance')) {
           return [
-            { id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b' },
+            { id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b', completed },
           ];
         }
         return [];
@@ -508,8 +510,7 @@ describe('Workflow Validation', () => {
       'existing-workflow',
     );
 
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(true);
+    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(!completed);
   });
 
   it('should allow removing an ending state even if instances are in it', async () => {

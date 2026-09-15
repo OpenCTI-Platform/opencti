@@ -65,6 +65,60 @@ export default defineConfig({
       dependencies: ['setup'],
     },
     {
+      name: 'workflow setup',
+      testMatch: "workflow/threatAdvisoryWorkflowSetup.spec.ts",
+      use: {
+        ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+        viewport: {
+          width: 1920,
+          height: 1080
+        }
+      },
+      dependencies: ['init data'],
+    },
+    {
+      name: 'form intake setup',
+      testMatch: "formIntake/threatAdvisorySetup.spec.ts",
+      use: {
+        ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+        viewport: {
+          width: 1920,
+          height: 1080
+        }
+      },
+      dependencies: ['init data', 'workflow setup'],
+    },
+    {
+      // Isolated from 'chromium' on purpose: these tests consume the workflow/form intake built by
+      // 'workflow setup' and 'form intake setup'. Keeping that dependency chain out of 'chromium'
+      // means CI can run this project alone (e.g. --project="workflow e2e"), instead of the setup
+      // projects being forced to re-run in every CI shard that filters 'chromium' tests by --grep
+      // (Playwright always fully runs a project's dependencies, ignoring --grep/--grep-invert).
+      name: 'workflow e2e',
+      testMatch: [
+        'drafts/draftsList.spec.ts',
+        'drafts/threatAdvisoryHappyFlow.spec.ts',
+        'drafts/threatAdvisoryOrgSharingRetry.spec.ts',
+        'drafts/threatAdvisoryRejectionByAnalystOrgC.spec.ts',
+        'drafts/threatAdvisoryRejectionByManagerOrgA.spec.ts',
+        'drafts/threatAdvisoryRejectionByManagerOrgC.spec.ts',
+      ],
+      use: {
+        ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+        viewport: {
+          width: 1920,
+          height: 1080
+        }
+      },
+      dependencies: ['init data', 'workflow setup', 'form intake setup'],
+    },
+    {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
@@ -74,6 +128,16 @@ export default defineConfig({
           height: 1080
         }
       },
+      testIgnore: [
+        'workflow/threatAdvisoryWorkflowSetup.spec.ts',
+        'formIntake/threatAdvisorySetup.spec.ts',
+        'drafts/draftsList.spec.ts',
+        'drafts/threatAdvisoryHappyFlow.spec.ts',
+        'drafts/threatAdvisoryOrgSharingRetry.spec.ts',
+        'drafts/threatAdvisoryRejectionByAnalystOrgC.spec.ts',
+        'drafts/threatAdvisoryRejectionByManagerOrgA.spec.ts',
+        'drafts/threatAdvisoryRejectionByManagerOrgC.spec.ts',
+      ],
       dependencies: ['init data'],
     },
     // {

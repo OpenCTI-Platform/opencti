@@ -93,7 +93,7 @@ const workflowResolvers = {
     to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
-    toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
+    toStatus: (transition: any) => (transition.toState ? { id: transition.toState, template_id: transition.toState } : null),
     comment: (transition: any) => transition.comment ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
