@@ -3865,6 +3865,12 @@ export type CatalogEdge = {
   node: Catalog;
 };
 
+export type CatalogRevision = {
+  __typename?: 'CatalogRevision';
+  id: Scalars['ID']['output'];
+  revision?: Maybe<Scalars['String']['output']>;
+};
+
 export enum CatalogsOrdering {
   Score = '_score',
   Name = 'name'
@@ -24698,6 +24704,7 @@ export type Query = {
   cases?: Maybe<CaseConnection>;
   catalog?: Maybe<Catalog>;
   catalogs: Array<Catalog>;
+  catalogsRevisions: Array<CatalogRevision>;
   channel?: Maybe<Channel>;
   channels?: Maybe<ChannelConnection>;
   cities?: Maybe<CityConnection>;
@@ -40026,6 +40033,7 @@ export type ResolversTypes = ResolversObject<{
   Catalog: ResolverTypeWrapper<GraphqlCatalog>;
   CatalogConnection: ResolverTypeWrapper<Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversTypes['CatalogEdge']> }>;
   CatalogEdge: ResolverTypeWrapper<Omit<CatalogEdge, 'node'> & { node: ResolversTypes['Catalog'] }>;
+  CatalogRevision: ResolverTypeWrapper<CatalogRevision>;
   CatalogsOrdering: CatalogsOrdering;
   CertAuthConfig: ResolverTypeWrapper<CertAuthConfig>;
   CertAuthConfigInput: CertAuthConfigInput;
@@ -41177,6 +41185,7 @@ export type ResolversParentTypes = ResolversObject<{
   Catalog: GraphqlCatalog;
   CatalogConnection: Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversParentTypes['CatalogEdge']> };
   CatalogEdge: Omit<CatalogEdge, 'node'> & { node: ResolversParentTypes['Catalog'] };
+  CatalogRevision: CatalogRevision;
   CertAuthConfig: CertAuthConfig;
   CertAuthConfigInput: CertAuthConfigInput;
   ChangePasswordInput: ChangePasswordInput;
@@ -43317,6 +43326,11 @@ export type CatalogConnectionResolvers<ContextType = any, ParentType extends Res
 export type CatalogEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogEdge'] = ResolversParentTypes['CatalogEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Catalog'], ParentType, ContextType>;
+}>;
+
+export type CatalogRevisionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogRevision'] = ResolversParentTypes['CatalogRevision']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  revision?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type CertAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertAuthConfig'] = ResolversParentTypes['CertAuthConfig']> = ResolversObject<{
@@ -49951,6 +49965,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<QueryCasesArgs>>;
   catalog?: Resolver<Maybe<ResolversTypes['Catalog']>, ParentType, ContextType, RequireFields<QueryCatalogArgs, 'id'>>;
   catalogs?: Resolver<Array<ResolversTypes['Catalog']>, ParentType, ContextType>;
+  catalogsRevisions?: Resolver<Array<ResolversTypes['CatalogRevision']>, ParentType, ContextType>;
   channel?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<QueryChannelArgs, 'id'>>;
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
@@ -54059,6 +54074,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Catalog?: CatalogResolvers<ContextType>;
   CatalogConnection?: CatalogConnectionResolvers<ContextType>;
   CatalogEdge?: CatalogEdgeResolvers<ContextType>;
+  CatalogRevision?: CatalogRevisionResolvers<ContextType>;
   CertAuthConfig?: CertAuthConfigResolvers<ContextType>;
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;

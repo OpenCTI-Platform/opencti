@@ -16,6 +16,11 @@ type ExtendedContract {
   contract: String! # JSON.Stringified GraphqlCatalogContract items
 }
 
+type CatalogRevision {
+  id: ID!
+  revision: String
+}
+
 # Ordering
 enum CatalogsOrdering {
   name
@@ -40,6 +45,8 @@ type Query {
   # Returns only the latest compatible version of each contract for
   # backwards compatibility.
   catalogs: [Catalog!]! @auth(for: [INGESTION])
+  # Lightweight polling endpoint for catalog refresh detection.
+  catalogsRevisions: [CatalogRevision!]! @auth(for: [INGESTION])
   # Returns only the latest compatible version for backwards compatibility.
   contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
 }

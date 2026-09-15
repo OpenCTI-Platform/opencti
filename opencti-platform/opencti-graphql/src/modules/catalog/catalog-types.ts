@@ -76,6 +76,11 @@ export interface GraphqlCatalog {
   description: string;
   contracts: string[]; // JSON.Stringified GraphqlCatalogContract items
 }
+
+export interface GraphqlCatalogRevision {
+  id: string;
+  revision: string | null;
+}
 // endregion
 
 // region Database types

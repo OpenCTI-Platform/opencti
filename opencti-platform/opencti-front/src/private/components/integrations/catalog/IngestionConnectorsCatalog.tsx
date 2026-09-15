@@ -3,6 +3,15 @@ import type { PreloadedQuery } from 'react-relay';
 import React from 'react';
 import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 
+export const ingestionConnectorsCatalogRevisionsQuery = graphql`
+  query IngestionConnectorsCatalogRevisionsQuery {
+    catalogsRevisions {
+      id
+      revision
+    }
+  }
+`;
+
 export const ingestionConnectorsCatalogsQuery = graphql`
   query IngestionConnectorsCatalogsQuery {
     catalogs {

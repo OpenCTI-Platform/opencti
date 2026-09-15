@@ -65,6 +65,33 @@ export const findCatalogs = async (context: AuthContext, user: AuthUser, exclude
   return catalogs;
 };
 
+export const findCatalogsRevisions = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
+  const filters = excludedIds?.length ? {
+    filters: excludedIds.map((catalogId) => ({
+      key: ['catalog_id'],
+      values: [catalogId],
+      operator: FilterOperator.NotEq,
+    })),
+    filterGroups: [],
+    mode: FilterMode.And,
+  } : null;
+  const catalogs = await fullEntitiesList<BasicStoreEntityCatalog>(
+    context,
+    user,
+    [ENTITY_TYPE_CATALOG],
+    {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      filters,
+      baseData: true,
+      baseFields: ['catalog_id', 'revision'],
+    },
+  );
+  return catalogs.map((catalog) => ({
+    catalog_id: catalog.catalog_id,
+    revision: catalog.revision,
+  }));
+};
+
 export const deleteCatalogs = async (context: AuthContext, catalogEntities: BasicStoreEntityCatalog[]) => {
   await elDeleteInstances(context, catalogEntities);
 };
