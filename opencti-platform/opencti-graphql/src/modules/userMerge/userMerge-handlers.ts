@@ -2,12 +2,15 @@ import { assertUserMergeHandlersAreValid, registerUserMergeHandler } from './use
 import { userMergeBlobsHandler } from './userMerge-blobsHandler';
 import { userMergeFiltersHandler } from './userMerge-filtersHandler';
 import { userMergeHistoryHandler } from './userMerge-historyHandler';
+import { userMergeHistoryPayloadHandler } from './userMerge-historyPayloadHandler';
 import { userMergeIndividualHandler } from './userMerge-individualHandler';
 import { userMergeOperationalRelationsHandler } from './userMerge-operationalRelationsHandler';
 import { userMergePublicSharingHandler } from './userMerge-publicSharingHandler';
+import { userMergeResidualHandler } from './userMerge-residualHandler';
 import { userMergeRightsHandler } from './userMerge-rightsHandler';
 import { userMergeRuntimeHandler } from './userMerge-runtimeHandler';
 import { userMergeScalarHandler } from './userMerge-scalarHandler';
+import { userMergeSettingsHandler } from './userMerge-settingsHandler';
 import { userMergeSourceDisableHandler } from './userMerge-sourceDisableHandler';
 
 /**
@@ -24,12 +27,16 @@ export const registerUserMergeHandlers = (): void => {
   registerUserMergeHandler(userMergeFiltersHandler);
   registerUserMergeHandler(userMergeBlobsHandler);
   registerUserMergeHandler(userMergeHistoryHandler);
+  registerUserMergeHandler(userMergeHistoryPayloadHandler);
   registerUserMergeHandler(userMergePublicSharingHandler);
   registerUserMergeHandler(userMergeRightsHandler);
   registerUserMergeHandler(userMergeOperationalRelationsHandler);
   registerUserMergeHandler(userMergeIndividualHandler);
+  registerUserMergeHandler(userMergeSettingsHandler);
   // Last: the source keeps its live accesses for the whole merge, so that a handler failing
   // halfway leaves an account an administrator can still inspect rather than one already stripped.
   registerUserMergeHandler(userMergeRuntimeHandler);
+  // Reads only, so it sees what every other handler left behind and reports it without acting.
+  registerUserMergeHandler(userMergeResidualHandler);
   assertUserMergeHandlersAreValid();
 };
