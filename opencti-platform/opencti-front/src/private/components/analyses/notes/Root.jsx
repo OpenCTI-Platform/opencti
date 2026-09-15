@@ -150,7 +150,7 @@ const RootNote = () => {
                     extraRoutes={(
                       <Route
                         path="/knowledge/relations/:relationId"
-                        element={<StixCoreRelationship entityId={note.id} />}
+                        element={<StixCoreRelationship />}
                       />
                     )}
                   />
