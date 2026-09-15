@@ -170,6 +170,7 @@ import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
+  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
@@ -780,7 +781,7 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
+
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -1896,6 +1897,9 @@ const mergeEntitiesRaw = async (
       // Single value. Put the data in the merged field only if empty.
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
+  }
+  if (!INTERNAL_USERS[user.id] && !user.no_creators) {
+    updateAttributes.push({ key: 'creator_id', value: [user.id], operation: EditOperation.Add });
   }
 
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
