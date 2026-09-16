@@ -1,11 +1,10 @@
 import { ValueType } from '@opentelemetry/api';
 import conf, { logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
-import { getEngineUsedSize, isEngineAlive } from '../database/engine';
-import { getStorageUsedSize, isStorageAlive } from '../database/raw-file-storage';
-import { getQueueConsumersByType, rabbitMQIsAlive } from '../database/rabbitmq';
-import { lockResource, redisGetPlatformUsageMetrics, redisIsAlive, redisSetPlatformUsageMetrics } from '../database/redis';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { isEngineAlive } from '../database/engine';
+import { isStorageAlive } from '../database/raw-file-storage';
+import { rabbitMQIsAlive } from '../database/rabbitmq';
+import { redisGetPlatformUsageMetrics, redisIsAlive } from '../database/redis';
 
 export const HEALTH_DEPENDENCIES = ['elasticsearch', 'storage', 'rabbitmq', 'redis'] as const;
 export type HealthDependency = typeof HEALTH_DEPENDENCIES[number];
@@ -31,8 +30,8 @@ export interface PlatformHealthStatus {
 
 const CHECK_TIMEOUT_MS = 15_000;
 const DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS = 30_000;
-const DEFAULT_USAGE_METRICS_INTERVAL_MS = 300_000;
-const USAGE_METRICS_LOCK = 'platform-usage-metrics';
+// Also the cadence at which `platformUsageMetricsManager` recomputes and republishes the shared value.
+export const DEFAULT_USAGE_METRICS_INTERVAL_MS = 300_000;
 
 const buildInitialStatuses = (): Record<HealthDependency, DependencyStatus> => {
   return HEALTH_DEPENDENCIES.reduce((statuses, dependency) => {
@@ -46,7 +45,6 @@ let dependencyStatuses = buildInitialStatuses();
 let usageMetrics: PlatformUsageMetrics = buildInitialUsageMetrics();
 let dependencyCheckInterval: NodeJS.Timeout | null = null;
 let usageMetricsInterval: NodeJS.Timeout | null = null;
-let usageMetricsTtlSeconds = DEFAULT_USAGE_METRICS_INTERVAL_MS / 1000;
 let gaugesRegistered = false;
 
 const dependencyProbes: Record<HealthDependency, () => Promise<unknown>> = {
@@ -57,7 +55,8 @@ const dependencyProbes: Record<HealthDependency, () => Promise<unknown>> = {
 };
 
 // Bound a probe so one unresponsive dependency cannot stall the whole refresh cycle.
-const withTimeout = async <T>(promise: Promise<T>, message: string): Promise<T> => {
+// Exported so `platformUsageMetricsManager` bounds its own collection the same way.
+export const withTimeout = async <T>(promise: Promise<T>, message: string): Promise<T> => {
   let timer: NodeJS.Timeout | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(Error(message)), CHECK_TIMEOUT_MS);
@@ -90,29 +89,6 @@ export const refreshDependencyStatus = async (): Promise<void> => {
   }));
 };
 
-// A failed collection resets the metric to null so neither Prometheus nor the
-// health endpoint reports a stale value as if it were freshly measured.
-const collectUsageMetric = async <K extends keyof PlatformUsageMetrics>(
-  name: K,
-  collect: () => Promise<NonNullable<PlatformUsageMetrics[K]>>,
-): Promise<void> => {
-  try {
-    usageMetrics[name] = await withTimeout(collect(), `Timeout collecting ${name}`);
-  } catch (error) {
-    usageMetrics[name] = null;
-    logApp.warn('[HEALTH] Unable to collect platform usage metric', { metric: name, cause: error });
-  }
-};
-
-const refreshUsageMetrics = async (): Promise<void> => {
-  const context = executionContext('health_monitoring');
-  await Promise.all([
-    collectUsageMetric('es_used_size', () => getEngineUsedSize()),
-    collectUsageMetric('s3_used_size', () => getStorageUsedSize()),
-    collectUsageMetric('queue_consumers', () => getQueueConsumersByType(context, SYSTEM_USER)),
-  ]);
-};
-
 const isNullableNumber = (value: unknown): value is number | null => value === null || typeof value === 'number';
 
 // Redis holds whatever the node that won the last collection wrote, so the payload is
@@ -131,37 +107,14 @@ export const parseCachedUsageMetrics = (cached: unknown): PlatformUsageMetrics |
   return { es_used_size, s3_used_size, queue_consumers: queue_consumers as Record<string, number> | null };
 };
 
-const readSharedUsageMetrics = async (): Promise<PlatformUsageMetrics | null> => {
-  return parseCachedUsageMetrics(await redisGetPlatformUsageMetrics());
-};
-
-// Collection is expensive (full bucket scan, engine stats) and its result is cluster wide,
-// so nodes share a single Redis value: the first node to take the lock computes it for
-// everyone else, and the others simply adopt the cached payload on their next cycle.
-export const syncUsageMetrics = async (): Promise<void> => {
-  const cached = await readSharedUsageMetrics();
+// Collection (full bucket scan, engine stats) is expensive and cluster wide, so it's owned by
+// `platformUsageMetricsManager` (one node computes and publishes it per interval through Redis).
+// This node only adopts whatever is currently published; if nothing has been published yet
+// (cold start, or between the TTL expiring and the manager's next tick), it keeps its previous value.
+export const adoptSharedUsageMetrics = async (): Promise<void> => {
+  const cached = parseCachedUsageMetrics(await redisGetPlatformUsageMetrics());
   if (cached !== null) {
     usageMetrics = cached;
-    return;
-  }
-  let lock;
-  try {
-    lock = await lockResource([USAGE_METRICS_LOCK], { retryCount: 0, automaticExtension: false });
-  } catch {
-    // Another node is already collecting: keep the values from the previous cycle.
-    return;
-  }
-  try {
-    // Re-read under the lock: a node may have published between our read and our acquisition.
-    const published = await readSharedUsageMetrics();
-    if (published !== null) {
-      usageMetrics = published;
-      return;
-    }
-    await refreshUsageMetrics();
-    await redisSetPlatformUsageMetrics(usageMetrics, usageMetricsTtlSeconds);
-  } finally {
-    await lock.unlock();
   }
 };
 
@@ -232,9 +185,6 @@ export const startPlatformHealthMonitor = async (): Promise<void> => {
   registerHealthGauges();
   const dependencyCheckIntervalMs = conf.get('app:health_monitoring:dependency_check_interval') ?? DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS;
   const usageMetricsIntervalMs = conf.get('app:health_monitoring:usage_metrics_interval') ?? DEFAULT_USAGE_METRICS_INTERVAL_MS;
-  // Expiring the shared value with the collection interval is what makes exactly one
-  // node recompute per cycle, the others reading the still valid payload.
-  usageMetricsTtlSeconds = Math.max(1, Math.round(usageMetricsIntervalMs / 1000));
   // Awaited so the health endpoint exposes a meaningful state as soon as the API accepts traffic.
   await refreshDependencyStatus();
   dependencyCheckInterval = setInterval(() => {
@@ -243,15 +193,14 @@ export const startPlatformHealthMonitor = async (): Promise<void> => {
     });
   }, dependencyCheckIntervalMs);
   if (usageMetricsIntervalMs > 0) {
-    // Usage metrics are expensive (full bucket scan), so they are never awaited on the startup path.
+    // Collection itself (compute + publish) is owned by `platformUsageMetricsManager`;
+    // this node only polls the shared value, so it's cheap enough to await on the startup path.
     usageMetricsInterval = setInterval(() => {
-      syncUsageMetrics().catch((error) => {
+      adoptSharedUsageMetrics().catch((error) => {
         logApp.error('[HEALTH] Usage metrics refresh failed', { cause: error });
       });
     }, usageMetricsIntervalMs);
-    syncUsageMetrics().catch((error) => {
-      logApp.error('[HEALTH] Usage metrics refresh failed', { cause: error });
-    });
+    await adoptSharedUsageMetrics();
   }
   logApp.info('[HEALTH] Platform health monitoring started', { dependencyCheckIntervalMs, usageMetricsIntervalMs });
 };

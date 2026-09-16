@@ -305,6 +305,10 @@
     "batch_size": 10000,
     "interval": 60000
   },
+  "platform_usage_metrics_manager": {
+    "enabled": true,
+    "lock_key": "platform_usage_metrics_manager_lock"
+  },
   "garbage_collection_manager": {
     "enabled": true,
     "lock_key": "garbage_collection_manager_lock",
