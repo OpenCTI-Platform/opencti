@@ -88,6 +88,7 @@ describe('useIngestionCatalogFilters', () => {
       // 3 verified (2 connectors + built-in), 1 community
       expect(result.current.facets.statusCounts).toEqual({ filigran: 3, community: 1 });
       expect(result.current.facets.deploymentCounts).toEqual({ connector: 3, 'built-in': 1 });
+      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 3, unmanaged: 1 });
     });
 
     it('counts each facet group against items filtered by every group except itself', () => {
@@ -101,6 +102,7 @@ describe('useIngestionCatalogFilters', () => {
       expect(result.current.facets.deploymentCounts).toEqual({ connector: 2, 'built-in': 1 });
       // ...but the status group itself is counted with the status filter skipped.
       expect(result.current.facets.statusCounts).toEqual({ filigran: 3, community: 1 });
+      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 2, unmanaged: 1 });
     });
 
     it('counts the license and category groups with their own filter skipped', () => {
@@ -128,6 +130,60 @@ describe('useIngestionCatalogFilters', () => {
       expect(result.current.facets.useCaseCounts).toEqual({ SIEM: 1, EDR: 1 });
       expect(result.current.facets.statusCounts).toEqual({ filigran: 1 });
       expect(result.current.facets.deploymentCounts).toEqual({ connector: 1 });
+      expect(result.current.facets.managerSupportedCounts).toEqual({ managed: 1, unmanaged: 0 });
+    });
+  });
+
+  describe('manager support filter', () => {
+    it('defaults to no selection and keeps managed, unmanaged and missing-field contracts visible', () => {
+      const { result } = renderFilters({
+        contracts: [
+          makeContract({ title: 'Managed', manager_supported: true }),
+          makeContract({ title: 'Unmanaged', manager_supported: false }),
+          makeContract({ title: 'Missing', manager_supported: undefined }),
+        ],
+      });
+      expect(result.current.filters.managerSupported).toEqual([]);
+      expect(result.current.filteredItems.map((item) => item.title)).toEqual(['Managed', 'Unmanaged', 'Missing']);
+      expect(result.current.hasActiveFilters).toBe(false);
+    });
+
+    it('filters managed and unmanaged contracts in memory and treats missing metadata as unmanaged', () => {
+      const { result } = renderFilters({
+        contracts: [
+          makeContract({ title: 'Managed', manager_supported: true }),
+          makeContract({ title: 'Unmanaged', manager_supported: false }),
+          makeContract({ title: 'Missing', manager_supported: undefined }),
+        ],
+      });
+
+      act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['managed'] })));
+      expect(result.current.filteredItems.map((item) => item.title)).toEqual(['Managed']);
+
+      act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['unmanaged'] })));
+      expect(result.current.filteredItems.map((item) => item.title).sort()).toEqual(['Missing', 'Unmanaged']);
+
+      act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['managed', 'unmanaged'] })));
+      expect(result.current.filteredItems.map((item) => item.title)).toEqual(['Managed', 'Unmanaged', 'Missing']);
+    });
+
+    it('persists managerSupported in the URL and clears it back to no selection', () => {
+      const { result } = renderFilters({ contracts: facetContracts });
+      act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['managed'] })));
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('managerSupported')).toBe('managed');
+      expect(result.current.hasActiveFilters).toBe(true);
+      act(() => result.current.clearAllFilters());
+      expect(result.current.filters.managerSupported).toEqual([]);
+      expect(window.location.search).toBe('');
+      expect(result.current.hasActiveFilters).toBe(false);
+    });
+
+    it('shows the empty-state path when Managed yields no matches', () => {
+      const { result } = renderFilters({ contracts: [makeContract({ title: 'Only Unmanaged', manager_supported: false })] });
+      act(() => result.current.setFilters((prev) => ({ ...prev, managerSupported: ['managed'] })));
+      expect(result.current.filteredItems).toEqual([]);
+      expect(result.current.sections).toEqual([]);
     });
   });
 
@@ -210,11 +266,15 @@ describe('useIngestionCatalogFilters', () => {
       expect(mocks.notifyError).not.toHaveBeenCalled();
     });
 
-    it('skips contracts that are not manager supported', () => {
+    it('keeps contracts regardless of manager_supported before filtering', () => {
       const { result } = renderFilters({
-        contracts: [makeContract({ title: 'Unsupported', manager_supported: false })],
+        contracts: [
+          makeContract({ title: 'Managed', manager_supported: true }),
+          makeContract({ title: 'Unmanaged', manager_supported: false }),
+          makeContract({ title: 'Missing', manager_supported: undefined }),
+        ],
       });
-      expect(result.current.items).toEqual([]);
+      expect(result.current.items.map((item) => item.title)).toEqual(['Managed', 'Unmanaged', 'Missing']);
     });
   });
 
@@ -223,11 +283,12 @@ describe('useIngestionCatalogFilters', () => {
       const { result } = renderFilters({
         contracts: facetContracts,
         builtIns: [builtInSync],
-        params: 'status=filigran,bogus&deployment=connector,nope&useCase=SIEM',
+        params: 'status=filigran,bogus&deployment=connector,nope&useCase=SIEM&managerSupported=managed',
       });
       expect(result.current.filters.statuses).toEqual(['filigran']);
       expect(result.current.filters.deployments).toEqual(['connector']);
       expect(result.current.filters.useCases).toEqual(['SIEM']);
+      expect(result.current.filters.managerSupported).toEqual(['managed']);
     });
 
     it('parses solutionCategory and licenseType params from the URL', () => {

@@ -9,6 +9,7 @@ import EnterpriseEditionButton from '@components/common/entreprise_edition/Enter
 import FiligranIcon from '@components/common/FiligranIcon';
 import { CatalogItem } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import { BuiltInIntegrationHubButton, BuiltInIntegrationImport, isImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { LogoFiligranIcon } from 'filigran-icon';
@@ -97,6 +98,7 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
 
   const connector = item.connector?.connector;
   const BuiltInIcon = item.builtIn?.icon;
+  const canDeploy = canDeployConnector(connector);
 
   const typeLabel = connector
     ? getConnectorMetadata(connector.container_type, t_i18n).label
@@ -245,8 +247,8 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
       </Box>
       {/* Actions column. */}
       <Box onClick={(event) => event.stopPropagation()} sx={cellSx('actions')}>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          {item.builtIn ? (
+        {item.builtIn ? (
+          <Security needs={[INGESTION_SETINGESTIONS]}>
             <Stack direction="row" alignItems="center">
               {isImportableBuiltInKind(item.builtIn.kind) && (
                 <>
@@ -258,20 +260,20 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
                 {t_i18n('Create')}
               </Button>
             </Stack>
-          ) : (
-            <>
-              {isEnterpriseEdition ? (
-                <Button size="small" onClick={onClickDeploy}>
-                  {t_i18n('Deploy')}
-                </Button>
-              ) : (
-                <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                  <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-                </Box>
-              )}
-            </>
-          )}
-        </Security>
+          </Security>
+        ) : canDeploy ? (
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {isEnterpriseEdition ? (
+              <Button size="small" onClick={onClickDeploy}>
+                {t_i18n('Deploy')}
+              </Button>
+            ) : (
+              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              </Box>
+            )}
+          </Security>
+        ) : null}
       </Box>
     </Box>
   );
