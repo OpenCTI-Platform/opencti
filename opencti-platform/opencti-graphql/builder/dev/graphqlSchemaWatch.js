@@ -26,11 +26,17 @@ const WATCHED_EXTENSIONS = new Set([
   '.graphql', '.gql', '.js',
 ]);
 
+// .js files only affect the generated schema when they live under builder/schema
+// (the scripts that produce it). .js files anywhere else in the watched tree
+// (e.g. under src) are not schema/codegen related and must not trigger a rebuild.
+const JS_SCHEMA_SCRIPTS_DIR = 'builder/schema/';
+
 let isBuilding = false;
 let pendingBuild = false;
 let debounceTimeout = null;
 let activeBuildPath = null;
 let queuedBuildPath = null;
+let currentSchemaProcess = null;
 
 const GENERATED_DIR_MARKERS = [
   '/src/generated/',
@@ -59,9 +65,18 @@ function shouldTriggerBuild(filePath) {
     return false;
   }
 
-  const dotIndex = filePath.lastIndexOf('.');
-  const extension = dotIndex >= 0 ? filePath.slice(dotIndex) : '';
-  return WATCHED_EXTENSIONS.has(extension);
+  const normalized = normalizePath(filePath);
+  const dotIndex = normalized.lastIndexOf('.');
+  const extension = dotIndex >= 0 ? normalized.slice(dotIndex) : '';
+  if (!WATCHED_EXTENSIONS.has(extension)) {
+    return false;
+  }
+  // Narrow .js down to the schema-generating scripts only; other .js files
+  // (e.g. under src) don't affect the graphql-codegen output.
+  if (extension === '.js') {
+    return normalized.includes(JS_SCHEMA_SCRIPTS_DIR);
+  }
+  return true;
 }
 
 function runSchemaBuild(reason = 'change', triggerPath = null) {
@@ -85,10 +100,14 @@ function runSchemaBuild(reason = 'change', triggerPath = null) {
     shell: false,
     env: { ...process.env },
   });
+  currentSchemaProcess = schemaProcess;
 
   schemaProcess.on('exit', (code) => {
     isBuilding = false;
     activeBuildPath = null;
+    if (currentSchemaProcess === schemaProcess) {
+      currentSchemaProcess = null;
+    }
 
     if (code === 0) {
       console.log('[GRAPHQL-WATCH] GraphQL schema build completed');
@@ -107,6 +126,9 @@ function runSchemaBuild(reason = 'change', triggerPath = null) {
   schemaProcess.on('error', (err) => {
     isBuilding = false;
     activeBuildPath = null;
+    if (currentSchemaProcess === schemaProcess) {
+      currentSchemaProcess = null;
+    }
     console.error('[GRAPHQL-WATCH] GraphQL build failed:', err);
 
     if (pendingBuild) {
@@ -150,15 +172,18 @@ function startWatcher() {
       console.error('[GRAPHQL-WATCH] File watcher error:', err);
     });
 
-  process.on('SIGINT', async () => {
+  const shutdown = async () => {
     await watcher.close();
+    // Terminate any in-flight schema build so it doesn't get orphaned when the
+    // dev watcher exits mid-build.
+    if (currentSchemaProcess && currentSchemaProcess.exitCode === null) {
+      currentSchemaProcess.kill('SIGTERM');
+    }
     process.exit(0);
-  });
+  };
 
-  process.on('SIGTERM', async () => {
-    await watcher.close();
-    process.exit(0);
-  });
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 
   console.log('[GRAPHQL-WATCH] Watching GraphQL sources for changes...');
 }

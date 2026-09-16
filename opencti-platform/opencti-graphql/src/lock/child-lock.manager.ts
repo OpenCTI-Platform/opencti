@@ -20,10 +20,23 @@ interface LockData {
 }
 
 initializeOnlyRedisLockClient().then(() => {
+  // In development mode, release all locks and exit immediately on SIGTERM/SIGINT
+  // This enables instant hot reload without lock conflicts
+  const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev';
+  let shutdownInProgress = false;
+
   // Listing on parent messaging
   process.on('message', async (data: LockData) => {
     // In case of lock
     if (data.type === 'lock') {
+      // Reject new lock requests once shutdown has started so we don't race
+      // freshly-acquired locks against the final activeLocks drain below.
+      if (shutdownInProgress) {
+        if (process.send) {
+          process.send({ operation: data.operation, error: new Error('Child lock manager is shutting down'), type: data.type, success: false });
+        }
+        return;
+      }
       try {
         const options = { child_operation: data.operation, ...data.args };
         const lock = await lockResource(data.ids, options);
@@ -67,11 +80,6 @@ initializeOnlyRedisLockClient().then(() => {
   // Don't do anything in exist event, process is attached to the parent
   process.on('exit', () => {});
 
-  // In development mode, release all locks and exit immediately on SIGTERM/SIGINT
-  // This enables instant hot reload without lock conflicts
-  const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev';
-  let shutdownInProgress = false;
-
   const quickShutdown = async () => {
     if (shutdownInProgress) {
       return;
@@ -80,12 +88,29 @@ initializeOnlyRedisLockClient().then(() => {
 
     logApp.info(`[LOCK-MANAGER] Dev mode: releasing ${activeLocks.size} active lock(s)`);
 
-    // Release all active locks quickly
-    const unlockPromises = Array.from(activeLocks.values()).map((lock) => lock.unlock().catch((err) => logApp.error('[LOCK-MANAGER] Error unlocking', { error: err })));
+    const deadline = Date.now() + 1000;
+    // Locks whose acquisition was already in flight when shutdown started can
+    // resolve and be added to activeLocks after our first pass, so keep
+    // draining the map until it's empty or the time budget runs out, instead
+    // of relying on a single Array.from(...) snapshot.
+    const releaseAll = async () => {
+      while (activeLocks.size > 0 && Date.now() < deadline) {
+        const pending = Array.from(activeLocks.entries());
+        await Promise.all(pending.map(async ([operation, lock]) => {
+          try {
+            await lock.unlock();
+          } catch (err) {
+            logApp.error('[LOCK-MANAGER] Error unlocking', { error: err });
+          } finally {
+            activeLocks.delete(operation);
+          }
+        }));
+      }
+    };
 
     // Wait up to 1 second for unlocks, then exit anyway
     await Promise.race([
-      Promise.all(unlockPromises),
+      releaseAll(),
       new Promise((resolve) => {
         setTimeout(resolve, 1000);
       }),
@@ -97,16 +122,16 @@ initializeOnlyRedisLockClient().then(() => {
   };
 
   if (isDevelopment) {
-    process.on('SIGTERM', () => {
+    const handleShutdownSignal = () => {
       quickShutdown().catch(() => process.exit(0));
-    });
-    process.on('SIGINT', () => {
-      quickShutdown().catch(() => process.exit(0));
-    });
+    };
+    process.on('SIGTERM', handleShutdownSignal);
+    process.on('SIGINT', handleShutdownSignal);
   } else {
     // In production, ignore signals since we're attached to parent
-    process.on('SIGTERM', () => {});
-    process.on('SIGINT', () => {});
+    const ignoreSignal = () => {};
+    process.on('SIGTERM', ignoreSignal);
+    process.on('SIGINT', ignoreSignal);
   }
 
   // Check with standard interval if the parent process is no longer running

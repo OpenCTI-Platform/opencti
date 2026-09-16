@@ -18,6 +18,25 @@ let esbuildProcess = null;
 let graphQLWatchProcess = null;
 let pendingRestart = false;
 
+// Shared lifecycle handlers to avoid repeating the same log+shutdown shape
+// across appProcess, graphQLWatchProcess and esbuildProcess.
+function onProcessError(label) {
+  return (err) => {
+    console.error(`[WATCH] Failed to start ${label}:`, err);
+    shutdown(1);
+  };
+}
+
+function onFatalExit(label, clearRef) {
+  return (code) => {
+    clearRef();
+    if (!shuttingDown && code !== 0 && code !== null) {
+      console.error(`[WATCH] ${label} exited with code ${code}`);
+      shutdown(1);
+    }
+  };
+}
+
 function startApp() {
   console.log('[WATCH] Starting backend...');
   appProcess = spawn('node', [
@@ -40,10 +59,7 @@ function startApp() {
     }
   });
 
-  appProcess.on('error', (err) => {
-    console.error('[WATCH] Failed to start backend process:', err);
-    shutdown(1);
-  });
+  appProcess.on('error', onProcessError('backend process'));
 }
 
 function restartApp() {
@@ -81,18 +97,8 @@ function startGraphQLSchemaWatch() {
     env: { ...process.env, NODE_ENV: 'development' },
   });
 
-  graphQLWatchProcess.on('exit', (code) => {
-    graphQLWatchProcess = null;
-    if (!shuttingDown && code !== 0 && code !== null) {
-      console.error(`[WATCH] GraphQL schema watcher exited with code ${code}`);
-      shutdown(1);
-    }
-  });
-
-  graphQLWatchProcess.on('error', (err) => {
-    console.error('[WATCH] Failed to start GraphQL schema watcher:', err);
-    shutdown(1);
-  });
+  graphQLWatchProcess.on('exit', onFatalExit('GraphQL schema watcher', () => { graphQLWatchProcess = null; }));
+  graphQLWatchProcess.on('error', onProcessError('GraphQL schema watcher'));
 }
 
 function startEsbuildWatch() {
@@ -122,18 +128,8 @@ function startEsbuildWatch() {
   esbuildProcess.stdout.on('data', handleEsbuildOutput);
   esbuildProcess.stderr.on('data', (data) => process.stderr.write(data));
 
-  esbuildProcess.on('exit', (code) => {
-    esbuildProcess = null;
-    if (!shuttingDown && code !== 0 && code !== null) {
-      console.error(`[WATCH] esbuild watcher exited with code ${code}`);
-      shutdown(1);
-    }
-  });
-
-  esbuildProcess.on('error', (err) => {
-    console.error('[WATCH] Failed to start esbuild watcher:', err);
-    shutdown(1);
-  });
+  esbuildProcess.on('exit', onFatalExit('esbuild watcher', () => { esbuildProcess = null; }));
+  esbuildProcess.on('error', onProcessError('esbuild watcher'));
 }
 
 function stopProcess(proc) {
