@@ -16,6 +16,7 @@ from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
 from chunk_transport import (
+    BUNDLE_PUBLISH_LOCK,
     CHUNK_ROUTING_SUFFIX,
     ChunkCapture,
     ChunkPublisher,
@@ -556,9 +557,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             return None
         published = 0
         try:
-            for message in chunk_messages:
-                self.chunk_publisher.publish(message)
-                published += 1
+            # one bundle at a time per worker: its chunks are contiguous in the chunk queue
+            with BUNDLE_PUBLISH_LOCK:
+                for message in chunk_messages:
+                    self.chunk_publisher.publish(message)
+                    published += 1
         except ChunkQueueUnavailable as err:
             if published == 0:
                 self.logger.error(

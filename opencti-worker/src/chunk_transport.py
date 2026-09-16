@@ -40,6 +40,15 @@ ECHO_SCALAR_FIELDS = (
 )
 
 
+# Per-worker publish lock (user ask 2026-09-16): one queue thread publishes ALL the chunks of
+# its bundle in a row, so a bundle's producers and consumers stay contiguous in the platform's
+# chunk queue (they land in the same prefetch window of the manager, and the sequencer sees
+# fewer cross-bundle reorderings). Process-wide, in memory, no coordination across workers:
+# the affinity is per worker instance by design. The chunks are serialized BEFORE the lock is
+# taken, so the critical section is the publish calls only.
+BUNDLE_PUBLISH_LOCK = threading.Lock()
+
+
 class ChunkQueueUnavailable(Exception):
     """No queue is bound on the chunk routing key: the platform manager is not enabled."""
 
