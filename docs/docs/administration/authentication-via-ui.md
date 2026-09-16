@@ -173,7 +173,7 @@ You can also control how OpenCTI validates the IdP's response using:
 
     If your IdP rejects the request with a signature-related error:
 
-    - Double-check that the certificate registered on the IdP is **exactly** the one matching your OpenCTI `Private key` (compare their SHA-256 fingerprints with `openssl x509 -in cert.pem -noout -fingerprint -sha256`).
+    - Double-check that the certificate registered on the IdP is **exactly** the same as the `Signing certificate` configured in OpenCTI (compare their SHA-256 fingerprints with `openssl x509 -in signing-cert.pem -noout -fingerprint -sha256`), and ensure that this certificate corresponds to the configured `Private key`.
     - Confirm the `Signature algorithm` configured in OpenCTI matches what the IdP expects.
     - Confirm the `SSO Binding type` matches the binding your IdP is configured to accept.
     - If the request is rejected with an error about an unknown or invalid requester (client not found), verify that the `Issuer` value exactly matches the client/application identifier registered on your IdP, and that this client exists in the correct realm/tenant.
