@@ -259,6 +259,7 @@ const StixSightingRelationshipCreationFromEntity = ({
     return (
       <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
         handleSelect={handleSelectEntity}
+        search={search}
         stixCoreObjectTypes={stixCoreObjectTypes}
       />
     );
