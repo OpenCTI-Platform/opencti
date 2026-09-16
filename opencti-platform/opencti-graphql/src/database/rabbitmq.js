@@ -528,7 +528,8 @@ export const getQueueConsumersByType = async (context, user) => {
     .filter((queue) => (queue?.name ?? '').startsWith(`${RABBIT_QUEUE_PREFIX}push_`))
     .reduce((consumersByType, queue) => {
       const connectorType = queue?.arguments?.config?.type ?? UNKNOWN_CONNECTOR_TYPE;
-      return { ...consumersByType, [connectorType]: (consumersByType[connectorType] ?? 0) + (queue?.consumers ?? 0) };
+      consumersByType[connectorType] = (consumersByType[connectorType] ?? 0) + (queue?.consumers ?? 0);
+      return consumersByType;
     }, {});
 };
 
