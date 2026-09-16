@@ -524,7 +524,8 @@ export const getQueueConsumersByType = async (context, user) => {
     stats = await metrics(context, user);
     metricsCache.set('cached_metrics', stats);
   }
-  return stats.queues
+  const queues = Array.isArray(stats?.queues) ? stats.queues : [];
+  return queues
     .filter((queue) => (queue?.name ?? '').startsWith(`${RABBIT_QUEUE_PREFIX}push_`))
     .reduce((consumersByType, queue) => {
       const connectorType = queue?.arguments?.config?.type ?? UNKNOWN_CONNECTOR_TYPE;
