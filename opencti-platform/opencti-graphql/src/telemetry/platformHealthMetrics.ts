@@ -190,8 +190,13 @@ export const startPlatformHealthMonitor = async (): Promise<void> => {
   registerHealthGauges();
   const dependencyCheckIntervalMs = conf.get('app:health_monitoring:dependency_check_interval') ?? DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS;
   const usageMetricsIntervalMs = conf.get('app:health_monitoring:usage_metrics_interval') ?? DEFAULT_USAGE_METRICS_INTERVAL_MS;
-  // Awaited so the health endpoint exposes a meaningful state as soon as the API accepts traffic.
-  await refreshDependencyStatus();
+  // Awaited when it works so the health endpoint exposes a meaningful state as soon as the API accepts traffic,
+  // but startup keeps going if this first refresh fails unexpectedly.
+  try {
+    await refreshDependencyStatus();
+  } catch (error) {
+    logApp.error('[HEALTH] Initial dependency status refresh failed', { cause: error });
+  }
   dependencyCheckInterval = setInterval(() => {
     refreshDependencyStatus().catch((error) => {
       logApp.error('[HEALTH] Dependency status refresh failed', { cause: error });
