@@ -133,6 +133,36 @@ const WorkspaceDuplicationDialog: FunctionComponent<
     });
   };
 
+  const submitInvestigationDuplication = (
+    e: UIEvent,
+    submittedWorkspace: WorkspaceDuplicationDialogFragment$data,
+  ) => {
+    stopEvent(e);
+    commitDuplicateInvestigation({
+      variables: { id: submittedWorkspace.id, name: submittedWorkspace.name },
+      updater: (store) => updater?.(store, 'investigationDuplicate'),
+      onError: (error) => {
+        handleError(error);
+        setDuplicating(false);
+      },
+      onCompleted: (result) => {
+        handleCloseDuplicate();
+        setDuplicating(false);
+        if (!paginationOptions) {
+          MESSAGING$.notifySuccess(
+            <span>
+              {t_i18n('The investigation has been duplicated. You can manage it')}{' '}
+              <Link to={`/dashboard/workspaces/investigations/${result.investigationDuplicate?.id}`}>
+                {t_i18n('here')}
+              </Link>
+              .
+            </span>,
+          );
+        }
+      },
+    });
+  };
+
   const handleSubmitDuplicate = (e: UIEvent, submittedNewName: string) => {
     stopEvent(e);
     switch (workspace.type) {
@@ -142,29 +172,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
         break;
       case 'investigation':
         setDuplicating(true);
-        commitDuplicateInvestigation({
-          variables: { id: workspace.id, name: submittedNewName },
-          updater: (store) => updater?.(store, 'investigationDuplicate'),
-          onError: (error) => {
-            handleError(error);
-            setDuplicating(false);
-          },
-          onCompleted: (result) => {
-            handleCloseDuplicate();
-            setDuplicating(false);
-            if (!paginationOptions) {
-              MESSAGING$.notifySuccess(
-                <span>
-                  {t_i18n('The investigation has been duplicated. You can manage it')}{' '}
-                  <Link to={`/dashboard/workspaces/investigations/${result.investigationDuplicate?.id}`}>
-                    {t_i18n('here')}
-                  </Link>
-                  .
-                </span>,
-              );
-            }
-          },
-        });
+        submitInvestigationDuplication(e, { ...workspace, name: submittedNewName });
         break;
     }
   };
