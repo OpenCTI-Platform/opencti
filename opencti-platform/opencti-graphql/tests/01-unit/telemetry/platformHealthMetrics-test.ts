@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { adoptSharedUsageMetrics, buildHealthFailures, type DependencyStatus, getPlatformUsageMetrics, type HealthDependency, parseCachedUsageMetrics } from '../../../src/telemetry/platformHealthMetrics';
-import { redisGetPlatformUsageMetrics } from '../../../src/database/redis';
+import { logApp } from '../../../src/config/conf';
+import { isEngineAlive } from '../../../src/database/engine';
+import { isStorageAlive } from '../../../src/database/raw-file-storage';
+import { rabbitMQIsAlive } from '../../../src/database/rabbitmq';
+import { adoptSharedUsageMetrics, buildHealthFailures, type DependencyStatus, getPlatformHealthStatus, getPlatformUsageMetrics, type HealthDependency, parseCachedUsageMetrics, refreshDependencyStatus, startPlatformHealthMonitor, stopPlatformHealthMonitor } from '../../../src/telemetry/platformHealthMetrics';
+import { redisGetPlatformUsageMetrics, redisIsAlive } from '../../../src/database/redis';
 
 vi.mock('../../../src/database/redis', () => ({
   redisGetPlatformUsageMetrics: vi.fn(),
@@ -116,5 +120,68 @@ describe('platformHealthMetrics: adoptSharedUsageMetrics function', () => {
     await adoptSharedUsageMetrics();
 
     expect(getPlatformUsageMetrics()).toEqual(shared);
+  });
+});
+
+describe('platformHealthMetrics: getPlatformHealthStatus function', () => {
+  beforeEach(() => {
+    stopPlatformHealthMonitor();
+    vi.clearAllMocks();
+  });
+
+  it('should expose every dependency state after a refresh', async () => {
+    vi.mocked(isEngineAlive).mockResolvedValue(true);
+    vi.mocked(isStorageAlive).mockRejectedValue(Error('Storage seems down'));
+    vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
+    vi.mocked(redisIsAlive).mockResolvedValue(true);
+
+    await refreshDependencyStatus();
+
+    expect(getPlatformHealthStatus()).toEqual({
+      initialized: true,
+      isHealthy: false,
+      failures: ['storage: Storage seems down'],
+      dependencies: {
+        elasticsearch: true,
+        storage: false,
+        rabbitmq: true,
+        redis: true,
+      },
+    });
+  });
+});
+
+describe('platformHealthMetrics: startPlatformHealthMonitor function', () => {
+  beforeEach(() => {
+    stopPlatformHealthMonitor();
+    vi.clearAllMocks();
+  });
+
+  it('should keep startup alive when the initial shared usage metrics read fails', async () => {
+    vi.mocked(isEngineAlive).mockResolvedValue(true);
+    vi.mocked(isStorageAlive).mockResolvedValue(true);
+    vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
+    vi.mocked(redisIsAlive).mockResolvedValue(true);
+    vi.mocked(redisGetPlatformUsageMetrics).mockRejectedValue(Error('Redis read failed'));
+    const errorSpy = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+
+    await expect(startPlatformHealthMonitor()).resolves.toBeUndefined();
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[HEALTH] Initial usage metrics adoption failed',
+      expect.objectContaining({ cause: expect.any(Error) }),
+    );
+    expect(getPlatformHealthStatus()).toEqual({
+      initialized: true,
+      isHealthy: true,
+      failures: [],
+      dependencies: {
+        elasticsearch: true,
+        storage: true,
+        rabbitmq: true,
+        redis: true,
+      },
+    });
+    stopPlatformHealthMonitor();
   });
 });

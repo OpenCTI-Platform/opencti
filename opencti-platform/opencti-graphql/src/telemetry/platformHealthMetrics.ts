@@ -35,7 +35,8 @@ export const DEFAULT_USAGE_METRICS_INTERVAL_MS = 300_000;
 
 const buildInitialStatuses = (): Record<HealthDependency, DependencyStatus> => {
   return HEALTH_DEPENDENCIES.reduce((statuses, dependency) => {
-    return { ...statuses, [dependency]: { isAlive: false, error: null, checkedAt: null } };
+    statuses[dependency] = { isAlive: false, error: null, checkedAt: null };
+    return statuses;
   }, {} as Record<HealthDependency, DependencyStatus>);
 };
 
@@ -168,7 +169,8 @@ export const getPlatformHealthStatus = (): PlatformHealthStatus => {
   const initialized = HEALTH_DEPENDENCIES.every((dependency) => dependencyStatuses[dependency].checkedAt !== null);
   const failures = buildHealthFailures(dependencyStatuses);
   const dependencies = HEALTH_DEPENDENCIES.reduce((states, dependency) => {
-    return { ...states, [dependency]: dependencyStatuses[dependency].isAlive };
+    states[dependency] = dependencyStatuses[dependency].isAlive;
+    return states;
   }, {} as Record<HealthDependency, boolean>);
   return { initialized, isHealthy: initialized && failures.length === 0, failures, dependencies };
 };
@@ -200,7 +202,11 @@ export const startPlatformHealthMonitor = async (): Promise<void> => {
         logApp.error('[HEALTH] Usage metrics refresh failed', { cause: error });
       });
     }, usageMetricsIntervalMs);
-    await adoptSharedUsageMetrics();
+    try {
+      await adoptSharedUsageMetrics();
+    } catch (error) {
+      logApp.error('[HEALTH] Initial usage metrics adoption failed', { cause: error });
+    }
   }
   logApp.info('[HEALTH] Platform health monitoring started', { dependencyCheckIntervalMs, usageMetricsIntervalMs });
 };
