@@ -165,4 +165,4 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 
 ### Global Export Platform
 
-- The number of global export platform exported
+- The number of global platform export requests
