@@ -95,6 +95,8 @@ const WorkspaceDuplicationDialog: FunctionComponent<
   const [commitDuplicatedWorkspaceCreation] = useApiMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
     workspaceDuplicationDialogDuplicatedWorkspaceCreation,
   );
+  // TODO: Refactor dashboard duplication to load source metadata server-side from its ID, as investigations do.
+  // Keep the legacy payload until a separate change addresses API compatibility.
   const submitDashboardDuplication = (
     e: UIEvent,
     submittedWorkspace: WorkspaceDuplicationDialogFragment$data,
