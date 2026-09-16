@@ -46,6 +46,7 @@ type IngestionJson implements InternalObject & BasicObject {
     ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
     markings: [String!]
     ssl_verify: Boolean
+    ingestion_health: IngestionHealth
     toConfigurationExport: String!
 }
 

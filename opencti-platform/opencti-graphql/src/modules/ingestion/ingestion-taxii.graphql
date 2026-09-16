@@ -39,6 +39,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
     confidence_to_score: Boolean
     ssl_verify: Boolean
+    ingestion_health: IngestionHealth
     toConfigurationExport: String!
 }
 enum IngestionTaxiiOrdering {

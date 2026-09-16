@@ -22,6 +22,7 @@ type IngestionRss implements InternalObject & BasicObject {
     ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
     ingestion_running: Boolean
     ssl_verify: Boolean
+    ingestion_health: IngestionHealth
     toConfigurationExport: String!
 }
 enum IngestionRssOrdering {

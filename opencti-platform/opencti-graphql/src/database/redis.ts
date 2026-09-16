@@ -18,6 +18,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import type { IngestionHealthObservation } from '../modules/ingestionHealth/ingestionHealth-types';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -887,6 +888,35 @@ export const redisGetConnectorHealthMetrics = async (connectorId: string): Promi
   const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
   return rawMetrics ? JSON.parse(rawMetrics) : null;
 };
+
+// Ingestion health observations — what the health manager remembers between
+// cycles so it can detect transitions rather than re-alerting every minute.
+// The shape is owned by the ingestion health module, which is the only thing
+// that reads or writes it; this file just moves it in and out of Redis.
+//
+// Deliberately NO TTL, unlike the composer metrics above: an expiring
+// observation silently resets the hysteresis and re-alerts.
+const ingestionHealthKey = (sourceId: string) => `ingestion-health-observation:${sourceId}`;
+
+export const redisGetIngestionHealthObservation = async (sourceId: string): Promise<IngestionHealthObservation | null> => {
+  const raw = await getClientBase().get(ingestionHealthKey(sourceId));
+  return raw ? JSON.parse(raw) : null;
+};
+
+export const redisSetIngestionHealthObservation = async (sourceId: string, observation: IngestionHealthObservation) => {
+  await getClientBase().set(ingestionHealthKey(sourceId), JSON.stringify(observation));
+};
+
+// Breadcrumb for the manager's last successful pass, for operators: `GET
+// ingestion-health-manager-last-run` answers "is the health manager alive". It
+// is not part of any answer the platform computes — health is evaluated from
+// live facts on every read, so a stopped manager cannot leave sources showing
+// stale green. One key for the platform, not one per source.
+const INGESTION_HEALTH_RUN_KEY = 'ingestion-health-manager-last-run';
+
+export const redisSetIngestionHealthLastRun = async (at: Date) => {
+  await getClientBase().set(INGESTION_HEALTH_RUN_KEY, at.toISOString());
+};
 // endregion
 
 // region auth log history (FIFO, last 50 per provider)
@@ -1067,35 +1097,3 @@ export const redisDeleteXtmAgentResponse = async (cacheKey: string): Promise<voi
   }
 };
 // endregion - XTM agent response cache
-
-// region user merge journal
-/**
- * The merge journal is diagnostic, not evidential: what authorizes deleting the source
- * account is the coverage manifest, derived from the register and the registered handlers.
- * So it does not need to be an indexed entity — and it should not be one, because every new
- * entity type spends from a mapping budget shared by all indices and already largely
- * consumed, permanently, for a feature meant to run once.
- *
- * Keeping it out of the indices also removes a self-reference: the journal would otherwise
- * live in a live index and carry a creator_id, the very field a merge rewrites.
- */
-const USER_MERGE_JOURNAL_TTL = 30 * 24 * 60 * 60; // 30 days
-const USER_MERGE_JOURNAL_LIST = 'user_merge_journal_entries';
-const userMergeEntryKey = (entryId: string) => `user_merge_journal_entry_${entryId}`;
-const userMergeJournalList = (mergeId: string) => `${USER_MERGE_JOURNAL_LIST}_${mergeId}`;
-
-export const redisUserMergeJournalUpsert = async (entryId: string, mergeId: string, patch: object) => {
-  const key = userMergeEntryKey(entryId);
-  const existing = await getClientBase().get(key);
-  const entry = { ...(existing ? JSON.parse(existing) : {}), ...patch };
-  // Indexed both globally and per merge: an operator who lost the id returned by the
-  // mutation also lost the only way to name the run they need to follow.
-  await setKeyWithList(key, [USER_MERGE_JOURNAL_LIST, userMergeJournalList(mergeId)], entry, USER_MERGE_JOURNAL_TTL);
-  return entry;
-};
-
-export const redisUserMergeJournalRead = async (mergeId?: string) => {
-  const listId = mergeId ? userMergeJournalList(mergeId) : USER_MERGE_JOURNAL_LIST;
-  return keysFromList(listId, USER_MERGE_JOURNAL_TTL);
-};
-// endregion - user merge journal

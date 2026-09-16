@@ -722,6 +722,7 @@ type Synchronizer {
   ssl_verify: Boolean
   synchronized: Boolean
   queue_messages: Int!
+  ingestion_health: IngestionHealth
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
 }
@@ -2330,6 +2331,7 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_hash: String
   manager_health_metrics: ConnectorHealthMetrics
   manager_connector_uptime: Int
+  ingestion_health: IngestionHealth
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
   xtm_one_intent: String
@@ -13664,6 +13666,7 @@ type IngestionRss implements InternalObject & BasicObject {
   ingestionLogs: [IngestionEntry]
   ingestion_running: Boolean
   ssl_verify: Boolean
+  ingestion_health: IngestionHealth
   toConfigurationExport: String!
 }
 
@@ -13765,6 +13768,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   ingestionLogs: [IngestionEntry]
   confidence_to_score: Boolean
   ssl_verify: Boolean
+  ingestion_health: IngestionHealth
   toConfigurationExport: String!
 }
 
@@ -13860,6 +13864,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user_id: String
   user: Creator
   authorized_members: [MemberAccess!]
+  ingestion_health: IngestionHealth
   toConfigurationExport: String!
 }
 
@@ -13923,6 +13928,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   last_execution_status: String
   ingestionLogs: [IngestionEntry]
   markings: [String!]
+  ingestion_health: IngestionHealth
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
 }
@@ -14038,6 +14044,7 @@ type IngestionJson implements InternalObject & BasicObject {
   ingestionLogs: [IngestionEntry]
   markings: [String!]
   ssl_verify: Boolean
+  ingestion_health: IngestionHealth
   toConfigurationExport: String!
 }
 
@@ -16537,6 +16544,54 @@ type NewsFeedItemEdge {
 type NewsFeedCount {
   user_id: String
   count: Int
+}
+
+enum IngestionHealthStatus {
+  healthy
+  idle
+  degraded
+  critical
+  stopped
+  unknown
+}
+
+enum IngestionCheckKind {
+  runtime
+}
+
+enum IngestionCheckSeverity {
+  advisory
+  blocking
+}
+
+enum IngestionCheckCode {
+  NO_HEARTBEAT
+  NO_CONSUMER
+  MANUALLY_STOPPED
+  NEVER_RUN
+  RUN_OVERDUE
+  RUN_STALE
+  LAST_RUN_ERROR
+  EMPTY_RUNS
+  CURSOR_STALLED
+}
+
+type IngestionCheck {
+  kind: IngestionCheckKind!
+  code: IngestionCheckCode!
+  severity: IngestionCheckSeverity!
+  params: JSON
+  message: String!
+  detail: String
+}
+
+type IngestionHealth {
+  status: IngestionHealthStatus!
+  summary: String!
+  checks: [IngestionCheck!]!
+  since: DateTime
+  last_productive_at: DateTime
+  next_expected_at: DateTime
 }
 
 type Metric {

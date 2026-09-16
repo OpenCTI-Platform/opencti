@@ -4583,6 +4583,7 @@ export type Connector = BasicObject & InternalObject & {
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestion_health?: Maybe<IngestionHealth>;
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
@@ -13902,6 +13903,37 @@ export enum IngestionAuthType {
   None = 'none'
 }
 
+export type IngestionCheck = {
+  __typename?: 'IngestionCheck';
+  code: IngestionCheckCode;
+  detail?: Maybe<Scalars['String']['output']>;
+  kind: IngestionCheckKind;
+  message: Scalars['String']['output'];
+  params?: Maybe<Scalars['JSON']['output']>;
+  severity: IngestionCheckSeverity;
+};
+
+export enum IngestionCheckCode {
+  CursorStalled = 'CURSOR_STALLED',
+  EmptyRuns = 'EMPTY_RUNS',
+  LastRunError = 'LAST_RUN_ERROR',
+  ManuallyStopped = 'MANUALLY_STOPPED',
+  NeverRun = 'NEVER_RUN',
+  NoConsumer = 'NO_CONSUMER',
+  NoHeartbeat = 'NO_HEARTBEAT',
+  RunOverdue = 'RUN_OVERDUE',
+  RunStale = 'RUN_STALE'
+}
+
+export enum IngestionCheckKind {
+  Runtime = 'runtime'
+}
+
+export enum IngestionCheckSeverity {
+  Advisory = 'advisory',
+  Blocking = 'blocking'
+}
+
 export type IngestionCsv = BasicObject & InternalObject & {
   __typename?: 'IngestionCsv';
   authentication_type: IngestionAuthType;
@@ -13916,6 +13948,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
+  ingestion_health?: Maybe<IngestionHealth>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   last_execution_status?: Maybe<Scalars['String']['output']>;
@@ -14001,6 +14034,25 @@ export type IngestionHeader = {
   value: Scalars['String']['output'];
 };
 
+export type IngestionHealth = {
+  __typename?: 'IngestionHealth';
+  checks: Array<IngestionCheck>;
+  last_productive_at?: Maybe<Scalars['DateTime']['output']>;
+  next_expected_at?: Maybe<Scalars['DateTime']['output']>;
+  since?: Maybe<Scalars['DateTime']['output']>;
+  status: IngestionHealthStatus;
+  summary: Scalars['String']['output'];
+};
+
+export enum IngestionHealthStatus {
+  Critical = 'critical',
+  Degraded = 'degraded',
+  Healthy = 'healthy',
+  Idle = 'idle',
+  Stopped = 'stopped',
+  Unknown = 'unknown'
+}
+
 export type IngestionJson = BasicObject & InternalObject & {
   __typename?: 'IngestionJson';
   authentication_type: IngestionAuthType;
@@ -14013,6 +14065,7 @@ export type IngestionJson = BasicObject & InternalObject & {
   headers?: Maybe<Array<IngestionHeader>>;
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
+  ingestion_health?: Maybe<IngestionHealth>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   jsonMapper: JsonMapper;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
@@ -14133,6 +14186,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
+  ingestion_health?: Maybe<IngestionHealth>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   last_execution_status?: Maybe<Scalars['String']['output']>;
@@ -14216,6 +14270,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
+  ingestion_health?: Maybe<IngestionHealth>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   last_execution_status?: Maybe<Scalars['String']['output']>;
@@ -14266,6 +14321,7 @@ export type IngestionTaxiiCollection = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestion_health?: Maybe<IngestionHealth>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -34221,6 +34277,7 @@ export type Synchronizer = {
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
+  ingestion_health?: Maybe<IngestionHealth>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   last_execution_status?: Maybe<Scalars['String']['output']>;
   listen_deletion: Scalars['Boolean']['output'];
@@ -40973,6 +41030,10 @@ export type ResolversTypes = ResolversObject<{
   InfrastructureEditMutations: ResolverTypeWrapper<Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Infrastructure']>, contextPatch?: Maybe<ResolversTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversTypes['Infrastructure']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Infrastructure']> }>;
   InfrastructuresOrdering: InfrastructuresOrdering;
   IngestionAuthType: IngestionAuthType;
+  IngestionCheck: ResolverTypeWrapper<IngestionCheck>;
+  IngestionCheckCode: IngestionCheckCode;
+  IngestionCheckKind: IngestionCheckKind;
+  IngestionCheckSeverity: IngestionCheckSeverity;
   IngestionCsv: ResolverTypeWrapper<BasicStoreEntityIngestionCsv>;
   IngestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput;
   IngestionCsvAddInput: IngestionCsvAddInput;
@@ -40982,6 +41043,8 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvOrdering: IngestionCsvOrdering;
   IngestionEntry: ResolverTypeWrapper<IngestionEntry>;
   IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
+  IngestionHealth: ResolverTypeWrapper<IngestionHealth>;
+  IngestionHealthStatus: IngestionHealthStatus;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: ResolverTypeWrapper<IngestionJsonAddInputFromImport>;
@@ -42090,6 +42153,7 @@ export type ResolversParentTypes = ResolversObject<{
   InfrastructureConnection: Omit<InfrastructureConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['InfrastructureEdge']>>> };
   InfrastructureEdge: Omit<InfrastructureEdge, 'node'> & { node: ResolversParentTypes['Infrastructure'] };
   InfrastructureEditMutations: Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Infrastructure']>, contextPatch?: Maybe<ResolversParentTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversParentTypes['Infrastructure']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Infrastructure']> };
+  IngestionCheck: IngestionCheck;
   IngestionCsv: BasicStoreEntityIngestionCsv;
   IngestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput;
   IngestionCsvAddInput: IngestionCsvAddInput;
@@ -42097,6 +42161,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
   IngestionEntry: IngestionEntry;
   IngestionHeader: IngestionHeader;
+  IngestionHealth: IngestionHealth;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
@@ -44180,6 +44245,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -47250,6 +47316,15 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
   relationDelete?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
 }>;
 
+export type IngestionCheckResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCheck'] = ResolversParentTypes['IngestionCheck']> = ResolversObject<{
+  code?: Resolver<ResolversTypes['IngestionCheckCode'], ParentType, ContextType>;
+  detail?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['IngestionCheckKind'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  severity?: Resolver<ResolversTypes['IngestionCheckSeverity'], ParentType, ContextType>;
+}>;
+
 export type IngestionCsvResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCsv'] = ResolversParentTypes['IngestionCsv']> = ResolversObject<{
   authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47263,6 +47338,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47307,6 +47383,15 @@ export type IngestionHeaderResolvers<ContextType = any, ParentType extends Resol
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type IngestionHealthResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealth'] = ResolversParentTypes['IngestionHealth']> = ResolversObject<{
+  checks?: Resolver<Array<ResolversTypes['IngestionCheck']>, ParentType, ContextType>;
+  last_productive_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  next_expected_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  summary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
   authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47318,6 +47403,7 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   headers?: Resolver<Maybe<Array<ResolversTypes['IngestionHeader']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jsonMapper?: Resolver<ResolversTypes['JsonMapper'], ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47395,6 +47481,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47446,6 +47533,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47473,6 +47561,7 @@ export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType exte
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52950,6 +53039,7 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -55092,11 +55182,13 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   InfrastructureConnection?: InfrastructureConnectionResolvers<ContextType>;
   InfrastructureEdge?: InfrastructureEdgeResolvers<ContextType>;
   InfrastructureEditMutations?: InfrastructureEditMutationsResolvers<ContextType>;
+  IngestionCheck?: IngestionCheckResolvers<ContextType>;
   IngestionCsv?: IngestionCsvResolvers<ContextType>;
   IngestionCsvConnection?: IngestionCsvConnectionResolvers<ContextType>;
   IngestionCsvEdge?: IngestionCsvEdgeResolvers<ContextType>;
   IngestionEntry?: IngestionEntryResolvers<ContextType>;
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
+  IngestionHealth?: IngestionHealthResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonAddInputFromImport?: IngestionJsonAddInputFromImportResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;

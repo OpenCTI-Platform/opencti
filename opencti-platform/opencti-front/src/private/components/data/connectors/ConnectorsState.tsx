@@ -11,6 +11,18 @@ export const connectorsStateQuery = graphql`
       auto
       manager_current_status
       manager_requested_status
+      ingestion_health {
+        status
+        summary
+        since
+        checks {
+          kind
+          code
+          severity
+          params
+          message
+        }
+      }
     }
     rabbitMQMetrics {
       queues {

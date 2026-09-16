@@ -247,6 +247,19 @@
     "enabled": true,
     "lock_key": "activity_manager_lock"
   },
+  "ingestion_health_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_health_manager_lock",
+    "interval": 60000,
+    "missed_periods_before_alert": 2,
+    "good_periods_before_recovery": 3,
+    "min_alert_dwell_seconds": 900,
+    "renotify_after_seconds": 0,
+    "startup_grace_seconds": 300,
+    "storm_threshold": 10,
+    "empty_runs_before_alert": 3,
+    "heartbeat_grace_seconds": 300
+  },
   "connector_manager": {
     "enabled": true,
     "lock_key": "connector_manager_lock",

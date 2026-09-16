@@ -72,7 +72,12 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
         const version = EVENT_NOTIFICATION_VERSION;
         for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
           const user = users[indexUser];
-          targets.push({ user: convertToNotificationUser(user, notifiers), type: event_scope, message: `\`${sourceUser?.name}\` ${message}` });
+          // Health events have no human actor: their message is already a
+          // complete sentence, so prefixing it with a user name would read as
+          // "`SYSTEM` Degraded — ...".
+          const isSystemEvent = event.data.type === 'health';
+          const targetMessage = isSystemEvent ? message : `\`${sourceUser?.name}\` ${message}`;
+          targets.push({ user: convertToNotificationUser(user, notifiers), type: event_scope, message: targetMessage });
         }
         const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data, origin };
         await storeNotificationEvent(context, notificationEvent);
