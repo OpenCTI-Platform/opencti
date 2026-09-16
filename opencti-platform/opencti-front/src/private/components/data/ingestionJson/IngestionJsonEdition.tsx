@@ -4,9 +4,10 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import { InfoOutlined } from '@mui/icons-material';
+import { fdsLayerClass } from '../../../../utils/fdsLayer';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import JsonMapperField, { JsonMapperFieldOption, jsonMapperQuery } from '@components/common/form/JsonMapperField';
@@ -26,7 +27,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -318,38 +319,38 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <IngestionSchedulingField />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="uri"
             label={t_i18n('HTTP JSON URL')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="verb"
             label={t_i18n('HTTP VERB')}
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem value="GET">GET</MenuItem>
-            <MenuItem value="POST">POST</MenuItem>
+            <SelectItem value="GET">GET</SelectItem>
+            <SelectItem value="POST">POST</SelectItem>
           </Field>
 
           {values.verb === 'POST' && (
@@ -384,10 +385,28 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             setFieldValue={setFieldValue}
           />
 
-          <Alert severity="info" variant="standard" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
-            <div>
+          <Alert
+            severity="info"
+            variant="standard"
+            // The icon rides inside the message, so the controls below line up with
+            // it rather than with the sentence it introduces.
+            icon={false}
+            className={fdsLayerClass(3)}
+            sx={{
+              position: 'relative',
+              marginTop: 2.5,
+              marginBottom: 2.5,
+              padding: 2,
+              backgroundColor: 'var(--bg-elevation-default)',
+              // MUI scrolls its message; the focus ring of the fields inside was
+              // being clipped by that overflow.
+              '& .MuiAlert-message': { padding: 0, width: '100%', overflow: 'visible' },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <InfoOutlined fontSize="small" color="info" />
               {t_i18n('For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases')}
-            </div>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
                 control={<Switch defaultChecked={!!values.pagination_with_sub_page} />}
@@ -400,8 +419,8 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             {!!values.pagination_with_sub_page && (
               <>
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="pagination_with_sub_page_query_verb"
                   label={t_i18n('Sub pagination verb')}
                   fullWidth={true}
@@ -410,17 +429,17 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                     marginTop: 20,
                   }}
                 >
-                  <MenuItem value="GET">GET</MenuItem>
-                  <MenuItem value="POST">POST</MenuItem>
+                  <SelectItem value="GET">GET</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
                 </Field>
 
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="pagination_with_sub_page_attribute_path"
                   label={t_i18n('Attribute path to get next uri')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                 />
               </>
             )}
@@ -460,8 +479,8 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             )
           }
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="authentication_type"
             label={t_i18n('Authentication type')}
             fullWidth={true}
@@ -471,22 +490,22 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             }}
             onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
           >
-            <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
-            <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-            <MenuItem value="certificate">
+            <SelectItem value="none">{t_i18n('None')}</SelectItem>
+            <SelectItem value="basic">{t_i18n('Basic user / password')}</SelectItem>
+            <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+            <SelectItem value="certificate">
               {t_i18n('Client certificate')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           {values.authentication_type === BASIC_AUTH && (
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="username"
                 label={t_i18n('Username')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="password"
@@ -506,11 +525,11 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="key"
@@ -519,11 +538,11 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}

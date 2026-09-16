@@ -11,7 +11,7 @@ The platform serves map tiles from a backend endpoint (`/maps/world.pmtiles`) th
 Two sources are available:
 
 - **Bundled** (default) — A PMTiles file shipped inside the Docker image.
-- **Custom** — A custom PMTiles file uploaded by an administrator and stored in S3/MinIO.
+- **Custom** — A custom PMTiles file uploaded by an administrator and stored in the S3 bucket (Silo or any S3-compatible storage).
 
 When a custom file has been uploaded, it is used; otherwise, the bundled file is used.
 
@@ -31,7 +31,7 @@ Administrators can upload a custom `.pmtiles` file to replace the bundled map da
 2. Go to **Settings > Parameters > Map configuration**.
 3. Click **Upload** to upload the file.
 
-The custom file is used immediately — no additional step required. It is stored in S3/MinIO; only one custom file can exist at a time, uploading a new file replaces the previous one.
+The custom file is used immediately — no additional step required. It is stored in the S3 bucket; only one custom file can exist at a time, uploading a new file replaces the previous one.
 
 ### Reverting to the bundled map
 

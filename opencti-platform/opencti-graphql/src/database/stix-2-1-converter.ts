@@ -569,7 +569,7 @@ const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixRepor
     name: instance.name,
     description: instance.description,
     report_types: instance.report_types,
-    published: convertToStixDate(instance.published),
+    published: convertToStixDate(instance.published, { allowEpoch: true }),
     object_refs: convertObjectReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

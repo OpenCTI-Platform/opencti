@@ -215,7 +215,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               textFieldProps={{
                 label: t_i18n('First observed'),
                 required: (mandatoryAttributes.includes('first_observed')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 helperText: (
                   <SubscriptionFocus
@@ -233,7 +233,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
               textFieldProps={{
                 label: t_i18n('Last observed'),
                 required: (mandatoryAttributes.includes('last_observed')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
                 helperText: (
@@ -246,12 +246,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="number_observed"
               label={t_i18n('Number observed')}
               required={(mandatoryAttributes.includes('number_observed'))}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={(

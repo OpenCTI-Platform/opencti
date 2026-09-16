@@ -18,7 +18,7 @@ import { streamEventId, utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { asyncMap } from '../utils/data-processing';
 import { roundRate } from '../utils/consumer-metrics';
-import { getFileContent, rawUpload } from './raw-file-storage';
+import { getFileContent, rawListObjects, rawUpload } from './raw-file-storage';
 // Self namespace import: referencing isEventTooLarge through the module namespace (instead of a direct
 // local call) allows it to be spied/mocked in tests (e.g. vi.spyOn(redisStream, 'isEventTooLarge')).
 import * as redisStreamSelf from './redis-stream';
@@ -68,12 +68,13 @@ export const STREAM_FILE_DIRECTORY = `streams/${REDIS_LIVE_STREAM_NAME}/`;
 export const isEventTooLarge = (eventStreamData: any) => {
   const eventStreamDataBlob = new Blob(eventStreamData);
   const totalStreamEventSize = eventStreamDataBlob.size;
-  return streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize;
+  return { isTooLarge: streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize, eventSize: totalStreamEventSize };
 };
 export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const redisClient = getClientBase();
   let eventStreamData = mapJSToStream(event);
-  if (redisStreamSelf.isEventTooLarge(eventStreamData)) {
+  const { isTooLarge, eventSize } = redisStreamSelf.isEventTooLarge(eventStreamData);
+  if (isTooLarge) {
     // Add salt to prevent time collision
     const randomSalt = Math.floor(Math.random() * 1000);
     const eventId = streamEventId(null, randomSalt);
@@ -81,12 +82,32 @@ export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
     const fileContent = JSON.stringify(eventStreamData);
     await rawUpload(filePath, fileContent);
     eventStreamData = [streamMaxEventFileKey, filePath];
+    logApp.info('[STREAM] Event too large for redis, offloaded to file storage', {
+      filePath,
+      eventSize,
+      maxEventSize: streamMaxEventSize,
+      eventType: event.type,
+    });
   }
   if (streamTrimming) {
     await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData);
   } else {
     await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventStreamData);
   }
+};
+// Count the stream events that have been offloaded to file storage (events too large for redis).
+// The listing is paginated so the count stays accurate beyond a single S3 page (default 1000 keys).
+export const countOffloadedStreamEvents = async (): Promise<number> => {
+  let count = 0;
+  let truncated = true;
+  let continuationToken: string | undefined;
+  while (truncated) {
+    const response = await rawListObjects(STREAM_FILE_DIRECTORY, true, continuationToken);
+    count += response.KeyCount ?? 0;
+    truncated = response.IsTruncated ?? false;
+    continuationToken = truncated ? response.NextContinuationToken : undefined;
+  }
+  return count;
 };
 export const processStreamData = async ([id, data]: any) => {
   if (data.includes(streamMaxEventFileKey)) {

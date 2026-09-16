@@ -64,6 +64,11 @@ describe('Telemetry manager test coverage', () => {
     let shareWithCreatorFilterId: string;
 
     beforeAll(async () => {
+      // The permission changes counter is a cumulative Redis gauge, and other tests of the
+      // suite feed it. Start from a clean state so it reflects this test only, the way the
+      // other telemetry tests of this file already do.
+      await redisClearTelemetry();
+
       // create shared saved filters
 
       const savedFilter = JSON.stringify({
@@ -123,7 +128,7 @@ describe('Telemetry manager test coverage', () => {
         await fetchTelemetryData(filigranTelemetryMeterManager);
         return filigranTelemetryMeterManager.sharedSavedFiltersCount === 1
           && filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount === 1;
-      }, 1000, 60, true, 'Shared saved filters telemetry counters were not updated in time');
+      }, 3000, { message: 'Shared saved filters telemetry counters were not updated in time' });
 
       expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
       expect(filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount).toEqual(1);
@@ -175,7 +180,7 @@ describe('Telemetry manager test coverage', () => {
     // Those gauges are fed by fire-and-forget helpers, so poll until they land. Giving up
     // silently here would let the assertions below report a counter mismatch instead of the
     // actual cause.
-    await awaitUntilCondition(isRedisUpdatedCallback, 1000, 60, true, 'Redis telemetry gauges were not updated in time');
+    await awaitUntilCondition(isRedisUpdatedCallback, 3000, { message: 'Redis telemetry gauges were not updated in time' });
 
     // WHEN data is fetched from elastic (platform wide gauges) and redis (user event gauge)
     await fetchTelemetryData(filigranTelemetryMeterManager);
@@ -256,13 +261,7 @@ describe('Telemetry manager test coverage', () => {
       const exportValue = await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED);
       return nlqValue === 1 && exportValue === 2;
     };
-    let countersUpdated = await allCountersUpdated();
-    let pollCurrent = 0;
-    while (!countersUpdated && pollCurrent < 3) {
-      await waitInSec(1);
-      countersUpdated = await allCountersUpdated();
-      pollCurrent += 1;
-    }
+    await awaitUntilCondition(allCountersUpdated, 3000, { message: 'Ask AI and export telemetry counters were not updated in time' });
     for (let featureIndex = 0; featureIndex < ASK_AI_FEATURES.length; featureIndex += 1) {
       const feature = ASK_AI_FEATURES[featureIndex];
       expect(await redisGetTelemetry(`${TELEMETRY_GAUGE_ASK_AI_QUERY}:${feature}`), `feature ${feature} should be counted once`).toBe(1);

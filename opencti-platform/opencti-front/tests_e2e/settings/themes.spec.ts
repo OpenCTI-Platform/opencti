@@ -1,8 +1,8 @@
 import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
-import { awaitUntilCondition } from 'tests_e2e/utils';
 import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
+import { awaitUntilCondition } from 'tests_e2e/utils';
 
 const openThemeEditMenu = async (themeName: string, page: Page) => {
   await page
@@ -75,13 +75,17 @@ test('Custom theme creation, logo edition, and deletion', { tag: ['@ce'] }, asyn
   await page.getByRole('button', { name: 'Create' }).click();
 
   // Assert exists on screen
-  await expect(page.getByText(THEME.name).first()).toBeVisible();
+  // The library Select mirrors every theme name into a hidden native <option>, which comes first in the DOM.
+  await expect(page.getByText(THEME.name).filter({ visible: true }).first()).toBeVisible();
 
   const logoImage = page.getByRole('link', { name: 'logo' }).locator('img');
 
   try {
     // Select system default
-    await page.locator('#mui-component-select-platform_theme').click();
+    // The default-theme field is on the library Select now, so the MUI-generated
+    // `#mui-component-select-<name>` id is gone. Targeted by its accessible role
+    // and name instead, which is what a user and a screen reader both use.
+    await page.getByRole('combobox', { name: 'Default theme' }).click();
     await page.getByTestId(`${THEME.name}-li`).click();
     // The logo swap also proves the settings mutation completed
     await expect(logoImage).toHaveAttribute('src', /googlelogo/);
@@ -150,4 +154,5 @@ test('Cannot delete or update system theme', { tag: ['@ce'] }, async ({ page }) 
   await expect(page.getByRole('menuitem', { name: 'View' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Update' })).toHaveCount(0);
   await expect(page.getByRole('menuitem', { name: 'Delete' })).toHaveCount(0);
+  expect(await page.getByLabel('Update').count()).toBe(0);
 });

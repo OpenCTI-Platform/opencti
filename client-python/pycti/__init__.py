@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "7.260904.0"
+__version__ = "7.260914.0"
 
 from .api.opencti_api_client import OpenCTIApiClient
 from .api.opencti_api_connector import OpenCTIApiConnector
@@ -46,6 +46,7 @@ from .entities.opencti_opinion import Opinion
 from .entities.opencti_report import Report
 from .entities.opencti_role import Role
 from .entities.opencti_security_coverage import SecurityCoverage
+from .entities.opencti_security_coverage_result import SecurityCoverageResult
 from .entities.opencti_settings import Settings
 from .entities.opencti_stix import Stix
 from .entities.opencti_stix_core_object import StixCoreObject
@@ -152,6 +153,7 @@ __all__ = [
     "Opinion",
     "Report",
     "SecurityCoverage",
+    "SecurityCoverageResult",
     "Stix",
     "StixCoreObject",
     "StixCoreRelationship",

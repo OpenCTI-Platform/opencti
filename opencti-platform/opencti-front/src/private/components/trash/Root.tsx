@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import Loader from '../../../components/Loader';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';

@@ -2,7 +2,7 @@ import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik, FormikConfig, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useTheme } from '@mui/material';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';

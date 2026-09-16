@@ -6,7 +6,6 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
@@ -19,7 +18,7 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { insertNode } from '../../../../utils/store';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
@@ -283,7 +282,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
               <Form>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Name')}
                   fullWidth={true}
@@ -295,37 +294,40 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   style={{ position: 'relative',
                     marginTop: 20, width: '100%',
                     overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                  // The fields inside are full width, so their 4px focus ring has
+                  // no room inside a message box MUI scrolls: it was cut off left
+                  // and right, leaving two horizontal lines.
+                  sx={{ '& .MuiAlert-message': { overflow: 'visible' } }}
                 >
-                  <AlertTitle>{t_i18n('Remote OpenCTI configuration')}</AlertTitle>
-                  <Tooltip
-                    title={t_i18n(
-                      'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
-                    )}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ position: 'absolute', top: 10, right: 18 }}
-                    />
-                  </Tooltip>
+                  <AlertTitle sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {t_i18n('Remote OpenCTI configuration')}
+                    <Tooltip
+                      title={t_i18n(
+                        'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
+                      )}
+                    >
+                      <InformationOutline fontSize="small" color="primary" />
+                    </Tooltip>
+                  </AlertTitle>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="uri"
                     label={t_i18n('Remote OpenCTI URL')}
                     fullWidth={true}
                     disabled={streams.length > 0}
-                    style={fieldSpacingContainerStyle}
+                    className="mt-5"
                   />
                   <PasswordTextField
+                    className="mt-4"
                     name="token"
                     label={t_i18n('Remote OpenCTI token')}
                     disabled={streams.length > 0}
                   />
                   {streams.length > 0 && (
                     <Field
-                      component={SelectField}
-                      variant="standard"
+                      component={SelectFieldFds}
+                      variant="outlined"
                       name="stream_id"
                       label={t_i18n('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
@@ -362,9 +364,9 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                               )}
                               placement="bottom-start"
                             >
-                              <MenuItem key={value} value={value}>
+                              <SelectItem key={value} value={value}>
                                 {label}
-                              </MenuItem>
+                              </SelectItem>
                             </EnrichedTooltip>
                           );
                         },
@@ -416,7 +418,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   name="current_state_date"
                   textFieldProps={{
                     label: t_i18n('Starting synchronization (empty = from start)'),
-                    variant: 'standard',
+                    variant: 'outlined',
                     fullWidth: true,
                     style: { marginTop: 20 },
                   }}
@@ -464,7 +466,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                         'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)',
                       )}
                     </div>
-                    <hr style={{ marginTop: 20, marginBottom: 20 }} />
+                    <hr style={{ marginTop: 20, marginBottom: 20, border: 'none', borderTop: '1px solid var(--border-elevation-subtle)' }} />
                     <Field
                       component={SwitchField}
                       type="checkbox"

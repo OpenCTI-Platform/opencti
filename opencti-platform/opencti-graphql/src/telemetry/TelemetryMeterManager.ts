@@ -118,6 +118,9 @@ export class TelemetryMeterManager {
   // Number of active connectors
   activeConnectorsCount = 0;
 
+  // Number of OpenAEV connectors
+  oaevConnectorsCount = 0;
+
   // Active connectors broken down by catalog identity (slug, managed, type).
   // Composer-managed connectors carry the exact catalog contract slug; manual
   // connectors fall back to their registered name (managed=false).
@@ -190,8 +193,14 @@ export class TelemetryMeterManager {
   // Number of form intakes submitted
   formIntakeSubmittedCount = 0;
 
-  // Number security coverages
+  // Number of security coverages
   securityCoveragesCount = 0;
+
+  // Number of security coverage results
+  securityCoverageResultsCount = 0;
+
+  // Number of has-covered relationships
+  relationshipsHasCoveredCount = 0;
 
   // Number of decay rules created
   decayRuleCreationCount = 0;
@@ -321,6 +330,14 @@ export class TelemetryMeterManager {
   ingestionObjectsProcessedCount = 0;
   // endregion Product adoption
 
+  // region Stream storage
+  // Current total number of stream events offloaded to file storage (events too large for redis)
+  offloadedStreamEventsCount = 0;
+
+  // Current total number of events held in the redis live stream
+  redisStreamEventsCount = 0;
+  // endregion Stream storage
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -387,6 +404,10 @@ export class TelemetryMeterManager {
 
   setActiveConnectorsCount(n: number) {
     this.activeConnectorsCount = n;
+  }
+
+  setOaevConnectorsCount(n: number) {
+    this.oaevConnectorsCount = n;
   }
 
   setActiveConnectorsByIdentity(items: DimensionalGaugeItem[]) {
@@ -495,6 +516,14 @@ export class TelemetryMeterManager {
 
   setSecurityCoveragesCount(n: number) {
     this.securityCoveragesCount = n;
+  }
+
+  setSecurityCoverageResultsCount(n: number) {
+    this.securityCoverageResultsCount = n;
+  }
+
+  setRelationshipsHasCoveredCount(n: number) {
+    this.relationshipsHasCoveredCount = n;
   }
 
   setDecayRuleCreationCount(n: number) {
@@ -641,6 +670,14 @@ export class TelemetryMeterManager {
     this.ingestionObjectsProcessedCount = n;
   }
 
+  setOffloadedStreamEventsCount(n: number) {
+    this.offloadedStreamEventsCount = n;
+  }
+
+  setRedisStreamEventsCount(n: number) {
+    this.redisStreamEventsCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: {
     unit?: string;
     valueType?: ValueType;
@@ -684,6 +721,7 @@ export class TelemetryMeterManager {
     this.registerGauge('total_service_account_count', 'number of service account', 'serviceAccountCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
+    this.registerGauge('oaev_connectors_count', 'number of OpenAEV connectors', 'oaevConnectorsCount');
     this.registerDimensionalGauge('active_connectors_by_identity', 'active connectors broken down by catalog identity (slug, managed, type)', 'activeConnectorsByIdentity');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
@@ -712,6 +750,8 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
+    this.registerGauge('security_coverage_results_count', 'Number of security coverage results', 'securityCoverageResultsCount');
+    this.registerGauge('relationships_has_covered_count', 'Number of relationships has-covered', 'relationshipsHasCoveredCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
     this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
@@ -761,6 +801,10 @@ export class TelemetryMeterManager {
     this.registerDimensionalGauge('notification_sent_count', 'notifications sent broken down by channel (email, webhook, ui)', 'notificationSentItems');
     this.registerGauge('export_generated_count', 'number of export generations requested', 'exportGeneratedCount');
     this.registerGauge('ingestion_objects_processed_count', 'number of objects processed by completed works', 'ingestionObjectsProcessedCount');
+    // endregion
+    // region Stream storage
+    this.registerGauge('offloaded_stream_events_count', 'current total number of stream events offloaded to file storage (too large for redis)', 'offloadedStreamEventsCount');
+    this.registerGauge('redis_stream_events_count', 'current total number of events held in the redis live stream', 'redisStreamEventsCount');
     // endregion
   }
 }

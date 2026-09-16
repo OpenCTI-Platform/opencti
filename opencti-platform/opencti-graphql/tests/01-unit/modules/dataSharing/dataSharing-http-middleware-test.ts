@@ -46,7 +46,10 @@ import { createAuthenticatedContext } from '../../../../src/http/httpAuthenticat
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { resolvePublicUser } from '../../../../src/modules/dataSharing/dataSharing-utils';
 import { findById as findTaxiiCollection } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
-import { authenticate, authenticateForPublic } from '../../../../src/graphql/sseMiddleware.js';
+// eslint-disable-next-line import/extensions
+import { authenticate, authenticateForPublic, sendEventWithFilteredObjectRefs } from '../../../../src/graphql/sseMiddleware.js';
+import { elFindByIds } from '../../../../src/database/engine';
+// eslint-disable-next-line import/extensions
 import { extractUserAndCollection } from '../../../../src/http/httpTaxii.js';
 import { resolveUserForFeed } from '../../../../src/http/httpRollingFeed.js';
 import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
@@ -214,6 +217,70 @@ describe('authenticateForPublic middleware', () => {
 
     expect(next).toHaveBeenCalled();
     expect(req.user).toBe(mockAuthUser);
+  });
+});
+
+// ─── sendEventWithFilteredObjectRefs (object_refs redaction) ─────────────────
+
+describe('sendEventWithFilteredObjectRefs', () => {
+  const CACHED_REF = 'malware--cached';
+  const ACCESSIBLE_UNCACHED_REF = 'malware--accessible';
+  const RESTRICTED_UNCACHED_REF = 'malware--restricted';
+
+  const makeEvent = (objectRefs?: string[]) => ({
+    eventId: 'event-1',
+    eventType: 'update',
+    eventData: { data: { id: 'report--x', ...(objectRefs ? { object_refs: objectRefs } : {}) } },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Refs accessible to the user but missing from the cache (e.g. evicted) must be recovered
+  // through the access-controlled elFindByIds and kept in object_refs.
+  it('keeps accessible refs that are not in cache by resolving them through elFindByIds', async () => {
+    const cache = new Map([[CACHED_REF, 'hit']]);
+    const client = { sendEvent: vi.fn() };
+    // The access-controlled lookup returns only the accessible ref, not the restricted one
+    vi.mocked(elFindByIds).mockResolvedValue({ [ACCESSIBLE_UNCACHED_REF]: { standard_id: ACCESSIBLE_UNCACHED_REF } } as any);
+
+    const event = makeEvent([CACHED_REF, ACCESSIBLE_UNCACHED_REF, RESTRICTED_UNCACHED_REF]);
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    // Only the uncached refs are looked up, with the all-ids map option
+    expect(elFindByIds).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [ACCESSIBLE_UNCACHED_REF, RESTRICTED_UNCACHED_REF],
+      expect.objectContaining({ toMap: true, mapWithAllIds: true }),
+    );
+    // Cached + accessible-uncached kept, restricted dropped
+    expect(event.eventData.data.object_refs).toEqual([CACHED_REF, ACCESSIBLE_UNCACHED_REF]);
+    expect(client.sendEvent).toHaveBeenCalledWith('event-1', 'update', event.eventData);
+  });
+
+  it('does not query elFindByIds when every ref is already in cache', async () => {
+    const cache = new Map([[CACHED_REF, 'hit'], [ACCESSIBLE_UNCACHED_REF, 'hit']]);
+    const client = { sendEvent: vi.fn() };
+
+    const event = makeEvent([CACHED_REF, ACCESSIBLE_UNCACHED_REF]);
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    expect(elFindByIds).not.toHaveBeenCalled();
+    expect(event.eventData.data.object_refs).toEqual([CACHED_REF, ACCESSIBLE_UNCACHED_REF]);
+    expect(client.sendEvent).toHaveBeenCalledWith('event-1', 'update', event.eventData);
+  });
+
+  it('sends the event untouched when there is no object_refs', async () => {
+    const cache = new Map();
+    const client = { sendEvent: vi.fn() };
+
+    const event = makeEvent();
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    expect(elFindByIds).not.toHaveBeenCalled();
+    expect(client.sendEvent).toHaveBeenCalledWith('event-1', 'update', event.eventData);
   });
 });
 

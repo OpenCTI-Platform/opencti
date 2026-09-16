@@ -263,17 +263,27 @@ const FilterIconButtonContainer: FunctionComponent<
                 filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
                   ? undefined
                   : (
-                      <FilterValues
-                        label={keyLabel}
-                        tooltip={true}
-                        currentFilter={currentFilter}
-                        handleSwitchLocalMode={handleSwitchLocalMode}
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                        redirection={redirection}
-                        entityTypes={entityTypes}
-                        filtersRestrictions={filtersRestrictions}
-                        host={host}
-                      />
+                      // As inline content the key, the values and the operator sat on three different baselines.
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '4px',
+                        }}
+                      >
+                        <FilterValues
+                          label={keyLabel}
+                          tooltip={true}
+                          currentFilter={currentFilter}
+                          handleSwitchLocalMode={handleSwitchLocalMode}
+                          filtersRepresentativesMap={filtersRepresentativesMap}
+                          redirection={redirection}
+                          entityTypes={entityTypes}
+                          filtersRestrictions={filtersRestrictions}
+                          host={host}
+                        />
+                      </Box>
                     )
               }
             >

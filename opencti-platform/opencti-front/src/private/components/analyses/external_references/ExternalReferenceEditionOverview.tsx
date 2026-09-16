@@ -124,7 +124,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
               name="external_id"
               label={t_i18n('External ID')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helperText={
@@ -137,7 +137,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<
               name="url"
               label={t_i18n('URL')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helperText={

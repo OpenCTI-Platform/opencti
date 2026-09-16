@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import ExtensionOutlined from '@mui/icons-material/ExtensionOutlined';
 import CustomFieldCreation from './CustomFieldCreation';
 import CustomFieldPopover from './CustomFieldPopover';
@@ -135,7 +135,11 @@ const CustomFields = () => {
             getKey={(entityType) => entityType}
             getLabel={(entityType) => t_i18n(`entity_${entityType}`)}
             renderTag={(entityType) => (
-              <Chip key={entityType} label={t_i18n(`entity_${entityType}`)} style={{ marginRight: 5 }} />
+              <Chip
+                key={entityType}
+                label={t_i18n(`entity_${entityType}`)}
+                style={{ marginRight: 5 }}
+              />
             )}
           />
         </FieldOrEmpty>

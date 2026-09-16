@@ -6,9 +6,9 @@ import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { ListItemButton } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -217,12 +217,11 @@ class AddExternalReferencesLinesContainer extends Component {
                     false,
                   )}
                 >
+                  <ListItemIcon style={{ minWidth: 40 }}>
+                    <Checkbox checked={alreadyAdded} />
+                  </ListItemIcon>
                   <ListItemIcon>
-                    {alreadyAdded ? (
-                      <CheckCircle classes={{ root: classes.icon }} />
-                    ) : (
-                      <ItemIcon type="External-Reference" />
-                    )}
+                    <ItemIcon type="External-Reference" />
                   </ListItemIcon>
                   {computeTextItem(externalReferenceNode)}
                 </ListItemButton>
@@ -239,12 +238,11 @@ class AddExternalReferencesLinesContainer extends Component {
                   false,
                 )}
               >
+                <ListItemIcon style={{ minWidth: 40 }}>
+                  <Checkbox checked={alreadyAdded} />
+                </ListItemIcon>
                 <ListItemIcon>
-                  {alreadyAdded ? (
-                    <CheckCircle classes={{ root: classes.icon }} />
-                  ) : (
-                    <ItemIcon type="External-Reference" />
-                  )}
+                  <ItemIcon type="External-Reference" />
                 </ListItemIcon>
                 {computeTextItem(externalReferenceNode)}
               </ListItemButton>

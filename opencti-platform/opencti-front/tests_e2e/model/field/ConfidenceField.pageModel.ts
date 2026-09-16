@@ -12,7 +12,11 @@ export default class ConfidenceFieldPageModel {
   }
 
   getInput() {
-    return this.alertLocator.getByLabel(this.label);
+    // By ROLE, not by label: this row shows one value twice, a number input and a
+    // select, and both are named after the field — as they should be. getByLabel
+    // matched both. type="number" gives the input the spinbutton role, which the
+    // select cannot have.
+    return this.alertLocator.getByRole('spinbutton');
   }
 
   getSelect() {

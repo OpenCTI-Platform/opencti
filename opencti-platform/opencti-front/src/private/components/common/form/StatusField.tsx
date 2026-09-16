@@ -4,7 +4,8 @@ import { graphql } from 'react-relay';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
@@ -164,7 +165,7 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
 
   const isWorkflowManaged = hasPublishedWorkflowDefinition;
 
-  const handleSearch = useCallback((_event: React.SyntheticEvent, value: string) => {
+  const handleSearch = useCallback((value: string) => {
     if (value) {
       setKeyword(value);
       debouncedSearchStatuses(value);
@@ -177,26 +178,29 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       style={style}
       name={name}
       required={required}
       disabled={disabled || isWorkflowManaged}
-      textfieldprops={{
-        variant: 'standard',
-        label: t_i18n('Status'),
-        helperText: isWorkflowManaged
-          ? t_i18n('This entity type is managed by a workflow, status is read-only here')
-          : helpertext,
-        onFocus: handleFocus,
-      }}
+      label={t_i18n('Status')}
+      helperText={isWorkflowManaged
+        ? t_i18n('This entity type is managed by a workflow, status is read-only here')
+        : helpertext}
       noOptionsText={t_i18n('No available options')}
       options={statuses}
-      onInputChange={handleSearch}
+      // Single-value field, so no chip and nothing waiting on the chip tone:
+      // the status colour lives in the row's Avatar, which stays the product's.
+      onInputChange={(value: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') handleSearch(value);
+      }}
+      onFocusInput={handleFocus}
       groupBy={type ? undefined : (option: StatusOption) => option.type}
-      onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: StatusOption) => (
-        <li {...props} key={option.value}>
+      onChange={typeof onChange === 'function' ? onChange : undefined}
+      // Was `sx={{ '& .MuiAutocomplete-clearIndicator': { display: 'none' } }}`.
+      clearable={false}
+      renderOption={(option: StatusOption) => (
+        <>
           <Box sx={{ pt: '4px', display: 'inline-block', color: 'primary.main' }}>
             <Avatar
               variant="square"
@@ -210,9 +214,8 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
             </Avatar>
           </Box>
           <Box sx={{ display: 'inline-block', flexGrow: 1, ml: '10px' }}>{option.label}</Box>
-        </li>
+        </>
       )}
-      sx={{ '& .MuiAutocomplete-clearIndicator': { display: 'none' } }}
     />
   );
 };

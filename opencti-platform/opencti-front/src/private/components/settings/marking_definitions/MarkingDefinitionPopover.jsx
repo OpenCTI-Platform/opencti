@@ -84,7 +84,7 @@ const MarkingDefinitionPopover = ({
       <IconButton
         aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
-        aria-haspopup="true"
+        aria-haspopup={disabled ? undefined : true}
         disabled={disabled}
         color="primary"
       >

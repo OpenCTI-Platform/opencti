@@ -77,13 +77,11 @@ class StixSightingRelationshipCreationFromEntityLinesContainer extends Component
     const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
     const stixDomainObjects = byType(stixDomainObjectsNodes);
     const stixDomainObjectsTypes = keys(stixDomainObjects);
-    let increment = 0;
 
     return (
       <div className={classes.container}>
         {stixDomainObjectsTypes.length > 0 ? (
           stixDomainObjectsTypes.map((type) => {
-            increment += 1;
             return (
               <Accordion
                 key={type}
@@ -93,18 +91,10 @@ class StixSightingRelationshipCreationFromEntityLinesContainer extends Component
                   stixDomainObjectsTypes.length,
                 )}
                 onChange={this.handleChangePanel.bind(this, type)}
-                elevation={3}
-                style={{
-                  marginBottom:
-                    increment === stixDomainObjectsTypes.length
-                    && this.isExpanded(
-                      type,
-                      stixDomainObjects[type].length,
-                      stixDomainObjectsTypes.length,
-                    )
-                      ? 16
-                      : 0,
-                }}
+                // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+                elevation={0}
+                disableGutters
+                sx={{ backgroundColor: 'var(--bg-input-default)' }}
               >
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Typography className={classes.heading}>

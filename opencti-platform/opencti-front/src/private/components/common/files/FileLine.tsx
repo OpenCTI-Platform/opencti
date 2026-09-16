@@ -52,7 +52,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 50,
   },
   itemNested: {
-    paddingLeft: theme.spacing(4),
+    // Same inset as the reference rows above it, not a further 16px.
+    paddingLeft: theme.spacing(2),
     height: 50,
   },
   itemText: {
@@ -62,6 +63,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   fileName: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  // `palette.text.secondary` is wired to the primary ink theme-wide, so MUI's own colour is the wrong one here.
+  fileMeta: {
+    color: 'var(--text-default-secondary)',
   },
 }));
 
@@ -276,7 +281,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           <Stack
             direction="row"
             alignItems="center"
-            gap={1}
+            gap={0.5}
           >
             {!isProgress && !isFail && !isOutdated && (
               <Box sx={{ maxWidth: 150 }}>
@@ -300,6 +305,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   aria-haspopup="true"
                   // color={nested ? 'inherit' : 'primary'}
                   size="small"
+                  keepMui
+                  aria-label={t_i18n('Launch the import')}
                 >
                   <ProgressUpload fontSize="small" />
                 </IconButton>
@@ -320,8 +327,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                       }
                     }}
                     aria-haspopup="true"
-                    // color={nested ? 'inherit' : 'primary'}
                     size="small"
+                    keepMui
+                    aria-label={t_i18n('Download the file')}
                   >
                     <GetAppOutlined fontSize="small" />
                   </IconButton>
@@ -368,6 +376,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                           handleOpenRemove();
                         }}
                         size="small"
+                        keepMui
+                        aria-label={t_i18n('Delete the file')}
                       >
                         <DeleteOutlined fontSize="small" color={deleteFileColor} />
                       </IconButton>
@@ -385,6 +395,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                           handleOpenDelete();
                         }}
                         size="small"
+                        keepMui
+                        aria-label={t_i18n('Delete the file')}
                       >
                         <DeleteOutlined fontSize="small" color={deleteFileColor} />
                       </IconButton>
@@ -427,7 +439,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               classes={{
                 root: classes.itemText,
                 primary: classes.fileName,
-                secondary: classes.fileName,
+                secondary: `${classes.fileName} ${classes.fileMeta}`,
               }}
               primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
               secondary={(

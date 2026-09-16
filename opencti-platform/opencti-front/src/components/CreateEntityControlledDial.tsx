@@ -21,8 +21,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
 }) => {
   const { t_i18n } = useFormatter();
   const valueString = entityType ? t_i18n(`entity_${entityType}`) : t_i18n('Entity');
-  const buttonValue = t_i18n('', {
-    id: 'Create ...',
+  const buttonValue = t_i18n('Create {entity_type}', {
     values: { entity_type: valueString },
   });
   // Remove create button in Draft context without the minimal right access "canEdit"

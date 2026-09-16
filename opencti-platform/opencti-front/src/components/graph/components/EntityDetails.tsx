@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
@@ -316,7 +316,7 @@ const EntityDetailsComponent: FunctionComponent<
   return (
     <Stack gap={2}>
       {stixCoreObject.entity_type !== 'StixFile' && (
-        <div>
+        <div style={{ marginTop: 20 }}>
           <Label>
             {t_i18n('Value')}
           </Label>

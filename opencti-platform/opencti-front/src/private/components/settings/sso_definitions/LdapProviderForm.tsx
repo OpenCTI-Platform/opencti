@@ -4,18 +4,14 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Add, Delete, ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -31,6 +27,7 @@ import type { LdapProviderFormCreateMutation } from './__generated__/LdapProvide
 import type { LdapProviderFormEditMutation } from './__generated__/LdapProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
 import { PaginationOptions } from '../../../../components/list_lines';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 // --- GraphQL Mutations ---
 
@@ -218,7 +215,7 @@ const LdapProviderForm = ({
 }: LdapProviderFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('configuration');
   const isEditing = !!data;
 
   const [commitCreate] = useApiMutation<LdapProviderFormCreateMutation>(ldapCreateMutation);
@@ -338,253 +335,258 @@ const LdapProviderForm = ({
     >
       {({ handleReset, submitForm, isSubmitting, dirty, values }) => (
         <Form>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)}>
-              <Tab label={t_i18n('Configuration')} />
-              <Tab label={t_i18n('Groups')} />
-              <Tab label={t_i18n('Organizations')} />
-            </Tabs>
-          </Box>
-          {currentTab === 0 && (
-            <>
-              {/* Enabled at the very top */}
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="enabled"
-                label={t_i18n('Enable LDAP authentication')}
-                containerstyle={{ marginTop: 20 }}
-              />
+          <Tabs value={currentTab} onValueChange={setCurrentTab}>
+            <TabsList>
+              <TabsTrigger value="configuration">{t_i18n('Configuration')}</TabsTrigger>
+              <TabsTrigger value="groups">{t_i18n('Groups')}</TabsTrigger>
+              <TabsTrigger value="organizations">{t_i18n('Organizations')}</TabsTrigger>
+            </TabsList>
 
-              {/* Mandatory fields */}
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Configuration name')}
-                fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth
-                multiline
-                rows={3}
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="url"
-                label={t_i18n('LDAP URL')}
-                fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="bind_dn"
-                label={t_i18n('Bind DN')}
-                fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
-              <SecretFieldControl
-                secretInfo={(data?.configuration?.bind_credentials ?? null) as SecretInfo | null}
-                namePrefix="bind_credentials"
-                availableSecrets={availableSecrets}
-                label={t_i18n('Bind credentials')}
-                isEditing={isEditing}
-                style={{ marginTop: 2.5 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="search_base"
-                label={t_i18n('Search base')}
-                fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="search_filter"
-                label={t_i18n('Search filter')}
-                fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="group_base"
-                label={t_i18n('Group base')}
-                fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="group_filter"
-                label={t_i18n('Group filter')}
-                fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
+            <TabsContent value="configuration">
+              <>
+                {/* Enabled at the very top */}
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="enabled"
+                  label={t_i18n('Enable LDAP authentication')}
+                  containerstyle={{ marginTop: 20 }}
+                />
 
-              <AuthProviderUserInfoFields />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="button_label_override"
-                label={t_i18n('Login button label')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
+                {/* Mandatory fields */}
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="name"
+                  label={t_i18n('Configuration name')}
+                  fullWidth
+                  required
+                  className="mt-5"
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="description"
+                  label={t_i18n('Description')}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="url"
+                  label={t_i18n('LDAP URL')}
+                  fullWidth
+                  required
+                  className="mt-5"
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="bind_dn"
+                  label={t_i18n('Bind DN')}
+                  fullWidth
+                  required
+                  className="mt-5"
+                />
+                <SecretFieldControl
+                  secretInfo={(data?.configuration?.bind_credentials ?? null) as SecretInfo | null}
+                  namePrefix="bind_credentials"
+                  availableSecrets={availableSecrets}
+                  label={t_i18n('Bind credentials')}
+                  isEditing={isEditing}
+                  style={{ marginTop: 2.5 }}
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="search_base"
+                  label={t_i18n('Search base')}
+                  fullWidth
+                  required
+                  className="mt-5"
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="search_filter"
+                  label={t_i18n('Search filter')}
+                  fullWidth
+                  required
+                  className="mt-5"
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="group_base"
+                  label={t_i18n('Group base')}
+                  fullWidth
+                  required
+                  className="mt-5"
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="group_filter"
+                  label={t_i18n('Group filter')}
+                  fullWidth
+                  required
+                  className="mt-5"
+                />
 
-              {/* --- Search & Authentication --- */}
-              <Accordion variant="outlined" style={{ marginTop: 30 }}>
-                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                  <Typography>{t_i18n('Search & Authentication')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ display: 'block' }}>
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="allow_self_signed"
-                    label={t_i18n('Allow self-signed certificates')}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="search_attributes"
-                    label={t_i18n('Search attributes (comma-separated)')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="username_field"
-                    label={t_i18n('Username field')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="password_field"
-                    label={t_i18n('Password field')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="credentials_lookup"
-                    label={t_i18n('Credentials lookup')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="group_search_attributes"
-                    label={t_i18n('Group search attributes (comma-separated)')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                </AccordionDetails>
-              </Accordion>
+                <AuthProviderUserInfoFields />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="button_label_override"
+                  label={t_i18n('Login button label')}
+                  fullWidth
+                  className="mt-5"
+                />
 
-              {/* --- Extra configuration --- */}
-              <Accordion variant="outlined" style={{ marginTop: 10 }}>
-                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                  <Typography>{t_i18n('Extra configuration')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ display: 'block' }}>
-                  <FieldArray name="extra_conf">
-                    {({ push, remove }) => (
-                      <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
-                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
-                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
-                          <IconButton
-                            color="primary"
-                            aria-label={t_i18n('Add')}
-                            size="default"
-                            onClick={() => push({ type: 'String', key: '', value: '' })}
-                          >
-                            <Add fontSize="small" color="primary" />
-                          </IconButton>
-                        </div>
-                        {values.extra_conf.length === 0 && (
-                          <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
-                            {t_i18n('No extra configuration entries. Click + to add one.')}
-                          </Typography>
-                        )}
-                        {values.extra_conf.map((_: ExtraConfEntry, index: number) => (
-                          <div
-                            key={index}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 8,
-                              marginTop: 10,
-                            }}
-                          >
-                            <Field
-                              component={SelectField}
-                              variant="standard"
-                              name={`extra_conf[${index}].type`}
-                              label={t_i18n('Type')}
-                              containerstyle={{ width: '20%' }}
-                            >
-                              <MenuItem value="String">String</MenuItem>
-                              <MenuItem value="Number">Number</MenuItem>
-                              <MenuItem value="Boolean">Boolean</MenuItem>
-                            </Field>
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`extra_conf[${index}].key`}
-                              label={t_i18n('Key')}
-                              fullWidth
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name={`extra_conf[${index}].value`}
-                              label={t_i18n('Value')}
-                              fullWidth
-                            />
+                {/* --- Search & Authentication --- */}
+                <Accordion variant="outlined" style={{ marginTop: 30 }}>
+                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                    <Typography>{t_i18n('Search & Authentication')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ display: 'block' }}>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="allow_self_signed"
+                      label={t_i18n('Allow self-signed certificates')}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="search_attributes"
+                      label={t_i18n('Search attributes (comma-separated)')}
+                      fullWidth
+                      className="mt-5"
+                    />
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="username_field"
+                      label={t_i18n('Username field')}
+                      fullWidth
+                      className="mt-5"
+                    />
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="password_field"
+                      label={t_i18n('Password field')}
+                      fullWidth
+                      className="mt-5"
+                    />
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="credentials_lookup"
+                      label={t_i18n('Credentials lookup')}
+                      fullWidth
+                      className="mt-5"
+                    />
+                    <Field
+                      component={TextField}
+                      variant="outlined"
+                      name="group_search_attributes"
+                      label={t_i18n('Group search attributes (comma-separated)')}
+                      fullWidth
+                      className="mt-5"
+                    />
+                  </AccordionDetails>
+                </Accordion>
+
+                {/* --- Extra configuration --- */}
+                <Accordion variant="outlined" style={{ marginTop: 10 }}>
+                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
+                    <Typography>{t_i18n('Extra configuration')}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ display: 'block' }}>
+                    <FieldArray name="extra_conf">
+                      {({ push, remove }) => (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
+                            <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
                             <IconButton
                               color="primary"
-                              aria-label={t_i18n('Delete')}
-                              onClick={() => remove(index)}
-                              style={{ marginTop: 10 }}
+                              aria-label={t_i18n('Add')}
+                              size="default"
+                              onClick={() => push({ type: 'String', key: '', value: '' })}
                             >
-                              <Delete fontSize="small" />
+                              <Add fontSize="small" color="primary" />
                             </IconButton>
                           </div>
-                        ))}
-                      </>
-                    )}
-                  </FieldArray>
-                </AccordionDetails>
-              </Accordion>
-            </>
-          )}
-          {currentTab === 1 && <AuthProviderGroupsFields />}
-          {currentTab === 2 && <AuthProviderOrganizationsFields />}
+                          {values.extra_conf.length === 0 && (
+                            <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                              {t_i18n('No extra configuration entries. Click + to add one.')}
+                            </Typography>
+                          )}
+                          {values.extra_conf.map((_: ExtraConfEntry, index: number) => (
+                            <div
+                              key={index}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                marginTop: 10,
+                              }}
+                            >
+                              <Field
+                                component={SelectFieldFds}
+                                variant="outlined"
+                                name={`extra_conf[${index}].type`}
+                                label={t_i18n('Type')}
+                                containerstyle={{ width: '20%' }}
+                              >
+                                <SelectItem value="String">String</SelectItem>
+                                <SelectItem value="Number">Number</SelectItem>
+                                <SelectItem value="Boolean">Boolean</SelectItem>
+                              </Field>
+                              <Field
+                                component={TextField}
+                                variant="outlined"
+                                name={`extra_conf[${index}].key`}
+                                label={t_i18n('Key')}
+                                fullWidth
+                              />
+                              <Field
+                                component={TextField}
+                                variant="outlined"
+                                name={`extra_conf[${index}].value`}
+                                label={t_i18n('Value')}
+                                fullWidth
+                              />
+                              <IconButton
+                                color="primary"
+                                aria-label={t_i18n('Delete')}
+                                onClick={() => remove(index)}
+                                style={{ marginTop: 10 }}
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </FieldArray>
+                  </AccordionDetails>
+                </Accordion>
+              </>
+            </TabsContent>
+            <TabsContent value="groups">
+              <AuthProviderGroupsFields />
+            </TabsContent>
+            <TabsContent value="organizations">
+              <AuthProviderOrganizationsFields />
+            </TabsContent>
+          </Tabs>
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="secondary"

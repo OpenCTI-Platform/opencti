@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -16,8 +16,7 @@ const ThreatActorIndividualDeletionDeleteMutation = graphql`
 const ThreatActorIndividualDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Threat-Actor-Individual') },
   });
   const [commit] = useApiMutation(

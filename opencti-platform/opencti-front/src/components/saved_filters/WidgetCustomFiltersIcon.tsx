@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import { FilterList } from '@mui/icons-material';
 import React from 'react';
@@ -12,13 +12,14 @@ const WidgetCustomFiltersIcon = ({ onClick }: WidgetCustomFiltersIconProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Tooltip title={t_i18n('Set custom filters')}>
-      <Button
-        size="small"
-        sx={{ minWidth: 'unset', padding: '4px' }}
+      <IconButton
+        variant="default"
+        priority="tertiary"
+        size="sm"
+        aria-label={t_i18n('Set custom filters')}
         onClick={onClick}
-      >
-        <FilterList fontSize="small" />
-      </Button>
+        icon={<FilterList fontSize="small" />}
+      />
     </Tooltip>
   );
 };

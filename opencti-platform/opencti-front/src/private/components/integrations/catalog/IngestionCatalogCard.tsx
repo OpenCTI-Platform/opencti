@@ -1,7 +1,7 @@
 import React from 'react';
 import { CardActions, Stack, Typography } from '@mui/material';
 import { GroupsOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { alpha, useTheme } from '@mui/material/styles';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
@@ -16,6 +16,7 @@ import Security from '../../../../utils/Security';
 import Card from '../../../../components/common/card/Card';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
+import { paperBorder } from '../paperSurface';
 
 export interface IngestionCatalogCardProps {
   node: IngestionConnector;
@@ -162,7 +163,7 @@ const IngestionCatalogCard = ({
       sx={{
         height: '100%',
         '& .MuiCard-root': {
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+          border: `1px solid ${paperBorder(theme)}`,
           transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {

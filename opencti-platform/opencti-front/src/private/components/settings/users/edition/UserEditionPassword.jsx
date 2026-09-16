@@ -115,7 +115,7 @@ const UserEditionPasswordComponent = ({ user }) => {
             <PasswordPolicies />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="password"
               label={t('Password')}
               type="password"
@@ -123,7 +123,7 @@ const UserEditionPasswordComponent = ({ user }) => {
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="confirmation"
               label={t('Confirmation')}
               type="password"

@@ -168,6 +168,7 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3}>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Intrusion-Set"
             config={config}
             parameters={{
@@ -190,6 +191,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Malware"
             config={config}
             parameters={{
@@ -212,6 +214,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Report"
             config={config}
             parameters={{
@@ -234,6 +237,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Indicator"
             config={config}
             parameters={{

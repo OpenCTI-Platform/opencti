@@ -1,7 +1,7 @@
 import React from 'react';
 import TopBanner from '../../../components/TopBanner';
 import { useFormatter } from '../../../components/i18n';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { REGISTER_BANNER_DISMISSED_BUS, REGISTER_BANNER_DISMISSED_KEY } from '../../../utils/bannerConstants';
 
 const RegisterPlatformBanner = () => {

@@ -11,19 +11,19 @@ const getMockIndicator = () => {
   return indicator as BasicStoreEntityIndicator;
 };
 indicatorList.push(getMockIndicator());
-describe('Testing indicatorDecayManager', () => {
-  vi.mock('../../../src/modules/indicator/indicator-domain', () => {
-    return {
-      findIndicatorsForDecay: vi.fn()
-        .mockImplementation(() => { return indicatorList; }),
-      updateIndicatorDecayScore: vi.fn()
-        .mockImplementationOnce(() => { /* Do nothing */ })
-        .mockImplementationOnce(() => {
-          throw new Error('Second time test is throwing error');
-        }),
-    };
-  });
+vi.mock('../../../src/modules/indicator/indicator-domain', () => {
+  return {
+    findIndicatorsForDecay: vi.fn()
+      .mockImplementation(() => { return indicatorList; }),
+    updateIndicatorDecayScore: vi.fn()
+      .mockImplementationOnce(() => { /* Do nothing */ })
+      .mockImplementationOnce(() => {
+        throw new Error('Second time test is throwing error');
+      }),
+  };
+});
 
+describe('Testing indicatorDecayManager', () => {
   it('should process indicator that requires decay.', async () => {
     const logAppErrorSpy = vi.spyOn(logApp, 'error');
     const logAppWarnSpy = vi.spyOn(logApp, 'warn');

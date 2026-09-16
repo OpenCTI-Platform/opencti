@@ -14,7 +14,7 @@ import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
 import type { Theme } from '../../../../components/Theme';
 import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from '@components/RedirectByPath';
 
 enum ProcessSteps {

@@ -1,11 +1,7 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import Drawer from '@mui/material/Drawer';
-import MenuList from '@mui/material/MenuList';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
+import { NavbarItem, NavbarTitle } from '@filigran/design-system';
 import { graphql, useFragment } from 'react-relay';
 import {
   StixCoreObjectKnowledgeBar_stixCoreObject$data,
@@ -15,10 +11,12 @@ import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
@@ -69,12 +67,26 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
       label
       value
     }
+    # distribution for indicators, restricted to "indicates" relationships to match the Indicators list view (#15882)
+    # Uses stixCoreRelationshipsDistribution (queries relationships directly, like the Indicators list)
+    # rather than stixCoreObjectsDistribution, whose regardingOf filter relies on the rel_indicates
+    # denormalized field that is only populated on the Indicator side, not consistently queryable here.
+    indicatorsDistribution: stixCoreRelationshipsDistribution(
+      field: "entity_type",
+      operation: count,
+      relationship_type: ["indicates"],
+      fromTypes: ["Indicator"],
+    ) {
+      label
+      value
+    }
   }
 `;
 
 type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
-  | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution']
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['indicatorsDistribution'];
 
 interface StixCoreObjectKnowledgeBarProps {
   stixCoreObjectLink: string;
@@ -103,20 +115,17 @@ interface KnowledgeBarProps {
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
+  const text = `${t_i18n(label)}${count > 0 ? ` (${n(count)})` : ''}`;
 
   return (
-    <MenuItem
-      component={Link}
-      to={to}
-      selected={location.pathname === to}
-      dense={true}
-      sx={{ height: 38, fontSize: 9 }}
-    >
-      <ListItemIcon style={{ minWidth: 28 }}>
-        <ItemIcon size="small" type={iconType} />
-      </ListItemIcon>
-      <ListItemText primary={`${t_i18n(label)}${count > 0 ? ` (${n(count)})` : ''}`} />
-    </MenuItem>
+    <NavbarItem asChild tooltipLabel={text}>
+      <Link to={to} aria-current={location.pathname === to ? 'page' : undefined}>
+        <span aria-hidden="true" className="flex shrink-0 items-center justify-center">
+          <ItemIcon size="small" type={iconType} />
+        </span>
+        <span className="flex-1 truncate text-left">{text}</span>
+      </Link>
+    </NavbarItem>
   );
 };
 
@@ -130,10 +139,12 @@ const StixCoreObjectKnowledgeBar = ({
   const draftContext = useDraftContext();
   const { bannerSettings, schema } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { height: topBannerHeight } = useTopBanner();
   const {
     relationshipsWithoutRelatedToDistribution,
     relationshipsRelatedDistribution,
     stixCoreObjectsDistribution,
+    indicatorsDistribution,
   } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
 
   const indexEntities = (distribution: ObjectsDistribution): Record<string, number> => (
@@ -147,6 +158,7 @@ const StixCoreObjectKnowledgeBar = ({
     withoutRelated: indexEntities(relationshipsWithoutRelatedToDistribution),
     related: indexEntities(relationshipsRelatedDistribution),
     coreObjects: indexEntities(stixCoreObjectsDistribution),
+    indicators: indexEntities(indicatorsDistribution),
   };
 
   const sumEntitiesByKeys = (source: Record<string, number>, keys?: string[]) => {
@@ -338,7 +350,7 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Indicators',
           iconType: 'Indicator',
           path: 'indicators',
-          count: distributions.coreObjects.Indicator || 0,
+          count: distributions.indicators.Indicator || 0,
         },
         {
           label: 'Observables',
@@ -394,6 +406,14 @@ const StixCoreObjectKnowledgeBar = ({
     <Drawer
       variant="permanent"
       anchor="right"
+      slotProps={{
+        paper: {
+          // Layer from the shared helper: the class and `layerInputVars` must sit on the SAME
+          // node (LIBRARY-FEEDBACK #57). `slotProps.paper`, not the deprecated `PaperProps`.
+          className: fdsLayerClass(RIGHT_BAR_LAYER),
+          sx: { ...layerInputVars },
+        },
+      }}
       sx={{
         '& .MuiPaper-root': {
           minHeight: '100vh',
@@ -403,17 +423,18 @@ const StixCoreObjectKnowledgeBar = ({
           padding: 0,
           zIndex: theme.zIndex.appBar - 1,
           paddingBottom: draftContext ? '69px' : 0, // Add 69px in case DraftToolbar is opened
-          background: theme.palette.background.nav,
+          background: 'var(--bg-elevation-default)',
+          borderLeft: '1px solid var(--border-elevation-subtle-soft)',
         },
       }}
     >
       <Box sx={{ ...theme.mixins.toolbar }} />
-      <MenuList
-        component="nav"
+      <nav
         style={{
-          marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
+          // Same sum as the top bar: the top banner has to clear too.
+          marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight + topBannerHeight,
           marginBottom: bannerSettings.bannerHeightNumber,
-          paddingBottom: 0,
+          paddingTop: 4, // the 4px slot inset of the Figma node
         }}
       >
         <KnowledgeBarItem
@@ -424,11 +445,11 @@ const StixCoreObjectKnowledgeBar = ({
         />
         {sectionsConfig.map((section, index) => (
           section.items.length > 0 && (
-            <MenuList component="nav" key={index} style={{ paddingBlock: 0 }}>
+            <React.Fragment key={index}>
               {section.title && (
-                <ListSubheader style={{ height: 35 }}>
-                  {section.title}
-                </ListSubheader>
+                // `as="p"`: this bar is page chrome rendered next to the entity's own heading outline, so a real
+                // <h2> here would inject an out-of-order heading (WCAG 1.3.1).
+                <NavbarTitle as="p">{section.title}</NavbarTitle>
               )}
               {section.items.map(({ path, label, iconType, count }) => (
                 <KnowledgeBarItem
@@ -439,10 +460,10 @@ const StixCoreObjectKnowledgeBar = ({
                   count={count ?? 0}
                 />
               ))}
-            </MenuList>
+            </React.Fragment>
           )
         ))}
-      </MenuList>
+      </nav>
     </Drawer>
   );
 };

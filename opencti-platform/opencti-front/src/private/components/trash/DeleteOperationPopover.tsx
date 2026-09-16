@@ -11,7 +11,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
 import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -136,7 +136,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
         color="primary"
         onClick={handleOpen}
         disabled={disabled}
-        aria-haspopup="true"
+        aria-haspopup={disabled ? undefined : true}
       >
         <MoreVert fontSize="small" color="primary" />
       </IconButton>
@@ -153,13 +153,13 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
         <DialogContentText>
           {confirmOperation === 'delete' && (
             <Alert severity="warning" variant="outlined">
-              {t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be deleted permanently.', values: { count: deletedCount - 1 } })}
+              {t_i18n('The main object and the {count} relationships/references linked to it will be deleted permanently.', { values: { count: deletedCount - 1 } })}
               <br />
               {t_i18n('This operation cannot be undone.')}
             </Alert>
           )}
           {confirmOperation === 'restore' && (
-            t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be restored.', values: { count: deletedCount - 1 } })
+            t_i18n('The main object and the {count} relationships/references linked to it will be restored.', { values: { count: deletedCount - 1 } })
           )}
         </DialogContentText>
         <DialogActions>

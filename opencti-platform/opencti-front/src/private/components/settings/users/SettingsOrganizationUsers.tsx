@@ -215,7 +215,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           <SettingsOrganizationUserCreation
             paginationOptions={queryPaginationOptions}
             organization={organization}
-            variant="standard"
+            variant="outlined"
           />
         )}
       >

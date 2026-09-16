@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { SearchIndexedFilesFile_node$data } from './__generated__/SearchIndexedFilesFile_node.graphql';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -251,6 +251,7 @@ const SearchIndexedFilesComponent = () => {
                   <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
                     <IconButton
                       onClick={() => window.open(entityLink, '_blank')}
+                      aria-label={t_i18n('Open the entity overview in a separated tab')}
                     >
                       <OpenInNewOutlined fontSize="medium" />
                     </IconButton>

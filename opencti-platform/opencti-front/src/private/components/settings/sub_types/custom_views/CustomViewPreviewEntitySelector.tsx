@@ -24,6 +24,9 @@ const customViewPreviewEntitySelectorQuery = graphql`
   }
 `;
 
+// FDS-WORKAROUND #43: kept on MUI Autocomplete — the library field exposes no
+// per-state tint. Remove when it does; see fds-migration/LIBRARY-FEEDBACK.md #43
+// and fds-migration/MIGRATION-DECISIONS.md#field-state-tint
 const IN_PREVIEW_SX_PROPS: SxProps = {
   '& .MuiOutlinedInput-root': {
     '& fieldset': {
