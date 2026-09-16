@@ -201,21 +201,6 @@ describe('httpPlatform: /health details behavior', () => {
     });
   });
 
-  it('should keep dependency states in the default authenticated success response', async () => {
-    const usageMetricsSpy = vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics');
-    const healthHandler = await setupHealthHandler();
-    const res = buildResponse();
-
-    await healthHandler?.({ query: { health_access_key: 'secret' } }, res);
-
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.send).toHaveBeenCalledWith({
-      status: 'success',
-      dependencies: allDependenciesUp,
-    });
-    expect(usageMetricsSpy).not.toHaveBeenCalled();
-  });
-
   it('should return null detailed metrics when collection is unavailable', async () => {
     vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: null, s3_used_size: null, queue_consumers: null });
     const healthHandler = await setupHealthHandler();

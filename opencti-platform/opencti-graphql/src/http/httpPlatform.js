@@ -591,7 +591,6 @@ const createApp = async (app, schema) => {
           const { initialized, isHealthy, failures, dependencies } = getPlatformHealthStatus();
           // Naming which dependency is down is disclosure, so it follows the same gate as the usage metrics.
           const withDetails = shouldIncludeHealthDetails(configAccessKey, req.query?.details);
-          const isPublicHealth = configAccessKey === 'public';
           if (!initialized) {
             res.status(503).send({ status: 'error', error: 'Health monitoring not initialized yet' });
           } else if (!isHealthy) {
@@ -600,7 +599,7 @@ const createApp = async (app, schema) => {
             const { es_used_size, s3_used_size, queue_consumers } = getPlatformUsageMetrics();
             res.status(200).send({ status: 'success', dependencies, es_used_size, s3_used_size, queue_consumers });
           } else {
-            res.status(200).send(isPublicHealth ? { status: 'success' } : { status: 'success', dependencies });
+            res.status(200).send({ status: 'success' });
           }
         } else {
           res.status(401).send({ status: 'unauthorized' });
