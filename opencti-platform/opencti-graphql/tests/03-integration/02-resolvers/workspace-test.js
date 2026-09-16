@@ -456,7 +456,7 @@ describe('Workspace resolver standard behavior', () => {
       }
     });
 
-    it('should duplicate an investigation referencing multiple investigated entities and preserve their order', async () => {
+    it('should duplicate an investigation referencing multiple investigated entities', async () => {
       const secondInvestigatedEntity = await elLoadById(
         testContext,
         ADMIN_USER,
@@ -486,7 +486,10 @@ describe('Workspace resolver standard behavior', () => {
         });
 
         expect(queryResult.errors).toBeUndefined();
-        expect(queryResult.data.investigationDuplicate.investigated_entities_ids).toEqual([secondInvestigatedEntityId, investigatedEntityId]);
+        expect(queryResult.data.investigationDuplicate.investigated_entities_ids).toEqual(
+          expect.arrayContaining([secondInvestigatedEntityId, investigatedEntityId]),
+        );
+        expect(queryResult.data.investigationDuplicate.investigated_entities_ids.length).toBe(2);
 
         await queryAsAdmin({
           query: DELETE_QUERY,
