@@ -344,6 +344,8 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   return workspaceId;
 };
 
+// TODO: Refactor dashboard duplication to load and validate the source by ID, as duplicateInvestigation does.
+// Preserve the legacy metadata input until a separate change addresses API compatibility.
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
