@@ -130,7 +130,7 @@ describe('platformHealthMetrics: getPlatformHealthStatus function', () => {
   });
 
   it('should expose every dependency state after a refresh', async () => {
-    vi.mocked(isEngineAlive).mockResolvedValue(true);
+    vi.mocked(isEngineAlive).mockResolvedValue(undefined);
     vi.mocked(isStorageAlive).mockRejectedValue(Error('Storage seems down'));
     vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
     vi.mocked(redisIsAlive).mockResolvedValue(true);
@@ -158,7 +158,7 @@ describe('platformHealthMetrics: startPlatformHealthMonitor function', () => {
   });
 
   it('should keep startup alive when the initial shared usage metrics read fails', async () => {
-    vi.mocked(isEngineAlive).mockResolvedValue(true);
+    vi.mocked(isEngineAlive).mockResolvedValue(undefined);
     vi.mocked(isStorageAlive).mockResolvedValue(true);
     vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
     vi.mocked(redisIsAlive).mockResolvedValue(true);
