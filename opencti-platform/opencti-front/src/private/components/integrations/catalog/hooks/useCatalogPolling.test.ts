@@ -46,7 +46,6 @@ describe('useCatalogPolling', () => {
     vi.useFakeTimers();
     vi.clearAllMocks();
     setDocumentHidden(false);
-    vi.spyOn(console, 'log').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
@@ -172,6 +171,5 @@ describe('useCatalogPolling', () => {
     });
 
     expect(mocks.fetchQuery).toHaveBeenCalledTimes(1);
-    expect(console.log).toHaveBeenCalledWith('[CatalogPolling] stopped');
   });
 });

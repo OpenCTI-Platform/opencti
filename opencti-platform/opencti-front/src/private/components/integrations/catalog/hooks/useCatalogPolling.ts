@@ -69,8 +69,13 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
         const result = await fetchQuery<IngestionConnectorsCatalogRevisionsQuery>(
           ingestionConnectorsCatalogRevisionsQuery,
           {},
-        ).toPromise();
-        const nextBaseline = toRevisionMap(result?.catalogsRevisions ?? []);
+        ).toPromise().catch(() => null);
+
+        if (!result) {
+          return;
+        }
+
+        const nextBaseline = toRevisionMap(result.catalogsRevisions ?? []);
 
         if (!baselineRef.current) {
           baselineRef.current = nextBaseline;
