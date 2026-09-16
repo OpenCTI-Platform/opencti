@@ -14,6 +14,7 @@ import Security from '../../../../utils/Security';
 import Tag from '@common/tag/Tag';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 
 type IngestionCatalogConnectorHeaderProps = {
   connector: IngestionConnector;
@@ -24,6 +25,7 @@ type IngestionCatalogConnectorHeaderProps = {
 const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onClickDeploy }: IngestionCatalogConnectorHeaderProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const canDeploy = canDeployConnector(connector);
 
   const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
 
@@ -94,15 +96,17 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
       </Stack>
 
       <div>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          {
-            isEnterpriseEdition ? (
-              <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
-            ) : (
-              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-            )
-          }
-        </Security>
+        {canDeploy && (
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {
+              isEnterpriseEdition ? (
+                <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+              ) : (
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              )
+            }
+          </Security>
+        )}
       </div>
     </Stack>
   );

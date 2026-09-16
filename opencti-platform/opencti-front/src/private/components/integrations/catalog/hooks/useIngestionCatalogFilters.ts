@@ -8,6 +8,10 @@ import { useFormatter } from '../../../../../components/i18n';
 
 export type CatalogSortMode = 'name' | 'deployed' | 'verified';
 
+export type ManagerSupportedFacet = 'managed' | 'unmanaged';
+
+export const CATALOG_MANAGER_SUPPORTED_FACETS: ManagerSupportedFacet[] = ['managed', 'unmanaged'];
+
 // Support origin of the item: verified contracts and built-in methods are
 // supported by Filigran, the rest by the community.
 export type CatalogStatusFacet = 'filigran' | 'community';
@@ -29,6 +33,7 @@ export interface CatalogFilterState {
   licenseTypes: string[];
   statuses: CatalogStatusFacet[];
   deployments: CatalogDeploymentFacet[];
+  managerSupported: ManagerSupportedFacet[];
 }
 
 export interface CatalogConnectorEntry {
@@ -49,6 +54,7 @@ export interface CatalogItem {
   solutionCategories: string[];
   licenseType: string | null;
   deploymentCount: number;
+  managerSupported?: boolean;
   connector?: CatalogConnectorEntry;
   builtIn?: BuiltInIntegrationDefinition;
 }
@@ -93,7 +99,19 @@ const matchesStatus = (item: CatalogItem, status: CatalogStatusFacet): boolean =
   return !item.verified;
 };
 
-type FacetGroup = 'types' | 'useCases' | 'solutionCategories' | 'licenseTypes' | 'statuses' | 'deployments';
+const matchesManagerSupported = (item: CatalogItem, managerSupported: ManagerSupportedFacet): boolean => {
+  if (managerSupported === 'managed') return item.managerSupported === true;
+  // Missing manager_supported metadata is treated as unmanaged so legacy
+  // contracts and built-in items stay in the same bucket.
+  return item.managerSupported !== true;
+};
+
+const matchesManagerSupportedFilters = (item: CatalogItem, managerSupportedFilters: ManagerSupportedFacet[]): boolean => {
+  if (managerSupportedFilters.length === 0) return true;
+  return managerSupportedFilters.some((managerSupported) => matchesManagerSupported(item, managerSupported));
+};
+
+type FacetGroup = 'types' | 'useCases' | 'solutionCategories' | 'licenseTypes' | 'statuses' | 'deployments' | 'managerSupported';
 
 const matchesFilters = (
   item: CatalogItem,
@@ -128,8 +146,14 @@ const matchesFilters = (
   if (skip !== 'deployments' && filters.deployments.length > 0 && !filters.deployments.includes(item.deployment)) {
     return false;
   }
+  if (skip !== 'managerSupported' && !matchesManagerSupportedFilters(item, filters.managerSupported)) {
+    return false;
+  }
   return true;
 };
+
+const parseManagerSupportedFromParams = (searchParams: URLSearchParams): ManagerSupportedFacet[] => parseListParam(searchParams.get('managerSupported'))
+  .filter((value): value is ManagerSupportedFacet => (CATALOG_MANAGER_SUPPORTED_FACETS as string[]).includes(value));
 
 const parseFiltersFromParams = (searchParams: URLSearchParams): CatalogFilterState => ({
   search: searchParams.get('search') || '',
@@ -141,6 +165,7 @@ const parseFiltersFromParams = (searchParams: URLSearchParams): CatalogFilterSta
     .filter((s): s is CatalogStatusFacet => (CATALOG_STATUS_FACETS as string[]).includes(s)),
   deployments: parseListParam(searchParams.get('deployment'))
     .filter((d): d is CatalogDeploymentFacet => (CATALOG_DEPLOYMENT_FACETS as string[]).includes(d)),
+  managerSupported: parseManagerSupportedFromParams(searchParams),
 });
 
 const parseSortFromParams = (searchParams: URLSearchParams): CatalogSortMode => {
@@ -182,6 +207,7 @@ const useIngestionCatalogFilters = ({
     if (filters.licenseTypes.length > 0) params.set('licenseType', [...filters.licenseTypes].sort().join(','));
     if (filters.statuses.length > 0) params.set('status', [...filters.statuses].sort().join(','));
     if (filters.deployments.length > 0) params.set('deployment', [...filters.deployments].sort().join(','));
+    if (filters.managerSupported.length > 0) params.set('managerSupported', [...filters.managerSupported].sort().join(','));
     if (sort !== 'name') params.set('sort', sort);
 
     const queryString = params.toString();
@@ -211,6 +237,7 @@ const useIngestionCatalogFilters = ({
         solutionCategories: [],
         licenseType: null,
         deploymentCount: builtIn.deploymentCount,
+        managerSupported: false,
         builtIn: builtIn.definition,
       });
     }
@@ -218,27 +245,26 @@ const useIngestionCatalogFilters = ({
       for (const contract of catalog.contracts) {
         try {
           const connector: IngestionConnector = JSON.parse(contract);
-          if (connector.manager_supported) {
-            parsedItems.push({
-              key: `${catalog.id}-${connector.slug}`,
-              title: connector.title,
-              searchText: [
-                connector.title,
-                connector.description,
-                connector.short_description,
-                ...(connector.use_cases ?? []),
-                ...(connector.solution_categories ?? []),
-              ].join(' ').toLowerCase(),
-              sectionKey: connector.container_type,
-              deployment: 'connector',
-              verified: connector.verified,
-              useCases: connector.use_cases ?? [],
-              solutionCategories: connector.solution_categories ?? [],
-              licenseType: connector.license_type ?? null,
-              deploymentCount: deploymentCounts.get(connector.container_image) ?? 0,
-              connector: { connector, catalogId: catalog.id },
-            });
-          }
+          parsedItems.push({
+            key: `${catalog.id}-${connector.slug}`,
+            title: connector.title,
+            searchText: [
+              connector.title,
+              connector.description,
+              connector.short_description,
+              ...(connector.use_cases ?? []),
+              ...(connector.solution_categories ?? []),
+            ].join(' ').toLowerCase(),
+            sectionKey: connector.container_type,
+            deployment: 'connector',
+            verified: connector.verified,
+            useCases: connector.use_cases ?? [],
+            solutionCategories: connector.solution_categories ?? [],
+            licenseType: connector.license_type ?? null,
+            deploymentCount: deploymentCounts.get(connector.container_image) ?? 0,
+            managerSupported: connector.manager_supported,
+            connector: { connector, catalogId: catalog.id },
+          });
         } catch (_e) {
           failures += 1;
         }
@@ -328,6 +354,21 @@ const useIngestionCatalogFilters = ({
     return counts;
   }, [items, filters]);
 
+  const managerSupportedCounts = useMemo(() => {
+    const counts: Record<ManagerSupportedFacet, number> = { managed: 0, unmanaged: 0 };
+    for (const item of items) {
+      if (matchesFilters(item, filters, 'managerSupported')) {
+        if (matchesManagerSupported(item, 'managed')) {
+          counts.managed += 1;
+        }
+        if (matchesManagerSupported(item, 'unmanaged')) {
+          counts.unmanaged += 1;
+        }
+      }
+    }
+    return counts;
+  }, [items, filters]);
+
   // All facet values present in the catalog, in display order.
   const availableTypes = useMemo(() => {
     const present = [...new Set(items.filter((item) => item.deployment === 'connector').map((item) => item.sectionKey))];
@@ -383,10 +424,11 @@ const useIngestionCatalogFilters = ({
     || filters.solutionCategories.length > 0
     || filters.licenseTypes.length > 0
     || filters.statuses.length > 0
-    || filters.deployments.length > 0;
+    || filters.deployments.length > 0
+    || filters.managerSupported.length > 0;
 
   const clearAllFilters = () => {
-    setFilters({ search: '', types: [], useCases: [], solutionCategories: [], licenseTypes: [], statuses: [], deployments: [] });
+    setFilters({ search: '', types: [], useCases: [], solutionCategories: [], licenseTypes: [], statuses: [], deployments: [], managerSupported: [] });
   };
 
   return {
@@ -410,6 +452,7 @@ const useIngestionCatalogFilters = ({
       licenseTypeCounts,
       statusCounts,
       deploymentCounts: deploymentCountsByFacet,
+      managerSupportedCounts,
     },
   };
 };
