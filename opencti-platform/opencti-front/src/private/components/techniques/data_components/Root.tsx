@@ -52,7 +52,6 @@ const dataComponentQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...DataComponent_dataComponent
-      ...DataComponentKnowledge_dataComponent
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -145,7 +144,7 @@ const RootDataComponent = () => {
                       <Route
                         path="/knowledge/*"
                         element={
-                          <DataComponentKnowledge data={dataComponent} />
+                          <DataComponentKnowledge />
                         }
                       />
                     )}

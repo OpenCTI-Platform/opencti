@@ -16,7 +16,7 @@ import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/Mal
 import { NoteCreationForm } from '../../analyses/notes/NoteCreation';
 import { OpinionCreationFormKnowledgeEditor, OpinionCreationFormKnowledgeParticipant } from '../../analyses/opinions/OpinionCreation';
 import { ReportCreationForm } from '../../analyses/reports/ReportCreation';
-import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/SecurityCoverageCreation';
+import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/security_coverage_creation/SecurityCoverageCreation';
 import { ChannelCreationForm } from '../../arsenal/channels/ChannelCreation';
 import { MalwareCreationForm } from '../../arsenal/malwares/MalwareCreation';
 import { ToolCreationForm } from '../../arsenal/tools/ToolCreation';
