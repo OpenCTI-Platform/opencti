@@ -188,6 +188,7 @@ const WorkspaceKebabMenu = ({ data }: WorkspaceKebabMenuProps) => {
             <Security needs={[INVESTIGATION_INUPDATE]}>
               <MenuItem onClick={handleOpenTurnToReportOrCaseContainer}>{t_i18n('Add to a container')}</MenuItem>
             </Security>
+            {/* TODO: In a separate sub-issue, use canView for duplication while retaining INVESTIGATION_INUPDATE. */}
             <Security needs={[INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
               <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate')}</MenuItem>
             </Security>

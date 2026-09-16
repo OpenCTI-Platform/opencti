@@ -119,6 +119,8 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
   const handleCloseEdit = () => setDisplayEdit(false);
 
   const { canManage, canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
+  // TODO: In the canView duplication sub-issue, keep this popover available to investigation viewers.
+  // Retain each action's access and capability checks when relaxing this guard.
   if (!canEdit && type !== 'dashboard') {
     return <></>;
   }
@@ -194,6 +196,7 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
         )}
         {type === 'investigation' && (
           <>
+            {/* TODO: In a separate sub-issue, use canView for duplication while retaining INVESTIGATION_INUPDATE. */}
             <Security needs={[INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
               <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate')}</MenuItem>
             </Security>
