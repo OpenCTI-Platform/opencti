@@ -18,6 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 
 const SEARCH_PARAMS = {
   OPEN_CONFIG: 'openConfig',
@@ -63,12 +64,13 @@ const IngestionCatalogConnectorComponent = ({
   const deploymentCount = connector
     ? (deploymentCounts.get(connector.container_image) ?? 0)
     : 0;
+  const canDeploy = connector ? canDeployConnector(connector) : false;
 
   useEffect(() => {
-    if (openConfig && contract && connector) {
+    if (openConfig && contract && connector && canDeploy) {
       onClickDeploy(connector, contract.catalog_id, hasActiveManagers, deploymentCount);
     }
-  }, [openConfig, contract]);
+  }, [openConfig, contract, canDeploy, connector, deploymentCount, hasActiveManagers, onClickDeploy]);
 
   if (!contract) return <ErrorNotFound />;
 

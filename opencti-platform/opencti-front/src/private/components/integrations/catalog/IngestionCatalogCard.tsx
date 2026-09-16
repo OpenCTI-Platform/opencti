@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import IngestionCatalogCardDeployButton from '@components/integrations/catalog/components/card/IngestionCatalogCardDeployButton';
 import ConnectorUseCases from '@components/integrations/catalog/components/card/usecases/ConnectorUseCases';
 import Tooltip from '@mui/material/Tooltip';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -98,6 +99,8 @@ const ConnectorActions = ({
   deploymentCount,
   onClickDeploy,
 }: ConnectorActionsProps) => {
+  const canDeploy = canDeployConnector(connector);
+
   return (
     <CardActions
       sx={{
@@ -110,27 +113,29 @@ const ConnectorActions = ({
       }}
     >
       <ConnectorUseCases useCases={connector.use_cases} />
-      <Stack
-        sx={{ marginLeft: '0!important' }}
-        direction="row"
-        gap={1}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          {isEnterpriseEdition ? (
-            <IngestionCatalogCardDeployButton
-              deploymentCount={deploymentCount}
-              deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
-              onClick={onClickDeploy}
-            />
-          ) : (
-            <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-              {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
-              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-            </Box>
-          )}
-        </Security>
-      </Stack>
+      {canDeploy && (
+        <Stack
+          sx={{ marginLeft: '0!important' }}
+          direction="row"
+          gap={1}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {isEnterpriseEdition ? (
+              <IngestionCatalogCardDeployButton
+                deploymentCount={deploymentCount}
+                deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
+                onClick={onClickDeploy}
+              />
+            ) : (
+              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              </Box>
+            )}
+          </Security>
+        </Stack>
+      )}
     </CardActions>
   );
 };
