@@ -134,7 +134,7 @@ In the SAML configuration form, under the **Security & Signing** section, fill i
 Note that for `Private key` and `Signing certificate` PEM, there is 2 way to use them:
 
 1. multiline: it must start by the `-----BEGIN` and ends with `-----END`, and keep the return character.
-Example (text is cut in the middle):
+Example (key truncated for brevity):
 ```
 -----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDnxI0CWT26SJzC
