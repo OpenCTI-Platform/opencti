@@ -215,7 +215,7 @@
     "globals": "17.12.0",
     "graphql-tag": "2.12.7",
     "license-checker-rseidelsohn": "5.0.1",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "typescript-eslint": "8.69.0",
     "vite": "8.2.2",
     "vitest": "5.0.0"
