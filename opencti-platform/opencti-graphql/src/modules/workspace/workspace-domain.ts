@@ -16,6 +16,7 @@ import type {
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
+  WorkspaceDuplicateInput,
   WorkspaceObjectsArgs,
 } from '../../generated/graphql';
 import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -343,26 +344,11 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   return workspaceId;
 };
 
-const duplicateDashboard = async (
-  context: AuthContext,
-  user: AuthUser,
-  source: BasicStoreEntityWorkspace,
-  name: string,
-) => {
-  if (!isUserHasCapability(user, 'EXPLORE_EXUPDATE')) {
-    throw ForbiddenAccess();
-  }
+export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  const workspaceToCreate = {
-    type: 'dashboard',
-    name,
-    manifest: source.manifest,
-    tags: source.tags,
-    description: source.description,
-    restricted_members: authorizedMembers,
-  };
+  const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
-  const sanitizeElement = { ...workspaceToCreate, manifest: undefined };
+  const sanitizeElement = { ...input, manifest: undefined };
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -374,12 +360,15 @@ const duplicateDashboard = async (
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
 
-const duplicateInvestigation = async (
+export const duplicateInvestigation = async (
   context: AuthContext,
   user: AuthUser,
-  source: BasicStoreEntityWorkspace,
-  name: string,
+  input: { id: string; name: string },
 ) => {
+  const source = await findById(context, user, input.id);
+  if (!source || source.type !== 'investigation') {
+    throw ForbiddenAccess();
+  }
   if (!isUserHasCapability(user, 'INVESTIGATION_INUPDATE')) {
     throw ForbiddenAccess();
   }
@@ -391,7 +380,7 @@ const duplicateInvestigation = async (
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const workspaceToCreate = {
     type: 'investigation',
-    name,
+    name: input.name,
     manifest: source.manifest,
     tags: source.tags,
     description: source.description,
@@ -409,22 +398,6 @@ const duplicateInvestigation = async (
     context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
-};
-
-export const duplicateWorkspace = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: { id: string; name: string },
-) => {
-  const source = await findById(context, user, input.id);
-  switch (source?.type) {
-    case 'dashboard':
-      return duplicateDashboard(context, user, source, input.name);
-    case 'investigation':
-      return duplicateInvestigation(context, user, source, input.name);
-    default:
-      throw ForbiddenAccess();
-  }
 };
 
 export const workspaceImportWidgetConfiguration = async (

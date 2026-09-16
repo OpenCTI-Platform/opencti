@@ -73,10 +73,59 @@ vi.mock('react-router', async (importOriginal) => {
 });
 
 describe('WorkspaceDuplicationDialog', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('preserves the dashboard metadata payload without a source ID', async () => {
+    const data = { name: 'Source dashboard', type: 'dashboard', description: 'Description', manifest: 'manifest' };
+    const handleCloseDuplicate = vi.fn();
+    const updater = vi.fn();
+    const { user } = testRender(
+      <WorkspaceDuplicationDialog
+        data={data as unknown as WorkspaceDuplicationDialogFragment$key}
+        displayDuplicate={true}
+        duplicating={false}
+        handleCloseDuplicate={handleCloseDuplicate}
+        setDuplicating={vi.fn()}
+        updater={updater}
+      />,
+    );
+    await user.clear(screen.getByRole('textbox'));
+    await user.type(screen.getByRole('textbox'), 'Copied dashboard');
+    await user.click(screen.getByRole('button', { name: 'Duplicate' }));
+    expect(mocks.commit.mock.calls[0][0].variables).toEqual({
+      input: { name: 'Copied dashboard', type: 'dashboard', description: 'Description', manifest: 'manifest' },
+    });
+    const store = {};
+    mocks.commit.mock.calls[0][0].updater(store);
+    expect(updater).toHaveBeenCalledWith(store, 'workspaceDuplicate');
+    mocks.commit.mock.calls[0][0].onCompleted({ workspaceDuplicate: { id: 'duplicated-id' } });
+    expect(handleCloseDuplicate).toHaveBeenCalledOnce();
+    testRender(mocks.notifySuccess.mock.calls[0][0]);
+    expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute('href', '/dashboard/workspaces/dashboards/duplicated-id');
+  });
+
+  it('preserves empty-string defaults for optional dashboard metadata', async () => {
+    const { user } = testRender(
+      <WorkspaceDuplicationDialog
+        data={{ name: 'Source dashboard', type: 'dashboard', description: null, manifest: null } as unknown as WorkspaceDuplicationDialogFragment$key}
+        displayDuplicate={true}
+        duplicating={false}
+        handleCloseDuplicate={vi.fn()}
+        setDuplicating={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Duplicate' }));
+    expect(mocks.commit.mock.calls[0][0].variables).toEqual({
+      input: { name: 'Source dashboard - copy', type: 'dashboard', description: '', manifest: '' },
+    });
+  });
+});
+
+describe('WorkspaceDuplicationDialog investigation flow', () => {
   const workspace = {
     id: 'workspace-id',
     name: 'Source workspace',
-    type: 'dashboard',
+    type: 'investigation',
   };
 
   const renderDialog = (overrides = {}) => {
@@ -99,18 +148,18 @@ describe('WorkspaceDuplicationDialog', () => {
     const { user, props } = renderDialog();
     const input = screen.getByRole('textbox');
     await user.clear(input);
-    await user.type(input, 'Copied dashboard');
+    await user.type(input, 'Copied investigation');
     await user.click(screen.getByRole('button', { name: 'Duplicate' }));
 
     expect(props.setDuplicating).toHaveBeenCalledWith(true);
     expect(mocks.commit).toHaveBeenCalledWith(expect.objectContaining({
       variables: {
         id: 'workspace-id',
-        name: 'Copied dashboard',
+        name: 'Copied investigation',
       },
     }));
     const mutation = mocks.commit.mock.calls[0][0];
-    mutation.onCompleted({ workspaceDuplicate: { id: 'duplicated-id' } }, null);
+    mutation.onCompleted({ investigationDuplicate: { id: 'duplicated-id' } }, null);
 
     expect(props.handleCloseDuplicate).toHaveBeenCalledOnce();
     expect(props.setDuplicating).toHaveBeenLastCalledWith(false);
@@ -130,9 +179,8 @@ describe('WorkspaceDuplicationDialog', () => {
     expect(props.handleCloseDuplicate).not.toHaveBeenCalled();
   });
 
-  it('shows investigation wording and skips the dashboard notification in paginated views', async () => {
+  it('shows investigation wording and skips the notification in paginated views', async () => {
     const { user, props } = renderDialog({
-      data: { ...workspace, type: 'investigation' },
       paginationOptions: { count: 10 },
     });
     expect(screen.getByRole('dialog', { name: 'Duplicate the investigation' })).toBeInTheDocument();
@@ -142,39 +190,31 @@ describe('WorkspaceDuplicationDialog', () => {
       variables: { id: 'workspace-id', name: 'Source workspace - copy' },
     }));
     const mutation = mocks.commit.mock.calls[0][0];
-    mutation.onCompleted({ workspaceDuplicate: { id: 'duplicated-investigation-id' } }, null);
+    mutation.onCompleted({ investigationDuplicate: { id: 'duplicated-investigation-id' } }, null);
 
     expect(props.handleCloseDuplicate).toHaveBeenCalledOnce();
     expect(mocks.notifySuccess).not.toHaveBeenCalled();
   });
 
-  it.each(['dashboard', 'investigation'])('links to the duplicated %s using its mutation response', async (type) => {
-    const { user } = renderDialog({ data: { ...workspace, type } });
+  it('links to the duplicated investigation using its mutation response', async () => {
+    const { user } = renderDialog();
     await user.click(screen.getByRole('button', { name: 'Duplicate' }));
 
-    mocks.commit.mock.calls[0][0].onCompleted({ workspaceDuplicate: { id: 'duplicated-id' } }, null);
+    mocks.commit.mock.calls[0][0].onCompleted({ investigationDuplicate: { id: 'duplicated-id' } }, null);
     testRender(mocks.notifySuccess.mock.calls[0][0]);
 
-    expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute('href', `/dashboard/workspaces/${type}s/duplicated-id`);
+    expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute('href', '/dashboard/workspaces/investigations/duplicated-id');
   });
 
-  it.each(['dashboard', 'investigation'])('forwards the updater for a %s duplication', async (type) => {
+  it('forwards the updater for an investigation duplication', async () => {
     const updater = vi.fn();
-    const { user } = renderDialog({ data: { ...workspace, type }, updater });
+    const { user } = renderDialog({ updater });
     await user.click(screen.getByRole('button', { name: 'Duplicate' }));
 
     const store = {};
     mocks.commit.mock.calls[0][0].updater(store);
 
-    expect(updater).toHaveBeenCalledWith(store);
-  });
-
-  it('does not duplicate an unsupported workspace type', async () => {
-    const { user } = renderDialog({ data: { ...workspace, type: 'unsupported' } });
-    const button = screen.getByRole('button', { name: 'Duplicate' });
-    expect(button).toBeDisabled();
-    await user.click(button);
-    expect(mocks.commit).not.toHaveBeenCalled();
+    expect(updater).toHaveBeenCalledWith(store, 'investigationDuplicate');
   });
 
   it('disables submission for an empty name and restores the source name on reopen', async () => {
@@ -194,6 +234,14 @@ describe('WorkspaceDuplicationDialog', () => {
   it('keeps submission disabled while another duplication is running', () => {
     renderDialog({ duplicating: true });
     expect(screen.getByRole('button', { name: 'Duplicate' })).toBeDisabled();
+  });
+
+  it('does not submit a mutation for an unsupported workspace type', async () => {
+    const { user } = renderDialog({ data: { ...workspace, type: 'unsupported' } });
+    const button = screen.getByRole('button', { name: 'Duplicate' });
+    expect(button).toBeDisabled();
+    await user.click(button);
+    expect(mocks.commit).not.toHaveBeenCalled();
   });
 
   it('updates the controlled name while editing', () => {
