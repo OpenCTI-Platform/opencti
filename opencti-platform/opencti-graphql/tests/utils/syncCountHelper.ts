@@ -48,7 +48,7 @@ testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
 testCreatedCounter['network-traffic'] = 1;
-testCreatedCounter.note = 5;
+testCreatedCounter.note = 6;
 // 1 in the dataset + 2 created by observedData-domain-test
 testCreatedCounter['observed-data'] = 3;
 testCreatedCounter.opinion = 5;
@@ -151,7 +151,7 @@ testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 13;
 testDeletedCounter.narrative = 1;
 testDeletedCounter['network-traffic'] = 1;
-testDeletedCounter.note = 4;
+testDeletedCounter.note = 5;
 testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-domain-test
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
