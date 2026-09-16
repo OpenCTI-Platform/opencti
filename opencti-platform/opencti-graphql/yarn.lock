@@ -5640,10 +5640,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"convert@npm:8.0.1":
-  version: 8.0.1
-  resolution: "convert@npm:8.0.1"
-  checksum: 10c0/6cb1c3c69090323f845ee5bf12569f9be5d770f89c8ad3d9ca83a3d471fe61d7fd852ff9a3795a4d658b6b99fdc21a1d018a4785627998db4d0b8551c6c543d9
+"convert@npm:8.0.2":
+  version: 8.0.2
+  resolution: "convert@npm:8.0.2"
+  checksum: 10c0/e369a6e9af5c47fd06ed83cda03f727a1f2b601e2c26423772bda7367f47a370ba8c79ebd250773eae0ebda0aff01fdd018f812bf88c86f7c10f911e7fe97203
   languageName: node
   linkType: hard
 
@@ -9941,7 +9941,7 @@ __metadata:
     compression: "npm:1.8.1"
     content-disposition: "npm:3.0.0"
     content-type: "npm:3.0.0"
-    convert: "npm:8.0.1"
+    convert: "npm:8.0.2"
     cors: "npm:2.8.6"
     csv-parse: "npm:7.0.2"
     dataloader: "npm:2.2.3"
