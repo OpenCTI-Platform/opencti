@@ -380,6 +380,7 @@ export const duplicateInvestigation = async (
     ids: source.investigated_entities_ids ?? [],
   });
   const authorizedMembers = initializeAuthorizedMembers([], user);
+  // Intentionally omit graph_data to avoid copying stale or inaccessible graph references.
   const workspaceToCreate = {
     type: 'investigation',
     name: input.name,
