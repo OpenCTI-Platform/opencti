@@ -38,7 +38,7 @@ import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import Divider from '@mui/material/Divider';
 import useHelper from 'src/utils/hooks/useHelper';
-import GlobalExportBundleDrawer from '../settings/experience/GlobarExportBundleDrawer';
+import GlobalExportBundleDrawer from '../settings/experience/GlobalExportBundleDrawer';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -211,7 +211,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       <Stack direction="row" gap={1.5} flexWrap="wrap" justifyContent="flex-end">
         {isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter}
       </Stack>
-      {isGrantedToParameters && featureFlagGlobalExport && (
+      {useGranted(['BYPASS']) && featureFlagGlobalExport && (
         <>
           <Divider sx={{ width: '100%' }} />
           <Button
