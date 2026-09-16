@@ -227,7 +227,7 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: (id) => id === 'software--s' });
     expect(plan.order).toEqual([]);
     expect(plan.parked).toEqual([]);
-    expect(plan.deferred).toEqual([{ intent: rel, reason: 'queued_producer' }]);
+    expect(plan.deferred).toEqual([{ intent: rel, reason: 'queued_producer', waitingOn: ['software--s'] }]);
     expect(plan.finalMissing).toEqual([]);
   });
 
@@ -258,14 +258,14 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
   it('soft member refs use the certainty rules without needing parkSoftRefs', () => {
     const entity = intentOf({ kind: 'entity', input: { name: 'M', createdBy: 'identity--i' }, candidateIds: ['malware--m'], referencedIds: ['identity--i'], memberRefIds: new Set(['identity--i']) });
     const plan = buildBatchPlan([entity], noResolve, new Set(), { queueHas: (id) => id === 'identity--i' });
-    expect(plan.deferred).toEqual([{ intent: entity, reason: 'queued_producer' }]);
+    expect(plan.deferred).toEqual([{ intent: entity, reason: 'queued_producer', waitingOn: ['identity--i'] }]);
   });
 
   it('defers with certainty when a missing EXTERNAL ref has its producer in the queue (s9.10.2)', () => {
     const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [] });
     const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
     const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: (id) => id === 'software--s' });
-    expect(plan.deferred).toEqual([{ intent: rel, reason: 'queued_producer' }]);
+    expect(plan.deferred).toEqual([{ intent: rel, reason: 'queued_producer', waitingOn: ['software--s'] }]);
     expect(plan.parked).toEqual([]); // before s9.10 this hard external ref parked
   });
 

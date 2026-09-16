@@ -37,6 +37,9 @@ export interface SequencerConfig {
   // reconciled (verdict 31 fix): the limit is a latency knob, not a data-loss knob; 0 =
   // strip-and-record immediately, no member parking at all.
   memberWaitLimit: number;
+  deferredWaitTtlMs: number;
+  deferredWaitMaxExpiries: number;
+  deferredReadmitRatio: number;
   origin: string;
 }
 
@@ -70,6 +73,14 @@ const readConfig = (): SequencerConfig => {
     resolveAhead: booleanConf('app:ingestion_sequencer:resolve_ahead', false),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
+    // B10 (2026-09-16): a deferral waiting on a queued producer is re-admitted when the
+    // producer lands or fails; the TTL bounds a missed wake (30 s >> the deepest queue wait
+    // measured, 7 s at prefetch 512), and after max expiries the intent applies as-is.
+    deferredWaitTtlMs: Number(conf.get('app:ingestion_sequencer:deferred_wait_ttl_ms') ?? 30000),
+    deferredWaitMaxExpiries: Number(conf.get('app:ingestion_sequencer:deferred_wait_max_expiries') ?? 3),
+    // share of the batch cap that lane re-admissions may take per cycle (the rest is kept
+    // for the queue drain); the queue also gets at least this share of the cap every cycle
+    deferredReadmitRatio: Number(conf.get('app:ingestion_sequencer:deferred_readmit_ratio') ?? 0.5),
     origin: conf.get('app:ingestion_sequencer:origin') ?? 'worker',
   };
 };

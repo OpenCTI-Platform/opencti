@@ -34,7 +34,8 @@ export type DeferReason = 'relation' | 'force_direct' | 'self_not_foldable' | 'h
 
 export interface BatchPlan {
   order: CoalesceGroup[];
-  deferred: { intent: SequencerIntent; reason: DeferReason }[];
+  // waitingOn (B10): the ids classified queued_producer, the deferral waits for their landing
+  deferred: { intent: SequencerIntent; reason: DeferReason; waitingOn?: string[] }[];
   parked: { intent: SequencerIntent; missing: string[] }[];
   // s9.8.2 "member dead": a ref declared in-bundle, absent everywhere after the bounded
   // wait: its producer failed, no retry can help. The loop rejects with final: true and
@@ -241,7 +242,7 @@ export const buildBatchPlan = (
   // absorbs into its step; a different norm appends a chain step when fold-safe, else
   // defers to the next batch (residual).
   const chainsByKey = new Map<string, Chain>();
-  const deferred: { intent: SequencerIntent; reason: DeferReason }[] = [];
+  const deferred: { intent: SequencerIntent; reason: DeferReason; waitingOn?: string[] }[] = [];
   let chainedSteps = 0;
   batch.forEach((intent) => {
     const key = canonicalKey(intent, resolveId);
@@ -304,6 +305,7 @@ export const buildBatchPlan = (
   const missingByGroup = new Map<number, string[]>();
   const groupClass = new Map<number, 'parked' | 'defer' | 'final'>();
   const deferReasonByGroup = new Map<number, DeferReason>();
+  const waitingByGroup = new Map<number, string[]>();
   groups.forEach((group, index) => {
     if (forceDirect.has(group.leader.id)) return; // expired: apply as-is, no deps, no parking
     // P2 chain edge: each step orders after its predecessor (its diff basis is the
@@ -320,6 +322,8 @@ export const buildBatchPlan = (
         defer = 'member_wait'; // dominates queued_producer: this pass counts an attempt
       } else if (cls === 'queued_producer') {
         defer = defer ?? 'queued_producer';
+        const waiting = waitingByGroup.get(index);
+        if (waiting) waiting.push(id); else waitingByGroup.set(index, [id]);
       } else if (cls === 'member_dead') {
         // s9.10.2: a dead SOFT ref is stripped (the container survives without the edge
         // that could never exist); a dead HARD ref (relation endpoint) still condemns.
@@ -403,8 +407,10 @@ export const buildBatchPlan = (
       group.absorbed.forEach((a) => finalMissing.push({ intent: a, missing }));
     } else if (cls === 'defer') {
       const reason = deferReasonByGroup.get(index) as DeferReason;
-      deferred.push({ intent: group.leader, reason });
-      group.absorbed.forEach((a) => deferred.push({ intent: a, reason }));
+      // only a queued_producer deferral waits; member_wait dominates and stays a bounded re-plan
+      const waitingOn = reason === 'queued_producer' ? waitingByGroup.get(index) : undefined;
+      deferred.push({ intent: group.leader, reason, waitingOn });
+      group.absorbed.forEach((a) => deferred.push({ intent: a, reason, waitingOn }));
     } else {
       parked.push({ intent: group.leader, missing });
       // absorbed follow their leader to parking: they resolve with the same application

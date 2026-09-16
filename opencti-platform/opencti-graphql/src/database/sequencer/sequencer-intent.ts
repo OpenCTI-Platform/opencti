@@ -33,6 +33,9 @@ export interface SequencerIntent {
   // s9.9 bounded wait: batches this intent was skipped in because its in-batch producer
   // failed at apply (mutated by the loop; at the limit it applies through today's path)
   failedProducerDefers?: number;
+  // B10 wait TTL expiries of this intent across its re-deferrals (mutated by the lanes; at
+  // the limit the intent applies as-is through today's path)
+  deferredWaitExpiries?: number;
   // verdict 31 fix: refs removed by the plan-time member-dead soft strip (s9.10.2),
   // with the input key they were removed from. Harvested by applyGroup after a
   // successful apply into the pending-refs store (s9.12.3): a "dead" member is usually

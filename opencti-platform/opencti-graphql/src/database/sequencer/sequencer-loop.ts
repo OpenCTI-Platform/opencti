@@ -39,6 +39,7 @@ import { flushSequencerEvents } from '../stream/stream-handler';
 import { lockResources } from '../../lock/master-lock';
 import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-buffer';
 import { SEQUENCER_CONFIG } from './sequencer-config';
+import { DeferredLanes } from './sequencer-lanes';
 import { sequencerMetrics } from './sequencer-metrics';
 import { SequencerQueue } from './sequencer-queue';
 import { buildIntent } from './sequencer-intent';
@@ -478,16 +479,17 @@ const runBatchLoop = async () => {
   // Lane form kept from the batchEwp-a diagnosis (2026-08-25): per-canonical-target FIFO,
   // at most ONE per target re-admitted per batch, so a backlog never recycles through
   // pre-resolve + plan every cycle.
-  const deferredByTarget = new Map<string, SequencerIntent[]>();
-  const deferToLane = (intent: SequencerIntent) => {
+  // B10 (2026-09-16): lanes with event-driven wake-up, see sequencer-lanes.ts. A deferral
+  // that waits on a queued (or deferred) producer takes no batch slot until the producer
+  // settles; re-admissions are capped per cycle and the queue always keeps its share.
+  const lanes = new DeferredLanes();
+  queue.setExternalLoad(() => ({ count: lanes.size(), bytes: lanes.sizeBytes() }));
+  const deferToLane = (intent: SequencerIntent, waitingOn?: string[]) => {
     const laneKey = canonicalKey(intent, (id) => sequencerIdentityMap.resolveInternalId(id));
-    const lane = deferredByTarget.get(laneKey);
-    if (lane) {
-      lane.push(intent);
-    } else {
-      deferredByTarget.set(laneKey, [intent]);
-    }
+    lanes.defer(laneKey, intent, waitingOn);
   };
+  const laneAdmitCap = Math.max(1, Math.floor(SEQUENCER_CONFIG.maxBatchSize * SEQUENCER_CONFIG.deferredReadmitRatio));
+  const settledIds = (intents: SequencerIntent[]): string[] => intents.flatMap((i) => i.candidateIds);
   let parked: ParkedIntent[] = [];
   let rootFailureSamples = 0; // s9.9.3 bounded root-attribution sampling
   // resolve-ahead: intents grabbed from the queue during the previous batch's commit,
@@ -499,12 +501,10 @@ const runBatchLoop = async () => {
     // parked set in a tight loop); then the parked intents (they re-plan each cycle) and a
     // drain of the queue.
     const batch: SequencerIntent[] = [];
-    for (const [laneKey, lane] of deferredByTarget) {
-      if (batch.length >= SEQUENCER_CONFIG.maxBatchSize) break;
-      const head = lane.shift();
-      if (head) batch.push(head);
-      if (lane.length === 0) deferredByTarget.delete(laneKey);
-    }
+    const admission = lanes.admit(laneAdmitCap);
+    admission.intents.forEach((intent) => batch.push(intent));
+    const exhaustedIds = new Set(admission.exhausted.map((i) => i.id));
+    if (admission.intents.length > 0) queue.notifySlot();
     carried.forEach((intent) => batch.push(intent));
     carried = [];
     if (batch.length === 0 && queue.size() === 0) {
@@ -532,7 +532,11 @@ const runBatchLoop = async () => {
         setTimeout(resolve, SEQUENCER_CONFIG.gatherWindowMs);
       });
     }
-    while (batch.length < SEQUENCER_CONFIG.maxBatchSize) {
+    // B10: whatever the lanes and the parked set assembled, the queue gets at least its
+    // share of the cap every cycle (a batch may exceed the cap by that share): the queued
+    // producers the waiters depend on are always reached
+    const drainTarget = Math.max(SEQUENCER_CONFIG.maxBatchSize, batch.length + laneAdmitCap);
+    while (batch.length < drainTarget) {
       const next = queue.tryPop();
       if (!next) break;
       // queue wait is recorded on FIRST entry into a batch only (deferred and parked
@@ -555,6 +559,7 @@ const runBatchLoop = async () => {
     parkedInBatch.forEach((p) => {
       if (p.deadline <= now) forceDirect.add(p.intent.id);
     });
+    exhaustedIds.forEach((id) => forceDirect.add(id)); // B10: waited too long, apply as-is
     // retry-gap option 1: creations to RETAIN (pending intents) instead of rejecting, settled
     // after the apply phase, once persisted (a chunk ack must never outrun the recorded debt)
     const deferrals: { intent: SequencerIntent; absorbed: SequencerIntent[]; missing: string[]; err: unknown }[] = [];
@@ -564,7 +569,7 @@ const runBatchLoop = async () => {
     const plan = buildBatchPlan(batch, (id) => sequencerIdentityMap.resolveInternalId(id), forceDirect, {
       parkSoftRefs: SEQUENCER_CONFIG.parkSoftRefs,
       memberWaitLimit: SEQUENCER_CONFIG.memberWaitLimit,
-      queueHas: (id) => queue.hasCandidate(id), // s9.8.3 queue index
+      queueHas: (id) => queue.hasCandidate(id) || lanes.hasResident(id), // s9.8.3 queue index + B10 lane residents
     });
     sequencerMetrics.phase('order', (Date.now() - t0) / 1000);
     if (plan.chainedSteps > 0) sequencerMetrics.chainSteps(plan.chainedSteps);
@@ -588,6 +593,7 @@ const runBatchLoop = async () => {
       }
       sequencerMetrics.intent('failed', intent.kind);
       intent.reject(err);
+      lanes.wake(intent.candidateIds, 'failed');
     });
     // s9.10.2: dead SOFT member refs were stripped in the plan; the intents apply without
     // them. Counted per stripped id; first occurrences sampled for live diagnosis.
@@ -602,8 +608,8 @@ const runBatchLoop = async () => {
         });
       }
     });
-    plan.deferred.forEach(({ intent, reason }) => {
-      deferToLane(intent);
+    plan.deferred.forEach(({ intent, reason, waitingOn }) => {
+      deferToLane(intent, waitingOn);
       sequencerMetrics.intent('deferred', intent.kind);
       sequencerMetrics.deferReason(reason);
       // P2 diagnosis: sample the first refusals with every predicate clause, so a live run
@@ -700,6 +706,7 @@ const runBatchLoop = async () => {
         sequencerMetrics.intent('failed', a.kind);
         a.reject(err);
       });
+      lanes.wake(settledIds([leader, ...absorbed]), 'failed'); // B10: waiters re-plan
     };
     const writtenIds: string[] = [];
     const strippedInputs: StrippedRefInput[] = [];
@@ -793,6 +800,8 @@ const runBatchLoop = async () => {
               sequencerMetrics.intent(retained ? 'retained' : 'failed', a.kind);
               a.reject(outcome);
             });
+            // B10: a retained or failed producer will not land in this run: its waiters re-plan
+            lanes.wake(settledIds([intent, ...absorbed]), 'failed');
           });
         }
         if (buffer.indexCalls.length > 0 || buffer.updateOps.length > 0) {
@@ -827,6 +836,8 @@ const runBatchLoop = async () => {
             a.resolve(result);
           });
         });
+        // B10: the committed ids wake the deferrals waiting on them (next cycle, in order)
+        pendings.forEach(({ leader, absorbed }) => lanes.wake(settledIds([leader, ...absorbed]), 'landed'));
       } catch (err) {
         // E5 v1: batch-level rejection. The workers retry through the full existence-checking
         // path (upsert), so nothing is replayed blindly; the flush already refreshed whatever
@@ -839,6 +850,7 @@ const runBatchLoop = async () => {
             sequencerMetrics.intent('failed', a.kind);
             a.reject(err);
           });
+          lanes.wake(settledIds([leader, ...absorbed]), 'failed');
         });
       }
     } finally {

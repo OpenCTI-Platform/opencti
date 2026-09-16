@@ -52,6 +52,12 @@ class SequencerMetrics {
 
   private batchDependsOnEdges: Histogram | null = null;
 
+  private lanesGauge: Gauge | null = null;
+
+  private lanesWaitingGauge: Gauge | null = null;
+
+  private laneEvents: Counter | null = null;
+
   private batchDistinctSources: Histogram | null = null;
 
   register() {
@@ -89,6 +95,18 @@ class SequencerMetrics {
     });
     // queue_max_bytes was blind (2026-09-15): the count bound is visible through the depth
     // gauge, the bytes bound was not. Deep prefetch rungs (past 128) need both.
+    this.lanesGauge = meter.createGauge('opencti_sequencer_deferred_lanes', {
+      valueType: ValueType.INT,
+      description: 'Deferred lanes (one FIFO per target) at batch assembly',
+    });
+    this.lanesWaitingGauge = meter.createGauge('opencti_sequencer_deferred_waiting', {
+      valueType: ValueType.INT,
+      description: 'Deferred intents waiting on a queued or deferred producer (B10 wake-up)',
+    });
+    this.laneEvents = meter.createCounter('opencti_sequencer_lane_events_total', {
+      valueType: ValueType.INT,
+      description: 'Deferred-lane events by kind (registered, woken_landed, woken_failed, expired, exhausted, readmitted, skipped)',
+    });
     this.queueBytesGauge = meter.createGauge('opencti_sequencer_queue_bytes', {
       valueType: ValueType.INT,
       description: 'Bytes of intents queued (queue_max_bytes is the bound)',
@@ -181,6 +199,15 @@ class SequencerMetrics {
 
   queueBytes(bytes: number) {
     this.queueBytesGauge?.record(bytes);
+  }
+
+  lanes(lanes: number, waiting: number) {
+    this.lanesGauge?.record(lanes);
+    this.lanesWaitingGauge?.record(waiting);
+  }
+
+  laneEvent(event: 'registered' | 'woken_landed' | 'woken_failed' | 'expired' | 'exhausted' | 'readmitted' | 'skipped', count = 1) {
+    this.laneEvents?.add(count, { event });
   }
 
   queueWait(seconds: number) {

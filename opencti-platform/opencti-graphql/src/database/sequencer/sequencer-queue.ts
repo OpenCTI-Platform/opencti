@@ -28,6 +28,20 @@ export class SequencerQueue {
   // to turn "missing in-bundle ref" into a certain one-batch wait instead of an error.
   private candidateIndex = new Map<string, number>();
 
+  // B10: intents parked in the loop's deferred lanes left the queue but have not settled;
+  // they count against the intake caps so the lanes are bounded by the same backpressure
+  private externalLoad: () => { count: number; bytes: number } = () => ({ count: 0, bytes: 0 });
+
+  setExternalLoad(fn: () => { count: number; bytes: number }) {
+    this.externalLoad = fn;
+  }
+
+  // wake one blocked submitter (a lane re-admission freed intake room)
+  notifySlot() {
+    const waiter = this.slotWaiters.shift();
+    if (waiter) waiter();
+  }
+
   size() {
     return this.count;
   }
@@ -52,8 +66,9 @@ export class SequencerQueue {
   }
 
   private hasCapacity(intent: SequencerIntent) {
-    if (this.count >= SEQUENCER_CONFIG.queueMaxIntents) return false;
-    if (this.count > 0 && this.bytes + intent.sizeBytes > SEQUENCER_CONFIG.queueMaxBytes) return false;
+    const external = this.externalLoad();
+    if (this.count + external.count >= SEQUENCER_CONFIG.queueMaxIntents) return false;
+    if (this.count > 0 && this.bytes + external.bytes + intent.sizeBytes > SEQUENCER_CONFIG.queueMaxBytes) return false;
     return true;
   }
 
