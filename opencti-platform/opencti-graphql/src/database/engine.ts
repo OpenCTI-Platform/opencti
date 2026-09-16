@@ -5188,12 +5188,14 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
 
 // Branches are kept separate: ELK types the metric as an array, OpenSearch as a string,
 // and their client signatures are not mutually assignable.
+// Scoped to `${ES_INDEX_PREFIX}*` (not '*'): on a cluster shared with other applications,
+// a plain wildcard would sum every index in the cluster, not just OpenCTI's own size.
 const fetchEngineUsedSize = async (): Promise<number> => {
   if (engine instanceof ElkClient) {
-    const engineIndicesStats = await engine.indices.stats({ index: '*', metric: ['store'], expand_wildcards: 'all' as any });
+    const engineIndicesStats = await engine.indices.stats({ index: `${ES_INDEX_PREFIX}*`, metric: ['store'], expand_wildcards: 'all' as any });
     return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
   }
-  const engineIndicesStats = await engine.indices.stats({ index: '*', metric: 'store', expand_wildcards: 'all' as any });
+  const engineIndicesStats = await engine.indices.stats({ index: `${ES_INDEX_PREFIX}*`, metric: 'store', expand_wildcards: 'all' as any });
   return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
 };
 

@@ -26,6 +26,7 @@ vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() 
 
 import conf from '../../../src/config/conf';
 import { getEngineUsedSize, searchEngineInit } from '../../../src/database/engine';
+import { ES_INDEX_PREFIX } from '../../../src/database/utils';
 
 const initEngine = async (selector: 'elk' | 'opensearch') => {
   const realGet = conf.get.bind(conf);
@@ -58,7 +59,7 @@ describe('engine: getEngineUsedSize', () => {
 
     await getEngineUsedSize();
 
-    expect(elkStats).toHaveBeenCalledWith(expect.objectContaining({ index: '*', metric: ['store'], expand_wildcards: 'all' }));
+    expect(elkStats).toHaveBeenCalledWith(expect.objectContaining({ index: `${ES_INDEX_PREFIX}*`, metric: ['store'], expand_wildcards: 'all' }));
   });
 
   it('should return the primary store size reported by OpenSearch', async () => {
@@ -76,7 +77,7 @@ describe('engine: getEngineUsedSize', () => {
 
     await getEngineUsedSize();
 
-    expect(openStats).toHaveBeenCalledWith(expect.objectContaining({ index: '*', metric: 'store', expand_wildcards: 'all' }));
+    expect(openStats).toHaveBeenCalledWith(expect.objectContaining({ index: `${ES_INDEX_PREFIX}*`, metric: 'store', expand_wildcards: 'all' }));
   });
 
   it('should return 0 when the engine reports no store size', async () => {
