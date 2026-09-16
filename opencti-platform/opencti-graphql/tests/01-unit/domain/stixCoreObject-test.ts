@@ -105,7 +105,7 @@ describe('batchInternalRels', () => {
     expect(result).toEqual(author);
   });
 
-  it('returns a restricted author with a valid standard_id when access is denied', async () => {
+  it('returns a restricted author with an obfuscated standard_id when access is denied', async () => {
     vi.spyOn(middlewareLoader, 'internalFindByIds').mockResolvedValue({ [author.internal_id]: author } as never);
     vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(false);
 
@@ -113,12 +113,13 @@ describe('batchInternalRels', () => {
     const [result] = await batchInternalRels(mockContext, mockUser, [{ element, definition: createdByDefinition }]);
 
     expect(result.name).toBe('Restricted');
-    // The regression from issue #18026: standard_id must stay the real STIX id,
-    // not the literal 'Restricted' string.
-    expect(result.standard_id).toBe(author.standard_id);
+    // standard_id must stay obfuscated: pycti drops restricted createdBy refs
+    // entirely from STIX exports, so exposing the real id here would only leak
+    // the entity's identity to a user with no access to it.
+    expect(result.standard_id).toBe('Restricted');
   });
 
-  it('restricts individual entries within a multiple ref while keeping valid standard_ids', async () => {
+  it('restricts individual entries within a multiple ref while keeping standard_id obfuscated', async () => {
     const secondAuthor = {
       ...author,
       id: 'org--internal-id-2',
@@ -142,7 +143,7 @@ describe('batchInternalRels', () => {
     const visible = result.find((e: any) => e.internal_id === secondAuthor.internal_id);
 
     expect(restricted.name).toBe('Restricted');
-    expect(restricted.standard_id).toBe(author.standard_id);
+    expect(restricted.standard_id).toBe('Restricted');
     expect(visible).toEqual(secondAuthor);
   });
 });

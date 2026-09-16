@@ -112,7 +112,7 @@ describe('convertAggregateDistributions via distributionEntities (field=creator_
     expect(result[0].entity).toBeNull();
   });
 
-  it('returns a restricted entity with a valid standard_id when access is denied', async () => {
+  it('returns a restricted entity with an obfuscated standard_id when access is denied', async () => {
     vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(false);
 
     vi.mocked(engine.elAggregationCount).mockResolvedValue([
@@ -134,9 +134,9 @@ describe('convertAggregateDistributions via distributionEntities (field=creator_
     } as any);
 
     expect(result[0].entity?.name).toBe('Restricted');
-    // standard_id must remain the real one: it's not sensitive content and must
-    // stay a valid STIX id for downstream consumers (e.g. STIX bundle export).
-    expect((result[0].entity as any)?.standard_id).toBe(entity.standard_id);
+    // standard_id must stay obfuscated: exposing the real id would leak the
+    // entity's identity to a user who has no access to it.
+    expect((result[0].entity as any)?.standard_id).toBe('Restricted');
   });
 });
 

@@ -42,16 +42,15 @@ import { buildRestrictedEntity } from '../../../src/database/middleware';
 // https://github.com/OpenCTI-Platform/opencti/issues/18026
 //
 // When a Sector's created_by_ref (author Organization) is TLP-restricted for the
-// requesting user, pycti's get_stix_bundle_or_object_from_entity_id produces an
-// invalid STIX 2.1 bundle: the redacted author identity has id: "Restricted"
+// requesting user, pycti's get_stix_bundle_or_object_from_entity_id produced an
+// invalid STIX 2.1 bundle: the redacted author identity had id: "Restricted"
 // instead of a valid `identity--<uuid>` STIX id.
 //
-// The GraphQL "createdBy" resolver (batchInternalRels in
-// src/domain/stixCoreObject.js) returns buildRestrictedEntity(resolve) whenever
-// the user cannot access the author entity. pycti later maps this entity's
-// GraphQL "standard_id" field directly into the exported STIX object's "id"
-// (and into created_by_ref on the child entity), so standard_id must remain a
-// valid STIX identifier on the restricted entity.
+// The fix lives in pycti (prepare_export/_is_restricted_identity), which now
+// drops the restricted createdBy ref and identity object from the export
+// entirely instead of needing a valid standard_id here. standard_id must stay
+// fully obfuscated on this backend entity to avoid leaking the real internal
+// identifier to a user who has no access to it.
 
 describe('buildRestrictedEntity (issue #18026)', () => {
   const restrictedOrganization = {
@@ -66,14 +65,10 @@ describe('buildRestrictedEntity (issue #18026)', () => {
     representative: { main: 'Restricted Corp', secondary: '' },
   };
 
-  it('keeps a valid STIX standard_id on the restricted entity', () => {
+  it('does not leak the real standard_id on the restricted entity', () => {
     const restricted = buildRestrictedEntity(restrictedOrganization as any);
 
-    // This is the assertion that fails on the buggy implementation: standard_id
-    // gets genericized to the literal string 'Restricted', which is not a valid
-    // STIX 2.1 identifier and later ends up as created_by_ref / id in the bundle.
-    expect(restricted.standard_id).toBe(restrictedOrganization.standard_id);
-    expect(restricted.standard_id).toMatch(/^identity--[0-9a-f-]{36}$/);
+    expect(restricted.standard_id).toBe('Restricted');
   });
 
   it('still obfuscates sensitive attribute values', () => {
