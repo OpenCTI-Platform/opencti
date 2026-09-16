@@ -1,19 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildHealthFailures, type DependencyStatus, getPlatformUsageMetrics, type HealthDependency, parseCachedUsageMetrics, syncUsageMetrics } from '../../../src/telemetry/platformHealthMetrics';
-import { lockResource, redisGetPlatformUsageMetrics, redisSetPlatformUsageMetrics } from '../../../src/database/redis';
-import { getEngineUsedSize } from '../../../src/database/engine';
-import { getStorageUsedSize } from '../../../src/database/raw-file-storage';
-import { getQueueConsumersByType } from '../../../src/database/rabbitmq';
+import { adoptSharedUsageMetrics, buildHealthFailures, type DependencyStatus, getPlatformUsageMetrics, type HealthDependency, parseCachedUsageMetrics } from '../../../src/telemetry/platformHealthMetrics';
+import { redisGetPlatformUsageMetrics } from '../../../src/database/redis';
 
 vi.mock('../../../src/database/redis', () => ({
-  lockResource: vi.fn(),
   redisGetPlatformUsageMetrics: vi.fn(),
-  redisSetPlatformUsageMetrics: vi.fn(),
   redisIsAlive: vi.fn(),
 }));
-vi.mock('../../../src/database/engine', () => ({ getEngineUsedSize: vi.fn(), isEngineAlive: vi.fn() }));
-vi.mock('../../../src/database/raw-file-storage', () => ({ getStorageUsedSize: vi.fn(), isStorageAlive: vi.fn() }));
-vi.mock('../../../src/database/rabbitmq', () => ({ getQueueConsumersByType: vi.fn(), rabbitMQIsAlive: vi.fn() }));
+vi.mock('../../../src/database/engine', () => ({ isEngineAlive: vi.fn() }));
+vi.mock('../../../src/database/raw-file-storage', () => ({ isStorageAlive: vi.fn() }));
+vi.mock('../../../src/database/rabbitmq', () => ({ rabbitMQIsAlive: vi.fn() }));
 
 const buildStatuses = (overrides: Partial<Record<HealthDependency, DependencyStatus>> = {}): Record<HealthDependency, DependencyStatus> => {
   const alive: DependencyStatus = { isAlive: true, error: null, checkedAt: 1 };
@@ -88,55 +83,38 @@ describe('platformHealthMetrics: parseCachedUsageMetrics function', () => {
   });
 });
 
-describe('platformHealthMetrics: syncUsageMetrics function', () => {
-  const collected = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
-  const unlock = vi.fn();
+describe('platformHealthMetrics: adoptSharedUsageMetrics function', () => {
+  const shared = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(lockResource).mockResolvedValue({ unlock } as never);
-    vi.mocked(getEngineUsedSize).mockResolvedValue(collected.es_used_size);
-    vi.mocked(getStorageUsedSize).mockResolvedValue(collected.s3_used_size);
-    vi.mocked(getQueueConsumersByType).mockResolvedValue(collected.queue_consumers);
   });
 
-  it('should adopt the value collected by another node instead of recomputing it', async () => {
-    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(collected);
+  it('should adopt the value shared by the manager through Redis', async () => {
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
 
-    await syncUsageMetrics();
+    await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual(collected);
-    expect(lockResource).not.toHaveBeenCalled();
-    expect(getEngineUsedSize).not.toHaveBeenCalled();
-    expect(getStorageUsedSize).not.toHaveBeenCalled();
+    expect(getPlatformUsageMetrics()).toEqual(shared);
   });
 
-  it('should collect and share the value when no other node did it', async () => {
+  it('should keep the previous value when nothing has been published yet', async () => {
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
+    await adoptSharedUsageMetrics();
+
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
+    await adoptSharedUsageMetrics();
 
-    await syncUsageMetrics();
-
-    expect(getPlatformUsageMetrics()).toEqual(collected);
-    expect(redisSetPlatformUsageMetrics).toHaveBeenCalledWith(collected, 300);
-    expect(unlock).toHaveBeenCalled();
+    expect(getPlatformUsageMetrics()).toEqual(shared);
   });
 
-  it('should not collect when another node is already collecting', async () => {
-    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
-    vi.mocked(lockResource).mockRejectedValue(new Error('Lock already taken'));
+  it('should keep the previous value when the published payload is invalid', async () => {
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
+    await adoptSharedUsageMetrics();
 
-    await syncUsageMetrics();
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue({ es_used_size: 'nope' });
+    await adoptSharedUsageMetrics();
 
-    expect(getEngineUsedSize).not.toHaveBeenCalled();
-    expect(getStorageUsedSize).not.toHaveBeenCalled();
-    expect(redisSetPlatformUsageMetrics).not.toHaveBeenCalled();
-  });
-
-  it('should release the lock when sharing the collected value fails', async () => {
-    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
-    vi.mocked(redisSetPlatformUsageMetrics).mockRejectedValue(new Error('Redis seems down'));
-
-    await expect(syncUsageMetrics()).rejects.toThrow('Redis seems down');
-    expect(unlock).toHaveBeenCalled();
+    expect(getPlatformUsageMetrics()).toEqual(shared);
   });
 });
