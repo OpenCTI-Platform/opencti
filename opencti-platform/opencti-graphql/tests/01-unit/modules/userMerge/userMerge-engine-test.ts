@@ -22,6 +22,12 @@ const plan = (handler: string, count: number): UserMergeHandlerPlan => ({
   alerts: [],
 });
 
+const blockingPlan = (handler: string): UserMergeHandlerPlan => ({
+  handler,
+  changes: [{ register_row_id: 'user.password', entity_type: 'User', count: 1, exact: true }],
+  alerts: [{ register_row_id: 'user.password', kind: 'exposure', message: 'exposure widens', blocking: true }],
+});
+
 const mockHandler = (identifier: string, overrides: Partial<UserMergeHandler> = {}): UserMergeHandler => ({
   identifier,
   covers: ['user.password'],
@@ -32,11 +38,11 @@ const mockHandler = (identifier: string, overrides: Partial<UserMergeHandler> = 
   ...overrides,
 });
 
-const execute = (dryRun: boolean) => executeUserMerge(
+const execute = (dryRun: boolean, acknowledgeExposureChange = false) => executeUserMerge(
   {} as never,
   'source-id',
   'target-id',
-  { dryRun, rightsStrategy: UserMergeRightsStrategy.Strict },
+  { dryRun, rightsStrategy: UserMergeRightsStrategy.Strict, acknowledgeExposureChange },
 );
 
 describe('userMerge engine', () => {
@@ -134,5 +140,29 @@ describe('userMerge engine', () => {
     const result = await execute(false);
     expect(result.status).toEqual(UserMergeStatus.Success);
     expect(result.report?.handlers).toEqual([]);
+  });
+
+  it('should report a blocking alert in dry mode instead of failing', async () => {
+    registerUserMergeHandler(mockHandler('handler-a', { compute: async () => blockingPlan('handler-a') }));
+    const result = await execute(true);
+    expect(result.status).toEqual(UserMergeStatus.Success);
+    expect(result.report?.handlers[0].alerts[0].blocking).toEqual(true);
+  });
+
+  it('should refuse to write when a blocking alert is not acknowledged', async () => {
+    const apply = vi.fn(async () => 3);
+    registerUserMergeHandler(mockHandler('handler-a', { compute: async () => blockingPlan('handler-a'), apply }));
+    const result = await execute(false);
+    expect(result.status).toEqual(UserMergeStatus.Failed);
+    expect(result.message).toContain('unacknowledged');
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it('should write when the blocking alert is acknowledged', async () => {
+    const apply = vi.fn(async () => 3);
+    registerUserMergeHandler(mockHandler('handler-a', { compute: async () => blockingPlan('handler-a'), apply }));
+    const result = await execute(false, true);
+    expect(result.status).toEqual(UserMergeStatus.Success);
+    expect(apply).toHaveBeenCalled();
   });
 });
