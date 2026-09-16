@@ -15,6 +15,12 @@ vi.mock('../../../../src/modules/dataSharing/dataSharing-utils', () => ({
 vi.mock('../../../../src/modules/dataSharing/taxiiCollection-domain', () => ({
   findById: vi.fn(),
 }));
+vi.mock('../../../../src/modules/dataSharing/feed-domain', () => ({
+  findById: vi.fn(),
+}));
+vi.mock('../../../../src/http/httpServer-draft', () => ({
+  checkDraftInContext: vi.fn(),
+}));
 vi.mock('../../../../src/utils/access', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/utils/access')>();
   return {
@@ -50,8 +56,11 @@ import { findById as findTaxiiCollection } from '../../../../src/modules/dataSha
 import { authenticate, authenticateForPublic, sendEventWithFilteredObjectRefs } from '../../../../src/graphql/sseMiddleware.js';
 import { elFindByIds } from '../../../../src/database/engine';
 // eslint-disable-next-line import/extensions
-import { extractUserAndCollection } from '../../../../src/http/httpTaxii.js';
+import { extractUserAndCollection, checkAuthenticationFromRequest } from '../../../../src/http/httpTaxii.js';
 import { resolveUserForFeed } from '../../../../src/http/httpRollingFeed.js';
+import initHttpRollingFeeds from '../../../../src/http/httpRollingFeed.js';
+import { findById as findFeedById } from '../../../../src/modules/dataSharing/feed-domain';
+import { checkDraftInContext } from '../../../../src/http/httpServer-draft';
 import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -472,5 +481,154 @@ describe('resolveUserForFeed helper', () => {
 
     expect(resolvePublicUser).toHaveBeenCalledWith(context, 'public-id');
     expect(result).toEqual({ id: 'public-user' });
+  });
+});
+
+// ─── draft-context authorization regression (security fix, non-GraphQL routes) ──
+// These routes read `context.draft_context` (set from the `opencti-draft-id`
+// header) to overlay draft-scoped data, but historically only the GraphQL
+// context enforced draft membership via `checkDraftInContext`. Each route
+// below must call it and must abort — without touching feed/collection/stream
+// data — the moment it rejects.
+
+describe('checkAuthenticationFromRequest (TAXII) draft authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('rejects when the caller is not authorized for the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { id: 'user-b', capabilities: [] },
+      draft_context: 'restricted-draft',
+    } as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Draft restricted-draft cannot be found'));
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+
+    await expect(checkAuthenticationFromRequest(req, res)).rejects.toThrow('Draft restricted-draft cannot be found');
+    expect(checkDraftInContext).toHaveBeenCalled();
+  });
+
+  it('returns the context when the draft check passes', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { id: 'user-a', capabilities: [] },
+      draft_context: 'own-draft',
+    } as any);
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+
+    const context = await checkAuthenticationFromRequest(req, res);
+
+    expect(context.user?.id).toBe('user-a');
+  });
+});
+
+describe('extractUserAndCollection (TAXII) draft authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('does not return a private collection when the caller cannot access the requested draft', async () => {
+    vi.mocked(findTaxiiCollection).mockResolvedValue({ ...MOCK_TAXII_COLLECTION, taxii_public: false } as any);
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { id: 'user-b', capabilities: [] },
+      draft_context: 'restricted-draft',
+    } as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Draft restricted-draft cannot be found'));
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+
+    await expect(extractUserAndCollection(req, res, 'taxii-1')).rejects.toThrow('Draft restricted-draft cannot be found');
+  });
+});
+
+describe('rolling feed route (httpRollingFeed) draft authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const captureFeedHandler = () => {
+    let handler: any;
+    const fakeApp = { get: (_path: string, h: any) => {
+      handler = h;
+    } };
+    initHttpRollingFeeds(fakeApp as any);
+    return handler;
+  };
+
+  it('does not stream feed content when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { id: 'user-b', capabilities: [] },
+      draft_context: 'restricted-draft',
+    } as any);
+    vi.mocked(findFeedById).mockResolvedValue({
+      feed_public: true,
+      feed_types: [],
+      feed_attributes: [],
+      separator: ',',
+      include_header: false,
+      rolling_time: 5,
+    } as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Draft restricted-draft cannot be found'));
+
+    const handler = captureFeedHandler();
+    const req = { params: { id: 'feed-1' }, headers: {} };
+    const res = { set: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn(), write: vi.fn() };
+
+    await handler(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalled();
+    expect(res.write).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+});
+
+describe('authenticate / authenticateForPublic (SSE) draft authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('authenticate: does not call next() when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { id: 'user-b', capabilities: [], otp_activated: false },
+      draft_context: 'restricted-draft',
+      otp_mandatory: false,
+    } as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Draft restricted-draft cannot be found'));
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(checkDraftInContext).toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+  });
+
+  it('authenticateForPublic: does not resolve a stream user when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { id: 'user-b', capabilities: [] },
+      draft_context: 'restricted-draft',
+    } as any);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([
+      { ...MOCK_STREAM_COLLECTION, stream_public: false, restricted_members: [] },
+    ] as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Draft restricted-draft cannot be found'));
+
+    const req = makeMockReq({ id: 'stream-1' });
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticateForPublic(req, res, next);
+
+    expect(checkDraftInContext).toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
   });
 });
