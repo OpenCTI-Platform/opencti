@@ -780,7 +780,6 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -961,7 +960,7 @@ export const distributionRelations = async (
     relationship_type: string[];
     dateAttribute?: string | null;
     onlyInferred?: boolean; } & RelationFilters<BasicStoreCommon>,
-) => {
+): ReturnType<typeof convertAggregateDistributions> => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
@@ -2924,7 +2923,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
-      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+      const shouldUpdateSecurityCoverage = data.updatedInstance[RELATION_COVERED]
+        && data.updatedInstance.entity_type !== ENTITY_TYPE_SECURITY_COVERAGE;
+      if (isRefUpdate && shouldUpdateSecurityCoverage) {
         const { element: securityCoverage } = await updateAttribute(
           context,
           user,
@@ -4062,7 +4063,7 @@ export const createEntity = async (
   user: AuthUser,
   input: Record<string, any>,
   type: string,
-  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+  opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
@@ -4073,7 +4074,7 @@ export const createEntity = async (
     if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null) { // upsert
+  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;

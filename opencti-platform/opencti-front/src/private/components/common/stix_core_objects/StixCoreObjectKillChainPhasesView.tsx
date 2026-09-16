@@ -22,13 +22,13 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StixCoreObjectKillChainPhasesViewProps {
-  killChainPhases: ReadonlyArray<{
+  killChainPhases?: ReadonlyArray<{
     entity_type: string;
     id: string;
     kill_chain_name: string;
     phase_name: string;
     x_opencti_order?: number | null;
-  }>;
+  }> | null;
   firstLine?: boolean;
   displayIcon?: boolean;
 }
@@ -48,7 +48,7 @@ const StixCoreObjectKillChainPhasesView = ({
       </Label>
       <FieldOrEmpty source={killChainPhases}>
         <List sx={{ py: 0 }}>
-          {killChainPhases.map((killChainPhase) => {
+          {(killChainPhases ?? []).map((killChainPhase) => {
             return (
               <ListItem
                 key={killChainPhase.phase_name}
