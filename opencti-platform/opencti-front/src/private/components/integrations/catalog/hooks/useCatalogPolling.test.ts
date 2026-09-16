@@ -65,6 +65,12 @@ describe('useCatalogPolling', () => {
       await flushPromises();
     });
 
+    expect(mocks.fetchQuery).toHaveBeenCalledWith(
+      expect.anything(),
+      {},
+      { fetchPolicy: 'network-only' },
+    );
+
     expect(onChanged).not.toHaveBeenCalled();
 
     await act(async () => {

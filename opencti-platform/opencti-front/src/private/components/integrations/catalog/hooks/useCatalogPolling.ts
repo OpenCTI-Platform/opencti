@@ -69,6 +69,7 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
         const result = await fetchQuery<IngestionConnectorsCatalogRevisionsQuery>(
           ingestionConnectorsCatalogRevisionsQuery,
           {},
+          { fetchPolicy: 'network-only' },
         ).toPromise().catch(() => null);
 
         if (!result) {
