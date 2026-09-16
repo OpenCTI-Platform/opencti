@@ -199,6 +199,7 @@ import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './en
 import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
 import { isEsScriptFilterEnabled } from './engine-config';
 import { AbortError } from 'node-fetch';
+import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1528,6 +1529,7 @@ const REL_DEFAULT_FETCH = [
   `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
   // DEFAULT (LOW VOLUME)
   `${REL_INDEX_PREFIX}${RELATION_COVERED}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_RESULT_OF}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,

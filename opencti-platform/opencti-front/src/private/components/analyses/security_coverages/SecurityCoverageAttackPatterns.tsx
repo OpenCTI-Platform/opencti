@@ -1,22 +1,21 @@
 import Typography from '@mui/material/Typography';
-import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { ViewListOutlined, ViewModuleOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { ButtonGroup, ButtonGroupItem, IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { useEffect, useMemo, useState } from 'react';
+import { createFragmentContainer, graphql, useFragment } from 'react-relay';
+import ListItem from '@mui/material/ListItem';
 // fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
 import Tooltip from '@mui/material/Tooltip';
-import { ButtonGroup, ButtonGroupItem, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
-import React, { useEffect, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
 import { Box, ListItemButton, Stack } from '@mui/material';
 import { Link } from 'react-router';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { useTheme } from '@mui/styles';
+import { InformationOutline } from 'mdi-material-ui';
+import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
 import { SecurityCoverageAttackPatternsKillChainPhasesFragment$key } from './__generated__/SecurityCoverageAttackPatternsKillChainPhasesFragment.graphql';
-import { SecurityCoverageAttackPatternsFragment$key } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
+import { SecurityCoverageAttackPatternsFragment$data } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
@@ -25,38 +24,10 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
+import Alert from '../../../../components/Alert';
+import { dedupeCoveredEntities } from './securityCoverageAggregation';
 
-const securityCoverageAttackPatternsFragment = graphql`
-  fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
-    id
-    attPatterns: stixCoreRelationships(
-        orderBy: created_at
-        orderMode: asc
-        relationship_type: "has-covered"
-        toTypes: ["Attack-Pattern"]
-        first: 25
-    ) @connection(key: "Pagination_attPatterns") {
-        edges {
-            node {
-                id
-                coverage_information {
-                    coverage_name
-                    coverage_score
-                }
-                to {
-                    ... on AttackPattern {
-                        id
-                        parent_types
-                        name
-                        description
-                    }
-                }
-            }
-        }
-    }
-    ...SecurityCoverageAttackPatternsMatrix_securityCoverage
-  }
-`;
+const MAX_ATTACK_PATTERNS = 5000;
 
 const securityCoverageKillChainPhasesFragment = graphql`
   fragment SecurityCoverageAttackPatternsKillChainPhasesFragment on Query {
@@ -72,35 +43,29 @@ const securityCoverageKillChainPhasesFragment = graphql`
   }
 `;
 
-interface SecurityCoverageAttackPatternsProps {
-  data: SecurityCoverageAttackPatternsFragment$key;
-  dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
-}
-
 // The library item declares a 16x16 glyph.
 const GLYPH = { fontSize: 16 };
 
-const SecurityCoverageAttackPatterns = ({
-  data,
+interface SecurityCoverageAttackPatternsProps {
+  securityCoverage: SecurityCoverageAttackPatternsFragment$data;
+  dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
+}
+
+const SecurityCoverageAttackPatternsComponent = ({
+  securityCoverage,
   dataKillChains,
 }: SecurityCoverageAttackPatternsProps) => {
   const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'matrix' | 'lines'>('matrix');
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
+  const [isModeOnlyActive, setIsModeOnlyActive] = useState(false);
   const theme = useTheme<Theme>();
-  const paginationOptions = {
-    orderBy: 'created_at',
-    orderMode: 'asc',
-    relationship_type: 'has-covered',
-    toTypes: ['Attack-Pattern'],
-  };
-  const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
-  const handleOnCreate = () => {
-    setTargetEntities([]);
-  };
-  const securityCoverage = useFragment(securityCoverageAttackPatternsFragment, data);
   const killChainsData = useFragment(securityCoverageKillChainPhasesFragment, dataKillChains);
+  const dedupedAttPatterns = useMemo(
+    () => dedupeCoveredEntities(securityCoverage.attPatterns?.entities ?? []),
+    [securityCoverage.attPatterns?.entities],
+  );
 
   // Extract unique kill chains from all attack patterns
   const killChainsSet = new Set<string>();
@@ -131,23 +96,36 @@ const SecurityCoverageAttackPatterns = ({
 
   return (
     <Card
-      title={t_i18n('Attack patterns coverage')}
-      action={(
+      title={(
         <Stack direction="row" spacing={1} alignItems="center">
-          <StixCoreRelationshipCreationFromEntity
-            entityId={securityCoverage.id}
-            objectId={securityCoverage.id}
-            connectionKey="Pagination_attPatterns"
-            targetEntities={targetEntities}
-            currentView="relationships"
-            allowedRelationshipTypes={['has-covered']}
-            targetStixDomainObjectTypes={['Attack-Pattern']}
-            paginationOptions={paginationOptions}
-            paddingRight={220}
-            onCreate={handleOnCreate}
-            isCoverage={true}
-            variant="inLine"
-          />
+          <span>{t_i18n('Attack patterns coverage')}</span>
+          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+        </Stack>
+      )}
+      action={(
+        <Stack direction="row" spacing={1}>
+          {viewMode === 'matrix' && (
+            <Tooltip
+              title={
+                isModeOnlyActive
+                  ? t_i18n('Display the whole matrix')
+                  : t_i18n('Display only used techniques')
+              }
+            >
+              <span>
+                <IconButton
+                  size="sm"
+                  priority="tertiary"
+                  color={isModeOnlyActive ? 'secondary' : 'primary'}
+                  onClick={() => setIsModeOnlyActive((value) => !value)}
+                  icon={<VisibilityOutlined fontSize="small" />}
+                  aria-label="matrix-mode"
+                />
+              </span>
+            </Tooltip>
+          )}
           <ButtonGroup
             size="sm"
             value={viewMode}
@@ -176,6 +154,16 @@ const SecurityCoverageAttackPatterns = ({
         </Stack>
       )}
     >
+      {(securityCoverage.attPatterns?.count ?? 0) > MAX_ATTACK_PATTERNS && (
+        <Alert
+          severity="warning"
+          style={{ marginBottom: 10 }}
+          content={t_i18n(
+            'Showing {max} of {count} attack patterns. Some results are not displayed.',
+            { values: { max: MAX_ATTACK_PATTERNS, count: securityCoverage.attPatterns?.count ?? 0 } },
+          )}
+        />
+      )}
       {viewMode === 'matrix' ? (
         <>
           {showKillChainSelector && (
@@ -206,35 +194,29 @@ const SecurityCoverageAttackPatterns = ({
             securityCoverage={securityCoverage}
             searchTerm={searchTerm}
             selectedKillChain={selectedKillChain}
+            isModeOnlyActive={isModeOnlyActive}
           />
         </>
       ) : (
         <>
           <div className="clearfix" />
-          <List style={{ marginTop: -10 }}>
-            <FieldOrEmpty source={securityCoverage.attPatterns?.edges || []}>
-              {(securityCoverage.attPatterns?.edges || []).map((attackPatternEdge) => {
-                const attackPattern = attackPatternEdge.node.to;
-                const coverage = attackPatternEdge.node.coverage_information || [];
+          <FieldOrEmpty source={securityCoverage.attPatterns?.entities || []}>
+            <SecurityCoverageCoveredList
+              entities={dedupedAttPatterns}
+              style={{ marginTop: -10 }}
+              rowRenderer={(attackPatternEntity) => {
+                const attackPattern = attackPatternEntity.to;
+                const coverage = attackPatternEntity.coverage_information || [];
                 return (
                   <ListItem
-                    key={attackPatternEdge.node.id}
+                    key={attackPatternEntity.relationship_id}
                     dense={true}
                     divider={true}
                     disablePadding={true}
-                    secondaryAction={(
-                      <StixCoreRelationshipPopover
-                        objectId={securityCoverage.id}
-                        connectionKey="Pagination_attPatterns"
-                        stixCoreRelationshipId={attackPatternEdge.node.id}
-                        paginationOptions={paginationOptions}
-                        isCoverage={true}
-                      />
-                    )}
                   >
                     <ListItemButton
                       component={Link}
-                      to={`/dashboard/analyses/security_coverages/${securityCoverage?.id}/relations/${attackPatternEdge.node.id}`}
+                      to={`/dashboard/analyses/security_coverages/${securityCoverage?.id}/relations/${attackPatternEntity.relationship_id}`}
                       style={{ width: '100%' }}
                     >
                       <ListItemIcon>
@@ -243,8 +225,8 @@ const SecurityCoverageAttackPatterns = ({
                       <ListItemText
                         primary={(
                           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                            <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
-                            <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
+                            <Typography variant="body2" component="span" noWrap sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
+                            <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'end' }}>
                               <SecurityCoverageScores
                                 coverage_information={coverage}
                                 variant="header"
@@ -256,13 +238,45 @@ const SecurityCoverageAttackPatterns = ({
                     </ListItemButton>
                   </ListItem>
                 );
-              })}
-            </FieldOrEmpty>
-          </List>
+              }}
+            />
+          </FieldOrEmpty>
         </>
       )}
     </Card>
   );
 };
+
+const SecurityCoverageAttackPatterns = createFragmentContainer(
+  SecurityCoverageAttackPatternsComponent,
+  {
+    securityCoverage: graphql`
+      fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
+        id
+        attPatterns: coveredAttackPatterns(
+          orderBy: created_at
+          orderMode: asc
+          first: 5000
+        ) {
+          count
+          entities {
+            relationship_id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
+            to {
+              id
+              parent_types
+              name
+              description
+            }
+          }
+        }
+        ...SecurityCoverageAttackPatternsMatrix_securityCoverage
+      }
+    `,
+  },
+);
 
 export default SecurityCoverageAttackPatterns;
