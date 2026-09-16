@@ -55,7 +55,6 @@ export const platformStart = async () => {
       await startPlatformHealthMonitor();
     } catch (healthMonitorError) {
       logApp.error('[OPENCTI] Platform health monitoring startup failed', { cause: healthMonitorError });
-      throw healthMonitorError;
     }
     // Init the modules
     try {
