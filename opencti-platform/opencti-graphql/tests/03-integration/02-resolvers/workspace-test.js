@@ -345,6 +345,7 @@ describe('Workspace resolver standard behavior', () => {
         manifest
         tags
         investigated_entities_ids
+        graph_data
         authorizedMembers {
           id
           access_right
@@ -419,6 +420,211 @@ describe('Workspace resolver standard behavior', () => {
         query: DELETE_QUERY,
         variables: { id: queryResult.data.investigationDuplicate.id },
       });
+    });
+
+    it('should duplicate an investigation with no investigated entities', async () => {
+      const emptySourceResult = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'investigation',
+            name: 'Investigation without investigated entities',
+            investigated_entities_ids: [],
+          },
+        },
+      });
+      const emptySourceId = emptySourceResult.data.workspaceAdd.id;
+
+      try {
+        const queryResult = await queryAsAdmin({
+          query: DUPLICATE_INVESTIGATION_QUERY,
+          variables: {
+            id: emptySourceId,
+            name: 'Investigation without investigated entities duplicated',
+          },
+        });
+
+        expect(queryResult.errors).toBeUndefined();
+        expect(queryResult.data.investigationDuplicate.investigated_entities_ids).toEqual([]);
+
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: queryResult.data.investigationDuplicate.id },
+        });
+      } finally {
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: emptySourceId } });
+      }
+    });
+
+    it('should duplicate an investigation referencing multiple investigated entities and preserve their order', async () => {
+      const secondInvestigatedEntity = await elLoadById(
+        testContext,
+        ADMIN_USER,
+        'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85',
+      );
+      const secondInvestigatedEntityId = secondInvestigatedEntity.internal_id;
+
+      const multiSourceResult = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'investigation',
+            name: 'Investigation with multiple investigated entities',
+            investigated_entities_ids: [secondInvestigatedEntityId, investigatedEntityId],
+          },
+        },
+      });
+      const multiSourceId = multiSourceResult.data.workspaceAdd.id;
+
+      try {
+        const queryResult = await queryAsAdmin({
+          query: DUPLICATE_INVESTIGATION_QUERY,
+          variables: {
+            id: multiSourceId,
+            name: 'Investigation with multiple investigated entities duplicated',
+          },
+        });
+
+        expect(queryResult.errors).toBeUndefined();
+        expect(queryResult.data.investigationDuplicate.investigated_entities_ids).toEqual([secondInvestigatedEntityId, investigatedEntityId]);
+
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: queryResult.data.investigationDuplicate.id },
+        });
+      } finally {
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: multiSourceId } });
+      }
+    });
+
+    it('should leave the source investigation unchanged after duplication', async () => {
+      const queryResult = await queryAsUser(USER_DISINFORMATION_ANALYST, {
+        query: DUPLICATE_INVESTIGATION_QUERY,
+        variables: {
+          id: investigationId,
+          name: 'Investigation duplicated without mutating source',
+        },
+      });
+      expect(queryResult.errors).toBeUndefined();
+
+      const sourceResult = await queryAsAdmin({
+        query: gql`
+          query InvestigationSource($id: String!) {
+            workspace(id: $id) {
+              name
+              description
+              tags
+              investigated_entities_ids
+            }
+          }
+        `,
+        variables: { id: investigationId },
+      });
+      expect(sourceResult.data.workspace.name).toBe('Investigation to duplicate');
+      expect(sourceResult.data.workspace.description).toBe('an investigation with content to duplicate');
+      expect(sourceResult.data.workspace.tags).toEqual(['duplication-test']);
+      expect(sourceResult.data.workspace.investigated_entities_ids).toEqual([investigatedEntityId]);
+
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: queryResult.data.investigationDuplicate.id },
+      });
+    });
+
+    it('should allow the owner of the source investigation to duplicate it', async () => {
+      const queryResult = await queryAsAdmin({
+        query: DUPLICATE_INVESTIGATION_QUERY,
+        variables: {
+          id: investigationId,
+          name: 'Investigation duplicated by its owner',
+        },
+      });
+
+      expect(queryResult.errors).toBeUndefined();
+      expect(queryResult.data.investigationDuplicate.investigated_entities_ids).toEqual([investigatedEntityId]);
+      expect(queryResult.data.investigationDuplicate.authorizedMembers.length).toBe(1);
+      expect(queryResult.data.investigationDuplicate.authorizedMembers[0].access_right).toBe('admin');
+
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: queryResult.data.investigationDuplicate.id },
+      });
+    });
+
+    it('should exclude non-existent investigated entity ids from duplication', async () => {
+      const staleSourceResult = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'investigation',
+            name: 'Investigation with a stale investigated entity',
+            investigated_entities_ids: [investigatedEntityId, 'fake-investigated-entity-id'],
+          },
+        },
+      });
+      const staleSourceId = staleSourceResult.data.workspaceAdd.id;
+
+      try {
+        const queryResult = await queryAsAdmin({
+          query: DUPLICATE_INVESTIGATION_QUERY,
+          variables: {
+            id: staleSourceId,
+            name: 'Investigation with a stale investigated entity duplicated',
+          },
+        });
+
+        expect(queryResult.errors).toBeUndefined();
+        expect(queryResult.data.investigationDuplicate.investigated_entities_ids).toEqual([investigatedEntityId]);
+
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: queryResult.data.investigationDuplicate.id },
+        });
+      } finally {
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: staleSourceId } });
+      }
+    });
+
+    it('should not copy graph_data to the duplicated investigation', async () => {
+      const graphDataSourceResult = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'investigation',
+            name: 'Investigation with graph data',
+            investigated_entities_ids: [investigatedEntityId],
+          },
+        },
+      });
+      const graphDataSourceId = graphDataSourceResult.data.workspaceAdd.id;
+
+      try {
+        await queryAsAdmin({
+          query: UPDATE_QUERY,
+          variables: {
+            id: graphDataSourceId,
+            input: { key: 'graph_data', value: JSON.stringify({ nodes: [{ id: investigatedEntityId }] }) },
+          },
+        });
+
+        const queryResult = await queryAsAdmin({
+          query: DUPLICATE_INVESTIGATION_QUERY,
+          variables: {
+            id: graphDataSourceId,
+            name: 'Investigation with graph data duplicated',
+          },
+        });
+
+        expect(queryResult.errors).toBeUndefined();
+        expect(queryResult.data.investigationDuplicate.graph_data).toBeFalsy();
+
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: queryResult.data.investigationDuplicate.id },
+        });
+      } finally {
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: graphDataSourceId } });
+      }
     });
 
     it('should exclude accessible Notes and Tasks and inaccessible entities from duplication', async () => {
