@@ -643,7 +643,7 @@ describe('Workspace resolver standard behavior', () => {
         });
         expect(markingResult.errors).toBeUndefined();
         const markingId = markingResult.data.markingDefinitionAdd.id;
-        cleanup.push({ query: gql`mutation DeleteMarking($id: ID!) { markingDefinitionDelete(id: $id) }`, variables: { id: markingId } });
+        cleanup.push({ query: gql`mutation DeleteMarking($id: ID!) { markingDefinitionEdit(id: $id) { delete } }`, variables: { id: markingId } });
 
         // Separate requests so a failure on one mutation cannot null out siblings that already succeeded,
         // which would otherwise leave an orphan entity that skips cleanup.
@@ -657,7 +657,7 @@ describe('Workspace resolver standard behavior', () => {
         });
         expect(noteResult.errors).toBeUndefined();
         const visibleNote = noteResult.data?.visibleNote;
-        if (visibleNote) cleanup.push({ query: gql`mutation DeleteNote($id: ID!) { noteDelete(id: $id) }`, variables: { id: visibleNote.id } });
+        if (visibleNote) cleanup.push({ query: gql`mutation DeleteNote($id: ID!) { noteEdit(id: $id) { delete } }`, variables: { id: visibleNote.id } });
 
         const taskResult = await queryAsAdmin({
           query: gql`
@@ -681,7 +681,7 @@ describe('Workspace resolver standard behavior', () => {
         });
         expect(malwareResult.errors).toBeUndefined();
         const hiddenMalware = malwareResult.data?.hiddenMalware;
-        if (hiddenMalware) cleanup.push({ query: gql`mutation DeleteMalware($id: ID!) { malwareDelete(id: $id) }`, variables: { id: hiddenMalware.id } });
+        if (hiddenMalware) cleanup.push({ query: gql`mutation DeleteMalware($id: ID!) { malwareEdit(id: $id) { delete } }`, variables: { id: hiddenMalware.id } });
 
         const visibilityQuery = gql`
           query DuplicationContentVisibility($noteId: String!, $taskId: String!, $hiddenId: String!) {
