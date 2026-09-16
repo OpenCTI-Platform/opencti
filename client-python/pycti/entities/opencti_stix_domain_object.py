@@ -539,6 +539,9 @@ class StixDomainObject:
                 x_opencti_cvss_v4_availability_impact_v
                 x_opencti_cvss_v4_availability_impact_s
                 x_opencti_cvss_v4_exploit_maturity
+                x_opencti_ssvc_exploitation
+                x_opencti_ssvc_automatable
+                x_opencti_ssvc_technical_impact
                 x_opencti_cwe
                 x_opencti_cisa_kev
                 x_opencti_epss_score
@@ -1085,6 +1088,9 @@ class StixDomainObject:
                 x_opencti_cvss_v4_availability_impact_v
                 x_opencti_cvss_v4_availability_impact_s
                 x_opencti_cvss_v4_exploit_maturity
+                x_opencti_ssvc_exploitation
+                x_opencti_ssvc_automatable
+                x_opencti_ssvc_technical_impact
                 x_opencti_cwe
                 x_opencti_cisa_kev
                 x_opencti_epss_score
