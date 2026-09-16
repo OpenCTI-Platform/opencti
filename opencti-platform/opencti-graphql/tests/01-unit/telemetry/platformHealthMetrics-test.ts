@@ -102,24 +102,24 @@ describe('platformHealthMetrics: adoptSharedUsageMetrics function', () => {
     expect(getPlatformUsageMetrics()).toEqual(shared);
   });
 
-  it('should keep the previous value when nothing has been published yet', async () => {
+  it('should reset metrics when nothing has been published yet', async () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
     await adoptSharedUsageMetrics();
 
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
     await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual(shared);
+    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, s3_used_size: null, queue_consumers: null });
   });
 
-  it('should keep the previous value when the published payload is invalid', async () => {
+  it('should reset metrics when the published payload is invalid', async () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
     await adoptSharedUsageMetrics();
 
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue({ es_used_size: 'nope' });
     await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual(shared);
+    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, s3_used_size: null, queue_consumers: null });
   });
 });
 

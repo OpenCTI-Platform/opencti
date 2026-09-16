@@ -111,12 +111,11 @@ export const parseCachedUsageMetrics = (cached: unknown): PlatformUsageMetrics |
 // Collection (full bucket scan, engine stats) is expensive and cluster wide, so it's owned by
 // `platformUsageMetricsManager` (one node computes and publishes it per interval through Redis).
 // This node only adopts whatever is currently published; if nothing has been published yet
-// (cold start, or between the TTL expiring and the manager's next tick), it keeps its previous value.
+// (cold start, or between the TTL expiring and the manager's next tick), metrics stay empty rather
+// than serving a stale in-memory value as if it were still current.
 export const adoptSharedUsageMetrics = async (): Promise<void> => {
   const cached = parseCachedUsageMetrics(await redisGetPlatformUsageMetrics());
-  if (cached !== null) {
-    usageMetrics = cached;
-  }
+  usageMetrics = cached ?? buildInitialUsageMetrics();
 };
 
 const registerHealthGauges = () => {
