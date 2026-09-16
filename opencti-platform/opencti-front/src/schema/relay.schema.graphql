@@ -10427,6 +10427,7 @@ type Mutation {
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
+  investigationDuplicate(input: InvestigationDuplicateInput!): Workspace
   workspaceDelete(id: ID!): ID
   workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
@@ -13111,6 +13112,16 @@ input WorkspaceAddInput {
 }
 
 input WorkspaceDuplicateInput {
+  type: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  manifest: String
+  tags: [String!]
+}
+
+input InvestigationDuplicateInput {
   id: ID!
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
