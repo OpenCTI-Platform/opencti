@@ -176,8 +176,12 @@ export const getPlatformHealthStatus = (): PlatformHealthStatus => {
 };
 
 export const getPlatformUsageMetrics = (): PlatformUsageMetrics => {
-  const { queue_consumers } = usageMetrics;
-  return { ...usageMetrics, queue_consumers: queue_consumers === null ? null : { ...queue_consumers } };
+  const { es_used_size, s3_used_size, queue_consumers } = usageMetrics;
+  return {
+    es_used_size,
+    s3_used_size,
+    queue_consumers: queue_consumers === null ? null : { ...queue_consumers },
+  };
 };
 
 export const startPlatformHealthMonitor = async (): Promise<void> => {
