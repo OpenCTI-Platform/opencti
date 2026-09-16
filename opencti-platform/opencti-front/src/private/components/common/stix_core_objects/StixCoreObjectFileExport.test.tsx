@@ -121,7 +121,7 @@ describe('FINTEL HTML and PDF export', () => {
   it('stops before PDF rendering when the HTML upload fails', async () => {
     const { relayEnv, onExportCompleted, onClose } = await openExport();
     await act(async () => {
-      relayEnv.mock.rejectMostRecentOperation(new Error('HTML upload failed'));
+      relayEnv.mock.rejectMostRecentOperation({ res: { errors: [{ message: 'HTML upload failed' }] } });
     });
     await waitFor(() => expect(screen.getByRole('button', { name: 'Create' })).not.toBeDisabled());
     expect(htmlToPdfReport).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe('FINTEL HTML and PDF export', () => {
     if (failureStage === 'upload') {
       await waitFor(() => expect(relayEnv.mock.getAllOperations()).toHaveLength(1));
       await act(async () => {
-        relayEnv.mock.rejectMostRecentOperation(new Error('PDF upload failed'));
+        relayEnv.mock.rejectMostRecentOperation({ res: { errors: [{ message: 'PDF upload failed' }] } });
       });
     }
     await waitFor(() => expect(screen.getByRole('button', { name: 'Create' })).not.toBeDisabled());
