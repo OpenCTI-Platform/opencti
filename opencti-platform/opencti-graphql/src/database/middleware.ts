@@ -1886,6 +1886,10 @@ const mergeEntitiesRaw = async (
       if (targetFieldKey === IDS_STIX) {
         pushAll(sourceValues, sourceEntities.map((s) => s.standard_id));
       }
+      // The merging user is folded into this same creator_id update (instead of a separate one) to avoid a second EditInput silently overwriting it.
+      if (targetFieldKey === 'creator_id' && !INTERNAL_USERS[user.id] && !user.no_creators) {
+        pushAll(sourceValues, [user.id]);
+      }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
         const concatSource = mergedEntityCurrentFieldValue as any[] ?? [];
@@ -1896,9 +1900,6 @@ const mergeEntitiesRaw = async (
       // Single value. Put the data in the merged field only if empty.
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
-  }
-  if (!INTERNAL_USERS[user.id] && !user.no_creators) {
-    updateAttributes.push({ key: 'creator_id', value: [user.id], operation: EditOperation.Add });
   }
 
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
