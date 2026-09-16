@@ -391,6 +391,14 @@ export const getConnectorQueueDetails = async (connectorId) => {
     return {
       messages_number: pushMessages + listenMessages,
       messages_size: pushSize + listenSize,
+      // Per-queue detail, kept alongside the aggregate so existing callers are
+      // unaffected. `undefined` means the queue could not be read at all, which
+      // is different from a queue with zero consumers — ingestion health relies
+      // on that distinction to avoid alerting during a RabbitMQ outage.
+      listen_messages: listenResult ? listenMessages : undefined,
+      listen_consumers: listenResult?.consumers,
+      push_messages: pushResult ? pushMessages : undefined,
+      push_consumers: pushResult?.consumers,
     };
   } catch (e) {
     // For managed connector, the queue is available only after the connector is started.

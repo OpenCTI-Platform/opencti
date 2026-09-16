@@ -8,6 +8,7 @@ import { useDeployedTypeMetadata } from '@components/integrations/deployed/Deplo
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { paperBorder } from '../paperSurface';
@@ -19,7 +20,8 @@ import { paperBorder } from '../paperSurface';
 // the names.
 const COLUMNS = {
   type: { width: '13%', minWidth: 110, display: { xs: 'none', sm: 'flex' } },
-  description: { width: '18%', display: { xs: 'none', lg: 'flex' } },
+  description: { width: '11%', display: { xs: 'none', lg: 'flex' } },
+  health: { width: '12%', minWidth: 96, display: { xs: 'none', md: 'flex' } },
   messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' }, justifyContent: 'flex-end' },
   throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' },
   date: { width: '12%', minWidth: 130, display: { xs: 'none', md: 'flex' } },
@@ -74,6 +76,9 @@ export const DeployedIntegrationLinesHeader = () => {
       </Typography>
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('date') }}>
         {t_i18n('Last activity')}
+      </Typography>
+      <Typography component="div" sx={{ ...headerCellSx, ...cellSx('health') }}>
+        {t_i18n('Health')}
       </Typography>
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('status') }}>
         {t_i18n('Status')}
@@ -285,6 +290,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
         )}
       </Box>
       {/* Status column. */}
+      <Box sx={cellSx('health')}>
+        <IngestionHealthChip health={item.health} />
+      </Box>
       <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
         {item.status === 'processing'
           ? <ItemBoolean status={undefined} label={statusText} />

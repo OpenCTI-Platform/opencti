@@ -7,7 +7,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 interface BasicUserAction {
   user: AuthUser;
   status?: 'success' | 'error'; // nothing = success
-  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command';
+  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'health';
   event_scope: string;
   event_access: 'extended' | 'administration';
   prevent_indexing?: boolean;
@@ -167,8 +167,33 @@ export interface UserForgotPasswordAction extends BasicUserAction {
 }
 // endregion
 
+// Ingestion health transitions. Unlike every other action these have no human
+// actor: they are emitted by the ingestion health manager, so `user` is the
+// system user and the message is pre-rendered (§6.2 of the spec).
+export interface UserHealthActionContextData {
+  // The source's internal_id — also the key the publisher buffers on.
+  id: string;
+  entity_type: string;
+  source_kind: 'connector' | 'feed' | 'sync';
+  source_name: string;
+  // Deep-link suffix under /dashboard/integrations/, e.g. `connectors/<id>`.
+  source_route: string;
+  status: string;
+  previous_status?: string;
+  since?: string;
+  checks: Array<{ code: string; severity: string; message: string }>;
+}
+
+export interface UserHealthAction extends BasicUserAction {
+  event_type: 'health';
+  event_scope: 'degraded' | 'critical' | 'recovered';
+  message: string;
+  context_data: UserHealthActionContextData;
+}
+
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
-  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
+  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction
+  | UserHealthAction;
 
 export interface ActionListener {
   id: string;

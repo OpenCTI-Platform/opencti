@@ -70,6 +70,11 @@ const IngestionCsv = () => {
       },
       ingestion_running: {
         label: 'Status',
+        width: '10%',
+        isSortable: false,
+      },
+      ingestion_health: {
+        label: 'Health',
         width: '15%',
         isSortable: false,
       },
@@ -81,7 +86,7 @@ const IngestionCsv = () => {
       current_state_hash: {
         label: 'Current state',
         isSortable: false,
-        width: '15%',
+        width: '10%',
       },
     };
     const queryRef = useQueryLoading<IngestionCsvLinesPaginationQuery>(

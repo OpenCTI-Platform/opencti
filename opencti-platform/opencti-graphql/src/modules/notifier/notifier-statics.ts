@@ -154,6 +154,7 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
 
 export const STATIC_NOTIFIER_UI = 'f4ee7b33-006a-4b0d-b57d-411ad288653d';
 export const STATIC_NOTIFIER_EMAIL = '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822';
+export const STATIC_NOTIFIER_INGESTION_HEALTH = '2f0f4d9c-0b4a-4d0e-9d2a-3c6f7b1d8a55';
 
 export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -382,6 +383,110 @@ ${HEADER_TEMPLATE}
          </tbody>
       </table>
    </body>
+</html>
+      `,
+    }),
+  },
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  {
+    id: STATIC_NOTIFIER_INGESTION_HEALTH,
+    standard_id: `notifier--${STATIC_NOTIFIER_INGESTION_HEALTH}`,
+    entity_type: ENTITY_TYPE_NOTIFIER,
+    parent_types: [ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT],
+    internal_id: STATIC_NOTIFIER_INGESTION_HEALTH,
+    built_in: true,
+    name: 'Ingestion health mailer',
+    description: 'Send ingestion health transitions as a summary table',
+    notifier_connector_id: NOTIFIER_CONNECTOR_EMAIL,
+    notifier_configuration: JSON.stringify({
+      // Reads `data[].instance`, which carries the health payload
+      // (source_name, status, checks, source_route) rather than the flattened
+      // `notification_content`, so the mail can show why and link to the source.
+      title: '<% var rows = (data || []); %>'
+        + '<% if (notification.trigger_type === \'digest\') { %>'
+        + '[<%= settings.platform_title %>] Ingestion health — <%= rows.length %> issue<%= rows.length > 1 ? \'s\' : \'\' %>'
+        + '<% } else { %>'
+        + '[<%= settings.platform_title %>] <%= rows.length && rows[0].message ? rows[0].message : \'Ingestion health\' %>'
+        + '<% } %>',
+      template: `
+${HEADER_TEMPLATE}
+  <body style="margin:0; padding:0; background-color:#f5f8fa; font-family: Helvetica, Arial, sans-serif; font-size:14px; color:#425b76;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#f5f8fa" style="width:100%; background-color:#f5f8fa;">
+      <tbody>
+        <tr>
+          <td align="center" valign="top" style="padding: 24px 12px;">
+            <table border="0" cellpadding="0" cellspacing="0" width="700" bgcolor="#ffffff" style="width:700px; max-width:100%; background-color:#ffffff;">
+              <tbody>
+                <tr>
+                  <td align="center" style="height:4px; background-color:#001bda; font-size:4px; line-height:4px;">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td align="center" valign="middle" style="padding: 16px 0;">${LOGO_TEMPLATE}</td>
+                </tr>
+                <tr>
+                  <td align="left" style="padding: 0 32px 8px 32px;">
+                    <h1 style="font-size:20px; font-weight:600; margin:0;">Ingestion health</h1>
+                    <p style="margin:6px 0 0 0; font-size:13px; color:#7c98b6;">
+                      <%= notification.name %> — <%= (new Date(notification.created)).toLocaleString() %>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 32px 8px 32px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:collapse;">
+                      <tbody>
+                        <% (data || []).forEach(function (row) { %>
+                          <%
+                            var payload = row.instance || {};
+                            var status = payload.status || '';
+                            var color = '#f0ad4e';
+                            if (status === 'critical') { color = '#d9534f'; }
+                            if (status === 'recovered' || status === 'healthy' || status === 'idle') { color = '#5cb85c'; }
+                            var checks = payload.checks || [];
+                          %>
+                          <tr>
+                            <td valign="top" width="6" style="width:6px; background-color:<%= color %>;">&nbsp;</td>
+                            <td valign="top" style="padding: 10px 0 10px 12px; border-bottom:1px solid #eaf0f6;">
+                              <span style="display:inline-block; font-size:11px; font-weight:600; text-transform:uppercase; color:<%= color %>;">
+                                <%= status %>
+                              </span>
+                              <div style="margin-top:4px; font-weight:600;"><%= payload.source_name || '' %></div>
+                              <div style="margin-top:2px; line-height:1.4;"><%= row.message %></div>
+                              <% checks.forEach(function (check) { %>
+                                <div style="margin-top:2px; font-size:12px; color:#7c98b6;"><%= check.message %></div>
+                              <% }); %>
+                              <% if (payload.source_route) { %>
+                                <div style="margin-top:6px; font-size:12px;">
+                                  <a style="color:#001bda; text-decoration:none;"
+                                     href="<%= platform_uri %>/dashboard/integrations/<%= payload.source_route %>">
+                                    Open in OpenCTI
+                                  </a>
+                                </div>
+                              <% } %>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="left" style="padding: 8px 32px 28px 32px; font-size:12px; color:#7c98b6;">
+                    <a style="color:#001bda; text-decoration:none;" href="<%= platform_uri %>/dashboard/integrations/deployed">
+                      See all integrations
+                    </a>
+                    &nbsp;·&nbsp;
+                    <a style="color:#001bda; text-decoration:none;" href="<%= doc_uri %>">Documentation</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
 </html>
       `,
     }),
