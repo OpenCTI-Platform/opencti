@@ -645,21 +645,43 @@ describe('Workspace resolver standard behavior', () => {
         const markingId = markingResult.data.markingDefinitionAdd.id;
         cleanup.push({ query: gql`mutation DeleteMarking($id: ID!) { markingDefinitionDelete(id: $id) }`, variables: { id: markingId } });
 
-        const contentResult = await queryAsAdmin({
+        // Separate requests so a failure on one mutation cannot null out siblings that already succeeded,
+        // which would otherwise leave an orphan entity that skips cleanup.
+        const noteResult = await queryAsAdmin({
           query: gql`
-            mutation CreateDuplicationContent($malwareId: String!, $markingId: String!) {
+            mutation CreateDuplicationNote($malwareId: String!) {
               visibleNote: noteAdd(input: { attribute_abstract: "Visible duplication note", content: "Visible content", objects: [$malwareId] }) { id }
+            }
+          `,
+          variables: { malwareId: investigatedEntityId },
+        });
+        expect(noteResult.errors).toBeUndefined();
+        const visibleNote = noteResult.data?.visibleNote;
+        if (visibleNote) cleanup.push({ query: gql`mutation DeleteNote($id: ID!) { noteDelete(id: $id) }`, variables: { id: visibleNote.id } });
+
+        const taskResult = await queryAsAdmin({
+          query: gql`
+            mutation CreateDuplicationTask($malwareId: String!) {
               visibleTask: taskAdd(input: { name: "Visible duplication task", objects: [$malwareId] }) { id }
+            }
+          `,
+          variables: { malwareId: investigatedEntityId },
+        });
+        expect(taskResult.errors).toBeUndefined();
+        const visibleTask = taskResult.data?.visibleTask;
+        if (visibleTask) cleanup.push({ query: gql`mutation DeleteTask($id: ID!) { taskDelete(id: $id) }`, variables: { id: visibleTask.id } });
+
+        const malwareResult = await queryAsAdmin({
+          query: gql`
+            mutation CreateDuplicationMalware($markingId: String!) {
               hiddenMalware: malwareAdd(input: { name: "Restricted duplication malware", is_family: false, objectMarking: [$markingId] }) { id }
             }
           `,
-          variables: { malwareId: investigatedEntityId, markingId },
+          variables: { markingId },
         });
-        const { visibleNote, visibleTask, hiddenMalware } = contentResult.data ?? {};
-        if (visibleNote) cleanup.push({ query: gql`mutation DeleteNote($id: ID!) { noteDelete(id: $id) }`, variables: { id: visibleNote.id } });
+        expect(malwareResult.errors).toBeUndefined();
+        const hiddenMalware = malwareResult.data?.hiddenMalware;
         if (hiddenMalware) cleanup.push({ query: gql`mutation DeleteMalware($id: ID!) { malwareDelete(id: $id) }`, variables: { id: hiddenMalware.id } });
-        if (visibleTask) cleanup.push({ query: gql`mutation DeleteTask($id: ID!) { taskDelete(id: $id) }`, variables: { id: visibleTask.id } });
-        expect(contentResult.errors).toBeUndefined();
 
         const visibilityQuery = gql`
           query DuplicationContentVisibility($noteId: String!, $taskId: String!, $hiddenId: String!) {
