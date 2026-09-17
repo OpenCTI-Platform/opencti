@@ -4,7 +4,7 @@ import { deleteElementById, mergeEntities, updateAttribute } from '../database/m
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { connectorsForExport } from './connector';
+import { connectorsForExport } from '../modules/connector/connector-domain';
 import { findById as findMarkingDefinitionById, markingDefinitionDeleteAndUpdateGroups } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork } from './work';

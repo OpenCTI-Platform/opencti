@@ -14,7 +14,7 @@ import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
-import { connectorsForImport } from './repository';
+import { connectorsForImport } from '../modules/connector/connector-domain';
 import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
@@ -490,7 +490,7 @@ export const uploadJobImport = async (
       const contextOutOfDraft = { ...context, draft_context: '' };
       const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
       const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, { draftContext });
-      return { connector, work };
+      return { connector, work: work as BasicStoreBase };
     };
     const actionList = await Promise.all(connectors.map((connector: BasicStoreEntityConnector) => createConnectorWork(connector)));
     // Send message to all correct connectors queues

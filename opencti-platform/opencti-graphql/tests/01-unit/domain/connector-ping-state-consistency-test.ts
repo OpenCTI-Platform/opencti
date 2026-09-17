@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { pingConnector, resetStateConnector } from '../../../src/domain/connector';
+import { pingConnector, resetStateConnector } from '../../../src/modules/connector/connector-domain';
 import { patchAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { registerConnectorQueues, purgeConnectorQueues } from '../../../src/modules/connector/connector-rabbitmq';

@@ -132,6 +132,9 @@ export const rabbitMQInit = async () => {
   return true;
 };
 
+// TODO The background task, playbook, sync and deprecated queue definitions below belong to the modules that own
+//  these queues, not to the connector RabbitMQ infrastructure. They will move there through the built-in connector
+//  registry (see connector-built-in-domain.ts).
 export const getInternalBackgroundTaskQueues = () => {
   return Array.from({ length: BACKGROUND_TASK_QUEUES }, (_, index) => ({
     id: `background-task-${index}`,
@@ -183,6 +186,7 @@ export const enforceQueuesConsistency = async (context: AuthContext, user: AuthU
       connector.connector_scope ? connector.connector_scope.split(',') : [],
     );
   }
+  // TODO Ask each module for its queues through the built-in connector registry (see connector-built-in-domain.ts)
   const internalQueues = [
     ...await getInternalPlaybookQueues(context, user),
     ...await getInternalSyncQueues(context, user),

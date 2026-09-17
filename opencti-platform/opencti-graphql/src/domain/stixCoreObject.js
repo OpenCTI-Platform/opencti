@@ -82,7 +82,7 @@ import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filter
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
-import { connectorsForAnalysis } from '../database/repository';
+import { connectorsForAnalysis } from '../modules/connector/connector-domain';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator, ValidationMode } from '../generated/graphql';
 import {

@@ -21,20 +21,10 @@ vi.mock('../../../src/modules/connector/connector-redis', () => ({
   redisGetConnectorHealthMetrics: vi.fn(),
   redisSetConnectorLogs: vi.fn(),
 }));
-vi.mock('../../../src/database/rabbitmq', () => ({
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   unregisterConnector: vi.fn(), registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(), getConnectorQueueDetails: vi.fn(), unregisterExchanges: vi.fn(),
 }));
-vi.mock('../../../src/database/repository', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../src/database/repository')>();
-  return {
-    ...actual,
-    connector: vi.fn(),
-    connectors: vi.fn(),
-    connectorsFor: vi.fn(),
-    completeConnector: vi.fn(),
-  };
-});
 vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn(), fullEntitiesList: vi.fn(), internalLoadById: vi.fn(), pageEntitiesConnection: vi.fn(),
 }));
@@ -79,7 +69,7 @@ vi.mock('../../../src/modules/catalog/catalog-repository', () => ({
 }));
 
 import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
-import { managedConnectorAdd } from '../../../src/domain/connector';
+import { managedConnectorAdd } from '../../../src/modules/connector/connector-domain';
 
 const fakeContext = {} as any;
 const fakeUser = { id: 'user-1', name: 'Test User', capabilities: [] } as any;
@@ -91,7 +81,7 @@ const input = {
   manager_contract_configuration: [],
 } as any;
 
-describe('connector.ts — managedConnectorAdd contract compatibility', () => {
+describe('connector-domain.ts — managedConnectorAdd contract compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
