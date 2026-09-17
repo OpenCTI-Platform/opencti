@@ -3134,6 +3134,7 @@
   "More": "もっと見る",
   "More fields": "フィールドを増やす",
   "More information": "詳細情報",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "{threshold} 列以上が選択されています。この設定を適用すると、エクスポート時の表示が横向きに切り替わります。",
   "More workflow options": "その他のワークフローオプション",
   "Most active labels (Last 3 months)": "最もアクティブなレーベル（過去3ヶ月）",
   "Most active malware (Last 3 months)": "最もアクティブなマルウェア（過去3ヶ月）",
