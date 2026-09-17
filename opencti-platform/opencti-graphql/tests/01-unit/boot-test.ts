@@ -2,7 +2,7 @@ import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest';
 import * as engineMock from '../../src/database/engine';
 import { checkSystemDependencies } from '../../src/boot-utils';
 import * as fileStorageMock from '../../src/database/raw-file-storage';
-import * as rabbitMqMock from '../../src/database/rabbitmq';
+import * as rabbitMqMock from '../../src/modules/connector/connector-rabbitmq';
 import * as redisMock from '../../src/database/redis';
 import * as SMTPMock from '../../src/database/smtp';
 import * as pythonMock from '../../src/python/pythonBridge';

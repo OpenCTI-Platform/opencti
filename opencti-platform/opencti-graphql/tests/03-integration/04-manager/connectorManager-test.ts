@@ -12,7 +12,8 @@ import { INDEX_HISTORY, RABBIT_QUEUE_PREFIX } from '../../../src/database/utils'
 import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
 import type { BasicStoreEntityConnector } from '../../../src/modules/connector/connector-types';
 import type { Work } from '../../../src/types/work';
-import { unregisterConnector, metrics } from '../../../src/database/rabbitmq';
+import { metrics } from '../../../src/database/rabbitmq';
+import { unregisterConnector } from '../../../src/modules/connector/connector-rabbitmq';
 
 describe('Old work of connector cleanup test', () => {
   let testConnector: BasicStoreEntityConnector;

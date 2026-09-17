@@ -38,7 +38,7 @@ import {
 } from './playbook-domain';
 import { executePlaybookOnEntity, playbookStepExecution, getManagerInfo } from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
-import { getConnectorQueueSize } from '../../database/rabbitmq';
+import { getConnectorQueueSize } from '../connector/connector-rabbitmq';
 import { loadCreators } from '../../database/members';
 
 const playbookResolvers: Resolvers = {
