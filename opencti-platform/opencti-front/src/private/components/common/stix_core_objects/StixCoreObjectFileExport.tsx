@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
 import { createSearchParams, useNavigate } from 'react-router';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
@@ -94,7 +94,7 @@ const stixCoreObjectFileExportQuery = graphql`
           }
         }
       }
-      ... on Container {
+      ... on StixDomainObject {
         fintelTemplates {
           id
           name
@@ -268,6 +268,9 @@ const StixCoreObjectFileExportComponent = ({
   const [commitUploadFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
   );
+  const [commitUploadFintelFile] = useMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
+    stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+  );
   const buildFintelDesignOptions = (values: StixCoreObjectFileExportFormInputs): FintelDesign => ({
     file_id: values.fintelDesign?.value.file_id ?? null,
     gradiantFromColor: values.fintelDesign?.value.gradiantFromColor ?? null,
@@ -288,11 +291,12 @@ const StixCoreObjectFileExportComponent = ({
     }
     const { setSubmitting, resetForm } = helpers;
     let htmlSaved = false;
+    const commitUpload = isFintelPdf ? commitUploadFintelFile : commitUploadFile;
     const uploadFile = (
       variables: StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables,
       completeExport = true,
     ) => new Promise<void>((resolve, reject) => {
-      commitUploadFile({
+      commitUpload({
         variables,
         onCompleted: (result, errors) => {
           if (isFintelPdf && (errors?.length || !result.stixCoreObjectEdit?.importPush)) {
@@ -322,6 +326,7 @@ const StixCoreObjectFileExportComponent = ({
     });
 
     try {
+      // Guard callers that bypass Formik validation.
       if (isFintelPdf && !values.template) {
         throw Error(t_i18n('Invalid form to export a template'));
       }

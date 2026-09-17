@@ -114,7 +114,7 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     expect(screen.getByLabelText('Export file name')).not.toHaveValue('');
   });
 
-  it('restores entity markings when switching to the template connector', async () => {
+  it.each([true, false])('restores entity markings when switching to the template connector with FINTEL %s', async (exportAsFintel) => {
     const onSubmit = vi.fn();
     const { user } = testRender(
       <StixCoreObjectFileExportForm
@@ -122,15 +122,18 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
         onSubmit={onSubmit}
         connectors={[{ ...BUILT_IN_HTML_TO_PDF, label: 'HTML content files to PDF' }, templateConnector]}
         templates={templates}
+        fileOptions={[{ value: 'mappableContent', label: 'Mappable main content', fileMarkings: [] }]}
         defaultFileMarkings={[{ value: 'marking-1', label: 'TLP:GREEN' }]}
         defaultValues={{ connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf' }}
       />,
     );
+    if (!exportAsFintel) await user.click(screen.getByLabelText('Export as fintel'));
     await user.click(screen.getByLabelText('Connector'));
     await user.click(await screen.findByRole('option', { name: 'Generate FINTEL from template' }));
     await user.click(screen.getByRole('button', { name: 'Create' }));
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     expect(onSubmit.mock.calls[0][0].fileMarkings).toEqual([{ value: 'marking-1', label: 'TLP:GREEN' }]);
+    expect(onSubmit.mock.calls[0][0].exportAsFintel).toBe(exportAsFintel);
   });
 
   it('restores the source template page defaults after switching back to legacy export', async () => {

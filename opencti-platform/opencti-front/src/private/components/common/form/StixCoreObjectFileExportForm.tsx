@@ -228,7 +228,9 @@ const StixCoreObjectFileExportForm = ({
         const isFintelPdf = values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.exportAsFintel;
 
         useEffect(() => {
-          setFieldValue('exportAsFintel', (templates?.length ?? 0) > 0);
+          if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value) {
+            setFieldValue('exportAsFintel', (templates?.length ?? 0) > 0);
+          }
         }, [values.connector?.value]);
 
         useEffect(() => {
@@ -248,6 +250,7 @@ const StixCoreObjectFileExportForm = ({
           }
         }, [values.format, connectors, values.connector, setFieldValue]);
 
+        // Reset dependent fields on mode changes; wasFintelPdf restores markings when leaving FINTEL mode.
         useEffect(() => {
           const connector = values.connector?.value;
           if (connector !== BUILT_IN_HTML_TO_PDF.value) setFieldValue('fileToExport', null);
