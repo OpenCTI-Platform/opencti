@@ -36,9 +36,14 @@ vi.mock('../../../src/database/repository', async (importOriginal) => {
 vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn(), fullEntitiesList: vi.fn(), internalLoadById: vi.fn(), pageEntitiesConnection: vi.fn(),
 }));
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(), completeContextDataForEntity: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+    completeContextDataForEntity: vi.fn(),
+  };
+});
 vi.mock('../../../src/modules/catalog/catalog-domain', () => ({
   computeConnectorTargetContract: vi.fn(), getSupportedContractsByImage: vi.fn(),
 }));

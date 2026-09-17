@@ -12,6 +12,7 @@ import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ing
 import { IngestionCsvLine_node$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvLine_node.graphql';
 import TableViewIcon from '@mui/icons-material/TableView';
 import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import { normalizeIngestionHealth } from '../../../../utils/IngestionHealth';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
@@ -132,7 +133,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
               />
             </Cell>
             <Cell width={dataColumns.ingestion_health.width} withTooltip={false}>
-              <IngestionHealthChip health={data.ingestion_health} />
+              <IngestionHealthChip health={normalizeIngestionHealth(data.ingestion_health)} />
             </Cell>
             <Cell width={dataColumns.last_execution_date.width}>
               {fldt(data.last_execution_date) || EMPTY_VALUE}

@@ -35,6 +35,7 @@ import BooleanStatusIcon from '../../../../components/common/icons/BooleanStatus
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
+import { normalizeIngestionHealth } from '../../../../utils/IngestionHealth';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -462,7 +463,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 // useful feedback, health is about to change.
                                 <ConnectorStatusChip connector={connector} />
                                 ) : (
-                                  <IngestionHealthChip health={connector.ingestion_health} />
+                                  <IngestionHealthChip health={normalizeIngestionHealth(connector.ingestion_health)} />
                                 )}
                             </div>
                             <div className={classes.bodyItem}>

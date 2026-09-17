@@ -35,6 +35,22 @@ export interface IngestionHealth {
   next_expected_at?: string | null;
 }
 
+// The loose shape a raw GraphQL/Relay selection actually provides. `status`
+// and `configuration_status` come back typed with Relay's own generated enum,
+// which always carries an extra "%future added value" member for forward
+// compatibility with schema changes this build has not shipped a case for —
+// that member is exactly what `normalizeIngestionHealth` below strips out
+// before the strict `IngestionHealth` shape below is built.
+export interface RawIngestionHealth {
+  status: string;
+  configuration_status?: string | null;
+  summary: string;
+  checks: ReadonlyArray<IngestionCheck>;
+  since?: string | null;
+  last_productive_at?: string | null;
+  next_expected_at?: string | null;
+}
+
 export type HealthPaletteToken = 'error' | 'warn' | 'success' | 'neutral';
 
 // Only statuses that need attention get a colour. `stopped`, `idle` and
@@ -57,6 +73,49 @@ export const HEALTH_STATUS_LABEL: Record<IngestionHealthStatus, string> = {
   critical: 'Critical',
   stopped: 'Stopped',
   unknown: 'Unknown',
+};
+
+const KNOWN_STATUSES: ReadonlySet<string> = new Set<IngestionHealthStatus>([
+  'healthy', 'idle', 'degraded', 'critical', 'stopped', 'unknown',
+]);
+const KNOWN_CONFIGURATION_STATUSES: ReadonlySet<string> = new Set<IngestionConfigurationStatus>([
+  'ok', 'advisory', 'blocking',
+]);
+
+// `HEALTH_PALETTE_TOKEN` / `HEALTH_STATUS_LABEL` above are keyed on the narrow
+// status union, so a raw Relay enum value — which may be "%future added
+// value" — has to be folded back onto it before it can be used as a lookup
+// key. Anything unrecognised becomes `unknown`, the status that already means
+// "nothing to say about this one".
+export const normalizeIngestionHealthStatus = (status: string): IngestionHealthStatus => (
+  KNOWN_STATUSES.has(status) ? (status as IngestionHealthStatus) : 'unknown'
+);
+
+// Same idea for the configuration axis. It has no "unknown" member, so an
+// unrecognised value defaults to `advisory` — the state that still gets
+// surfaced to someone, rather than `ok`, which would silently hide it.
+export const normalizeIngestionConfigurationStatus = (
+  status: string | null | undefined,
+): IngestionConfigurationStatus | null | undefined => {
+  if (status === null || status === undefined) {
+    return status;
+  }
+  return KNOWN_CONFIGURATION_STATUSES.has(status) ? (status as IngestionConfigurationStatus) : 'advisory';
+};
+
+// Bridges a raw ingestion_health GraphQL selection to the strict shape every
+// helper in this file is written against — see the two functions above.
+export const normalizeIngestionHealth = (
+  raw: RawIngestionHealth | null | undefined,
+): IngestionHealth | null | undefined => {
+  if (!raw) {
+    return raw;
+  }
+  return {
+    ...raw,
+    status: normalizeIngestionHealthStatus(raw.status),
+    configuration_status: normalizeIngestionConfigurationStatus(raw.configuration_status),
+  };
 };
 
 // The configuration marker is driven by the checks, never by `status` — that is

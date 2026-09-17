@@ -32,9 +32,13 @@ vi.mock('../../../src/database/redis', () => ({
   notify: vi.fn().mockResolvedValue({}),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn().mockResolvedValue({}),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn().mockResolvedValue({}),
+  };
+});
 
 vi.mock('../../../src/domain/group', () => ({
   findGroupPaginated: vi.fn().mockResolvedValue({ edges: [] }),

@@ -52,27 +52,30 @@ interface WorkLike {
   timestamp?: string | Date | null;
 }
 
+// Every optional field here also accepts `null`: the resolver passes the raw
+// GraphQL-codegen `Connector` object straight through, and generated types
+// model every nullable schema field as `T | null`, never `T | undefined`.
 interface ConnectorLike {
   id: string;
-  internal_id?: string;
-  name?: string;
-  active?: boolean;
-  connector_type?: string;
-  auto?: boolean;
-  updated_at?: string | Date;
-  created_at?: string | Date;
-  connector_state_timestamp?: string | Date;
-  manager_requested_status?: string;
-  is_managed?: boolean;
-  built_in?: boolean;
-  connector_user_id?: string;
-  connector_scope?: string[];
-  connector_contract_configuration?: Array<{ key?: string; value?: string | null }>;
+  internal_id?: string | null;
+  name?: string | null;
+  active?: boolean | null;
+  connector_type?: string | null;
+  auto?: boolean | null;
+  updated_at?: string | Date | null;
+  created_at?: string | Date | null;
+  connector_state_timestamp?: string | Date | null;
+  manager_requested_status?: string | null;
+  is_managed?: boolean | null;
+  built_in?: boolean | null;
+  connector_user_id?: string | null;
+  connector_scope?: string[] | null;
+  connector_contract_configuration?: Array<{ key?: string; value?: string | null }> | null;
   connector_info?: {
-    run_and_terminate?: boolean;
-    buffering?: boolean;
-    queue_threshold?: number;
-    queue_messages_size?: number;
+    run_and_terminate?: boolean | null;
+    buffering?: boolean | null;
+    queue_threshold?: number | null;
+    queue_messages_size?: number | null;
     next_run_datetime?: string | Date | null;
     last_run_datetime?: string | Date | null;
   } | null;
@@ -204,7 +207,16 @@ export const isIngestionConnector = (connector: ConnectorLike): boolean => {
 export const buildConnectorHealthInput = (
   connector: ConnectorLike,
   works: WorkLike[],
-  queue?: { messages_number?: number; listen_messages?: number; listen_consumers?: number },
+  // `queueDetails()` returns the full RabbitMQ metric shape — push_* included
+  // — but only the listen queue answers "is this connector picking up its own
+  // work"; the push queue is drained by workers and says nothing about that.
+  queue?: {
+    messages_number?: number;
+    listen_messages?: number;
+    listen_consumers?: number;
+    push_messages?: number;
+    push_consumers?: number;
+  },
   previous?: IngestionHealthObservation,
   // Composer metrics. `null` means the key was absent, which is two different
   // situations — not supervised, or supervised and no longer reporting — told
@@ -227,9 +239,9 @@ export const buildConnectorHealthInput = (
     id: connector.internal_id ?? connector.id,
     name: connector.name ?? '',
     source_kind: 'connector',
-    connector_type: connector.connector_type,
-    auto: connector.auto,
-    run_and_terminate: info?.run_and_terminate,
+    connector_type: connector.connector_type ?? undefined,
+    auto: connector.auto ?? undefined,
+    run_and_terminate: info?.run_and_terminate ?? undefined,
 
     enabled: connector.active !== false,
     manually_stopped: connector.manager_requested_status === 'stopped',
@@ -261,9 +273,9 @@ export const buildConnectorHealthInput = (
     stability_metrics_present: Boolean(stability),
 
     configuration_checked: Boolean(userLookup),
-    user_id: connector.connector_user_id,
-    user: userLookup?.(connector.connector_user_id),
-    connector_scope: connector.connector_scope,
+    user_id: connector.connector_user_id ?? undefined,
+    user: userLookup?.(connector.connector_user_id ?? undefined),
+    connector_scope: connector.connector_scope ?? undefined,
     contract_missing_fields: missingContractFields(connector),
 
     previous,
@@ -297,7 +309,11 @@ export const resolveConnectorIngestionHealth = async (
     ]);
     const input = buildConnectorHealthInput(
       connector,
-      works ?? [],
+      // `worksForConnector` is untyped legacy JS wrapping `elPaginate`'s
+      // generic overloads — with `connectionFormat: false` it always returns
+      // a plain array of work entities, which is exactly `WorkLike[]`'s
+      // shape, but nothing here lets TS narrow that statically.
+      (works ?? []) as WorkLike[],
       queue ?? undefined,
       previous ?? undefined,
       stability,
@@ -582,7 +598,7 @@ export const collectIngestionSources = async (
       entity_type: 'Connector',
       source_kind: 'connector',
       route: `connectors/${connectorId}`,
-      input: buildConnectorHealthInput(connector, works ?? [], queue ?? undefined, undefined, stability, userLookup),
+      input: buildConnectorHealthInput(connector, (works ?? []) as WorkLike[], queue ?? undefined, undefined, stability, userLookup),
     });
   }
 

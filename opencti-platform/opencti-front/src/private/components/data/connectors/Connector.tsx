@@ -4,7 +4,7 @@ import ManagedConnectorEdition from '@components/data/connectors/ManagedConnecto
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
 import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
-import { buildHealthTooltipLines } from '../../../../utils/IngestionHealth';
+import { buildHealthTooltipLines, normalizeIngestionHealth } from '../../../../utils/IngestionHealth';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import List from '@mui/material/List';
@@ -558,8 +558,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Health')}
                 </Label>
                 <div>
-                  <IngestionHealthChip health={connector.ingestion_health} />
-                  {buildHealthTooltipLines(connector.ingestion_health).slice(1).map((line) => (
+                  <IngestionHealthChip health={normalizeIngestionHealth(connector.ingestion_health)} />
+                  {buildHealthTooltipLines(normalizeIngestionHealth(connector.ingestion_health)).slice(1).map((line) => (
                     <div key={line} style={{ marginTop: 4 }}>{line}</div>
                   ))}
                 </div>
@@ -1089,6 +1089,8 @@ const Connector = createRefetchContainer(
           since
           checks {
             code
+            kind
+            params
             severity
             message
           }

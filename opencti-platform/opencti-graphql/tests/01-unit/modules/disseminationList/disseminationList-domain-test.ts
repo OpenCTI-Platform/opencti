@@ -23,10 +23,14 @@ vi.mock('../../../../src/enterprise-edition/ee', () => ({
   checkEnterpriseEdition: vi.fn(),
 }));
 
-vi.mock('../../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-  completeContextDataForEntity: vi.fn((inputContextData: object) => ({ ...inputContextData })),
-}));
+vi.mock('../../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+    completeContextDataForEntity: vi.fn((inputContextData: object) => ({ ...inputContextData })),
+  };
+});
 
 vi.mock('../../../../src/database/smtp', () => ({
   sendMail: vi.fn(),

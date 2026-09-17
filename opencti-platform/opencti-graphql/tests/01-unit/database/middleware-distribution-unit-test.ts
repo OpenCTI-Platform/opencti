@@ -18,9 +18,13 @@ vi.mock('../../../src/database/stream/stream-handler', () => ({
 vi.mock('../../../src/database/file-search', () => ({
   elUpdateRemovedFiles: vi.fn(),
 }));
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 vi.mock('../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../src/config/conf');
   return {

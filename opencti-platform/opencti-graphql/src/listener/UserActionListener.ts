@@ -204,7 +204,7 @@ export const CONFIGURATION_EVENT_SCOPES = [
 ] as const;
 export type ConfigurationEventScope = typeof CONFIGURATION_EVENT_SCOPES[number];
 
-export const isIngestionEventType = (type: string | undefined): boolean => {
+export const isIngestionEventType = (type: string | undefined): type is IngestionEventType => {
   return INGESTION_EVENT_TYPES.includes(type as IngestionEventType);
 };
 

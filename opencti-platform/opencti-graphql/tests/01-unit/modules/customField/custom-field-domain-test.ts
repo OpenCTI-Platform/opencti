@@ -43,9 +43,13 @@ vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn().mockImplementation((_topic, element) => Promise.resolve(element)),
 }));
 
-vi.mock('../../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 
 vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn(async () => []),

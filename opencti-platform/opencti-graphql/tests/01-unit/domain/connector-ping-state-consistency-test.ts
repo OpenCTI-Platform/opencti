@@ -44,10 +44,14 @@ vi.mock('../../../src/database/rabbitmq', () => ({
   connectorConfig: vi.fn().mockReturnValue({}),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-  completeContextDataForEntity: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+    completeContextDataForEntity: vi.fn(),
+  };
+});
 
 const testContext = { source: 'test' } as unknown as AuthContext;
 const testUser = { id: 'test-user-id' } as unknown as AuthUser;
