@@ -38,6 +38,7 @@ export const up = async (next: (error?: Error) => void) => {
   const storedLogos = managedConnectors.length > 0 ? (await listCatalogContractLogos()) : new Set<string>();
   for (let i = 0; i < managedConnectors.length; i += 1) {
     const connector = managedConnectors[i];
+    logMigration.info(`${message} > processing connector ${connector.id} (${i + 1}/${managedConnectors.length})`);
     const patch: Pick<BasicStoreEntityConnector, 'manager_contract' | 'manager_upgrade_strategy'> = {};
     if (!connector.manager_contract && connector.manager_contract_image) {
       const contractDto = contractsByImage[connector.manager_contract_image];
