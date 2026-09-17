@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { elDeleteInstances, elIndex, elIndexElements } from '../../../../src/database/engine';
 import { fullEntitiesList, internalFindByIdsMapped } from '../../../../src/database/middleware-loader';
-import { deleteCatalogContracts, findAllCatalogs, findAllCatalogsExcluding, updateCatalogContracts, upsertCatalog } from '../../../../src/modules/catalog/catalog-repository';
+import {
+  deleteCatalogContracts,
+  findAllCatalogs,
+  findAllCatalogsExcluding,
+  findCatalogsRevisions,
+  updateCatalogContracts,
+  upsertCatalog,
+} from '../../../../src/modules/catalog/catalog-repository';
 import {
   type BasicStoreEntityCatalogContract,
   type CatalogContractUpdate,
@@ -88,6 +95,39 @@ describe('catalog repository', () => {
           filterGroups: [],
           mode: FilterMode.And,
         },
+      },
+    );
+  });
+
+  it('should find catalog revisions excluding the specified catalog ids', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([]);
+
+    await findCatalogsRevisions(context, user, ['catalog-1', 'catalog-2']);
+
+    expect(fullEntitiesList).toHaveBeenCalledWith(
+      context,
+      user,
+      [ENTITY_TYPE_CATALOG],
+      {
+        indices: [READ_INDEX_INTERNAL_OBJECTS],
+        filters: {
+          filters: [
+            {
+              key: ['catalog_id'],
+              values: ['catalog-1'],
+              operator: FilterOperator.NotEq,
+            },
+            {
+              key: ['catalog_id'],
+              values: ['catalog-2'],
+              operator: FilterOperator.NotEq,
+            },
+          ],
+          filterGroups: [],
+          mode: FilterMode.And,
+        },
+        baseData: true,
+        baseFields: ['catalog_id', 'revision'],
       },
     );
   });
