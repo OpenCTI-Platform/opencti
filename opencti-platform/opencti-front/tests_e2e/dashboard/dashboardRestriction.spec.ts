@@ -17,6 +17,38 @@ import DashboardWidgetsPageModel from '../model/DashboardWidgets.pageModel';
 import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
 import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 
+const AUTH_FILE = 'tests_e2e/.setup/.auth/user.json';
+
+// Every logout of this test destroys the server-side session recorded in the shared storage
+// state. A failed attempt therefore leaves the retry, and every later test of the shard, logged
+// out. Land on whatever the stored session gives (dashboards list or login page) and make sure
+// an admin is logged in before starting; log back in as admin and rewrite the storage state
+// afterwards, whatever happened in between.
+test.beforeEach(async ({ page }) => {
+  const loginForm = new LoginFormPageModel(page);
+  const dashboardPage = new DashboardPage(page);
+  await page.goto('/dashboard/workspaces/dashboards');
+  await expect(loginForm.getPage().or(dashboardPage.getPageTitle())).toBeVisible();
+  if (await loginForm.getPage().isVisible()) {
+    await loginForm.login();
+  }
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
+});
+
+test.afterEach(async ({ page }) => {
+  const loginForm = new LoginFormPageModel(page);
+  const topBar = new TopMenuProfilePage(page);
+  const dashboardPage = new DashboardPage(page);
+  await page.goto('/dashboard/workspaces/dashboards');
+  await expect(loginForm.getPage().or(topBar.getMenuProfile())).toBeVisible();
+  if (await topBar.getMenuProfile().isVisible()) {
+    await topBar.logout();
+  }
+  await loginForm.login();
+  await expect(dashboardPage.getPageTitle()).toBeVisible();
+  await page.context().storageState({ path: AUTH_FILE });
+});
+
 test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   test.setTimeout(300000); // This test has 7 login/logout cycles — needs more headroom than the default 200s
 
@@ -50,7 +82,6 @@ test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page 
 
   // region Prepare dashboard for tests
   // ----------------------------------
-  await page.goto('/dashboard/workspaces/dashboards');
   await leftBar.open();
 
   // await dashboardPage.getCreateMenuButton().hover();
@@ -158,10 +189,4 @@ test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page 
 
   // ---------
   // endregion
-
-  // To reset the token with an admin token
-  await topBar.logout();
-  await loginForm.login();
-  await leftBar.clickOnMenu('Dashboards', 'Custom dashboards');
-  await page.context().storageState({ path: 'tests_e2e/.setup/.auth/user.json' });
 });
