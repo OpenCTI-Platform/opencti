@@ -27,7 +27,14 @@ export const findCatalogByCatalogId = async (
   user: AuthUser,
   catalogId: string,
 ) => {
-  const catalog = await elLoadBy<BasicStoreEntityCatalog>(context, user, 'catalog_id', catalogId, ENTITY_TYPE_CATALOG);
+  const catalog = await elLoadBy<BasicStoreEntityCatalog>(
+    context,
+    user,
+    'catalog_id',
+    catalogId,
+    ENTITY_TYPE_CATALOG,
+    [READ_INDEX_INTERNAL_OBJECTS],
+  );
   return catalog;
 };
 
@@ -36,7 +43,14 @@ export const findCatalogBySourceUri = async (
   user: AuthUser,
   sourceUri: string,
 ) => {
-  const catalog = await elLoadBy<BasicStoreEntityCatalog>(context, user, 'source_uri', sourceUri);
+  const catalog = await elLoadBy<BasicStoreEntityCatalog>(
+    context,
+    user,
+    'source_uri',
+    sourceUri,
+    ENTITY_TYPE_CATALOG,
+    [READ_INDEX_INTERNAL_OBJECTS],
+  );
   return catalog;
 };
 
