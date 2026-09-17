@@ -363,6 +363,7 @@ type GetMetrics {
 
 type DocsMetrics {
   count: String
+  total_size_in_bytes: Float
 }
 
 type ElasticSearchMetrics {
@@ -370,6 +371,23 @@ type ElasticSearchMetrics {
   search: SearchMetrics
   get: GetMetrics
   indexing: IndexingMetrics
+}
+
+type DataIndexMetrics {
+  indexes: [DataIndex]
+}
+
+type DataIndex {
+  name: String
+  uuid: String
+  health: String
+  status: String
+  primaries: IndexStats
+  total: IndexStats
+}
+
+type IndexStats {
+  docs: DocsMetrics
 }
 
 enum StatsOperation {
@@ -9246,6 +9264,7 @@ type Query {
   about: AppInfo
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
+  dataIndexMetrics: DataIndexMetrics
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   log(id: ID!): Log
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection

@@ -349,12 +349,27 @@ type GetMetrics {
 }
 type DocsMetrics {
   count: String
+  total_size_in_bytes: Float
 }
 type ElasticSearchMetrics {
   docs: DocsMetrics
   search: SearchMetrics
   get: GetMetrics
   indexing: IndexingMetrics
+}
+type DataIndexMetrics {
+  indexes:[DataIndex]
+}
+type DataIndex {
+  name: String
+  uuid: String
+  health: String
+  status: String
+  primaries: IndexStats,
+  total: IndexStats,
+}
+type IndexStats {
+  docs: DocsMetrics
 }
 enum StatsOperation {
   count
@@ -14494,6 +14509,7 @@ type Query {
   about: AppInfo @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
+  dataIndexMetrics: DataIndexMetrics @auth(for: [MODULES])
   logs(
     first: Int
     after: ID
