@@ -32,8 +32,10 @@ const autoUpgradeManagedConnector = async (
     if (!latestCompatibleContract) {
       // Warning: we're running a connector that's not compatible anymore but
       // there's no replacement version compatible !
-      // TODO: stop the connector and block the restart from the UI, or delete
-      // the connector ?
+      logApp.warn('[OPENCTI-MODULE] Unable to find a compatible contract when applying auto-upgrade-to-latest-compatible strategy', {
+        module: 'connector',
+        connectorId: managedConnector.id,
+      });
       return;
     }
     if (semver.eq(contract_version, latestCompatibleContract.contract_version)
