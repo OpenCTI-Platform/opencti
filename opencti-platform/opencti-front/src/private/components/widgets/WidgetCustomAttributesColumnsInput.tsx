@@ -271,10 +271,10 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
                   sx={{ height: 42, paddingLeft: theme.spacing(2) }}
                 >
                   <Checkbox
+                    label={t_i18n(formatColumnName(column))}
                     checked={value.some((col) => col.attribute === column.attribute)}
                     onCheckedChange={() => handleToggleColumn(column.attribute)}
                   />
-                  <ListItemText primary={t_i18n(formatColumnName(column))} />
                 </ListItem>
               ))}
             </List>
