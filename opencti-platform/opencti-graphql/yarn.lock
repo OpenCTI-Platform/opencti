@@ -8698,7 +8698,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jiti@npm:^2.0.0, jiti@npm:^2.3.0, jiti@npm:^2.7.0":
+"jiti@npm:2.7.0, jiti@npm:^2.0.0, jiti@npm:^2.3.0, jiti@npm:^2.7.0":
   version: 2.7.0
   resolution: "jiti@npm:2.7.0"
   bin:
@@ -10374,6 +10374,7 @@ __metadata:
     https-proxy-agent: "npm:9.1.0"
     ioredis: "npm:5.8.2"
     ipaddr.js: "npm:2.5.0"
+    jiti: "npm:2.7.0"
     jose: "npm:6.2.12"
     js-deep-equals: "npm:2.1.1"
     jsonpath-plus: "npm:10.4.0"
