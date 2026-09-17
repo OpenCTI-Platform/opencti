@@ -3132,7 +3132,7 @@
   "More": "Altro",
   "More fields": "Altri campi",
   "More information": "Maggiori informazioni",
-  "More than 8 columns selected — when applied the export will switch to landscape format.": "Sono state selezionate più di 8 colonne: una volta avviata, l'esportazione passerà al formato orizzontale.",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "Sono state selezionate più di {threshold} colonne: una volta applicata, l'esportazione passerà al formato orizzontale.",
   "More workflow options": "Altre opzioni del flusso di lavoro",
   "Most active labels (Last 3 months)": "Etichette più attive (Ultimi 3 mesi)",
   "Most active malware (Last 3 months)": "Malware più attivi (Ultimi 3 mesi)",

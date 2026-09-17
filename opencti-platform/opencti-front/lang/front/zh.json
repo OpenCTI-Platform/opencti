@@ -3132,7 +3132,7 @@
   "More": "更多",
   "More fields": "更多字段",
   "More information": "更多信息",
-  "More than 8 columns selected — when applied the export will switch to landscape format.": "选中的列数超过 8 列——应用此设置后，导出将切换为横向布局。",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "已选中的列数超过 {threshold} — 应用此设置后，导出文件将切换为横向布局。",
   "More workflow options": "更多工作流选项",
   "Most active labels (Last 3 months)": "最活跃的标签（最近 3 个月）",
   "Most active malware (Last 3 months)": "最活跃的恶意软件（最近 3 个月）",

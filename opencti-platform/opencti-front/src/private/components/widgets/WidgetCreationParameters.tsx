@@ -987,7 +987,9 @@ const WidgetCreationParameters = () => {
                 onChange={(newColumns) => setColumns(index, newColumns)}
                 selectedPanelFlex={1}
                 landscapeWarningThreshold={WIDE_TABLE_COLUMN_THRESHOLD}
-                landscapeWarningMessage={t_i18n('More than 8 columns selected — when applied the export will switch to landscape format.')}
+                landscapeWarningMessage={t_i18n('More than {threshold} columns selected — when applied the export will switch to landscape format.', {
+                  values: { threshold: WIDE_TABLE_COLUMN_THRESHOLD },
+                })}
                 labels={{
                   title: t_i18n('Customize columns'),
                   available: t_i18n('Available columns'),

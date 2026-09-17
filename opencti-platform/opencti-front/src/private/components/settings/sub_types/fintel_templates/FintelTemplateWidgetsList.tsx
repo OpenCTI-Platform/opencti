@@ -86,7 +86,9 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
 
       {hasWideTableWidget && (
         <Alert severity="warning" sx={{ marginLeft: 2, marginRight: 2, marginTop: 1 }}>
-          {t_i18n('More than 8 columns selected — when applied the export will switch to landscape format.')}
+          {t_i18n('More than {threshold} columns selected — when applied the export will switch to landscape format.', {
+            values: { threshold: WIDE_TABLE_COLUMN_THRESHOLD },
+          })}
         </Alert>
       )}
 

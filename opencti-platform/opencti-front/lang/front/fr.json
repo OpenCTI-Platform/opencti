@@ -3132,7 +3132,7 @@
   "More": "Plus",
   "More fields": "Plus de champs",
   "More information": "Plus d'informations",
-  "More than 8 columns selected — when applied the export will switch to landscape format.": "Plus de 8 colonnes sélectionnées — lors de l'exportation, le format passera en mode paysage.",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "Plus de {threshold} colonnes sélectionnées — une fois cette option appliquée, l'exportation passera en format paysage.",
   "More workflow options": "Autres options du workflow",
   "Most active labels (Last 3 months)": "Labels les plus actifs (3 derniers mois)",
   "Most active malware (Last 3 months)": "Logiciels malveillants les plus actifs (3 derniers mois)",
