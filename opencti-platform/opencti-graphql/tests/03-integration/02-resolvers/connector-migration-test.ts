@@ -193,19 +193,31 @@ describe('Check connector migration', () => {
           throw new Error('Connector nist-nvd-cve container-image not found in catalog');
         }
 
-        // same values excluded from catalog-domain
-        const RUNTIME_KEYS = ['OPENCTI_TOKEN', 'CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
         const managedConnector = managedConnectorResult.data.connectorMigrateToManaged;
         const rawConfig = managedConnector.manager_contract_configuration;
 
-        const actualConfig = rawConfig.filter((c: { key: string }) => !RUNTIME_KEYS.includes(c.key));
-        RUNTIME_KEYS.forEach((runtimeKey) => {
+        // ManagedConnector.manager_contract_configuration injects these keys dynamically at read time
+        // (see computeManagerConnectorConfiguration), they are not part of the persisted/schema-driven config.
+        const INJECTED_KEYS = ['CONNECTOR_ID', 'CONNECTOR_NAME', 'CONNECTOR_TYPE', 'OPENCTI_TOKEN'];
+        INJECTED_KEYS.forEach((injectedKey) => {
+          const found = rawConfig.find((c: { key: string }) => c.key === injectedKey);
+          expect(found).toBeDefined();
+        });
+
+        // These runtime keys are never persisted/returned in manager_contract_configuration:
+        // OPENCTI_URL and CONNECTOR_RUN_AND_TERMINATE are excluded from the contract's config
+        // (same exclusion as catalog-domain), and proxy vars are only injected when configured.
+        const EXCLUDED_RUNTIME_KEYS = ['OPENCTI_URL', 'CONNECTOR_RUN_AND_TERMINATE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
+        EXCLUDED_RUNTIME_KEYS.forEach((runtimeKey) => {
           const found = rawConfig.find((c: { key: string }) => c.key === runtimeKey);
           expect(found).toBeUndefined();
         });
+
+        const actualConfig = rawConfig.filter((c: { key: string }) => !INJECTED_KEYS.includes(c.key));
         const schemaProperties = contractFound.config_schema.properties;
 
-        const expectedKeys = Object.keys(schemaProperties);
+        const expectedKeys = Object.keys(schemaProperties)
+          .filter((key) => !INJECTED_KEYS.includes(key) && !EXCLUDED_RUNTIME_KEYS.includes(key));
         const actualKeys = actualConfig.map((c: { key: string }) => c.key);
 
         // Assert all expected keys are present and no extra keys
