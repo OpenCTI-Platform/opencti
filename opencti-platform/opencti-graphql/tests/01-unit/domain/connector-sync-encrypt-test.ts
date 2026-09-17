@@ -15,6 +15,8 @@ vi.mock('../../../src/database/redis', () => ({
   setEditContext: vi.fn(),
   delEditContext: vi.fn(),
   redisGetWork: vi.fn(),
+}));
+vi.mock('../../../src/modules/connector/connector-redis', () => ({
   redisSetConnectorHealthMetrics: vi.fn(),
   redisGetConnectorHealthMetrics: vi.fn(),
   redisSetConnectorLogs: vi.fn(),

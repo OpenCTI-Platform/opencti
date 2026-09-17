@@ -13,18 +13,15 @@ import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
 import {
   type ConnectorHealthMetrics,
-  delEditContext,
-  notify,
   redisDeleteConnectorHeartbeat,
   redisGetConnectorHealthMetrics,
-  redisGetWork,
   redisSetConnectorHealthMetrics,
   redisSetConnectorHeartbeat,
   redisSetConnectorLogs,
-  setEditContext,
-} from '../database/redis';
+} from '../modules/connector/connector-redis';
 import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';

@@ -44,8 +44,8 @@ vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   connectorConfig: vi.fn().mockReturnValue({}),
 }));
 
-vi.mock('../../../src/database/redis', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/connector/connector-redis')>()),
   redisSetConnectorHeartbeat: vi.fn(),
   redisGetConnectorHeartbeat: vi.fn().mockResolvedValue(null),
 }));

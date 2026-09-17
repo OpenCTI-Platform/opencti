@@ -845,15 +845,6 @@ export interface FeedLog {
   count?: number;
 }
 
-export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
-  const data = JSON.stringify(logs);
-  await getClientBase().set(`connector-${connectorId}-logs`, data);
-};
-export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
-  const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
-  return rawLogs ? JSON.parse(rawLogs) : [];
-};
-
 const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
 
 const INGESTION_DEDUP_MAX_COUNT = 100;
@@ -910,55 +901,6 @@ export const redisAddIngestionHistory = async (feedId: string, log: FeedLog) => 
 export const redisGetIngestionHistory = async (feedId: string): Promise<FeedLog[]> => {
   const rawLogs = await getClientBase().lrange(getIngestionLogKey(feedId), 0, -1);
   return rawLogs.map((entry) => JSON.parse(entry) as FeedLog);
-};
-// endregion
-
-// region connector health metrics
-export interface ConnectorHealthMetrics {
-  restart_count: number;
-  started_at: string;
-  last_update: string;
-  is_in_reboot_loop: boolean;
-}
-
-export const redisSetConnectorHealthMetrics = async (connectorId: string, metrics: ConnectorHealthMetrics) => {
-  const data = JSON.stringify(metrics);
-  // TTL of 5 minutes (300 seconds)
-  await getClientBase().set(`connector-${connectorId}-health`, data, 'EX', 300);
-};
-
-export const redisGetConnectorHealthMetrics = async (connectorId: string): Promise<ConnectorHealthMetrics | null> => {
-  const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
-  return rawMetrics ? JSON.parse(rawMetrics) : null;
-};
-// endregion
-
-// region connector heartbeats
-// Connector liveness is kept out of Elasticsearch so that no entity write (migration, auto-upgrade, edition...)
-// can make a connector look alive: only a connector ping or registration records a heartbeat.
-// Single sorted set (member: connector id, score: last heartbeat epoch ms) so that listing works in one call, cluster included.
-const CONNECTOR_HEARTBEATS_KEY = 'connector_heartbeats';
-
-export const redisSetConnectorHeartbeat = async (connectorId: string, lastSeenAt: string) => {
-  await getClientBase().zadd(CONNECTOR_HEARTBEATS_KEY, new Date(lastSeenAt).getTime(), connectorId);
-};
-
-export const redisGetConnectorHeartbeat = async (connectorId: string): Promise<string | null> => {
-  const score = await getClientBase().zscore(CONNECTOR_HEARTBEATS_KEY, connectorId);
-  return score ? new Date(Number(score)).toISOString() : null;
-};
-
-export const redisGetConnectorsHeartbeats = async (): Promise<Map<string, string>> => {
-  const membersWithScores = await getClientBase().zrange(CONNECTOR_HEARTBEATS_KEY, 0, -1, 'WITHSCORES');
-  const heartbeats = new Map<string, string>();
-  for (let i = 0; i < membersWithScores.length; i += 2) {
-    heartbeats.set(membersWithScores[i], new Date(Number(membersWithScores[i + 1])).toISOString());
-  }
-  return heartbeats;
-};
-
-export const redisDeleteConnectorHeartbeat = async (connectorId: string) => {
-  await getClientBase().zrem(CONNECTOR_HEARTBEATS_KEY, connectorId);
 };
 // endregion
 
