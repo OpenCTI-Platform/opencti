@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { addIngestionCsv, deleteIngestionCsv, ingestionCsvEditField } from '../../../../src/modules/ingestion/ingestion-csv-domain';
 import { connectorIdFromIngestId } from '../../../../src/domain/connector';
 import { connector } from '../../../../src/database/repository';
-import { redisGetConnectorHeartbeat } from '../../../../src/database/redis';
+import { redisGetConnectorHeartbeat } from '../../../../src/modules/connector/connector-redis';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { IngestionAuthType } from '../../../../src/generated/graphql';
 

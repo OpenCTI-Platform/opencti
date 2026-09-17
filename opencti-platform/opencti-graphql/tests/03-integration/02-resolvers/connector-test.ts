@@ -7,7 +7,7 @@ import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
 import { BACKGROUND_TASK_QUEUES } from '../../../src/modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { patchAttribute } from '../../../src/database/middleware';
-import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat } from '../../../src/database/redis';
+import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat } from '../../../src/modules/connector/connector-redis';
 import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
 import { DRAFT_VALIDATION_CONNECTOR } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
 
