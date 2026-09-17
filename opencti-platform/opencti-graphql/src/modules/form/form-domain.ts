@@ -480,6 +480,14 @@ export interface SubmissionPlan {
   draftPlan: DraftPlan | null;
 }
 
+// planSubmission is the decision step: it resolves the submitted form values into the concrete
+// STIX bundle and (when applicable) draft-workspace input that commitSubmission will persist.
+// It performs no observable writes (no work item, no queue push, no draft workspace, no patch,
+// no telemetry) — that boundary is what makes it safe to call speculatively/repeatedly without
+// side effects on the platform. It is NOT a pure, input-only function though: entity/relationship
+// materialization still needs read access to existing platform data (loadFormEntity/storeLoadById
+// lookups, the pattern-conversion bridge) and generates a fresh bundle id, so replaying it with
+// the same input is not guaranteed to be deterministic or replayable offline.
 export const planSubmission = async (
   context: AuthContext,
   user: AuthUser,
@@ -518,7 +526,6 @@ export const planSubmission = async (
   const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
-  logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
 
   let draftPlan: DraftPlan | null = null;
   if (finalIsDraft) {
@@ -550,6 +557,7 @@ export const commitSubmission = async (
 ): Promise<SubmissionResult> => {
   const { bundle, mainEntityStixId, finalIsDraft, draftPlan } = plan;
   try {
+    logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
     const connectorId = connectorIdFromIngestId(formId);
     const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
     const workName = `Form submission @ ${now()}`;

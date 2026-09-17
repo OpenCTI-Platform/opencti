@@ -26,7 +26,8 @@ const mockContext: any = {};
 const mockUser: any = { id: 'user-1', capabilities: [] };
 
 describe('planSubmission', () => {
-  it('builds a bundle with objects and no draft plan when isDraft is false', async () => {
+  it('orchestrates the builder pipeline with the right arguments and returns their results as the plan (bundle-population itself is mocked, not exercised)', async () => {
+    const { buildMainStixEntities, buildAdditionalEntities, buildRelationships, wrapInContainerOrPush } = await import('../../../src/modules/form/form-bundle-builder');
     const form: any = { id: 'form-1', name: 'Test Form' };
     const input: any = {
       formId: 'form-1',
@@ -46,6 +47,14 @@ describe('planSubmission', () => {
     expect(plan.finalIsDraft).toBe(false);
     expect(plan.mainEntityStixId).toBe('report--main');
     expect(plan.draftPlan).toBeNull();
+
+    // Confirms the planner actually wires the builders together (values/schema decoded and
+    // threaded through, main entities passed on to relationship-building and container wrapping)
+    // rather than just happening to return a well-shaped, still-empty bundle.
+    expect(buildMainStixEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, 'Report', false);
+    expect(buildAdditionalEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, plan.bundle, false);
+    expect(buildRelationships).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, [{ id: 'report--main' }], new Map(), plan.bundle);
+    expect(wrapInContainerOrPush).toHaveBeenCalledWith('Report', [{ id: 'report--main' }], plan.bundle, false);
   });
 
   it('produces a draftPlan when isDraft is true', async () => {
