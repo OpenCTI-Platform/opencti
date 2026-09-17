@@ -70,6 +70,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
           helpers={filterHelpers}
           searchContext={{ entityTypes: ['Stix-Core-Object'] }}
           disabled={disabled}
+          disableAddFilterGroup
         />
       </Box>
       <FilterIconButton

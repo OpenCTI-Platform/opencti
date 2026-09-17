@@ -42,6 +42,7 @@ type ListFiltersProps = {
   isDatatable?: boolean;
   disabled?: boolean;
   hideSavedFilters?: boolean;
+  disableAddFilterGroup?: boolean;
 };
 
 type ParametersType = {
@@ -78,6 +79,7 @@ const ListFilters = ({
   isDatatable = false,
   disabled = false,
   hideSavedFilters = false,
+  disableAddFilterGroup = false,
 }: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
@@ -200,7 +202,9 @@ const ListFilters = ({
   };
 
   // prepended after the sorts so that it cannot be moved by them
-  const allOptions: OptionType[] = [addFilterGroupOption, ...(options as OptionType[])];
+  const allOptions: OptionType[] = disableAddFilterGroup
+    ? (options as OptionType[])
+    : [addFilterGroupOption, ...(options as OptionType[])];
 
   const defaultFilterOptions = (unfilteredOptions: OptionType[], inputValue: string) => {
     const search = inputValue.trim().toLowerCase();
@@ -208,10 +212,14 @@ const ListFilters = ({
     return unfilteredOptions.filter((o) => o.label.toLowerCase().includes(search));
   };
   // the synthetic option must never be filtered out by the search input
-  const filterOptions = (unfilteredOptions: OptionType[], inputValue: string) => [
-    addFilterGroupOption,
-    ...defaultFilterOptions(unfilteredOptions.filter((o) => o.value !== ADD_FILTER_GROUP_OPTION_VALUE), inputValue),
-  ];
+  const filterOptions = (unfilteredOptions: OptionType[], inputValue: string) => (
+    disableAddFilterGroup
+      ? defaultFilterOptions(unfilteredOptions.filter((o) => o.value !== ADD_FILTER_GROUP_OPTION_VALUE), inputValue)
+      : [
+          addFilterGroupOption,
+          ...defaultFilterOptions(unfilteredOptions.filter((o) => o.value !== ADD_FILTER_GROUP_OPTION_VALUE), inputValue),
+        ]
+  );
 
   const handleAddFilterGroup = () => {
     helpers?.handleAddFilterGroup?.(); // always added at the root from ListFilters
