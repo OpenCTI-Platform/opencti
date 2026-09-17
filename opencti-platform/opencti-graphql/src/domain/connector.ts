@@ -28,7 +28,8 @@ import {
 import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
+import type { BasicStoreEntitySynchronizer } from '../types/connector';
+import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, ConnectorInfo, StoreEntityConnector } from '../modules/connector/connector-types';
 import {
   type AddManagedConnectorInput,
   ConnectorPriorityGroup,
@@ -142,7 +143,7 @@ export const updateConnectorWithConnectorInfo = async (
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
   }
-  const { element } = await patchAttribute<BasicStoreEntityConnector>(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  const { element } = await patchAttribute<StoreEntityConnector>(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
   return element;
 };
 
@@ -165,7 +166,7 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
-  const { element } = await patchAttribute<BasicStoreEntityConnector>(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+  const { element } = await patchAttribute<StoreEntityConnector>(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -459,7 +460,7 @@ export const registerConnector = async (
 export const connectorDelete = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
-  const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const { element } = await internalDeleteElementById<StoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   try {
     await redisDeleteConnectorHeartbeat(element.internal_id);
   } catch (err) {
@@ -480,7 +481,7 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
 };
 
 const updateConnector = async (context: AuthContext, user: AuthUser, connectorId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
+  const { element } = await updateAttribute<StoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
   await publishUserAction({
     user,
     event_type: 'mutation',

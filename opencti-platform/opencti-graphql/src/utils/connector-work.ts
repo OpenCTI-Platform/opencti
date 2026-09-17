@@ -1,6 +1,6 @@
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from './access';
 

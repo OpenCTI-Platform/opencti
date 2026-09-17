@@ -14,7 +14,7 @@ import {
 } from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
-import type { BasicStoreEntityConnectorManager } from '../types/connector';
+import type { BasicStoreEntityConnectorManager } from '../modules/connector/connector-types';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
 import { resolveUserByIdFromCache, userEditField } from '../modules/user/user-domain';

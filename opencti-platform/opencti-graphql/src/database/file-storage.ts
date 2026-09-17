@@ -8,7 +8,7 @@ import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityDocument } from '../modules/internal/document/document-types';
 import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, StoreFile } from '../types/store';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';

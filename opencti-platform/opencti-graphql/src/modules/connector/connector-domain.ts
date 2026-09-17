@@ -5,7 +5,7 @@ import { findLatestCompatibleCatalogContractBySlug } from '../catalog/catalog-re
 import { mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../catalog/catalog-domain';
 import { compareContractVersions } from '../catalog/catalog-version-utils';
 import { findManagedConnectorsByCatalogId } from './connector-repository';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from './connector-types';
 import { patchAttribute } from '../../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { redisGetManagedConnectorAutoUpgradeStatus, redisSetManagedConnectorAutoUpgradeStatus } from './connector-redis';
