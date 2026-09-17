@@ -222,7 +222,7 @@
     "eslint-plugin-import-newlines": "2.0.0",
     "globals": "17.12.0",
     "graphql-tag": "2.12.7",
-    "knip": "6.34.0",
+    "knip": "6.35.1",
     "license-checker-rseidelsohn": "5.0.1",
     "node-gyp-build": "4.8.4",
     "typescript": "6.0.3",
