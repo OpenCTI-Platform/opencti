@@ -31,6 +31,8 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
 
   const widgetSelfInstance = widgets.find(({ widget }) => widget.dataSelection[0].instance_id === SELF_ID);
   const widgetsNoSelf = widgets.filter(({ widget }) => widget.dataSelection[0].instance_id !== SELF_ID);
+  const hasWideTableWidget = widgets.some(({ widget }) => widget.dataSelection
+    .some((selection) => (selection.columns?.length ?? 0) >= 8));
 
   return (
     <>
@@ -80,6 +82,12 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       >
         {t_i18n('Add related data')}
       </Button>
+
+      {hasWideTableWidget && (
+        <Alert severity="warning" sx={{ marginLeft: 2, marginRight: 2, marginTop: 1 }}>
+          {t_i18n('More than 8 columns selected — when applied the export will switch to landscape format.')}
+        </Alert>
+      )}
 
       <List>
         {widgetsNoSelf.length === 0 && (

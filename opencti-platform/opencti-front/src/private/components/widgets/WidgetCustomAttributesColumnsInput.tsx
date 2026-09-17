@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
 import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import { Checkbox, IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
@@ -27,6 +28,8 @@ type WidgetCustomAttributesColumnsInputProps = {
     selected?: string;
   };
   selectedPanelFlex?: number;
+  landscapeWarningThreshold?: number;
+  landscapeWarningMessage?: string;
 };
 
 type DraggableColumnItemProps = {
@@ -203,12 +206,17 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   onLayoutChange,
   labels,
   selectedPanelFlex = 2,
+  landscapeWarningThreshold,
+  landscapeWarningMessage,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const titleLabel = labels?.title ?? t_i18n('Customize attributes');
   const availableLabel = labels?.available ?? t_i18n('Available attributes');
   const selectedLabel = labels?.selected ?? t_i18n('Selected attributes');
+  const shouldDisplayLandscapeWarning = !!landscapeWarningMessage
+    && typeof landscapeWarningThreshold === 'number'
+    && value.length >= landscapeWarningThreshold;
 
   const { handleDragEndSingleColumn, handleDragEndDoubleColumns, handleToggleColumn, formatColumnName } = useWidgetColumnsCustomization(
     availableColumns,
@@ -228,6 +236,11 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
         <Typography>{titleLabel}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
+        {shouldDisplayLandscapeWarning && (
+          <Alert severity="warning" sx={{ marginBottom: theme.spacing(2) }}>
+            {landscapeWarningMessage}
+          </Alert>
+        )}
 
         {/* Layout selector */}
         {onLayoutChange && (
