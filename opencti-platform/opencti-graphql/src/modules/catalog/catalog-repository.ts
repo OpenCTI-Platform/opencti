@@ -1,4 +1,3 @@
-import type { FilterGroup } from '@mistralai/mistralai/models/components';
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
