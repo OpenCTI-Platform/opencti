@@ -2394,7 +2394,7 @@ class OpenCTIStix2:
         )
 
     @staticmethod
-    def _marking_to_stix(marking: Dict) -> Dict:
+    def _marking_to_stix(marking: Dict, spec_version: str = SPEC_VERSION) -> Dict:
         """Convert an API marking definition to a STIX marking definition."""
         if marking["definition_type"] == "TLP":
             created = "2017-01-20T00:00:00.000Z"
@@ -2402,7 +2402,7 @@ class OpenCTIStix2:
             created = marking["created"]
         return {
             "type": "marking-definition",
-            "spec_version": SPEC_VERSION,
+            "spec_version": spec_version,
             "id": marking["standard_id"],
             "created": created,
             "definition_type": marking["definition_type"].lower(),
@@ -2446,6 +2446,17 @@ class OpenCTIStix2:
         result = []
         objects_to_get = []
         self._rewrite_embedded_image_uris_for_export(entity)
+
+        # Related SDOs generated below (e.g. marking-definition) must match
+        # the spec_version of the entity they are attached to: entities
+        # whose STIX representation is delegated to the backend
+        # `toStix(version: stix_2_0)` are STIX 2.0, everything else keeps
+        # the client-side default `SPEC_VERSION`.
+        # TODO(stix-2-0-migration): DELETE this once every entity is migrated
+        # and `SPEC_VERSION` becomes the sole spec version in use.
+        related_objects_spec_version = (
+            "2.0" if entity["type"] in _STIX_2_0_BACKEND_STIX_TYPES else SPEC_VERSION
+        )
 
         # CreatedByRef
         if (
@@ -2546,7 +2557,7 @@ class OpenCTIStix2:
                     created = entity_marking_definition["created"]
                 marking_definition = {
                     "type": "marking-definition",
-                    "spec_version": SPEC_VERSION,
+                    "spec_version": related_objects_spec_version,
                     "id": entity_marking_definition["standard_id"],
                     "created": created,
                     "definition_type": entity_marking_definition[
@@ -2757,7 +2768,9 @@ class OpenCTIStix2:
                     "object_marking_refs": [],
                 }
                 for file_marking_definition in file.get("objectMarking") or []:
-                    marking_definition = self._marking_to_stix(file_marking_definition)
+                    marking_definition = self._marking_to_stix(
+                        file_marking_definition, related_objects_spec_version
+                    )
                     self._append_marking_definition(result, marking_definition)
                     x_opencti_file["object_marking_refs"].append(
                         marking_definition["id"]
