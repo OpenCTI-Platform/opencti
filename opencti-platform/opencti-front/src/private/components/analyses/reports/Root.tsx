@@ -15,6 +15,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ReportStixCoreRelationships from './ReportStixCoreRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -170,6 +171,11 @@ const RootReport = () => {
                         <ContainerStixCyberObservables
                           container={report}
                           enableReferences={enableReferences}
+                        />
+                      ),
+                      relationships: (
+                        <ReportStixCoreRelationships
+                          reportId={report.id}
                         />
                       ),
                       files: (
