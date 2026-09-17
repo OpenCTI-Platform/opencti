@@ -9946,6 +9946,7 @@ __metadata:
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.3.0"
     canonicalize: "npm:4.0.0"
+    chokidar: "npm:5.0.0"
     compression: "npm:1.8.2"
     content-disposition: "npm:3.0.0"
     content-type: "npm:3.0.0"
