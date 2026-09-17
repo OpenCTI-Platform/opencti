@@ -74,6 +74,29 @@ export default class DashboardWidgetsPageModel {
     return this.page.getByTestId('widget-submit-button').click();
   }
 
+  /** Same button as the creation one, labelled 'Update' when editing an existing widget. */
+  updateWidget() {
+    return this.page.getByTestId('widget-submit-button').click();
+  }
+
+  /** Reopens the configuration dialog of an existing widget. */
+  async openUpdateWidgetModal() {
+    await this.getActionsWidgetsPopover().click();
+    await this.getActionButton('Update').click();
+  }
+
+  /**
+   * Jumps to one step of the widget config stepper.
+   * Scoped to the dialog and exact, otherwise 'Filters' also matches the 'Clear filters' and
+   * 'Validate filters' buttons of the filter step itself. MUI marks the current step with
+   * `aria-current="step"` AND disables its button, so clicking it would hang: no-op instead.
+   */
+  async goToStep(step: 'Visualization' | 'Perspective' | 'Filters' | 'Parameters') {
+    const stepButton = this.page.getByRole('dialog').getByRole('button', { name: step, exact: true });
+    if (await stepButton.getAttribute('aria-current') === 'step') return;
+    await stepButton.click();
+  }
+
   getItemFromWidgetList(name: string) {
     return this.page.getByTestId(name);
   }
@@ -148,8 +171,8 @@ export default class DashboardWidgetsPageModel {
     await this.openWidgetModal();
     await this.selectWidget('Horizontal Bar');
     await this.selectPerspective('Knowledge graph');
-    await this.filters.addFilter('Source type', 'Malware');
-    await this.filters.addFilter('Relationship type', 'targets');
+    await this.filters.addFilter('Source type', 'Malware', 'Relationship filters');
+    await this.filters.addFilter('Relationship type', 'targets', 'Relationship filters');
     await this.addEntitiesSelection();
     await this.subFilters.addFilter('Entity type', 'Malware');
     await this.validateFilters();
