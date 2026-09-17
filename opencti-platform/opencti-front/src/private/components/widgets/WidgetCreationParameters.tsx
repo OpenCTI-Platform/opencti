@@ -41,6 +41,7 @@ import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import { getEntityTypeFromFilters, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
+import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -985,7 +986,7 @@ const WidgetCreationParameters = () => {
                 value={selectedColumns}
                 onChange={(newColumns) => setColumns(index, newColumns)}
                 selectedPanelFlex={1}
-                landscapeWarningThreshold={8}
+                landscapeWarningThreshold={WIDE_TABLE_COLUMN_THRESHOLD}
                 landscapeWarningMessage={t_i18n('More than 8 columns selected — when applied the export will switch to landscape format.')}
                 labels={{
                   title: t_i18n('Customize columns'),
