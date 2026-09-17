@@ -2281,6 +2281,17 @@ class OpenCTIStix2:
         objects_to_get = []
         self._rewrite_embedded_image_uris_for_export(entity)
 
+        # Related SDOs generated below (e.g. marking-definition) must match
+        # the spec_version of the entity they are attached to: entities
+        # whose STIX representation is delegated to the backend
+        # `toStix(version: stix_2_0)` are STIX 2.0, everything else keeps
+        # the client-side default `SPEC_VERSION`.
+        # TODO(stix-2-0-migration): DELETE this once every entity is migrated
+        # and `SPEC_VERSION` becomes the sole spec version in use.
+        related_objects_spec_version = (
+            "2.0" if entity["type"] in _STIX_2_0_BACKEND_STIX_TYPES else SPEC_VERSION
+        )
+
         # CreatedByRef
         if (
             not no_custom_attributes
@@ -2379,7 +2390,7 @@ class OpenCTIStix2:
                     created = entity_marking_definition["created"]
                 marking_definition = {
                     "type": "marking-definition",
-                    "spec_version": SPEC_VERSION,
+                    "spec_version": related_objects_spec_version,
                     "id": entity_marking_definition["standard_id"],
                     "created": created,
                     "definition_type": entity_marking_definition[
@@ -2572,11 +2583,12 @@ class OpenCTIStix2:
                 for file_marking_definition in file.get("objectMarking", []):
                     if file_marking_definition["definition_type"] == "TLP":
                         created = "2017-01-20T00:00:00.000Z"
+
                     else:
                         created = file_marking_definition["created"]
                     marking_definition = {
                         "type": "marking-definition",
-                        "spec_version": SPEC_VERSION,
+                        "spec_version": related_objects_spec_version,
                         "id": file_marking_definition["standard_id"],
                         "created": created,
                         "definition_type": file_marking_definition[
