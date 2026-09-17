@@ -4,7 +4,7 @@ import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../util
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
-import { BACKGROUND_TASK_QUEUES } from '../../../src/database/rabbitmq';
+import { BACKGROUND_TASK_QUEUES } from '../../../src/modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { patchAttribute } from '../../../src/database/middleware';
 import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat } from '../../../src/database/redis';

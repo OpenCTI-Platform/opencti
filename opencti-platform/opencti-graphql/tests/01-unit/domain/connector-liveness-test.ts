@@ -31,7 +31,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   topEntitiesList: vi.fn(),
 }));
 
-vi.mock('../../../src/database/rabbitmq', () => ({
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(),
   getConnectorQueueDetails: vi.fn(),
