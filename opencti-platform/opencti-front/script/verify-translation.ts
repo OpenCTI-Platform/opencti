@@ -7,24 +7,14 @@ const englishTranslationFileFrontend = 'lang/front/en.json';
 const englishTranslationFileBackend = 'lang/back/en.json';
 const jsxTsxFileExtensions = ['.jsx', '.tsx'];
 const jsTsFileExtensions = ['.js', '.ts'];
-const frontendSearchPattern = /t_i18n\('[^']+'\)/g;
-const backendSearchPattern = /label: '[^']+'/g;
-const frontendExtractedValues = {};
-const backendExtractedValues = {};
+const frontendSearchPattern = /t_i18n\('([^']+)'\)/g;
+const backendSearchPattern = /label: '([^']+)'/g;
+const frontendExtractedValues: Record<string, string> = {};
+const backendExtractedValues: Record<string, string> = {};
 let missingTranslationsFrontend = 0;
 let missingTranslationsBackend = 0;
 
-const extractValueFromPatternFrontend = (pattern) => {
-  const match = /t_i18n\('([^']+)'\)/.exec(pattern);
-  return match ? match[1] : null;
-};
-
-const extractValueFromPatternBackend = (pattern) => {
-  const match = /label: '([^']+)'/.exec(pattern);
-  return match ? match[1] : null;
-};
-
-const extractI18nValuesFrontend = async (directory) => {
+const extractI18nValuesFrontend = async (directory: string) => {
   try {
     const files = await readdir(directory);
     for (const file of files) {
@@ -35,23 +25,19 @@ const extractI18nValuesFrontend = async (directory) => {
         await extractI18nValuesFrontend(filePath); // Recursively call the function for directories
       } else if (stats.isFile() && jsxTsxFileExtensions.includes(path.extname(filePath))) {
         const data = await readFile(filePath, 'utf8');
-        const matches = data.match(frontendSearchPattern);
-        if (matches) {
-          matches.forEach((match) => {
-            const value = extractValueFromPatternFrontend(match);
-            if (value) {
-              frontendExtractedValues[value] = value;
-            }
-          });
+        for (const [, value] of data.matchAll(frontendSearchPattern)) {
+          if (value) {
+            frontendExtractedValues[value] = value;
+          }
         }
       }
     }
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`Error: ${(error instanceof Error ? error.message : String(error))}`);
   }
 };
 
-const extractI18nValuesBackend = async (directory) => {
+const extractI18nValuesBackend = async (directory: string) => {
   try {
     const files = await readdir(directory);
     for (const file of files) {
@@ -62,19 +48,15 @@ const extractI18nValuesBackend = async (directory) => {
         await extractI18nValuesBackend(filePath); // Recursively call the function for directories
       } else if (stats.isFile() && jsTsFileExtensions.includes(path.extname(filePath))) {
         const data = await readFile(filePath, 'utf8');
-        const matches = data.match(backendSearchPattern);
-        if (matches) {
-          matches.forEach((match) => {
-            const value = extractValueFromPatternBackend(match);
-            if (value) {
-              backendExtractedValues[value] = value;
-            }
-          });
+        for (const [, value] of data.matchAll(backendSearchPattern)) {
+          if (value) {
+            backendExtractedValues[value] = value;
+          }
         }
       }
     }
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`Error: ${(error instanceof Error ? error.message : String(error))}`);
   }
 };
 
@@ -86,7 +68,7 @@ const mergeWithExistingDataFrontend = async () => {
     const updatedValues = { ...existingValues };
 
     for (const key in frontendExtractedValues) {
-      if (!updatedValues.hasOwnProperty(key)) {
+      if (!Object.prototype.hasOwnProperty.call(updatedValues, key)) {
         console.log('Missing frontend key: ' + key);
         missingTranslationsFrontend = 1;
       }
@@ -94,7 +76,7 @@ const mergeWithExistingDataFrontend = async () => {
 
     console.log('Frontend file verified');
   } catch (error) {
-    console.error(`Error merging frontend data: ${error.message}`);
+    console.error(`Error merging frontend data: ${(error instanceof Error ? error.message : String(error))}`);
   }
 };
 
@@ -106,14 +88,14 @@ const mergeWithExistingDataBackend = async () => {
     const updatedValues = { ...existingValues };
 
     for (const key in backendExtractedValues) {
-      if (!updatedValues.hasOwnProperty(key)) {
+      if (!Object.prototype.hasOwnProperty.call(updatedValues, key)) {
         console.log('Missing backend key: ' + key);
         missingTranslationsBackend = 1;
       }
     }
     console.log('Backend file verified');
   } catch (error) {
-    console.error(`Error merging backend data: ${error.message}`);
+    console.error(`Error merging backend data: ${(error instanceof Error ? error.message : String(error))}`);
   }
 };
 
