@@ -10,19 +10,10 @@ import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import {
-  type ConnectorHealthMetrics,
-  delEditContext,
-  notify,
-  redisGetConnectorHealthMetrics,
-  redisGetWork,
-  redisSetConnectorHealthMetrics,
-  redisSetConnectorLogs,
-  setEditContext,
-} from '../database/redis';
-import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import { OPENCTI_NAMESPACE } from '../schema/general';
+import { SYSTEM_USER } from '../utils/access';
+import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
