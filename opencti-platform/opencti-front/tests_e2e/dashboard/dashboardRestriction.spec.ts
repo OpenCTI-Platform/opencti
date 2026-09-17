@@ -30,7 +30,10 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/dashboard/workspaces/dashboards');
   await expect(loginForm.getPage().or(dashboardPage.getPageTitle())).toBeVisible();
   if (await loginForm.getPage().isVisible()) {
+    // A login lands on the home page, whatever URL was requested before it.
     await loginForm.login();
+    await expect(dashboardPage.getPage()).toBeVisible();
+    await page.goto('/dashboard/workspaces/dashboards');
   }
   await expect(dashboardPage.getPageTitle()).toBeVisible();
 });
@@ -45,7 +48,7 @@ test.afterEach(async ({ page }) => {
     await topBar.logout();
   }
   await loginForm.login();
-  await expect(dashboardPage.getPageTitle()).toBeVisible();
+  await expect(dashboardPage.getPage()).toBeVisible();
   await page.context().storageState({ path: AUTH_FILE });
 });
 
