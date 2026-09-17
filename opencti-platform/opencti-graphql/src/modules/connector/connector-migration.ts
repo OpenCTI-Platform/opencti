@@ -1,25 +1,25 @@
-import { BUS_TOPICS, logApp } from '../config/conf';
-import { FunctionalError } from '../config/errors';
-import { patchAttribute } from '../database/middleware';
-import { fullEntitiesList } from '../database/middleware-loader';
-import { notify } from '../database/redis';
-import { completeConnector, connector, connectors, loadConnectorHeartbeat } from '../database/repository';
-import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
-import { publishUserAction } from '../listener/UserActionListener';
-import { addConnectorDeployedCount } from '../manager/telemetryManager';
+import { BUS_TOPICS, logApp } from '../../config/conf';
+import { FunctionalError } from '../../config/errors';
+import { patchAttribute } from '../../database/middleware';
+import { fullEntitiesList } from '../../database/middleware-loader';
+import { notify } from '../../database/redis';
+import { completeConnector, connector, connectors, loadConnectorHeartbeat } from './connector-domain';
+import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { addConnectorDeployedCount } from '../../manager/telemetryManager';
 import {
   computeConnectorTargetContract,
   mapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mapContractEntityFieldsToGraphqlCatalogContract,
-} from '../modules/catalog/catalog-domain';
-import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
-import type { BasicStoreEntityConnectorManager } from '../modules/connector/connector-types';
-import type { AuthContext, AuthUser } from '../types/user';
-import { isServiceAccountUser } from '../utils/access';
-import { resolveUserByIdFromCache, userEditField } from '../modules/user/user-domain';
-import { now } from '../utils/format';
-import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
+} from '../catalog/catalog-domain';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../../schema/internalObject';
+import type { BasicStoreEntityConnectorManager } from './connector-types';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { isServiceAccountUser } from '../../utils/access';
+import { resolveUserByIdFromCache, userEditField } from '../user/user-domain';
+import { now } from '../../utils/format';
+import { findLatestCompatibleCatalogContractByImageName } from '../catalog/catalog-repository';
 
 type ConfigInput = {
   key: string;

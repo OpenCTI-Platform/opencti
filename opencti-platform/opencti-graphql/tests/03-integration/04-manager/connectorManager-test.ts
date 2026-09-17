@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import moment from 'moment/moment';
 import { findById as findWorkById, worksForConnector } from '../../../src/domain/work';
-import { registerConnector } from '../../../src/domain/connector';
+import { registerConnector } from '../../../src/modules/connector/connector-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { RegisterConnectorInput } from '../../../src/generated/graphql';
 import { ConnectorType } from '../../../src/generated/graphql';

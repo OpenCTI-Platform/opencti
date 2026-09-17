@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { sendStixBundle, stixDelete, stixObjectMerge } from '../domain/stix';
 import { stixLoadByIdStringify } from '../database/middleware';
-import { connectorsForEnrichment } from '../database/repository';
+import { connectorsForEnrichment } from '../modules/connector/connector-domain';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { INPUT_GRANTED_REFS } from '../schema/general';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';

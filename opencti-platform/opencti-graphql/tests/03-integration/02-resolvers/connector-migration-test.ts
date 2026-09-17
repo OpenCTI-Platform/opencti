@@ -1,12 +1,11 @@
 import gql from 'graphql-tag';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { registerConnector } from '../../../src/domain/connector';
+import { connector as loadConnector, registerConnector } from '../../../src/modules/connector/connector-domain';
 import { ConnectorType } from '../../../src/generated/graphql';
 import * as catalogRepository from '../../../src/modules/catalog/catalog-repository';
 import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
 import conf from '../../../src/config/conf';
-import { connector as loadConnector } from '../../../src/database/repository';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';

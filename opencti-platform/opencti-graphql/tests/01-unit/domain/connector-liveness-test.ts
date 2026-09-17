@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { connectorDelete, pingConnector, registerConnector, updateConnectorRequestedStatus } from '../../../src/domain/connector';
-import { connector, connectors, isConnectorActive } from '../../../src/database/repository';
+import {
+  connector,
+  connectorDelete,
+  connectors,
+  isConnectorActive,
+  pingConnector,
+  registerConnector,
+  updateConnectorRequestedStatus,
+} from '../../../src/modules/connector/connector-domain';
 import { createEntity, internalDeleteElementById, patchAttribute, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
 import { notify } from '../../../src/database/redis';
@@ -59,8 +66,8 @@ vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal)
   redisDeleteConnectorHeartbeat: vi.fn(),
 }));
 
-vi.mock('../../../src/connector/connector-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/connector/connector-domain')>()),
+vi.mock('../../../src/modules/connector/connector-built-in-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/connector/connector-built-in-domain')>()),
   builtInConnectorsRuntime: vi.fn().mockResolvedValue([]),
 }));
 

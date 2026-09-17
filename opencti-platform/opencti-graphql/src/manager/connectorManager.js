@@ -3,7 +3,7 @@ import { redisGetConnectorStatus, redisGetWork } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { connectors } from '../database/repository';
+import { connectors } from '../modules/connector/connector-domain';
 import { elList, elUpdate } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_HISTORY } from '../database/utils';
