@@ -107,7 +107,7 @@ const FilterGroupPanelHost: FunctionComponent<FilterGroupPanelHostProps> = ({
                 listener can recognize it. On `pointerdown` the target is still the trigger.
                 Clicks landing inside an already open portal are handled by ClickAwayListener
                 itself, which forgives events bubbling through a React portal.
-                FDS-WORKAROUND #61: removable once SelectContent accepts `portalled`. */}
+                FDS-WORKAROUND #65: removable once SelectContent accepts `portalled`. */}
             <ClickAwayListener mouseEvent="onPointerDown" onClickAway={onClickAway}>
               <Box sx={{ padding: 2 }}>
                 {group && withContext(<FilterGroupPanel group={group} />)}
