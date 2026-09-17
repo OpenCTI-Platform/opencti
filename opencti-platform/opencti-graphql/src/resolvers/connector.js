@@ -67,7 +67,7 @@ import {
   connectorsForWorker,
 } from '../database/repository';
 import { getConnectorQueueSize } from '../database/rabbitmq';
-import { redisGetConnectorLogs } from '../database/redis';
+import { redisGetConnectorLogs } from '../modules/connector/connector-redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/connector-migration';
