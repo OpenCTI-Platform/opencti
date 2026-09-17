@@ -66,37 +66,33 @@ const CoverageDetailsStep = ({
         style={fieldSpacingContainerStyle}
         setFieldValue={setFieldValue}
       />
-      {mode === SecurityCoverageMode.MANUAL && (
-        <>
-          <PeriodicityField
-            name="duration"
-            label={t_i18n('Duration')}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <Field
-            component={SelectFieldFds}
-            variant="standard"
-            name="type_affinity"
-            onChange={(name: string, value: string) => setFieldValue(name, value)}
-            label={t_i18n('Type affinity')}
-            fullWidth={true}
-            containerstyle={{ width: '100%', marginTop: 20 }}
-          >
-            <SelectItem key="ENDPOINT" value="ENDPOINT">
-              {t_i18n('Endpoint')}
-            </SelectItem>
-          </Field>
-          <OpenVocabField
-            label={t_i18n('Platform(s) affinity')}
-            type="platforms_ov"
-            name="platforms_affinity"
-            onChange={(name, value) => setFieldValue(name, value)}
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={true}
-          />
-        </>
-      )}
+      <PeriodicityField
+        name="duration"
+        label={t_i18n('Duration')}
+        style={fieldSpacingContainerStyle}
+        setFieldValue={setFieldValue}
+      />
+      <Field
+        component={SelectFieldFds}
+        variant="standard"
+        name="type_affinity"
+        onChange={(name: string, value: string) => setFieldValue(name, value)}
+        label={t_i18n('Type affinity')}
+        fullWidth={true}
+        containerstyle={{ width: '100%', marginTop: 20 }}
+      >
+        <SelectItem key="ENDPOINT" value="ENDPOINT">
+          {t_i18n('Endpoint')}
+        </SelectItem>
+      </Field>
+      <OpenVocabField
+        label={t_i18n('Platform(s) affinity')}
+        type="platforms_ov"
+        name="platforms_affinity"
+        onChange={(name, value) => setFieldValue(name, value)}
+        containerStyle={fieldSpacingContainerStyle}
+        multiple={true}
+      />
       <Field
         component={SwitchField}
         type="checkbox"

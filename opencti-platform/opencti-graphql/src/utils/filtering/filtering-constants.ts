@@ -73,6 +73,9 @@ export const REQUEST_FOR_TAKEDOWN_TYPES_FILTER = 'takedown_types';
 export const NOTE_TYPES_FILTER = 'note_types';
 export const INCIDENT_TYPE_FILTER = 'incident_type';
 export const DESCRIPTION_FILTER = 'description';
+export const SSVC_EXPLOITATION_FILTER = 'x_opencti_ssvc_exploitation';
+export const SSVC_AUTOMATABLE_FILTER = 'x_opencti_ssvc_automatable';
+export const SSVC_TECHNICAL_IMPACT_FILTER = 'x_opencti_ssvc_technical_impact';
 
 // special cases
 export const IDS_FILTER = 'ids';

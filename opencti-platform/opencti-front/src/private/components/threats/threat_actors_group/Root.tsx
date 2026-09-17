@@ -134,6 +134,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                     'sightings',
                   ]}
                   data={threatActorGroup}
+                  relatedRelationshipTypes={THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES}
                 />
               )}
             />
