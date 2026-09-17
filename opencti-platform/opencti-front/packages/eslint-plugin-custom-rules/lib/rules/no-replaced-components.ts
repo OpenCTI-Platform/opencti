@@ -1,4 +1,5 @@
 import path from 'node:path';
+import type { Rule } from 'eslint';
 
 // Fully replaced components: their Filigran Design System equivalent completely
 // supersedes the MUI / legacy `@filigran/ui` version, so using the old one is an
@@ -22,7 +23,7 @@ const REPLACED_COMPONENTS = {
 // (fds-migration/scripts/check-mui-regression.mjs).
 const REPLACED_SOURCE_RE = /^@mui\/|^@filigran\/ui(\/|$)/;
 
-const rule = {
+const rule: Rule.RuleModule = {
   meta: {
     type: 'problem',
     docs: {
@@ -35,15 +36,17 @@ const rule = {
   },
   create: (context) => {
     return {
-      ImportDeclaration(node) {
+      ImportDeclaration: (node) => {
         const source = node.source.value;
         if (typeof source !== 'string' || !REPLACED_SOURCE_RE.test(source)) {
           return;
         }
         for (const specifier of node.specifiers) {
-          let identifier = null;
+          let identifier: string | null = null;
           if (specifier.type === 'ImportSpecifier') {
-            identifier = specifier.imported.name;
+            // `imported` is an Identifier for `import { X }` and a Literal for the
+            // `import { 'x' as y }` string form, which carries no component name.
+            identifier = specifier.imported.type === 'Identifier' ? specifier.imported.name : null;
           } else if (specifier.type === 'ImportDefaultSpecifier') {
             // A default import carries no symbol name at the source, so the
             // module's own last path segment is the component:
@@ -56,7 +59,7 @@ const rule = {
               messageId: 'replaced',
               data: {
                 identifier,
-                replacement: REPLACED_COMPONENTS[identifier],
+                replacement: (REPLACED_COMPONENTS as Record<string, string>)[identifier],
               },
             });
           }

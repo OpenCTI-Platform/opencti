@@ -1,10 +1,10 @@
-import rule from '../../../lib/rules/classes-rule';
+import rule from '../../../lib/rules/classes-rule.ts';
 import { RuleTester } from 'eslint';
 import parser from '@typescript-eslint/parser';
 
 const ruleTester = new RuleTester({
-  parser,
-  parserOptions: {
+  languageOptions: {
+    parser,
     ecmaVersion: 2020,
   },
 });
@@ -60,6 +60,16 @@ ruleTester.run('classes-rule', rule, {
             right: 30,
           },
         }));
+      `,
+    }, {
+      code: `
+        const useStyles = makeStyles(() => ({
+          ...shared,
+          avatar: {
+            width: 24,
+          },
+        }));
+        classes.avatar;
       `,
     },
   ],
