@@ -18,6 +18,10 @@ import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
 import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 
 const AUTH_FILE = 'tests_e2e/.setup/.auth/user.json';
+// Bounds the session restoring actions of the hooks below. They run outside of a test body, so a
+// step that hangs produces no trace and no screenshot: failing on the step itself, well inside
+// the test budget, is what keeps the next occurrence diagnosable.
+const RESTORE_STEP_TIMEOUT = 60_000;
 
 // Every logout of this test destroys the server-side session recorded in the shared storage
 // state. A failed attempt therefore leaves the retry, and every later test of the shard, logged
@@ -45,10 +49,10 @@ test.afterEach(async ({ page }) => {
   await page.goto('/dashboard/workspaces/dashboards');
   await expect(loginForm.getPage().or(topBar.getMenuProfile())).toBeVisible();
   if (await topBar.getMenuProfile().isVisible()) {
-    await topBar.logout();
+    await topBar.logout(RESTORE_STEP_TIMEOUT);
     // The logout redirects to `/`. Wait for that page rather than typing into the form straight
     // away: with no actionTimeout configured, a navigation that never completes would otherwise
-    // hold the click until the test timeout and leave no trace of what happened.
+    // hold the following click until the test timeout and leave no trace of what happened.
     await expect(loginForm.getPage()).toBeVisible();
   }
   await loginForm.login();
