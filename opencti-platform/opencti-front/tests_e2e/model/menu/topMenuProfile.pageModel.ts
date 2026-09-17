@@ -11,8 +11,13 @@ export default class TopMenuProfilePage {
     return this.page.getByRole('menuitem', { name: 'Logout' });
   }
 
-  async logout() {
-    await this.getMenuProfile().click();
-    return this.getLogoutButton().click();
+  /**
+   * @param timeout Bounds each click. A click that triggers a navigation only resolves once that
+   *               navigation settles, so without a bound a logout whose redirect never completes
+   *               holds the caller until the test timeout, with no artifact captured in a hook.
+   */
+  async logout(timeout?: number) {
+    await this.getMenuProfile().click({ timeout });
+    return this.getLogoutButton().click({ timeout });
   }
 }
