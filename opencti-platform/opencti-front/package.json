@@ -55,7 +55,6 @@
     "@mui/lab": "5.0.0-alpha.177",
     "@mui/material": "6.5.0",
     "@mui/styles": "6.5.0",
-    "@mui/types": "7.4.12",
     "@mui/x-date-pickers": "7.29.4",
     "@rjsf/core": "6.10.0",
     "@rjsf/mui": "6.10.0",

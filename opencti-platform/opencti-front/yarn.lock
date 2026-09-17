@@ -1975,7 +1975,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/types@npm:7.4.12, @mui/types@npm:^7.4.12":
+"@mui/types@npm:^7.4.12":
   version: 7.4.12
   resolution: "@mui/types@npm:7.4.12"
   dependencies:
@@ -11914,7 +11914,6 @@ __metadata:
     "@mui/lab": "npm:5.0.0-alpha.177"
     "@mui/material": "npm:6.5.0"
     "@mui/styles": "npm:6.5.0"
-    "@mui/types": "npm:7.4.12"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.63.0"
     "@rjsf/core": "npm:6.10.0"
