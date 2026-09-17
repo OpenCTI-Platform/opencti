@@ -12,6 +12,15 @@ enum IngestionHealthStatus {
 
 enum IngestionCheckKind {
     runtime
+    configuration
+}
+
+# Orthogonal to IngestionHealthStatus on purpose: a source on a personal account
+# ingests perfectly well. Kept apart so neither axis can mask the other.
+enum IngestionConfigurationStatus {
+    ok
+    advisory
+    blocking
 }
 
 enum IngestionCheckSeverity {
@@ -29,6 +38,18 @@ enum IngestionCheckCode {
     LAST_RUN_ERROR
     EMPTY_RUNS
     CURSOR_STALLED
+    REBOOT_LOOP
+    USER_NOT_SERVICE_ACCOUNT
+    USER_MISSING
+    USER_DISABLED
+    USER_MISSING_CAPABILITY
+    TOKEN_EXPIRED
+    TOKEN_EXPIRING
+    EMPTY_SCOPE
+    CONFIDENCE_UNSET
+    CONTRACT_CONFIG_INCOMPLETE
+    VERSION_MISMATCH
+    DUPLICATE_QUEUE
 }
 
 type IngestionCheck {
@@ -45,6 +66,9 @@ type IngestionCheck {
 
 type IngestionHealth {
     status: IngestionHealthStatus!
+    # Always populated, independently of `status`, so a source that is both
+    # degraded and misconfigured stays findable on either axis.
+    configuration_status: IngestionConfigurationStatus!
     # Status plus the most diagnostic check, as one sentence.
     summary: String!
     # Ranked, most diagnostic first.

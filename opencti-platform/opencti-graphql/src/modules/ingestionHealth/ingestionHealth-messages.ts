@@ -26,9 +26,35 @@ export const CHECK_MESSAGE_TEMPLATES = {
   LAST_RUN_ERROR: 'Last run failed: {error}',
   EMPTY_RUNS: 'Ran {count} times without importing any object',
   CURSOR_STALLED: 'Polling successfully but the cursor has not moved since {since}',
+  // stability — composer-supervised connectors only
+  REBOOT_LOOP: 'Restarted {count} times in the last {window}',
 } as const;
 
-export type IngestionCheckCode = keyof typeof CHECK_MESSAGE_TEMPLATES;
+// Configuration findings are a separate axis, not another rung on the runtime
+// ladder: a source running under a personal account ingests perfectly well, it
+// is simply wrong. Keeping the two apart is what stops one masking the other.
+export const CONFIGURATION_MESSAGE_TEMPLATES = {
+  USER_NOT_SERVICE_ACCOUNT: 'Ingesting as {user}, which is a personal account rather than a service account',
+  USER_MISSING: 'No user is configured to create data',
+  USER_DISABLED: 'The configured user {user} is disabled',
+  USER_MISSING_CAPABILITY: 'The configured user {user} lacks the {capability} capability',
+  TOKEN_EXPIRED: 'The configured token expired {since}',
+  TOKEN_EXPIRING: 'The configured token expires {expires_at}',
+  EMPTY_SCOPE: 'No scope configured',
+  CONFIDENCE_UNSET: 'No confidence level is set for the ingesting user',
+  CONTRACT_CONFIG_INCOMPLETE: 'Required configuration fields are not set: {fields}',
+  VERSION_MISMATCH: 'Image {image} is not compatible with this platform version',
+  DUPLICATE_QUEUE: 'Another source is already using this queue',
+} as const;
+
+export const ALL_MESSAGE_TEMPLATES = {
+  ...CHECK_MESSAGE_TEMPLATES,
+  ...CONFIGURATION_MESSAGE_TEMPLATES,
+} as const;
+
+export type IngestionRuntimeCheckCode = keyof typeof CHECK_MESSAGE_TEMPLATES;
+export type IngestionConfigurationCheckCode = keyof typeof CONFIGURATION_MESSAGE_TEMPLATES;
+export type IngestionCheckCode = keyof typeof ALL_MESSAGE_TEMPLATES;
 
 // Connector error strings are untrusted input: they can be long and they
 // routinely carry credentials in URLs. Truncate and redact before a template
@@ -61,7 +87,7 @@ export type CheckParams = Record<string, string | number>;
 // Renders a template by substituting {placeholders}. An absent param renders as
 // "unknown" rather than leaving a raw brace in a user-visible sentence.
 export const renderCheckMessage = (code: IngestionCheckCode, params: CheckParams = {}): string => {
-  return CHECK_MESSAGE_TEMPLATES[code].replace(/\{(\w+)\}/g, (_, key: string) => {
+  return ALL_MESSAGE_TEMPLATES[code].replace(/\{(\w+)\}/g, (_, key: string) => {
     const value = params[key];
     return value === undefined || value === null || value === '' ? 'unknown' : String(value);
   });
@@ -76,6 +102,12 @@ export const STATUS_LABELS: Record<string, string> = {
   critical: 'Critical',
   stopped: 'Stopped',
   unknown: 'Unknown',
+};
+
+export const CONFIGURATION_STATUS_LABELS: Record<string, string> = {
+  ok: 'Configuration OK',
+  advisory: 'Misconfigured',
+  blocking: 'Cannot run as configured',
 };
 
 export const RECOVERY_MESSAGE = 'Recovered — back to normal after {duration}';

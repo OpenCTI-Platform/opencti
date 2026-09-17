@@ -13,6 +13,7 @@ export const connectorsStateQuery = graphql`
       manager_requested_status
       ingestion_health {
         status
+        configuration_status
         summary
         since
         checks {

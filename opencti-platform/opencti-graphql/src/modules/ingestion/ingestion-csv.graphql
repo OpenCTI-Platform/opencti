@@ -27,7 +27,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     last_execution_status: String
     ingestionLogs: [IngestionEntry]
     markings: [String!]
-    ingestion_health: IngestionHealth
+    ingestion_health: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
     toConfigurationExport: String!
     duplicateCsvMapper: CsvMapper!
 }

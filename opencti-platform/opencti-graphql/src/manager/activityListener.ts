@@ -14,7 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { LRUCache } from 'lru-cache';
-import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
+import {
+  type ActionHandler,
+  type ActionListener,
+  CONFIGURATION_EVENT_SCOPES,
+  EVENT_TYPE_CONFIGURATION,
+  EVENT_TYPE_HEALTH,
+  HEALTH_EVENT_SCOPES,
+  isIngestionEventType,
+  registerUserActionListener,
+  type UserAction,
+  type UserReadAction,
+} from '../listener/UserActionListener';
 import conf, { auditLogTypes, logAudit } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { storeActivityEvent } from '../database/stream/stream-handler';
@@ -33,10 +44,10 @@ const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
 export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot',
-  // ingestion health transitions — the scope carries the state entered, not
-  // an action, because severity is what people subscribe to.
-  'degraded', 'critical', 'recovered'];
-export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'health'];
+  // Ingestion health and configuration scopes, spread from the definitions the
+  // emitter uses, so a new scope cannot be added on one side only.
+  ...HEALTH_EVENT_SCOPES, ...CONFIGURATION_EVENT_SCOPES];
+export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', EVENT_TYPE_HEALTH, EVENT_TYPE_CONFIGURATION];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
@@ -239,7 +250,7 @@ const initActivityManager = () => {
           await activityLogger(action, message);
         }
       }
-      if (action.event_type === 'health') {
+      if (isIngestionEventType(action.event_type)) {
         // The message is already a complete sentence built by the health
         // manager, so it is forwarded as-is rather than composed here.
         await activityLogger(action, action.message);

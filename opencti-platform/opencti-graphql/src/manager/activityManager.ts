@@ -38,6 +38,7 @@ import { lockResources } from '../lock/master-lock';
 import { ACTIVITY_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { InterruptibleTimer } from './interruptible-timer';
+import { EVENT_SCOPE_INVENTORY, isIngestionEventType } from '../listener/UserActionListener';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -59,6 +60,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
     // status: 'error' | 'success'
     const event = events[index];
     const { message, data, origin, event_scope } = event.data;
+    const isHealthEvent = isIngestionEventType(event.data.type);
     let sourceUser = origin.user_id ? platformUsers.get(origin.user_id) : SYSTEM_USER;
     if (ENABLED_DEMO_MODE) sourceUser = REDACTED_USER;
     for (let triggerIndex = 0; triggerIndex < triggers.length; triggerIndex += 1) {
@@ -67,7 +69,16 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
       const triggerFilters = trigger.filters ? JSON.parse(trigger.filters) : null;
       // Filter the event
       const isMatchFilter = triggerFilters ? await isActivityEventMatchFilterGroup(event.data, triggerFilters) : true;
-      if (isMatchFilter) {
+      // The daily configuration inventory restates every still-misconfigured
+      // source so a digest can be a full list rather than a changelog. Someone
+      // filtering loosely on `event_type = configuration` alone would otherwise
+      // get that whole list delivered live, every day: it goes only to triggers
+      // that asked for the `inventory` scope by name.
+      const wantsInventory = triggerFilters
+        ? JSON.stringify(triggerFilters).includes(EVENT_SCOPE_INVENTORY)
+        : false;
+      const isSuppressedInventory = event_scope === EVENT_SCOPE_INVENTORY && !wantsInventory;
+      if (isMatchFilter && !isSuppressedInventory) {
         const targets: Array<{ user: NotificationUser; type: string; message: string }> = [];
         const version = EVENT_NOTIFICATION_VERSION;
         for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
@@ -75,8 +86,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
           // Health events have no human actor: their message is already a
           // complete sentence, so prefixing it with a user name would read as
           // "`SYSTEM` Degraded — ...".
-          const isSystemEvent = event.data.type === 'health';
-          const targetMessage = isSystemEvent ? message : `\`${sourceUser?.name}\` ${message}`;
+          const targetMessage = isHealthEvent ? message : `\`${sourceUser?.name}\` ${message}`;
           targets.push({ user: convertToNotificationUser(user, notifiers), type: event_scope, message: targetMessage });
         }
         const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data, origin };

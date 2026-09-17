@@ -6,6 +6,7 @@ import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxiiCollecti
 import { convertIngestionTaxiiCollectionToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
   type: {
@@ -42,6 +43,15 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection
       isFilterable: true,
     },
     authorizedMembers,
+    // Cached ingestion health, written by the health manager on change only.
+    // The resolver stays the source of truth — these exist so the fleet can be
+    // filtered and sorted server-side, which a value computed on read cannot do.
+    // Registered behind the feature flag, so with it off they are absent from
+    // the mapping entirely rather than present and always empty.
+    { name: 'ingestion_health_status', label: 'Health status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_health_since', label: 'Health since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_last_productive_at', label: 'Last productive run', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_configuration_status', label: 'Configuration status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
   ],
   relations: [],
   representative: (stix: StixIngestionTaxiiCollection) => {

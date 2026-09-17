@@ -12,6 +12,7 @@ import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { paperBorder } from '../paperSurface';
+import useIngestionHealthEnabled from '../../../../utils/hooks/useIngestionHealthEnabled';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -37,6 +38,7 @@ const cellSx = (column: keyof typeof COLUMNS) => ({
 
 // Column headers rendered once at the top of each section container.
 export const DeployedIntegrationLinesHeader = () => {
+  const healthEnabled = useIngestionHealthEnabled();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const headerCellSx = {
@@ -77,9 +79,11 @@ export const DeployedIntegrationLinesHeader = () => {
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('date') }}>
         {t_i18n('Last activity')}
       </Typography>
-      <Typography component="div" sx={{ ...headerCellSx, ...cellSx('health') }}>
-        {t_i18n('Health')}
-      </Typography>
+      {healthEnabled && (
+        <Typography component="div" sx={{ ...headerCellSx, ...cellSx('health') }}>
+          {t_i18n('Health')}
+        </Typography>
+      )}
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('status') }}>
         {t_i18n('Status')}
       </Typography>
@@ -96,6 +100,7 @@ export interface DeployedIntegrationLineProps {
 // Compact row variant of DeployedIntegrationCard for the lines view. Cells
 // share their geometry with DeployedIntegrationLinesHeader so rows align.
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
+  const healthEnabled = useIngestionHealthEnabled();
   const { t_i18n, n, nsdt, rd } = useFormatter();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -289,10 +294,13 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           </Typography>
         )}
       </Box>
-      {/* Status column. */}
-      <Box sx={cellSx('health')}>
-        <IngestionHealthChip health={item.health} />
-      </Box>
+      {/* Health column — dropped with its header when the feature is off, so
+          the remaining columns stay aligned rather than leaving a gap. */}
+      {healthEnabled && (
+        <Box sx={cellSx('health')}>
+          <IngestionHealthChip health={item.health} />
+        </Box>
+      )}
       <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
         {item.status === 'processing'
           ? <ItemBoolean status={undefined} label={statusText} />

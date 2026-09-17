@@ -1084,6 +1084,7 @@ const Connector = createRefetchContainer(
         }
         ingestion_health {
           status
+          configuration_status
           summary
           since
           checks {

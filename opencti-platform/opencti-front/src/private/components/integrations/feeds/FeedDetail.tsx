@@ -60,6 +60,7 @@ const feedDetailSyncQuery = graphql`
       }
       ingestion_health {
         status
+        configuration_status
         summary
         since
         checks {
@@ -93,6 +94,7 @@ const feedDetailRssQuery = graphql`
       }
       ingestion_health {
         status
+        configuration_status
         summary
         since
         checks {
@@ -130,6 +132,7 @@ const feedDetailTaxiiQuery = graphql`
       }
       ingestion_health {
         status
+        configuration_status
         summary
         since
         checks {
@@ -158,6 +161,7 @@ const feedDetailTaxiiPushQuery = graphql`
       }
       ingestion_health {
         status
+        configuration_status
         summary
         since
         checks {
@@ -193,6 +197,7 @@ const feedDetailCsvQuery = graphql`
       }
       ingestion_health {
         status
+        configuration_status
         summary
         since
         checks {
@@ -225,6 +230,7 @@ const feedDetailJsonQuery = graphql`
       }
       ingestion_health {
         status
+        configuration_status
         summary
         since
         checks {

@@ -16579,6 +16579,13 @@ enum IngestionHealthStatus {
 
 enum IngestionCheckKind {
   runtime
+  configuration
+}
+
+enum IngestionConfigurationStatus {
+  ok
+  advisory
+  blocking
 }
 
 enum IngestionCheckSeverity {
@@ -16596,6 +16603,18 @@ enum IngestionCheckCode {
   LAST_RUN_ERROR
   EMPTY_RUNS
   CURSOR_STALLED
+  REBOOT_LOOP
+  USER_NOT_SERVICE_ACCOUNT
+  USER_MISSING
+  USER_DISABLED
+  USER_MISSING_CAPABILITY
+  TOKEN_EXPIRED
+  TOKEN_EXPIRING
+  EMPTY_SCOPE
+  CONFIDENCE_UNSET
+  CONTRACT_CONFIG_INCOMPLETE
+  VERSION_MISMATCH
+  DUPLICATE_QUEUE
 }
 
 type IngestionCheck {
@@ -16609,6 +16628,7 @@ type IngestionCheck {
 
 type IngestionHealth {
   status: IngestionHealthStatus!
+  configuration_status: IngestionConfigurationStatus!
   summary: String!
   checks: [IngestionCheck!]!
   since: DateTime

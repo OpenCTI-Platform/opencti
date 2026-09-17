@@ -10,9 +10,24 @@
 // notifications for one source critical over three days.
 
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, INGESTION_HEALTH_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { publishUserAction } from '../listener/UserActionListener';
+import type { AuthContext } from '../types/user';
+import {
+  type ConfigurationEventScope,
+  EVENT_SCOPE_ADVISORY,
+  EVENT_SCOPE_BLOCKING,
+  EVENT_SCOPE_CRITICAL,
+  EVENT_SCOPE_DEGRADED,
+  EVENT_SCOPE_INVENTORY,
+  EVENT_SCOPE_RECOVERED,
+  EVENT_SCOPE_RESOLVED,
+  EVENT_TYPE_CONFIGURATION,
+  EVENT_TYPE_HEALTH,
+  type HealthEventScope,
+  type IngestionEventType,
+  publishUserAction,
+} from '../listener/UserActionListener';
 import {
   redisGetIngestionHealthObservation,
   redisSetIngestionHealthLastRun,
@@ -22,8 +37,15 @@ import {
   collectIngestionSources,
   type IngestionSourceSnapshot,
 } from '../modules/ingestionHealth/ingestionHealth-domain';
-import { advanceProductivityCounters, computeIngestionHealth } from '../modules/ingestionHealth/ingestionHealth-checks';
+import { patchAttribute } from '../database/middleware';
+import {
+  advanceProductivityCounters,
+  computeIngestionHealth,
+  isConfigurationWorse,
+} from '../modules/ingestionHealth/ingestionHealth-checks';
+import { INGESTION_HEALTH_THRESHOLDS } from '../modules/ingestionHealth/ingestionHealth-config';
 import type {
+  IngestionConfigurationStatus,
   IngestionHealth,
   IngestionHealthInput,
   IngestionHealthObservation,
@@ -38,6 +60,8 @@ const GOOD_PERIODS_BEFORE_RECOVERY = conf.get('ingestion_health_manager:good_per
 const MIN_ALERT_DWELL_SECONDS = conf.get('ingestion_health_manager:min_alert_dwell_seconds') ?? 900;
 const STARTUP_GRACE_SECONDS = conf.get('ingestion_health_manager:startup_grace_seconds') ?? 300;
 const STORM_THRESHOLD = conf.get('ingestion_health_manager:storm_threshold') ?? 10;
+const INVENTORY_ENABLED = booleanConf('ingestion_health_manager:configuration_inventory_enabled', true);
+const INVENTORY_INTERVAL_SECONDS = conf.get('ingestion_health_manager:configuration_inventory_interval_seconds') ?? 86400;
 
 // When the manager process started. Emission is suppressed until the grace
 // period has passed: on a platform restart nothing has re-pinged yet, so
@@ -56,7 +80,37 @@ const SEVERITY_ORDER: Record<IngestionHealthStatus, number> = {
 const isBad = (status: IngestionHealthStatus) => status === 'degraded' || status === 'critical';
 const worsens = (from: IngestionHealthStatus, to: IngestionHealthStatus) => SEVERITY_ORDER[to] > SEVERITY_ORDER[from];
 
-type Transition = { kind: 'alert' | 'recovery'; scope: 'degraded' | 'critical' | 'recovered' };
+type Transition = { kind: 'alert' | 'recovery'; scope: HealthEventScope };
+
+// Configuration is its own edge, with its own rules. It does not flap — a user
+// either is a service account or is not — so it fires on first detection rather
+// than waiting for agreement, and it is never re-notified, because these never
+// self-recover and a reminder is just nagging.
+type ConfigurationTransition = { scope: ConfigurationEventScope };
+
+export const resolveConfigurationTransition = (
+  status: IngestionConfigurationStatus,
+  previous: IngestionHealthObservation | null,
+  now: Date,
+): { transition: ConfigurationTransition | null; since: string; alertAt?: string } => {
+  const published = previous?.configuration_status ?? 'ok';
+  const since = previous?.configuration_since ?? now.toISOString();
+  if (status === published) {
+    return { transition: null, since, alertAt: previous?.configuration_alert_at };
+  }
+  if (status === 'ok') {
+    return { transition: { scope: EVENT_SCOPE_RESOLVED }, since: now.toISOString(), alertAt: previous?.configuration_alert_at };
+  }
+  // Only announce a worsening. advisory -> blocking is worth saying; blocking ->
+  // advisory means somebody is already fixing it, so record it and stay quiet.
+  if (!isConfigurationWorse(published, status)) {
+    return { transition: null, since: now.toISOString(), alertAt: previous?.configuration_alert_at };
+  }
+  // `advisory` / `blocking` are both a configuration status and an event scope:
+  // the same two words on purpose, so a subscriber filters on what they read.
+  const scope = status === 'blocking' ? EVENT_SCOPE_BLOCKING : EVENT_SCOPE_ADVISORY;
+  return { transition: { scope }, since: now.toISOString(), alertAt: now.toISOString() };
+};
 
 // Decides whether this evaluation is a publishable transition, and returns the
 // observation to persist. Pure apart from its inputs so the hysteresis is
@@ -79,10 +133,16 @@ export const resolveTransition = (
     status: publishedStatus,
     since: previous?.since ?? now.toISOString(),
     last_productive_at: health.last_productive_at?.toISOString() ?? previous?.last_productive_at,
-    ...advanceProductivityCounters(input, previous),
+    ...advanceProductivityCounters(input, previous, now, INGESTION_HEALTH_THRESHOLDS),
     last_alert_at: previous?.last_alert_at,
     pending_status: candidate,
     pending_count: agreeing,
+    // The configuration axis rides the same record — same key, same write — but
+    // its own fields, so neither edge can clobber the other's state.
+    configuration_status: previous?.configuration_status,
+    configuration_since: previous?.configuration_since,
+    configuration_alert_at: previous?.configuration_alert_at,
+    last_inventory_at: previous?.last_inventory_at,
   };
 
   if (candidate === publishedStatus) {
@@ -99,7 +159,7 @@ export const resolveTransition = (
 
   if (becomingBad && agreeing >= MISSED_PERIODS_BEFORE_ALERT) {
     return {
-      transition: { kind: 'alert', scope: candidate as 'degraded' | 'critical' },
+      transition: { kind: 'alert', scope: candidate as HealthEventScope },
       observation: { ...observation, status: candidate, since: now.toISOString(), last_alert_at: now.toISOString() },
     };
   }
@@ -113,7 +173,7 @@ export const resolveTransition = (
       return { transition: null, observation };
     }
     return {
-      transition: { kind: 'recovery', scope: 'recovered' },
+      transition: { kind: 'recovery', scope: EVENT_SCOPE_RECOVERED },
       observation: { ...observation, status: candidate, since: now.toISOString() },
     };
   }
@@ -127,16 +187,26 @@ export const resolveTransition = (
   return { transition: null, observation };
 };
 
-const emit = async (source: IngestionSourceSnapshot, health: IngestionHealth, transition: Transition) => {
+// `event_type` is what splits "live alert on bad health" from "daily digest of
+// misconfiguration" using the filter keys AlertLiveCreation already offers, so
+// the two axes emit under different types rather than different scopes.
+const emit = async (
+  source: IngestionSourceSnapshot,
+  health: IngestionHealth,
+  transition: { kind: 'alert' | 'recovery' | 'inventory'; scope: HealthEventScope | ConfigurationEventScope },
+  eventType: IngestionEventType = EVENT_TYPE_HEALTH,
+) => {
   await publishUserAction({
     user: SYSTEM_USER,
-    event_type: 'health',
+    event_type: eventType,
     event_scope: transition.scope,
     event_access: 'administration',
     status: transition.kind === 'recovery' ? 'success' : 'error',
     // Transitions are indexed into the audit trail on purpose: edge-triggering
     // keeps the volume trivial, and it is the only place incident history lives.
-    prevent_indexing: false,
+    // The daily inventory is not: one event per misconfigured source per day
+    // would drown that trail.
+    prevent_indexing: transition.kind === 'inventory',
     message: health.summary,
     context_data: {
       // Also the key publisherManager buffers on — one field, two reasons.
@@ -146,14 +216,49 @@ const emit = async (source: IngestionSourceSnapshot, health: IngestionHealth, tr
       source_name: source.name,
       source_route: source.route,
       status: health.status,
+      configuration_status: health.configuration_status,
       since: health.since?.toISOString(),
-      checks: health.checks.map((check) => ({
-        code: check.code,
-        severity: check.severity,
-        message: check.message,
-      })),
+      // A configuration event carries only its own findings, so an email about
+      // a personal account does not also recite why the feed is late.
+      checks: health.checks
+        .filter((check) => (eventType === EVENT_TYPE_CONFIGURATION ? check.kind === 'configuration' : check.kind === 'runtime'))
+        .map((check) => ({
+          code: check.code,
+          kind: check.kind,
+          severity: check.severity,
+          message: check.message,
+        })),
     },
   });
+};
+
+// Mirrors the computed status onto the source so the fleet can be filtered and
+// sorted server-side. Written on change only — a 60s patch of every source would
+// be a write storm for no gain — and never load-bearing: the resolver recomputes
+// from live facts regardless, so a stale cached value can only affect a filter,
+// never an answer.
+const cacheStatus = async (
+  context: AuthContext,
+  source: IngestionSourceSnapshot,
+  health: IngestionHealth,
+  previous: IngestionHealthObservation | null,
+) => {
+  const statusChanged = previous?.status !== health.status;
+  const configurationChanged = previous?.configuration_status !== health.configuration_status;
+  if (!statusChanged && !configurationChanged) {
+    return;
+  }
+  try {
+    await patchAttribute(context, SYSTEM_USER, source.id, source.entity_type, {
+      ingestion_health_status: health.status,
+      ingestion_health_since: health.since?.toISOString(),
+      ingestion_last_productive_at: health.last_productive_at?.toISOString(),
+      ingestion_configuration_status: health.configuration_status,
+    });
+  } catch (e) {
+    // A failed cache write must never stop the evaluation or the notification.
+    logApp.warn('[OPENCTI-MODULE] Unable to cache ingestion health status', { cause: e, id: source.id });
+  }
 };
 
 export const ingestionHealthHandler = async () => {
@@ -163,17 +268,49 @@ export const ingestionHealthHandler = async () => {
 
   const withinStartupGrace = (now.getTime() - startedAt.getTime()) / 1000 < STARTUP_GRACE_SECONDS;
   const pending: Array<{ source: IngestionSourceSnapshot; health: IngestionHealth; transition: Transition }> = [];
+  const configurationPending: Array<{
+    source: IngestionSourceSnapshot;
+    health: IngestionHealth;
+    transition: ConfigurationTransition;
+  }> = [];
+  const inventory: Array<{ source: IngestionSourceSnapshot; health: IngestionHealth }> = [];
 
   for (let i = 0; i < sources.length; i += 1) {
     const source = sources[i];
     try {
       const previous = await redisGetIngestionHealthObservation(source.id);
       const input = { ...source.input, previous: previous ?? undefined };
-      const health = computeIngestionHealth(input, now);
+      const health = computeIngestionHealth(input, now, INGESTION_HEALTH_THRESHOLDS);
       const { transition, observation } = resolveTransition(input, health, previous, now);
+
+      // Two independent edges, one pass, one write.
+      const configuration = resolveConfigurationTransition(health.configuration_status, previous, now);
+      observation.configuration_status = health.configuration_status;
+      observation.configuration_since = configuration.since;
+      observation.configuration_alert_at = configuration.alertAt;
+
+      // A digest replays events from the last period, so a source misconfigured
+      // since March emits nothing today and never appears in one. Re-stating the
+      // still-misconfigured sources once a day is what turns that changelog into
+      // an inventory.
+      const lastInventory = previous?.last_inventory_at ? new Date(previous.last_inventory_at) : null;
+      const inventoryDue = INVENTORY_ENABLED
+        && health.configuration_status !== 'ok'
+        && (!lastInventory || (now.getTime() - lastInventory.getTime()) / 1000 >= INVENTORY_INTERVAL_SECONDS);
+      if (inventoryDue) {
+        observation.last_inventory_at = now.toISOString();
+      }
+
       await redisSetIngestionHealthObservation(source.id, observation);
+      await cacheStatus(context, source, health, previous);
       if (transition) {
         pending.push({ source, health, transition });
+      }
+      if (configuration.transition) {
+        configurationPending.push({ source, health, transition: configuration.transition });
+      }
+      if (inventoryDue) {
+        inventory.push({ source, health });
       }
     } catch (e) {
       logApp.error('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: source.id });
@@ -183,8 +320,31 @@ export const ingestionHealthHandler = async () => {
   await redisSetIngestionHealthLastRun(now);
 
   if (withinStartupGrace) {
-    logApp.debug('[OPENCTI-MODULE] Ingestion health transitions suppressed during startup grace', { count: pending.length });
+    // Configuration respects the grace period too: nothing has re-reported yet,
+    // so a restart would otherwise announce the whole fleet's configuration.
+    logApp.debug('[OPENCTI-MODULE] Ingestion health transitions suppressed during startup grace', {
+      runtime: pending.length,
+      configuration: configurationPending.length,
+    });
     return;
+  }
+
+  // Configuration findings never flap and never self-recover, so they are not
+  // subject to the hysteresis above — but they are subject to the storm breaker,
+  // because one bad change can misconfigure everything at once.
+  if (configurationPending.length > STORM_THRESHOLD) {
+    logApp.warn('[OPENCTI-MODULE] Ingestion configuration storm detected, individual notifications suppressed', {
+      manager: 'INGESTION_HEALTH_MANAGER',
+      affected: configurationPending.length,
+    });
+  } else {
+    for (const entry of configurationPending) {
+      await emit(entry.source, entry.health, { kind: 'alert', scope: entry.transition.scope }, EVENT_TYPE_CONFIGURATION);
+    }
+  }
+
+  for (const entry of inventory) {
+    await emit(entry.source, entry.health, { kind: 'inventory', scope: EVENT_SCOPE_INVENTORY }, EVENT_TYPE_CONFIGURATION);
   }
 
   // Storm breaker: RabbitMQ dropping takes every source down at once. That is
@@ -195,10 +355,10 @@ export const ingestionHealthHandler = async () => {
       manager: 'INGESTION_HEALTH_MANAGER',
       affected: alerts.length,
     });
-    const worst = alerts.some((entry) => entry.transition.scope === 'critical') ? 'critical' : 'degraded';
+    const worst = alerts.some((entry) => entry.transition.scope === EVENT_SCOPE_CRITICAL) ? EVENT_SCOPE_CRITICAL : EVENT_SCOPE_DEGRADED;
     await publishUserAction({
       user: SYSTEM_USER,
-      event_type: 'health',
+      event_type: EVENT_TYPE_HEALTH,
       event_scope: worst,
       event_access: 'administration',
       status: 'error',
@@ -250,4 +410,10 @@ const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
   // triggers that turn these events into notifications are EE.
 };
 
-registerManager(INGESTION_HEALTH_MANAGER_DEFINITION);
+// Gated at registration rather than inside enabled(), matching
+// workflowStatusCleanupManager: with the flag off the manager is absent from the
+// registry entirely, so it does not show up in the UI's module list as a thing
+// an administrator could turn on.
+if (isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG)) {
+  registerManager(INGESTION_HEALTH_MANAGER_DEFINITION);
+}

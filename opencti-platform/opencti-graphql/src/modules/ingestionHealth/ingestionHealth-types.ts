@@ -8,7 +8,13 @@ import type { CheckParams, IngestionCheckCode } from './ingestionHealth-messages
 
 export type IngestionHealthStatus = 'healthy' | 'idle' | 'degraded' | 'critical' | 'stopped' | 'unknown';
 
-export type IngestionCheckKind = 'runtime'; // 'configuration' added by increment 3
+export type IngestionCheckKind = 'runtime' | 'configuration';
+
+// Deliberately NOT another value on IngestionHealthStatus. Configuration is
+// orthogonal to runtime health — a source on a personal account ingests fine —
+// so folding the two would force a precedence rule, and whichever lost would be
+// masked and unfindable.
+export type IngestionConfigurationStatus = 'ok' | 'advisory' | 'blocking';
 export type IngestionCheckSeverity = 'advisory' | 'blocking';
 
 export interface IngestionCheck {
@@ -22,7 +28,11 @@ export interface IngestionCheck {
 
 export interface IngestionHealth {
   status: IngestionHealthStatus;
+  // Always populated, independently of `status`, so a source that is both
+  // degraded and misconfigured stays findable on either axis.
+  configuration_status: IngestionConfigurationStatus;
   summary: string;
+  // Both kinds, ranked. Callers that want one axis filter on `kind`.
   checks: IngestionCheck[];
   since?: Date;
   last_productive_at?: Date;
@@ -51,6 +61,16 @@ export interface IngestionHealthObservation {
   last_cursor_hash?: string;
   consecutive_empty_runs: number;
   last_alert_at?: string;
+  // Stability: the composer's restart counter as of the last evaluation, so the
+  // next one can take a delta. Absent for a connector the composer does not
+  // supervise, and for every feed and synchronizer.
+  last_restart_count?: number;
+  restart_count_since?: string;
+  // Configuration is its own edge, tracked independently of the runtime one.
+  configuration_status?: IngestionConfigurationStatus;
+  configuration_since?: string;
+  configuration_alert_at?: string;
+  last_inventory_at?: string;
   // Hysteresis: how many consecutive evaluations have agreed on a status that
   // has not been published yet.
   pending_status?: IngestionHealthStatus;
@@ -93,6 +113,34 @@ export interface IngestionHealthInput {
   consecutive_empty_runs?: number;
   cursor_hash?: string;
 
+  // stability (connectors the composer supervises; absent everywhere else)
+  is_managed?: boolean;
+  restart_count?: number;
+  is_in_reboot_loop?: boolean;
+  // Distinguishes "the composer does not supervise this" from "the composer
+  // supervises it and has stopped reporting" — the second is itself a signal.
+  stability_metrics_present?: boolean;
+
+  // configuration — the resolved ingesting user and the source's own settings.
+  //
+  // `configuration_checked` says the caller actually attempted to resolve the
+  // user. Without it the axis is skipped entirely: an unresolved user is not
+  // evidence of a missing one, and treating it as USER_MISSING would escalate
+  // every source on the platform to critical the moment the users cache failed.
+  configuration_checked?: boolean;
+  user_id?: string;
+  user?: {
+    name?: string;
+    service_account?: boolean;
+    account_status?: string;
+    api_token_expiration?: string;
+    effective_confidence_level?: number | null;
+  };
+  connector_scope?: string[];
+  contract_missing_fields?: string[];
+  version_mismatch_image?: string;
+  duplicate_queue?: boolean;
+
   previous?: IngestionHealthObservation;
 }
 
@@ -106,6 +154,11 @@ export interface IngestionHealthThresholds {
   // min_interval_minutes` defaults to 5 — or a perfectly healthy auto feed is
   // reported stale between two of its own runs.
   unscheduledStaleSeconds: number;
+  // Stability: how many restarts between two evaluations count as a loop.
+  restartDeltaThreshold: number;
+  restartDeltaWindowSeconds: number;
+  // Configuration: how long before expiry a token is worth warning about.
+  tokenExpiryWarningDays: number;
 }
 
 export const DEFAULT_THRESHOLDS: IngestionHealthThresholds = {
@@ -114,4 +167,7 @@ export const DEFAULT_THRESHOLDS: IngestionHealthThresholds = {
   heartbeatGraceSeconds: 300, // grace is 2× this
   evaluationIntervalSeconds: 60,
   unscheduledStaleSeconds: 3600,
+  restartDeltaThreshold: 3,
+  restartDeltaWindowSeconds: 900,
+  tokenExpiryWarningDays: 14,
 };
