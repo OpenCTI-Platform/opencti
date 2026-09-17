@@ -21,6 +21,7 @@ from pycti.connector.opencti_connector_helper import (
 
 from gil_probe import start_gil_probe
 from listen_handler import ListenHandler
+from cache_lock_shim import install_cache_lock_shim
 from orjson_shim import install_orjson_shim
 from message_queue_consumer import MessageQueueConsumer
 from push_handler import PushHandler
@@ -312,6 +313,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         start_gil_probe(self.worker_logger)
         # study 0011: orjson swap on the JSON hot path, env-gated (WORKER_ORJSON)
         install_orjson_shim(self.worker_logger)
+        install_cache_lock_shim(self.worker_logger)
 
     def build_pika_parameters(
         self, connector_config: Dict[str, Any]
