@@ -58,9 +58,13 @@ vi.mock('../../../src/database/entity-representative', () => ({
   extractEntityRepresentativeName: vi.fn(),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 
 vi.mock('../../../src/database/redis/token_usage', () => ({
   getTokensUsage: vi.fn(async () => []),

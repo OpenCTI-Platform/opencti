@@ -35,9 +35,13 @@ vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn().mockResolvedValue({ platform_organization: null }),
 }));
 
-vi.mock('../../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 
 vi.mock('../../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../../src/config/conf');

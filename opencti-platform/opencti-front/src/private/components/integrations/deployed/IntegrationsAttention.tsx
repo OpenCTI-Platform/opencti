@@ -137,7 +137,7 @@ const IntegrationsAttentionContent = ({
         <Typography variant="body2" sx={{ color: theme.palette.text.secondary, marginBottom: 2 }}>
           {t_i18n('No integration needs attention right now.')}
         </Typography>
-        <Button component={Link} to="/dashboard/integrations/deployed" variant="outlined">
+        <Button component={Link} to="/dashboard/integrations/deployed" variant="secondary">
           {t_i18n('View all deployed integrations')}
         </Button>
       </Box>

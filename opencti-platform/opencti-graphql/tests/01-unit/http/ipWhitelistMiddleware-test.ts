@@ -15,9 +15,13 @@ vi.mock('../../../src/domain/user', () => ({
   userWithOrigin: vi.fn((req, user) => user),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 
 vi.mock('../../../src/config/conf', async (importOriginal: any) => {
   const actual = await importOriginal();

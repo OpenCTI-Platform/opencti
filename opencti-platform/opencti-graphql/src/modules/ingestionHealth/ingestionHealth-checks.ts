@@ -190,7 +190,13 @@ export const computeIngestionChecks = (
   if (profile.heartbeat) {
     const grace = (input.heartbeat_interval_seconds ?? thresholds.heartbeatGraceSeconds) * 2;
     if (!input.last_seen_at) {
-      checks.push(buildCheck('NO_HEARTBEAT', 'blocking', { last_seen: '' }));
+      // A source that has never run at all has no baseline to judge a missing
+      // heartbeat against — that is the "unknown" fold, not a critical one.
+      // Only a source that HAS run before but has since gone quiet is a real
+      // NO_HEARTBEAT incident.
+      if (input.last_run_at) {
+        checks.push(buildCheck('NO_HEARTBEAT', 'blocking', { last_seen: '' }));
+      }
     } else if (secondsBetween(now, input.last_seen_at) > grace) {
       checks.push(buildCheck('NO_HEARTBEAT', 'blocking', { last_seen: input.last_seen_at.toISOString() }));
     }
