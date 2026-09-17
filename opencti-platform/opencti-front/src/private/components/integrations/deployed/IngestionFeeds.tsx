@@ -26,6 +26,7 @@ export const ingestionFeedsQuery = graphql`
           }
           ingestion_health {
             status
+            configuration_status
             summary
             since
             checks {
@@ -61,6 +62,7 @@ export const ingestionFeedsQuery = graphql`
           }
           ingestion_health {
             status
+            configuration_status
             summary
             since
             checks {
@@ -97,6 +99,7 @@ export const ingestionFeedsQuery = graphql`
           }
           ingestion_health {
             status
+            configuration_status
             summary
             since
             checks {
@@ -128,6 +131,7 @@ export const ingestionFeedsQuery = graphql`
           }
           ingestion_health {
             status
+            configuration_status
             summary
             since
             checks {
@@ -163,6 +167,7 @@ export const ingestionFeedsQuery = graphql`
           }
           ingestion_health {
             status
+            configuration_status
             summary
             since
             checks {
@@ -198,6 +203,7 @@ export const ingestionFeedsQuery = graphql`
           }
           ingestion_health {
             status
+            configuration_status
             summary
             since
             checks {

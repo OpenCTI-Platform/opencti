@@ -15,7 +15,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
     user_id: String
     user: Creator
     authorized_members: [MemberAccess!] @auth(for: [INGESTION_SETINGESTIONS])
-    ingestion_health: IngestionHealth
+    ingestion_health: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
     toConfigurationExport: String!
 }
 enum IngestionTaxiiCollectionOrdering {

@@ -5,6 +5,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_TAXII, type StixIngestionTaxii, type StoreEntityIngestionTaxii } from './ingestion-types';
 import { convertIngestionTaxiiToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
   type: {
@@ -57,6 +58,15 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     { name: 'last_execution_status', label: 'Last execution status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'confidence_to_score', label: 'Copy confidence level to OpenCTI scores for indicators', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
+    // Cached ingestion health, written by the health manager on change only.
+    // The resolver stays the source of truth — these exist so the fleet can be
+    // filtered and sorted server-side, which a value computed on read cannot do.
+    // Registered behind the feature flag, so with it off they are absent from
+    // the mapping entirely rather than present and always empty.
+    { name: 'ingestion_health_status', label: 'Health status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_health_since', label: 'Health since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_last_productive_at', label: 'Last productive run', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_configuration_status', label: 'Configuration status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
   ],
   relations: [],
   representative: (stix: StixIngestionTaxii) => {

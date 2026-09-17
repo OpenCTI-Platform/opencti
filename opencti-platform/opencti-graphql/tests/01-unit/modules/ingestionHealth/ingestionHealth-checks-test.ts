@@ -3,7 +3,9 @@ import { DEFAULT_THRESHOLDS } from '../../../../src/modules/ingestionHealth/inge
 import {
   advanceProductivityCounters,
   buildSummary,
+  computeConfigurationChecks,
   computeIngestionChecks,
+  foldConfigurationStatus,
   computeIngestionHealth,
   foldRuntimeStatus,
   resolveRuleProfile,
@@ -389,5 +391,153 @@ describe('advanceProductivityCounters', () => {
       previous,
     });
     expect(computeIngestionChecks(finalInput, NOW).map((c) => c.code)).toContain('CURSOR_STALLED');
+  });
+});
+
+describe('stability', () => {
+  const managed = (over: Partial<IngestionHealthInput> = {}): IngestionHealthInput => scheduledConnector({
+    is_managed: true,
+    stability_metrics_present: true,
+    ...over,
+  });
+
+  it('trusts the composer when it says the connector is looping', () => {
+    const input = managed({ is_in_reboot_loop: true, restart_count: 9 });
+    const checks = computeIngestionChecks(input, NOW);
+    expect(checks.map((c) => c.code)).toContain('REBOOT_LOOP');
+    expect(foldRuntimeStatus(checks, input, NOW)).toBe('critical');
+  });
+
+  it('takes the headline off NO_HEARTBEAT, which it explains', () => {
+    // A looping connector also stops pinging. Reporting the missing ping would
+    // send someone looking for a network problem that is not there.
+    const input = managed({ is_in_reboot_loop: true, restart_count: 9, last_seen_at: ago(2 * HOUR) });
+    const checks = computeIngestionChecks(input, NOW);
+    expect(checks.map((c) => c.code)).toContain('NO_HEARTBEAT');
+    expect(checks[0].code).toBe('REBOOT_LOOP');
+  });
+
+  it('counts restarts between two evaluations, not since the beginning of time', () => {
+    const previous = { status: 'healthy' as const, since: ago(HOUR).toISOString(), consecutive_empty_runs: 0, last_restart_count: 40 };
+    expect(computeIngestionChecks(managed({ restart_count: 42, previous }), NOW).map((c) => c.code))
+      .not.toContain('REBOOT_LOOP');
+    expect(computeIngestionChecks(managed({ restart_count: 44, previous }), NOW).map((c) => c.code))
+      .toContain('REBOOT_LOOP');
+  });
+
+  it('ignores a counter that went backwards', () => {
+    // The composer restarted and reset its own counter; the connector did not
+    // un-restart. Alerting on a negative delta would be nonsense.
+    const previous = { status: 'healthy' as const, since: ago(HOUR).toISOString(), consecutive_empty_runs: 0, last_restart_count: 40 };
+    expect(computeIngestionChecks(managed({ restart_count: 1, previous }), NOW).map((c) => c.code))
+      .not.toContain('REBOOT_LOOP');
+  });
+
+  it('says nothing about a connector the composer does not supervise', () => {
+    // Degrade honestly: no inputs means no claim, never a claim of health.
+    const input = scheduledConnector({ is_managed: false, restart_count: 99, is_in_reboot_loop: true });
+    expect(computeIngestionChecks(input, NOW).map((c) => c.code)).not.toContain('REBOOT_LOOP');
+  });
+
+  it('never applies to a feed, which has no process to supervise', () => {
+    expect(resolveRuleProfile(dailyFeed()).stability).toBe(false);
+    expect(resolveRuleProfile(scheduledConnector()).stability).toBe(true);
+  });
+});
+
+describe('configuration', () => {
+  const withUser = (over: Record<string, unknown> = {}): IngestionHealthInput => dailyFeed({
+    configuration_checked: true,
+    user_id: 'u1',
+    user: { name: 'alice', service_account: true, account_status: 'Active', effective_confidence_level: 50, ...over },
+  });
+
+  it('is silent for a correctly configured source', () => {
+    expect(computeConfigurationChecks(withUser(), NOW)).toHaveLength(0);
+    expect(foldConfigurationStatus(computeConfigurationChecks(withUser(), NOW))).toBe('ok');
+  });
+
+  it('keeps a personal account advisory — it works, so it must not page anyone', () => {
+    const checks = computeConfigurationChecks(withUser({ service_account: false }), NOW);
+    expect(checks.map((c) => c.code)).toContain('USER_NOT_SERVICE_ACCOUNT');
+    expect(checks.every((c) => c.severity === 'advisory')).toBe(true);
+    expect(foldConfigurationStatus(checks)).toBe('advisory');
+  });
+
+  it('treats a missing or disabled user as blocking', () => {
+    const noUser = dailyFeed({ configuration_checked: true });
+    expect(foldConfigurationStatus(computeConfigurationChecks(noUser, NOW))).toBe('blocking');
+    expect(foldConfigurationStatus(computeConfigurationChecks(withUser({ account_status: 'Inactive' }), NOW))).toBe('blocking');
+  });
+
+  it('says nothing at all when nobody resolved the configuration', () => {
+    // Regression guard: without this, a failed users-cache read would report
+    // USER_MISSING for every source and take the whole platform critical.
+    expect(computeConfigurationChecks(dailyFeed(), NOW)).toHaveLength(0);
+    expect(computeIngestionHealth(dailyFeed(), NOW).configuration_status).toBe('ok');
+    expect(computeIngestionHealth(dailyFeed(), NOW).status).not.toBe('critical');
+  });
+
+  it('warns before a token expires and blocks once it has', () => {
+    const expiring = withUser({ api_token_expiration: new Date(NOW.getTime() + 3 * DAY * 1000).toISOString() });
+    const expired = withUser({ api_token_expiration: ago(DAY).toISOString() });
+    expect(computeConfigurationChecks(expiring, NOW).map((c) => c.code)).toContain('TOKEN_EXPIRING');
+    expect(computeConfigurationChecks(expired, NOW).map((c) => c.code)).toContain('TOKEN_EXPIRED');
+  });
+
+  it('says nothing about a token that expires next year', () => {
+    const far = withUser({ api_token_expiration: new Date(NOW.getTime() + 300 * DAY * 1000).toISOString() });
+    const codes = computeConfigurationChecks(far, NOW).map((c) => c.code);
+    expect(codes).not.toContain('TOKEN_EXPIRING');
+    expect(codes).not.toContain('TOKEN_EXPIRED');
+  });
+
+  it('marks every configuration check with its own kind', () => {
+    const checks = computeConfigurationChecks(withUser({ service_account: false }), NOW);
+    expect(checks.every((c) => c.kind === 'configuration')).toBe(true);
+  });
+});
+
+describe('the two axes together', () => {
+  const misconfigured = (over: Partial<IngestionHealthInput> = {}) => dailyFeed({
+    configuration_checked: true,
+    user_id: 'u1',
+    user: { name: 'alice', service_account: false, account_status: 'Active', effective_confidence_level: 50 },
+    ...over,
+  });
+
+  it('reports both, so neither is masked', () => {
+    // The whole reason configuration is its own status: a source that is both
+    // degraded and misconfigured must be findable on either axis.
+    const health = computeIngestionHealth(misconfigured({ consecutive_empty_runs: 5, last_run_failed: true }), NOW);
+    expect(health.status).toBe('critical');
+    expect(health.configuration_status).toBe('advisory');
+  });
+
+  it('leaves the runtime status alone for an advisory finding', () => {
+    const health = computeIngestionHealth(misconfigured(), NOW);
+    expect(health.configuration_status).toBe('advisory');
+    expect(health.status).not.toBe('critical');
+  });
+
+  it('escalates the runtime status when the source cannot work as configured', () => {
+    // Not merely misconfigured: it cannot run at all, and that is an incident.
+    const health = computeIngestionHealth(dailyFeed({ configuration_checked: true }), NOW);
+    expect(health.configuration_status).toBe('blocking');
+    expect(health.status).toBe('critical');
+  });
+
+  it('does not escalate a source someone deliberately switched off', () => {
+    // Their decision, not an incident — and not something to page them about
+    // until they switch it back on.
+    const health = computeIngestionHealth(dailyFeed({ configuration_checked: true, enabled: false }), NOW);
+    expect(health.configuration_status).toBe('blocking');
+    expect(health.status).toBe('stopped');
+  });
+
+  it('never lets a configuration finding take the summary headline', () => {
+    const health = computeIngestionHealth(misconfigured({ last_run_failed: true, last_run_error: 'HTTP 500' }), NOW);
+    expect(health.checks[0].kind).toBe('runtime');
+    expect(health.summary).toMatch(/Last run failed/);
   });
 });

@@ -22,6 +22,7 @@ import { IngestionFeedsFormsQuery } from '@components/integrations/deployed/__ge
 import { BrowseMoreButton } from '@components/integrations/components/MarketplaceUi';
 import IntegrationsAvailable from '@components/integrations/available/IntegrationsAvailable';
 import IntegrationsDeployed from '@components/integrations/deployed/IntegrationsDeployed';
+import IntegrationsAttention from '@components/integrations/deployed/IntegrationsAttention';
 import IntegrationsStatsStrip from '@components/integrations/deployed/IntegrationsStatsStrip';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -30,10 +31,11 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
+import useIngestionHealthEnabled from '../../../utils/hooks/useIngestionHealthEnabled';
 import { paperBg, paperBorder } from './paperSurface';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
-export type IntegrationsTab = 'deployed' | 'available';
+export type IntegrationsTab = 'deployed' | 'available' | 'attention';
 
 const FEEDS_PAGE_SIZE = 500;
 
@@ -207,6 +209,7 @@ interface IntegrationsComponentProps {
 const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { hasActiveManagers } = useConnectorManagerStatus();
+  const healthEnabled = useIngestionHealthEnabled();
   const { deploymentData, feedsData, formsData } = data;
 
   // Feed instances register a technical twin connector: excluded from the
@@ -260,14 +263,21 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
                 {t_i18n('Available')}
               </Link>
             </TabsTrigger>
+            {/* Last, not first: this tab is empty on a healthy platform, and a
+                landing tab that is usually blank reads as a broken screen. */}
+            {healthEnabled && (
+              <TabsTrigger value="attention" asChild>
+                <Link to="/dashboard/integrations/attention" data-testid="integrations-tab-attention">
+                  {t_i18n('Needs attention')}
+                </Link>
+              </TabsTrigger>
+            )}
           </TabsList>
         </Tabs>
 
-        {tab === 'deployed' ? (
-          <IntegrationsDeployed data={data} />
-        ) : (
-          <IntegrationsAvailable data={data} />
-        )}
+        {tab === 'deployed' && <IntegrationsDeployed data={data} />}
+        {tab === 'available' && <IntegrationsAvailable data={data} />}
+        {tab === 'attention' && <IntegrationsAttention data={data} />}
       </PageContainer>
     </div>
   );
@@ -277,9 +287,17 @@ const Integrations = () => {
   const { tab } = useParams();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const healthEnabled = useIngestionHealthEnabled();
   setTitle(t_i18n('Integrations'));
 
-  if (tab !== 'deployed' && tab !== 'available') {
+  // Two guards rather than one boolean, because the first is what narrows `tab`
+  // to IntegrationsTab for the component below.
+  if (tab !== 'deployed' && tab !== 'available' && tab !== 'attention') {
+    return <Navigate to="/dashboard/integrations/deployed" replace={true} />;
+  }
+  // A stale bookmark to /attention with the feature off lands on Deployed
+  // rather than on an empty shell.
+  if (tab === 'attention' && !healthEnabled) {
     return <Navigate to="/dashboard/integrations/deployed" replace={true} />;
   }
 

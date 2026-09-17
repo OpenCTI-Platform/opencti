@@ -55,6 +55,7 @@ const ingestionCsvLineFragment = graphql`
     last_execution_date
     ingestion_health {
       status
+      configuration_status
       summary
       since
       checks {

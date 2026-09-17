@@ -13914,24 +13914,43 @@ export type IngestionCheck = {
 };
 
 export enum IngestionCheckCode {
+  ConfidenceUnset = 'CONFIDENCE_UNSET',
+  ContractConfigIncomplete = 'CONTRACT_CONFIG_INCOMPLETE',
   CursorStalled = 'CURSOR_STALLED',
+  DuplicateQueue = 'DUPLICATE_QUEUE',
   EmptyRuns = 'EMPTY_RUNS',
+  EmptyScope = 'EMPTY_SCOPE',
   LastRunError = 'LAST_RUN_ERROR',
   ManuallyStopped = 'MANUALLY_STOPPED',
   NeverRun = 'NEVER_RUN',
   NoConsumer = 'NO_CONSUMER',
   NoHeartbeat = 'NO_HEARTBEAT',
+  RebootLoop = 'REBOOT_LOOP',
   RunOverdue = 'RUN_OVERDUE',
-  RunStale = 'RUN_STALE'
+  RunStale = 'RUN_STALE',
+  TokenExpired = 'TOKEN_EXPIRED',
+  TokenExpiring = 'TOKEN_EXPIRING',
+  UserDisabled = 'USER_DISABLED',
+  UserMissing = 'USER_MISSING',
+  UserMissingCapability = 'USER_MISSING_CAPABILITY',
+  UserNotServiceAccount = 'USER_NOT_SERVICE_ACCOUNT',
+  VersionMismatch = 'VERSION_MISMATCH'
 }
 
 export enum IngestionCheckKind {
+  Configuration = 'configuration',
   Runtime = 'runtime'
 }
 
 export enum IngestionCheckSeverity {
   Advisory = 'advisory',
   Blocking = 'blocking'
+}
+
+export enum IngestionConfigurationStatus {
+  Advisory = 'advisory',
+  Blocking = 'blocking',
+  Ok = 'ok'
 }
 
 export type IngestionCsv = BasicObject & InternalObject & {
@@ -14037,6 +14056,7 @@ export type IngestionHeader = {
 export type IngestionHealth = {
   __typename?: 'IngestionHealth';
   checks: Array<IngestionCheck>;
+  configuration_status: IngestionConfigurationStatus;
   last_productive_at?: Maybe<Scalars['DateTime']['output']>;
   next_expected_at?: Maybe<Scalars['DateTime']['output']>;
   since?: Maybe<Scalars['DateTime']['output']>;
@@ -41034,6 +41054,7 @@ export type ResolversTypes = ResolversObject<{
   IngestionCheckCode: IngestionCheckCode;
   IngestionCheckKind: IngestionCheckKind;
   IngestionCheckSeverity: IngestionCheckSeverity;
+  IngestionConfigurationStatus: IngestionConfigurationStatus;
   IngestionCsv: ResolverTypeWrapper<BasicStoreEntityIngestionCsv>;
   IngestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput;
   IngestionCsvAddInput: IngestionCsvAddInput;
@@ -47385,6 +47406,7 @@ export type IngestionHeaderResolvers<ContextType = any, ParentType extends Resol
 
 export type IngestionHealthResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealth'] = ResolversParentTypes['IngestionHealth']> = ResolversObject<{
   checks?: Resolver<Array<ResolversTypes['IngestionCheck']>, ParentType, ContextType>;
+  configuration_status?: Resolver<ResolversTypes['IngestionConfigurationStatus'], ParentType, ContextType>;
   last_productive_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   next_expected_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

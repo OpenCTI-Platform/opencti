@@ -4,9 +4,12 @@ import Tag from '@common/tag/Tag';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { countHealthStatuses } from '../../../../utils/IngestionHealth';
+import useIngestionHealthEnabled from '../../../../utils/hooks/useIngestionHealthEnabled';
 
 interface IngestionHealthCountersProps {
-  connectors: ReadonlyArray<{ ingestion_health?: { status?: string | null } | null }>;
+  connectors: ReadonlyArray<{
+    ingestion_health?: { status?: string | null; configuration_status?: string | null } | null;
+  }>;
 }
 
 // The line an administrator reads each morning, above the table.
@@ -16,6 +19,7 @@ interface IngestionHealthCountersProps {
 const IngestionHealthCounters: React.FC<IngestionHealthCountersProps> = ({ connectors }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const healthEnabled = useIngestionHealthEnabled();
   const counts = countHealthStatuses(connectors);
 
   const entries = [
@@ -24,9 +28,12 @@ const IngestionHealthCounters: React.FC<IngestionHealthCountersProps> = ({ conne
     // Stopped is deliberate, so it is listed without a colour: worth knowing,
     // not worth alarming about.
     { key: 'stopped', value: counts.stopped, color: undefined, label: t_i18n('Stopped') },
+    // Counted on its own axis: a source can be both degraded and misconfigured,
+    // and it appears in both figures rather than only the worse one.
+    { key: 'misconfigured', value: counts.misconfigured, color: theme.palette.warn.main, label: t_i18n('Misconfigured') },
   ].filter((entry) => entry.value > 0);
 
-  if (entries.length === 0) {
+  if (!healthEnabled || entries.length === 0) {
     return null;
   }
 

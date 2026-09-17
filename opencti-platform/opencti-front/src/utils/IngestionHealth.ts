@@ -21,8 +21,13 @@ export interface IngestionCheck {
   detail?: string | null;
 }
 
+export type IngestionConfigurationStatus = 'ok' | 'advisory' | 'blocking';
+
 export interface IngestionHealth {
   status: IngestionHealthStatus;
+  // Reported independently of `status` so a source that is both degraded and
+  // misconfigured stays visible on either axis.
+  configuration_status?: IngestionConfigurationStatus | null;
   summary: string;
   checks: ReadonlyArray<IngestionCheck>;
   since?: string | null;
@@ -54,6 +59,33 @@ export const HEALTH_STATUS_LABEL: Record<IngestionHealthStatus, string> = {
   unknown: 'Unknown',
 };
 
+// The configuration marker is driven by the checks, never by `status` — that is
+// the whole point of keeping the two axes apart.
+export const hasConfigurationFinding = (health: IngestionHealth | null | undefined): boolean => {
+  return !!health?.checks?.some((check) => check.kind === 'configuration');
+};
+
+export const CONFIGURATION_STATUS_LABEL: Record<IngestionConfigurationStatus, string> = {
+  ok: 'Configuration OK',
+  advisory: 'Misconfigured',
+  blocking: 'Cannot run as configured',
+};
+
+export const CONFIGURATION_PALETTE_TOKEN: Record<IngestionConfigurationStatus, HealthPaletteToken> = {
+  ok: 'neutral',
+  advisory: 'warn',
+  blocking: 'error',
+};
+
+// Only the configuration findings, for the surfaces that show that axis on its
+// own — the detail-page alert slot and the row marker's tooltip.
+export const buildConfigurationLines = (health: IngestionHealth | null | undefined): string[] => {
+  if (!health) {
+    return [];
+  }
+  return health.checks.filter((check) => check.kind === 'configuration').map((check) => check.message);
+};
+
 // A status worth surfacing in the counters above the table.
 export const ATTENTION_STATUSES: IngestionHealthStatus[] = ['critical', 'degraded'];
 
@@ -66,13 +98,14 @@ export interface HealthCounts {
   degraded: number;
   stopped: number;
   unknown: number;
+  misconfigured: number;
   total: number;
 }
 
 export const countHealthStatuses = (
-  sources: ReadonlyArray<{ ingestion_health?: { status?: string | null } | null }>,
+  sources: ReadonlyArray<{ ingestion_health?: { status?: string | null; configuration_status?: string | null } | null }>,
 ): HealthCounts => {
-  const counts: HealthCounts = { critical: 0, degraded: 0, stopped: 0, unknown: 0, total: 0 };
+  const counts: HealthCounts = { critical: 0, degraded: 0, stopped: 0, unknown: 0, misconfigured: 0, total: 0 };
   sources.forEach((source) => {
     const status = source.ingestion_health?.status;
     if (!status) {
@@ -81,6 +114,11 @@ export const countHealthStatuses = (
     counts.total += 1;
     if (status === 'critical' || status === 'degraded' || status === 'stopped' || status === 'unknown') {
       counts[status] += 1;
+    }
+    // Counted independently: a source can be both, and both figures matter.
+    if (source.ingestion_health?.configuration_status
+      && source.ingestion_health.configuration_status !== 'ok') {
+      counts.misconfigured += 1;
     }
   });
   return counts;

@@ -4,6 +4,7 @@ import {
   buildFeedHealthInput,
   buildSyncHealthInput,
   formatIngestionLogDetail,
+  isIngestionConnector,
   parseSchedulingPeriodSeconds,
   summarizeWorks,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-domain';
@@ -267,5 +268,38 @@ describe('formatIngestionLogDetail', () => {
   it('falls back to the bare message when there is no usable meta', () => {
     expect(formatIngestionLogDetail(entry({ meta: {} }))).toBe('Feed fetch failed');
     expect(formatIngestionLogDetail(entry())).toBe('Feed fetch failed');
+  });
+});
+
+describe('isIngestionConnector', () => {
+  // The bug this guards: "[DRAFT] Draft validation" reported critical because
+  // it has no configured user. It is platform plumbing, not an ingestion
+  // source — it never pings, cannot carry a user, and is forced active, so
+  // evaluating it produced a permanent false alarm.
+  it('excludes the static built-in connectors', () => {
+    expect(isIngestionConnector({ id: 'c', built_in: true, connector_type: 'INTERNAL_INGESTION' })).toBe(false);
+    expect(isIngestionConnector({ id: 'c', built_in: true, connector_type: 'INTERNAL_IMPORT_FILE' })).toBe(false);
+  });
+
+  it('excludes the queue-backed internal connectors', () => {
+    // These use a lowercase literal that is not in the ConnectorType enum.
+    expect(isIngestionConnector({ id: 'c', connector_type: 'internal' })).toBe(false);
+  });
+
+  it('excludes the technical twin a feed registers', () => {
+    // Real connector, real user — but the feed it mirrors is already evaluated,
+    // so keeping both would double every feed and notify twice per incident.
+    expect(isIngestionConnector({
+      id: 'c',
+      built_in: true,
+      connector_type: 'EXTERNAL_IMPORT',
+      connector_user_id: 'u1',
+    })).toBe(false);
+  });
+
+  it('keeps everything an operator actually deployed', () => {
+    expect(isIngestionConnector({ id: 'c', connector_type: 'EXTERNAL_IMPORT' })).toBe(true);
+    expect(isIngestionConnector({ id: 'c', built_in: false, connector_type: 'INTERNAL_ENRICHMENT' })).toBe(true);
+    expect(isIngestionConnector({ id: 'c', is_managed: true, connector_type: 'STREAM' })).toBe(true);
   });
 });

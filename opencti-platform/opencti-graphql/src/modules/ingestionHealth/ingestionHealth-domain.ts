@@ -10,8 +10,16 @@
 
 import { worksForConnector } from '../../domain/work';
 import { queueDetails } from '../../domain/connector';
-import { type IngestionLogEntry, redisGetIngestionHealthObservation, redisGetIngestionLogHistory } from '../../database/redis';
+import {
+  type IngestionLogEntry,
+  redisGetConnectorHealthMetrics,
+  redisGetIngestionHealthObservation,
+  redisGetIngestionLogHistory,
+} from '../../database/redis';
+import { getEntitiesMapFromCache } from '../../database/cache';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { computeIngestionHealth } from './ingestionHealth-checks';
+import { INGESTION_HEALTH_THRESHOLDS } from './ingestionHealth-config';
 import type {
   IngestionHealth,
   IngestionHealthInput,
@@ -28,6 +36,7 @@ import {
 } from '../ingestion/ingestion-types';
 import { ENTITY_TYPE_SYNC } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
+import { SYSTEM_USER } from '../../utils/access';
 import { logApp } from '../../config/conf';
 
 // How many recent works are enough to answer "has it produced anything, and
@@ -54,6 +63,11 @@ interface ConnectorLike {
   created_at?: string | Date;
   connector_state_timestamp?: string | Date;
   manager_requested_status?: string;
+  is_managed?: boolean;
+  built_in?: boolean;
+  connector_user_id?: string;
+  connector_scope?: string[];
+  connector_contract_configuration?: Array<{ key?: string; value?: string | null }>;
   connector_info?: {
     run_and_terminate?: boolean;
     buffering?: boolean;
@@ -105,11 +119,98 @@ export const summarizeWorks = (works: WorkLike[]) => {
   };
 };
 
+// region configuration inputs
+//
+// Every source kind has a user_id, so the configuration axis applies to all
+// seven — a TAXII feed ingesting as a personal account is the same problem as a
+// connector doing it.
+
+export interface IngestionUserFacts {
+  name?: string;
+  service_account?: boolean;
+  account_status?: string;
+  api_token_expiration?: string;
+  effective_confidence_level?: number | null;
+}
+
+export type IngestionUserLookup = (userId: string | undefined) => IngestionUserFacts | undefined;
+
+// Resolving the user per source per cycle must not hit Elastic each time. The
+// users cache is what activityManager already uses for exactly this.
+export const buildUserLookup = async (context: AuthContext, user: AuthUser): Promise<IngestionUserLookup> => {
+  const platformUsers = await getEntitiesMapFromCache<any>(context, user ?? SYSTEM_USER, ENTITY_TYPE_USER)
+    .catch(() => new Map());
+  return (userId) => {
+    if (!userId) {
+      return undefined;
+    }
+    const found = platformUsers.get(userId);
+    if (!found) {
+      return undefined;
+    }
+    return {
+      name: found.name ?? found.user_email,
+      service_account: found.user_service_account,
+      account_status: found.account_status,
+      api_token_expiration: found.api_token_expiration,
+      effective_confidence_level: found.effective_confidence_level?.max_confidence
+        ?? found.user_confidence_level?.max_confidence
+        ?? null,
+    };
+  };
+};
+
+// A managed connector declares its required fields through its contract; an
+// empty value on a required one means it cannot start.
+export const missingContractFields = (connector: ConnectorLike): string[] => {
+  if (!connector.is_managed) {
+    return [];
+  }
+  return (connector.connector_contract_configuration ?? [])
+    .filter((field) => field.key && (field.value === null || field.value === undefined || field.value === ''))
+    .map((field) => field.key as string);
+};
+
+// endregion
+
+// Which connectors this feature is about.
+//
+// `built_in: true` covers two very different things, and neither belongs here:
+//
+//   - platform plumbing — `[DRAFT] Draft validation`, `[FILE] CSV Mapper
+//     import`, the `[TASK]` / `[PLAYBOOK]` / `[SYNC]` queue connectors. These
+//     are static objects that never ping, never carry a user (their TS
+//     interface has no `connector_user_id` field at all) and are forced
+//     `active: true` by `completeConnector`. Evaluated as ingestion they report
+//     NO_HEARTBEAT and USER_MISSING and land on critical, permanently, which is
+//     exactly the false positive that makes a health column stop being read.
+//
+//   - the technical twin every feed registers, `[FEED - CSV] <name>`. That one
+//     is a real connector with a real user, but the feed it mirrors is already
+//     evaluated in its own right — keeping both would double every feed's
+//     health record and send two notifications for one incident.
+//
+// Composer-managed and self-registered connectors are `built_in: false`, so
+// nothing an operator actually deployed is excluded by this.
+export const isIngestionConnector = (connector: ConnectorLike): boolean => {
+  if (connector.built_in) {
+    return false;
+  }
+  // The queue-backed internal connectors use a lowercase literal that is not in
+  // the ConnectorType enum.
+  return connector.connector_type !== 'internal';
+};
+
 export const buildConnectorHealthInput = (
   connector: ConnectorLike,
   works: WorkLike[],
   queue?: { messages_number?: number; listen_messages?: number; listen_consumers?: number },
   previous?: IngestionHealthObservation,
+  // Composer metrics. `null` means the key was absent, which is two different
+  // situations — not supervised, or supervised and no longer reporting — told
+  // apart by `is_managed` rather than guessed at here.
+  stability?: { restart_count: number; is_in_reboot_loop: boolean } | null,
+  userLookup?: IngestionUserLookup,
 ): IngestionHealthInput => {
   const info = connector.connector_info ?? undefined;
   const workFacts = summarizeWorks(works ?? []);
@@ -153,6 +254,18 @@ export const buildConnectorHealthInput = (
     consecutive_empty_runs: workFacts.consecutive_empty_runs,
     last_run_failed: workFacts.last_run_failed,
     last_run_error: workFacts.last_run_error,
+
+    is_managed: connector.is_managed === true,
+    restart_count: stability?.restart_count,
+    is_in_reboot_loop: stability?.is_in_reboot_loop,
+    stability_metrics_present: Boolean(stability),
+
+    configuration_checked: Boolean(userLookup),
+    user_id: connector.connector_user_id,
+    user: userLookup?.(connector.connector_user_id),
+    connector_scope: connector.connector_scope,
+    contract_missing_fields: missingContractFields(connector),
+
     previous,
   };
 };
@@ -162,20 +275,35 @@ export const resolveConnectorIngestionHealth = async (
   user: AuthUser,
   connector: ConnectorLike,
 ): Promise<IngestionHealth | null> => {
+  if (!isIngestionConnector(connector)) {
+    // Not an ingestion source: report nothing rather than a verdict we have no
+    // basis for. The field is nullable, and every surface already handles null.
+    return null;
+  }
   try {
     const connectorId = connector.internal_id ?? connector.id;
-    const [works, queue] = await Promise.all([
+    const [works, queue, stability, previous, userLookup] = await Promise.all([
       worksForConnector(context, user, connectorId, { first: WORKS_LOOKBACK }),
       // RabbitMQ may be unreachable; health must still resolve without it.
       queueDetails(connector.id).catch(() => undefined),
+      // Composer metrics, written with a 300s TTL and only by xtm-composer.
+      redisGetConnectorHealthMetrics(connectorId).catch(() => null),
+      // Read the manager's observation so the chip in the UI and the alert in an
+      // email are the same answer: without it the API would evaluate every source
+      // as if it had no history, and the cursor check could never fire at read
+      // time. One Redis GET next to the works query and the RabbitMQ call.
+      redisGetIngestionHealthObservation(connectorId).catch(() => null),
+      buildUserLookup(context, user),
     ]);
-    // Read the manager's observation so the chip in the UI and the alert in an
-    // email are the same answer: without it the API would evaluate every source
-    // as if it had no history, and the cursor check could never fire at read
-    // time. One Redis GET next to the works query and the RabbitMQ call.
-    const previous = await redisGetIngestionHealthObservation(connectorId).catch(() => null);
-    const input = buildConnectorHealthInput(connector, works ?? [], queue ?? undefined, previous ?? undefined);
-    return computeIngestionHealth(input, new Date());
+    const input = buildConnectorHealthInput(
+      connector,
+      works ?? [],
+      queue ?? undefined,
+      previous ?? undefined,
+      stability,
+      userLookup,
+    );
+    return computeIngestionHealth(input, new Date(), INGESTION_HEALTH_THRESHOLDS);
   } catch (e) {
     // A health field must never break the query that asked for it.
     logApp.warn('[OPENCTI-MODULE] Unable to resolve ingestion health', { cause: e, id: connector.id });
@@ -201,6 +329,7 @@ interface FeedLike {
   current_state_cursor?: string | null;
   current_state_hash?: string | null;
   current_state_date?: string | Date | null;
+  user_id?: string;
 }
 
 interface SyncLike {
@@ -212,6 +341,7 @@ interface SyncLike {
   current_state_date?: string | Date | null;
   last_execution_date?: string | Date | null;
   last_execution_status?: string | null;
+  user_id?: string;
 }
 
 // `scheduling_period` is an ISO-8601 duration ("PT1H", "PT6H", "P1D"), or the
@@ -291,6 +421,7 @@ export const buildFeedHealthInput = (
   // be off, Redis may have been flushed, the entry may have aged out of the
   // ring — and the check still fires on the persisted status either way.
   lastRunError?: string,
+  userLookup?: IngestionUserLookup,
 ): IngestionHealthInput => {
   const lastRunAt = asDate(feed.last_execution_date);
   const periodSeconds = parseSchedulingPeriodSeconds(feed.scheduling_period);
@@ -318,6 +449,11 @@ export const buildFeedHealthInput = (
     // keeps the total in the observation; CURSOR_STALLED reads it back here.
     consecutive_empty_runs: previous?.consecutive_empty_runs ?? 0,
     cursor_hash: feed.current_state_cursor ?? feed.current_state_hash ?? undefined,
+
+    configuration_checked: Boolean(userLookup),
+    user_id: feed.user_id,
+    user: userLookup?.(feed.user_id),
+
     previous,
   };
 };
@@ -325,6 +461,7 @@ export const buildFeedHealthInput = (
 export const buildSyncHealthInput = (
   sync: SyncLike,
   previous?: IngestionHealthObservation,
+  userLookup?: IngestionUserLookup,
 ): IngestionHealthInput => {
   const lastRunAt = asDate(sync.last_execution_date);
   return {
@@ -345,6 +482,11 @@ export const buildSyncHealthInput = (
     last_productive_at: asDate(sync.current_state_date),
     consecutive_empty_runs: previous?.consecutive_empty_runs ?? 0,
     cursor_hash: asDate(sync.current_state_date)?.toISOString(),
+
+    configuration_checked: Boolean(userLookup),
+    user_id: sync.user_id,
+    user: userLookup?.(sync.user_id),
+
     previous,
   };
 };
@@ -352,20 +494,37 @@ export const buildSyncHealthInput = (
 // The entity carries every fact the evaluator reads; the only fetch is the
 // manager's observation, which is what the cursor check needs and what keeps the
 // API's answer identical to the one that was notified on.
-export const resolveFeedIngestionHealth = async (feed: FeedLike): Promise<IngestionHealth> => {
+export const resolveFeedIngestionHealth = async (
+  feed: FeedLike,
+  context?: AuthContext,
+  user?: AuthUser,
+): Promise<IngestionHealth> => {
   const feedId = feed.internal_id ?? feed.id;
-  const [previous, failureDetail] = await Promise.all([
+  const [previous, failureDetail, userLookup] = await Promise.all([
     redisGetIngestionHealthObservation(feedId).catch(() => null),
     // Only read the log ring when the entity already says the run failed, so a
     // healthy platform pays nothing for it.
     isFailedExecution(feed.last_execution_status) ? readFeedFailureDetail(feedId) : undefined,
+    context ? buildUserLookup(context, user as AuthUser) : undefined,
   ]);
-  return computeIngestionHealth(buildFeedHealthInput(feed, previous ?? undefined, failureDetail), new Date());
+  return computeIngestionHealth(
+    buildFeedHealthInput(feed, previous ?? undefined, failureDetail, userLookup),
+    new Date(),
+    INGESTION_HEALTH_THRESHOLDS,
+  );
 };
 
-export const resolveSyncIngestionHealth = async (sync: SyncLike): Promise<IngestionHealth> => {
-  const previous = await redisGetIngestionHealthObservation(sync.internal_id ?? sync.id).catch(() => null);
-  return computeIngestionHealth(buildSyncHealthInput(sync, previous ?? undefined), new Date());
+export const resolveSyncIngestionHealth = async (
+  sync: SyncLike,
+  context?: AuthContext,
+  user?: AuthUser,
+): Promise<IngestionHealth> => {
+  const syncId = sync.internal_id ?? sync.id;
+  const [previous, userLookup] = await Promise.all([
+    redisGetIngestionHealthObservation(syncId).catch(() => null),
+    context ? buildUserLookup(context, user as AuthUser) : undefined,
+  ]);
+  return computeIngestionHealth(buildSyncHealthInput(sync, previous ?? undefined, userLookup), new Date(), INGESTION_HEALTH_THRESHOLDS);
 };
 // endregion
 
@@ -401,17 +560,21 @@ export const collectIngestionSources = async (
 ): Promise<IngestionSourceSnapshot[]> => {
   const snapshots: IngestionSourceSnapshot[] = [];
 
+  // Built once for the whole pass: the users cache is shared, so resolving the
+  // ingesting user for forty sources costs one lookup, not forty.
+  const userLookup = await buildUserLookup(context, user);
+
   const platformConnectors = await connectors(context, user);
   for (const connector of platformConnectors) {
-    // Internal connectors are platform plumbing, not ingestion.
-    if (connector.connector_type === 'internal') {
+    if (!isIngestionConnector(connector)) {
       continue;
     }
     const connectorId = connector.internal_id ?? connector.id;
-    const [works, queue] = await Promise.all([
+    const [works, queue, stability] = await Promise.all([
       worksForConnector(context, user, connectorId, { first: WORKS_LOOKBACK }).catch(() => []),
       // RabbitMQ may be unreachable; health must still evaluate without it.
       queueDetails(connector.id).catch(() => undefined),
+      redisGetConnectorHealthMetrics(connectorId).catch(() => null),
     ]);
     snapshots.push({
       id: connectorId,
@@ -419,7 +582,7 @@ export const collectIngestionSources = async (
       entity_type: 'Connector',
       source_kind: 'connector',
       route: `connectors/${connectorId}`,
-      input: buildConnectorHealthInput(connector, works ?? [], queue ?? undefined),
+      input: buildConnectorHealthInput(connector, works ?? [], queue ?? undefined, undefined, stability, userLookup),
     });
   }
 
@@ -439,7 +602,7 @@ export const collectIngestionSources = async (
         entity_type: feedSource.type,
         source_kind: 'feed',
         route: feedSource.route,
-        input: buildFeedHealthInput(feed, undefined, failureDetail),
+        input: buildFeedHealthInput(feed, undefined, failureDetail, userLookup),
       });
     }
   }
@@ -452,7 +615,7 @@ export const collectIngestionSources = async (
       entity_type: ENTITY_TYPE_SYNC,
       source_kind: 'sync',
       route: 'feeds/sync',
-      input: buildSyncHealthInput(sync),
+      input: buildSyncHealthInput(sync, undefined, userLookup),
     });
   }
 

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { computeAccountStatusChoices } from '../../config/conf';
+import { computeAccountStatusChoices, INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
 import { ConnectorPriorityGroup } from '../../generated/graphql';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import {
@@ -465,6 +465,14 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'manager_contract_image', label: 'Connector manager image', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'manager_contract_configuration', label: 'Connector manager', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     // endregion
+    // Cached ingestion health, written by the health manager on change only.
+    // The resolver stays the source of truth — these exist so the fleet can be
+    // filtered and sorted server-side, which a value computed on read cannot do.
+    // Behind the feature flag, so with it off they never reach the mapping.
+    { name: 'ingestion_health_status', label: 'Health status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_health_since', label: 'Health since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_last_productive_at', label: 'Last productive run', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_configuration_status', label: 'Configuration status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
   ],
   [ENTITY_TYPE_CONNECTOR_MANAGER]: [
     { ...updatedAt, update: true }, // Allow change of updated_at for connector ping
@@ -566,6 +574,14 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'last_execution_status', label: 'Last execution status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'listen_deletion', label: 'Listen deletion', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'no_dependencies', label: 'No dependencies', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    // Cached ingestion health, written by the health manager on change only.
+    // The resolver stays the source of truth — these exist so the fleet can be
+    // filtered and sorted server-side, which a value computed on read cannot do.
+    // Behind the feature flag, so with it off they never reach the mapping.
+    { name: 'ingestion_health_status', label: 'Health status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_health_since', label: 'Health since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_last_productive_at', label: 'Last productive run', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_configuration_status', label: 'Configuration status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
   ],
   [ENTITY_TYPE_HISTORY]: HistoryDefinition,
   [ENTITY_TYPE_PIR_HISTORY]: HistoryDefinition,
