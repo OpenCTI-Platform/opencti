@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { spawn, fork } from 'node:child_process';
+import { spawn, fork, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -13,31 +13,31 @@ const CONFIG = {
 
 let initialBuildDone = false;
 let shuttingDown = false;
-let appProcess = null;
-let esbuildProcess = null;
-let graphQLWatchProcess = null;
+let appProcess: ChildProcess | null = null;
+let esbuildProcess: ChildProcess | null = null;
+let graphQLWatchProcess: ChildProcess | null = null;
 let pendingRestart = false;
 
 // Shared lifecycle handlers to avoid repeating the same log+shutdown shape
 // across appProcess, graphQLWatchProcess and esbuildProcess.
-function onProcessError(label) {
-  return (err) => {
+const onProcessError = (label: string) => {
+  return (err: Error) => {
     console.error(`[WATCH] Failed to start ${label}:`, err);
     shutdown(1);
   };
-}
+};
 
-function onFatalExit(label, clearRef) {
-  return (code) => {
+const onFatalExit = (label: string, clearRef: () => void) => {
+  return (code: number | null) => {
     clearRef();
     if (!shuttingDown && code !== 0 && code !== null) {
       console.error(`[WATCH] ${label} exited with code ${code}`);
       shutdown(1);
     }
   };
-}
+};
 
-function startApp() {
+const startApp = () => {
   console.log('[WATCH] Starting backend...');
   appProcess = spawn('node', [
     '--enable-source-maps',
@@ -49,8 +49,8 @@ function startApp() {
     env: { ...process.env, NODE_ENV: 'development', HOT_RELOAD_WATCH: 'true' },
   });
 
-  appProcess.stdout.on('data', (data) => process.stdout.write(data));
-  appProcess.stderr.on('data', (data) => process.stderr.write(data));
+  appProcess.stdout?.on('data', (data: Buffer) => process.stdout.write(data));
+  appProcess.stderr?.on('data', (data: Buffer) => process.stderr.write(data));
 
   appProcess.on('exit', (code) => {
     appProcess = null;
@@ -60,9 +60,9 @@ function startApp() {
   });
 
   appProcess.on('error', onProcessError('backend process'));
-}
+};
 
-function restartApp() {
+const restartApp = () => {
   console.log('[WATCH] Restarting backend...');
   if (appProcess) {
     pendingRestart = true;
@@ -76,21 +76,21 @@ function restartApp() {
   } else {
     startApp();
   }
-}
+};
 
-function handleEsbuildOutput(data) {
+const handleEsbuildOutput = (data: Buffer) => {
   const output = data.toString();
   process.stdout.write(output);
-}
+};
 
-function startGraphQLSchemaWatch() {
+const startGraphQLSchemaWatch = () => {
   if (!CONFIG.graphql || graphQLWatchProcess) {
     return;
   }
 
   console.log('[WATCH] Starting GraphQL schema watch...');
 
-  graphQLWatchProcess = spawn('node', ['builder/dev/graphqlSchemaWatch.js'], {
+  graphQLWatchProcess = spawn('node', ['builder/dev/graphqlSchemaWatch.ts'], {
     cwd: CONFIG.projectRoot,
     stdio: ['inherit', 'inherit', 'inherit'],
     shell: false,
@@ -101,49 +101,51 @@ function startGraphQLSchemaWatch() {
     graphQLWatchProcess = null;
   }));
   graphQLWatchProcess.on('error', onProcessError('GraphQL schema watcher'));
-}
+};
 
-function startEsbuildWatch() {
-  esbuildProcess = fork(path.join(CONFIG.projectRoot, 'builder/builder.js'), ['--development', '--watch'], {
+const startEsbuildWatch = () => {
+  esbuildProcess = fork(path.join(CONFIG.projectRoot, 'builder/builder.ts'), ['--development', '--watch'], {
     cwd: CONFIG.projectRoot,
     silent: true, // captures stdio so we can pipe it
     execArgv: [],
     env: { ...process.env, NODE_ENV: 'development' },
   });
 
-  // Receive IPC messages from builder.js
+  // Receive IPC messages from builder.ts. IPC carries no type information, so the
+  // shape builder.ts sends is asserted once, here at the boundary.
   esbuildProcess.on('message', (msg) => {
-    if (!msg) return;
-    if (msg.type === 'initial-build-complete' && !initialBuildDone) {
+    const message = msg as { type?: string } | null;
+    if (!message) return;
+    if (message.type === 'initial-build-complete' && !initialBuildDone) {
       console.log('[WATCH] Received initial-build-complete IPC, starting app...');
       initialBuildDone = true;
       startApp();
       startGraphQLSchemaWatch();
-    } else if (msg.type === 'rebuild-complete') {
+    } else if (message.type === 'rebuild-complete') {
       restartApp();
-    } else if (msg.type === 'rebuild-failed' && pendingRestart) {
+    } else if (message.type === 'rebuild-failed' && pendingRestart) {
       pendingRestart = false;
       console.log('[WATCH] Build failed while restarting backend, waiting for next successful build...');
     }
   });
 
-  esbuildProcess.stdout.on('data', handleEsbuildOutput);
-  esbuildProcess.stderr.on('data', (data) => process.stderr.write(data));
+  esbuildProcess.stdout?.on('data', handleEsbuildOutput);
+  esbuildProcess.stderr?.on('data', (data: Buffer) => process.stderr.write(data));
 
   esbuildProcess.on('exit', onFatalExit('esbuild watcher', () => {
     esbuildProcess = null;
   }));
   esbuildProcess.on('error', onProcessError('esbuild watcher'));
-}
+};
 
-function stopProcess(proc) {
+const stopProcess = (proc: ChildProcess | null) => {
   if (!proc || proc.killed) {
     return;
   }
   proc.kill('SIGTERM');
-}
+};
 
-function shutdown(code = 0) {
+const shutdown = (code = 0) => {
   if (shuttingDown) {
     return;
   }
@@ -153,10 +155,10 @@ function shutdown(code = 0) {
   stopProcess(appProcess);
   stopProcess(graphQLWatchProcess);
   process.exit(code);
-}
+};
 
 // Main entry point
-function main() {
+const main = () => {
   console.log('\n🚀 Starting dev OpenCTI...');
   console.log(CONFIG.graphql ? '• with GraphQL hot reload\n' : '• without GraphQL hot reload\n');
 
@@ -164,7 +166,7 @@ function main() {
 
   process.on('SIGINT', () => shutdown(0));
   process.on('SIGTERM', () => shutdown(0));
-}
+};
 
 // Start the watch process
 main();

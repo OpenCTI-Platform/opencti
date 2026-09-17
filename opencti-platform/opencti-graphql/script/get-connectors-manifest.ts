@@ -48,7 +48,7 @@ const getConnectorManifest = async () => {
 
     console.info(`✅ Manifest saved to: ${fullPath}`);
   } catch (err) {
-    console.error(`❌ Error: ${err.message}`, err);
+    console.error(`❌ Error: ${err instanceof Error ? err.message : String(err)}`, err);
     console.error(err);
     process.exit(1);
   }

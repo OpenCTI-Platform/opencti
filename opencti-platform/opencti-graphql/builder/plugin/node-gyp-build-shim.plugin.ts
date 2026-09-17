@@ -4,12 +4,13 @@
  */
 
 import { fileURLToPath } from 'node:url';
+import type { Plugin } from 'esbuild';
 
-const nodeGypBuildShimPlugin = () => ({
+const nodeGypBuildShimPlugin = (): Plugin => ({
   name: 'node-gyp-build-shim',
   setup: (build) => {
     build.onResolve({ filter: /^node-gyp-build$/ }, () => ({
-      path: fileURLToPath(new URL('node-gyp-build-shim.cjs', import.meta.url)),
+      path: fileURLToPath(new URL('node-gyp-build-shim.cts', import.meta.url)),
     }));
   },
 });

@@ -1,8 +1,8 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { SourceMapConsumer } from 'source-map';
+import { SourceMapConsumer, type RawSourceMap } from 'source-map';
 
-const readStdin = () => new Promise((resolve) => {
+const readStdin = () => new Promise<string>((resolve) => {
   let data = '';
   process.stdin.setEncoding('utf8');
   process.stdin.on('data', (chunk) => {
@@ -40,11 +40,12 @@ if (isExecTypeBack) {
 
 const specificErrorKeys = ['componentStack', 'codeStack'];
 const specificStartErrorMessages = ['Error', 'GraphQLError', 'TypeError'];
-const getAllLogStacks = (obj, results = []) => {
+const getAllLogStacks = (obj: unknown, results: string[] = []): string[] => {
   if (typeof obj === 'object' && obj !== null) {
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const value = obj[key];
+    const record = obj as Record<string, unknown>;
+    for (const key in record) {
+      if (Object.prototype.hasOwnProperty.call(record, key)) {
+        const value = record[key];
         if (typeof value === 'string' && (specificErrorKeys.includes(key) || specificStartErrorMessages.some((m) => value.startsWith(m)))) {
           results.push(value);
         } else if (typeof value === 'object') {
@@ -56,7 +57,7 @@ const getAllLogStacks = (obj, results = []) => {
   return results;
 };
 
-const parseStackTrace = async (stackTrace, sourceMaps) => {
+const parseStackTrace = async (stackTrace: string, sourceMaps: RawSourceMap[]) => {
   const consumers = await Promise.all(sourceMaps.map((sm) => new SourceMapConsumer(sm)));
   const lines = stackTrace.split('\n');
   const mappedLines = lines.map((line) => {
