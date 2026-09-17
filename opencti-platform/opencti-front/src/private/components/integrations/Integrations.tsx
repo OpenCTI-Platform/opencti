@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect, useMemo } from 'react';
-import { Link, Navigate, useParams } from 'react-router';
+import React, { Suspense, useCallback, useEffect, useMemo } from 'react';
+import {  Link, Navigate, useParams } from 'react-router';
 import { Box, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useQueryLoader } from 'react-relay';
@@ -42,6 +42,7 @@ export interface IntegrationsData {
   deploymentData: IngestionConnectorsQuery['response'] | null;
   feedsData: IngestionFeedsData | null;
   formsData: IngestionFeedsFormsData | null;
+  refetchCatalogs: () => void;
   refetchFeeds: () => void;
   refetchForms: () => void;
 }
@@ -78,16 +79,21 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
 
   // store-and-network: the previous data keeps rendering while the refresh
   // happens in the background, so refetching never suspends the whole page.
-  const refetchFeeds = () => {
+  const refetchFeeds = useCallback(() => {
     if (isIngestionReader) {
       loadFeeds({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
-  };
-  const refetchForms = () => {
+  }, [isIngestionReader, loadFeeds]);
+  const refetchForms = useCallback(() => {
     if (isFormReader) {
       loadForms({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
-  };
+  }, [isFormReader, loadForms]);
+  const refetchCatalogs = useCallback(() => {
+    if (isConnectorReader) {
+      loadCatalogs({}, { fetchPolicy: 'store-and-network' });
+    }
+  }, [isConnectorReader, loadCatalogs]);
 
   const renderWithForms = (
     catalogsData: IngestionConnectorsCatalogsQuery['response'] | null,
@@ -97,11 +103,27 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
     if (formsRef) {
       return (
         <IngestionFeedsForms queryRef={formsRef}>
-          {({ data: formsData }) => children({ catalogsData, deploymentData, feedsData, formsData, refetchFeeds, refetchForms })}
+          {({ data: formsData }) => children({
+            catalogsData,
+            deploymentData,
+            feedsData,
+            formsData,
+            refetchCatalogs,
+            refetchFeeds,
+            refetchForms,
+          })}
         </IngestionFeedsForms>
       );
     }
-    return children({ catalogsData, deploymentData, feedsData, formsData: null, refetchFeeds, refetchForms });
+    return children({
+      catalogsData,
+      deploymentData,
+      feedsData,
+      formsData: null,
+      refetchCatalogs,
+      refetchFeeds,
+      refetchForms,
+    });
   };
 
   const renderWithFeeds = (
