@@ -126,6 +126,8 @@ interface QueryRendererProps {
   fetchPolicy?: FetchPolicy;
 }
 
+type FetchQueryOptions = NonNullable<Parameters<typeof FQ>[3]>;
+
 export const QueryRenderer = ({
   variables,
   query,
@@ -241,7 +243,8 @@ export const requestSubscription = <T extends OperationType>(args: GraphQLSubscr
 export const fetchQuery = <T extends OperationType>(
   query: GraphQLTaggedNode,
   args: T['variables'] = {},
-) => FQ<T>(environment, query, args);
+  options?: FetchQueryOptions,
+) => FQ<T>(environment, query, args, options);
 
 export const commitLocalUpdate = (updater: SelectorStoreUpdater) => CLU(environment, updater);
 
