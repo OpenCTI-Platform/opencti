@@ -3,7 +3,7 @@ import * as readline from 'node:readline';
 import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { consumeQueue, registerConnectorQueues } from '../../database/rabbitmq';
+import { consumeQueue, registerConnectorQueues } from '../../modules/connector/connector-rabbitmq';
 import { downloadFile } from '../../database/raw-file-storage';
 import { addDraftContext, reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess, type CsvBundlerIngestionOpts, generateAndSendBundleProcess } from '../../parser/csv-bundler';
