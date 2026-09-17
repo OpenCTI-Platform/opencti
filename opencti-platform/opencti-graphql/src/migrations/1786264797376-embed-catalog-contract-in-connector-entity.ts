@@ -16,6 +16,7 @@ import { mapCatalogContractDtoToCatalogContractSyncSource } from '../modules/cat
 const message = '[MIGRATION] managed connectors contract snapshot';
 
 export const up = async (next: (error?: Error) => void) => {
+  const start = new Date().getTime();
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
@@ -74,7 +75,7 @@ export const up = async (next: (error?: Error) => void) => {
       logMigration.info(`${message} > connector ${connector.id} patched`);
     }
   }
-  logMigration.info(`${message} > done`);
+  logMigration.info(`${message} > done in ${new Date().getTime() - start} ms`);
   next();
 };
 
