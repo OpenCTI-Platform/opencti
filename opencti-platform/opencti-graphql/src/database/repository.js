@@ -1,6 +1,6 @@
 import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
+import { BACKGROUND_TASK_QUEUES, connectorConfig } from '../modules/connector/connector-rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
 import { fullEntitiesList, topEntitiesList, storeLoadById } from './middleware-loader';

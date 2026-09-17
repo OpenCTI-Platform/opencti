@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
-import * as rabbitmq from '../../../../src/database/rabbitmq';
+import * as rabbitmq from '../../../../src/modules/connector/connector-rabbitmq';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR } from '../../../utils/testQuery';
 import { addSecurityCoverage, securityCoverageDelete } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
 import { addIntrusionSet } from '../../../../src/domain/intrusionSet';

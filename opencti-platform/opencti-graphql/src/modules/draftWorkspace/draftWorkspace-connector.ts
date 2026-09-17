@@ -1,7 +1,7 @@
 import type { ConnectorConfig, InternalConnector } from '../connector/connector-types';
 import { CONNECTOR_INTERNAL_INGESTION } from '../../schema/general';
 import { logApp } from '../../config/conf';
-import { registerConnectorQueues } from '../../database/rabbitmq';
+import { registerConnectorQueues } from '../connector/connector-rabbitmq';
 import { ConnectorPriorityGroup } from '../../generated/graphql';
 
 export const DRAFT_VALIDATION_CONNECTOR_ID = 'c194e700-afb6-4c4e-ad1b-d4a00590e735';

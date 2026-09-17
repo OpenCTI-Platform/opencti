@@ -95,7 +95,9 @@ vi.mock('lru-cache', () => {
 });
 
 import { updateExpectationsNumber } from '../../../src/domain/work';
-import { buildSplitMessages, getConnectorQueueSize, getQueueConsumersByType, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
+import { buildSplitMessages, getQueueConsumersByType, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
+import { getConnectorQueueSize } from '../../../src/modules/connector/connector-rabbitmq';
+import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 describe('rabbitmq: metrics', () => {
   const context = {};
@@ -199,8 +201,8 @@ describe('rabbitmq: metrics', () => {
 });
 
 describe('rabbitmq: getConnectorQueueSize', () => {
-  const context = {};
-  const user = {};
+  const context = {} as AuthContext;
+  const user = {} as AuthUser;
 
   beforeEach(() => {
     vi.clearAllMocks();

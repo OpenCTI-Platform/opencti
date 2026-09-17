@@ -15,7 +15,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from './repository';
-import { pushToConnector } from './rabbitmq';
+import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';

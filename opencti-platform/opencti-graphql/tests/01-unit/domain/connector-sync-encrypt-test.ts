@@ -19,7 +19,7 @@ vi.mock('../../../src/database/redis', () => ({
   redisGetConnectorHealthMetrics: vi.fn(),
   redisSetConnectorLogs: vi.fn(),
 }));
-vi.mock('../../../src/database/rabbitmq', () => ({
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   unregisterConnector: vi.fn(), registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(), getConnectorQueueDetails: vi.fn(), unregisterExchanges: vi.fn(),
 }));
