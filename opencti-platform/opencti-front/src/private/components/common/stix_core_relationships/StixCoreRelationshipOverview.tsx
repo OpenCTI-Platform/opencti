@@ -4528,11 +4528,11 @@ const StixCoreRelationshipOverview = ({
                 <div className={classes.content}>
                   <span className={classes.name}>
                     <Tooltip title={fromText}>
-                      <>
+                      <span>
                         {!fromRestricted
                           ? truncate(fromText, TRUNCATE_CHARS_COUNT)
                           : t_i18n('Restricted')}
-                      </>
+                      </span>
                     </Tooltip>
                     {!fromRestricted && from?.draftVersion && (<DraftChip />)}
                   </span>
@@ -4586,11 +4586,11 @@ const StixCoreRelationshipOverview = ({
                 <div className={classes.content}>
                   <span className={classes.name}>
                     <Tooltip title={toText}>
-                      <>
+                      <span>
                         {!toRestricted
                           ? truncate(toText, TRUNCATE_CHARS_COUNT)
                           : t_i18n('Restricted')}
-                      </>
+                      </span>
                     </Tooltip>
                     {!toRestricted && to?.draftVersion && (<DraftChip />)}
                   </span>
