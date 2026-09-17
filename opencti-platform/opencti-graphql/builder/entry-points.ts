@@ -3,7 +3,7 @@
 export const BUILD_ENTRY_POINTS = [
   'src/back.ts',
   'src/lock/child-lock.manager.ts',
-  'script/script-clean-relations.js',
-  'script/script-insert-dataset.js',
+  'script/script-clean-relations.ts',
+  'script/script-insert-dataset.ts',
   'src/utils/safeEjs.worker.ts',
 ];

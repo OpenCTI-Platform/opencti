@@ -1,7 +1,8 @@
 import path from 'node:path';
+import type { Plugin } from 'esbuild';
 import fs from 'node:fs/promises';
 
-const nativeNodeModulesPlugin = () => ({
+const nativeNodeModulesPlugin = (): Plugin => ({
   name: 'native-node-modules',
   setup: (build) => {
     // If a ".node" file is imported within a module in the "file" namespace, resolve

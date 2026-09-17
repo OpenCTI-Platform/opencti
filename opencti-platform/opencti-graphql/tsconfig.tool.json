@@ -3,8 +3,8 @@
   "include": [
     "builder",
     "*.ts",
-    "script/get-connectors-manifest.js",
-    "script/script-stack-analysis.js"
+    "script/get-connectors-manifest.ts",
+    "script/script-stack-analysis.ts"
   ],
   "files": [],
   "compilerOptions": {
