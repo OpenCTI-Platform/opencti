@@ -11,7 +11,7 @@ const renderAsTheBarDoes = (unread: number) => testRender(
     <TooltipTrigger asChild>
       <TopBarIconLink
         aria-label="Notifications"
-        to="/dashboard/profile/notifications/alerts"
+        to="/dashboard/profile/notifications"
         icon={<NotificationsOutlined fontSize="medium" />}
         badge={{
           content: unread,
