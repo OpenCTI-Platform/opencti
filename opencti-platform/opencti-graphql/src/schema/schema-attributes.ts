@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
+import type { AttributeDefinition, AttrType, ComplexAttribute, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
@@ -145,7 +145,7 @@ export const schemaAttributesDefinition = {
         });
       }
       // Check sortBy on object
-      if (attribute.type === 'object' && attribute.format !== 'flat' && attribute.format !== 'raw' && attribute.sortBy) {
+      if (isObjectAttributeWithMappings(attribute) && attribute.sortBy) {
         const correspondingMapping = getAttributeMappingFromPath(attribute.sortBy.path, attribute);
         if (correspondingMapping.type !== attribute.sortBy.type) {
           throw UnsupportedError('You can\'t define a sortBy with path and type that do not match the corresponding mapping', {
@@ -155,7 +155,7 @@ export const schemaAttributesDefinition = {
         }
       }
       let registeredAttribute: AttributeDefinition = { ...attribute };
-      if (registeredAttribute.type === 'object' && registeredAttribute.format !== 'flat' && registeredAttribute.format !== 'raw' && registeredAttribute.mappings.length > 0) {
+      if (isObjectAttributeWithMappings(registeredAttribute) && registeredAttribute.mappings.length > 0) {
         registeredAttribute = {
           ...registeredAttribute,
           // filter feature flagged attributes
