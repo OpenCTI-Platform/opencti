@@ -17,6 +17,7 @@ import { meterManager } from '../config/tracing';
 import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
 import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
+import { splitEchoIds } from './chunkIntakeEchoes';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import {
   deferOperation,
@@ -388,7 +389,17 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
           // A consumer refused for a missing reference before it reached the loop: retain
           // the operation (producers keep the error path: their consumers already ran).
           if (code === MISSING_REF_ERROR && !operation.echo_id && DEFER_MISSING_REFS && pendingIntentsAccepting()) {
-            const missing = unresolvedIdsOf(first);
+            const { resolvable: missing, echoes } = splitEchoIds(unresolvedIdsOf(first));
+            if (echoes.length > 0) {
+              // B12: an unresolved echo id has no producer that can still land (it leaked
+              // from another capture window, A9, or its producer failed): retaining the
+              // operation would park it until expiry. Fail it, visibly.
+              logApp.error('[CHUNK-INTAKE] Operation refused: unresolved echo id (no producer in its chunk)', {
+                chunk_id: message.chunk_id, object_id: operation.object_id, echoes, missing,
+              });
+              operationsCounter?.add(1, { outcome: 'echo_unresolved' });
+              return { error: `unresolved echo id: ${echoes.join(', ')}` };
+            }
             const retained = await deferOperation({ operation, envelope: envelopeOf(message), user, missing });
             if (retained) {
               logApp.info('[CHUNK-INTAKE] Operation retained (missing reference outside the loop)', {
@@ -486,7 +497,10 @@ const chunkIntakeInitializer = async () => {
       const code = first?.extensions?.code;
       if (code === SEQUENCER_DEFERRED_ERROR) return 'handed';
       if (code === MISSING_REF_ERROR) {
-        await deferOperation({ operation, envelope, user, missing: unresolvedIdsOf(first) });
+        const { resolvable: missing, echoes } = splitEchoIds(unresolvedIdsOf(first));
+        // B12: a retained record still waiting on an echo id will never land: terminal, visible
+        if (echoes.length > 0) throw new Error(`unresolved echo id: ${echoes.join(', ')}`);
+        await deferOperation({ operation, envelope, user, missing });
         return 'redeferred';
       }
       throw new Error(String(first.message));
