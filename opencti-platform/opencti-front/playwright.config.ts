@@ -21,8 +21,9 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   retries: 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : '25%',
+  /* On CI, default to a single worker; override with PW_WORKERS for shards whose specs are
+   * independent (e.g. the 'workflow e2e' project, where every spec seeds its own uuid-named data). */
+  workers: process.env.CI ? Number(process.env.PW_WORKERS ?? 1) : '25%',
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['list'],
