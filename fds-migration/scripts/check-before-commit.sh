@@ -26,7 +26,7 @@ node fds-migration/scripts/check-accessible-names.mjs || fail=1
 # for accessibility means introducing a t_i18n key, and a key with no catalogue
 # entry is a red gate the other three do not see.
 echo "== i18n keys =="
-out=$(cd opencti-platform/opencti-front && node script/verify-translation.js 2>&1)
+out=$(cd opencti-platform/opencti-front && yarn verify-translation 2>&1)
 printf '%s\n' "$out"
 printf '%s\n' "$out" | grep -q "^Missing" && fail=1
 

@@ -25,26 +25,27 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src');
 
 /** Every stylesheet the running app loads, in front.tsx order. */
-function stylesheets() {
-  const out = [];
+const stylesheets = () => {
+  const out: string[] = [];
   const lib = path.join(
     ROOT, 'node_modules', '@filigran', 'design-system',
     'packages', 'filigran-design-system', 'dist', 'index.css',
   );
   const flat = path.join(ROOT, 'node_modules', '@filigran', 'design-system', 'dist', 'index.css');
   for (const p of [lib, flat]) if (fs.existsSync(p)) {
-    out.push(p); break;
+    out.push(p);
+    break;
   }
   const staticDir = path.join(SRC, 'static', 'css');
   if (fs.existsSync(staticDir)) {
     for (const f of fs.readdirSync(staticDir)) if (f.endsWith('.css')) out.push(path.join(staticDir, f));
   }
   return out;
-}
+};
 
 /** Class names defined by those stylesheets, unescaped. */
-function definedClasses(files) {
-  const set = new Set();
+const definedClasses = (files: string[]) => {
+  const set = new Set<string>();
   for (const f of files) {
     const css = fs.readFileSync(f, 'utf8');
     for (const m of css.matchAll(/\.((?:[A-Za-z0-9_-]|\\.)+)/g)) {
@@ -52,7 +53,7 @@ function definedClasses(files) {
     }
   }
   return set;
-}
+};
 
 /**
  * A token is only treated as a utility if it looks like one. Product code also
@@ -61,7 +62,7 @@ function definedClasses(files) {
  */
 const UTILITY = /^-?(?:[a-z]+:)*(?:m|p)[tblrxy]?-\d+(?:\.\d+)?$/;
 
-function sourceFiles(dir, acc = []) {
+const sourceFiles = (dir: string, acc: string[] = []) => {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) {
@@ -69,16 +70,16 @@ function sourceFiles(dir, acc = []) {
     } else if (/\.(tsx|jsx)$/.test(p)) acc.push(p);
   }
   return acc;
-}
+};
 
-function main() {
+const main = () => {
   const sheets = stylesheets();
   if (sheets.length === 0) {
     console.error('No stylesheet found — is @filigran/design-system installed?');
     process.exit(1);
   }
   const defined = definedClasses(sheets);
-  const dead = [];
+  const dead: { file: string; line: number; token: string }[] = [];
   for (const file of sourceFiles(SRC)) {
     const src = fs.readFileSync(file, 'utf8');
     if (!/className/.test(src)) continue;
@@ -105,7 +106,7 @@ function main() {
     console.log('\n✅ Every spacing utility written in product code exists in the delivered CSS.');
     return;
   }
-  const byToken = new Map();
+  const byToken = new Map<string, number>();
   for (const d of dead) byToken.set(d.token, (byToken.get(d.token) ?? 0) + 1);
   console.error(`\n❌ ${dead.length} dead utility class(es) — written here, absent from the CSS the app loads:\n`);
   for (const [token, count] of [...byToken].sort((a, b) => b[1] - a[1])) {
@@ -119,6 +120,6 @@ function main() {
     + 'be arbitrated with design — never hardcoded back into a style attribute.',
   );
   process.exit(1);
-}
+};
 
 main();

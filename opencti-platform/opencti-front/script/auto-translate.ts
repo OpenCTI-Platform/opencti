@@ -31,19 +31,19 @@ const translateFiles = async () => {
         const { stdout } = await execAsync(frontCommand);
         console.log(stdout);
       } catch (error) {
-        console.error(`Error translating ./lang/front/${code}.json:`, error.message);
+        console.error(`Error translating ./lang/front/${code}.json:`, (error instanceof Error ? error.message : String(error)));
       }
       try {
         const { stdout } = await execAsync(backCommand);
         console.log(stdout);
       } catch (error) {
-        console.error(`Error translating ./lang/back/${code}.json:`, error.message);
+        console.error(`Error translating ./lang/back/${code}.json:`, (error instanceof Error ? error.message : String(error)));
       }
     }
 
     console.log('Translation process completed!');
   } catch (error) {
-    console.error('Fatal error:', error.message);
+    console.error('Fatal error:', (error instanceof Error ? error.message : String(error)));
     process.exit(1);
   }
 };
