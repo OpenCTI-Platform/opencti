@@ -120,7 +120,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
             setFieldValue(name, value);
           }
         }}
-        label={label && t_i18n('Name')}
+        label={label ? t_i18n(label) : t_i18n('Name')}
         helperText={helpertext}
         // Prevent filtering on previous status
         onFocusInput={() => handleSearch('')}

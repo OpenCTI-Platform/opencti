@@ -37,7 +37,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
    */
   addTransition(
     from: State,
-    to: State,
+    to: State | null | undefined,
     event: Event,
     options?: {
       comment?: string;
@@ -51,7 +51,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
   ) {
     // Ensure states exist
     if (!this.states.has(from)) this.addState(from);
-    if (!this.states.has(to)) this.addState(to);
+    if (to != null && !this.states.has(to)) this.addState(to);
 
     this.transitions.push({
       from,

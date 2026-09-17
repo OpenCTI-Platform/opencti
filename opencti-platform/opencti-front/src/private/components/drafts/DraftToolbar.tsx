@@ -71,6 +71,7 @@ const DraftToolbarComponent = ({
 
   return (
     <Stack
+      data-testid="draft-toolbar"
       sx={{
         p: 2,
         gap: 1,

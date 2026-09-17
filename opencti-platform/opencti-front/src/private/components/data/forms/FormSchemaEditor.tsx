@@ -885,7 +885,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             </div>
           </Select>
 
+          {/* Remount when options change so the native select does not reset the automatic type to empty. */}
           <Select
+            key={field.attributeMapping.attributeName}
             value={field.type}
             onValueChange={(value) => {
               handleFieldChange(`fields.${fieldIndex}.type`, value);

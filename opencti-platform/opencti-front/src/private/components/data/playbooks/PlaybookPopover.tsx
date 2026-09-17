@@ -178,6 +178,7 @@ const PlaybookPopover = ({
         value="popover"
         color="primary"
         size="small"
+        data-testid="playbook-popover-toggle"
       >
         {paginationOptions
           ? <MoreVert />

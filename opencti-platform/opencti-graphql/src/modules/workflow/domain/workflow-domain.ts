@@ -17,7 +17,7 @@ import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
+import { AccessOperation, SYSTEM_USER, validateUserAccessOperation, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
@@ -201,6 +201,7 @@ const notifyWorkflowTransitionComment = async (
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
+  completed?: boolean;
   history: string;
   pendingStatus?: string | null;
   pendingError?: string | null;
@@ -830,7 +831,7 @@ export const publishWorkflowDefinition = async (
                 filterGroups: [],
               },
             });
-            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
+            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id && !inst.completed);
 
             if (conflictingInstances.length > 0) {
               throw FunctionalError(
@@ -1089,9 +1090,22 @@ export const getAllowedTransitions = async (
     definitionData?: WorkflowDefinitionResponse | null;
     instanceEntity?: WorkflowInstanceStoreEntity | null;
   },
-): Promise<Array<{ event: string; toState: string; comment?: string; actions: string[]; requiresShareOrganizationInput: boolean; requiresUnshareOrganizationInput: boolean }>> => {
+): Promise<Array<{
+  event: string;
+  toState: string | null;
+  comment?: string;
+  actions: string[];
+  requiresShareOrganizationInput: boolean;
+  requiresUnshareOrganizationInput: boolean;
+}>> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
+    return [];
+  }
+
+  // View access alone isn't enough to trigger a transition: a view-only user (e.g. restricted by
+  // an authorized-members group restriction) must not see any transition as available.
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
     return [];
   }
 
@@ -1104,6 +1118,9 @@ export const getAllowedTransitions = async (
 
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = options?.instanceEntity ?? await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  if (instanceEntity?.completed) {
+    return [];
+  }
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
@@ -1125,7 +1142,7 @@ export const getAllowedTransitions = async (
       }
       return {
         event: transition.event,
-        toState: transition.to,
+        toState: transition.to ?? null,
         comment: transition.comment,
         actions: transition.actionTypes || [],
         requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
@@ -1179,6 +1196,10 @@ export const triggerWorkflowEvent = async (
     const executionUser = bypassDraftUser(user);
 
     const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+
+    if (instanceEntity.completed) {
+      return { success: false, reason: 'Workflow has already completed' };
+    }
 
     // 3. Lock check: reject new events while a transition is already pending
     if (instanceEntity.pendingStatus === 'pending') {
@@ -1257,12 +1278,14 @@ export const triggerWorkflowEvent = async (
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
       const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
-      const targetStateDef = definitionData.states?.find((s: any) => s.statusId === toStateId);
+      const completesWorkflow = targetTransitionForSync != null && targetTransitionForSync.to == null;
+      const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
       const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
 
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
         toState: toStateId,
+        ...(completesWorkflow ? { completesWorkflow: true } : {}),
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
@@ -1301,12 +1324,14 @@ export const triggerWorkflowEvent = async (
       user_id: user.id,
       timestamp: new Date().toISOString(),
       event: eventName,
+      ...(result.workflowCompleted ? { completed: true } : {}),
       ...(comment ? { comment } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'currentState', value: [newState] },
       { key: 'history', value: [JSON.stringify(history)] },
+      ...(result.workflowCompleted ? [{ key: 'completed', value: [true] }] : []),
     ]);
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);

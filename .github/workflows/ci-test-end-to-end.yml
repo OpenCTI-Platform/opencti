@@ -21,17 +21,32 @@ jobs:
       matrix:
         include:
           - name: "e2e group0 tests"
-            grep_args: '--grep-invert "@group1|@groupff"'
+            grep_args: '--grep-invert "@group1|@groupff|@workflow" --project=chromium'
             dev_features: '[]'
             artifact_suffix: '-group0'
+            pw_workers: '1'
           - name: "e2e ff tests"
-            grep_args: '--grep @groupff'
+            grep_args: '--grep @groupff --project=chromium'
             dev_features: '["*"]'
             artifact_suffix: '-ff'
+            pw_workers: '1'
           - name: "e2e group1 tests"
-            grep_args: '--grep @group1'
+            grep_args: '--grep @group1 --project=chromium'
             dev_features: '[]'
             artifact_suffix: '-group1'
+            pw_workers: '1'
+          - name: "e2e workflow tests"
+            # Dedicated shard for the workflow/form-intake setup chain and everything that depends
+            # on it. Isolated in its own Playwright project ('workflow e2e', see playwright.config.ts)
+            # so this expensive setup doesn't get forced to re-run in the other shards too - Playwright
+            # always fully runs a project's dependencies regardless of --grep/--grep-invert filters.
+            # Temporarily collect all workflow failures while stabilizing this shard.
+            # Runs with several workers: every spec in this project seeds its own uuid-named data,
+            # so specs are independent and safe to run concurrently (see playwright.config.ts).
+            grep_args: '--grep @workflow --project="workflow e2e" --max-failures=0'
+            dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
+            pw_workers: '2'
+            artifact_suffix: '-workflow'
 
     steps:
       - name: OpenCTI checkout
@@ -144,6 +159,7 @@ jobs:
             -e BACK_END_URL=http://opencti-e2e-start:4100 \
             -e E2E_TEST=true \
             -e NODE_OPTIONS=--max_old_space_size=8192 \
+            -e PW_WORKERS=${{ matrix.pw_workers }} \
             node:22 \
             sh -c 'set -eux;
                 cd /home/workspace/opencti-platform/opencti-front
