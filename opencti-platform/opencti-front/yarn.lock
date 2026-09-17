@@ -12012,6 +12012,7 @@ __metadata:
     invert-color: "npm:3.0.0"
     ipaddr.js: "npm:2.5.0"
     is-svg: "npm:6.1.0"
+    jiti: "npm:2.7.0"
     js-base64: "npm:3.9.3"
     js-file-download: "npm:0.4.12"
     jsdom: "npm:29.1.1"
