@@ -1,5 +1,5 @@
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, UnknownError } from '../../config/errors';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
 import { fullEntitiesList, internalFindByIdsMapped, type FilterGroupWithNested } from '../../database/middleware-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
@@ -99,6 +99,14 @@ export const findAllCatalogsExcluding = async (
 };
 
 export const deleteCatalogs = async (context: AuthContext, catalogEntities: BasicStoreEntityCatalog[]) => {
+  for (let idx = 0; idx < catalogEntities.length; ++idx) {
+    const catalogEntity = catalogEntities[idx];
+    if (catalogEntity.entity_type !== ENTITY_TYPE_CATALOG) {
+      throw UnknownError(`Expected the entity for deletion to be of type ${ENTITY_TYPE_CATALOG}`, {
+        actualType: catalogEntity.entity_type,
+      });
+    }
+  }
   await elDeleteInstances(context, catalogEntities);
 };
 
