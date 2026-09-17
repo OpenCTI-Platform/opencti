@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { registerConnector } from '../../../src/domain/connector';
+import { registerConnector } from '../../../src/modules/connector/connector-domain';
 import { ConnectorType } from '../../../src/generated/graphql';
 import * as catalogRepository from '../../../src/modules/catalog/catalog-repository';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
