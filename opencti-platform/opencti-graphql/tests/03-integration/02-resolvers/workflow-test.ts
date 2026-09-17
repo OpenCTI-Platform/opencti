@@ -802,12 +802,21 @@ describe('Workflow Resolver', () => {
           variables: { entityType: 'Report' },
         });
 
-        // Note: `findByType` below runs in-process in the test runner, not against the API
-        // server (mutations above went over HTTP to a separate server process/container in CI).
-        // It reads Status entities straight from Elasticsearch (refresh: true on every write),
-        // so it's always fresh regardless of any in-memory cache state.
+        // The patch below must change the status, otherwise nothing is written and no stream
+        // event is emitted (the raw stream test counts them). Since the publication creates a
+        // Status per workflow state, the Report statuses hold two entries with the same `order`
+        // (legacy NEW and the workflow's `validated`), and the cache sorts by `order` only: a
+        // positional pick such as `statuses[1]` lands on the current status or not depending on
+        // the tie-break. Pick a status explicitly different from the report's current one.
+        const currentStatusResult = await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_STATUS_QUERY,
+          variables: { id: reportId },
+        });
+        const currentStatusId = currentStatusResult.data?.stixDomainObject?.status?.id;
         const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
-        secondStatusId = statuses[1].id;
+        const otherStatus = statuses.find((status) => status.id !== currentStatusId);
+        if (!otherStatus) throw new Error('No Report status different from the current one');
+        secondStatusId = otherStatus.id;
       });
 
       afterAll(async () => {
