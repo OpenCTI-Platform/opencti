@@ -45,7 +45,7 @@ jobs:
             # so specs are independent and safe to run concurrently (see playwright.config.ts).
             grep_args: '--grep @workflow --project="workflow e2e" --max-failures=0'
             dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
-            pw_workers: '4'
+            pw_workers: '2'
             artifact_suffix: '-workflow'
 
     steps:
