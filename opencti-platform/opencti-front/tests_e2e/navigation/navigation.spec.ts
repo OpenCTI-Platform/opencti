@@ -22,6 +22,7 @@ import DataRelationshipsPage from 'tests_e2e/model/dataRelationships.pageModel';
 import SettingsActivityPage from 'tests_e2e/model/settingsActivity.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
+import TopBarPage from '../model/menu/topBar.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
 import ContainerObservablesPage from '../model/containerObservables.pageModel';
@@ -1638,6 +1639,40 @@ const navigateDataManagement = async (page: Page) => {
   await expect(dataManagementPage.getPage()).toBeVisible();
 };
 
+// The top bar links live outside the left menu, so the left-menu tour above never
+// exercises them: #18321 shipped a bell link that matched no route and rendered an
+// empty page. Each check asserts the page actually rendered, not only the URL.
+const navigateTopBar = async (page: Page) => {
+  const topBarPage = new TopBarPage(page);
+  const leftBarPage = new LeftBarPage(page);
+
+  await topBarPage.clickOnIconLink('Triggers');
+  await expect(page).toHaveURL(/\/dashboard\/profile\/triggers$/);
+  await leftBarPage.expectBreadcrumb('Triggers');
+
+  await topBarPage.clickOnIconLink('Alerts');
+  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications$/);
+  await leftBarPage.expectBreadcrumb('Alerts');
+
+  await topBarPage.clickOnIconLink('News Feed');
+  await expect(page).toHaveURL(/\/dashboard\/news-feed$/);
+  await leftBarPage.expectBreadcrumb('XTM Hub News Feed');
+
+  await topBarPage.openProfileMenu();
+  await topBarPage.clickOnProfileMenuItem('Profile');
+  await expect(page).toHaveURL(/\/dashboard\/profile\/me$/);
+  await expect(page.getByText('User experience', { exact: true })).toBeVisible();
+
+  // Paths from before the news feed page extraction (#18150) must keep working.
+  await page.goto('/dashboard/profile/notifications/alerts');
+  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications$/);
+  await leftBarPage.expectBreadcrumb('Alerts');
+
+  await page.goto('/dashboard/profile/notifications/news-feed');
+  await expect(page).toHaveURL(/\/dashboard\/news-feed$/);
+  await leftBarPage.expectBreadcrumb('XTM Hub News Feed');
+};
+
 const navigateTrash = async (page: Page) => {
   const trashPage = new TrashPage(page);
   await trashPage.navigateFromMenu();
@@ -1990,6 +2025,11 @@ test.describe('Navigation available on CE', { tag: ['@ce'] }, () => {
     const leftBarPage = new LeftBarPage(page);
     await leftBarPage.open();
     await navigateTrash(page);
+  });
+
+  test('Check navigation on top bar', async ({ page }) => {
+    await page.goto('/');
+    await navigateTopBar(page);
   });
 });
 
