@@ -20,8 +20,8 @@ import {
   emptyFilterGroup,
   getDefaultFilterObject,
   serializeFilterGroupForBackend,
-  stixFilters,
   useFilterDefinition,
+  useStixFilters,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
@@ -93,6 +93,7 @@ interface TriggerEditionFormValues {
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
+  const stixFilters = useStixFilters();
   const theme = useTheme();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,

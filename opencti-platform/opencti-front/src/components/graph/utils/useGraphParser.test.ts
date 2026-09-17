@@ -118,6 +118,48 @@ describe('useGraphParser', () => {
     });
   });
 
+  describe('buildGraphData', () => {
+    it('should promote both sides of a relationship nested on both ends to nodes', () => {
+      // Two "leaf" relationships, each linking two plain entities.
+      const entityA = constructEntity({ id: 'entity-A', entity_type: 'Malware' });
+      const entityB = constructEntity({ id: 'entity-B', entity_type: 'Attack-Pattern' });
+      const entityC = constructEntity({ id: 'entity-C', entity_type: 'Malware' });
+      const entityD = constructEntity({ id: 'entity-D', entity_type: 'Attack-Pattern' });
+      const innerRel1 = constructRelationship({
+        id: 'inner-rel-1',
+        from: { id: 'entity-A', entity_type: 'Malware' },
+        to: { id: 'entity-B', entity_type: 'Attack-Pattern' },
+      });
+      const innerRel2 = constructRelationship({
+        id: 'inner-rel-2',
+        from: { id: 'entity-C', entity_type: 'Malware' },
+        to: { id: 'entity-D', entity_type: 'Attack-Pattern' },
+      });
+      // A relationship nested on BOTH ends: from and to are themselves relationships.
+      const outerRel = constructRelationship({
+        id: 'outer-rel',
+        from: { id: 'inner-rel-1', relationship_type: 'uses' },
+        to: { id: 'inner-rel-2', relationship_type: 'uses' },
+      });
+
+      const objects = [entityA, entityB, entityC, entityD, innerRel1, innerRel2, outerRel];
+      const { nodes, links } = parser.buildGraphData(objects, emptyPositions);
+
+      const nodeIds = new Set(nodes.map((n) => n.id));
+
+      // Every link must reference nodes that actually exist in the graph, otherwise
+      // react-force-graph crashes with "node not found: <id>".
+      links.forEach((link) => {
+        expect(nodeIds.has(link.source_id)).toBe(true);
+        expect(nodeIds.has(link.target_id)).toBe(true);
+      });
+
+      // Both nested relationships should have been promoted to nodes.
+      expect(nodeIds.has('inner-rel-1')).toBe(true);
+      expect(nodeIds.has('inner-rel-2')).toBe(true);
+    });
+  });
+
   describe('buildGraphDataAfterRelationshipLinkToNodeConversion', () => {
     it('should return previous graph data when relObj has no relationship_type', () => {
       const previousGraphData = { nodes: [] as GraphNode[], links: [] as GraphLink[] };

@@ -671,6 +671,7 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  to_be_deleted_at: DateTime
 }
 
 type StatusConnection {
@@ -9668,6 +9669,7 @@ type Query {
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
   userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]!
+  userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage!
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
@@ -10664,6 +10666,7 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
   statusId: String!
+  order: Int
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
 }
@@ -14341,6 +14344,22 @@ type VulnerabilityEdge {
   node: Vulnerability!
 }
 
+enum SsvcExploitation {
+  none
+  poc
+  active
+}
+
+enum SsvcAutomatable {
+  no
+  yes
+}
+
+enum SsvcTechnicalImpact {
+  partial
+  total
+}
+
 type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -14432,6 +14451,9 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_cvss_v4_availability_impact_v: String
   x_opencti_cvss_v4_availability_impact_s: String
   x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: SsvcExploitation
+  x_opencti_ssvc_automatable: SsvcAutomatable
+  x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
   x_opencti_cwe: [String]
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float
@@ -14503,6 +14525,9 @@ input VulnerabilityAddInput {
   x_opencti_cvss_v4_availability_impact_v: String
   x_opencti_cvss_v4_availability_impact_s: String
   x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: SsvcExploitation
+  x_opencti_ssvc_automatable: SsvcAutomatable
+  x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
   x_opencti_cwe: [String]
   x_opencti_cisa_kev: Boolean
   x_opencti_epss_score: Float
@@ -17251,6 +17276,62 @@ enum UserMergeStatus {
 input UserMergeOptions {
   dryRun: Boolean = true
   rightsStrategy: UserMergeRightsStrategy = STRICT
+  acknowledgeExposureChange: Boolean = false
+}
+
+enum UserMergeDisposition {
+  TRANSFER
+  INVALIDATE
+  CONDITIONAL
+  RETAIN
+  OUT_OF_SCOPE
+}
+
+type UserMergePlannedChange {
+  register_row_id: String!
+  entity_type: String!
+  count: Int!
+  exact: Boolean!
+  detail: String
+}
+
+type UserMergeRightsAlert {
+  register_row_id: String!
+  kind: String!
+  message: String!
+  blocking: Boolean
+}
+
+type UserMergeHandlerOutcome {
+  handler: String!
+  changes: [UserMergePlannedChange!]!
+  alerts: [UserMergeRightsAlert!]!
+  updated: Int!
+}
+
+type UserMergeExecutionReport {
+  merge_id: ID!
+  handlers: [UserMergeHandlerOutcome!]!
+  total_updated: Int!
+  coverage: UserMergeCoverage!
+}
+
+type UserMergeCoverageRow {
+  row_id: String!
+  label: String!
+  path: String!
+  disposition: UserMergeDisposition!
+  covered: Boolean!
+  handler: String
+}
+
+type UserMergeCoverage {
+  total: Int!
+  covered_count: Int!
+  uncovered_count: Int!
+  gating_uncovered_count: Int!
+  is_complete: Boolean!
+  rows: [UserMergeCoverageRow!]!
 }
 
 type UserMergeResult {
@@ -17263,6 +17344,7 @@ type UserMergeResult {
   started_at: DateTime!
   completed_at: DateTime
   message: String
+  report: UserMergeExecutionReport
 }
 
 type UserMergeJournalEntry {
@@ -17276,6 +17358,8 @@ type UserMergeJournalEntry {
   started_at: DateTime!
   completed_at: DateTime
   message: String
+  updated_count: Int
+  outcome: UserMergeHandlerOutcome
 }
 
 type CustomFieldValue {
