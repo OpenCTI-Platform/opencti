@@ -10,7 +10,7 @@ import { elIndex } from '../../../src/database/engine';
 import { ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
 import { INDEX_HISTORY, RABBIT_QUEUE_PREFIX } from '../../../src/database/utils';
 import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
-import type { BasicStoreEntityConnector } from '../../../src/types/connector';
+import type { BasicStoreEntityConnector } from '../../../src/modules/connector/connector-types';
 import type { Work } from '../../../src/types/work';
 import { unregisterConnector, metrics } from '../../../src/database/rabbitmq';
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BasicStoreEntityConnector } from '../../../../src/types/connector';
+import type { BasicStoreEntityConnector } from '../../../../src/modules/connector/connector-types';
 
 const {
   mockFindManagedConnectorsByCatalogId,

@@ -1,7 +1,7 @@
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from './connector-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 
 export const findManagedConnectorsByCatalogId = async (

@@ -14,7 +14,7 @@ import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
-import type { ConnectorConfig } from '../internalConnector';
+import type { ConnectorConfig } from '../../modules/connector/connector-types';
 import { addDraftWorkspace } from '../../modules/draftWorkspace/draftWorkspace-domain';
 
 const RETRY_CONNECTION_PERIOD = 10000;
