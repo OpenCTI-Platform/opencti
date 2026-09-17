@@ -67,7 +67,7 @@ def collect_echo_refs(value: Any, acc: set) -> None:
 
 
 def build_chunks(
-    operations: List[Dict[str, Any]], size: int
+    operations: List[Dict[str, Any]], size: int, dangling: Optional[set] = None
 ) -> List[List[Dict[str, Any]]]:
     """Group captured operations into chunks of `size` OBJECTS, in capture order.
 
@@ -76,6 +76,8 @@ def build_chunks(
     them in an earlier chunk (its bundle pre-pass creates all labels / external references
     / kill chain phases up front): those creates are idempotent upserts, so repeating one
     across chunks is safe, while a dangling echo id would fail the object platform-side.
+    An echo referenced by an operation but produced by NO operation of this bundle is
+    reported into `dangling` (A9 detector): it can only come from another capture window.
     """
     producers = {op["echo_id"]: op for op in operations if op.get("echo_id")}
     chunks: List[List[Dict[str, Any]]] = []
@@ -101,7 +103,10 @@ def build_chunks(
         collect_echo_refs(op.get("variables"), refs)
         for echo_id in refs:
             producer = producers.get(echo_id)
-            if producer is not None and echo_id not in current_echo:
+            if producer is None:
+                if dangling is not None:
+                    dangling.add(echo_id)
+            elif echo_id not in current_echo:
                 current.append(producer)
                 current_echo.add(echo_id)
         current.append(op)
@@ -138,6 +143,25 @@ class ChunkCapture:
         self._real_query = api.query
         self._local = threading.local()
         api.query = self._query
+        # A9: pycti's mapping cache is shared by every capture window open on this client
+        # (one handler imports two bundles at once at prefetch 2). An echo id only has a
+        # producer in the window that minted it: a cache hit on ANOTHER window's echo would
+        # travel in this bundle's chunks with no producer, and the object platform-side
+        # would be refused for an id nothing can ever resolve. Filter the reads: a foreign
+        # echo is a miss, the caller re-creates its sub-object (an idempotent upsert) with a
+        # producer of its own.
+        stix2 = getattr(api, "stix2", None)
+        self._real_get_in_cache = getattr(stix2, "get_in_cache", None)
+        if stix2 is not None and self._real_get_in_cache is not None:
+            stix2.get_in_cache = self._get_in_cache
+
+    def _get_in_cache(self, data_id: str) -> Any:
+        value = self._real_get_in_cache(data_id)
+        if isinstance(value, dict) and str(value.get("id", "")).startswith(ECHO_PREFIX):
+            echoes = getattr(self._local, "echoes", None)
+            if echoes is None or value["id"] not in echoes:
+                return None
+        return value
 
     def _purge_echo_cache(self) -> None:
         # pycti caches the ids it gets back from sub-object creates (labels by value, kill
@@ -196,6 +220,8 @@ class ChunkCapture:
         # as its PRODUCER: the platform manager executes producers first and substitutes
         # the real ids before the objects run (worker-side there is no platform to ask).
         echo_id = None if stix_id else f"{ECHO_PREFIX}{uuid.uuid4()}"
+        if echo_id:
+            self._local.echoes.add(echo_id)
         captured = {
             # whitespace-normalized: same document string every time, so the platform's
             # per-document parse cache hits and the message stays small
@@ -229,10 +255,12 @@ class ChunkCapture:
     def capture(self) -> Iterator[List[Dict[str, Any]]]:
         buffer: List[Dict[str, Any]] = []
         self._local.buffer = buffer
+        self._local.echoes = set()
         try:
             yield buffer
         finally:
             self._local.buffer = None
+            self._local.echoes = None
             self._purge_echo_cache()
 
 

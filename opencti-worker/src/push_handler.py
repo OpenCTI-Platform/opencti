@@ -540,8 +540,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         # multipart File that escaped the guard above) must send the whole bundle to the
         # HTTP path, never publish half of it.
         chunk_messages: List[Dict[str, Any]] = []
+        dangling: set = set()
         try:
-            for chunk_operations in build_chunks(operations, size):
+            for chunk_operations in build_chunks(operations, size, dangling):
                 message = {
                     **base,
                     "chunk_id": str(uuid.uuid4()),
@@ -555,6 +556,14 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 {"error": str(err)},
             )
             return None
+        if dangling:
+            # A9: an echo with no producer in this bundle came from another capture window
+            # through the client cache; the platform cannot resolve it. Must never happen
+            # with the window filter of ChunkCapture: loud if it does.
+            self.logger.error(
+                "Chunk capture: echo reference without producer in this bundle",
+                {"echoes": sorted(dangling), "chunks": len(chunk_messages)},
+            )
         published = 0
         try:
             # one bundle at a time per worker: its chunks are contiguous in the chunk queue
