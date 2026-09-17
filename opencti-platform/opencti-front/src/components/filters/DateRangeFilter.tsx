@@ -8,6 +8,8 @@ interface DateRangeFilterProps {
   filterKey: string;
   helpers?: handleFilterHelpers;
   filterValues: string[];
+  /** Shows relative-date shortcuts (Last 7 days, ...) on the From field only. */
+  showRelativeDateShortcuts?: boolean;
 }
 
 const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({
@@ -15,6 +17,7 @@ const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({
   filterKey,
   filterValues,
   helpers,
+  showRelativeDateShortcuts = false,
 }) => {
   const { t_i18n } = useFormatter();
   const [dateInput, setDateInput] = useState(filterValues);
@@ -29,6 +32,7 @@ const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({
         autoFocus
         dateInput={dateInput}
         setDateInput={setDateInput}
+        showShortcuts={showRelativeDateShortcuts}
       />
       <RelativeDateInput
         filter={filter}
