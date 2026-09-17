@@ -2,13 +2,15 @@ import esbuild from 'esbuild';
 import { copy } from 'esbuild-plugin-copy';
 import importGlobPluginPkg from 'esbuild-plugin-import-glob';
 import graphqlLoaderPluginPkg from '@luckycatfactory/esbuild-graphql-loader';
-import nativeNodePlugin from './plugin/native.node.plugin.js';
-import nodeGypBuildShimPlugin from './plugin/node-gyp-build-shim.plugin.js';
-import { generateEsmPlugin } from './plugin/generate-esm-plugin.js';
-import { BUILD_ENTRY_POINTS } from './entry-points.js';
+import nativeNodePlugin from './plugin/native.node.plugin.ts';
+import nodeGypBuildShimPlugin from './plugin/node-gyp-build-shim.plugin.ts';
+import { generateEsmPlugin } from './plugin/generate-esm-plugin.ts';
+import { BUILD_ENTRY_POINTS } from './entry-points.ts';
 
-const { default: importGlobPlugin } = importGlobPluginPkg;
-const { default: graphqlLoaderPlugin } = graphqlLoaderPluginPkg;
+// Both plugins are CommonJS. Their published types describe the factory as the
+// module's default export, while the ESM interop wrapper puts it one level deeper.
+const { default: importGlobPlugin } = importGlobPluginPkg as unknown as { default: typeof importGlobPluginPkg };
+const { default: graphqlLoaderPlugin } = graphqlLoaderPluginPkg as unknown as { default: typeof graphqlLoaderPluginPkg };
 
 const args = process.argv.slice(2).filter((a) => a !== '--watch');
 const isWatch = process.argv.includes('--watch');
@@ -17,7 +19,7 @@ const isScript = arg === '--script';
 const isDev = isScript || arg === '--development';
 const scriptName = isScript ? args.shift() : undefined;
 
-const entryPoints = [];
+const entryPoints: string[] = [];
 
 if (scriptName) {
   entryPoints.push(scriptName);
@@ -62,16 +64,16 @@ const buildOptions = {
   external: [
     'apollo-server-errors', // required by graphql-constraint-directive in dead code when using Apollo 4+
   ],
-};
+} satisfies esbuild.BuildOptions;
 
 if (isWatch) {
   let buildCount = 0;
 
-  // Log rebuild events so the watch runner (builder/dev/watch.js) can detect them
-  const watchPlugin = {
+  // Log rebuild events so the watch runner (builder/dev/watch.ts) can detect them
+  const watchPlugin: esbuild.Plugin = {
     name: 'watch-plugin',
     setup(build) {
-      let startTime;
+      let startTime = 0;
       build.onStart(() => {
         startTime = Date.now();
         buildCount += 1;
@@ -89,7 +91,7 @@ if (isWatch) {
           }
         } else if (buildCount === 1) {
           console.log('✅ Initial build complete');
-          // Signal the parent (builder/dev/watch.js) via IPC that the initial
+          // Signal the parent (builder/dev/watch.ts) via IPC that the initial
           // build is done so it can start the app process.
           if (process.send) {
             process.send({ type: 'initial-build-complete' });

@@ -6,20 +6,20 @@
   "scripts": {
     "check-ts": "tsc -b",
     "install:python": "pip3 install -r src/python/requirements.txt",
-    "script:exec": "echo \"Building ${0}...\" && node builder/builder.js --script script/${0}.js && echo \"Executing ${0}...\" && node build/${0}.mjs ${1:-} ${2:-} ${3:-} ${4:-} ${5:-} && echo \"${0} done!\"",
+    "script:exec": "echo \"Building ${0}...\" && node builder/builder.ts --script script/${0}.ts && echo \"Executing ${0}...\" && node build/${0}.mjs ${1:-} ${2:-} ${3:-} ${4:-} ${5:-} && echo \"${0} done!\"",
     "build:types": "graphql-codegen --config graphql-codegen.yml",
     "build:schema": "run build:types && run script:exec script-generate-schema",
-    "build:prod": "run get-connectors-manifest && run build:types && node builder/builder.js",
-    "build:dev": "run get-connectors-manifest && run build:schema && node builder/builder.js --development",
+    "build:prod": "run get-connectors-manifest && run build:types && node builder/builder.ts",
+    "build:dev": "run get-connectors-manifest && run build:schema && node builder/builder.ts --development",
     "build:antlr": "java -jar ./builder/antlr/antlr-4.13.0-complete.jar -Dlanguage=JavaScript ./src/stixpattern/STIXPattern.g4 -o ./src/stixpattern/",
     "migrate:add": "migrate create --template-file src/templates/migration-template.ts --migrations-dir=./src/migrations",
-    "backend:stack:analysis": "node ./script/script-stack-analysis back",
-    "frontend:stack:analysis": "node ./script/script-stack-analysis front",
+    "backend:stack:analysis": "node ./script/script-stack-analysis.ts back",
+    "frontend:stack:analysis": "node ./script/script-stack-analysis.ts front",
     "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
     "build": "run install:python && run build:prod",
     "start": "run build:dev && node --enable-source-maps build/back.mjs",
-    "dev": "node builder/dev/watch.js",
-    "dev:watch-with-graphql": "node builder/dev/watch.js --graphql",
+    "dev": "node builder/dev/watch.ts",
+    "dev:watch-with-graphql": "node builder/dev/watch.ts --graphql",
     "start:e2e": "run build:dev && APP__BASE_PATH=/e2e APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.mjs",
     "start:light": "NODE_ENV=development node --enable-source-maps build/back.mjs",
     "start:cluster": "NODE_ENV=cluster node --enable-source-maps build/back.mjs",
@@ -38,7 +38,7 @@
     "test": "vitest --silent --bail 1 run --config vitest.config.integration.ts --coverage",
     "knip": "knip",
     "verify-licenses": "license-checker-rseidelsohn --production --summary --onlyAllow '0BSD;Apache-2.0;BlueOak-1.0.0;BSD-2-Clause;BSD-3-Clause;CC-BY-3.0;CC-BY-4.0;CC0-1.0;Hippocratic-2.1;ISC;LGPL-3.0;MIT;OFL-1.1;Python-2.0;Unlicense;UNLICENSED' --excludePackagesStartingWith 'opencti'",
-    "get-connectors-manifest": "node script/get-connectors-manifest.js"
+    "get-connectors-manifest": "node script/get-connectors-manifest.ts"
   },
   "pkg": {
     "scripts": "dist/**/*.js",
@@ -49,7 +49,7 @@
   },
   "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
   "engines": {
-    "node": ">= 22.0.0"
+    "node": ">= 22.18.0"
   },
   "dependencies": {
     "@apollo/server": "5.5.1",

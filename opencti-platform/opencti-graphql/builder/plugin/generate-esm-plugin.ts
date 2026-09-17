@@ -1,4 +1,6 @@
-export const generateEsmPlugin = () => ({
+import type { Plugin } from 'esbuild';
+
+export const generateEsmPlugin = (): Plugin => ({
   name: 'generate-esm',
   setup: ({ initialOptions }) => {
     initialOptions.format = 'esm';

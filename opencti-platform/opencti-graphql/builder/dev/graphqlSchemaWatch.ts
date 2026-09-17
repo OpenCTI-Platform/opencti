@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import chokidar from 'chokidar';
 
 // Only watch directories that contain files affecting graphql-codegen output.
@@ -33,10 +33,10 @@ const JS_SCHEMA_SCRIPTS_DIR = 'builder/schema/';
 
 let isBuilding = false;
 let pendingBuild = false;
-let debounceTimeout = null;
-let activeBuildPath = null;
-let queuedBuildPath = null;
-let currentSchemaProcess = null;
+let debounceTimeout: NodeJS.Timeout | null = null;
+let activeBuildPath: string | null = null;
+let queuedBuildPath: string | null = null;
+let currentSchemaProcess: ChildProcess | null = null;
 
 const GENERATED_DIR_MARKERS = [
   '/src/generated/',
@@ -48,19 +48,19 @@ const GENERATED_FILE_MARKERS = [
   'graphql.schema.json',
 ];
 
-function normalizePath(filePath) {
+const normalizePath = (filePath: string) => {
   return filePath.replace(/\\/g, '/');
-}
+};
 
-function isGeneratedOutput(filePath) {
+const isGeneratedOutput = (filePath: string) => {
   const normalized = normalizePath(filePath);
   if (GENERATED_DIR_MARKERS.some((marker) => normalized.includes(marker))) {
     return true;
   }
   return GENERATED_FILE_MARKERS.some((marker) => normalized.endsWith(marker));
-}
+};
 
-function shouldTriggerBuild(filePath) {
+const shouldTriggerBuild = (filePath: string) => {
   if (isGeneratedOutput(filePath)) {
     return false;
   }
@@ -77,9 +77,9 @@ function shouldTriggerBuild(filePath) {
     return normalized.includes(JS_SCHEMA_SCRIPTS_DIR);
   }
   return true;
-}
+};
 
-function runSchemaBuild(reason = 'change', triggerPath = null) {
+const runSchemaBuild = (reason = 'change', triggerPath: string | null = null) => {
   if (isBuilding) {
     // Editors can emit multiple events for the same save (change/unlink/add).
     // Do not queue another build if the trigger is the same file already being processed.
@@ -138,9 +138,9 @@ function runSchemaBuild(reason = 'change', triggerPath = null) {
       runSchemaBuild('queued-after-error', nextPath);
     }
   });
-}
+};
 
-function scheduleBuild(eventName, filePath) {
+const scheduleBuild = (eventName: string, filePath: string) => {
   if (!shouldTriggerBuild(filePath)) {
     return;
   }
@@ -152,9 +152,9 @@ function scheduleBuild(eventName, filePath) {
   debounceTimeout = setTimeout(() => {
     runSchemaBuild(`${eventName}: ${filePath}`, filePath);
   }, 300);
-}
+};
 
-function startWatcher() {
+const startWatcher = () => {
   const watcher = chokidar.watch(WATCH_PATHS, {
     ignoreInitial: true,
     ignored: IGNORED_PATTERNS,
@@ -186,11 +186,11 @@ function startWatcher() {
   process.on('SIGTERM', shutdown);
 
   console.log('[GRAPHQL-WATCH] Watching GraphQL sources for changes...');
-}
+};
 
-function main() {
+const main = () => {
   runSchemaBuild('initial');
   startWatcher();
-}
+};
 
 main();
