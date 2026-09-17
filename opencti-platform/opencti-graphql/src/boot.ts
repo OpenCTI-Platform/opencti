@@ -7,6 +7,7 @@ import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
+import { getBuildCommit } from './utils/build-info';
 
 // region platform start and stop
 // Track the in-flight startup so a shutdown signal received while the platform is still
@@ -24,6 +25,9 @@ export const platformStart = async () => {
 const doPlatformStart = async () => {
   const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
+  if (!getBuildCommit()) {
+    logApp.warn('[OPENCTI] Build commit metadata is missing or invalid');
+  }
   try {
     // Start the liveness probe first so orchestrators can detect the process is alive
     try {
