@@ -11987,6 +11987,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     monocart-reporter: "npm:2.13.1"
+    pdfjs-dist: "npm:5.4.296"
     pdfmake: "npm:0.3.11"
     pmtiles: "npm:4.5.0"
     prop-types: "npm:15.8.1"
