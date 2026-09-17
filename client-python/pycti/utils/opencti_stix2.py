@@ -76,7 +76,7 @@ STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba
 # becomes the unique conversion path and `generate_export` can be reduced
 # to a one-liner
 _STIX_2_0_BACKEND_DISPATCH = {
-    "Malware": lambda api, eid: api.malware.to_stix_2_0(id=eid),
+    "Malware": lambda api, eid: api.malware.to_stix(id=eid, version="stix_2_0"),
 }
 
 # TODO(stix-2-0-migration): DELETE this set once every entity is migrated.
