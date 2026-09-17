@@ -71,7 +71,7 @@ export const upsertCatalog = async (
 export const findAllCatalogs = async (
   context: AuthContext,
   user: AuthUser,
-  filters?: FilterGroupWithNested,
+  filters: FilterGroupWithNested | null = null,
 ) => {
   return fullEntitiesList<BasicStoreEntityCatalog>(
     context,
