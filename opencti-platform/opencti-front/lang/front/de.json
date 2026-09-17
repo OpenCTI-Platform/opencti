@@ -3134,6 +3134,7 @@
   "More": "Mehr",
   "More fields": "Mehr Felder",
   "More information": "Mehr Informationen",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "Es wurden mehr als {threshold} Spalten ausgewählt – bei der Anwendung wechselt der Export in das Querformat.",
   "More workflow options": "Weitere Workflow-Optionen",
   "Most active labels (Last 3 months)": "Die aktivsten Labels (letzte 3 Monate)",
   "Most active malware (Last 3 months)": "Aktivste Malware (Letzte 3 Monate)",

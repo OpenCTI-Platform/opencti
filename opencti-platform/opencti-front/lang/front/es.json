@@ -3134,6 +3134,7 @@
   "More": "Más",
   "More fields": "Más campos",
   "More information": "Más información",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "Se han seleccionado más de {threshold} columnas; al aplicar la exportación, esta pasará al formato apaisado.",
   "More workflow options": "Más opciones del flujo de trabajo",
   "Most active labels (Last 3 months)": "Etiquetas más activas (Últimos 3 meses)",
   "Most active malware (Last 3 months)": "Malware más activo (Últimos 3 meses)",

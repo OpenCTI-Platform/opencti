@@ -3134,6 +3134,7 @@
   "More": "Подробнее",
   "More fields": "Другие поля",
   "More information": "Дополнительная информация",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "Выбрано более {threshold} столбцов — при экспорте будет использоваться альбомная ориентация.",
   "More workflow options": "Дополнительные параметры рабочего процесса",
   "Most active labels (Last 3 months)": "Самые активные тэги (последние 3 месяца)",
   "Most active malware (Last 3 months)": "Самые активные вредоносные программы (последние 3 месяца)",

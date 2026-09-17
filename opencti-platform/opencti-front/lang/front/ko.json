@@ -3134,6 +3134,7 @@
   "More": "더",
   "More fields": "더 많은 필드",
   "More information": "더 많은 정보",
+  "More than {threshold} columns selected — when applied the export will switch to landscape format.": "{threshold}개 이상의 열이 선택되었습니다. 이 설정을 적용하면 내보내기 시 가로 방향으로 전환됩니다.",
   "More workflow options": "추가 워크플로 옵션",
   "Most active labels (Last 3 months)": "가장 많이 활성화된 레이블(최근 3개월)",
   "Most active malware (Last 3 months)": "가장 많이 활동하는 멀웨어(최근 3개월)",
