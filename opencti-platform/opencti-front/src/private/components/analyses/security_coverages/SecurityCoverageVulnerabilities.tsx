@@ -5,7 +5,7 @@ import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Box, ListItemButton } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';

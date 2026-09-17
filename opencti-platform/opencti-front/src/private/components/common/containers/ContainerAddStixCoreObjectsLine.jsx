@@ -4,15 +4,17 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
+import { CircleOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -24,15 +26,7 @@ const useStyles = makeStyles((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
@@ -53,14 +47,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
       onClick={(event) => onToggleEntity(node, event)}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
-        {node.id in (addedElements || {}) ? (
-          <CheckCircleOutlined
-            classes={{ root: classes.icon }}
-            color="primary"
-          />
-        ) : (
-          <CircleOutlined classes={{ root: classes.icon }} />
-        )}
+        <Checkbox checked={node.id in (addedElements || {})} />
       </ListItemIcon>
       <ListItemText
         primary={(

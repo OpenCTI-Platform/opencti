@@ -76,6 +76,7 @@ export const convertThreatActorIndividualToStix_2_0 = (instance: StoreEntity): S
     primary_motivation: instance.primary_motivation ?? (threatActorIndividual as any).primary_motivations,
     secondary_motivations: instance.secondary_motivations,
     personal_motivations: instance.personal_motivations,
+    x_opencti_score: instance.x_opencti_score,
     date_of_birth: convertToStixDate(threatActorIndividual.date_of_birth),
     gender: threatActorIndividual.gender,
     job_title: threatActorIndividual.job_title,

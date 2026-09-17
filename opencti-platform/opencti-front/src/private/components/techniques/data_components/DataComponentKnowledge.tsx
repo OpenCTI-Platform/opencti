@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { DataComponentKnowledge_dataComponent$key } from './__generated__/DataComponentKnowledge_dataComponent.graphql';

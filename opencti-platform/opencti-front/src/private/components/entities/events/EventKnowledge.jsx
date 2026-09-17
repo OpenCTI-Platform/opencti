@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 import useAuth from '../../../../utils/hooks/useAuth';

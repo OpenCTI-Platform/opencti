@@ -7,22 +7,29 @@ import * as Yup from 'yup';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
-import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import {
+  Chip,
+  Icon,
+  IconButton as FdsIconButton,
+  Input,
+  Select,
+  SelectContent,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import MuiTextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
@@ -34,7 +41,8 @@ import CreatorField from '../../common/form/CreatorField';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import ComboboxField from '../../../../components/ComboboxField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
@@ -89,7 +97,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginLeft: theme.spacing(2),
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: '10px 28px 20px 0',
   },
   step: {
     position: 'relative',
@@ -103,12 +111,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   stepCloseButton: {
     position: 'absolute',
-    top: -20,
-    right: -20,
+    // Offsets resolve against the padding box; the 1px border sits outside it.
+    top: -1,
+    right: -29,
   },
   buttonAdd: {
     width: '100%',
-    height: 20,
   },
   alert: {
     width: '100%',
@@ -116,7 +124,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   message: {
     width: '100%',
-    overflow: 'hidden',
+    // The library paints the focus ring outside the box; hidden clipped it.
+    overflow: 'visible',
   },
 }));
 
@@ -475,18 +484,18 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                     <Form>
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="name"
                         label={t_i18n('Name')}
                         fullWidth={true}
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="description"
                         label={t_i18n('Description')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
                       <Alert
                         icon={false}
@@ -526,68 +535,62 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                       </Alert>
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         name="separator"
                         label={t_i18n('Separator')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
+                      {/* `style` and `slotProps` are unplaceable; a number field owns its trailing slot. */}
+                      <div style={{ marginTop: 20 }}>
+                        <Field
+                          component={TextField}
+                          type="number"
+                          name="rolling_time"
+                          label={t_i18n('Rolling time (in minutes)')}
+                          fullWidth={true}
+                          infoTooltip={(
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <FdsIconButton
+                                  icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
+                                  aria-label={t_i18n('More information')}
+                                  variant="default"
+                                  priority="tertiary"
+                                  size="sm"
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {t_i18n(
+                                  'Return all objects matching the filters that have been updated since this amount of minutes',
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        />
+                      </div>
                       <Field
-                        component={TextField}
-                        variant="standard"
-                        type="number"
-                        name="rolling_time"
-                        label={t_i18n('Rolling time (in minutes)')}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <Tooltip
-                                  title={t_i18n(
-                                    'Return all objects matching the filters that have been updated since this amount of minutes',
-                                  )}
-                                >
-                                  <InformationOutline
-                                    fontSize="small"
-                                    color="primary"
-                                    style={{ cursor: 'default' }}
-                                  />
-                                </Tooltip>
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                      />
-                      <Field
-                        component={SelectField}
-                        variant="standard"
+                        component={SelectFieldFds}
+                        variant="outlined"
                         name="feed_date_attribute"
                         label={t_i18n('Base attribute')}
                         fullWidth={true}
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
-                        <MenuItem key="created_at" value="created_at">{t_i18n('Creation date')}</MenuItem>
-                        <MenuItem key="updated_at" value="updated_at">{t_i18n('Update date')}</MenuItem>
+                        <SelectItem key="created_at" value="created_at">{t_i18n('Creation date')}</SelectItem>
+                        <SelectItem key="updated_at" value="updated_at">{t_i18n('Update date')}</SelectItem>
                       </Field>
                       <Field
-                        component={SelectField}
-                        variant="standard"
+                        component={ComboboxField}
                         name="feed_types"
                         onChange={(_: unknown, value: string[]) => handleSelectTypes(value)}
                         label={t_i18n('Entity types')}
-                        fullWidth={true}
-                        multiple={true}
-                        containerstyle={{ width: '100%', marginTop: 20 }}
-                      >
-                        {entitiesTypes.map((type) => (
-                          <MenuItem key={type.value} value={type.value}>
-                            {type.label}
-                          </MenuItem>
-                        ))}
-                      </Field>
+                        multiple
+                        style={{ width: '100%', marginTop: 20 }}
+                        options={entitiesTypes.map((type) => type.value)}
+                        getOptionLabel={(value) => entitiesTypes.find((t) => t.value === value)?.label ?? value}
+                      />
                       <Field
                         component={SwitchField}
                         type="checkbox"
@@ -632,34 +635,35 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                   className={classes.stepCloseButton}
                                   onClick={() => handleRemoveAttribute(i)}
                                 >
-                                  <CancelOutlined fontSize="small" />
+                                  <CancelOutlined sx={{ fontSize: 16 }} />
                                 </IconButton>
                                 <Box sx={{ width: '100%' }}>
                                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', mb: 2 }}>
-                                    <MuiTextField
-                                      variant="standard"
-                                      name="attribute"
-                                      label={t_i18n('Column name')}
-                                      fullWidth={true}
-                                      value={feedAttributes[i].attribute || ''}
-                                      onChange={(event) => handleChangeField(i, event.target.value)}
-                                      sx={{ flex: 1 }}
-                                    />
+                                    <Box sx={{ flex: 1 }}>
+                                      <Input
+                                        label={t_i18n('Column name')}
+                                        value={feedAttributes[i].attribute || ''}
+                                        onChange={(event) => handleChangeField(i, event.target.value)}
+                                      />
+                                    </Box>
                                     {hasNeighborMapping && (
                                       <>
-                                        <FormControl variant="standard" sx={{ minWidth: 140 }}>
-                                          <InputLabel>{t_i18n('Multi-match')}</InputLabel>
-                                          <Select
-                                            value={feedAttributes[i]?.multi_match_strategy || 'list'}
-                                            onChange={(event) => handleChangeMultiMatchStrategy(i, event.target.value)}
-                                          >
-                                            <MenuItem value="list">{t_i18n('All (list)')}</MenuItem>
-                                            <MenuItem value="first">{t_i18n('First match')}</MenuItem>
-                                          </Select>
-                                        </FormControl>
+                                        <Select
+                                          value={feedAttributes[i]?.multi_match_strategy || 'list'}
+                                          onValueChange={(value) => handleChangeMultiMatchStrategy(i, value)}
+                                        >
+                                          <SelectLabel>{t_i18n('Multi-match')}</SelectLabel>
+                                          <SelectTrigger className="w-full">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent aria-label={t_i18n('Multi-match')}>
+                                            <SelectItem value="list">{t_i18n('All (list)')}</SelectItem>
+                                            <SelectItem value="first">{t_i18n('First match')}</SelectItem>
+                                          </SelectContent>
+                                        </Select>
                                         {(feedAttributes[i]?.multi_match_strategy || 'list') === 'list' && (
                                           <MuiTextField
-                                            variant="standard"
+                                            variant="outlined"
                                             label={t_i18n('List separator')}
                                             value={feedAttributes[i]?.multi_match_separator ?? ','}
                                             onChange={(event) => handleChangeMultiMatchSeparator(i, event.target.value)}
@@ -682,53 +686,64 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
                                             {t_i18n(`entity_${selectedType}`)}
                                           </Typography>
-                                          <Chip
-                                            label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
-                                            size="small"
-                                            color={isNeighborMode ? 'secondary' : 'default'}
-                                            variant="outlined"
+                                          <button
+                                            type="button"
+                                            aria-pressed={isNeighborMode}
                                             onClick={() => handleToggleNeighborMode(i, selectedType)}
-                                            sx={{ cursor: 'pointer', fontSize: '0.75rem', height: 22 }}
-                                          />
+                                            // The wrapper had no focus treatment, so it fell back to the UA outline.
+                                            // rounded-sm matches Chip's own radius so the ring hugs the chip.
+                                            className="inline-flex cursor-pointer rounded-sm border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
+                                          >
+                                            <Chip
+                                              label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
+                                              severity={isNeighborMode ? 'info' : 'neutral'}
+                                            />
+                                          </button>
                                         </Box>
                                         {isNeighborMode ? (
                                           <Grid container spacing={2}>
                                             <Grid item xs={4}>
-                                              <FormControl variant="standard" fullWidth>
-                                                <InputLabel>{t_i18n('Relationship type')}</InputLabel>
-                                                <Select
-                                                  value={currentMapping?.relationship_type || ''}
-                                                  onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', event.target.value)}
-                                                >
+                                              <Select
+                                                value={currentMapping?.relationship_type || ''}
+                                                onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', value)}
+                                              >
+                                                <SelectLabel>{t_i18n('Relationship type')}</SelectLabel>
+                                                <SelectTrigger className="w-full">
+                                                  <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent aria-label={t_i18n('Relationship type')}>
                                                   {getRelationshipTypesForEntityType(selectedType, schema).sort().map((rt) => (
-                                                    <MenuItem key={rt} value={rt}>
+                                                    <SelectItem key={rt} value={rt}>
                                                       {t_i18n(`relationship_${rt}`)}
-                                                    </MenuItem>
+                                                    </SelectItem>
                                                   ))}
-                                                </Select>
-                                              </FormControl>
+                                                </SelectContent>
+                                              </Select>
                                             </Grid>
                                             <Grid item xs={4}>
-                                              <FormControl variant="standard" fullWidth disabled={!currentMapping?.relationship_type}>
-                                                <InputLabel>{t_i18n('Target type')}</InputLabel>
-                                                <Select
-                                                  value={currentMapping?.target_entity_type || ''}
-                                                  onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', event.target.value)}
-                                                >
+                                              <Select
+                                                value={currentMapping?.target_entity_type || ''}
+                                                onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', value)}
+                                                disabled={!currentMapping?.relationship_type}
+                                              >
+                                                <SelectLabel>{t_i18n('Target type')}</SelectLabel>
+                                                <SelectTrigger className="w-full">
+                                                  <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent aria-label={t_i18n('Target type')}>
                                                   {currentMapping?.relationship_type
                                                     && getTargetTypesForRelationship(
                                                       selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping,
                                                     ).map((tt) => (
-                                                      <MenuItem key={tt} value={tt}>
+                                                      <SelectItem key={tt} value={tt}>
                                                         {t_i18n(`entity_${tt}`)}
-                                                      </MenuItem>
+                                                      </SelectItem>
                                                     ))}
-                                                </Select>
-                                              </FormControl>
+                                                </SelectContent>
+                                              </Select>
                                             </Grid>
                                             <Grid item xs={4}>
-                                              <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
-                                                <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                              <FormControl variant="outlined" fullWidth disabled={!currentMapping?.target_entity_type}>
                                                 {currentMapping?.target_entity_type ? (
                                                   <QueryRenderer
                                                     query={stixCyberObservablesLinesAttributesQuery}
@@ -750,24 +765,29 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                         return (
                                                           <Select
                                                             value={currentMapping?.attribute || ''}
-                                                            onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
+                                                            onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                           >
-                                                            {attributes.map((attr) => (
-                                                              <MenuItem key={attr.value} value={attr.value}>{attr.value}</MenuItem>
-                                                            ))}
+                                                            <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
+                                                            <SelectTrigger className="w-full">
+                                                              <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent aria-label={t_i18n('Attribute')}>
+                                                              {attributes.map((attr) => (
+                                                                <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
+                                                              ))}
+                                                            </SelectContent>
                                                           </Select>
                                                         );
                                                       }
-                                                      return <Select disabled value="" />;
+                                                      return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
                                                     }}
                                                   />
-                                                ) : <Select disabled value="" />}
+                                                ) : <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>}
                                               </FormControl>
                                             </Grid>
                                           </Grid>
                                         ) : (
-                                          <FormControl variant="standard" fullWidth>
-                                            <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                          <FormControl variant="outlined" fullWidth>
                                             <QueryRenderer
                                               query={stixCyberObservablesLinesAttributesQuery}
                                               variables={{ elementType: [selectedType] }}
@@ -788,15 +808,21 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                   return (
                                                     <Select
                                                       value={currentMapping?.attribute || ''}
-                                                      onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
+                                                      onValueChange={(value) => handleChangeAttributeMapping(i, selectedType, value)}
                                                     >
-                                                      {attributes.map((attr) => (
-                                                        <MenuItem key={attr.value} value={attr.value}>{attr.value}</MenuItem>
-                                                      ))}
+                                                      <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
+                                                      <SelectTrigger className="w-full">
+                                                        <SelectValue />
+                                                      </SelectTrigger>
+                                                      <SelectContent aria-label={t_i18n('Attribute')}>
+                                                        {attributes.map((attr) => (
+                                                          <SelectItem key={attr.value} value={attr.value}>{attr.value}</SelectItem>
+                                                        ))}
+                                                      </SelectContent>
                                                     </Select>
                                                   );
                                                 }
-                                                return <Select disabled value="" />;
+                                                return <Select disabled value=""><SelectLabel>{t_i18n('Attribute')}</SelectLabel><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent aria-label={t_i18n('Attribute')}><></></SelectContent></Select>;
                                               }}
                                             />
                                           </FormControl>
@@ -812,11 +838,12 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                             <IconButton
                               aria-label={t_i18n('Add')}
                               disabled={selectedTypes.length === 0}
-                              size="small"
+                              size="default"
+                              color="primary"
+                              className="w-full"
                               onClick={() => handleAddAttribute()}
-                              classes={{ root: classes.buttonAdd }}
                             >
-                              <AddOutlined fontSize="small" />
+                              <AddOutlined sx={{ fontSize: 16 }} />
                             </IconButton>
                           </div>
                         </div>

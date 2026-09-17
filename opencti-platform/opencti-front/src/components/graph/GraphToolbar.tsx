@@ -15,15 +15,19 @@ import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
 import useAuth from '../../utils/hooks/useAuth';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 
-export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
+export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps & {
+  warning?: React.ReactNode;
+};
 
 const GraphToolbar = ({
   onInvestigationExpand,
   onInvestigationRollback,
   onUnfixNodes,
+  warning,
   ...props
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
@@ -51,18 +55,21 @@ const GraphToolbar = ({
     <Drawer
       anchor="bottom"
       variant="permanent"
-      PaperProps={{
+      slotProps={{ paper: {
         elevation: 1,
+        className: fdsLayerClass(RIGHT_BAR_LAYER),
+        sx: { ...layerInputVars },
         style: {
           zIndex: 1,
           paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+          right: 'var(--chatbot-sidebar-width, 0px)',
+          transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease',
           height: showTimeRange ? 134 : 54,
           overflow: 'hidden',
-          transition: 'height 0.2s ease',
           marginBottom: bannerHeightNumber,
           bottom: posBottom,
         },
-      }}
+      } }}
     >
       <LinearProgress
         style={{
@@ -94,6 +101,12 @@ const GraphToolbar = ({
 
         <GraphToolbarFilterTools />
         <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+
+        {warning && (
+          <div style={{ flexShrink: 1, minWidth: 0, marginRight: theme.spacing(1) }}>
+            {warning}
+          </div>
+        )}
 
         {context === 'correlation' && (
           <>

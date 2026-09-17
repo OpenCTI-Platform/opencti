@@ -11,7 +11,7 @@ import Opinion from '../../../static/images/entities/opinion.svg';
 import Report from '../../../static/images/entities/report.svg';
 import Grouping from '../../../static/images/entities/grouping.svg';
 import CourseOfAction from '../../../static/images/entities/course-of-action.svg';
-import CitizenshipDocument from '../../../static/images/entities/individual.svg'; // TOD Need to create
+import CitizenshipDocument from '../../../static/images/entities/citizenship-document.svg'; // TOD Need to create
 import Individual from '../../../static/images/entities/individual.svg';
 import Organization from '../../../static/images/entities/organization.svg';
 import Sector from '../../../static/images/entities/sector.svg';
@@ -135,7 +135,7 @@ const GRAPH_IMAGES: GraphImages = {
     rawImg: CourseOfAction,
     img: generateHtmlImageElement(CourseOfAction),
   },
-  CitizenshipDocument: {
+  'Citizenship-Document': {
     rawImg: CitizenshipDocument,
     img: generateHtmlImageElement(CitizenshipDocument),
   },

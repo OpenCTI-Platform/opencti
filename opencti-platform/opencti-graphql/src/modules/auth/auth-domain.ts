@@ -19,6 +19,7 @@ import { addForgotPasswordCount } from '../../manager/telemetryManager';
 import { sanitizeSettings } from '../../utils/templateContextSanitizer';
 import { safeRender } from '../../utils/safeEjs.client';
 import { totp } from '../../utils/totp';
+import { normalizeEmail } from '../../utils/email';
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -51,10 +52,10 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     return transactionId;
   }
   const { user_email, name, otp_activated: mfa_activated, id } = user;
-  const email = user_email.toLowerCase();
+  const email = normalizeEmail(user_email);
 
   // Don't generate new redis key under 30-second delay
-  const previousKey = await redisGetForgotPasswordOtpPointer(input.email);
+  const previousKey = await redisGetForgotPasswordOtpPointer(email);
   const isTooRecent = previousKey.ttl > (OTP_TTL - 30);
   if (isTooRecent) return transactionId;
 

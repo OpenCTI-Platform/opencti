@@ -149,6 +149,7 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
         aria-haspopup="true"
         style={{ marginTop: 3 }}
         color="primary"
+        aria-label={t_i18n('Open the menu')}
       >
         <MoreVert />
       </IconButton>

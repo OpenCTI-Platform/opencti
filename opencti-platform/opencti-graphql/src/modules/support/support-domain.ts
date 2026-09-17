@@ -15,7 +15,7 @@ import {
   TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
 } from '../../config/conf';
 import { downloadFile } from '../../database/raw-file-storage';
-import { loadedFilesListing, streamConverter, fileToReadStream, uploadToStorage } from '../../database/file-storage';
+import { loadedFilesListing, streamConverter, fileToReadStream, uploadToStorage, type LoadedFile } from '../../database/file-storage';
 import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
@@ -145,7 +145,7 @@ export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: 
 };
 
 const downloadAllLogFiles = async (context: AuthContext, user: AuthUser, s3Directory: string, localDirectory: string) => {
-  const allSupportFiles = await loadedFilesListing(context, user, s3Directory, {});
+  const allSupportFiles = await loadedFilesListing(context, user, s3Directory, {}) as LoadedFile[];
   logApp.info('All support files', { allSupportFiles });
   for (let i = 0; i < allSupportFiles.length; i += 1) {
     const supportFile = allSupportFiles[i];

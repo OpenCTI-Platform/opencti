@@ -26,6 +26,7 @@ import {
   FactCheckOutlined,
   FilterAltOutlined,
   FlagOutlined,
+  FolderShared,
   HelpOutlined,
   Insights,
   LayersClearOutlined,
@@ -620,7 +621,7 @@ const iconSelector = (
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     case 'citizenship-document':
-      // TODO: look into how this is used before seeing about creating one.
+      return <FolderShared style={style} fontSize={fontSize} role="img" />;
     default:
       return <AutoAwesomeMotion style={style} fontSize={fontSize} role="img" />;
   }

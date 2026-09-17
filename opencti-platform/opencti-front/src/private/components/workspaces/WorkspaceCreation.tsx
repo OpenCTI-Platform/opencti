@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { useContext } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 import TextField from '../../../components/TextField';
@@ -135,6 +135,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             onClick={importHelpers.handleImport}
             data-testid="ImportDashboard"
 
+            aria-label={t_i18n('Import dashboard')}
           >
             <FileUploadOutlined fontSize="small" color="primary" />
           </IconButton>

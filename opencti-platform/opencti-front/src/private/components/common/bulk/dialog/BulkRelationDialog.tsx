@@ -12,8 +12,7 @@ import Typography from '@mui/material/Typography';
 import { useFormatter } from 'src/components/i18n';
 import useAuth from 'src/utils/hooks/useAuth';
 import { ArrowRightAlt } from '@mui/icons-material';
-import MenuItem from '@mui/material/MenuItem';
-import { Select, SelectChangeEvent } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import { StixCoreRelationshipAddInput } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
@@ -26,6 +25,7 @@ import { PaginationOptions } from 'src/components/list_lines';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
 import { type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../../utils/fdsLayer';
 
 export const searchStixCoreObjectsByRepresentativeQuery = graphql`
   query BulkRelationDialogQuery(
@@ -324,8 +324,8 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
     });
     setBulkEntityList([...bulkEntityListToEdit]);
   }, [selectedRelationType]);
-  const handleChangeSelectedRelationType = (event: SelectChangeEvent) => {
-    setSelectedRelationType(event.target.value);
+  const handleChangeSelectedRelationType = (value: string) => {
+    setSelectedRelationType(value);
   };
 
   const handleChangeTextArea = async (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -478,7 +478,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
+      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1, className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
           <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
@@ -486,7 +486,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
         </DialogTitle>
         <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography sx={{ height: '25px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
+            <Typography sx={{ height: '30px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
             <Box sx={{ display: 'flex' }}>
               <Box id="entityCard" sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
                 <EntityRelationshipCard
@@ -494,13 +494,18 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
                   entityType={stixDomainObjectType}
                 />
               </Box>
-              <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
-                <Select disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
-                  {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
-                    <MenuItem key={relation} value={relation}>
-                      {t_i18n(`relationship_${relation}`)}
-                    </MenuItem>
-                  ))}
+              <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: '6px 20px 0', flexDirection: 'column', minWidth: '200px' }}>
+                <Select disabled={isSubmitting} onValueChange={handleChangeSelectedRelationType} value={selectedRelationType}>
+                  <SelectTrigger aria-label={t_i18n('Relationship type')}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Relationship type')}>
+                    {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
+                      <SelectItem key={relation} value={relation}>
+                        {t_i18n(`relationship_${relation}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
                 <ArrowRightAlt sx={{ alignSelf: 'center', margin: '10px' }} fontSize="large" />
               </Box>
@@ -550,7 +555,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ paddingInline: 3, paddingBottom: 3 }}>
           <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
           <Button onClick={handleSubmit} disabled={isSubmitDisable || isSubmitting}>
             {t_i18n('Create')}

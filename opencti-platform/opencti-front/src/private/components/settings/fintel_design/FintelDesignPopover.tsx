@@ -138,6 +138,7 @@ const FintelDesignPopover = ({
           className="icon-outlined"
           variant="secondary"
           size="default"
+          aria-label={t_i18n('Open the menu')}
         >
           <MoreVert fontSize="small" />
         </IconButton>

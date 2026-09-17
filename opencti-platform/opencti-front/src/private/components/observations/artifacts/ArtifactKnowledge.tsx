@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '@components/events/stix_sighting_relationships/StixSightingRelationship';
 import StixCyberObservableKnowledge from '../stix_cyber_observables/StixCyberObservableKnowledge';

@@ -97,7 +97,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
                   {data.name}
                 </span>
               </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
+              <div className={classes.bodyItem} style={{ width: dataColumns.description.width, paddingRight: 40 }}>
                 <span className={classes.bodyItemText}>
                   {data.description}
                 </span>

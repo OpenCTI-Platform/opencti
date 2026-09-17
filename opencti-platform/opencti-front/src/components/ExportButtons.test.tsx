@@ -29,7 +29,7 @@ vi.mock('../utils/ExportThemeContext', () => ({
 
 const mockThemeNode = {
   id: 'theme-1',
-  name: 'Dark',
+  name: 'Filigran Dark',
   theme_background: '#000000',
 };
 

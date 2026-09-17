@@ -76,7 +76,6 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -105,7 +104,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -153,23 +152,14 @@ import {
   type AttributeDefinition,
   authorizedMembers,
   baseType,
-  booleanMapping,
-  dateMapping,
   entityType as entityTypeAttribute,
   id as idAttribute,
   internalId,
-  longStringFormats,
-  numericMapping,
-  shortMapping,
-  shortStringFormats,
   standardId,
-  textMapping,
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
-import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { rule_definitions } from '../rules/rules-definition';
+import { isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
@@ -206,6 +196,7 @@ import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
+import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
 import { isEsScriptFilterEnabled } from './engine-config';
 import { AbortError } from 'node-fetch';
 
@@ -1175,95 +1166,6 @@ const updateCoreSettings = async (): Promise<void> => {
   }
 };
 
-// Engine mapping generation on attributes definition
-const attributeMappingGenerator = (entityAttribute: AttributeDefinition): any => {
-  if (entityAttribute.type === 'string') {
-    if (shortStringFormats.includes(entityAttribute.format)) {
-      return shortMapping;
-    }
-    if (longStringFormats.includes(entityAttribute.format)) {
-      return textMapping;
-    }
-    throw UnsupportedError('Cant generated string mapping', { format: entityAttribute.format });
-  }
-  if (entityAttribute.type === 'date') {
-    return dateMapping;
-  }
-  if (entityAttribute.type === 'numeric') {
-    return numericMapping(entityAttribute.precision);
-  }
-  if (entityAttribute.type === 'boolean') {
-    return booleanMapping;
-  }
-  if (entityAttribute.type === 'object') {
-    // For flat object
-    if (entityAttribute.format === 'flat') {
-      return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
-    }
-    // For standard object
-    const properties: Record<string, any> = {};
-    for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
-      const mapping = entityAttribute.mappings[i];
-      properties[mapping.name] = attributeMappingGenerator(mapping);
-    }
-    const config: { dynamic: string; properties: any; type?: string } = { dynamic: 'strict', properties };
-    // Add nested option if needed
-    if (entityAttribute.format === 'nested') {
-      config.type = 'nested';
-    }
-    return config;
-  }
-  throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
-};
-const ruleMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
-  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
-  for (let attrIndex = 0; attrIndex < rule_definitions.length; attrIndex += 1) {
-    const rule = rule_definitions[attrIndex];
-    schemaProperties[`i_rule_${rule.id}`] = {
-      dynamic: 'strict',
-      properties: {
-        explanation: shortMapping,
-        dependencies: shortMapping,
-        hash: shortMapping,
-        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
-      },
-    };
-  }
-  return schemaProperties;
-};
-const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
-  const databaseRelationshipsName = [
-    STIX_SIGHTING_RELATIONSHIP,
-    ...STIX_CORE_RELATIONSHIPS,
-    ...INTERNAL_RELATIONSHIPS,
-    ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP),
-  ];
-  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
-  for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
-    const relName = databaseRelationshipsName[attrIndex];
-    schemaProperties[`rel_${relName}`] = {
-      dynamic: 'strict',
-      properties: {
-        internal_id: shortMapping,
-        inferred_id: shortMapping,
-      },
-    };
-  }
-  return schemaProperties;
-};
-const attributesMappingGenerator = (): Record<string, any> => {
-  const entityAttributes = schemaAttributesDefinition.getAllAttributes();
-  const schemaProperties: Record<string, any> = {};
-  for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
-    const entityAttribute = entityAttributes[attrIndex];
-    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute);
-  }
-  return schemaProperties;
-};
-
-export const engineMappingGenerator = (): Record<string, any> => {
-  return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
-};
 const computeIndexSettings = (rolloverAlias: string | null | undefined): any => {
   if (engine instanceof ElkClient) {
     // Rollover alias can be undefined for platform initialized <= 5.8
@@ -1302,206 +1204,6 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
   };
 };
 
-// Only useful for option ES_INIT_RETRO_MAPPING_MIGRATION
-// This mode let the platform initialize old mapping protection before direct stop
-// Its only useful when old platform needs to be reindex
-const getRetroCompatibleMappings = (): any => {
-  const flattenedType = engine instanceof ElkClient ? 'flattened' : 'flat_object';
-  return {
-    internal_id: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    standard_id: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    user_email: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    name: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    height: {
-      type: 'nested',
-      properties: {
-        measure: { type: 'float' },
-        date_seen: { type: 'date' },
-      },
-    },
-    weight: {
-      type: 'nested',
-      properties: {
-        measure: { type: 'float' },
-        date_seen: { type: 'date' },
-      },
-    },
-    timestamp: {
-      type: 'date',
-    },
-    created: {
-      type: 'date',
-    },
-    created_at: {
-      type: 'date',
-    },
-    modified: {
-      type: 'date',
-    },
-    modified_at: {
-      type: 'date',
-    },
-    indexed_at: {
-      type: 'date',
-    },
-    uploaded_at: {
-      type: 'date',
-    },
-    first_seen: {
-      type: 'date',
-    },
-    last_seen: {
-      type: 'date',
-    },
-    start_time: {
-      type: 'date',
-    },
-    stop_time: {
-      type: 'date',
-    },
-    published: {
-      type: 'date',
-    },
-    valid_from: {
-      type: 'date',
-    },
-    valid_until: {
-      type: 'date',
-    },
-    observable_date: {
-      type: 'date',
-    },
-    event_date: {
-      type: 'date',
-    },
-    received_time: {
-      type: 'date',
-    },
-    processed_time: {
-      type: 'date',
-    },
-    completed_time: {
-      type: 'date',
-    },
-    ctime: {
-      type: 'date',
-    },
-    mtime: {
-      type: 'date',
-    },
-    atime: {
-      type: 'date',
-    },
-    current_state_date: {
-      type: 'date',
-    },
-    confidence: {
-      type: 'integer',
-    },
-    attribute_order: {
-      type: 'integer',
-    },
-    base_score: {
-      type: 'integer',
-    },
-    is_family: {
-      type: 'boolean',
-    },
-    number_observed: {
-      type: 'integer',
-    },
-    x_opencti_negative: {
-      type: 'boolean',
-    },
-    default_assignation: {
-      type: 'boolean',
-    },
-    x_opencti_detection: {
-      type: 'boolean',
-    },
-    x_opencti_order: {
-      type: 'integer',
-    },
-    import_expected_number: {
-      type: 'integer',
-    },
-    import_processed_number: {
-      type: 'integer',
-    },
-    x_opencti_score: {
-      type: 'integer',
-    },
-    connections: {
-      type: 'nested',
-    },
-    manager_setting: {
-      type: flattenedType,
-    },
-    context_data: {
-      properties: {
-        input: { type: flattenedType },
-      },
-    },
-    size: {
-      type: 'integer',
-    },
-    lastModifiedSinceMin: {
-      type: 'integer',
-    },
-    lastModified: {
-      type: 'date',
-    },
-    metaData: {
-      properties: {
-        order: {
-          type: 'integer',
-        },
-        inCarousel: {
-          type: 'boolean',
-        },
-        messages: { type: flattenedType },
-        errors: { type: flattenedType },
-      },
-    },
-  };
-};
-
 const updateIndexTemplate = async (name: string, mapping_properties: Record<string, any>): Promise<any> => {
   // compute pattern to be retro compatible for platform < 5.9
   // Before 5.9, only one pattern for all indices
@@ -1514,7 +1216,7 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
       template: {
         settings: computeIndexSettings(name),
         mappings: ES_IS_OLD_MAPPING ? {
-          properties: getRetroCompatibleMappings(),
+          properties: getRetroCompatibleMappings(engine),
         } : {
           // Global option to prevent elastic to try any magic
           dynamic: 'strict' as const,
@@ -1571,7 +1273,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
   // Update core settings
   await updateCoreSettings();
   // Reset the templates
-  const mappingProperties = engineMappingGenerator();
+  const mappingProperties = engineMappingGenerator(engine);
   const templates = await elPlatformTemplates();
   for (let index = 0; index < templates.length; index += 1) {
     const template = templates[index];
@@ -1656,7 +1358,11 @@ export const elDeleteIndex = async (index: string) => {
     logApp.error('Error deleting indexes:', error);
   }
 };
-export const elCreateIndex = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
+export const elCreateIndex = async (index: string) => {
+  const mappingProperties = engineMappingGenerator(engine);
+  return elCreateIndexWithMapping(index, mappingProperties);
+};
+const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;
@@ -1679,10 +1385,10 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES):
   await updateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
-  const mappingProperties = engineMappingGenerator();
+  const mappingProperties = engineMappingGenerator(engine);
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
-    const createdIndex = await elCreateIndex(index, mappingProperties);
+    const createdIndex = await elCreateIndexWithMapping(index, mappingProperties);
     if (createdIndex) {
       createdIndices.push(oebp(createdIndex));
     }
@@ -2020,7 +1726,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
     logApp.debug('[SEARCH] elInternalLoadById', { query });
     const searchType = `${ids} (${types ? (types as string[]).join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-      throw wrapEngineError('Find direct ids fail', err, { query, searchType });
+      throw wrapEngineError('Find direct ids fail', err, { query: JSON.stringify(query), searchType });
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
@@ -2182,17 +1888,23 @@ type ProcessSearchArgs = {
   useWildcardPrefix?: boolean;
   historyFiltering?: boolean;
 };
+
+// Hard cap user-provided search input to limit normalization + query parsing cost
+const MAX_SEARCH_LENGTH = 512;
+
 function processSearch(
   search: string,
   args: ProcessSearchArgs,
 ): { exactSearch: string[]; querySearch: string[] } {
   const { useWildcardPrefix } = args;
+  const boundedSearch = search.length > MAX_SEARCH_LENGTH ? search.slice(0, MAX_SEARCH_LENGTH) : search;
+
   let decodedSearch;
   try {
-    decodedSearch = decodeURIComponent(refang(search))
+    decodedSearch = decodeURIComponent(refang(boundedSearch))
       .trim();
   } catch (_e) {
-    decodedSearch = refang(search).trim();
+    decodedSearch = refang(boundedSearch).trim();
   }
   let remainingSearch = decodedSearch;
   const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
@@ -3402,7 +3114,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   } catch (err: any) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-    throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query, queryArguments: options });
+    throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query: JSON.stringify(query), queryArguments: options });
   }
 };
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
@@ -3542,7 +3254,7 @@ export const elCardinalityCount = async (
   };
   const searchType = `Aggregations (${field})`;
   const cardinalityData = await elRawSearch(context, user, searchType, cardinalityQuery).catch((err) => {
-    throw wrapEngineError('Cardinality computing fail', err, { cardinalityQuery });
+    throw wrapEngineError('Cardinality computing fail', err, { cardinalityQuery: JSON.stringify(cardinalityQuery) });
   });
   return cardinalityData.aggregations.cardinality_count.value;
 };
@@ -3919,7 +3631,7 @@ export const elAggregationsList = async (
   };
   const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
   const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-    throw wrapEngineError('Aggregations computing list fail', err, { query });
+    throw wrapEngineError('Aggregations computing list fail', err, { query: JSON.stringify(query) });
   });
   const aggsMap = Object.keys(data.aggregations);
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b: { key: string }) => b.key))));
@@ -4156,6 +3868,26 @@ export const elUpdate = async (
   };
   return retryElOperations(updateOperation);
 };
+// Field names are passed as script parameters and never interpolated in the source.
+// Interpolating them would create one script per field combination, and every distinct
+// source has to be compiled by the engine, quickly exhausting script.max_compilations_rate.
+export const EL_REPLACE_SCRIPT_SOURCE = 'for (entry in params.replacements.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }'
+  + ' for (key in params.removals) { ctx._source.remove(key); }';
+export const buildReplaceScriptParams = (doc: Record<string, any>) => {
+  const replacements: Record<string, any> = {};
+  const removals: string[] = [];
+  const entries = Object.entries(doc);
+  for (let index = 0; index < entries.length; index += 1) {
+    const [key, val] = entries[index];
+    // We clean the attribute only if data is null or undefined
+    if (val === undefined || val === null) {
+      removals.push(key);
+    } else {
+      replacements[key] = val;
+    }
+  }
+  return { replacements, removals };
+};
 export const elReplace = async (
   context: AuthContext,
   indexName: string,
@@ -4163,20 +3895,8 @@ export const elReplace = async (
   documentBody: any,
 ) => {
   const doc = R.dissoc('_index', documentBody.doc);
-  const entries = Object.entries(doc);
-  const rawSources = [];
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key, val] = entries[index];
-    // We clean the attribute only if data is null or undefined
-    if (val === undefined || val === null) {
-      rawSources.push(`ctx._source.remove('${key}')`);
-    } else {
-      rawSources.push(`ctx._source['${key}'] = params['${key}']`);
-    }
-  }
-  const source = R.join(';', rawSources);
   return elUpdate(context, indexName, documentId, {
-    script: { source, params: doc },
+    script: { source: EL_REPLACE_SCRIPT_SOURCE, params: buildReplaceScriptParams(doc) },
   });
 };
 export const elDelete = (indexName: string, documentId: string) => {
@@ -4521,6 +4241,8 @@ export const copyLiveElementToDraft = async (
   const allDraftIds = allDrafts.map((d) => d.internal_id);
   const addDraftIdScript = {
     script: {
+      // draftId is a script parameter, never interpolated: interpolating it would compile
+      // a new script for every draft ever created (see script.max_compilations_rate).
       source: `
         if (ctx._source.containsKey('draft_ids')) {
           for (int i=ctx._source['draft_ids'].length-1; i>=0; i--) {
@@ -4528,12 +4250,12 @@ export const copyLiveElementToDraft = async (
               ctx._source['draft_ids'].remove(i);
             }
           }
-          ctx._source['draft_ids'].add('${draftContext}');
+          ctx._source['draft_ids'].add(params.draftId);
         }
         else
-          {ctx._source.draft_ids = ['${draftContext}']}
+          {ctx._source.draft_ids = [params.draftId]}
       `,
-      params: { allDraftIds },
+      params: { allDraftIds, draftId: draftContext },
     },
   };
   await elUpdate(context, element._index, element.internal_id, addDraftIdScript);
@@ -4803,6 +4525,79 @@ const validateElementsToIndex = (context: AuthContext, user: AuthUser, elements:
     throw UnsupportedError('Cannot index unsupported element in draft context');
   }
 };
+type DenormalizedRefTarget = { relation: string; field: string; elements: any[] };
+// Field names are script parameters and never interpolated in the source. Interpolating them
+// would compile one script per combination of ref relationship types carried by an entity,
+// which grows with the powerset of the ref types and quickly exhausts script.max_compilations_rate.
+export const EL_DENORMALIZED_REFS_SCRIPT_SOURCE = `
+  for (ref in params.appended_refs) {
+    if (ctx._source[ref.field] == null) { ctx._source[ref.field] = []; }
+    ctx._source[ref.field].addAll(ref.ids);
+  }
+  for (ref in params.distinct_refs) {
+    if (ctx._source[ref.field] == null) { ctx._source[ref.field] = []; }
+    for (id in ref.ids) {
+      if (!ctx._source[ref.field].contains(id)) { ctx._source[ref.field].add(id); }
+    }
+  }
+  for (field in params.timestamp_fields) { ctx._source[field] = params.updated_at; }
+  if (params.pir_ids != null) {
+    if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+      ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
+      ctx._source['pir_information'].addAll(params.new_pir_information);
+    } else { ctx._source['pir_information'] = params.new_pir_information; }
+  }
+`;
+export const buildDenormalizedRefsScriptParams = (targetsElements: DenormalizedRefTarget[], updatedAt: string) => {
+  const appendedRefs: { field: string; ids: string[] }[] = [];
+  const distinctRefs: { field: string; ids: string[] }[] = [];
+  const timestampFields: string[] = [];
+  const addTimestampField = (field: string) => {
+    if (!timestampFields.includes(field)) timestampFields.push(field);
+  };
+  let pirIds: string[] | null = null;
+  let newPirInformation: any[] | null = null;
+  for (let index = 0; index < targetsElements.length; index += 1) {
+    const target = targetsElements[index];
+    const field = buildRefRelationKey(target.relation, target.field);
+    const ids = target.elements.map((e: any) => e.id);
+    if (isStixRefUnidirectionalRelationship(target.relation)) {
+      // don't try to add unidirectional ref rel if already present (issue#7535)
+      distinctRefs.push({ field, ids });
+    } else {
+      appendedRefs.push({ field, ids });
+    }
+    const fromSide = target.elements.find((e: any) => e.side === 'from');
+    const toSide = target.elements.find((e: any) => e.side === 'to');
+    if (fromSide && isStixRefRelationship(target.relation)) {
+      // updated_at and modified only updated for ref relationships
+      if (isUpdatedAtObject(fromSide.type)) addTimestampField('updated_at');
+      if (isModifiedObject(fromSide.type)) addTimestampField('modified');
+    }
+    // freshness of an entity updated for any relationship
+    if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
+      addTimestampField('refreshed_at');
+    }
+    // Add Pir information for in-pir relationships
+    if (target.relation === RELATION_IN_PIR) {
+      // remove pir_information concerning the pir and add the new pir_information
+      newPirInformation = target.elements.map((e: any) => ({
+        pir_id: e.id,
+        pir_score: e.pir_score,
+        last_pir_score_date: updatedAt,
+      }));
+      pirIds = ids;
+    }
+  }
+  return {
+    updated_at: updatedAt,
+    appended_refs: appendedRefs,
+    distinct_refs: distinctRefs,
+    timestamp_fields: timestampFields,
+    pir_ids: pirIds,
+    new_pir_information: newPirInformation,
+  };
+};
 export const elIndexElements = async (
   context: AuthContext,
   user: AuthUser,
@@ -4873,64 +4668,8 @@ export const elIndexElements = async (
         return { relation: relType, field: refField, elements: resolvedData };
       });
       // Create params and scripted update
-      const params: any = { updated_at: now() };
-      const sources = targetsElements.map((t) => {
-        const field = buildRefRelationKey(t.relation, t.field);
-        let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        if (isStixRefUnidirectionalRelationship(t.relation)) {
-          // don't try to add unidirectional ref rel if already present (issue#7535)
-          script += `for(refId in params['${field}']) {
-          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
-        } else {
-          script += `ctx._source['${field}'].addAll(params['${field}']);`;
-        }
-        const fromSide = t.elements.find((e: any) => e.side === 'from');
-        const toSide = t.elements.find((e: any) => e.side === 'to');
-        if (fromSide && isStixRefRelationship(t.relation)) {
-          // updated_at and modified only updated for ref relationships
-          if (isUpdatedAtObject(fromSide.type)) {
-            script += 'ctx._source[\'updated_at\'] = params.updated_at;';
-          }
-          if (isModifiedObject(fromSide.type)) {
-            script += 'ctx._source[\'modified\'] = params.updated_at;';
-          }
-        }
-        // freshness of an entity updated for any relationship
-        if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
-          script += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
-        }
-        // Add Pir information for in-pir relationships
-        if (t.relation === RELATION_IN_PIR) {
-          // remove pir_information concerning the pir and add the new pir_information
-          script += `
-            if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
-              ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
-              ctx._source['pir_information'].addAll(params.new_pir_information);
-            } else { ctx._source['pir_information'] = params.new_pir_information; }
-          `;
-        }
-        return script;
-      });
-      // Concat sources scripts by adding a ';' between each script to close each final script line
-      const source = sources.length > 1 ? R.join(' ', sources) : `${R.head(sources)}`;
-      // Construct params
-      for (let index = 0; index < targetsElements.length; index += 1) {
-        const targetElement = targetsElements[index];
-        params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e: any) => e.id);
-      }
-      // Add new_pir_information params
-      const pirElements = targetsElements.filter((e) => e.relation === RELATION_IN_PIR);
-      for (let index = 0; index < pirElements.length; index += 1) {
-        const pirElement = pirElements[index];
-        params.new_pir_information = pirElement.elements
-          .map((e: any) => ({
-            pir_id: e.id,
-            pir_score: e.pir_score,
-            last_pir_score_date: params.updated_at,
-          }));
-        params.pir_ids = pirElement.elements.map((e: any) => e.id);
-      }
-      return { ...entity, id: entityId, data: { script: { source, params } } };
+      const params = buildDenormalizedRefsScriptParams(targetsElements, now());
+      return { ...entity, id: entityId, data: { script: { source: EL_DENORMALIZED_REFS_SCRIPT_SOURCE, params } } };
     });
     // bulk update elements (denormalized relations)
     if (elementsToUpdate.length > 0) {

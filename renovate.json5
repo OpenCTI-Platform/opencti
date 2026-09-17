@@ -1,29 +1,33 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    ':semanticCommits',
     'config:recommended',
     'docker:enableMajor',
+    ':semanticCommits',
   ],
   labels: [
     'dependencies',
     'filigran team',
   ],
   minimumReleaseAge: '3 days',
-  prHourlyLimit: 2,
+  // high limits so that all PRs are created at once during the schedule window rather than being drip-fed across multiple runs
+  prHourlyLimit: 100,
   prConcurrentLimit: 100,
   branchConcurrentLimit: 100,
   timezone: 'Europe/Paris',
+  // weekdays outside working hours (22h-5h) + all weekend
   schedule: [
     '* 0-4,22-23 * * 1-5',
     '* * * * 0,6',
   ],
+  // prevent Renovate from updating existing PRs outside the schedule window
   updateNotScheduled: false,
+  // only rebase when there is a conflict; avoids unnecessary CI runs on every base branch change, can be removed when number of open PR is low
   rebaseWhen: 'conflicted',
   vulnerabilityAlerts: {
     // as we don't rely on Renovate to be informed of dependency security advisories,
     // vulnerabilityAlerts is disabled since it can cause problems by skipping minimumReleaseAge, schedule and others constraints
-    'enabled': false,
+    enabled: false,
   },
   packageRules: [
     // sticks to Node 22.x docker image, matching engines.node (>= 22.0.0)
@@ -107,16 +111,17 @@
       description: 'Update aws-sdk-js-v3 only once a week on Sunday',
       schedule: ['* * * * 0'],
     },
-    // group non-major devDependencies once a week to avoid Renovate noise
+    // group non-major devDependencies and GitHub Actions once a week to avoid Renovate noise
     {
       groupName: 'devDependencies (non-major)',
       groupSlug: 'dev-dependencies-non-major',
-      description: 'Batch non-major updates of dev dependencies once a week on Sunday',
+      description: 'Batch non-major updates of dev dependencies and GitHub Actions once a week on Sunday',
       schedule: [
-	      '* * * * 0',
+        '* * * * 0',
       ],
       matchDepTypes: [
         'devDependencies',
+        'action',
       ],
       matchUpdateTypes: [
         'minor',
@@ -124,6 +129,8 @@
         'pin',
         'digest',
       ],
+      // use 'auto' here so grouped PRs stay up-to-date automatically,
+      // since we batch them and want them merge-ready on Monday
       rebaseWhen: 'auto',
     },
   ],

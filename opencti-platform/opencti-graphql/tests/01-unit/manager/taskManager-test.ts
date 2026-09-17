@@ -70,24 +70,24 @@ const expectedWithoutNeighborsFieldPatch = [{
   value: [element.id],
 }];
 
+vi.mock('../../../src/database/middleware-loader', () => {
+  return {
+    fullRelationsList: vi.fn().mockImplementation((_c, _u, _t, args) => {
+      const { callback, fromOrToId } = args;
+      const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
+        return { fromId: id, toId: `${id}toId`, id: `${id}rel` };
+      }) : [];
+      if (callback) {
+        callback(mockRelations);
+      }
+      return mockRelations;
+    }),
+  };
+});
+
 describe('TaskMananger objectsFromElements tests', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  vi.mock('../../../src/database/middleware-loader', () => {
-    return {
-      fullRelationsList: vi.fn().mockImplementation((_c, _u, _t, args) => {
-        const { callback, fromOrToId } = args;
-        const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
-          return { fromId: id, toId: `${id}toId`, id: `${id}rel` };
-        }) : [];
-        if (callback) {
-          callback(mockRelations);
-        }
-        return mockRelations;
-      }),
-    };
   });
 
   it('buildContainersElementsBundle should return object', async () => {

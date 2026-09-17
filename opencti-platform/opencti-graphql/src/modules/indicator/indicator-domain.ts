@@ -5,7 +5,7 @@ import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegar
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
-import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
+import { DatabaseError, DOC_INCORRECT_INDICATOR_FORMAT, DOC_INDICATOR_PATTERN_EXCLUDED, FunctionalError, ValidationError } from '../../config/errors';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import {
@@ -235,7 +235,7 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   const formattedPattern = cleanupIndicatorPattern(loweredPatternType, patternValue);
   const check = await checkIndicatorSyntax(context, user, loweredPatternType, formattedPattern);
   if (check === false) {
-    throw FunctionalError(`Indicator of type ${patternType} is not correctly formatted.`, { doc_code: 'INCORRECT_INDICATOR_FORMAT' });
+    throw FunctionalError(`Indicator of type ${patternType} is not correctly formatted.`, { doc_code: DOC_INCORRECT_INDICATOR_FORMAT });
   }
 
   // Check that indicator is not excluded from an exclusion list
@@ -246,7 +246,7 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
       const exclusionListCheck = await checkObservableValue(observableValues[i]);
       if (exclusionListCheck) {
         throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
-          doc_code: 'INDICATOR_PATTERN_EXCLUDED',
+          doc_code: DOC_INDICATOR_PATTERN_EXCLUDED,
           excludedValue: exclusionListCheck.value,
           exclusionList: exclusionListCheck.listId,
         });

@@ -49,9 +49,9 @@ vi.mock('../../../src/database/middleware-loader', () => ({
 }));
 
 vi.mock('../../../src/database/session', () => ({
-  findUserSessions: vi.fn(async () => []),
-  killSessions: vi.fn(),
+  killOtherUserSessions: vi.fn(async () => []),
   killUserSessions: vi.fn(),
+  killUserSessionsOverLimit: vi.fn(async () => []),
 }));
 
 vi.mock('../../../src/database/entity-representative', () => ({

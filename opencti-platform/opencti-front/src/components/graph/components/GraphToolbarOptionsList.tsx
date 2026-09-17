@@ -1,10 +1,9 @@
 import List from '@mui/material/List';
-import ListItemText from '@mui/material/ListItemText';
 import Popover from '@mui/material/Popover';
-import React from 'react';
 import { ListItemButton } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { Checkbox } from '@filigran/design-system';
 
 interface GraphToolbarOptionsListProps<T> {
   onClose: () => void;
@@ -41,11 +40,10 @@ function GraphToolbarOptionsList<T>({
             onClick={() => onSelect(option)}
           >
             {isMultiple && (
-              <ListItemIcon sx={{ minWidth: 0 }}>
+              <ListItemIcon sx={{ minWidth: 0, marginRight: 1, pointerEvents: 'none' }}>
                 <Checkbox
-                  edge="start"
-                  disableRipple
-                  sx={{ paddingTop: 0.5, paddingBottom: 0.5 }}
+                  aria-label={getOptionText(option)}
+                  className="py-1"
                   checked={isOptionSelected(option)}
                 />
               </ListItemIcon>

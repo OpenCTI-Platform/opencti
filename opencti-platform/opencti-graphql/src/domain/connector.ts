@@ -137,7 +137,8 @@ export const updateConnectorWithConnectorInfo = async (
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
   }
-  await patchAttribute(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  const { element } = await patchAttribute<BasicStoreEntityConnector>(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  return element;
 };
 
 export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
@@ -149,8 +150,8 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   const scopes = connectorEntity.connector_scope ? connectorEntity.connector_scope.split(',') : [];
   await registerConnectorQueues(connectorEntity.id, connectorEntity.name, connectorEntity.connector_type, scopes);
 
-  await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
-  return storeLoadById(context, user, id, 'Connector').then((data) => completeConnector(data));
+  const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
+  return completeConnector(updatedConnector);
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
@@ -164,7 +165,7 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
-  return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+  return completeConnector(element);
 };
 interface RegisterOptions {
   built_in?: boolean;
@@ -228,7 +229,26 @@ export const managedConnectorEdit = async (
     connector_user_id: input.connector_user_id,
     manager_contract_configuration: contractConfigurations,
   };
+
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `creates ${ENTITY_TYPE_CONNECTOR} \`${input.name}\``,
+    context_data: {
+      entity_type: ENTITY_TYPE_CONNECTOR, id: input.id, input: {
+        id: input.id,
+        name: input.name,
+        title: input.title,
+        connector_user_id: input.connector_user_id,
+      },
+    },
+  });
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return element;
 };
 
@@ -525,7 +545,14 @@ export const unregisterConnectorForIngestion = async (context: AuthContext, id: 
   await connectorDelete(context, SYSTEM_USER, connectorId);
 };
 
-export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running: boolean }) => {
+type SynchronizerPatch = {
+  running?: boolean;
+  current_state_date?: Date | string;
+  last_execution_date?: Date | string;
+  last_execution_status?: string;
+};
+
+export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: SynchronizerPatch) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };

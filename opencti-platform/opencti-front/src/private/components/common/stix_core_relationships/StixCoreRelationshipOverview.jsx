@@ -13,7 +13,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Card from '../../../../components/common/card/Card';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import Label from '../../../../components/common/label/Label';
@@ -558,6 +558,7 @@ class StixCoreRelationshipContainer extends Component {
                   size="small"
                   onClick={this.handleToggleExpand.bind(this)}
                   classes={{ root: classes.buttonExpand }}
+                  aria-expanded={expanded}
                 >
                   {expanded ? (
                     <ExpandLessOutlined />

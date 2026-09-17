@@ -25,10 +25,10 @@
       "src/*": ["./src/*"],
       "tests_e2e/*": ["./tests_e2e/*"]
     },
-    "types": ["@testing-library/jest-dom", "vite/client"]
+    "types": ["vite/client"]
   },
   "include": [
-    "src", "index.d.ts", ".eslintrc.js", "tests_e2e"
+    "src", "index.d.ts", "vitest.d.ts", ".eslintrc.js", "tests_e2e"
   ],
   "references": [
     {

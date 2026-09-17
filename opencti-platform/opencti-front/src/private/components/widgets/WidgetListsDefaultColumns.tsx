@@ -1,5 +1,6 @@
 import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
 import useAttributes from '../../../utils/hooks/useAttributes';
+import CitizenshipDocument from '@components/entities/citizenshipDocuments/CitizenshipDocument';
 
 const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
@@ -365,6 +366,10 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'coverage_valid_to', label: 'Valid until', attributeType: 'date' },
     { attribute: 'coverage_last_result', label: 'Last result', attributeType: 'date' },
     { attribute: 'coverage_information', label: 'Detection' },
+  ],
+  CitizenshipDocument: [
+    { attribute: 'contact_information', label: 'Contact information', attributeType: 'markdown' },
+    { attribute: 'x_opencti_reliability', label: 'Reliability', attributeType: 'open_vocab' },
   ],
 };
 

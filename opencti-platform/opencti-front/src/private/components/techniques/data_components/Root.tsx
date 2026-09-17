@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useParams, useLocation, Route } from 'react-router-dom';
+import { useParams, useLocation, Route } from 'react-router';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';

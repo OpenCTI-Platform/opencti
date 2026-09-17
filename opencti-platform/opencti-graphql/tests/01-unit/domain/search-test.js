@@ -119,3 +119,28 @@ it('should generate search clauses for both activity and history fields in histo
   expect(topLevelActivityAndHistoryQueryString).toBeDefined();
   expect(nestedHistoryQueryString).toBeDefined();
 });
+
+it('should bound overlong search input instead of processing it in full', () => {
+  const MAX_SEARCH_LENGTH = 512;
+  const marker = 'shouldBeTruncatedAway';
+  // Marker sits well beyond the bound, so it must not survive into the query.
+  const overlongSearch = `${'a'.repeat(MAX_SEARCH_LENGTH + 50)}${marker}`;
+  const shouldSearch = elGenerateFullTextSearchShould(overlongSearch);
+  const queriesString = shouldSearch
+    .map((e) => e?.query_string?.query)
+    .filter((f) => isNotEmptyField(f))
+    .join(' ');
+  const matchesString = shouldSearch
+    .map((e) => e?.multi_match?.query)
+    .filter((f) => isNotEmptyField(f))
+    .join(' ');
+  expect(queriesString).not.toContain(marker);
+  expect(matchesString).not.toContain(marker);
+});
+
+it('should not throw when a percent-encoded sequence straddles the search length boundary', () => {
+  const MAX_SEARCH_LENGTH = 512;
+  // Place a percent-encoded byte so it gets cut mid-sequence by the length bound.
+  const searchWithSplitEncoding = `${'a'.repeat(MAX_SEARCH_LENGTH - 1)}%E0%A4%A`;
+  expect(() => elGenerateFullTextSearchShould(searchWithSplitEncoding)).not.toThrow();
+});

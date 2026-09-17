@@ -38,7 +38,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/techniques/courses_of_action';
     case 'Individual':
       return '/dashboard/entities/individuals';
-    case 'CitizenshipDocument':
+    case 'Citizenship-Document':
       return '/dashboard/entities/citizenship_documents';
     case 'Organization':
       return '/dashboard/entities/organizations';

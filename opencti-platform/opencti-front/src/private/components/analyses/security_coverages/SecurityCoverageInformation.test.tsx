@@ -1,15 +1,13 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import SecurityCoverageInformation from './SecurityCoverageInformation';
 import { screen } from '@testing-library/react';
 
-describe('Component: SecurityCoverageInformation', () => {
-  beforeAll(() => {
-    vi.mock('./SecurityCoverageScores', () => ({
-      default: () => (<></>),
-    }));
-  });
+vi.mock('./SecurityCoverageScores', () => ({
+  default: () => (<></>),
+}));
 
+describe('Component: SecurityCoverageInformation', () => {
   it('should display is covered : false and should not display the coverage scores section when there is no coverage_information', () => {
     testRender(
       <SecurityCoverageInformation

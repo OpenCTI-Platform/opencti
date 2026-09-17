@@ -20,7 +20,7 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import fileDownload from 'js-file-download';
 import { PlaybooksLinesPaginationQuery$variables } from '@components/data/__generated__/PlaybooksLinesPaginationQuery.graphql';
 import PlaybookPopoverToggleDialog from './PlaybookPopoverToggleDialog';

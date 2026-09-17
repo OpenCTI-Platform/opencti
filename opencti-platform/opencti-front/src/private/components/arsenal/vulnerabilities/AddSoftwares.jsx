@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
@@ -13,7 +14,7 @@ import Drawer from '../../common/drawer/Drawer';
 class AddSoftwares extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, search: '' };
+    this.state = { open: false, search: '', softwareCreation: false, creationKey: 0 };
   }
 
   handleOpen() {
@@ -21,7 +22,7 @@ class AddSoftwares extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false, search: '' });
+    this.setState({ open: false, search: '', softwareCreation: false });
   }
 
   handleSearch(keyword) {
@@ -33,8 +34,10 @@ class AddSoftwares extends Component {
     const paginationOptions = {
       search: this.state.search,
     };
+    // flex, not block: an inline-flex button in a block wrapper reserves a text
+    // descender below it, and the centred row lines up the wrapper, not the button.
     return (
-      <div>
+      <div style={{ display: 'flex' }}>
         <IconButton
           color="primary"
           aria-label="Add"
@@ -54,6 +57,17 @@ class AddSoftwares extends Component {
                 key="leftInput"
               />
             )],
+            right: [(
+              // Names the dialog it opens: StixCyberObservableCreation titles
+              // itself "Create an observable", whatever type it is seeded with.
+              <Button
+                key="createSoftware"
+                aria-label={t('Create an observable')}
+                onClick={() => this.setState({ softwareCreation: true })}
+              >
+                {t('Create an observable')}
+              </Button>
+            )],
           }}
         >
           <QueryRenderer
@@ -72,8 +86,17 @@ class AddSoftwares extends Component {
           />
         </Drawer>
         <StixCyberObservableCreation
-          display={this.state.open}
+          display={false}
           contextual={true}
+          speeddial={true}
+          // Remount on close: the host-driven close does not reset the type the
+          // dialog's own one does, so it would reopen on the last form.
+          key={this.state.creationKey}
+          open={this.state.softwareCreation}
+          handleClose={() => this.setState(({ creationKey }) => ({
+            softwareCreation: false,
+            creationKey: creationKey + 1,
+          }))}
           inputValue={this.state.search}
           paginationOptions={{ ...paginationOptions, types: ['Software'] }}
           paginationKey="Pagination_stixCyberObservables"

@@ -1,6 +1,22 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { loadEntity } from '../../../src/database/middleware';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { FilterMode } from '../../../src/generated/graphql';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { findByType } from '../../../src/domain/status';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+
+// Directly query the store for the WorkflowInstance attached to an entity,
+// mirroring the lookup used internally by workflow-domain.ts.
+const findWorkflowInstance = async (entityId: string) => loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+  filters: {
+    mode: FilterMode.And,
+    filters: [{ key: ['entity_id'], values: [entityId] }],
+    filterGroups: [],
+  },
+});
 
 const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
   mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
@@ -596,6 +612,262 @@ describe('Workflow Resolver', () => {
       });
       expect(publishResult.errors).toBeDefined();
       expect(publishResult.errors?.[0].message).toContain('validation errors');
+    });
+  });
+
+  describe('Workflow Instance eager creation', () => {
+    const simpleWorkflowDefinition = JSON.stringify({
+      id: 'eager-creation-workflow',
+      name: 'Eager Creation Workflow',
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'validated' }],
+      transitions: [{ from: 'open', to: 'validated', event: 'validate_event' }],
+    });
+
+    describe('on entity creation (createEntity)', () => {
+      let eagerWorkspaceId: string;
+
+      beforeAll(async () => {
+        // Configure and publish the workflow *before* creating the entity so that
+        // initializeEntityWorkflow (invoked from within createEntity) has a real
+        // definition to eagerly materialize an instance from.
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_ADD_MUTATION,
+          variables: { entityType: 'DraftWorkspace', definition: simpleWorkflowDefinition },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+          variables: { entityType: 'DraftWorkspace' },
+        });
+
+        const result = await queryAsAdmin({
+          query: CREATE_DRAFT_WORKSPACE_QUERY,
+          variables: { input: { name: 'Eager Creation Test Workspace' } },
+        });
+        eagerWorkspaceId = result.data?.draftWorkspaceAdd.id;
+      });
+
+      afterAll(async () => {
+        await queryAsAdmin({
+          query: DELETE_DRAFT_WORKSPACE_QUERY,
+          variables: { id: eagerWorkspaceId },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+          variables: { entityType: 'DraftWorkspace' },
+        });
+      });
+
+      it('should eagerly materialize a real WorkflowInstance as soon as the entity is created', async () => {
+        // No transition was ever triggered: if a WorkflowInstance is found here,
+        // it can only have come from createEntity's eager initializeEntityWorkflow call.
+        const instance = await findWorkflowInstance(eagerWorkspaceId);
+        expect(instance).not.toBeNull();
+      });
+    });
+
+    describe('on relationship creation (createRelation)', () => {
+      const CREATE_OBSERVABLE_MUTATION = gql`
+        mutation StixCyberObservableAdd($type: String!, $imei: IMEIAddInput, $iccid: ICCIDAddInput) {
+          stixCyberObservableAdd(type: $type, IMEI: $imei, ICCID: $iccid) {
+            id
+          }
+        }
+      `;
+      const DELETE_OBSERVABLE_MUTATION = gql`
+        mutation stixCyberObservableDelete($id: ID!) {
+          stixCyberObservableEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const CREATE_RELATION_MUTATION = gql`
+        mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+          stixCoreRelationshipAdd(input: $input) {
+            id
+            fromType
+            toType
+          }
+        }
+      `;
+
+      let fromId: string;
+      let toId: string;
+      let eagerRelationId: string;
+
+      beforeAll(async () => {
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_ADD_MUTATION,
+          variables: { entityType: 'uses', definition: simpleWorkflowDefinition },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+          variables: { entityType: 'uses' },
+        });
+
+        const fromResult = await queryAsAdmin({
+          query: CREATE_OBSERVABLE_MUTATION,
+          variables: { type: 'IMEI', imei: { value: '112222229999991' } },
+        });
+        fromId = fromResult.data?.stixCyberObservableAdd.id;
+        const toResult = await queryAsAdmin({
+          query: CREATE_OBSERVABLE_MUTATION,
+          variables: { type: 'ICCID', iccid: { value: '123456789012399991' } },
+        });
+        toId = toResult.data?.stixCyberObservableAdd.id;
+
+        const relationResult = await queryAsAdmin({
+          query: CREATE_RELATION_MUTATION,
+          variables: { input: { fromId, toId, relationship_type: 'uses' } },
+        });
+        eagerRelationId = relationResult.data?.stixCoreRelationshipAdd.id;
+      });
+
+      afterAll(async () => {
+        await queryAsAdmin({
+          query: DELETE_OBSERVABLE_MUTATION,
+          variables: { id: fromId },
+        });
+        await queryAsAdmin({
+          query: DELETE_OBSERVABLE_MUTATION,
+          variables: { id: toId },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+          variables: { entityType: 'uses' },
+        });
+      });
+
+      it('should eagerly materialize a real WorkflowInstance as soon as the relationship is created', async () => {
+        const instance = await findWorkflowInstance(eagerRelationId);
+        expect(instance).not.toBeNull();
+      });
+    });
+
+    describe('on legacy status field patch (updateAttribute)', () => {
+      const STIX_DOMAIN_OBJECT_ADD_MUTATION = gql`
+        mutation StixDomainObjectAdd($input: StixDomainObjectAddInput!) {
+          stixDomainObjectAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION = gql`
+        mutation StixDomainObjectFieldPatch($id: ID!, $input: [EditInput]!) {
+          stixDomainObjectEdit(id: $id) {
+            fieldPatch(input: $input) {
+              id
+            }
+          }
+        }
+      `;
+      const STIX_DOMAIN_OBJECT_DELETE_MUTATION = gql`
+        mutation StixDomainObjectDelete($id: ID!) {
+          stixDomainObjectEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+
+      let reportId: string;
+      let secondStatusId: string;
+
+      beforeAll(async () => {
+        // Create the Report *before* any workflow is configured for this type, so
+        // createEntity's eager initializeEntityWorkflow call is a no-op (no instance yet).
+        const createResult = await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_ADD_MUTATION,
+          variables: { input: { name: 'Legacy Status Patch Test Report', type: 'Report' } },
+        });
+        reportId = createResult.data?.stixDomainObjectAdd.id;
+
+        // Configure and publish the workflow *after* creation so that the entity
+        // currently has no WorkflowInstance, letting us exercise the lazy path.
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_ADD_MUTATION,
+          variables: { entityType: 'Report', definition: simpleWorkflowDefinition },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+          variables: { entityType: 'Report' },
+        });
+
+        const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
+        secondStatusId = statuses[1].id;
+      });
+
+      afterAll(async () => {
+        await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_DELETE_MUTATION,
+          variables: { id: reportId },
+        });
+        await queryAsAdmin({
+          query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+          variables: { entityType: 'Report' },
+        });
+      });
+
+      it('should lazily materialize a real WorkflowInstance when the legacy x_opencti_workflow_id is patched', async () => {
+        // No instance should exist yet: the workflow was configured after entity creation.
+        const beforePatch = await findWorkflowInstance(reportId);
+        expect(beforePatch).toBeUndefined();
+
+        await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
+          variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
+        });
+
+        // Patching the legacy status field should have lazily triggered initializeEntityWorkflow,
+        // which in turn calls ensureWorkflowInstance since no instance existed for this entity yet.
+        const afterPatch = await findWorkflowInstance(reportId);
+        expect(afterPatch).not.toBeNull();
+      });
+    });
+  });
+
+  describe('Workflow Instance deletion cleanup', () => {
+    let cleanupWorkspaceId: string;
+
+    beforeAll(async () => {
+      const result = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'Cleanup Test Workspace' } },
+      });
+      cleanupWorkspaceId = result.data?.draftWorkspaceAdd.id;
+
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_ADD_MUTATION,
+        variables: { entityType: 'DraftWorkspace', definition: workflowDefinition },
+      });
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+        variables: { entityType: 'DraftWorkspace' },
+      });
+      // The WorkflowInstance is materialized lazily on the first transition.
+      await queryAsAdmin({
+        query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+        variables: { entityId: cleanupWorkspaceId, eventName: 'validate_event' },
+      });
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+        variables: { entityType: 'DraftWorkspace' },
+      });
+    });
+
+    it('should remove the WorkflowInstance when its parent entity is deleted', async () => {
+      const before = await findWorkflowInstance(cleanupWorkspaceId);
+      expect(before).not.toBeNull();
+
+      await queryAsAdmin({
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: cleanupWorkspaceId },
+      });
+
+      const after = await findWorkflowInstance(cleanupWorkspaceId);
+      expect(after).toBeUndefined();
     });
   });
 });

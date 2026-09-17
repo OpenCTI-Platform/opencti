@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Field, useFormikContext } from 'formik';
 import Box from '@mui/material/Box';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
 import ConfidenceField from '@components/common/form/ConfidenceField';

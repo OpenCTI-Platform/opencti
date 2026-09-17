@@ -20,12 +20,9 @@ import { buildRefRelationKey } from '../../../schema/general';
 import { getDraftContext } from '../../../utils/draftContext';
 import { DRAFT_OPERATION_CREATE } from '../../draftWorkspace/draftOperations';
 import { getDraftFilePrefix } from '../../../database/draft-utils';
+import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from './document-types';
 
-export const SUPPORT_STORAGE_PATH = 'support';
-export const IMPORT_STORAGE_PATH = 'import';
-export const EMBEDDED_STORAGE_PATH = 'embedded';
-export const EXPORT_STORAGE_PATH = 'export';
-export const FROM_TEMPLATE_STORAGE_PATH = 'fromTemplate';
+export { SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH };
 
 export const DELETABLE_FILE_STATUSES = ['complete', 'timeout'];
 export const UPLOAD_STATUS_VALUES = Object.values(State);

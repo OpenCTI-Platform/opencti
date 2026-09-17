@@ -1,8 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { IncidentEditionOverview_incident$key } from '@components/events/incidents/__generated__/IncidentEditionOverview_incident.graphql';
 import { IncidentEditionDetails_incident$key } from '@components/events/incidents/__generated__/IncidentEditionDetails_incident.graphql';
@@ -12,6 +9,7 @@ import IncidentEditionDetails from './IncidentEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 interface IncidentEditionContainerProps {
   queryRef: PreloadedQuery<IncidentEditionContainerQuery>;
@@ -42,8 +40,8 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
 }) => {
   const { t_i18n } = useFormatter();
   const { incident } = usePreloadedQuery(IncidentEditionQuery, queryRef);
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleChangeTab = (event: React.SyntheticEvent, value: number) => setCurrentTab(value);
+  const [currentTab, setCurrentTab] = useState('overview');
+  const enableReferences = useIsEnforceReference('Incident');
 
   if (incident === null) {
     return <ErrorNotFound />;
@@ -58,28 +56,29 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
     >
       {({ onClose }) => (
         <>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={currentTab} onChange={handleChangeTab}>
-              <Tab label={t_i18n('Overview')} />
-              <Tab label={t_i18n('Details')} />
-            </Tabs>
-          </Box>
-          {currentTab === 0 && (
-            <IncidentEditionOverview
-              incidentRef={incident as IncidentEditionOverview_incident$key}
-              enableReferences={useIsEnforceReference('Incident')}
-              context={incident?.editContext}
-              handleClose={onClose}
-            />
-          )}
-          {currentTab === 1 && (
-            <IncidentEditionDetails
-              incidentRef={incident as IncidentEditionDetails_incident$key}
-              enableReferences={useIsEnforceReference('Incident')}
-              context={incident?.editContext}
-              handleClose={onClose}
-            />
-          )}
+          <Tabs value={currentTab} onValueChange={setCurrentTab}>
+            <TabsList>
+              <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+              <TabsTrigger value="details">{t_i18n('Details')}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview">
+              <IncidentEditionOverview
+                incidentRef={incident as IncidentEditionOverview_incident$key}
+                enableReferences={enableReferences}
+                context={incident?.editContext}
+                handleClose={onClose}
+              />
+            </TabsContent>
+            <TabsContent value="details">
+              <IncidentEditionDetails
+                incidentRef={incident as IncidentEditionDetails_incident$key}
+                enableReferences={enableReferences}
+                context={incident?.editContext}
+                handleClose={onClose}
+              />
+            </TabsContent>
+          </Tabs>
         </>
       )}
     </Drawer>

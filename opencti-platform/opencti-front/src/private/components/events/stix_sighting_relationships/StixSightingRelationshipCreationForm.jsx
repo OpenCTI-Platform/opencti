@@ -79,13 +79,6 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     color: theme.palette.text.primary,
   },
-  buttonBack: {
-    marginTop: 20,
-    float: 'left',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
 }));
 
 const STIX_SIGHTING_TYPE = 'stix-sighting-relationship';
@@ -255,13 +248,13 @@ const StixSightingRelationshipCreationForm = ({
             </div>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="attribute_count"
               required={(mandatoryAttributes.includes('attribute_count'))}
               label={t_i18n('Count')}
               fullWidth={true}
               type="number"
-              style={{ marginTop: 20 }}
+              className="mt-5"
             />
             <ConfidenceField
               entityType="stix-sighting-relationship"
@@ -273,7 +266,7 @@ const StixSightingRelationshipCreationForm = ({
               textFieldProps={{
                 label: t_i18n('First seen'),
                 required: (mandatoryAttributes.includes('first_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -284,7 +277,7 @@ const StixSightingRelationshipCreationForm = ({
               textFieldProps={{
                 label: t_i18n('Last seen'),
                 required: (mandatoryAttributes.includes('last_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -324,18 +317,19 @@ const StixSightingRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            {typeof handleResetSelection === 'function' && (
-              <div className={classes.buttonBack}>
-                <Button
-                  variant="secondary"
-                  onClick={handleResetSelection}
-                  disabled={isSubmitting}
-                >
-                  {t_i18n('Back')}
-                </Button>
-              </div>
-            )}
             <FormButtonContainer>
+              {typeof handleResetSelection === 'function' && (
+                // A wrapper, not `sx`: the product Button falls back to MUI when given one.
+                <div style={{ marginRight: 'auto' }}>
+                  <Button
+                    variant="secondary"
+                    onClick={handleResetSelection}
+                    disabled={isSubmitting}
+                  >
+                    {t_i18n('Back')}
+                  </Button>
+                </div>
+              )}
               <Button
                 variant="secondary"
                 onClick={handleReset}

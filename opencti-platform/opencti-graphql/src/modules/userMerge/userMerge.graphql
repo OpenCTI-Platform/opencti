@@ -1,0 +1,55 @@
+# Rationale for the defaults and the guard-rails lives in userMerge-domain.ts, not here:
+# descriptions in this file are printed into the generated schema and exposed through
+# introspection, so they are kept to what an API consumer needs.
+
+enum UserMergeRightsStrategy {
+    STRICT
+    UNION
+}
+
+enum UserMergeStatus {
+    RUNNING
+    SUCCESS
+    FAILED
+}
+
+input UserMergeOptions {
+    dryRun: Boolean = true
+    rightsStrategy: UserMergeRightsStrategy = STRICT
+}
+
+type UserMergeResult {
+    id: ID!
+    source_id: ID!
+    target_id: ID!
+    dry_run: Boolean!
+    rights_strategy: UserMergeRightsStrategy!
+    status: UserMergeStatus!
+    started_at: DateTime!
+    completed_at: DateTime
+    message: String
+}
+
+type UserMergeJournalEntry {
+    id: ID!
+    merge_id: ID!
+    source_id: ID!
+    target_id: ID!
+    handler: String!
+    dry_run: Boolean!
+    status: UserMergeStatus!
+    started_at: DateTime!
+    completed_at: DateTime
+    message: String
+}
+
+extend type Query {
+    # mergeId is optional: an operator who lost the connection also lost the id returned by
+    # the mutation, so requiring it would defeat the point of the query.
+    userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
+}
+
+extend type Mutation {
+    # Runs synchronously; follow userMergeJournal to observe a run whose connection was cut.
+    userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult! @auth(for: [BYPASS]) @ff(flags: ["MERGE_USERS"])
+}

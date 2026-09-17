@@ -138,6 +138,7 @@ const AccordionAttackPattern = ({
               event.stopPropagation();
               setExpanded(!expanded);
             }}
+            aria-expanded={expanded}
           >
             <ArrowForwardIosSharpIcon sx={{
               fontSize: '0.9rem',

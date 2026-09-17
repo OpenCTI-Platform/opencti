@@ -36,6 +36,7 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   enforce_reference: boolean;
   attributes_configuration?: string;
   workflow_configuration: boolean;
+  sync_workflow_status_by_name?: boolean;
   workflow_id?: string | null;
   availableSettings?: string[];
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
@@ -50,6 +51,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   enforce_reference: boolean;
   attributes_configuration?: string;
   workflow_configuration: boolean;
+  sync_workflow_status_by_name?: boolean;
   availableSettings?: string[];
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;
@@ -75,6 +77,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   enforce_reference: boolean;
   attributes_configuration?: string;
   workflow_configuration: boolean;
+  sync_workflow_status_by_name?: boolean;
   workflow_id?: string | null;
   availableSettings?: string[];
   overviewLayoutCustomization?: Array<string>;
@@ -89,6 +92,7 @@ export interface StixEntitySetting extends StixObject {
   enforce_reference: boolean;
   attributes_configuration?: string;
   workflow_configuration: boolean;
+  sync_workflow_status_by_name: boolean;
   workflow_id?: string | null;
   available_settings?: string[];
   templates?: Array<FintelTemplate>;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import StixSightingRelationship from '@components/events/stix_sighting_relationships/StixSightingRelationship';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservableKnowledgeEntities from './StixCyberObservableEntities';

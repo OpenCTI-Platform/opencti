@@ -14,16 +14,22 @@ import {
 } from './stream/stream-utils';
 import { createRedisClient, getClientBase, getClientXRANGE } from './redis';
 import { isEmptyField, wait, waitInSec } from './utils';
-import { utcDate } from '../utils/format';
+import { streamEventId, utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { asyncMap } from '../utils/data-processing';
 import { roundRate } from '../utils/consumer-metrics';
+import { getFileContent, rawListObjects, rawUpload } from './raw-file-storage';
+// Self namespace import: referencing isEventTooLarge through the module namespace (instead of a direct
+// local call) allows it to be spied/mocked in tests (e.g. vi.spyOn(redisStream, 'isEventTooLarge')).
+import * as redisStreamSelf from './redis-stream';
 
 // region opencti data stream
 const REDIS_LIVE_STREAM_NAME = `${REDIS_PREFIX}${LIVE_STREAM_NAME}`;
 const REDIS_NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}${NOTIFICATION_STREAM_NAME}`;
 const REDIS_ACTIVITY_STREAM_NAME = `${REDIS_PREFIX}${ACTIVITY_STREAM_NAME}`;
 const streamTrimming = conf.get('redis:trimming') || 0;
+const streamMaxEventSize = conf.get('redis:max_event_length') || 0;
+const streamMaxEventFileKey = 'event_file_id';
 
 const convertStreamName = (streamName = LIVE_STREAM_NAME) => {
   switch (streamName) {
@@ -58,24 +64,78 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
   return { id, event: obj.type, data: obj };
 };
 
-const rawPushToStream = async <T extends BaseEvent> (event: T) => {
+export const STREAM_FILE_DIRECTORY = `streams/${REDIS_LIVE_STREAM_NAME}/`;
+export const isEventTooLarge = (eventStreamData: any) => {
+  const eventStreamDataBlob = new Blob(eventStreamData);
+  const totalStreamEventSize = eventStreamDataBlob.size;
+  return { isTooLarge: streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize, eventSize: totalStreamEventSize };
+};
+export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const redisClient = getClientBase();
-  const eventStreamData = mapJSToStream(event);
+  let eventStreamData = mapJSToStream(event);
+  const { isTooLarge, eventSize } = redisStreamSelf.isEventTooLarge(eventStreamData);
+  if (isTooLarge) {
+    // Add salt to prevent time collision
+    const randomSalt = Math.floor(Math.random() * 1000);
+    const eventId = streamEventId(null, randomSalt);
+    const filePath = `${STREAM_FILE_DIRECTORY}${eventId}`;
+    const fileContent = JSON.stringify(eventStreamData);
+    await rawUpload(filePath, fileContent);
+    eventStreamData = [streamMaxEventFileKey, filePath];
+    logApp.info('[STREAM] Event too large for redis, offloaded to file storage', {
+      filePath,
+      eventSize,
+      maxEventSize: streamMaxEventSize,
+      eventType: event.type,
+    });
+  }
   if (streamTrimming) {
     await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData);
   } else {
     await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventStreamData);
   }
 };
+// Count the stream events that have been offloaded to file storage (events too large for redis).
+// The listing is paginated so the count stays accurate beyond a single S3 page (default 1000 keys).
+export const countOffloadedStreamEvents = async (): Promise<number> => {
+  let count = 0;
+  let truncated = true;
+  let continuationToken: string | undefined;
+  while (truncated) {
+    const response = await rawListObjects(STREAM_FILE_DIRECTORY, true, continuationToken);
+    count += response.KeyCount ?? 0;
+    truncated = response.IsTruncated ?? false;
+    continuationToken = truncated ? response.NextContinuationToken : undefined;
+  }
+  return count;
+};
+export const processStreamData = async ([id, data]: any) => {
+  if (data.includes(streamMaxEventFileKey)) {
+    const filePath = data[1];
+    try {
+      const fileContent = await getFileContent(filePath);
+      if (!fileContent) {
+        logApp.warn('Stream event file could not be found', { id, filePath });
+        return null;
+      }
+      const fileResult = JSON.parse(fileContent);
+      return mapStreamToJS([id, fileResult]);
+    } catch (error) {
+      logApp.warn('Error fetching file stream event, skipping event', { id, filePath, error });
+      return null;
+    }
+  }
+  return mapStreamToJS([id, data]);
+};
 const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
-  const transform = (r: any) => mapStreamToJS(r);
-  const filter = (s: any) => (withInternal ? true : (s.data.scope ?? 'external') === 'external');
+  const transform = (r: any) => processStreamData(r);
+  const filter = (s: any) => s && (withInternal ? true : (s.data.scope ?? 'external') === 'external');
   const events = await asyncMap(results, transform, filter);
   const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;
   await callback(events, lastEventId);
   return lastEventId;
 };
-const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
+export const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const redisStreamName = convertStreamName(streamName);
   const res: any = await getClientBase().xinfo('STREAM', redisStreamName);
   const info: any = R.fromPairs(R.splitEvery(2, res) as any);

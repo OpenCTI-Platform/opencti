@@ -88,6 +88,7 @@
     },
     "health_access_key": "ChangeMe",
     "request_timeout": 1200000,
+    "keep_alive_timeout": 65000,
     "session_timeout": 1200000,
     "session_cookie": false,
     "child_locking_process": {
@@ -119,8 +120,7 @@
       "file_max_size": 10000000
     },
     "performance_logger": false,
-    "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark3/{z}/{x}/{y}.png",
-    "map_tile_server_light": "https://map.opencti.io/styles/filigran-light3/{z}/{x}/{y}.png",
+    "map_bundled_file_path": "./static/maps/world.pmtiles",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
@@ -381,7 +381,8 @@
     "ca": [],
     "port": 6379,
     "host_ip_family": 4,
-    "trimming": 2000000
+    "trimming": 2000000,
+    "max_event_length": 0
   },
   "elasticsearch": {
     "index_prefix": "opencti",

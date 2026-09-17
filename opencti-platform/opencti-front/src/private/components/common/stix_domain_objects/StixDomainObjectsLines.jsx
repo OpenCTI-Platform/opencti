@@ -12,7 +12,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { ExpandMore } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
@@ -385,6 +385,12 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
+          ... on CitizenshipDocument {
+            name
+          }
+          ... on SecurityPlatform {
+            name
+          }
           createdBy {
             ... on Identity {
               id
@@ -564,6 +570,12 @@ const StixDomainObjectsLines = createPaginationContainer(
                 name
               }
               ... on Task {
+                name
+              }
+              ... on CitizenshipDocument {
+                name
+              }
+              ... on SecurityPlatform {
                 name
               }
               objectLabel {

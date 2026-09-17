@@ -1,9 +1,11 @@
 import type { Request, Response } from 'express';
+import type { AuthContext } from '../types/user';
 import crypto from 'node:crypto';
 import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
 import {
+  getKeepAliveTimeout,
   getPublicAuthorizedDomainsFromConfiguration,
   getRateProtectionIpSkipList,
   getRateProtectionIpSkipRanges,
@@ -16,6 +18,7 @@ import {
 import type { HelmetOptions } from 'helmet';
 import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
+import type { Server } from 'node:http';
 
 export const setCookieError = (res: Response, message: string) => {
   // Map error messages to safe, non-sensitive codes exposed to the client.
@@ -51,6 +54,24 @@ export const extractRefererPathFromReq = (req: Request) => {
     // prevent any invalid referer
     logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
   }
+};
+
+// Whether this request is driven by a signed-in person in a browser, as opposed
+// to an API token.
+//
+// `context.user_with_session` alone does not answer that: it only records that
+// a session cookie was present, while `authenticateUserFromRequest` returns on
+// the bearer-token branch before it ever looks at the session (`domain/user.js`).
+// A request carrying a token *and* any user's cookie therefore authenticates as
+// the token identity while still looking session-backed. Require that the
+// identity actually resolved from the session, by matching it against the
+// session user and refusing any request that presents an Authorization header
+// at all.
+export const isBrowserSessionRequest = (req: Request, context: AuthContext): boolean => {
+  if (req.headers.authorization) return false;
+  if (!context.user_with_session) return false;
+  const sessionUserId = req.session?.user?.id;
+  return !!sessionUserId && sessionUserId === context.user?.id;
 };
 
 /**
@@ -285,4 +306,18 @@ export const buildRateLimiterOptions = (): Options => {
     },
   };
   return rateLimitOptions as Options;
+};
+
+/**
+ * Align the server keep-alive with the idle timeout of the front load balancer / reverse proxy.
+ * The Node.js default of 5s is shorter than the idle timeout of a standard proxy (60s for an AWS
+ * ALB), so the platform closes idle sockets the proxy still considers usable and the clients get
+ * intermittent 502. headersTimeout is left to the Node.js default: it only bounds the reception of
+ * the headers of a request already started and never counts keep-alive idle time, so it does not
+ * have to be kept above keepAliveTimeout.
+ */
+export const applyKeepAliveTimeout = (server: Server) => {
+  const keepAliveTimeout = getKeepAliveTimeout();
+  server.keepAliveTimeout = keepAliveTimeout;
+  return keepAliveTimeout;
 };

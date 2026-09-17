@@ -1,6 +1,6 @@
 import React from 'react';
+import { Paper } from '@filigran/design-system';
 import { Field } from 'formik';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
@@ -29,8 +29,10 @@ const AuthProviderUserInfoFields = ({
   const { t_i18n } = useFormatter();
   const prefix = fieldPrefix ? `${fieldPrefix}.` : '';
 
+  // FDS-WORKAROUND #36: top margin posed in `style`, the shipped sheet has no
+  // `mt-*` — remove when it ships consumer utilities — see LIBRARY-FEEDBACK.md #36
   return (
-    <Paper variant="outlined" sx={{ mt: 2.5, borderRadius: 1, overflow: 'hidden' }}>
+    <Paper padding={0} className="overflow-hidden" style={{ marginTop: 20 }}>
       <Box sx={{ px: 2, py: 1.5, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center' }}>
         <Typography variant="caption" color="textSecondary">
           {t_i18n('User information mapping')}
@@ -49,41 +51,41 @@ const AuthProviderUserInfoFields = ({
       >
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}email_expr`}
           label={t_i18n('Email expression')}
           placeholder={emailPlaceholder}
           fullWidth
           required={emailRequired}
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}name_expr`}
           label={t_i18n('Name expression')}
           placeholder={namePlaceholder}
           fullWidth
           required={nameRequired}
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}firstname_expr`}
           label={t_i18n('First name expression')}
           placeholder={firstnamePlaceholder}
           fullWidth
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
         <Field
           component={TextField}
-          variant="standard"
+          variant="outlined"
           name={`${prefix}lastname_expr`}
           label={t_i18n('Last name expression')}
           placeholder={lastnamePlaceholder}
           fullWidth
-          style={{ marginTop: 10 }}
+          className="mt-2.5"
         />
       </Box>
     </Paper>

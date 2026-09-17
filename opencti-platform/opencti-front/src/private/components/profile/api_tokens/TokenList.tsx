@@ -1,5 +1,10 @@
 import { Delete } from '@mui/icons-material';
-import { Alert, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { IconButton, Paper } from '@filigran/design-system';
+// MIXED FILE, declared as such: the <Paper> tag is the library's, but `TableContainer
+// component=` has to stay MUI's Paper — a component passed to MUI as a prop receives MUI props
+// (`variant`, `sx`) that the library Paper does not understand.
+import MuiPaper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -111,7 +116,7 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
 
   if (tokens.length === 0) {
     return (
-      <Paper variant="outlined">
+      <Paper padding={0}>
         <div className={classes.empty}>
           {t_i18n('No tokens found. Click "Generate Token" to create one.')}
         </div>
@@ -121,7 +126,7 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
 
   return (
     <div>
-      <TableContainer component={Paper} variant="outlined" sx={{ border: 'none' }}>
+      <TableContainer component={MuiPaper} variant="outlined" sx={{ border: 'none' }}>
         <Table
           size="small"
           aria-label="token list"
@@ -158,13 +163,13 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
                 <TableCell align="right">
                   <Tooltip title={t_i18n('Revoke')}>
                     <IconButton
+                      variant="default"
+                      priority="tertiary"
+                      size="sm"
                       aria-label="revoke"
-                      color="primary"
                       onClick={() => handleOpenDelete({ id: token.id, name: token.name || '' })}
-                      size="small"
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
+                      icon={<Delete fontSize="small" />}
+                    />
                   </Tooltip>
                 </TableCell>
               </TableRow>

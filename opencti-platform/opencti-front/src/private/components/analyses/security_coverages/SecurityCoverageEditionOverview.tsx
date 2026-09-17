@@ -20,8 +20,7 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import { CoverageInformationFieldEdit } from '../../common/form/CoverageInformationField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 
 const SECURITY_COVERAGE_TYPE = 'Security-Coverage';
@@ -279,11 +278,11 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
         values,
         setFieldValue,
       }) => (
-        <div style={{ margin: '20px 0 20px 0' }}>
+        <div style={{ margin: '0px 0 20px 0' }}>
           <AlertConfidenceForEntity entity={securityCoverageData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -332,8 +331,8 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             setFieldValue={setFieldValue}
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="type_affinity"
             onSubmit={handleSubmitField}
             onChange={(name: string, value: string) => setFieldValue(name, value)}
@@ -341,9 +340,9 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem key="ENDPOINT" value="ENDPOINT">
+            <SelectItem key="ENDPOINT" value="ENDPOINT">
               {t_i18n('Endpoint')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           <OpenVocabField
             label={t_i18n('Platform(s) affinity')}
@@ -373,12 +372,12 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="external_uri"
                 onSubmit={handleSubmitField}
                 label={t_i18n('Source external link')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}
