@@ -1,16 +1,16 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const sortJSONKeys = (json) => {
+const sortJSONKeys = (json: Record<string, unknown>) => {
   const sortedKeys = Object.keys(json).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-  const sortedJSON = {};
+  const sortedJSON: Record<string, unknown> = {};
   sortedKeys.forEach((key) => {
     sortedJSON[key] = json[key];
   });
   return sortedJSON;
 };
 
-const sortJSONFile = async (filePath) => {
+const sortJSONFile = async (filePath: string) => {
   try {
     // Read JSON file
     const jsonData = JSON.parse(await readFile(filePath, 'utf8'));
@@ -27,7 +27,7 @@ const sortJSONFile = async (filePath) => {
   }
 };
 
-const sortAllJSONFiles = async (dirPath) => {
+const sortAllJSONFiles = async (dirPath: string) => {
   try {
     // Get list of files in directory
     const files = await readdir(dirPath);

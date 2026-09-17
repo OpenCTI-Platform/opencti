@@ -7,21 +7,12 @@ const jsxTsxFileExtensions = ['.jsx', '.tsx'];
 const t_i18nPatternSource = String.raw`t_i18n\((['"])((?:\\.|(?!\1).)*)\1\s*[,)]`;
 const searchPattern = new RegExp(t_i18nPatternSource, 'g');
 const labelSearchPattern = /label:\s'(\w+)',/g;
-const labelExecPattern = /label:\s'(\w+)',/;
-const extractedValues = {};
+const extractedValues: Record<string, string> = {};
 
 // extract all translation in the t_i18n() formatter from frontend
 // and add them in opencti-front/lang/en.json
 
-const extractValueFromPattern = (pattern) => {
-  const match = new RegExp(t_i18nPatternSource).exec(pattern);
-  if (!match) return null;
-  const [, quote, value] = match;
-  // unescape the quote char that was escaped for JS syntax reasons only
-  return value.replace(new RegExp(`\\\\${quote}`, 'g'), quote);
-};
-
-const extractI18nValues = async (directory) => {
+const extractI18nValues = async (directory: string) => {
   try {
     const files = await readdir(directory);
     for (const file of files) {
@@ -33,28 +24,21 @@ const extractI18nValues = async (directory) => {
       } else if (stats.isFile() && jsxTsxFileExtensions.includes(path.extname(filePath))) {
         const data = await readFile(filePath, 'utf8');
         if (filePath === 'src\\components\\dataGrid\\dataTableUtils.tsx') {
-          const labelMatches = data.match(labelSearchPattern);
-          if (labelMatches) {
-            labelMatches.forEach((m) => {
-              const value = labelExecPattern.exec(m)[1];
-              extractedValues[value] = value;
-            });
+          for (const [, value] of data.matchAll(labelSearchPattern)) {
+            extractedValues[value] = value;
           }
         }
-        const matches = data.match(searchPattern);
-
-        if (matches) {
-          matches.forEach((match) => {
-            const value = extractValueFromPattern(match);
-            if (value) {
-              extractedValues[value] = value;
-            }
-          });
+        for (const [, quote, captured] of data.matchAll(searchPattern)) {
+          // unescape the quote char that was escaped for JS syntax reasons only
+          const value = captured.replace(new RegExp(`\\\\${quote}`, 'g'), quote);
+          if (value) {
+            extractedValues[value] = value;
+          }
         }
       }
     }
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`Error: ${(error instanceof Error ? error.message : String(error))}`);
   }
 };
 
@@ -68,7 +52,7 @@ const mergeWithExistingData = async () => {
     // Append only the new values that do not already exist in the file
     console.log('--- Add Frontend new key ---');
     for (const key in extractedValues) {
-      if (!updatedValues.hasOwnProperty(key)) {
+      if (!Object.prototype.hasOwnProperty.call(updatedValues, key)) {
         console.log(key);
         updatedValues[key] = extractedValues[key];
       }
@@ -76,14 +60,14 @@ const mergeWithExistingData = async () => {
     console.log('--- End ---');
     // Write the merged values back to the file
     const sortedKeys = Object.keys(updatedValues).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    const sortedValues = {};
+    const sortedValues: Record<string, string> = {};
     sortedKeys.forEach((key) => {
       sortedValues[key] = updatedValues[key];
     });
     await writeFile(englishTranslationFiles, JSON.stringify(sortedValues, null, 2));
     console.log('File written successfully');
   } catch (error) {
-    console.error(`Error merging with existing data: ${error.message}`);
+    console.error(`Error merging with existing data: ${(error instanceof Error ? error.message : String(error))}`);
   }
 };
 
