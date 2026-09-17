@@ -78,7 +78,7 @@ export interface GraphqlCatalog {
 }
 
 export interface GraphqlCatalogRevision {
-  id: string;
+  catalog_id: string;
   revision: string | null;
 }
 // endregion

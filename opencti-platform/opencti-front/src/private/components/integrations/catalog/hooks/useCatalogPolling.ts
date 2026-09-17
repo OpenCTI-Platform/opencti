@@ -12,9 +12,9 @@ type UseCatalogPollingProps = {
 type RevisionByCatalogId = Map<string, string | null>;
 
 const toRevisionMap = (
-  revisions: ReadonlyArray<{ id: string; revision: string | null | undefined }> | null | undefined,
+  revisions: ReadonlyArray<{ catalog_id: string; revision: string | null | undefined }> | null | undefined,
 ): RevisionByCatalogId => {
-  return new Map((revisions ?? []).map((entry) => [entry.id, entry.revision ?? null]));
+  return new Map((revisions ?? []).map((entry) => [entry.catalog_id, entry.revision ?? null]));
 };
 
 const haveRevisionsChanged = (baseline: RevisionByCatalogId, next: RevisionByCatalogId): boolean => {

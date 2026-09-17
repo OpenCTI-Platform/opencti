@@ -3867,7 +3867,7 @@ export type CatalogEdge = {
 
 export type CatalogRevision = {
   __typename?: 'CatalogRevision';
-  id: Scalars['ID']['output'];
+  catalog_id: Scalars['String']['output'];
   revision?: Maybe<Scalars['String']['output']>;
 };
 
@@ -43329,7 +43329,7 @@ export type CatalogEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type CatalogRevisionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogRevision'] = ResolversParentTypes['CatalogRevision']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  catalog_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revision?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 

@@ -12,7 +12,7 @@ vi.mock('../../../../../relay/environment', () => ({
 }));
 
 type RevisionsPayload = {
-  catalogsRevisions: Array<{ id: string; revision: string | null }>;
+  catalogsRevisions: Array<{ catalog_id: string; revision: string | null }>;
 };
 
 const setDocumentHidden = (hidden: boolean) => {
@@ -55,8 +55,8 @@ describe('useCatalogPolling', () => {
 
   it('seeds baseline without triggering a full catalogs refresh', async () => {
     mockFetchSequence([
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
     ]);
     const onChanged = vi.fn();
 
@@ -83,9 +83,9 @@ describe('useCatalogPolling', () => {
 
   it('refreshes catalogs when a revision changes and updates baseline', async () => {
     mockFetchSequence([
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-2' }] },
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-2' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] },
     ]);
     const onChanged = vi.fn();
 
@@ -110,8 +110,8 @@ describe('useCatalogPolling', () => {
   it('retries after a failed seed without triggering a refresh', async () => {
     mockFetchSequence([
       new Error('network down'),
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
     ]);
     const onChanged = vi.fn();
 
@@ -131,9 +131,9 @@ describe('useCatalogPolling', () => {
 
   it('pauses polling while hidden and performs an immediate check when visible again', async () => {
     mockFetchSequence([
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
     ]);
 
     renderHook(() => useCatalogPolling({ enabled: true, onCatalogRevisionsChanged: vi.fn() }));
@@ -160,8 +160,8 @@ describe('useCatalogPolling', () => {
 
   it('stops polling on unmount', async () => {
     mockFetchSequence([
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
-      { catalogsRevisions: [{ id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
     ]);
 
     const { unmount } = renderHook(() => useCatalogPolling({ enabled: true, onCatalogRevisionsChanged: vi.fn() }));

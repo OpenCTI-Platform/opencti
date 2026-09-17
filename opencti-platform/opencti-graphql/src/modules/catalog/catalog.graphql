@@ -17,7 +17,7 @@ type ExtendedContract {
 }
 
 type CatalogRevision {
-  id: ID!
+  catalog_id: String!
   revision: String
 }
 

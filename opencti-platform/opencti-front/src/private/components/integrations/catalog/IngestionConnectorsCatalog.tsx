@@ -6,7 +6,7 @@ import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catal
 export const ingestionConnectorsCatalogRevisionsQuery = graphql`
   query IngestionConnectorsCatalogRevisionsQuery {
     catalogsRevisions {
-      id
+      catalog_id
       revision
     }
   }

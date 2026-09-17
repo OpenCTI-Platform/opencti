@@ -477,7 +477,7 @@ export const findCatalogRevisions = async (context: AuthContext, user: AuthUser)
   try {
     const catalogsRevisions = await findCatalogsRevisions(context, user);
     const revisions = catalogsRevisions.map((catalog) => ({
-      id: catalog.catalog_id,
+      catalog_id: catalog.catalog_id,
       revision: catalog.revision ?? null,
     }));
     logApp.debug('[OPENCTI-MODULE] [catalog] Catalog revisions query resolved', {
