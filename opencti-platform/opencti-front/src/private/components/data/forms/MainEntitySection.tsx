@@ -7,12 +7,13 @@ import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import type { EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import DraftDefaultsSection from './DraftDefaultsSection';
+import { removeFieldsSupersededByParsedMapping } from './FormUtils';
 import useStyles from './useFormSchemaEditorStyles';
 
 export interface MainEntitySectionProps {
   formData: FormBuilderData;
   handleFieldChange: (path: string, value: unknown) => void;
-  toggleParsedMode: (entityId: string | 'main') => void;
+  toggleParsedMode: (entityId: string | 'main', mode: 'multiple' | 'parsed') => void;
   updateFormData: (updater: (prev: FormBuilderData) => FormBuilderData) => void;
   entityTypes: EntityTypeOption[];
   handleMainEntityTypeChange: (value: string) => void;
@@ -113,7 +114,7 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
       {formData.mainEntityMultiple && !formData.mainEntityLookup && (
         <Select
           value={formData.mainEntityFieldMode}
-          onValueChange={() => toggleParsedMode('main')}
+          onValueChange={(value) => toggleParsedMode('main', value as 'multiple' | 'parsed')}
         >
           <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>
           <SelectTrigger className="w-full">
@@ -160,26 +161,11 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
             value={formData.mainEntityParseFieldMapping || ''}
             onValueChange={(value) => {
               const newMapping = value;
-              updateFormData((prev) => {
-                const wasFirstSelection = !prev.mainEntityParseFieldMapping;
-                let updatedFields = prev.fields;
-
-                if (newMapping) {
-                  if (wasFirstSelection) {
-                    // First time selecting: remove ALL pre-provisioned fields for main entity
-                    updatedFields = prev.fields.filter((f) => f.attributeMapping.entity !== 'main_entity');
-                  } else {
-                    // Changing selection: remove any field that maps to the newly selected attribute
-                    updatedFields = prev.fields.filter((f) => !(f.attributeMapping.entity === 'main_entity' && f.attributeMapping.attributeName === newMapping));
-                  }
-                }
-
-                return {
-                  ...prev,
-                  mainEntityParseFieldMapping: newMapping,
-                  fields: updatedFields,
-                };
-              });
+              updateFormData((prev) => ({
+                ...prev,
+                mainEntityParseFieldMapping: newMapping,
+                fields: removeFieldsSupersededByParsedMapping(prev.fields, 'main_entity', prev.mainEntityParseFieldMapping, newMapping),
+              }));
             }}
           >
             <SelectLabel>{t_i18n('Map parsed values to attribute')}</SelectLabel>

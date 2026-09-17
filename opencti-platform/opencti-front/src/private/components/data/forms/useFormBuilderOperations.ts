@@ -17,14 +17,15 @@ export const useFormBuilderOperations = (
     }));
   }, [updateFormData]);
 
-  // Assumes fieldMode/mainEntityFieldMode is strictly binary ('multiple' | 'parsed').
-  // If a third mode is ever introduced, this simple flip must be replaced with an explicit target mode.
-  const toggleParsedMode = useCallback((entityId: string | 'main') => {
+  // Callers pass the explicit target mode selected in the UI (rather than flipping the current
+  // value) because `fieldMode`/`mainEntityFieldMode` can be `undefined` for legacy/imported
+  // entities, in which case a same-value flip would silently coerce it to 'parsed'.
+  const toggleParsedMode = useCallback((entityId: string | 'main', mode: 'multiple' | 'parsed') => {
     updateFormData((prev) => {
       if (entityId === 'main') {
         return {
           ...prev,
-          mainEntityFieldMode: prev.mainEntityFieldMode === 'parsed' ? 'multiple' : 'parsed',
+          mainEntityFieldMode: mode,
         };
       }
 
@@ -32,7 +33,7 @@ export const useFormBuilderOperations = (
         ...prev,
         additionalEntities: prev.additionalEntities.map((entity) => (
           entity.id === entityId
-            ? { ...entity, fieldMode: entity.fieldMode === 'parsed' ? 'multiple' : 'parsed' }
+            ? { ...entity, fieldMode: mode }
             : entity
         )),
       };

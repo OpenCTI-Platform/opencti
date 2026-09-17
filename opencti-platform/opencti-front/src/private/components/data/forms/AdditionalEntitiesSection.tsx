@@ -6,13 +6,13 @@ import { IconButton, Input, Select, SelectContent, SelectItem, SelectLabel, Sele
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import type { AdditionalEntity, EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
-import { getInitialMandatoryFields } from './FormUtils';
+import { getInitialMandatoryFields, removeFieldsSupersededByParsedMapping } from './FormUtils';
 import useStyles from './useFormSchemaEditorStyles';
 
 export interface AdditionalEntitiesSectionProps {
   formData: FormBuilderData;
   handleFieldChange: (path: string, value: unknown) => void;
-  toggleParsedMode: (entityId: string | 'main') => void;
+  toggleParsedMode: (entityId: string | 'main', mode: 'multiple' | 'parsed') => void;
   updateFormData: (updater: (prev: FormBuilderData) => FormBuilderData) => void;
   entityTypes: EntityTypeOption[];
   fieldsByEntity: Record<string, FormFieldAttribute[]>;
@@ -186,7 +186,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
         {entity.multiple && !entity.lookup && (
           <Select
             value={entity.fieldMode}
-            onValueChange={() => toggleParsedMode(entity.id)}
+            onValueChange={(value) => toggleParsedMode(entity.id, value as 'multiple' | 'parsed')}
           >
             <div>
               <SelectLabel>{t_i18n('Multiple Mode')}</SelectLabel>
@@ -243,18 +243,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
                 const newMapping = value;
                 updateFormData((prev) => {
                   const currentEntity = prev.additionalEntities[entityIndex];
-                  const wasFirstSelection = !currentEntity.parseFieldMapping;
-                  let updatedFields = prev.fields;
-
-                  if (newMapping) {
-                    if (wasFirstSelection) {
-                      // First time selecting: remove ALL pre-provisioned fields for this entity
-                      updatedFields = prev.fields.filter((f) => f.attributeMapping.entity !== entity.id);
-                    } else {
-                      // Changing selection: remove any field that maps to the newly selected attribute
-                      updatedFields = prev.fields.filter((f) => !(f.attributeMapping.entity === entity.id && f.attributeMapping.attributeName === newMapping));
-                    }
-                  }
+                  const updatedFields = removeFieldsSupersededByParsedMapping(prev.fields, entity.id, currentEntity.parseFieldMapping, newMapping);
 
                   // Update the entity's parseFieldMapping
                   const updatedEntities = [...prev.additionalEntities];

@@ -28,7 +28,7 @@ const renderFilesField = (context: FieldRendererContext): React.ReactNode => {
   } = context;
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
   const displayLabel = field.label || field.attributeMapping.attributeName;
-  const fieldValue = fieldPrefix ? getNestedValue(values, fieldName) : (values[field.name] || '');
+  const fieldValue = getNestedValue(values, fieldName) ?? '';
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
@@ -56,10 +56,10 @@ const renderFilesField = (context: FieldRendererContext): React.ReactNode => {
         const allowMultiple = field.multiple === true;
         if (allowMultiple) {
           const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
-          setFieldValue(field.name, [...currentFiles, ...fileData]);
+          setFieldValue(fieldName, [...currentFiles, ...fileData]);
         } else {
           // Single file mode: replace existing file
-          setFieldValue(field.name, [fileData[0]]);
+          setFieldValue(fieldName, [fileData[0]]);
         }
       });
     }
@@ -68,7 +68,7 @@ const renderFilesField = (context: FieldRendererContext): React.ReactNode => {
   const handleFileRemove = (index: number) => {
     const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
     const newFiles = currentFiles.filter((_: { name?: string; data?: string }, i: number) => i !== index);
-    setFieldValue(field.name, newFiles);
+    setFieldValue(fieldName, newFiles);
   };
 
   const allowMultipleFiles = field.multiple === true;
@@ -113,6 +113,7 @@ const renderFilesField = (context: FieldRendererContext): React.ReactNode => {
               key={index}
               label={file.name ?? ''}
               onDelete={() => handleFileRemove(index)}
+              deleteLabel={`${context.t_i18n ? context.t_i18n('Remove') : 'Remove'} ${file.name ?? ''}`}
               style={fileFieldStyles.fileChip}
             />
           ))}

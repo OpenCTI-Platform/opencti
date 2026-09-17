@@ -73,23 +73,34 @@ describe('useFormBuilderOperations', () => {
     ]);
   });
 
-  it('toggles parsed mode for the main entity', () => {
+  it('sets the main entity to the explicitly selected mode', () => {
     const { result, getCurrent } = renderOperations();
 
-    act(() => result.current.toggleParsedMode('main'));
+    act(() => result.current.toggleParsedMode('main', 'parsed'));
     expect(getCurrent().mainEntityFieldMode).toBe('parsed');
 
-    act(() => result.current.toggleParsedMode('main'));
+    act(() => result.current.toggleParsedMode('main', 'multiple'));
     expect(getCurrent().mainEntityFieldMode).toBe('multiple');
   });
 
-  it('toggles parsed mode for an additional entity', () => {
+  it('sets an additional entity to the explicitly selected mode', () => {
     const { result, getCurrent } = renderOperations();
 
-    act(() => result.current.toggleParsedMode('entity-1'));
+    act(() => result.current.toggleParsedMode('entity-1', 'parsed'));
     expect(getCurrent().additionalEntities[0].fieldMode).toBe('parsed');
 
-    act(() => result.current.toggleParsedMode('entity-1'));
+    act(() => result.current.toggleParsedMode('entity-1', 'multiple'));
+    expect(getCurrent().additionalEntities[0].fieldMode).toBe('multiple');
+  });
+
+  it('sets an additional entity with an omitted (legacy/imported) fieldMode to the explicitly selected mode, not a same-value flip', () => {
+    const { result, getCurrent } = renderOperations();
+    getCurrent().additionalEntities[0].fieldMode = undefined;
+
+    act(() => result.current.toggleParsedMode('entity-1', 'multiple'));
+
+    // Selecting "Multiple fields" on an entity with no prior mode must land on 'multiple',
+    // not silently flip an undefined value to 'parsed'.
     expect(getCurrent().additionalEntities[0].fieldMode).toBe('multiple');
   });
 

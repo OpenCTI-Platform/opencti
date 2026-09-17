@@ -6,6 +6,18 @@ import type { FieldRendererContext } from './types';
 import { fieldRendererRegistry } from './registry';
 import './fileFieldRenderer';
 
+// Mirrors FormFieldRenderer.tsx's real getNestedValue: dotted paths are always walked, whether
+// or not a fieldPrefix is set, since a plain field.name can itself be a dotted path (e.g. for
+// parsed/multiple main-entity overrides).
+const defaultGetNestedValue = (obj: Record<string, unknown>, path: string): unknown => path
+  .split('.')
+  .reduce<unknown>((current, key) => {
+    if (current && typeof current === 'object' && key in current) {
+      return (current as Record<string, unknown>)[key];
+    }
+    return undefined;
+  }, obj);
+
 const createContext = (
   field: Partial<FieldRendererContext['field']> = {},
   overrides: Partial<FieldRendererContext> = {},
@@ -29,7 +41,7 @@ const createContext = (
   setFieldValue: vi.fn(),
   fieldPrefix: undefined,
   useGridLayout: false,
-  getNestedValue: () => undefined,
+  getNestedValue: defaultGetNestedValue,
   ...overrides,
 });
 
@@ -78,7 +90,8 @@ describe('file field renderer', () => {
 
     expect(screen.queryByRole('button', { name: 'Upload' })).toBeNull();
     expect(screen.getByText('report.pdf')).toBeTruthy();
-    expect(t_i18n).not.toHaveBeenCalled();
+    // t_i18n is used for the chip's translated delete label, not the (absent) upload button.
+    expect(t_i18n).toHaveBeenCalledWith('Remove');
   });
 
   it('keeps the upload button visible in multi-file mode with existing files', () => {
@@ -90,7 +103,7 @@ describe('file field renderer', () => {
     expect(screen.getByText('Upload files')).toBeTruthy();
   });
 
-  it('renders existing files as removable chips and uses the bare field name on removal', async () => {
+  it('renders existing files as removable chips and calls setFieldValue with the fully-qualified prefixed path on removal', async () => {
     const setFieldValue = vi.fn();
     const values = { metadata: { attachments: [{ name: 'report.pdf', data: 'encoded' }] } };
     const { user } = renderFilesField({}, {
@@ -111,7 +124,10 @@ describe('file field renderer', () => {
 
     await user.click(deleteIcon);
 
-    expect(setFieldValue).toHaveBeenCalledWith('attachments', []);
+    // The renderer always calls back with the fully-qualified `fieldPrefix.field.name` path (matching
+    // the Formik <Field> name); it is FormFieldRenderer's `setFieldValue` wrapper that is responsible
+    // for reconciling that with a prefixing setter, not this renderer.
+    expect(setFieldValue).toHaveBeenCalledWith('metadata.attachments', []);
   });
 
   it('uses singular and plural upload labels with the defensive translation fallback', () => {

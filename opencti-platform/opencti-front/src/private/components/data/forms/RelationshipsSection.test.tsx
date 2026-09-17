@@ -75,6 +75,9 @@ const renderSection = (
     formData,
     handleFieldChange: vi.fn(),
     updateFormData: vi.fn(),
+    updateRelationshipEntity: vi.fn(),
+    updateRelationshipType: vi.fn(),
+    toggleRelationshipRequired: vi.fn(),
     handleRemoveRelationship: vi.fn(),
     handleAddRelationship: vi.fn(),
     ...overrides,
@@ -114,7 +117,7 @@ describe('RelationshipsSection', () => {
     expect(props.handleAddRelationship).toHaveBeenCalledOnce();
   });
 
-  it('updates the source entity and clears an existing relationship type', () => {
+  it('calls updateRelationshipEntity with the selected source entity, letting the caller decide whether to clear the relationship type', () => {
     const props = renderSection({
       formData: {
         ...formData,
@@ -129,15 +132,10 @@ describe('RelationshipsSection', () => {
     fireEvent.click(sourceSelect);
     fireEvent.click(screen.getByRole('option', { name: 'Technique' }));
 
-    expect(props.handleFieldChange).toHaveBeenNthCalledWith(
-      1,
-      'relationships.0.fromEntity',
+    expect(props.updateRelationshipEntity).toHaveBeenCalledWith(
+      'relationship-1',
+      'fromEntity',
       'entity-1',
-    );
-    expect(props.handleFieldChange).toHaveBeenNthCalledWith(
-      2,
-      'relationships.0.relationshipType',
-      '',
     );
   });
 

@@ -104,7 +104,7 @@ const renderObjectLabelField = ({
   getNestedValue,
 }: FieldRendererContext): React.ReactNode => {
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
-  const fieldValue = fieldPrefix ? getNestedValue(values, fieldName) : (values[field.name] || '');
+  const fieldValue = getNestedValue(values, fieldName) ?? '';
 
   return (
     <ObjectLabelField
@@ -125,7 +125,7 @@ const renderExternalReferencesField = ({
   getNestedValue,
 }: FieldRendererContext): React.ReactNode => {
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
-  const fieldValue = fieldPrefix ? getNestedValue(values, fieldName) : (values[field.name] || '');
+  const fieldValue = getNestedValue(values, fieldName) ?? '';
 
   return (
     <ExternalReferencesField

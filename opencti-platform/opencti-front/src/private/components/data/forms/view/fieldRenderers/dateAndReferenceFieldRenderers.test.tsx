@@ -63,6 +63,18 @@ vi.mock('../../../../common/form/ExternalReferencesField', () => ({
   ),
 }));
 
+// Mirrors FormFieldRenderer.tsx's real getNestedValue: dotted paths are always walked, whether
+// or not a fieldPrefix is set, since a plain field.name can itself be a dotted path (e.g. for
+// parsed/multiple main-entity overrides).
+const defaultGetNestedValue = (obj: Record<string, unknown>, path: string): unknown => path
+  .split('.')
+  .reduce<unknown>((current, key) => {
+    if (current && typeof current === 'object' && key in current) {
+      return (current as Record<string, unknown>)[key];
+    }
+    return undefined;
+  }, obj);
+
 const createContext = (
   field: Partial<FieldRendererContext['field']> & { type: string },
   overrides: Partial<FieldRendererContext> = {},
@@ -86,7 +98,7 @@ const createContext = (
   setFieldValue: () => {},
   fieldPrefix: undefined,
   useGridLayout: false,
-  getNestedValue: () => undefined,
+  getNestedValue: defaultGetNestedValue,
   ...overrides,
 });
 

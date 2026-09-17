@@ -19,6 +19,18 @@ interface UseFieldRendererParams {
   handleRemoveField: (fieldId: string) => void;
 }
 
+// Special (non entity-attribute) attribute names and the single field type/name they are always rendered as.
+// Shared between the available-field-types computation and the attribute-selection handler below so the
+// two stay in sync (see PR review discussion on the duplicated special-attribute rules).
+const SPECIAL_ATTRIBUTE_FIELD_TYPE: Record<string, { value: string; label: string }> = {
+  createdBy: { value: 'createdBy', label: 'Created By' },
+  objectMarking: { value: 'objectMarking', label: 'Object Marking' },
+  objectLabel: { value: 'objectLabel', label: 'Object Label' },
+  externalReferences: { value: 'externalReferences', label: 'External References' },
+  x_opencti_files: { value: 'files', label: 'Files' },
+  x_opencti_main_observable_type: { value: 'types', label: 'Types' },
+};
+
 const useFieldRenderer = ({
   formData,
   entityTypes,
@@ -118,18 +130,9 @@ const useFieldRenderer = ({
       const selectedAttribute = allAttributes.find((attr) => attr.value === field.attributeMapping.attributeName);
 
       // Check if it's a special attribute first
-      if (field.attributeMapping.attributeName === 'createdBy') {
-        availableFieldTypes = [{ value: 'createdBy', label: 'Created By' }];
-      } else if (field.attributeMapping.attributeName === 'objectMarking') {
-        availableFieldTypes = [{ value: 'objectMarking', label: 'Object Marking' }];
-      } else if (field.attributeMapping.attributeName === 'objectLabel') {
-        availableFieldTypes = [{ value: 'objectLabel', label: 'Object Label' }];
-      } else if (field.attributeMapping.attributeName === 'externalReferences') {
-        availableFieldTypes = [{ value: 'externalReferences', label: 'External References' }];
-      } else if (field.attributeMapping.attributeName === 'x_opencti_files') {
-        availableFieldTypes = [{ value: 'files', label: 'Files' }];
-      } else if (field.attributeMapping.attributeName === 'x_opencti_main_observable_type') {
-        availableFieldTypes = [{ value: 'types', label: 'Types' }];
+      const specialFieldType = SPECIAL_ATTRIBUTE_FIELD_TYPE[field.attributeMapping.attributeName];
+      if (specialFieldType) {
+        availableFieldTypes = [specialFieldType];
       } else {
         availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes)
           .filter((fieldType) => {
@@ -206,16 +209,9 @@ const useFieldRenderer = ({
                 handleFieldChange(`fields.${fieldIndex}.name`, name || field.id);
               }
               // Check for special attributes first
-              if (attributeName === 'createdBy') {
-                handleFieldChange(`fields.${fieldIndex}.type`, 'createdBy');
-              } else if (attributeName === 'objectMarking') {
-                handleFieldChange(`fields.${fieldIndex}.type`, 'objectMarking');
-              } else if (attributeName === 'objectLabel') {
-                handleFieldChange(`fields.${fieldIndex}.type`, 'objectLabel');
-              } else if (attributeName === 'externalReferences') {
-                handleFieldChange(`fields.${fieldIndex}.type`, 'externalReferences');
-              } else if (attributeName === 'x_opencti_files') {
-                handleFieldChange(`fields.${fieldIndex}.type`, 'files');
+              const specialType = attributeName !== 'x_opencti_main_observable_type' ? SPECIAL_ATTRIBUTE_FIELD_TYPE[attributeName] : undefined;
+              if (specialType) {
+                handleFieldChange(`fields.${fieldIndex}.type`, specialType.value);
               } else {
               // Determine and set an appropriate default field type for regular attributes
                 const compatibleTypes = getAvailableFieldTypes(entityType, entityTypes)
