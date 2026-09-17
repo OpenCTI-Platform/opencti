@@ -1,13 +1,13 @@
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify } from '../../database/redis';
-import { fullEntitiesList } from '../../database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { mergeEntities, patchAttribute } from '../../database/middleware';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../schema/stixDomainObject';
 import { FilterMode } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
 import { USER_MERGE_SILENT_WRITE } from './userMerge-handler';
 import type { UserMergeHandler, UserMergeHandlerContext, UserMergeHandlerPlan, UserMergePlannedChange, UserMergeRightsAlert } from './userMerge-handler';
@@ -58,6 +58,26 @@ const readIndividualPlan = async (context: AuthContext, sourceEmail: string, tar
   return { survivor, merged, repoint: onTarget.length === 0, all };
 };
 
+/**
+ * The identity fields the platform keeps mirrored from the user onto its individual.
+ *
+ * Every user update re-applies them alongside the email (`middleware.updateAttributeMetaResolved`),
+ * so a re-point moving the email alone would leave the survivor answering to the target address
+ * under the source name — until the next edit of the target user silently repairs it.
+ *
+ * They are read from the stored user rather than from the session one, which carries the name
+ * but neither the first nor the last name.
+ */
+const identityOf = async (context: AuthContext, targetUser: AuthUser): Promise<Record<string, unknown>> => {
+  type StoredUserIdentity = BasicStoreEntity & { firstname?: string; lastname?: string };
+  const stored = await storeLoadById<StoredUserIdentity>(context, SYSTEM_USER, targetUser.internal_id, ENTITY_TYPE_USER);
+  return {
+    name: stored.name,
+    x_opencti_firstname: stored.firstname,
+    x_opencti_lastname: stored.lastname,
+  };
+};
+
 const ambiguousJoinAlert = (email: string, count: number): UserMergeRightsAlert => ({
   register_row_id: INDIVIDUAL_ROW,
   kind: 'rights',
@@ -80,8 +100,18 @@ const ambiguousJoinAlert = (email: string, count: number): UserMergeRightsAlert 
 export const userMergeIndividualHandler: UserMergeHandler = {
   identifier: USER_MERGE_INDIVIDUAL_HANDLER,
   covers: [],
-  reads: [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}.${CONTACT_INFORMATION}`],
-  writes: [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}.${CONTACT_INFORMATION}`],
+  reads: [
+    `${ENTITY_TYPE_IDENTITY_INDIVIDUAL}.${CONTACT_INFORMATION}`,
+    `${ENTITY_TYPE_USER}.name`,
+    `${ENTITY_TYPE_USER}.firstname`,
+    `${ENTITY_TYPE_USER}.lastname`,
+  ],
+  writes: [
+    `${ENTITY_TYPE_IDENTITY_INDIVIDUAL}.${CONTACT_INFORMATION}`,
+    `${ENTITY_TYPE_IDENTITY_INDIVIDUAL}.name`,
+    `${ENTITY_TYPE_IDENTITY_INDIVIDUAL}.x_opencti_firstname`,
+    `${ENTITY_TYPE_IDENTITY_INDIVIDUAL}.x_opencti_lastname`,
+  ],
   compute: async ({ context, sourceUser, targetUser }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
     const changes: UserMergePlannedChange[] = [];
     const alerts: UserMergeRightsAlert[] = [];
@@ -98,7 +128,7 @@ export const userMergeIndividualHandler: UserMergeHandler = {
       entity_type: ENTITY_TYPE_IDENTITY_INDIVIDUAL,
       count: plan.repoint ? 1 : 0,
       exact: true,
-      detail: 're-pointed to the target email',
+      detail: 're-pointed to the target email and identity',
     });
     const individuals = plan.all;
     [sourceUser.user_email, targetUser.user_email].forEach((email) => {
@@ -125,6 +155,7 @@ export const userMergeIndividualHandler: UserMergeHandler = {
       // user. This is the synchronized user/individual update the flag exists for.
       await patchAttribute(context, SYSTEM_USER, plan.survivor.internal_id, ENTITY_TYPE_IDENTITY_INDIVIDUAL, {
         [CONTACT_INFORMATION]: targetUser.user_email,
+        ...await identityOf(context, targetUser),
       }, { bypassIndividualUpdate: true, ...USER_MERGE_SILENT_WRITE });
       updated += 1;
     }

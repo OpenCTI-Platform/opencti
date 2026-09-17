@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 const fullRelationsList = vi.fn();
 const fullEntitiesList = vi.fn();
+const storeLoadById = vi.fn();
 const stixObjectOrRelationshipAddRefRelation = vi.fn();
 const stixObjectOrRelationshipDeleteRefRelation = vi.fn();
 const mergeEntities = vi.fn();
@@ -12,6 +13,7 @@ const deleteElementById = vi.fn();
 vi.mock('../../../../src/database/middleware-loader', () => ({
   fullRelationsList: (...args: unknown[]) => fullRelationsList(...args),
   fullEntitiesList: (...args: unknown[]) => fullEntitiesList(...args),
+  storeLoadById: (...args: unknown[]) => storeLoadById(...args),
 }));
 vi.mock('../../../../src/domain/stixObjectOrStixRelationship', () => ({
   stixObjectOrRelationshipAddRefRelation: (...args: unknown[]) => stixObjectOrRelationshipAddRefRelation(...args),
@@ -49,6 +51,8 @@ const optionsOf = (call: unknown[]) => call[call.length - 1] as Record<string, u
 describe('user merge writes nothing to the live stream', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The individual re-point reads the stored target user for the identity it carries over.
+    storeLoadById.mockResolvedValue({ internal_id: TARGET_ID, name: 'target', firstname: 'Tar', lastname: 'Get' });
   });
 
   it('suppresses the events of the re-pointed operational relations', async () => {
