@@ -152,8 +152,11 @@ class ChunkCapture:
         # producer of its own.
         stix2 = getattr(api, "stix2", None)
         self._real_get_in_cache = getattr(stix2, "get_in_cache", None)
+        self._real_set_in_cache = getattr(stix2, "set_in_cache", None)
         if stix2 is not None and self._real_get_in_cache is not None:
             stix2.get_in_cache = self._get_in_cache
+        if stix2 is not None and self._real_set_in_cache is not None:
+            stix2.set_in_cache = self._set_in_cache
 
     def _get_in_cache(self, data_id: str) -> Any:
         value = self._real_get_in_cache(data_id)
@@ -163,34 +166,35 @@ class ChunkCapture:
                 return None
         return value
 
+    def _set_in_cache(self, data_id: str, data: Any) -> None:
+        # remember the keys this window stored an echo under: the purge at window close
+        # visits those keys only, instead of scanning the whole cache (50k entries at the
+        # scan's worst, per bundle: the scan was a third of a single worker's CPU)
+        self._real_set_in_cache(data_id, data)
+        if isinstance(data, dict) and str(data.get("id", "")).startswith(ECHO_PREFIX):
+            echo_keys = getattr(self._local, "echo_keys", None)
+            if echo_keys is not None:
+                echo_keys.add(data_id)
+
     def _purge_echo_cache(self) -> None:
         # pycti caches the ids it gets back from sub-object creates (labels by value, kill
         # chain phases, external references) for the CLIENT's lifetime and reuses them
         # across bundles. An echo id is only meaningful inside the capture window that
-        # produced it (its producer travels in that bundle's chunks), so drop every cached
-        # echo entry when the window closes: the next bundle re-creates its sub-objects
-        # (idempotent upserts, in process) with producers of its own.
+        # produced it (its producer travels in that bundle's chunks), so drop this window's
+        # echo entries when it closes: the next bundle re-creates its sub-objects
+        # (idempotent upserts, in process) with producers of its own. Only the keys this
+        # window wrote are visited (A9 bookkeeping in _set_in_cache), and only an entry
+        # still holding one of THIS window's echoes is removed: a concurrent window that
+        # overwrote the key keeps its own entry.
         stix2 = getattr(self._api, "stix2", None)
         cache = getattr(stix2, "mapping_cache", None)
-        if cache is None:
+        echo_keys = getattr(self._local, "echo_keys", None)
+        echoes = getattr(self._local, "echoes", None)
+        if cache is None or not echo_keys:
             return
-        # With a push prefetch above 1 a handler imports two bundles at once on the same
-        # client: snapshot the keys and read each value on its own so a concurrent write
-        # never turns into "dictionary changed size during iteration" (A/B attempt 4: 12
-        # bundles nacked that way); a snapshot that still races is simply retried.
-        for _attempt in range(3):
-            try:
-                keys = list(cache.keys())
-                break
-            except RuntimeError:
-                keys = None
-        if keys is None:
-            return
-        for key in keys:
+        for key in list(echo_keys):
             value = cache.get(key)
-            if isinstance(value, dict) and str(value.get("id", "")).startswith(
-                ECHO_PREFIX
-            ):
+            if isinstance(value, dict) and (echoes is None or value.get("id") in echoes):
                 try:
                     del cache[key]
                 except KeyError:
@@ -256,12 +260,14 @@ class ChunkCapture:
         buffer: List[Dict[str, Any]] = []
         self._local.buffer = buffer
         self._local.echoes = set()
+        self._local.echo_keys = set()
         try:
             yield buffer
         finally:
             self._local.buffer = None
-            self._local.echoes = None
             self._purge_echo_cache()
+            self._local.echoes = None
+            self._local.echo_keys = None
 
 
 class ChunkPublisher:

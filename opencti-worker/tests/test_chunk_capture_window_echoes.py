@@ -19,7 +19,7 @@ INDICATOR_MUTATION = "mutation IndicatorAdd($input: IndicatorAddInput!) { indica
 
 class FakeStix2:
     def __init__(self):
-        self.mapping_cache = LRUCache(maxsize=100)
+        self.mapping_cache = LRUCache(maxsize=5000)
         self.opencti = MagicMock()
         self.opencti.get_draft_id.return_value = ""
 
@@ -98,3 +98,23 @@ def test_build_chunks_reports_dangling_echoes():
     assert [op["object_id"] for op in chunks[0][1:]] == ["indicator--1", "indicator--2"]
     # the default call stays compatible
     assert len(build_chunks([producer, consumer_ok], 16)) == 1
+
+
+def test_purge_visits_only_this_windows_echo_keys_and_keeps_foreign_entries():
+    api = make_client()
+    capture = ChunkCapture(api)
+    stix2 = api.stix2
+    # a large cache of real entries must survive a window close untouched
+    for i in range(1000):
+        stix2.set_in_cache(f"identity--{i}", {"id": f"identity--{i}"})
+    foreign = {"id": f"{ECHO_PREFIX}foreign"}
+    stix2.mapping_cache["label--foreign"] = foreign  # another window's echo, bypassing the wrapper
+    with capture.capture():
+        echo = api.query(LABEL_MUTATION, {"input": {"value": "mine"}})["data"]["labelAdd"]
+        stix2.set_in_cache("label--mine", echo)
+        stix2.set_in_cache("identity--mine", {"id": "identity--mine"})
+        assert capture._local.echo_keys == {"label--mine"}
+    assert "label--mine" not in stix2.mapping_cache
+    assert stix2.mapping_cache["label--foreign"] is foreign
+    assert stix2.mapping_cache["identity--mine"] == {"id": "identity--mine"}
+    assert len(stix2.mapping_cache) == 1002
