@@ -6,26 +6,16 @@ import {
   resolveSyncIngestionHealth,
 } from './ingestionHealth-domain';
 
-// `ingestionHealth-types.ts` uses plain string unions for every enum-shaped
-// field (status, check codes, severities…), on purpose — it keeps the pure
-// evaluator framework-free and lets its unit tests assert against string
-// literals directly, with no dependency on graphql-codegen output. TS string
-// enums are nominal, though, so the evaluator's result does not structurally
-// satisfy the generated `Resolvers` return type even though every value is
-// one the schema enum accepts. The string values are identical at runtime
-// (that agreement is what the unit tests and the .graphql enum both guard),
-// so bridging the two here is exactly as safe as that agreement.
+// The evaluator's types use plain string unions (kept framework-free), while
+// codegen emits nominal TS enums for the same values — same strings at
+// runtime, so this bridges the two.
 const toGeneratedHealth = (health: IngestionHealth | null): GqlIngestionHealth | null => (
   health as unknown as GqlIngestionHealth | null
 );
 
-// The field is declared on types that live in the legacy `opencti.graphql` and
-// in the ingestion modules' own schemas, so only the resolvers are gathered
-// here — one place for all seven ingestion source kinds.
-//
-// Every one of these fields carries @ff(flags: ["INGESTION_HEALTH"],
-// softFail: true), so with the flag off the directive short-circuits to null
-// and none of these resolvers runs at all.
+// One place for all seven ingestion source kinds. Every field carries
+// @ff(flags: ["INGESTION_HEALTH"], softFail: true), so with the flag off it
+// short-circuits to null and none of these resolvers runs.
 const ingestionHealthResolver: Resolvers = {
   Connector: {
     ingestion_health: async (connector, _, context) => toGeneratedHealth(

@@ -1,8 +1,6 @@
-// Ingestion health — presentation helpers.
-//
-// Pure: no React, no theme, no i18n. Colour is returned as a palette *token
-// path* rather than a value so the component resolves it through the theme —
-// `check-fds-conformity.mjs` fails on a hardcoded colour in a migrated zone.
+// Ingestion health — presentation helpers. Pure: no React, no theme, no i18n.
+// Colour is a palette token path, not a value, so components resolve it
+// through the theme (hardcoded colours fail check-fds-conformity.mjs).
 
 export type IngestionHealthStatus =
   | 'healthy'
@@ -35,12 +33,8 @@ export interface IngestionHealth {
   next_expected_at?: string | null;
 }
 
-// The loose shape a raw GraphQL/Relay selection actually provides. `status`
-// and `configuration_status` come back typed with Relay's own generated enum,
-// which always carries an extra "%future added value" member for forward
-// compatibility with schema changes this build has not shipped a case for —
-// that member is exactly what `normalizeIngestionHealth` below strips out
-// before the strict `IngestionHealth` shape below is built.
+// The loose shape a raw GraphQL/Relay selection provides, before
+// `normalizeIngestionHealth` strips Relay's "%future added value" enum member.
 export interface RawIngestionHealth {
   status: string;
   configuration_status?: string | null;
@@ -53,9 +47,8 @@ export interface RawIngestionHealth {
 
 export type HealthPaletteToken = 'error' | 'warn' | 'success' | 'neutral';
 
-// Only statuses that need attention get a colour. `stopped`, `idle` and
-// `unknown` stay neutral on purpose: colouring a deliberately stopped source
-// red is how a status column stops being read at all.
+// Only statuses that need attention get a colour; `stopped`/`idle`/`unknown`
+// stay neutral so a status column doesn't turn into an ocean of red.
 export const HEALTH_PALETTE_TOKEN: Record<IngestionHealthStatus, HealthPaletteToken> = {
   healthy: 'success',
   idle: 'neutral',
@@ -82,18 +75,14 @@ const KNOWN_CONFIGURATION_STATUSES: ReadonlySet<string> = new Set<IngestionConfi
   'ok', 'advisory', 'blocking',
 ]);
 
-// `HEALTH_PALETTE_TOKEN` / `HEALTH_STATUS_LABEL` above are keyed on the narrow
-// status union, so a raw Relay enum value — which may be "%future added
-// value" — has to be folded back onto it before it can be used as a lookup
-// key. Anything unrecognised becomes `unknown`, the status that already means
-// "nothing to say about this one".
+// Folds a raw Relay status (possibly "%future added value") onto the narrow
+// union the lookups above are keyed on.
 export const normalizeIngestionHealthStatus = (status: string): IngestionHealthStatus => (
   KNOWN_STATUSES.has(status) ? (status as IngestionHealthStatus) : 'unknown'
 );
 
-// Same idea for the configuration axis. It has no "unknown" member, so an
-// unrecognised value defaults to `advisory` — the state that still gets
-// surfaced to someone, rather than `ok`, which would silently hide it.
+// No "unknown" member on this axis; unrecognised defaults to `advisory` so it
+// still surfaces rather than reading as `ok`.
 export const normalizeIngestionConfigurationStatus = (
   status: string | null | undefined,
 ): IngestionConfigurationStatus | null | undefined => {
@@ -183,9 +172,7 @@ export const countHealthStatuses = (
   return counts;
 };
 
-// The tooltip shows the whole story: the headline, then every check, then how
-// long the source has been in this state. Returned as lines so the component
-// decides the markup.
+// Headline plus every check, as lines so the component owns the markup.
 export const buildHealthTooltipLines = (health: IngestionHealth | null | undefined): string[] => {
   if (!health) {
     return [];

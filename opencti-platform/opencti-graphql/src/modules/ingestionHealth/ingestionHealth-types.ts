@@ -40,16 +40,9 @@ export interface IngestionHealth {
 }
 
 // What the manager persists between cycles and reads back on the next one.
-//
-// This lives in Redis, not Elasticsearch, and on purpose: it is the manager's
-// own memory — the state needed to tell "just went critical" apart from "has
-// been critical for six hours" — not a queryable fact about the source. The
-// health *status* is never stored anywhere; it is recomputed from live facts on
-// every read. If health ever needs to be filtered or sorted server-side, that is
-// a separate set of Elastic attributes on each source (spec D2), not this.
-//
-// Declared here rather than next to the Redis helpers so the evaluator, the
-// manager and the resolver all agree on one shape.
+// Lives in Redis, not Elasticsearch: it's the manager's own memory, not a
+// queryable fact — status itself is always recomputed from live facts.
+// Declared here so the evaluator, manager and resolver share one shape.
 export interface IngestionHealthObservation {
   status: IngestionHealthStatus;
   since: string;

@@ -210,9 +210,8 @@ export const isIngestionEventType = (type: string | undefined): type is Ingestio
 
 // endregion
 
-// Ingestion health transitions. Unlike every other action these have no human
-// actor: they are emitted by the ingestion health manager, so `user` is the
-// system user and the message is pre-rendered (§6.2 of the spec).
+// Ingestion health transitions. No human actor — emitted by the health
+// manager, so `user` is the system user and `message` is pre-rendered.
 export interface UserHealthActionContextData {
   // The source's internal_id — also the key the publisher buffers on.
   id: string;

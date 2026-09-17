@@ -250,14 +250,7 @@ const initActivityManager = () => {
         }
       }
       if (action.event_type === EVENT_TYPE_HEALTH || action.event_type === EVENT_TYPE_CONFIGURATION) {
-        // Direct discriminant comparison, not `isIngestionEventType`: a type
-        // predicate call on `action.event_type` narrows that expression's own
-        // type but does not narrow `action` itself back to `UserHealthAction`,
-        // so `action.message` below would still fail to compile. Comparing the
-        // discriminant literal-for-literal is what TS actually narrows on.
-        //
-        // The message is already a complete sentence built by the health
-        // manager, so it is forwarded as-is rather than composed here.
+        // Already a complete sentence from the health manager: forwarded as-is.
         await activityLogger(action, action.message);
       }
       if (action.event_type === 'mutation') {
