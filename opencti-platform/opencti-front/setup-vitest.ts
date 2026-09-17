@@ -47,3 +47,19 @@ if (!Element.prototype.releasePointerCapture) {
 if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }
+
+// PDF.js reads DOMMatrix at import time, and jsdom provides none.
+if (!('DOMMatrix' in globalThis)) {
+  class DOMMatrixStub {
+    translate() {
+      return new DOMMatrixStub();
+    }
+
+    scale() {
+      return new DOMMatrixStub();
+    }
+  }
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  globalThis.DOMMatrix = DOMMatrixStub;
+}

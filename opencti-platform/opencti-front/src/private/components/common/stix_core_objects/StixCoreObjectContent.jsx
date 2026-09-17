@@ -726,6 +726,7 @@ class StixCoreObjectContentComponent extends Component {
                   }
                 >
                   <Document
+                    suspense={false}
                     onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                     onLoadError={this.handlePdfLoadError.bind(this)}
                     onPassword={this.handlePdfPasswordRequest.bind(this)}
