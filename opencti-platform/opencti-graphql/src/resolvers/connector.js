@@ -1,38 +1,19 @@
 import {
-  computeWorkStatus,
-  connectorDelete,
-  connectorForWork,
-  connectorGetHealth,
-  connectorGetUptime,
-  connectorsForExport,
-  connectorTriggerUpdate,
-  connectorUpdateHealth,
-  connectorUpdateLogs,
-  connectorUser,
   fetchRemoteStreams,
   findSyncById,
   findSyncPaginated,
-  managedConnectorAdd,
-  managedConnectorEdit,
   patchSync,
-  pingConnector,
-  queueDetails,
-  registerConnector,
-  registerConnectorsManager,
   registerSync,
-  resetStateConnector,
+  syncAddInputFromImport,
   syncCleanContext,
   syncDelete,
   syncEditContext,
   syncEditField,
-  synchronizerExport,
   synchronizerAddAutoUser,
+  synchronizerExport,
   testSync,
-  updateConnectorCurrentStatus,
-  updateConnectorManagerStatus,
-  updateConnectorRequestedStatus,
-  syncAddInputFromImport,
 } from '../domain/connector';
+import { computeWorkStatus, connectorForWork } from '../domain/connector';
 import {
   addDraftContext,
   createWork,
@@ -56,21 +37,39 @@ import {
   computeManagerConnectorImage,
   computeManagerContractHash,
   connector,
-  getConnectorJwks,
+  connectorDelete,
+  connectorGetHealth,
+  connectorGetUptime,
   connectorManager,
   connectorManagers,
   connectors,
   connectorsForAnalysis,
+  connectorsForExport,
   connectorsForImport,
   connectorsForManagers,
   connectorsForNotification,
   connectorsForWorker,
-} from '../database/repository';
-import { getConnectorQueueSize } from '../database/rabbitmq';
+  connectorTriggerUpdate,
+  connectorUpdateHealth,
+  connectorUpdateLogs,
+  connectorUser,
+  getConnectorJwks,
+  managedConnectorAdd,
+  managedConnectorEdit,
+  pingConnector,
+  queueDetails,
+  registerConnector,
+  registerConnectorsManager,
+  resetStateConnector,
+  updateConnectorCurrentStatus,
+  updateConnectorManagerStatus,
+  updateConnectorRequestedStatus,
+} from '../modules/connector/connector-domain';
+import { getConnectorQueueSize } from '../modules/connector/connector-rabbitmq';
 import { redisGetConnectorLogs } from '../modules/connector/connector-redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
-import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/connector-migration';
+import { assessConnectorMigration, migrateConnectorToManaged } from '../modules/connector/connector-migration';
 import { loadCreator } from '../database/members';
 import { readSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { findIngestionLogsForFeed } from '../modules/ingestion/ingestion-common';
@@ -98,15 +97,13 @@ const connectorResolvers = {
     synchronizerAddInputFromImport: (_, { file }) => syncAddInputFromImport(file),
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
-    // region new managed connectors
     connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
     connectorManagers: (_, __, context) => connectorManagers(context, context.user),
     connectorMigrationAssessment: async (_, { connectorId, containerImage, configuration }, context) => {
       return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
     },
-    // endregion
   },
-  Connector: { // For UI display
+  Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_priority_group: (cn) => {
@@ -123,7 +120,7 @@ const connectorResolvers = {
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
     jwks: () => getConnectorJwks(),
   },
-  ManagedConnector: { // For composer
+  ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
     manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
@@ -157,7 +154,6 @@ const connectorResolvers = {
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
-    // region new managed connectors
     managedConnectorAdd: (_, { input }, context) => {
       return managedConnectorAdd(context, context.user, input);
     },
@@ -182,8 +178,6 @@ const connectorResolvers = {
     updateConnectorHealth: (_, { input }, context) => {
       return connectorUpdateHealth(context, context.user, input);
     },
-    // endregion
-    // Work part
     workAdd: async (_, { connectorId, friendlyName, isMultiPartWork }, context) => {
       const connectorEntity = await connector(context, context.user, connectorId);
       return createWork(context, context.user, connectorEntity, friendlyName, connectorEntity.id, {
@@ -201,7 +195,6 @@ const connectorResolvers = {
       toProcessed: ({ message, inError }) => updateProcessedTime(context, context.user, id, message, inError),
     }),
     workDelete: (_, { connectorId }, context) => deleteWorkForConnector(context, context.user, connectorId),
-    // Sync part
     synchronizerAdd: (_, { input }, context) => registerSync(context, context.user, input),
     synchronizerAddAutoUser: (_, { id, input }, context) => synchronizerAddAutoUser(context, context.user, id, input),
     synchronizerEdit: (_, { id }, context) => ({
@@ -213,7 +206,6 @@ const connectorResolvers = {
     synchronizerStart: (_, { id }, context) => patchSync(context, context.user, id, { running: true }),
     synchronizerStop: (_, { id }, context) => patchSync(context, context.user, id, { running: false }),
     synchronizerTest: (_, { input }, context) => testSync(context, context.user, input),
-
     connectorMigrateToManaged: (_, { input }, context) => {
       const { connectorId, containerImage, configuration, resetConnectorState, convertUserToServiceAccount } = input;
       return migrateConnectorToManaged(

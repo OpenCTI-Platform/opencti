@@ -26,7 +26,7 @@ import { generateInternalType } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
-import { connectorsForPlaybook } from '../../database/repository';
+import { connectorsForPlaybook } from '../connector/connector-domain';
 import { fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';

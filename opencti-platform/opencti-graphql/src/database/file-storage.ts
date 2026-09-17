@@ -14,7 +14,7 @@ import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
-import { connectorsForImport } from './repository';
+import { connectorsForImport } from '../modules/connector/connector-domain';
 import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
@@ -486,10 +486,13 @@ export const uploadJobImport = async (
   }
   if (connectors.length > 0) {
     // Create job and send ask to broker
-    const createConnectorWork = async (connector: BasicStoreEntityConnector) => {
+    const createConnectorWork = async (connector: BasicStoreEntityConnector): Promise<{ connector: BasicStoreEntityConnector; work: { id: string } }> => {
       const contextOutOfDraft = { ...context, draft_context: '' };
       const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
       const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, { draftContext });
+      if (!work) {
+        throw FunctionalError('Unable to create connector work', { connectorId: connector.id });
+      }
       return { connector, work };
     };
     const actionList = await Promise.all(connectors.map((connector: BasicStoreEntityConnector) => createConnectorWork(connector)));

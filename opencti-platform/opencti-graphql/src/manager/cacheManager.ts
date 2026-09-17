@@ -10,7 +10,7 @@ import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/no
 import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, internalFindByIds, fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { CACHE_RESET_TOPIC, pubSubSubscription } from '../database/redis';
-import { connectors as findConnectors } from '../database/repository';
+import { connectors as findConnectors } from '../modules/connector/connector-domain';
 import { buildCompleteUsers, resolveUserById } from '../domain/user';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
