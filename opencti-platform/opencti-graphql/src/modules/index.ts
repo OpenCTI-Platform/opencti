@@ -106,6 +106,7 @@ import './customField/custom-field';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
+import './connector/connector-graphql';
 import './catalog/catalog-graphql';
 import './language/language-graphql';
 import './event/event-graphql';

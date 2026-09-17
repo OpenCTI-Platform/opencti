@@ -3,7 +3,7 @@ import { deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, upload
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { getDraftContextFilesPrefix } from '../database/draft-utils';
-import { askJobImport, createDraftAndAskJobImport } from '../modules/connector/connector-domain';
+import { askJobImport, createDraftAndAskJobImport } from '../domain/connector';
 import { loadCreator } from '../database/members';
 
 const fileResolvers = {

@@ -274,6 +274,61 @@ input ExportContext {
   visible_columns: [String]
 }
 
+input ExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+}
+
+input StixCoreObjectsExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+  search: String
+  exportContext: ExportContext
+  orderBy: StixCoreObjectsOrdering
+  orderMode: OrderingMode
+  filters: FilterGroup
+  selectedIds: [String]
+}
+
+input StixCoreRelationshipsExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+  exportContext: ExportContext
+  search: String
+  orderBy: StixCoreRelationshipsOrdering
+  orderMode: OrderingMode
+  selectedIds: [String]
+  fromOrToId: [String]
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromRole: String
+  fromTypes: [String]
+  toId: [String]
+  toRole: String
+  toTypes: [String]
+  relationship_type: [String]
+  filters: FilterGroup
+}
+
+input StixCyberObservablesExportAskInput {
+  format: String!
+  exportType: String!
+  exportContext: ExportContext
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+  search: String
+  orderBy: StixCyberObservablesOrdering
+  orderMode: OrderingMode
+  filters: FilterGroup
+  selectedIds: [String]
+}
+
 type AppDebugDistribution {
   label: String!
   value: Int
@@ -1982,401 +2037,6 @@ type Capability implements BasicObject & InternalObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   editContext: [EditUserContext!]
-}
-
-enum ConnectorType {
-  EXTERNAL_IMPORT
-  INTERNAL_IMPORT_FILE
-  INTERNAL_ENRICHMENT
-  INTERNAL_ANALYSIS
-  INTERNAL_EXPORT_FILE
-  STREAM
-}
-
-input ConnectorWithConfig {
-  connectorId: String
-  configuration: String
-}
-
-input ExportAskInput {
-  format: String!
-  exportType: String!
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-}
-
-input StixCoreObjectsExportAskInput {
-  format: String!
-  exportType: String!
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-  search: String
-  exportContext: ExportContext
-  orderBy: StixCoreObjectsOrdering
-  orderMode: OrderingMode
-  filters: FilterGroup
-  selectedIds: [String]
-}
-
-input StixCoreRelationshipsExportAskInput {
-  format: String!
-  exportType: String!
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-  exportContext: ExportContext
-  search: String
-  orderBy: StixCoreRelationshipsOrdering
-  orderMode: OrderingMode
-  selectedIds: [String]
-  fromOrToId: [String]
-  elementWithTargetTypes: [String]
-  fromId: [String]
-  fromRole: String
-  fromTypes: [String]
-  toId: [String]
-  toRole: String
-  toTypes: [String]
-  relationship_type: [String]
-  filters: FilterGroup
-}
-
-input StixCyberObservablesExportAskInput {
-  format: String!
-  exportType: String!
-  exportContext: ExportContext
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-  search: String
-  orderBy: StixCyberObservablesOrdering
-  orderMode: OrderingMode
-  filters: FilterGroup
-  selectedIds: [String]
-}
-
-input ContractConfigInput {
-  key: String!
-  value: String!
-}
-
-input RegisterConnectorInput {
-  id: ID!
-
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  type: ConnectorType!
-  scope: [String!]
-  auto: Boolean
-  auto_update: Boolean
-  enrichment_resolution: String
-  only_contextual: Boolean
-  playbook_compatible: Boolean
-  listen_callback_uri: String
-  xtm_one_intent: String
-}
-
-input EditManagedConnectorInput {
-  id: ID!
-
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  title: String!
-  connector_user_id: ID!
-  manager_contract_configuration: [ContractConfigInput!]!
-}
-
-input AddManagedConnectorInput {
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  connector_user_id: ID
-  user_id: ID!
-  catalog_id: ID!
-  automatic_user: Boolean
-  confidence_level: String
-  manager_contract_image: String!
-  manager_contract_configuration: [ContractConfigInput!]!
-}
-
-input RegisterConnectorsManagerInput {
-  id: ID!
-
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  public_key: String!
-}
-
-input UpdateConnectorManagerStatusInput {
-  id: ID!
-}
-
-input RequestConnectorStatusInput {
-  id: ID!
-  status: ConnectorRequestStatus!
-}
-
-input CurrentConnectorStatusInput {
-  id: ID!
-  status: ConnectorCurrentStatus!
-}
-
-input LogsConnectorStatusInput {
-  id: ID!
-  logs: [String!]!
-}
-
-input HealthConnectorStatusInput {
-  id: ID!
-  restart_count: Int!
-  started_at: DateTime!
-  is_in_reboot_loop: Boolean!
-}
-
-type RabbitMQConnection {
-  host: String!
-  vhost: String!
-  use_ssl: Boolean!
-  port: Int!
-  user: String!
-  pass: String!
-}
-
-type S3Connection {
-  endpoint: String!
-  port: Int!
-  use_ssl: Boolean!
-  bucket_name: String!
-  bucket_region: String!
-  access_key: String!
-  secret_key: String!
-}
-
-input ConnectorInfoInput {
-  run_and_terminate: Boolean!
-  buffering: Boolean!
-  queue_threshold: Float!
-  queue_messages_size: Float!
-  next_run_datetime: DateTime
-  last_run_datetime: DateTime
-}
-
-type ConnectorInfo {
-  run_and_terminate: Boolean!
-  buffering: Boolean!
-  queue_threshold: Float!
-  queue_messages_size: Float!
-  next_run_datetime: DateTime
-  last_run_datetime: DateTime
-}
-
-type ConnectorConfig {
-  connection: RabbitMQConnection!
-  s3: S3Connection!
-  listen: String!
-  listen_routing: String!
-  listen_exchange: String!
-  listen_callback_uri: String
-  push: String!
-  push_routing: String!
-  push_exchange: String!
-  dead_letter_routing: String!
-}
-
-type ConnectorMetadata {
-  configuration: String!
-}
-
-type ConnectorConfiguration {
-  id: ID!
-  name: String!
-  configuration: String!
-}
-
-type ConnectorQueueDetails {
-  messages_number: Float!
-  messages_size: Float!
-}
-
-type ConnectorContractConfiguration {
-  key: String!
-  value: String
-  encrypted: Boolean
-}
-
-enum ConnectorRequestStatus {
-  starting
-  stopping
-}
-
-enum ConnectorCurrentStatus {
-  started
-  stopped
-}
-
-type ManagerContractConfiguration {
-  key: String
-  value: String
-}
-
-type ManagerContractExcerpt {
-  title: String!
-  slug: String!
-  logo: String!
-}
-
-enum ConnectorPriorityGroup {
-  REALTIME
-  DEFAULT
-}
-
-input ConnectorMigrationAssessmentInput {
-  connectorId: ID!
-  containerImage: String!
-  configuration: [ContractConfigInput!]
-}
-
-input MigrateConnectorToManagedInput {
-  connectorId: ID!
-  containerImage: String!
-  configuration: [ContractConfigInput!]
-  resetConnectorState: Boolean
-  convertUserToServiceAccount: Boolean
-}
-
-type MigrationAssessmentSummary {
-  total_source_keys: Int!
-  mapped_keys: Int!
-  ignored_keys: Int!
-  missing_mandatory_keys: Int!
-  can_migrate: Boolean!
-  assessment_date: DateTime!
-}
-
-type MappedConfigKey {
-  key: String!
-  sourceKey: String!
-  value: String!
-  type: String!
-  required: Boolean!
-}
-
-type IgnoredConfigKey {
-  key: String!
-  value: String!
-  reason: String!
-}
-
-type MissingConfigKey {
-  key: String!
-  type: String!
-  description: String!
-  format: String
-  enum: [String!]
-  default: JSON
-  required: Boolean!
-}
-
-type MigrationAssessment {
-  connector_id: ID!
-  connector_name: String!
-  contract_image: String!
-  summary: MigrationAssessmentSummary!
-  mapped: [MappedConfigKey!]!
-  ignored: [IgnoredConfigKey!]!
-  missing: [MissingConfigKey!]!
-}
-
-type Connector implements BasicObject & InternalObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics: [Metric]
-  name: String!
-  title: String!
-  active: Boolean
-  auto: Boolean
-  auto_update: Boolean
-  enrichment_resolution: String
-  only_contextual: Boolean
-  playbook_compatible: Boolean
-  connector_trigger_filters: String
-  connector_type: String
-  connector_scope: [String!]
-  connector_state: String
-  connector_schema: String
-  connector_schema_ui: String
-  connector_state_reset: Boolean
-  connector_state_timestamp: DateTime
-  connector_user_id: ID
-  connector_user: User
-  connector_queue_details: ConnectorQueueDetails!
-  connector_info: ConnectorInfo
-  connector_priority_group: ConnectorPriorityGroup!
-  updated_at: DateTime
-  refreshed_at: DateTime
-  created_at: DateTime
-  config: ConnectorConfig
-  works(status: String): [Work]
-  is_managed: Boolean
-  manager_current_status: String
-  manager_requested_status: String
-  manager_contract_image: String
-  manager_contract_definition: String
-  manager_contract_excerpt: ManagerContractExcerpt
-  manager_contract_configuration: [ManagerContractConfiguration!]
-  manager_connector_logs: [String!]
-  manager_contract_hash: String
-  manager_health_metrics: ConnectorHealthMetrics
-  manager_connector_uptime: Int
-  built_in: Boolean
-  configurations: [ConnectorConfiguration!]
-  xtm_one_intent: String
-  jwks: String!
-}
-
-type ManagedConnector implements BasicObject & InternalObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics: [Metric]
-  name: String!
-  connector_user_id: ID
-  connector_user: User
-  connector_state_timestamp: DateTime
-  manager: ConnectorManager
-  manager_contract_image: String!
-  manager_current_status: String
-  manager_requested_status: String!
-  manager_contract_configuration: [ConnectorContractConfiguration!]!
-  manager_contract_hash: String!
-  manager_connector_logs: [String!]!
-  manager_health_metrics: ConnectorHealthMetrics
-  manager_connector_uptime: Int
-}
-
-type ConnectorHealthMetrics {
-  restart_count: Int!
-  started_at: DateTime!
-  last_update: DateTime!
-  is_in_reboot_loop: Boolean!
-}
-
-type ConnectorManager implements BasicObject & InternalObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics: [Metric]
-  name: String!
-  public_key: String!
-  last_sync_execution: DateTime
-  about_version: String!
-  active: Boolean!
 }
 
 type RuleExecutionError {
@@ -5585,9 +5245,9 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  x_opencti_score
   sophistication
   resource_level
-  x_opencti_score
   _score
   threat_actor_types
   objectMarking
@@ -5696,6 +5356,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5744,7 +5405,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   goals: [String]
   sophistication: String
   resource_level: String
-  x_opencti_score: Int
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
@@ -9283,17 +8943,6 @@ type Query {
   role(id: String!): Role
   capabilities(first: Int): CapabilityConnection
   capabilitiesInDraft(first: Int): CapabilityConnection
-  connector(id: String!): Connector
-  connectors: [Connector!]!
-  connectorManager(managerId: ID!): ConnectorManager!
-  connectorManagers: [ConnectorManager!]!
-  connectorsForManagers: [ManagedConnector!]
-  connectorsForWorker: [Connector]
-  connectorsForExport: [Connector]
-  connectorsForImport: [Connector]
-  connectorsForAnalysis: [Connector]
-  connectorsForNotification: [Connector]
-  connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
   work(id: ID!): Work
   isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
@@ -9467,6 +9116,17 @@ type Query {
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
+  connector(id: String!): Connector
+  connectors: [Connector!]!
+  connectorManager(managerId: ID!): ConnectorManager!
+  connectorManagers: [ConnectorManager!]!
+  connectorsForManagers: [ManagedConnector!]
+  connectorsForWorker: [Connector]
+  connectorsForExport: [Connector]
+  connectorsForImport: [Connector]
+  connectorsForAnalysis: [Connector]
+  connectorsForNotification: [Connector]
+  connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
   contract(slug: String!): ExtendedContract
@@ -10218,20 +9878,6 @@ type Mutation {
   sessionKill(id: ID!): ID
   userSessionsKill(id: ID!): [ID]
   roleEdit(id: ID!): RoleEditMutations
-  pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
-  registerConnector(input: RegisterConnectorInput): Connector
-  managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector
-  managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector
-  registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager
-  updateConnectorManagerStatus(input: UpdateConnectorManagerStatusInput): ConnectorManager
-  resetStateConnector(id: ID!): Connector
-  deleteConnector(id: ID!): ID!
-  updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector
-  updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
-  updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
-  updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
-  updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
-  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   stixEdit(id: ID!): StixEditMutations
   markingDefinitionAdd(input: MarkingDefinitionAddInput!): MarkingDefinition
   markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
@@ -10326,6 +9972,20 @@ type Mutation {
   channelContextClean(id: ID!): Channel
   channelRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel
+  pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
+  registerConnector(input: RegisterConnectorInput): Connector
+  managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector
+  managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector
+  registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager
+  updateConnectorManagerStatus(input: UpdateConnectorManagerStatusInput): ConnectorManager
+  resetStateConnector(id: ID!): Connector
+  deleteConnector(id: ID!): ID!
+  updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector
+  updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
+  updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
+  updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
+  updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
+  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
@@ -10949,6 +10609,346 @@ input ChannelAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+}
+
+enum ConnectorType {
+  EXTERNAL_IMPORT
+  INTERNAL_IMPORT_FILE
+  INTERNAL_ENRICHMENT
+  INTERNAL_ANALYSIS
+  INTERNAL_EXPORT_FILE
+  STREAM
+}
+
+input ConnectorWithConfig {
+  connectorId: String
+  configuration: String
+}
+
+input ContractConfigInput {
+  key: String!
+  value: String!
+}
+
+input RegisterConnectorInput {
+  id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  type: ConnectorType!
+  scope: [String!]
+  auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
+  only_contextual: Boolean
+  playbook_compatible: Boolean
+  listen_callback_uri: String
+  xtm_one_intent: String
+}
+
+input EditManagedConnectorInput {
+  id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  title: String!
+  connector_user_id: ID!
+  manager_contract_configuration: [ContractConfigInput!]!
+}
+
+input AddManagedConnectorInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  connector_user_id: ID
+  user_id: ID!
+  catalog_id: ID!
+  automatic_user: Boolean
+  confidence_level: String
+  manager_contract_image: String!
+  manager_contract_configuration: [ContractConfigInput!]!
+}
+
+input RegisterConnectorsManagerInput {
+  id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  public_key: String!
+}
+
+input UpdateConnectorManagerStatusInput {
+  id: ID!
+}
+
+input RequestConnectorStatusInput {
+  id: ID!
+  status: ConnectorRequestStatus!
+}
+
+input CurrentConnectorStatusInput {
+  id: ID!
+  status: ConnectorCurrentStatus!
+}
+
+input LogsConnectorStatusInput {
+  id: ID!
+  logs: [String!]!
+}
+
+input HealthConnectorStatusInput {
+  id: ID!
+  restart_count: Int!
+  started_at: DateTime!
+  is_in_reboot_loop: Boolean!
+}
+
+type RabbitMQConnection {
+  host: String!
+  vhost: String!
+  use_ssl: Boolean!
+  port: Int!
+  user: String!
+  pass: String!
+}
+
+type S3Connection {
+  endpoint: String!
+  port: Int!
+  use_ssl: Boolean!
+  bucket_name: String!
+  bucket_region: String!
+  access_key: String!
+  secret_key: String!
+}
+
+input ConnectorInfoInput {
+  run_and_terminate: Boolean!
+  buffering: Boolean!
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
+  last_run_datetime: DateTime
+}
+
+type ConnectorInfo {
+  run_and_terminate: Boolean!
+  buffering: Boolean!
+  queue_threshold: Float!
+  queue_messages_size: Float!
+  next_run_datetime: DateTime
+  last_run_datetime: DateTime
+}
+
+type ConnectorConfig {
+  connection: RabbitMQConnection!
+  s3: S3Connection!
+  listen: String!
+  listen_routing: String!
+  listen_exchange: String!
+  listen_callback_uri: String
+  push: String!
+  push_routing: String!
+  push_exchange: String!
+  dead_letter_routing: String!
+}
+
+type ConnectorMetadata {
+  configuration: String!
+}
+
+type ConnectorConfiguration {
+  id: ID!
+  name: String!
+  configuration: String!
+}
+
+type ConnectorQueueDetails {
+  messages_number: Float!
+  messages_size: Float!
+}
+
+type ConnectorContractConfiguration {
+  key: String!
+  value: String
+  encrypted: Boolean
+}
+
+enum ConnectorRequestStatus {
+  starting
+  stopping
+}
+
+enum ConnectorCurrentStatus {
+  started
+  stopped
+}
+
+type ManagerContractConfiguration {
+  key: String
+  value: String
+}
+
+type ManagerContractExcerpt {
+  title: String!
+  slug: String!
+  logo: String!
+}
+
+enum ConnectorPriorityGroup {
+  REALTIME
+  DEFAULT
+}
+
+input ConnectorMigrationAssessmentInput {
+  connectorId: ID!
+  containerImage: String!
+  configuration: [ContractConfigInput!]
+}
+
+input MigrateConnectorToManagedInput {
+  connectorId: ID!
+  containerImage: String!
+  configuration: [ContractConfigInput!]
+  resetConnectorState: Boolean
+  convertUserToServiceAccount: Boolean
+}
+
+type MigrationAssessmentSummary {
+  total_source_keys: Int!
+  mapped_keys: Int!
+  ignored_keys: Int!
+  missing_mandatory_keys: Int!
+  can_migrate: Boolean!
+  assessment_date: DateTime!
+}
+
+type MappedConfigKey {
+  key: String!
+  sourceKey: String!
+  value: String!
+  type: String!
+  required: Boolean!
+}
+
+type IgnoredConfigKey {
+  key: String!
+  value: String!
+  reason: String!
+}
+
+type MissingConfigKey {
+  key: String!
+  type: String!
+  description: String!
+  format: String
+  enum: [String!]
+  default: JSON
+  required: Boolean!
+}
+
+type MigrationAssessment {
+  connector_id: ID!
+  connector_name: String!
+  contract_image: String!
+  summary: MigrationAssessmentSummary!
+  mapped: [MappedConfigKey!]!
+  ignored: [IgnoredConfigKey!]!
+  missing: [MissingConfigKey!]!
+}
+
+type Connector implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  name: String!
+  title: String!
+  active: Boolean
+  auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
+  only_contextual: Boolean
+  playbook_compatible: Boolean
+  connector_trigger_filters: String
+  connector_type: String
+  connector_scope: [String!]
+  connector_state: String
+  connector_schema: String
+  connector_schema_ui: String
+  connector_state_reset: Boolean
+  connector_state_timestamp: DateTime
+  connector_user_id: ID
+  connector_user: User
+  connector_queue_details: ConnectorQueueDetails!
+  connector_info: ConnectorInfo
+  connector_priority_group: ConnectorPriorityGroup!
+  updated_at: DateTime
+  refreshed_at: DateTime
+  created_at: DateTime
+  config: ConnectorConfig
+  works(status: String): [Work]
+  is_managed: Boolean
+  manager_current_status: String
+  manager_requested_status: String
+  manager_contract_image: String
+  manager_contract_definition: String
+  manager_contract_excerpt: ManagerContractExcerpt
+  manager_contract_configuration: [ManagerContractConfiguration!]
+  manager_connector_logs: [String!]
+  manager_contract_hash: String
+  manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Int
+  built_in: Boolean
+  configurations: [ConnectorConfiguration!]
+  xtm_one_intent: String
+  jwks: String!
+}
+
+type ManagedConnector implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  name: String!
+  connector_user_id: ID
+  connector_user: User
+  connector_state_timestamp: DateTime
+  manager: ConnectorManager
+  manager_contract_image: String!
+  manager_current_status: String
+  manager_requested_status: String!
+  manager_contract_configuration: [ConnectorContractConfiguration!]!
+  manager_contract_hash: String!
+  manager_connector_logs: [String!]!
+  manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Int
+}
+
+type ConnectorHealthMetrics {
+  restart_count: Int!
+  started_at: DateTime!
+  last_update: DateTime!
+  is_in_reboot_loop: Boolean!
+}
+
+type ConnectorManager implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  name: String!
+  public_key: String!
+  last_sync_execution: DateTime
+  about_version: String!
+  active: Boolean!
 }
 
 type Catalog implements InternalObject & BasicObject {
