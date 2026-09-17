@@ -1,31 +1,27 @@
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'eslint/config';
+import { defineConfig, includeIgnoreFile } from 'eslint/config';
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import globals from 'globals';
 import importPlugin from 'eslint-plugin-import';
+// @ts-expect-error -- eslint-plugin-import-newlines ships no type declarations.
 import importNewlines from 'eslint-plugin-import-newlines';
 import customRules from 'eslint-plugin-custom-rules';
 import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
+  // Build and tool output is already named once, in `.gitignore`.
+  includeIgnoreFile(fileURLToPath(new URL('.gitignore', import.meta.url))),
+
   {
     ignores: [
-      '**/builder/**',
-      '**/coverage/**',
-      '**/node_module/**',
-      '**/packages/**',
-      '**/src/generated/**',
-      '**/__generated__/**',
+      // A workspace of its own: it carries its own ESLint, TypeScript and vitest
+      // configuration, and its own commands.
+      'packages/**',
+      // Generated sources that git does track, so `.gitignore` does not cover them.
       '**/fds-tokens.generated.ts',
       '**/fds-tokens.generated.meta.json',
-      '**/extract-i18n-keyword.js',
-      'eslint.config.js',
-      'playwright.config.ts',
-      'vite.config.ts',
-      'vitest.config.ts',
-      'setup-vitest.ts',
     ],
   },
 
@@ -88,7 +84,7 @@ export default defineConfig([
 
   // Custom rules (from legacy config)
   {
-    files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+    files: ['**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -167,12 +163,28 @@ export default defineConfig([
             'src/utils/tests/*.{ts,tsx}',
             '**/*.test.{ts,tsx}',
             'tests_e2e/**/*.{ts,tsx,js}',
+            // Build, test and lint configuration, plus the maintenance scripts and the
+            // workspace package holding the custom ESLint rules: none of it ships.
+            '*.ts',
+            '*.d.ts',
+            'script/**',
           ],
           optionalDependencies: false,
         },
       ],
       'react/jsx-closing-bracket-location': 'error',
       'react/react-in-jsx-scope': 'off',
+    },
+  },
+
+  // Playwright fixtures and the maintenance scripts run in Node, not in a browser, so
+  // they see Node's globals rather than the browser ones the app code is checked against.
+  {
+    files: ['tests_e2e/**', 'script/**'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
 ]);
