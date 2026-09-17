@@ -95,6 +95,37 @@ export const findAllCatalogsExcluding = async (
   return findAllCatalogs(context, user, filters);
 };
 
+export const findCatalogsRevisions = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
+  const filters: FilterGroupWithNested | undefined = excludedIds?.length
+    ? {
+        filters: excludedIds.map((catalogId) => ({
+          key: ['catalog_id'],
+          values: [catalogId],
+          operator: FilterOperator.NotEq,
+        })),
+        filterGroups: [],
+        mode: FilterMode.And,
+      }
+    : undefined;
+
+  const catalogs = await fullEntitiesList<BasicStoreEntityCatalog>(
+    context,
+    user,
+    [ENTITY_TYPE_CATALOG],
+    {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      filters,
+      baseData: true,
+      baseFields: ['catalog_id', 'revision'],
+    },
+  );
+
+  return catalogs.map((catalog) => ({
+    catalog_id: catalog.catalog_id,
+    revision: catalog.revision,
+  }));
+};
+
 export const deleteCatalogs = async (context: AuthContext, catalogEntities: BasicStoreEntityCatalog[]) => {
   for (let idx = 0; idx < catalogEntities.length; ++idx) {
     const catalogEntity = catalogEntities[idx];
