@@ -161,6 +161,8 @@ export default defineConfig([
       'import/no-extraneous-dependencies': [
         'error',
         {
+          // includeTypes because `import type` of an undeclared package is skipped by default.
+          includeTypes: true,
           devDependencies: [
             'src/utils/tests/*.{ts,tsx}',
             '**/*.test.{ts,tsx}',

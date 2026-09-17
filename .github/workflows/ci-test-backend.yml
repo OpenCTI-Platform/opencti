@@ -367,7 +367,7 @@ jobs:
             cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
         '
 
-    - name: Backend type checking and linting
+    - name: Backend type checking, linting and dependency check
       run: |
         docker run --name backend-lint \
           -v ${{ github.workspace }}:/home/workspace \
@@ -378,6 +378,9 @@ jobs:
             cd /home/workspace/opencti-platform/opencti-graphql
             yarn check-ts
             yarn lint
+            # --dependencies only: the wider knip report (unused files and exports) still has a
+            # large pre-existing backlog on both workspaces, so only declaration drift is enforced.
+            yarn knip --dependencies
         '
 
     - name: Start unit tests (aka yarn test:ci-unit)

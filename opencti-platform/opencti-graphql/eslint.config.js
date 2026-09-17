@@ -99,6 +99,19 @@ export default defineConfig([
       'no-await-in-loop': 'off',
       'import/no-import-module-exports': 'off',
       'import/prefer-default-export': 'off',
+      // includeTypes because `import type` of an undeclared package is skipped by default.
+      'import/no-extraneous-dependencies': ['error', {
+        includeTypes: true,
+        devDependencies: [
+          'tests/**',
+          'script/**',
+          'builder/**',
+          'knip.ts',
+          'vitest.config*.ts',
+          'eslint.config.js',
+        ],
+        optionalDependencies: false,
+      }],
       'arrow-body-style': 'off',
       'object-curly-newline': 'off',
 
