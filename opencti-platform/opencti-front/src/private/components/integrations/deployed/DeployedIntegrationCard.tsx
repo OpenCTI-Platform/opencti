@@ -9,6 +9,7 @@ import DeployedIntegrationPopover from '@components/integrations/deployed/Deploy
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { paperBorder } from '../paperSurface';
 
@@ -249,7 +250,10 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             )}
           </Stack>
           <Box onClick={(event) => event.stopPropagation()}>
-            {statusChip}
+            <Stack direction="row" gap={1} alignItems="center">
+              <IngestionHealthChip health={item.health} />
+              {statusChip}
+            </Stack>
           </Box>
         </Stack>
       </Card>

@@ -680,6 +680,7 @@ type Synchronizer {
   ssl_verify: Boolean
   synchronized: Boolean
   queue_messages: Int!
+  ingestion_health: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
 }
@@ -2256,6 +2257,7 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_hash: String
   manager_health_metrics: ConnectorHealthMetrics
   manager_connector_uptime: Int
+  ingestion_health: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
   xtm_one_intent: String
@@ -2292,6 +2294,7 @@ type ConnectorHealthMetrics {
   last_update: DateTime!
   is_in_reboot_loop: Boolean!
 }
+
 
 type ConnectorManager implements BasicObject & InternalObject {
   id: ID! # internal_id

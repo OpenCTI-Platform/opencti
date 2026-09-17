@@ -3,6 +3,8 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { getConnectorMetadata, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import IngestionHealthCounters from '@components/data/connectors/IngestionHealthCounters';
 import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
 import ConnectorsLogos, { connectorsLogosQuery } from '@components/data/connectors/ConnectorsLogos';
 import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
@@ -33,6 +35,7 @@ import BooleanStatusIcon from '../../../../components/common/icons/BooleanStatus
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
+import { normalizeIngestionHealth } from '../../../../utils/IngestionHealth';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -83,6 +86,7 @@ interface ConnectorsStatusContentProps {
   connectorsStateData: ConnectorsStateQuery['response'];
   logosBySlug: Map<string, string>;
 }
+
 
 const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> = ({
   connectorsListData,
@@ -303,6 +307,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
           />
         )}
       >
+        <IngestionHealthCounters connectors={connectors} />
         <List classes={{ root: classes.linesContainer }}>
           <ListItem
             classes={{ root: classes.itemHead }}
@@ -452,7 +457,14 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               {n(connector.messages)}
                             </div>
                             <div className={classes.bodyItem}>
-                              <ConnectorStatusChip connector={connector} />
+                              {connector.manager_requested_status
+                              && connector.manager_requested_status !== connector.manager_current_status ? (
+                                // Mid start/stop: the lifecycle chip is the
+                                // useful feedback, health is about to change.
+                                <ConnectorStatusChip connector={connector} />
+                                ) : (
+                                  <IngestionHealthChip health={normalizeIngestionHealth(connector.ingestion_health)} />
+                                )}
                             </div>
                             <div className={classes.bodyItem}>
                               <span className={classes.bodyItemText}>

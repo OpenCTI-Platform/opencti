@@ -43,8 +43,13 @@
       "logs_console": true,
       "logs_max_files": 7,
       "logs_directory": "./logs",
-      "logs_in_transports": ["administration"],
-      "trace_request_headers": ["user-agent", "x-forwarded-for"]
+      "logs_in_transports": [
+        "administration"
+      ],
+      "trace_request_headers": [
+        "user-agent",
+        "x-forwarded-for"
+      ]
     },
     "event_loop_logs": {
       "enabled": false,
@@ -180,11 +185,19 @@
     },
     "groups": {
       "enabled": true,
-      "protected_names": ["Administrators", "Connectors", "Default"]
+      "protected_names": [
+        "Administrators",
+        "Connectors",
+        "Default"
+      ]
     },
     "roles": {
       "enabled": true,
-      "protected_names": ["Administrator", "Connector", "Default"]
+      "protected_names": [
+        "Administrator",
+        "Connector",
+        "Default"
+      ]
     },
     "rules": {
       "enabled": true
@@ -246,6 +259,24 @@
   "activity_manager": {
     "enabled": true,
     "lock_key": "activity_manager_lock"
+  },
+  "ingestion_health_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_health_manager_lock",
+    "interval": 60000,
+    "missed_periods_before_alert": 2,
+    "good_periods_before_recovery": 3,
+    "min_alert_dwell_seconds": 900,
+    "startup_grace_seconds": 300,
+    "storm_threshold": 10,
+    "empty_runs_before_alert": 3,
+    "heartbeat_grace_seconds": 300,
+    "unscheduled_stale_seconds": 3600,
+    "restart_delta_threshold": 3,
+    "restart_delta_window_seconds": 900,
+    "configuration_inventory_enabled": true,
+    "configuration_inventory_interval_seconds": 86400,
+    "token_expiry_warning_days": 14
   },
   "connector_manager": {
     "enabled": true,
@@ -406,7 +437,9 @@
     "access_key": "ChangeMe",
     "secret_key": "ChangeMe",
     "use_aws_role": false,
-    "excluded_files": [".DS_Store"],
+    "excluded_files": [
+      ".DS_Store"
+    ],
     "disable_checksum_validation": false
   },
   "rabbitmq": {

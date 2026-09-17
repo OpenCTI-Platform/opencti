@@ -18,6 +18,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import type { IngestionHealthObservation } from '../modules/ingestionHealth/ingestionHealth-types';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -886,6 +887,36 @@ export const redisSetConnectorHealthMetrics = async (connectorId: string, metric
 export const redisGetConnectorHealthMetrics = async (connectorId: string): Promise<ConnectorHealthMetrics | null> => {
   const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
   return rawMetrics ? JSON.parse(rawMetrics) : null;
+};
+// endregion
+
+// Ingestion health observations — what the health manager remembers between
+// cycles so it can detect transitions rather than re-alerting every minute.
+// The shape is owned by the ingestion health module, which is the only thing
+// that reads or writes it; this file just moves it in and out of Redis.
+//
+// Deliberately NO TTL, unlike the composer metrics above: an expiring
+// observation silently resets the hysteresis and re-alerts.
+const ingestionHealthKey = (sourceId: string) => `ingestion-health-observation:${sourceId}`;
+
+export const redisGetIngestionHealthObservation = async (sourceId: string): Promise<IngestionHealthObservation | null> => {
+  const raw = await getClientBase().get(ingestionHealthKey(sourceId));
+  return raw ? JSON.parse(raw) : null;
+};
+
+export const redisSetIngestionHealthObservation = async (sourceId: string, observation: IngestionHealthObservation) => {
+  await getClientBase().set(ingestionHealthKey(sourceId), JSON.stringify(observation));
+};
+
+// Breadcrumb for the manager's last successful pass, for operators: `GET
+// ingestion-health-manager-last-run` answers "is the health manager alive". It
+// is not part of any answer the platform computes — health is evaluated from
+// live facts on every read, so a stopped manager cannot leave sources showing
+// stale green. One key for the platform, not one per source.
+const INGESTION_HEALTH_RUN_KEY = 'ingestion-health-manager-last-run';
+
+export const redisSetIngestionHealthLastRun = async (at: Date) => {
+  await getClientBase().set(INGESTION_HEALTH_RUN_KEY, at.toISOString());
 };
 // endregion
 

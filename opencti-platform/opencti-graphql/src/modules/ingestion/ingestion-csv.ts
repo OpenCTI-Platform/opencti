@@ -6,6 +6,7 @@ import { normalizeName } from '../../schema/identifier';
 import { convertIngestionCsvToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
+import { INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
 
 const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
   type: {
@@ -39,8 +40,21 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     { name: 'markings', label: 'Markings', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: true, upsert: true, isFilterable: false },
     { name: 'authentication_type', label: 'Authentication type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    // `ingestionManager` patches this on every run and the GraphQL schema has always
+    // exposed it, but it was never registered here — so the write was silently dropped
+    // and the field read back null. Registering it makes the existing patch effective.
+    { name: 'last_execution_status', label: 'Last execution status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'authentication_value', label: 'Authentication value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
+    // Cached ingestion health, written by the health manager on change only.
+    // The resolver stays the source of truth — these exist so the fleet can be
+    // filtered and sorted server-side, which a value computed on read cannot do.
+    // Registered behind the feature flag, so with it off they are absent from
+    // the mapping entirely rather than present and always empty.
+    { name: 'ingestion_health_status', label: 'Health status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_health_since', label: 'Health since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_last_productive_at', label: 'Last productive run', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+    { name: 'ingestion_configuration_status', label: 'Configuration status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
   ],
   relations: [],
   representative: (stix: StixIngestionCsv) => {

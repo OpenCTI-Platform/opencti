@@ -48,9 +48,13 @@ vi.mock('../../../../src/database/stream/stream-handler', () => ({
   fetchStreamInfo: vi.fn(),
 }));
 
-vi.mock('../../../../src/listener/UserActionListener', () => ({
-  publishUserAction: vi.fn(),
-}));
+vi.mock('../../../../src/listener/UserActionListener', async () => {
+  const actual = await vi.importActual('../../../../src/listener/UserActionListener');
+  return {
+    ...actual,
+    publishUserAction: vi.fn(),
+  };
+});
 
 vi.mock('../../../../src/graphql/streamConsumerRegistry', () => ({
   getConsumersForCollection: vi.fn(),
