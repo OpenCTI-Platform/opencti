@@ -20,23 +20,36 @@ describe('normalizeFrontendError', () => {
     expect(stack).toBeDefined();
   });
 
-  it('should wrap a thrown plain object into a readable Error message', () => {
-    const { message } = normalizeFrontendError({ reason: 'network down' });
-    expect(message).toEqual('Error: {"reason":"network down"}');
+  it('should surface only key names, never values, for a thrown plain object', () => {
+    const { message } = normalizeFrontendError({ reason: 'network down', token: 'super-secret' });
+    expect(message).toEqual('Error: Non-Error object thrown with keys: [reason, token]');
+    expect(message).not.toContain('network down');
+    expect(message).not.toContain('super-secret');
   });
 
-  it('should not throw and should still produce a message when the thrown value cannot be serialized (circular reference)', () => {
+  it('should not throw and should still produce a message when the thrown value is a circular reference', () => {
     const circular: Record<string, unknown> = {};
     circular.self = circular;
 
     expect(() => normalizeFrontendError(circular)).not.toThrow();
     const { message } = normalizeFrontendError(circular);
-    expect(message).toEqual('Error: [object Object]');
+    expect(message).toEqual('Error: Non-Error object thrown with keys: [self]');
   });
 
   it('should not throw and should still produce a message when the thrown value is undefined', () => {
     expect(() => normalizeFrontendError(undefined)).not.toThrow();
     const { message } = normalizeFrontendError(undefined);
     expect(message).toEqual('Error: undefined');
+  });
+
+  it('should not throw when the Error message conversion itself throws', () => {
+    const hostileError = new Error('boom');
+    hostileError.toString = () => {
+      throw new Error('nested failure');
+    };
+
+    expect(() => normalizeFrontendError(hostileError)).not.toThrow();
+    const { message } = normalizeFrontendError(hostileError);
+    expect(message).toEqual('Error: <unreadable error message>');
   });
 });
