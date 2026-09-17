@@ -43,13 +43,8 @@
       "logs_console": true,
       "logs_max_files": 7,
       "logs_directory": "./logs",
-      "logs_in_transports": [
-        "administration"
-      ],
-      "trace_request_headers": [
-        "user-agent",
-        "x-forwarded-for"
-      ]
+      "logs_in_transports": ["administration"],
+      "trace_request_headers": ["user-agent", "x-forwarded-for"]
     },
     "event_loop_logs": {
       "enabled": false,
@@ -185,19 +180,11 @@
     },
     "groups": {
       "enabled": true,
-      "protected_names": [
-        "Administrators",
-        "Connectors",
-        "Default"
-      ]
+      "protected_names": ["Administrators", "Connectors", "Default"]
     },
     "roles": {
       "enabled": true,
-      "protected_names": [
-        "Administrator",
-        "Connector",
-        "Default"
-      ]
+      "protected_names": ["Administrator", "Connector", "Default"]
     },
     "rules": {
       "enabled": true
@@ -411,8 +398,6 @@
     "engine_selector": "auto",
     "engine_check": true,
     "index_creation_pattern": "-000001",
-    "search_wildcard_prefix": false,
-    "search_fuzzy": false,
     "max_pagination_result": 5000,
     "default_pagination_result": 500,
     "max_bulk_operations": 5000,
@@ -428,9 +413,7 @@
     "access_key": "ChangeMe",
     "secret_key": "ChangeMe",
     "use_aws_role": false,
-    "excluded_files": [
-      ".DS_Store"
-    ],
+    "excluded_files": [".DS_Store"],
     "disable_checksum_validation": false
   },
   "rabbitmq": {
