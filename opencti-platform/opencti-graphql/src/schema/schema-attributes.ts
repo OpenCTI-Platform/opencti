@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, ComplexAttribute, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
+import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
