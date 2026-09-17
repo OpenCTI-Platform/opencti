@@ -1642,34 +1642,35 @@ const navigateDataManagement = async (page: Page) => {
 // The top bar links live outside the left menu, so the left-menu tour above never
 // exercises them: #18321 shipped a bell link that matched no route and rendered an
 // empty page. Each check asserts the page actually rendered, not only the URL.
+// Lists sync their filters and sort into the query string, so URL checks stop at the path.
 const navigateTopBar = async (page: Page) => {
   const topBarPage = new TopBarPage(page);
   const leftBarPage = new LeftBarPage(page);
 
   await topBarPage.clickOnIconLink('Triggers');
-  await expect(page).toHaveURL(/\/dashboard\/profile\/triggers$/);
+  await expect(page).toHaveURL(/\/dashboard\/profile\/triggers(\?|$)/);
   await leftBarPage.expectBreadcrumb('Triggers');
 
   await topBarPage.clickOnIconLink('Alerts');
-  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications$/);
+  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications(\?|$)/);
   await leftBarPage.expectBreadcrumb('Alerts');
 
   await topBarPage.clickOnIconLink('News Feed');
-  await expect(page).toHaveURL(/\/dashboard\/news-feed$/);
+  await expect(page).toHaveURL(/\/dashboard\/news-feed(\?|$)/);
   await leftBarPage.expectBreadcrumb('XTM Hub News Feed');
 
   await topBarPage.openProfileMenu();
   await topBarPage.clickOnProfileMenuItem('Profile');
-  await expect(page).toHaveURL(/\/dashboard\/profile\/me$/);
+  await expect(page).toHaveURL(/\/dashboard\/profile\/me(\?|$)/);
   await expect(page.getByText('User experience', { exact: true })).toBeVisible();
 
   // Paths from before the news feed page extraction (#18150) must keep working.
   await page.goto('/dashboard/profile/notifications/alerts');
-  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications$/);
+  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications(\?|$)/);
   await leftBarPage.expectBreadcrumb('Alerts');
 
   await page.goto('/dashboard/profile/notifications/news-feed');
-  await expect(page).toHaveURL(/\/dashboard\/news-feed$/);
+  await expect(page).toHaveURL(/\/dashboard\/news-feed(\?|$)/);
   await leftBarPage.expectBreadcrumb('XTM Hub News Feed');
 };
 
