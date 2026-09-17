@@ -52,9 +52,9 @@ interface WorkLike {
   timestamp?: string | Date | null;
 }
 
-// Every optional field here also accepts `null`: the resolver passes the raw
-// GraphQL-codegen `Connector` object straight through, and generated types
-// model every nullable schema field as `T | null`, never `T | undefined`.
+// Every field also accepts `null` — the resolver passes the generated
+// `Connector` object straight through, and codegen types nullable fields
+// `T | null`, not `T | undefined`.
 interface ConnectorLike {
   id: string;
   internal_id?: string | null;
@@ -207,9 +207,7 @@ export const isIngestionConnector = (connector: ConnectorLike): boolean => {
 export const buildConnectorHealthInput = (
   connector: ConnectorLike,
   works: WorkLike[],
-  // `queueDetails()` returns the full RabbitMQ metric shape — push_* included
-  // — but only the listen queue answers "is this connector picking up its own
-  // work"; the push queue is drained by workers and says nothing about that.
+  // push_* included for completeness; only listen_* is actually read below.
   queue?: {
     messages_number?: number;
     listen_messages?: number;
@@ -309,10 +307,7 @@ export const resolveConnectorIngestionHealth = async (
     ]);
     const input = buildConnectorHealthInput(
       connector,
-      // `worksForConnector` is untyped legacy JS wrapping `elPaginate`'s
-      // generic overloads — with `connectionFormat: false` it always returns
-      // a plain array of work entities, which is exactly `WorkLike[]`'s
-      // shape, but nothing here lets TS narrow that statically.
+      // worksForConnector is untyped legacy JS; it's actually a plain array.
       (works ?? []) as WorkLike[],
       queue ?? undefined,
       previous ?? undefined,

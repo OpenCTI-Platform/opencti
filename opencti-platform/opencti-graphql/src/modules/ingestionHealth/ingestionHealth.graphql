@@ -1,5 +1,5 @@
 # Ingestion health — resolved at read time from each source's own state, never
-# stored as the answer. See spec INGESTION-HEALTH-1-MVP.md.
+# stored as the answer.
 
 enum IngestionHealthStatus {
     healthy
