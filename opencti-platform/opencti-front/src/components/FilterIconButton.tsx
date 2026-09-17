@@ -1,6 +1,6 @@
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmpty, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
+import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmpty, mapFilterGroupTree, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
@@ -31,6 +31,7 @@ export interface FilterIconButtonProps {
   availableRelationshipTypes?: string[];
   host?: WidgetHost;
   hasSavedFilters?: boolean;
+  inline?: boolean;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -62,6 +63,8 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   hasSavedFilters,
   filterChipsParams,
   setFilterChipsParams,
+  availableFilterKeys,
+  inline,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -97,6 +100,8 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             hasSavedFilters={hasSavedFilters}
             filterChipsParams={filterChipsParams}
             setFilterChipsParams={setFilterChipsParams}
+            availableFilterKeys={availableFilterKeys}
+            inline={inline}
           />
         </React.Suspense>
       )}
@@ -134,6 +139,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   availableRelationshipTypes,
   host,
   hasSavedFilters,
+  inline,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = (value: boolean) => {
@@ -146,13 +152,12 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     anchorPosition: undefined,
   });
 
-  const displayedFilters = filters
-    ? {
-        ...filters,
-        filters:
-          filters.filters.filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey)),
-      }
-    : undefined;
+  const filterGroupOnAvailableKeys = (filterGroup: FilterGroup, keys?: string[]): FilterGroup => mapFilterGroupTree(filterGroup, (group) => ({
+    ...group,
+    filters: group.filters.filter((currentFilter) => !keys || keys.some((currentKey) => currentFilter.key === currentKey)),
+  }));
+
+  const displayedFilters = filters ? filterGroupOnAvailableKeys(filters, availableFilterKeys) : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery
@@ -177,6 +182,8 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         hasSavedFilters={hasSavedFilters}
         filterChipsParams={filterChipsParams}
         setFilterChipsParams={setFilterChipsParams}
+        availableFilterKeys={availableFilterKeys}
+        inline={inline}
       />
     );
   }
