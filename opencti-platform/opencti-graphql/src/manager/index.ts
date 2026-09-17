@@ -5,6 +5,7 @@ import './garbageCollectionManager';
 import './hubRegistrationManager';
 import './indicatorDecayManager';
 import './pirManager';
+import './platformUsageMetricsManager';
 import './retentionManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';
