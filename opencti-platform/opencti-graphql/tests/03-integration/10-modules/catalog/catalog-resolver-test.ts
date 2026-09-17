@@ -24,7 +24,7 @@ const LIST_CATALOGS_QUERY = gql`
 const LIST_CATALOG_REVISIONS_QUERY = gql`
   query CatalogsRevisions {
     catalogsRevisions {
-      id
+      catalog_id
       revision
     }
   }
@@ -218,8 +218,8 @@ describe('Catalog resolver integration', () => {
     expect(revisions.length).toBeGreaterThan(0);
 
     for (const revisionEntry of revisions) {
-      expect(Object.keys(revisionEntry).sort()).toEqual(['id', 'revision']);
-      expect(revisionEntry.id).toEqual(expect.any(String));
+      expect(Object.keys(revisionEntry).sort()).toEqual(['catalog_id', 'revision']);
+      expect(revisionEntry.catalog_id).toEqual(expect.any(String));
       expect(revisionEntry.revision).toEqual(expect.any(String));
     }
   });
