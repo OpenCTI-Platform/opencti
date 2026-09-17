@@ -107,18 +107,18 @@ vi.mock('../../../src/__generated__/opencti-manifest.json', () => ({
   },
 }));
 
-import { up } from '../../../src/migrations/1786264797376-embed-catalog-contract-in-connector-entity';
+import { up } from '../../../src/migrations/1789637887081-embed-catalog-contract-in-connector-entity';
 
 const runUp = async () => {
   await new Promise<void>((resolve, reject) => {
-    up((error?: Error) => {
+    void up((error?: Error) => {
       if (error) reject(error);
       else resolve();
     });
   });
 };
 
-describe('migration 1786264797376 embed catalog contract', () => {
+describe('migration 1789637887081 embed catalog contract', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockListCatalogContractLogos.mockResolvedValue(new Set<string>());
