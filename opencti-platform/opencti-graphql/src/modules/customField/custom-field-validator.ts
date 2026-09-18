@@ -1,10 +1,11 @@
 import * as R from 'ramda';
 import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
-import { getCustomFieldDefinitionsForEntityType, getCustomFieldSettingForEntityType } from './custom-field-cache';
+import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitionsForEntityType, getCustomFieldSettingForEntityType, getCustomFieldValueField } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type CustomFieldValueAddInput, type EditInput, EditOperation } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
+import { customFieldValues } from '../../schema/attribute-definition';
 
 const verifyAddInputValueType = (
   customFieldValueAddInputValue: any[],
@@ -177,6 +178,21 @@ export const fillCustomFieldsDefaultValues = async (
   } else {
     return undefined;
   }
+};
+export const extractStringifiedCustomFieldValueFromStoreEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: Record<string, any>,
+  customFieldName: string,
+): Promise<string | undefined> => {
+  const customFieldDefinition = await getCustomFieldDefinitionByNameOrAlias(context, user, customFieldName);
+  if (!customFieldDefinition) return undefined;
+  const customFieldValueInElement = element[customFieldValues.name]?.find((cfv: any) => cfv.field_name === customFieldDefinition.name);
+  if (!customFieldValueInElement) return undefined;
+  const valueField = getCustomFieldValueField(customFieldDefinition.field_type);
+  const rawValue = customFieldValueInElement[valueField];
+  if (rawValue === undefined || rawValue === null) return undefined;
+  return Array.isArray(rawValue) ? rawValue.join(',') : String(rawValue);
 };
 /**
  * Validates an array of custom field values against the definitions for a given entity type.

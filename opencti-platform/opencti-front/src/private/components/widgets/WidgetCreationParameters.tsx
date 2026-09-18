@@ -23,7 +23,7 @@ import { isNotEmptyField } from 'src/utils/utils';
 import { capitalizeFirstLetter } from 'src/utils/String';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from 'src/components/i18n';
-import { findFiltersFromKeys, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
+import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
 import {
@@ -43,6 +43,7 @@ import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@compon
 import { getEntityTypeFromFilters, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidgetColumns';
+import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -1026,9 +1027,9 @@ const WidgetCreationParameters = () => {
           return (
             <WidgetColumnsCustomizationInput
               key={index}
-              availableColumns={getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined)}
+              availableColumns={fullAvailableColumns}
               defaultColumns={defaultWidgetColumnsByType}
-              value={[...(columns ?? defaultWidgetColumnsByType)]}
+              value={selectedColumns}
               onChange={(newColumns) => setColumns(index, newColumns)}
               isAvailableColumnsLoading={listCustomFieldColumnsLoading}
             />
