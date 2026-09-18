@@ -567,6 +567,7 @@
   "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "Будьте внимательны, задайте какой-нибудь фильтр для правила исключения, иначе, поскольку фильтры не заданы, любой индикатор будет соответствовать правилу и будет иметь правило исключения",
   "Be careful, you are about to delete the selected entities": "Будьте осторожны, вы собираетесь удалить выбранные сущности.",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Будьте осторожны, вы собираетесь удалить выбранные сущности (не связи).",
+  "Be careful, you are about to delete the selected relationships": "Будьте осторожны, вы собираетесь удалить выбранные связи.",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Будьте осторожны, вы собираетесь удалить выбранные объекты наблюдения (не отношения).",
   "Bearer token": "Токен Bearer",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "Поскольку по умолчанию черновик не будет включать изменения, внесенные в объект после создания рабочей среды.",
