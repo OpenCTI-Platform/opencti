@@ -7,5 +7,6 @@ import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
 // `Assertion<R, T>` of Vitest 5. The matchers are declared here against `Matchers`, the
 // extension point Vitest 5 documents, until the package supports it upstream.
 declare module 'vitest' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- merging is the point
   interface Matchers<R extends void | Promise<void> = void | Promise<void>> extends TestingLibraryMatchers<unknown, R> {}
 }
