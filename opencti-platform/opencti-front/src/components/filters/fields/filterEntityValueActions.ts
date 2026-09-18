@@ -60,7 +60,8 @@ export const isChangeBlocked = (
 ): boolean => {
   if (!disabled || currentValues.length !== 1) return false;
   if (change.type === 'add') return currentValues.includes(change.value);
-  return change.type === 'remove';
+  // 'clear' drops the same sole value a 'remove' would: blocked the same way.
+  return change.type === 'remove' || change.type === 'clear';
 };
 
 const applyRepresentationChange = (

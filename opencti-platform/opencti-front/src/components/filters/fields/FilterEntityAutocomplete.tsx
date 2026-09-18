@@ -4,6 +4,7 @@ import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
 // fds:keep-mui paired with the Autocomplete above (renderInput), converts with it once gap #155 lands
 import TextField from '@mui/material/TextField';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Dispatch, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { isStixObjectTypes } from '../../../utils/filters/filtersUtils';
@@ -64,10 +65,6 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
   const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
     const currentValues = getEditedValues(filter, subKey);
     const change = computeValueChange(currentValues, newValue.map((v) => v.value), reason);
-    if (change.type === 'clear') {
-      applyValueChange(change, { helpers, filter, subKey });
-      return;
-    }
     if (reason === AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION) {
       setInputValue('');
     }
@@ -89,6 +86,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       getOptionLabel={(option) => option.label ?? ''}
       noOptionsText={t_i18n('No available options')}
       options={options}
+      disableClearable={disabled}
       groupBy={(option) => t_i18n(option?.group ? option?.group : label)}
       onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
         if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
@@ -101,6 +99,28 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       onChange={handleAutocompleteChange}
       disableCloseOnSelect
       isOptionEqualToValue={(option, val) => option.value === val.value}
+      renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => {
+        const { key, onDelete, className } = getTagProps({ index });
+        // The sole value of a locked filter cannot be removed (isChangeBlocked): showing a
+        // delete icon that silently does nothing is worse than not showing one, so this chip
+        // drops it and explains why instead.
+        const isLockedValue = disabled && tagValue.length === 1;
+        if (!isLockedValue) {
+          return <Chip key={key} className={className} label={option.label} onDelete={() => onDelete(index)} />;
+        }
+        return (
+          <Tooltip key={key}>
+            <TooltipTrigger asChild>
+              <span>
+                <Chip className={className} label={option.label} disabled />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {t_i18n('Cannot be removed: the relationship type is required while this filter has a dynamic value')}
+            </TooltipContent>
+          </Tooltip>
+        );
+      })}
       sx={{
         '& .MuiAutocomplete-tag': {
           maxWidth: 200,
