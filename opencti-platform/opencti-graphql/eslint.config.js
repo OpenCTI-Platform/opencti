@@ -65,7 +65,7 @@ export default defineConfig([
       parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 2020,
-        project: './tsconfig.json',
+        project: ['./tsconfig.back.json', './tsconfig.tool.json'],
         tsconfigRootDir: fileURLToPath(new URL('.', import.meta.url)),
       },
       globals: {
