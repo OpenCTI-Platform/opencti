@@ -39153,6 +39153,7 @@ export type WorkflowInstance = {
   pendingError?: Maybe<Scalars['String']['output']>;
   pendingStatus?: Maybe<WorkflowExecutionStatus>;
   pendingTransition?: Maybe<WorkflowPendingTransition>;
+  scope?: Maybe<Scalars['String']['output']>;
 };
 
 export type WorkflowLastHistoryEntry = {
@@ -54585,6 +54586,7 @@ export type WorkflowInstanceResolvers<ContextType = any, ParentType extends Reso
   pendingError?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pendingStatus?: Resolver<Maybe<ResolversTypes['WorkflowExecutionStatus']>, ParentType, ContextType>;
   pendingTransition?: Resolver<Maybe<ResolversTypes['WorkflowPendingTransition']>, ParentType, ContextType>;
+  scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type WorkflowLastHistoryEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowLastHistoryEntry'] = ResolversParentTypes['WorkflowLastHistoryEntry']> = ResolversObject<{
