@@ -244,6 +244,9 @@ class StixCoreRelationship:
                     created_at
                     updated_at
                 }
+                ... on CitizenshipDocument {
+                    name
+                }
             }
             to {
                 ... on BasicObject {
@@ -353,6 +356,9 @@ class StixCoreRelationship:
                     spec_version
                     created_at
                     updated_at
+                }
+                ... on CitizenshipDocument {
+                    name
                 }
             }
         """

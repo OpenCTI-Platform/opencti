@@ -542,6 +542,12 @@ class Identity:
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
+        x_opencti_citizenship_document_id = kwargs.get(
+            "x_opencti_citizenship_document_id", None
+        )
+        x_opencti_citizenship_document_type = kwargs.get(
+            "x_opencti_citizenship_document_type", None
+        )
 
         if type is not None and name is not None:
             self.opencti.app_logger.info("Creating Identity", {"name": name})
@@ -638,6 +644,29 @@ class Identity:
                 input_variables["x_opencti_lastname"] = x_opencti_lastname
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
                 result_data_field = "systemAdd"
+            elif type == IdentityTypes.CITIZENSHIP_DOCUMENT.value:
+                # TODO
+                query = """
+                    mutation CitizenshipDocumentAdd($input: SystemAddInput!) {
+                        c8itizenshipDocumentAdd(input: $input) {
+                            id
+                            standard_id
+                            entity_type
+                            parent_types
+                        }
+                    }
+                """
+                input_variables["objectOrganization"] = granted_refs
+                input_variables["x_opencti_firstname"] = x_opencti_firstname
+                input_variables["x_opencti_lastname"] = x_opencti_lastname
+                input_variables["x_opencti_citizenship_document_type"] = (
+                    x_opencti_citizenship_document_type
+                )
+                input_variables["x_opencti_citizenship_document_id"] = (
+                    x_opencti_citizenship_document_id
+                )
+                input_variables["x_opencti_reliability"] = x_opencti_reliability
+                result_data_field = "systemAdd"
             else:
                 query = """
                     mutation IdentityAdd($input: IdentityAddInput!) {
@@ -692,6 +721,8 @@ class Identity:
                     type = "System"
                 elif stix_object["identity_class"] == "securityplatform":
                     type = "SecurityPlatform"
+                elif stix_object["identity_class"] == "citizenshipDocument":
+                    type = "CitizenshipDocument"
 
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:

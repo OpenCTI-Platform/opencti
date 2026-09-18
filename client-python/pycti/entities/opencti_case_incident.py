@@ -230,6 +230,9 @@ class CaseIncident:
                         ... on DataSource {
                             name
                         }
+                        ... on CitizenshipDocument{
+                            name
+                        }
                         ... on StixCyberObservable {
                             observable_value
                         }

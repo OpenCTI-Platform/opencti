@@ -234,6 +234,9 @@ class Report:
                             created_at
                             updated_at
                         }
+                        ... on CitizenshipDocument {
+                            name
+                        }
                     }
                 }
             }
@@ -459,6 +462,9 @@ class Report:
                             spec_version
                             created_at
                             updated_at
+                        }
+                        ... on CitizenshipDocument {
+                            name
                         }
                     }
                 }

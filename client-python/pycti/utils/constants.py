@@ -79,6 +79,7 @@ class IdentityTypes(CaseInsensitiveEnum):
     INDIVIDUAL = "Individual"
     SYSTEM = "System"
     SECURITYPLATFORM = "SecurityPlatform"
+    CITIZENSHIP_DOCUMENT = "CitizenshipDocument"
 
 
 class ThreatActorTypes(CaseInsensitiveEnum):

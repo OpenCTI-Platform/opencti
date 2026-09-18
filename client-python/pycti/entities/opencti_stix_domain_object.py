@@ -1099,6 +1099,16 @@ class StixDomainObject:
                 last_seen
                 objective
             }
+            ... on CitizenshipDocument {
+                name
+                description
+                x_opencti_aliases
+                contact_information
+                x_opencti_firstname
+                x_opencti_lastname
+                x_opencti_citizenship_document_type
+                x_opencti_citizenship_document_id
+            }
             importFiles {
                 edges {
                     node {

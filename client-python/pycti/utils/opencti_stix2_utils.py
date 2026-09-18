@@ -348,7 +348,7 @@ def resolve_aliases_field(stix_type: str) -> str:
     - `aliases`: Standard STIX field used by most SDO types (Attack-Pattern, Campaign,
       Infrastructure, Intrusion-Set, Malware, Threat-Actor-Group, Tool, Incident, etc.)
     - `x_opencti_aliases`: OpenCTI extension field used by Course-Of-Action, Vulnerability,
-      Grouping, Identity types (Individual, Sector, System, Organization), and Location types
+      Grouping, Identity types (Individual, Sector, System, Organization, CitizenshipDocument), and Location types
       (Region, Country, Administrative-Area, City, Position)
 
     This mirrors the logic in opencti-graphql/src/schema/stixDomainObject.ts resolveAliasesField()

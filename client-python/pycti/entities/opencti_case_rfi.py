@@ -229,6 +229,9 @@ class CaseRfi:
                         ... on DataSource {
                             name
                         }
+                        ... CitizenshipDocument {
+                            name
+                        }
                         ... on StixCyberObservable {
                             observable_value
                         }
@@ -467,6 +470,9 @@ class CaseRfi:
                             spec_version
                             created_at
                             updated_at
+                        }
+                        ... on CitizenshipDocument {
+                            name
                         }
                     }
                 }
