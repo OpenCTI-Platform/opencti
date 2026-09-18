@@ -1,12 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import convertTaxiiCollectionToStix from './taxiiCollection-converter';
-import { ENTITY_TYPE_TAXII_COLLECTION, type StoreEntityTaxiiCollection, type StixTaxiiCollection } from './taxiiCollection-types';
+import { ENTITY_TYPE_TAXII_COLLECTION } from './taxiiCollection-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
-const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, StixTaxiiCollection> = {
+const TAXII_COLLECTION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'taxii-collection',
     name: ENTITY_TYPE_TAXII_COLLECTION,
@@ -29,10 +28,6 @@ const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, 
     authorizedMembers,
   ],
   relations: [],
-  representative: (instance: StixTaxiiCollection) => {
-    return instance.name;
-  },
-  converter_2_1: convertTaxiiCollectionToStix,
 };
 
-registerDefinition(TAXII_COLLECTION_DEFINITION);
+registerInternalObjectDefinition(TAXII_COLLECTION_DEFINITION);
