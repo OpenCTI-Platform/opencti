@@ -22,6 +22,13 @@ interface EmailTemplateTabsProps {
   children: (props: ChildrenProps) => ReactNode;
 }
 
+function a11yProps(index: number) {
+  return {
+    id: `email-templates-tab-${index}`,
+    'aria-controls': `email-templates-tabpanel-${index}`,
+  };
+}
+
 const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -46,7 +53,7 @@ const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
       }}
       >
         <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-          <Tab label={t_i18n('Template Editor')} />
+          <Tab label={t_i18n('Template Editor')} {...a11yProps(0)} />
         </Tabs>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
