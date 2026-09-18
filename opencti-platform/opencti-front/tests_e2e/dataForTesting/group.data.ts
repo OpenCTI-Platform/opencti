@@ -57,7 +57,6 @@ const addGroupRole = (groupId: string, roleId: string) => `
   }
 `;
 
-// Seeded one at a time on purpose, see role.data.ts.
 export const addGroups = async (request: APIRequestContext, groups: AddGroupInput[]) => {
   const { roles } = await graphqlRequest<{ roles: EdgesOf<NamedNode> }>(request, getRoles(), 'list roles');
   const allRoles = roles.edges.map((e) => e.node);

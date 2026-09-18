@@ -802,12 +802,7 @@ describe('Workflow Resolver', () => {
           variables: { entityType: 'Report' },
         });
 
-        // The patch below must change the status, otherwise nothing is written and no stream
-        // event is emitted (the raw stream test counts them). Since the publication creates a
-        // Status per workflow state, the Report statuses hold two entries with the same `order`
-        // (legacy NEW and the workflow's `validated`), and the cache sorts by `order` only: a
-        // positional pick such as `statuses[1]` lands on the current status or not depending on
-        // the tie-break. Pick a status explicitly different from the report's current one.
+        // Patching to the current status writes nothing, and emits no stream event.
         const currentStatusResult = await queryAsAdmin({
           query: STIX_DOMAIN_OBJECT_STATUS_QUERY,
           variables: { id: reportId },
