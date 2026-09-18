@@ -1,6 +1,4 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { AuthorizedMember } from '../../utils/access';
 import type { FilterGroup } from '../../generated/graphql';
 
@@ -47,14 +45,6 @@ export interface StoreEntityTrigger extends StoreEntity {
   instance_trigger: boolean;
 }
 
-export interface StixTrigger extends StixObject {
-  name: string;
-  description: string;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
-}
-
 // region Notifications
 export const ENTITY_TYPE_NOTIFICATION = 'Notification';
 export const NOTIFICATION_NUMBER = 'NotificationNumber';
@@ -96,15 +86,5 @@ export interface StoreEntityNotification extends StoreEntity {
   notification_id: string;
   notification_uri: string;
   user_id: string;
-}
-// endregion
-
-// Stix type
-export interface StixNotification extends StixObject {
-  messages: Array<string>;
-  is_read: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 // endregion
