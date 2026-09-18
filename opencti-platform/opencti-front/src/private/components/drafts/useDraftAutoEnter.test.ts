@@ -70,8 +70,6 @@ describe('useDraftAutoEnter', () => {
     expect(enterDraft).toHaveBeenCalledTimes(1);
   });
 
-  // #18112: the context is cleared by the exit mutation, by a server-side eviction, or by a late
-  // subscription payload; none of these is a reason to put the session back into the draft.
   it('does not re-enter the draft when the context is cleared during the visit', () => {
     mockedUseDraftContext.mockReturnValue(inDraft(DRAFT_ID));
     const { rerender } = renderAutoEnter({ draftId: DRAFT_ID, disabled: false, enterDraft });
