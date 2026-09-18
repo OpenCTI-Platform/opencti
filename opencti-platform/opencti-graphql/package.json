@@ -7,7 +7,7 @@
     "check-ts": "tsc -b",
     "install:python": "pip3 install -r src/python/requirements.txt",
     "script:exec": "echo \"Building ${0}...\" && node builder/builder.ts --script script/${0}.ts && echo \"Executing ${0}...\" && node build/${0}.mjs ${1:-} ${2:-} ${3:-} ${4:-} ${5:-} && echo \"${0} done!\"",
-    "build:types": "graphql-codegen --config graphql-codegen.yml",
+    "build:types": "graphql-codegen --config graphql-codegen.ts",
     "build:schema": "run build:types && run script:exec script-generate-schema",
     "build:prod": "run get-connectors-manifest && run build:types && node builder/builder.ts",
     "build:dev": "run get-connectors-manifest && run build:schema && node builder/builder.ts --development",
