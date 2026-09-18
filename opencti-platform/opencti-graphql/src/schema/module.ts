@@ -42,7 +42,14 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z
     id: string;
     name: string;
     aliased?: boolean;
-    category: 'Case' | 'Container' | 'Location' | 'Identity' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object' | 'Threat-Actor';
+    category: typeof ENTITY_TYPE_CONTAINER_CASE
+      | typeof ENTITY_TYPE_CONTAINER
+      | typeof ENTITY_TYPE_LOCATION
+      | typeof ENTITY_TYPE_IDENTITY
+      | typeof ABSTRACT_STIX_DOMAIN_OBJECT
+      | typeof ABSTRACT_STIX_META_OBJECT
+      | typeof ABSTRACT_INTERNAL_OBJECT
+      | typeof ENTITY_TYPE_THREAT_ACTOR;
   };
   identifier: {
     definition: {
