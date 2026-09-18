@@ -110,7 +110,7 @@ class MeterManager {
       valueType: ValueType.INT,
       description: 'Duration of each migration',
       unit: 's',
-      advice: { explicitBucketBoundaries: [1, 5, 15, 30, 60, 120, 300, 3600, 18000] },
+      advice: { explicitBucketBoundaries: [1, 5, 15, 30, 60, 120, 300, 600, 1800, 3600, 18000] },
     });
     // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
