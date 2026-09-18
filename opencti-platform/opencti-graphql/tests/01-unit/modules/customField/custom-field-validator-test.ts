@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as cacheModule from '../../../../src/database/cache';
 import {
+  extractStringifiedCustomFieldValueFromStoreEntity,
   fillCustomFieldsDefaultValues,
   getCustomFieldDefaultValueFromEntitySettings,
   transformCustomFieldValueAddInput,
@@ -565,5 +566,116 @@ describe('fillCustomFieldsDefaultValues', () => {
     );
     const result = await fill({});
     expect(result).toEqual([{ field_id: 'cf-1', field_name: 'x_opencti_cf_a', string_value: 'hello' }]);
+  });
+});
+
+describe('extractStringifiedCustomFieldValueFromStoreEntity', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const extract = (element: Record<string, any>, fieldName: string) => extractStringifiedCustomFieldValueFromStoreEntity(CONTEXT, USER, element, fieldName);
+
+  it('returns undefined when no custom field definition matches the given name', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_other' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_other', string_value: 'hello' }] };
+    const result = await extract(element, 'x_opencti_cf_unknown');
+    expect(result).toBeUndefined();
+  });
+
+  it('resolves the definition through one of its aliases', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string', aliases: ['x_opencti_cf_alias'] } as any));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'hello' }] };
+    const result = await extract(element, 'x_opencti_cf_alias');
+    expect(result).toBe('hello');
+  });
+
+  it('returns undefined when the element has no custom field value matching the definition', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+    const element = { custom_field_values: [{ field_id: 'other-id', field_name: 'x_opencti_cf_other', string_value: 'hello' }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBeUndefined();
+  });
+
+  it('returns undefined when the element has no custom_field_values at all', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+    const result = await extract({}, 'x_opencti_cf_field');
+    expect(result).toBeUndefined();
+  });
+
+  it('stringifies an integer value', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'integer' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 42 }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('42');
+  });
+
+  it('returns a string value as-is', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'hello world' }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('hello world');
+  });
+
+  it('returns a markdown value using the same string_value channel', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'markdown' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: '# Title' }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('# Title');
+  });
+
+  it('stringifies a true boolean value', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'boolean' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', boolean_value: true }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('true');
+  });
+
+  it('stringifies a false boolean value (not treated as empty)', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'boolean' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', boolean_value: false }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('false');
+  });
+
+  it('stringifies a date value', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'date' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', date_value: '2026-01-01T00:00:00.000Z' }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('2026-01-01T00:00:00.000Z');
+  });
+
+  it('returns a select value as-is', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'select', select_options: ['a', 'b'] }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', select_value: 'b' }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('b');
+  });
+
+  it('joins multi_select values with a comma', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'multi_select', select_options: ['a', 'b', 'c'] }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', select_values: ['a', 'c'] }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('a,c');
+  });
+
+  it('returns an empty string when multi_select value is an empty array', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'multi_select', select_options: ['a', 'b'] }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', select_values: [] }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBe('');
+  });
+
+  it('returns undefined when the relevant value field is empty (e.g. missing string_value)', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field' }] };
+    const result = await extract(element, 'x_opencti_cf_field');
+    expect(result).toBeUndefined();
+  });
+
+  it('throws on an unknown field_type on the matched definition', async () => {
+    seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'unsupported' as any }));
+    const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'a' }] };
+    await expect(extract(element, 'x_opencti_cf_field')).rejects.toThrow('Unknown custom field type');
   });
 });
