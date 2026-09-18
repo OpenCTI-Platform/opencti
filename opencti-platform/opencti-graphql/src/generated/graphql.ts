@@ -31568,7 +31568,7 @@ export enum SsvcAutomatable {
 export enum SsvcExploitation {
   Active = 'active',
   None = 'none',
-  Poc = 'poc'
+  ProofOfConcept = 'proof_of_concept'
 }
 
 export enum SsvcTechnicalImpact {
