@@ -26,13 +26,24 @@ const SUBJECT_IDS_MULTIPLE_FIELDS = ['selected_ids'];
 /**
  * The structured parts of the payload, which cannot be pre-selected.
  *
- * `input` and `list_params` map to `flattened` on Elasticsearch and `flat_object` on OpenSearch,
- * `history_changes` maps to `nested`. Nothing in the codebase queries either shape today, and the
- * two engines do not agree on what a term query against them returns, so the handler does not bet
- * on one: it reads the candidates and filters them in memory. A false negative here would silently
- * leave the source id inside an audit record, which is exactly what this row exists to prevent.
+ * `input` and `list_params` map to `flattened` on Elasticsearch and `flat_object` on OpenSearch.
+ * Nothing in the codebase queries that shape today, and the two engines do not agree on what a
+ * term query against it returns, so the handler does not bet on one: it reads the candidates and
+ * filters them in memory. A false negative here would silently leave the source id inside an audit
+ * record, which is exactly what this row exists to prevent.
  */
-const PAYLOAD_FIELDS = ['input', 'list_params', 'history_changes'];
+const FLAT_PAYLOAD_FIELDS = ['input', 'list_params'];
+
+/**
+ * The recorded changes, which map to `nested`.
+ *
+ * A `nested` field is indexed as separate hidden documents, so a plain `exists` on the parent path
+ * matches nothing at all — the selection below reaches it through a `nested` query instead. This
+ * is the field that carries the author of an attribute change, `creator_id` above all.
+ */
+const CHANGES_FIELD = 'history_changes';
+
+const PAYLOAD_FIELDS = [...FLAT_PAYLOAD_FIELDS, CHANGES_FIELD];
 
 /** Serialized filter payload. Plain `text`, so a phrase query does reach it. */
 const FILTERS_FIELD = 'filters';
@@ -79,7 +90,13 @@ const payloadQuery = (sourceId: string, mergeStartedAt: Date) => ({
     minimum_should_match: 1,
     should: [
       { match_phrase: { [`context_data.${FILTERS_FIELD}`]: sourceId } },
-      ...PAYLOAD_FIELDS.map((field) => ({ exists: { field: `context_data.${field}` } })),
+      ...FLAT_PAYLOAD_FIELDS.map((field) => ({ exists: { field: `context_data.${field}` } })),
+      {
+        nested: {
+          path: `context_data.${CHANGES_FIELD}`,
+          query: { exists: { field: `context_data.${CHANGES_FIELD}.field` } },
+        },
+      },
     ],
   },
 });
@@ -87,6 +104,97 @@ const payloadQuery = (sourceId: string, mergeStartedAt: Date) => ({
 interface ContextData extends Record<string, unknown> {
   filters?: string;
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+/** The two sides of a recorded change, both holding the same `{ raw, translated }` pairs. */
+const CHANGE_VALUE_FIELDS = ['changes_added', 'changes_removed'];
+
+/**
+ * The label map a recorded change stores next to the id it resolved, serialized as
+ * `{"<id>":"<representative name>"}`.
+ *
+ * The id sits in key position, and the shared remapper rewrites values only — a deliberate choice,
+ * since it walks opaque blobs where no key position is known. Here the shape is declared by the
+ * schema, so the key is rewritten at this level rather than by loosening the remapper everywhere.
+ *
+ * Only the id moves. The name is left as recorded, like every other label the merge crosses.
+ *
+ * Returns null when there is nothing to do, including when the payload does not parse: an
+ * unreadable map is left alone rather than patched by string substitution.
+ */
+const rewriteTranslatedIds = (serialized: string, sourceId: string, targetId: string): string | null => {
+  if (!serialized.includes(sourceId)) {
+    return null;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(serialized);
+  } catch {
+    return null;
+  }
+  if (!isRecord(parsed)) {
+    return null;
+  }
+  const entries = Object.entries(parsed);
+  if (!entries.some(([key]) => key === sourceId)) {
+    return null;
+  }
+  // A map naming both users keeps the entry already held for the target: the merge cannot leave it
+  // naming the same account twice, and the target's own label is the one that still resolves.
+  const holdsTarget = entries.some(([key]) => key === targetId);
+  const rewritten: Record<string, unknown> = {};
+  entries.forEach(([key, value]) => {
+    if (key === sourceId) {
+      if (!holdsTarget) {
+        rewritten[targetId] = value;
+      }
+      return;
+    }
+    rewritten[key] = value;
+  });
+  return JSON.stringify(rewritten);
+};
+
+/**
+ * Walks the recorded changes and rewrites the label maps they carry.
+ *
+ * Runs after the shared remapper, which has already moved the ids held in value position — `raw`
+ * among them. This pass only reaches what that one cannot see.
+ */
+const rewriteChangeLabels = (changes: unknown, sourceId: string, targetId: string): { value: unknown; changed: boolean } => {
+  if (!Array.isArray(changes)) {
+    return { value: changes, changed: false };
+  }
+  let changed = false;
+  const rewritten = changes.map((change) => {
+    if (!isRecord(change)) {
+      return change;
+    }
+    const entry: Record<string, unknown> = { ...change };
+    CHANGE_VALUE_FIELDS.forEach((field) => {
+      const values = entry[field];
+      if (!Array.isArray(values)) {
+        return;
+      }
+      entry[field] = values.map((value) => {
+        if (!isRecord(value) || typeof value.translated !== 'string') {
+          return value;
+        }
+        const translated = rewriteTranslatedIds(value.translated, sourceId, targetId);
+        if (translated === null) {
+          return value;
+        }
+        changed = true;
+        return { ...value, translated };
+      });
+    });
+    return entry;
+  });
+  return { value: changed ? rewritten : changes, changed };
+};
 
 /**
  * The rewritten `context_data` for one record, or null when it holds no reference to the source.
@@ -112,6 +220,11 @@ export const userMergeRewriteHistoryPayload = (
         changed = true;
       }
     }
+  }
+  const changeLabels = rewriteChangeLabels(rewritten[CHANGES_FIELD], sourceId, targetId);
+  if (changeLabels.changed) {
+    rewritten[CHANGES_FIELD] = changeLabels.value;
+    changed = true;
   }
   const filters = contextData[FILTERS_FIELD];
   if (typeof filters === 'string' && filters.includes(sourceId)) {
