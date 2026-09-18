@@ -4590,8 +4590,10 @@ export type Connector = BasicObject & InternalObject & {
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  incompatibility?: Maybe<Scalars['Boolean']['output']>;
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
+  latest_compatible_version?: Maybe<Scalars['String']['output']>;
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
@@ -4611,6 +4613,7 @@ export type Connector = BasicObject & InternalObject & {
   representative: Representative;
   standard_id: Scalars['String']['output'];
   title: Scalars['String']['output'];
+  update_available?: Maybe<Scalars['Boolean']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
   xtm_one_intent?: Maybe<Scalars['String']['output']>;
@@ -24798,6 +24801,7 @@ export type Query = {
   connectorsForManagers?: Maybe<Array<ManagedConnector>>;
   connectorsForNotification?: Maybe<Array<Maybe<Connector>>>;
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
+  connectorsUpdateCount?: Maybe<Scalars['Int']['output']>;
   container?: Maybe<Container>;
   containers?: Maybe<ContainerConnection>;
   containersAskAiSummary?: Maybe<AiSummary>;
@@ -44241,8 +44245,10 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  incompatibility?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  latest_compatible_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
@@ -44262,6 +44268,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  update_available?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
   xtm_one_intent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -50678,6 +50685,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForManagers?: Resolver<Maybe<Array<ResolversTypes['ManagedConnector']>>, ParentType, ContextType>;
   connectorsForNotification?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
+  connectorsUpdateCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
   containersAskAiSummary?: Resolver<Maybe<ResolversTypes['AiSummary']>, ParentType, ContextType, Partial<QueryContainersAskAiSummaryArgs>>;

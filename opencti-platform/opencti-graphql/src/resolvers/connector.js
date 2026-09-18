@@ -55,11 +55,13 @@ import {
   computeManagerConnectorExcerpt,
   computeManagerConnectorImage,
   computeManagerContractHash,
+  computeConnectorUpdateStatus,
   connector,
   getConnectorJwks,
   connectorManager,
   connectorManagers,
   connectors,
+  connectorsUpdateCount,
   connectorsForAnalysis,
   connectorsForImport,
   connectorsForManagers,
@@ -82,6 +84,7 @@ const connectorResolvers = {
   Query: {
     connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
+    connectorsUpdateCount: (_, __, context) => connectorsUpdateCount(context, context.user),
     connectorsForManagers: async (_, __, context) => {
       await waitForManagedConnectorAutoUpgrade();
       return connectorsForManagers(context, context.user);
@@ -125,6 +128,9 @@ const connectorResolvers = {
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
+    update_available: async (cn, _, context) => (await computeConnectorUpdateStatus(context, context.user, cn)).update_available,
+    latest_compatible_version: async (cn, _, context) => (await computeConnectorUpdateStatus(context, context.user, cn)).latest_compatible_version,
+    incompatibility: async (cn, _, context) => (await computeConnectorUpdateStatus(context, context.user, cn)).incompatibility,
     jwks: () => getConnectorJwks(),
   },
   ManagedConnector: { // For composer

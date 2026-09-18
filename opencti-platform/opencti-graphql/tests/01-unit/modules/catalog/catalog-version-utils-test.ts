@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { BasicStoreEntityCatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import {
   buildCatalogContractCompatibility,
+  buildConnectorUpdateStatus,
   compareContractVersionDesc,
   compareContractVersions,
   filterAndSortLatestCompatibleContracts,
@@ -325,5 +326,19 @@ describe('catalog-version-utils', () => {
 
     expect(getLatestCompatibleVersion(versions, options)).toBe(selected.contract_version);
     expect(getLatestCompatibleVersion(versions, options)).toBe('rolling');
+  });
+
+  it('should expose connector update information from compatible and incompatible contract versions', () => {
+    const status = buildConnectorUpdateStatus('1.0.0', [
+      { version: '2.0.0', min_version: '9999.0.0' },
+      { version: '1.5.0', min_version: '7.0.0' },
+      { version: '1.0.0', min_version: '7.0.0' },
+    ], { platformVersion: '7.2.0' });
+
+    expect(status).toEqual({
+      update_available: true,
+      latest_compatible_version: '1.5.0',
+      incompatibility: true,
+    });
   });
 });
