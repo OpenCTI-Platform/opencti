@@ -28,4 +28,3 @@ export const EXPECTED_DOMAIN_NAME = {
   value: 'example.com',
   resolves_to_refs: [],
 };
-

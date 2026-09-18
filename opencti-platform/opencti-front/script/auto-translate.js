@@ -19,9 +19,9 @@ const translateFiles = async () => {
     const langDir = './lang/front';
     const files = await readdir(langDir);
     const languageCodes = files
-      .filter(file => file.endsWith('.json'))
-      .map(file => path.basename(file, '.json'))
-      .filter(code => code.length === 2 && code !== 'en'); // Exclude 'en' since it's the source
+      .filter((file) => file.endsWith('.json'))
+      .map((file) => path.basename(file, '.json'))
+      .filter((code) => code.length === 2 && code !== 'en'); // Exclude 'en' since it's the source
     console.log(`Translating from English to [${languageCodes}]`);
 
     for (const code of languageCodes) {
@@ -29,25 +29,24 @@ const translateFiles = async () => {
       const backCommand = `i18n-auto-translation -a deepl-free -p ./lang/back/en.json -t ${code} -k ${subscriptionKey}`;
       try {
         const { stdout } = await execAsync(frontCommand);
-        console.log(stdout)
+        console.log(stdout);
       } catch (error) {
         console.error(`Error translating ./lang/front/${code}.json:`, error.message);
       }
       try {
         const { stdout } = await execAsync(backCommand);
-        console.log(stdout)
+        console.log(stdout);
       } catch (error) {
         console.error(`Error translating ./lang/back/${code}.json:`, error.message);
       }
     }
 
     console.log('Translation process completed!');
-
   } catch (error) {
     console.error('Fatal error:', error.message);
     process.exit(1);
   }
-}
+};
 
 // Run the script
 await translateFiles();

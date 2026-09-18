@@ -33,4 +33,3 @@ export const EXPECTED_SOFTWARE = {
   languages: ['en'],
   x_opencti_product: 'Cobalt Strike Beacon',
 };
-

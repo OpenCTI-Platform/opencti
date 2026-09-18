@@ -1,5 +1,5 @@
 import path from 'node:path';
-import fs from "node:fs/promises";
+import fs from 'node:fs/promises';
 
 const nativeNodeModulesPlugin = () => ({
   name: 'native-node-modules',
@@ -48,11 +48,11 @@ const nativeNodeModulesPlugin = () => ({
       (args) => ({
         path: path.join(process.cwd(), args.path),
         namespace: 'file',
-      })
+      }),
     );
 
     // Tell esbuild's default loading behavior to use the "file" loader for these ".node" files.
-    const { initialOptions} = build;
+    const { initialOptions } = build;
     initialOptions.loader = {
       ...(initialOptions.loader ?? {}),
       '.node': 'file',

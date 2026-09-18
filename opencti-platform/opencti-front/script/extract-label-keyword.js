@@ -13,7 +13,7 @@ const extractedValues = {};
 const extractValueFromPattern = (pattern) => {
   const match = /label: '([^']+)'/.exec(pattern);
   return match ? match[1] : null;
-}
+};
 
 const extractI18nValues = async (directory) => {
   try {
@@ -29,7 +29,7 @@ const extractI18nValues = async (directory) => {
         const matches = data.match(searchPattern);
 
         if (matches) {
-          matches.forEach(match => {
+          matches.forEach((match) => {
             const value = extractValueFromPattern(match);
             if (value) {
               extractedValues[value] = value;
@@ -41,7 +41,7 @@ const extractI18nValues = async (directory) => {
   } catch (error) {
     console.error(`Error: ${error.message}`);
   }
-}
+};
 
 const mergeWithExistingData = async () => {
   try {
@@ -62,16 +62,16 @@ const mergeWithExistingData = async () => {
     // Write the merged values back to the file
     const sortedKeys = Object.keys(updatedValues).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     const sortedValues = {};
-    sortedKeys.forEach(key => {
+    sortedKeys.forEach((key) => {
       sortedValues[key] = updatedValues[key];
     });
-    
+
     await writeFile(englishTranslationFiles, JSON.stringify(sortedValues, null, 2));
     console.log('File written successfully');
   } catch (error) {
     console.error(`Error merging with existing data: ${error.message}`);
   }
-}
+};
 
 console.log('--- extract labels from backend schema definition ---');
 await extractI18nValues(srcDirectory);

@@ -51,28 +51,28 @@ export const EXPECTED_SIGHTING = {
   modified: '2025-07-31T07:28:43.240Z',
   confidence: 100,
   labels: [
-    'indicator'
+    'indicator',
   ],
   external_references: [
     {
       source_name: 'cve',
-      external_id: 'CVE-2012-0158'
-    }
+      external_id: 'CVE-2012-0158',
+    },
   ],
   x_opencti_id: '11cad6c5-98f1-4491-899a-15b7789e1492',
   x_opencti_type: 'stix-sighting-relationship',
   type: 'sighting',
   created_by_ref: 'identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6',
   x_opencti_granted_refs: [
-    'identity--18fe5225-fee1-5627-ad3e-20c14435b024'
+    'identity--18fe5225-fee1-5627-ad3e-20c14435b024',
   ],
   object_marking_refs: [
-    'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1'
+    'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1',
   ],
   count: 1,
   sighting_of_ref: 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752',
   where_sighted_refs: [
-    'identity--4f347cc9-4658-59ee-9707-134f434f9d1c'
+    'identity--4f347cc9-4658-59ee-9707-134f434f9d1c',
   ],
   x_opencti_files: [],
 };

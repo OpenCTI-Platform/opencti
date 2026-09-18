@@ -1,14 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import {
-  ADMIN_USER,
-  getOrganizationIdByName,
-  GREEN_GROUP,
-  PLATFORM_ORGANIZATION,
-  testContext,
-  USER_EDITOR,
-  USER_SECURITY,
-} from '../../utils/testQuery';
+import { ADMIN_USER, getOrganizationIdByName, GREEN_GROUP, PLATFORM_ORGANIZATION, testContext, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { queryAsAuthUser } from '../../utils/testQueryHelper';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { getInferences } from '../../utils/rule-utils';

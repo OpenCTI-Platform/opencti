@@ -19,7 +19,7 @@ const extractValueFromPattern = (pattern) => {
   const [, quote, value] = match;
   // unescape the quote char that was escaped for JS syntax reasons only
   return value.replace(new RegExp(`\\\\${quote}`, 'g'), quote);
-}
+};
 
 const extractI18nValues = async (directory) => {
   try {
@@ -38,13 +38,13 @@ const extractI18nValues = async (directory) => {
             labelMatches.forEach((m) => {
               const value = labelExecPattern.exec(m)[1];
               extractedValues[value] = value;
-            })
+            });
           }
         }
         const matches = data.match(searchPattern);
 
         if (matches) {
-          matches.forEach(match => {
+          matches.forEach((match) => {
             const value = extractValueFromPattern(match);
             if (value) {
               extractedValues[value] = value;
@@ -56,7 +56,7 @@ const extractI18nValues = async (directory) => {
   } catch (error) {
     console.error(`Error: ${error.message}`);
   }
-}
+};
 
 const mergeWithExistingData = async () => {
   try {
@@ -77,7 +77,7 @@ const mergeWithExistingData = async () => {
     // Write the merged values back to the file
     const sortedKeys = Object.keys(updatedValues).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     const sortedValues = {};
-    sortedKeys.forEach(key => {
+    sortedKeys.forEach((key) => {
       sortedValues[key] = updatedValues[key];
     });
     await writeFile(englishTranslationFiles, JSON.stringify(sortedValues, null, 2));
@@ -85,7 +85,7 @@ const mergeWithExistingData = async () => {
   } catch (error) {
     console.error(`Error merging with existing data: ${error.message}`);
   }
-}
+};
 
 console.log('--- extract i18n values from frontend ---');
 await extractI18nValues(srcDirectory);

@@ -3,7 +3,7 @@
  * calls the real node-gyp-build with the correct bundle directory.
  */
 
-import {fileURLToPath} from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const nodeGypBuildShimPlugin = () => ({
   name: 'node-gyp-build-shim',

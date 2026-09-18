@@ -25,4 +25,3 @@ export const EXPECTED_IMSI = {
   labels: [],
   external_references: [],
 };
-
