@@ -1,5 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import Button from '@common/button/Button';
@@ -123,6 +126,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const input: OpinionCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       opinion: values.opinion,
       explanation: values.explanation,
       confidence: parseInt(String(values.confidence), 10),
@@ -171,6 +175,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
 
   return (
     <Formik<OpinionAddInput>
+      entityType={OPINION_TYPE}
       initialValues={initialValues}
       validationSchema={opinionValidator}
       validateOnChange={true}
@@ -233,6 +238,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           <div className={classes.buttons}>
             <Button
               variant="secondary"
@@ -288,6 +294,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const finalValues: OpinionCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       opinion: values.opinion,
       explanation: values.explanation,
       confidence: parseInt(String(values.confidence), 10),
@@ -336,6 +343,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
 
   return (
     <Formik<OpinionAddInput>
+      entityType={OPINION_TYPE}
       initialValues={initialValues}
       validationSchema={opinionValidator}
       validateOnChange={true}
@@ -392,6 +400,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           <div className={classes.buttons}>
             <Button
               variant="secondary"

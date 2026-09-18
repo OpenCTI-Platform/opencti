@@ -1,10 +1,14 @@
 import * as R from 'ramda';
+import { useEffect, useMemo, useState } from 'react';
+import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
+import type { filtersUtilsCustomFieldStixFilterKeysQuery } from './__generated__/filtersUtilsCustomFieldStixFilterKeysQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import useHelper from '../hooks/useHelper';
+import { fetchQuery } from '../../relay/environment';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
@@ -122,7 +126,10 @@ export const streamOriginFilters = [
 ];
 
 // filters available in stix filtering (streams, playbooks, triggers)
-export const stixFilters = [
+// this is the static part of the list: it is completed dynamically with the custom fields
+// stix filter keys (see useStixFilters below), which is the only entry point that should be used
+// by callers needing the full, up-to-date list of stix filtering keys.
+const STATIC_STIX_FILTERS = [
   'entity_type',
   'workflow_id',
   'objectAssignee',
@@ -170,11 +177,61 @@ const ssvcFilters = [
   'x_opencti_ssvc_automatable',
   'x_opencti_ssvc_technical_impact',
 ];
+const customFieldStixFilterKeysQuery = graphql`
+  query filtersUtilsCustomFieldStixFilterKeysQuery($entityType: String) {
+    customFieldStixFilterKeys(entityType: $entityType)
+  }
+`;
 
-// stixFilters, extended with the SSVC filter keys when the SSVC_ATTRIBUTES feature flag is enabled
-export const useStixFilters = () => {
+/**
+ * Centralizes the fetching of the custom fields filter keys usable in stix filtering
+ * (streams, playbooks, triggers, connectors, ...), so that callers don't have to
+ * each implement their own loading strategy (feature flag check, query, caching...).
+ * Returns an empty array while loading, or if the CUSTOM_FIELDS feature flag is disabled
+ * (the underlying query field would otherwise throw server-side).
+ */
+const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
   const { isFeatureEnable } = useHelper();
-  return isFeatureEnable('SSVC_ATTRIBUTES') ? [...stixFilters, ...ssvcFilters] : stixFilters;
+  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+  const [customFieldFilterKeys, setCustomFieldFilterKeys] = useState<string[]>([]);
+  useEffect(() => {
+    if (!isCustomFieldsEnabled) {
+      setCustomFieldFilterKeys([]);
+      return undefined;
+    }
+    let isMounted = true;
+    fetchQuery<filtersUtilsCustomFieldStixFilterKeysQuery>(
+      customFieldStixFilterKeysQuery,
+      { entityType },
+    )
+      .toPromise()
+      .then((data) => {
+        if (isMounted) {
+          setCustomFieldFilterKeys([...(data?.customFieldStixFilterKeys ?? [])]);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [isCustomFieldsEnabled, entityType]);
+  return customFieldFilterKeys;
+};
+
+/**
+ * Returns the full list of filter keys usable in stix filtering (streams, playbooks, triggers,
+ * connectors, ...): the static list of built-in keys, concatenated with the dynamic list of
+ * custom fields filter keys (fetched and feature-flagged centrally by this hook).
+ * This is the single entry point callers should use instead of hard-coding/duplicating
+ * the custom fields loading logic.
+ */
+export const useStixFilters = (entityType?: string): string[] => {
+  const customFieldFilterKeys = useCustomFieldStixFilterKeys(entityType);
+  const { isFeatureEnable } = useHelper();
+  const ssvcStixFilters = isFeatureEnable('SSVC_ATTRIBUTES') ? ssvcFilters : [];
+  return useMemo(
+    () => uniqueArray([...STATIC_STIX_FILTERS, ...ssvcStixFilters, ...customFieldFilterKeys]),
+    [customFieldFilterKeys],
+  );
 };
 
 // ----------------------------------------------------------------------------------------------------------------------

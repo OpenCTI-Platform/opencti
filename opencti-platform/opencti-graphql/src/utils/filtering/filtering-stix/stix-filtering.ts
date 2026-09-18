@@ -1,5 +1,4 @@
-import { FILTER_KEY_TESTERS_MAP } from './stix-testers';
-import { type FilterEventContext, testFilterGroup } from '../boolean-logic-engine';
+import { type FilterEventContext, type TesterFunction, testFilterGroup } from '../boolean-logic-engine';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../../access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { getEntitiesMapFromCache } from '../../../database/cache';
@@ -10,13 +9,14 @@ import type { FilterResolutionMap } from '../filtering-resolution';
 import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filtering-resolution';
 import { UnsupportedError } from '../../../config/errors';
 import { checkFiltersFormat } from '../filtering-utils';
+import { getFullFilterKeyTestersMap } from './stix-testers';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * check a FilterGroup's keys validity in stix filtering
  */
-const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup) => {
+const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup, filtersKeyTestersMap: Record<string, TesterFunction>) => {
   filterGroup.filters.forEach((filter) => {
     if (!Array.isArray(filter.key)) {
       throw UnsupportedError('The provided filter key is not an array', { key: JSON.stringify(filter.key) });
@@ -24,22 +24,23 @@ const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup) => {
     if (filter.key.length !== 1) {
       throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
     }
-    if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
-      const availableFilters = JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP));
+    if (filtersKeyTestersMap[filter.key[0]] === undefined) {
+      const availableFilters = JSON.stringify(Object.keys(filtersKeyTestersMap));
       throw UnsupportedError('Stix filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });
     }
   });
-  filterGroup.filterGroups.forEach((fg) => checkFiltersKeysForStixMatch(fg));
+  filterGroup.filterGroups.forEach((fg) => checkFiltersKeysForStixMatch(fg, filtersKeyTestersMap));
 };
 
 /**
  * validate a FilterGroup in stix filtering: check the filters format and the filter keys validity
  */
-export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
+export const validateFilterGroupForStixMatch = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
   // check filters format
   checkFiltersFormat(filterGroup);
   // check filters keys validity
-  checkFiltersKeysForStixMatch(filterGroup);
+  const fullFiltersKeyTestersMap = await getFullFilterKeyTestersMap(context, user);
+  checkFiltersKeysForStixMatch(filterGroup, fullFiltersKeyTestersMap);
 };
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -60,7 +61,9 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   // we are limited to certain filter keys right now, so better throw an explicit error if a key is not compatible
   // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
   // This check should thus not fail here, theoretically.
-  if (filterGroup) validateFilterGroupForStixMatch(filterGroup);
+  if (filterGroup) {
+    await validateFilterGroupForStixMatch(context, user, filterGroup);
+  }
 
   // first check: user access right to the element (according to markings, organization, etc.)
   const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix);
@@ -75,7 +78,8 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   const resolvedFilterGroup = await resolveFilterGroup(context, user, filterGroup, resolutionMap);
 
   // then call our boolean engine on the filter group using the stix testers
-  return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP, eventContext);
+  const fullFiltersKeyTestersMap = await getFullFilterKeyTestersMap(context, user);
+  return testFilterGroup(stix, resolvedFilterGroup, fullFiltersKeyTestersMap, eventContext);
 };
 
 /**

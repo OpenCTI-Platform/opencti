@@ -18,6 +18,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -86,6 +87,7 @@ export const ThreatActorIndividualMutationRelationDelete = graphql`
 const threatActorIndividualEditionOverviewFragment = graphql`
   fragment ThreatActorIndividualEditionOverview_ThreatActorIndividual on ThreatActorIndividual {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     threat_actor_types
     confidence
@@ -345,6 +347,13 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={threatActorIndividual.entity_type}
+            entityId={threatActorIndividual.id}
+            values={threatActorIndividual.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

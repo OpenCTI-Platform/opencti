@@ -141,6 +141,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 enum LanguagesOrdering {
@@ -205,6 +206,7 @@ input LanguageAddInput {
     filesMarkings: [[String]]
     noTriggerImport: [Boolean]
     embedded: [Boolean]
+    customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

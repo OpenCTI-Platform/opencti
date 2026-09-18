@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
@@ -16,6 +17,10 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const InfrastructureDetailsFragment = graphql`
   fragment InfrastructureDetails_infrastructure on Infrastructure {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     infrastructure_types
@@ -121,6 +126,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           <Grid item xs={6}>
             <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
         </Grid>
         <br />
         <StixCoreObjectsDonut

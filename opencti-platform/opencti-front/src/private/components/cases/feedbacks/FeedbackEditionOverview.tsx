@@ -15,6 +15,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import RatingField from '../../../../components/fields/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -59,6 +60,7 @@ export const feedbackEditionOverviewFocus = graphql`
 const feedbackEditionOverviewFragment = graphql`
   fragment FeedbackEditionOverview_case on Feedback {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     revoked
     description
@@ -348,6 +350,13 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={feedbackData.entity_type}
+            entityId={feedbackData.id}
+            values={feedbackData.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

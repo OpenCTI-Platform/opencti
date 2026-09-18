@@ -13,6 +13,7 @@ import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -213,6 +214,12 @@ const OpinionEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
+            <CustomFieldValuesEdition
+              entityType={opinion.entity_type}
+              entityId={opinion.id}
+              values={opinion.customFieldValues ?? []}
+              fieldPatch={editor.fieldPatch}
+            />
           </Form>
         </div>
       )}
@@ -224,6 +231,7 @@ export default createFragmentContainer(OpinionEditionOverviewComponent, {
   opinion: graphql`
       fragment OpinionEditionOverview_opinion on Opinion {
           id
+          ...CustomFieldValuesEdition_values @relay(mask: false)
           opinion
           explanation
           confidence

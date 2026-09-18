@@ -4,7 +4,10 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -147,6 +150,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const input: ReportCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       name: values.name,
       description: values.description,
       content: values.content,
@@ -218,6 +222,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   }
   return (
     <Formik<ReportAddInput>
+      entityType={REPORT_TYPE}
       initialValues={initialValues}
       validationSchema={reportValidator}
       validateOnChange={true}
@@ -334,6 +339,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

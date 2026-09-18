@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
@@ -44,6 +45,7 @@ class CampaignDetailsComponent extends Component {
               </Label>
               {fldt(campaign.last_seen)}
             </Grid>
+            <CustomFieldValuesDisplay entityType={campaign.entity_type} values={campaign.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -61,6 +63,10 @@ const CampaignDetails = createFragmentContainer(CampaignDetailsComponent, {
   campaign: graphql`
     fragment CampaignDetails_campaign on Campaign {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       description
       first_seen
       last_seen
