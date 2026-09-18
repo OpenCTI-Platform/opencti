@@ -103,6 +103,10 @@ const EntityStixSightingRelationshipLineFragment = graphql`
                 name
                 description
             }
+            ... on SecurityPlatform {
+                name
+                description
+            }
             ... on Indicator {
                 name
                 description
@@ -180,6 +184,10 @@ const EntityStixSightingRelationshipLineFragment = graphql`
                 description
             }
             ... on System {
+                name
+                description
+            }
+            ... on SecurityPlatform {
                 name
                 description
             }
