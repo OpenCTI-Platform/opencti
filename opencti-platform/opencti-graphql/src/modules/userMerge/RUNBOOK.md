@@ -482,7 +482,7 @@ Some platform versions ship the readiness query without `userMergeDeleteSource`.
 ```graphql
 mutation ClearMergeMark($id: ID!) {
   userEdit(id: $id) {
-    fieldPatch(input: [{ key: "merged_into", value: null }]) { id }
+    fieldPatch(input: [{ key: "merged_into", value: [null] }]) { id }
   }
 }
 ```
