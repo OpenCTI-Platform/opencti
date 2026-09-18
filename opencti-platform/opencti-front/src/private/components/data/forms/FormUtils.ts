@@ -72,6 +72,65 @@ export const generateEntityId = () => `entity-${Date.now()}-${Math.random().toSt
 export const generateRelationshipId = () => `rel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 /**
+ * When a parsed-mode entity's "map parsed values to attribute" selection changes, any
+ * pre-provisioned field(s) that would now conflict with the parsed mapping must be dropped.
+ * The very first selection for an entity clears all of its pre-provisioned fields (there is no
+ * previous mapping to compare against); any later change only clears the field(s) that map to
+ * the newly selected attribute. Shared between the main entity and additional entities, whose
+ * parsed-mapping selects use this same removal rule keyed by their respective `attributeMapping.entity`
+ * (`'main_entity'` or the additional entity's id).
+ */
+export const removeFieldsSupersededByParsedMapping = (
+  fields: FormFieldAttribute[],
+  entityAttributeId: string,
+  previousMapping: string | undefined,
+  newMapping: string,
+): FormFieldAttribute[] => {
+  if (!newMapping) return fields;
+
+  const wasFirstSelection = !previousMapping;
+  if (wasFirstSelection) {
+    return fields.filter((field) => field.attributeMapping.entity !== entityAttributeId);
+  }
+  return fields.filter((field) => !(
+    field.attributeMapping.entity === entityAttributeId && field.attributeMapping.attributeName === newMapping
+  ));
+};
+
+export interface FormSchemaMappingError {
+  type: 'main-entity-mapping' | 'additional-entity-mappings';
+  missingLabels?: string[];
+}
+
+export const validateFormSchemaMappings = (
+  formBuilderData: FormBuilderData,
+): FormSchemaMappingError | null => {
+  if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
+    return { type: 'main-entity-mapping' };
+  }
+
+  const missingLabels = formBuilderData.additionalEntities
+    .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
+    .map((entity) => entity.label);
+  if (missingLabels.length > 0) {
+    return { type: 'additional-entity-mappings', missingLabels };
+  }
+
+  return null;
+};
+
+export const formatFormSchemaMappingError = (
+  error: FormSchemaMappingError,
+  t_i18n: (message: string) => string,
+): string => {
+  if (error.type === 'main-entity-mapping') {
+    return t_i18n('Map parsed values to attribute is required when using parsed mode');
+  }
+
+  return t_i18n('Map parsed values to attribute is required for: ') + (error.missingLabels ?? []).join(', ');
+};
+
+/**
  * Get available field types based on entity attributes
  * @param entityType The entity type to check
  * @param entityTypes The list of available entity types
