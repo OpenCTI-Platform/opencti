@@ -33,7 +33,7 @@ The **User Merge** capability reassigns data ownership, entity associations, col
 
 * **Manual, Unitary Execution (1-by-1)**: Merges are performed one pair at a time through GraphQL mutations. Batching is controlled externally by the operator (e.g. iterating over a CSV list), allowing human inspection of dry-run reports before each write.
 * **Two-Pass Execution**: Every merge runs an in-memory computation (`dryRun: true`) producing a full report before any write occurs. In a real pass (`dryRun: false`), the engine verifies that the platform state has not drifted before committing any update.
-* **Platform at Rest**: The merge engine relies on the platform being at rest. Ingestions, connectors, and background workers must be stopped to avoid state divergence during execution.
+* **Platform at Rest**: The merge engine relies on the platform being at rest. Ingestions, connectors, background workers and the scheduled platform tasks must all be stopped: a single concurrent write aborts the pass and leaves it partially applied.
 * **Non-Destructive Merge, Gated Deletion**: The merge operation itself **disables** the source account (`account_status: Expired`) and closes its access. Deleting the source account is a separate, explicitly gated operation requiring full coverage and zero pending references.
 * **Never Delete the Source Account via Settings → Users**: Merging an account disables it and marks it with `merged_into`. Deleting it through the standard web UI is rejected by the platform to avoid running cascades that destroy transferred dashboards and triggers. Source account deletion must be conducted exclusively through the dedicated, gated `userMergeDeleteSource` mutation.
 * **Strict Idempotency**: All merge handlers are strictly idempotent. If an execution is interrupted, re-running the merge on the same pair is a safe no-op on already applied data.
@@ -258,16 +258,105 @@ input UserMergeOptions {
 
 Before initiating a merge batch, verify and fulfill every requirement in this checklist.
 
-### 3.1 Platform at Rest (Workers & Connectors Stopped)
+### 3.1 Platform at Rest
 
-The platform must experience zero concurrent writes during the merge window.
+The merge rewrites documents in place. Elasticsearch refuses an update whose document version moved
+since the pass started, and the merge is deliberately configured to abort on that conflict rather
+than overwrite a concurrent change. A single object written by anything else during the window is
+therefore enough to stop the pass — and, because a bulk rewrite is not transactional, to leave it
+partially applied. Re-running is safe, but only once the platform is genuinely idle.
 
-1. **Stop all ingestion connectors**: Stop all connector containers/processes feeding data into the platform.
-2. **Drain and stop background workers**: Ensure RabbitMQ queues are empty and stop the OpenCTI workers:
-   ```bash
-   docker compose stop worker connector-*
-   ```
-3. **Terminate active user sessions**: Notify active users and verify no active sessions remain on the platform.
+"At rest" means no writes at all, from any source: ingestion, background workers, scheduled platform
+tasks, and interactive users.
+
+#### Order of operations
+
+Stop the producers before the consumers, so the queues drain instead of growing.
+
+1. **Stop ingestion.** Stop every connector and feed pushing data into the platform. Managed
+   connectors and ingestion feeds can be paused from the platform itself; external connectors are
+   stopped wherever they are deployed.
+2. **Wait for the queues to drain.** Let the running workers finish what is already queued.
+3. **Stop the workers.** Once the queues are empty, stop every worker process.
+4. **Disable the scheduled platform tasks.** See below — these write with no connector and no worker
+   involved, and a platform restart is required for the change to take effect.
+5. **Prevent interactive writes.** Notify users and confirm no session is still active. Any UI action
+   writes an entity and a history record.
+
+#### Scheduled platform tasks
+
+These run inside the platform process. Stopping connectors and workers does not stop them. Disable
+them in the configuration, then restart the platform.
+
+| Configuration key | What it writes during the window |
+|---|---|
+| `RULE_ENGINE__ENABLED` | Inferred entities and relationships |
+| `TASK_SCHEDULER__ENABLED` | Bulk operations queued from the interface |
+| `SYNC_MANAGER__ENABLED` | Everything pulled from a remote platform |
+| `INGESTION_MANAGER__ENABLED` | Everything pulled from TAXII, RSS, CSV and JSON feeds |
+| `PLAYBOOK_MANAGER__ENABLED` | Whatever the playbooks create or patch |
+| `RETENTION_MANAGER__ENABLED` | Deletions of expired elements |
+| `GARBAGE_COLLECTION_MANAGER__ENABLED` | Purges of deleted objects |
+| `EXPIRATION_SCHEDULER__ENABLED` | Revocation of expired indicators |
+| `INDICATOR_DECAY_MANAGER__ENABLED` | Indicator score updates |
+| `PIR_MANAGER__ENABLED` | PIR scoring updates |
+| `FILE_INDEX_MANAGER__ENABLED` | Indexed file content |
+| `NOTIFICATION_MANAGER__ENABLED` | Notifications, which carry user references |
+| `PUBLISHER_MANAGER__ENABLED` | Notification deliveries and digests |
+
+> [!IMPORTANT]
+> **Leave `HISTORY_MANAGER__ENABLED` and `ACTIVITY_MANAGER__ENABLED` on.**
+>
+> Both only ever append to `opencti_history`; neither updates an existing record, so neither can
+> conflict with the rewrites. And the activity manager is the sole writer of the audit trace the
+> merge itself emits (`merges user <source> into user <target>`). Disabling it would run the batch
+> with no record that it happened.
+>
+> Records written during the window are not rewritten either: every handler cuts at the start of the
+> merge, so the traces the merge produces are left as they are instead of being erased by a later
+> pass.
+
+#### Verifying the platform is at rest
+
+Check from the platform itself rather than from the infrastructure, so the answer reflects what the
+platform actually sees. `rabbitMQMetrics` requires the `MODULES` capability.
+
+```graphql
+query PlatformAtRest {
+  # Expect every count at "0": nothing queued, nothing being processed.
+  rabbitMQMetrics {
+    consumers # Connected workers. Expect "0" once the workers are stopped.
+    overview {
+      queue_totals {
+        messages
+        messages_ready
+        messages_unacknowledged
+      }
+    }
+  }
+  # A running connector refreshes updated_at on every heartbeat. Expect it to stop moving.
+  # `active` is not enough on its own: a connector killed without unregistering stays true.
+  connectors {
+    name
+    active
+    updated_at
+  }
+  # Expect completed: true on every entry, or an empty list.
+  backgroundTasks(first: 50) {
+    edges {
+      node {
+        id
+        completed
+        task_expected_number
+        task_processed_number
+      }
+    }
+  }
+}
+```
+
+Run the query twice, a few minutes apart. Identical counts and unchanged `updated_at` values confirm
+the platform is idle rather than merely slow.
 
 ### 3.2 Feature Flag Enablement
 
@@ -555,10 +644,11 @@ Once all accounts in the batch have been processed:
    - Log in as the target user.
    - Verify that the source user's dashboards, investigation workspaces, cases, and incidents are visible and editable.
    - Check the Activity Log to confirm audit traces (`merges user <source> into user <target>`).
-2. **Restart Services**:
-   ```bash
-   docker compose start worker connector-*
-   ```
+2. **Restore the platform**: Reverse the steps of [section 3.1](#31-platform-at-rest), in the opposite
+   order — re-enable the scheduled platform tasks and restart the platform, start the workers, then
+   start the connectors and ingestion feeds last, so nothing is queued before there is a consumer for
+   it. Re-run the verification query of that section: the worker count should be back to its nominal
+   value.
 3. **Re-open Platform Traffic**: Re-enable user access through the reverse proxy.
 
 ---
