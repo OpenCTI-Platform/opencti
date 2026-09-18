@@ -168,6 +168,7 @@ export default defineConfig(({ mode, command }) => {
         [`${basePath}/logout`]: backProxy(),
         [`${basePath}/stream`]: backProxy(),
         [`${basePath}/storage`]: backProxy(),
+        [`${basePath}/catalog`]: backProxy(),
         [`${basePath}/schema`]: backProxy(),
         '^/.*/embedded/.*': backProxy(),
         [`${basePath}/taxii2`]: backProxy(),

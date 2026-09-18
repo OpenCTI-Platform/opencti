@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { registerConnector } from '../../../src/domain/connector';
 import { ConnectorType } from '../../../src/generated/graphql';
-import * as catalogDomain from '../../../src/modules/catalog/catalog-domain';
+import * as catalogRepository from '../../../src/modules/catalog/catalog-repository';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
@@ -188,32 +188,38 @@ describe('Check connector migration', () => {
           },
         });
 
-        const contractFound = await catalogDomain.findContractByContainerImage(testContext, ADMIN_USER, 'opencti/connector-cve');
-        if (!contractFound?.contract) {
+        const contractFound = await catalogRepository.findLatestCompatibleCatalogContractByImageName(testContext, ADMIN_USER, 'opencti/connector-cve');
+        if (!contractFound) {
           throw new Error('Connector nist-nvd-cve container-image not found in catalog');
         }
 
-        let contractParsed;
-        try {
-          contractParsed = JSON.parse(contractFound?.contract);
-        } catch {
-          throw new Error('Cannot parse nist-nvd-cve catalog');
-        }
-
-        if (!contractParsed) {
-          throw new Error('Contract nist-nvd-cve catalog is undefined');
-        }
-
-        // same values excluded from catalog-domain
-        const RUNTIME_KEYS = ['OPENCTI_TOKEN', 'CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
         const managedConnector = managedConnectorResult.data.connectorMigrateToManaged;
         const rawConfig = managedConnector.manager_contract_configuration;
-        rawConfig.filter((c: any) => !RUNTIME_KEYS.includes(c.key));
 
-        const actualConfig = rawConfig.filter((c: { key: string }) => !RUNTIME_KEYS.includes(c.key));
-        const schemaProperties = contractParsed.config_schema.properties;
+        // ManagedConnector.manager_contract_configuration injects these keys dynamically at read time
+        // (see computeManagerConnectorConfiguration / injectProxyConfiguration), they are not part of the
+        // persisted/schema-driven config. Proxy vars are injected because config/test.json configures
+        // http_proxy, https_proxy and no_proxy, and https_proxy_reject_unauthorized is always injected.
+        const INJECTED_KEYS = ['CONNECTOR_ID', 'CONNECTOR_NAME', 'CONNECTOR_TYPE', 'OPENCTI_TOKEN', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
+        INJECTED_KEYS.forEach((injectedKey) => {
+          const found = rawConfig.find((c: { key: string }) => c.key === injectedKey);
+          expect(found).toBeDefined();
+        });
 
-        const expectedKeys = Object.keys(schemaProperties);
+        // These runtime keys are never persisted/returned in manager_contract_configuration:
+        // OPENCTI_URL and CONNECTOR_RUN_AND_TERMINATE are excluded from the contract's config
+        // (same exclusion as catalog-domain) and never re-injected by this resolver.
+        const EXCLUDED_RUNTIME_KEYS = ['OPENCTI_URL', 'CONNECTOR_RUN_AND_TERMINATE'];
+        EXCLUDED_RUNTIME_KEYS.forEach((runtimeKey) => {
+          const found = rawConfig.find((c: { key: string }) => c.key === runtimeKey);
+          expect(found).toBeUndefined();
+        });
+
+        const actualConfig = rawConfig.filter((c: { key: string }) => !INJECTED_KEYS.includes(c.key));
+        const schemaProperties = contractFound.config_schema.properties;
+
+        const expectedKeys = Object.keys(schemaProperties)
+          .filter((key) => !INJECTED_KEYS.includes(key) && !EXCLUDED_RUNTIME_KEYS.includes(key));
         const actualKeys = actualConfig.map((c: { key: string }) => c.key);
 
         // Assert all expected keys are present and no extra keys

@@ -63,7 +63,7 @@ import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
 export type FilterDefinition = {
   filterKey: string;
-  type: string; // possible values: boolean, date, integer, float, string, id, vocabulary, text, enum, object, nested
+  type: string; // possible values: boolean, date, integer, float, version, string, id, vocabulary, text, enum, object, nested
   label: string; // filter key translation in English
   multiple: boolean; // if the field can have multiple values
   subEntityTypes: string[]; // entity types that have the given type as parent and have this filter key in their schema
