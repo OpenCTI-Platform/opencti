@@ -1,12 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_DELETE_OPERATION, type StixDeleteOperation, type StoreEntityDeleteOperation } from './deleteOperation-types';
-import convertDeleteOperationToStix from './deleteOperation-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_DELETE_OPERATION } from './deleteOperation-types';
 import { confidence, createdAt, creators, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import { objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 
-const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, StixDeleteOperation> = {
+const DELETE_OPERATION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'deleteOperation',
     name: ENTITY_TYPE_DELETE_OPERATION,
@@ -34,10 +33,6 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
     objectMarking,
     { ...objectOrganization, isFilterable: false },
   ],
-  representative: (stix: StixDeleteOperation) => {
-    return stix.main_entity_name;
-  },
-  converter_2_1: convertDeleteOperationToStix,
 };
 
-registerDefinition(DELETE_OPERATION_DEFINITION);
+registerInternalObjectDefinition(DELETE_OPERATION_DEFINITION);
