@@ -99,6 +99,7 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
   const connector = item.connector?.connector;
   const BuiltInIcon = item.builtIn?.icon;
   const canDeploy = canDeployConnector(connector);
+  const shouldRenderDeploy = connector?.manager_supported === true;
 
   const typeLabel = connector
     ? getConnectorMetadata(connector.container_type, t_i18n).label
@@ -261,10 +262,10 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
               </Button>
             </Stack>
           </Security>
-        ) : canDeploy ? (
+        ) : shouldRenderDeploy ? (
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {isEnterpriseEdition ? (
-              <Button size="small" onClick={onClickDeploy}>
+              <Button size="small" disabled={!canDeploy} onClick={onClickDeploy}>
                 {t_i18n('Deploy')}
               </Button>
             ) : (

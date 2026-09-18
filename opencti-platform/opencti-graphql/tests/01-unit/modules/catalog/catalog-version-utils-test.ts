@@ -1,21 +1,28 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { BasicStoreEntityCatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import {
+  buildCatalogContractCompatibility,
   compareContractVersionDesc,
   filterAndSortLatestCompatibleContracts,
+  getLatestCompatibleVersion,
+  getMinimumPlatformVersion,
+  groupContractVersionsBySlug,
   isSupportVersionCompatible,
   parseCatalogSemver,
+  selectLatestContractsBySlug,
 } from '../../../../src/modules/catalog/catalog-version-utils';
 
 const buildContract = (args: {
   contract_id: string;
   contract_version: string;
   support_version?: string;
+  slug?: string;
 }) => {
   return {
     contract_id: args.contract_id,
     contract_version: args.contract_version,
     support_version: args.support_version,
+    slug: args.slug ?? args.contract_id,
   } as unknown as BasicStoreEntityCatalogContract;
 };
 
@@ -88,6 +95,47 @@ describe('catalog-version-utils', () => {
       'no-support-version',
     ]);
     expect(onUnparsableSupportVersion).toHaveBeenCalledTimes(1);
+  });
+
+  it('should keep the latest contract version per slug even when it is incompatible', () => {
+    const selected = selectLatestContractsBySlug([
+      buildContract({ contract_id: 'compatible-1', slug: 'same-slug', contract_version: '1.0.0', support_version: '7.0.0' }),
+      buildContract({ contract_id: 'incompatible-2', slug: 'same-slug', contract_version: '2.0.0', support_version: '9999.0.0' }),
+      buildContract({ contract_id: 'other-1', slug: 'other-slug', contract_version: '1.0.0', support_version: '7.0.0' }),
+    ]);
+
+    expect(selected.map((contract) => contract.contract_id)).toEqual(['incompatible-2', 'other-1']);
+  });
+
+  it('should group versions by slug in descending version order', () => {
+    const grouped = groupContractVersionsBySlug([
+      buildContract({ contract_id: 'compatible-1', slug: 'same-slug', contract_version: '1.0.0', support_version: '7.0.0' }),
+      buildContract({ contract_id: 'incompatible-2', slug: 'same-slug', contract_version: '2.0.0', support_version: '9999.0.0' }),
+      buildContract({ contract_id: 'other-1', slug: 'other-slug', contract_version: '1.0.0', support_version: '7.1.0' }),
+    ]);
+
+    expect(grouped.get('same-slug')).toEqual([
+      { version: '2.0.0', support_version: '9999.0.0', min_version: '9999.0.0', min_platform_version: '9999.0.0' },
+      { version: '1.0.0', support_version: '7.0.0', min_version: '7.0.0', min_platform_version: '7.0.0' },
+    ]);
+    expect(grouped.get('other-slug')).toEqual([
+      { version: '1.0.0', support_version: '7.1.0', min_version: '7.1.0', min_platform_version: '7.1.0' },
+    ]);
+  });
+
+  it('should compute compatibility from contract versions for the current platform', () => {
+    const versions = [
+      { version: '2.0.0', support_version: '9999.0.0', min_version: '9999.0.0', min_platform_version: '9999.0.0' },
+      { version: '1.0.0', support_version: '7.0.0', min_version: '7.0.0', min_platform_version: '7.0.0' },
+    ];
+
+    expect(getLatestCompatibleVersion(versions, { platformVersion: '7.2.0' })).toBe('1.0.0');
+    expect(getMinimumPlatformVersion(versions)).toBe('7.0.0');
+    expect(buildCatalogContractCompatibility(versions, { platformVersion: '7.2.0' })).toEqual({
+      is_compatible: true,
+      latest_compatible_version: '1.0.0',
+      minimum_platform_version: '7.0.0',
+    });
   });
 });
 

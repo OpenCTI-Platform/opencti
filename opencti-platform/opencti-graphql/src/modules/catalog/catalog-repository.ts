@@ -195,6 +195,29 @@ export const findCatalogContractsByCatalogId = async (
   }, new Map<string, BasicStoreEntityCatalogContract>());
 };
 
+export const findCatalogContractsBySlug = async (
+  context: AuthContext,
+  user: AuthUser,
+  contractSlug: string,
+) => {
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(
+    context,
+    user,
+    [ENTITY_TYPE_CATALOG_CONTRACT],
+    {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      filters: {
+        filters: [{
+          key: ['slug'],
+          values: [contractSlug],
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+};
+
 export const findLatestCompatibleCatalogContractsByCatalogId = async (
   context: AuthContext,
   user: AuthUser,

@@ -75,6 +75,13 @@ const assertContractShape = (contract: any) => {
     required: expect.any(Array),
     additionalProperties: expect.any(Boolean),
   });
+  if (contract.versions) {
+    expect(contract.versions).toEqual(expect.any(Array));
+    contract.versions.forEach((versionEntry: any) => {
+      expect(versionEntry.version).toEqual(expect.any(String));
+      expect(versionEntry.min_platform_version === null || typeof versionEntry.min_platform_version === 'string').toBe(true);
+    });
+  }
 };
 
 describe('Catalog resolver integration', () => {
@@ -222,5 +229,71 @@ describe('Catalog resolver integration', () => {
       expect(revisionEntry.catalog_id).toEqual(expect.any(String));
       expect(revisionEntry.revision).toEqual(expect.any(String));
     }
+  });
+
+  it('should expose the latest contract version even when it is incompatible with the current platform', async () => {
+    const runSuffix = uuidv4().slice(0, 8);
+    const fixture = JSON.parse(await readFile(v1TemplatePath, 'utf8'));
+    const catalogId = `integration-catalog-v1-incompatible-${runSuffix}`;
+    const contractSlug = `integration-v1-incompatible-${runSuffix}`;
+    const fixturePath = join(tempFixtureDir, `integration-catalog-v1-incompatible-${runSuffix}.json`);
+
+    fixture.id = catalogId;
+    fixture.contracts = [
+      {
+        ...fixture.contracts[0],
+        id: `${contractSlug}-1.0.0`,
+        slug: contractSlug,
+        version: '1.0.0',
+        support_version: '7.0.0',
+      },
+      {
+        ...fixture.contracts[0],
+        id: `${contractSlug}-2.0.0`,
+        slug: contractSlug,
+        version: '2.0.0',
+        support_version: '9999.0.0',
+      },
+    ];
+
+    await writeFile(fixturePath, JSON.stringify(fixture), 'utf8');
+    conf.set('catalog_manager:custom_catalog_refresh_endpoint_uri', pathToFileURL(fixturePath).toString());
+    await synchronizeCatalogs(testContext, ADMIN_USER);
+
+    const catalogsResult = await queryAsAdminWithSuccess({
+      query: LIST_CATALOGS_QUERY,
+      variables: {},
+    });
+    const catalogs = catalogsResult.data?.catalogs ?? [];
+    const catalog = catalogs.find((entry: any) => entry.id === catalogId);
+    expect(catalog).toBeDefined();
+
+    const catalogContracts = catalog.contracts.map((raw: string) => JSON.parse(raw));
+    const listedContract = catalogContracts.find((entry: any) => entry.slug === contractSlug);
+    expect(listedContract).toBeDefined();
+    expect(listedContract.container_version).toBe('2.0.0');
+    expect(listedContract.support_version).toBe('9999.0.0');
+    expect(listedContract.versions).toEqual([
+      { version: '2.0.0', min_platform_version: '9999.0.0', min_version: '9999.0.0', support_version: '9999.0.0' },
+      { version: '1.0.0', min_platform_version: '7.0.0', min_version: '7.0.0', support_version: '7.0.0' },
+    ]);
+
+    const bySlugResult = await queryAsAdminWithSuccess({
+      query: GET_CONTRACT_BY_SLUG_QUERY,
+      variables: { slug: contractSlug },
+    });
+    const bySlugPayload = bySlugResult.data?.contract;
+    expect(bySlugPayload).toMatchObject({
+      catalog_id: catalogId,
+      contract: expect.any(String),
+    });
+    const bySlugContract = JSON.parse(bySlugPayload.contract);
+    expect(bySlugContract.slug).toEqual(contractSlug);
+    expect(bySlugContract.container_version).toBe('2.0.0');
+    expect(bySlugContract.support_version).toBe('9999.0.0');
+    expect(bySlugContract.versions).toEqual([
+      { version: '2.0.0', min_platform_version: '9999.0.0', min_version: '9999.0.0', support_version: '9999.0.0' },
+      { version: '1.0.0', min_platform_version: '7.0.0', min_version: '7.0.0', support_version: '7.0.0' },
+    ]);
   });
 });

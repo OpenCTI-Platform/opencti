@@ -4,6 +4,7 @@ import IngestionCatalogConnectorHeader from '@components/integrations/catalog/In
 import IngestionCatalogConnectorOverview from '@components/integrations/catalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/integrations/catalog/__generated__/IngestionCatalogConnectorQuery.graphql';
 import useConnectorDeployDialog from '@components/integrations/catalog/hooks/useConnectorDeployDialog';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import createDeploymentCountMap from '@components/integrations/catalog/utils/createDeploymentCountMap';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
@@ -18,7 +19,6 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 
 const SEARCH_PARAMS = {
   OPEN_CONFIG: 'openConfig',
@@ -70,7 +70,7 @@ const IngestionCatalogConnectorComponent = ({
     if (openConfig && contract && connector && canDeploy) {
       onClickDeploy(connector, contract.catalog_id, hasActiveManagers, deploymentCount);
     }
-  }, [openConfig, contract, canDeploy, connector, deploymentCount, hasActiveManagers, onClickDeploy]);
+  }, [canDeploy, connector, contract, deploymentCount, hasActiveManagers, onClickDeploy, openConfig]);
 
   if (!contract) return <ErrorNotFound />;
 
