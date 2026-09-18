@@ -1,10 +1,8 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { StixCustomFieldDefinition, StoreEntityCustomFieldDefinition } from './custom-field-types';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from './custom-field-types';
-import convertCustomFieldDefinitionToStix from './custom-field-converter';
 
-const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFieldDefinition, StixCustomFieldDefinition> = {
+const CUSTOM_FIELD_DEFINITION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'custom-field-definition',
     name: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
@@ -48,10 +46,6 @@ const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFiel
   ],
   relations: [],
   relationsRefs: [],
-  representative: (stix: StixCustomFieldDefinition) => {
-    return stix.label ?? stix.name;
-  },
-  converter_2_1: convertCustomFieldDefinitionToStix,
 };
 
-registerDefinition(CUSTOM_FIELD_DEFINITION_DEFINITION);
+registerInternalObjectDefinition(CUSTOM_FIELD_DEFINITION_DEFINITION);
