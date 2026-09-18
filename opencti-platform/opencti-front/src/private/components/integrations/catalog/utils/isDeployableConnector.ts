@@ -3,6 +3,7 @@ import { getLatestCompatibleVersion } from './getLatestCompatibleVersion';
 
 type DeployableConnector = {
   manager_supported?: IngestionConnector['manager_supported'] | null;
+  compatibility?: IngestionConnector['compatibility'] | null;
   support_version?: IngestionConnector['support_version'] | null;
   container_version?: IngestionConnector['container_version'] | null;
   versions?: Array<{
@@ -19,6 +20,10 @@ export const canDeployConnector = (
 ) => {
   if (connector?.manager_supported !== true) {
     return false;
+  }
+
+  if (connector.compatibility) {
+    return connector.compatibility.is_compatible;
   }
 
   if (!platformVersion) {

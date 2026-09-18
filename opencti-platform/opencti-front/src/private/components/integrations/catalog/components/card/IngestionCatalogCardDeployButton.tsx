@@ -8,9 +8,10 @@ type IngestionCatalogCardDeployButtonProps = {
   deploymentCount?: number;
   deployedTo?: string;
   onClick: () => void;
+  disabled?: boolean;
 };
 
-const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, deployedTo, onClick }: IngestionCatalogCardDeployButtonProps) => {
+const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, deployedTo, onClick, disabled = false }: IngestionCatalogCardDeployButtonProps) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -18,6 +19,7 @@ const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, deployedTo, onC
       <DeployedCountChip count={deploymentCount} to={deployedTo} />
       <Button
         size="small"
+        disabled={disabled}
         onClick={onClick}
       >
         {t_i18n('Deploy')}

@@ -100,6 +100,7 @@ const ConnectorActions = ({
   onClickDeploy,
 }: ConnectorActionsProps) => {
   const canDeploy = canDeployConnector(connector);
+  const shouldRenderDeploy = connector.manager_supported === true;
 
   return (
     <CardActions
@@ -113,7 +114,7 @@ const ConnectorActions = ({
       }}
     >
       <ConnectorUseCases useCases={connector.use_cases} />
-      {canDeploy && (
+      {shouldRenderDeploy && (
         <Stack
           sx={{ marginLeft: '0!important' }}
           direction="row"
@@ -125,6 +126,7 @@ const ConnectorActions = ({
               <IngestionCatalogCardDeployButton
                 deploymentCount={deploymentCount}
                 deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
+                disabled={!canDeploy}
                 onClick={onClickDeploy}
               />
             ) : (

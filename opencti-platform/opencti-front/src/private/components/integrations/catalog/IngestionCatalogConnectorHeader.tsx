@@ -6,6 +6,7 @@ import IngestionCatalogChip from '@components/integrations/catalog/IngestionCata
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -14,7 +15,6 @@ import Security from '../../../../utils/Security';
 import Tag from '@common/tag/Tag';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
-import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 
 type IngestionCatalogConnectorHeaderProps = {
   connector: IngestionConnector;
@@ -25,9 +25,10 @@ type IngestionCatalogConnectorHeaderProps = {
 const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onClickDeploy }: IngestionCatalogConnectorHeaderProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const canDeploy = canDeployConnector(connector);
 
   const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
+  const shouldRenderDeploy = connector.manager_supported === true;
+  const canDeploy = canDeployConnector(connector);
 
   return (
     <Stack
@@ -96,17 +97,15 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
       </Stack>
 
       <div>
-        {canDeploy && (
-          <Security needs={[INGESTION_SETINGESTIONS]}>
-            {
-              isEnterpriseEdition ? (
-                <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
-              ) : (
-                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-              )
-            }
-          </Security>
-        )}
+        <Security needs={[INGESTION_SETINGESTIONS]} hasAccess={shouldRenderDeploy}>
+          {
+            isEnterpriseEdition ? (
+              <Button disabled={!canDeploy} onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+            ) : (
+              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+            )
+          }
+        </Security>
       </div>
     </Stack>
   );
