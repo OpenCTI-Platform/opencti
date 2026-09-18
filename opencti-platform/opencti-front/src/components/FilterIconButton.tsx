@@ -1,6 +1,6 @@
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmpty, mapFilterGroupTree, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
+import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmptyShallow, mapFilterGroupTree, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
@@ -158,7 +158,9 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   }));
 
   const displayedFilters = filters ? filterGroupOnAvailableKeys(filters, availableFilterKeys) : undefined;
-  if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
+  // shallow check on purpose: this gates rendering of the chips/edit UI itself, so it must not
+  // hide a filter/group the user just added but hasn't filled in yet (see isFilterGroupNotEmptyShallow doc)
+  if (displayedFilters && isFilterGroupNotEmptyShallow(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery
         filters={displayedFilters}
