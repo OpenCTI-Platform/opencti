@@ -1,9 +1,8 @@
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
-import convertWorkflowToStix from '../engine/workflow-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../../schema/module';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../types/workflow-types';
 
-const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
+const WORKFLOW_INSTANCE_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'workflowinstances',
     name: ENTITY_TYPE_WORKFLOW_INSTANCE,
@@ -16,7 +15,6 @@ const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
     },
     resolvers: {},
   },
-  converter_2_1: convertWorkflowToStix,
   attributes: [
     { name: 'entity_id', label: 'Entity ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'workflow_id', label: 'Workflow Definition ID', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -27,9 +25,6 @@ const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
     { name: 'pendingTransition', label: 'Pending Transition', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: any) => {
-    return stix.currentState;
-  },
 };
 
-registerDefinition(WORKFLOW_INSTANCE_DEFINITION);
+registerInternalObjectDefinition(WORKFLOW_INSTANCE_DEFINITION);
