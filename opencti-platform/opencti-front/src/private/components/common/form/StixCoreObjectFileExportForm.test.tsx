@@ -68,12 +68,14 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     expect(screen.getByLabelText('File to export')).toBeDisabled();
     expect(screen.getByLabelText('File to export')).toHaveValue('Generated file');
     expect(screen.getByLabelText('Export file name')).toHaveValue('');
+    expect(screen.getByLabelText('Remove empty sections')).not.toBeChecked();
     expect(screen.getByLabelText('Include cover page')).toBeChecked();
     expect(screen.getByLabelText('Include back page')).toBeChecked();
   });
 
   it('requires a template and filename and submits without inherited markings', async () => {
     const { user, onSubmit } = renderPdfForm();
+    await waitFor(() => expect(screen.getByLabelText('Remove empty sections')).not.toBeChecked());
     await user.click(screen.getByRole('button', { name: 'Create' }));
     await waitFor(() => expect(screen.getAllByText('This field is required')).toHaveLength(2));
     expect(onSubmit).not.toHaveBeenCalled();
@@ -82,10 +84,12 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     await user.click(await screen.findByRole('option', { name: 'Template A' }));
     expect(screen.getByLabelText('Export file name')).toHaveValue('');
     await user.type(screen.getByLabelText('Export file name'), 'briefing');
+    await user.click(screen.getByLabelText('Remove empty sections'));
     await user.click(screen.getByRole('button', { name: 'Create' }));
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     expect(onSubmit.mock.calls[0][0]).toMatchObject({
       exportAsFintel: true,
+      removeEmptySections: true,
       template: { value: 'tpl-1' },
       exportFileName: 'briefing',
       fileMarkings: [],
@@ -97,12 +101,14 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     const { user } = renderPdfForm();
     await user.click(screen.getByLabelText('Export as fintel'));
     await waitFor(() => expect(screen.queryByLabelText('Template')).not.toBeInTheDocument());
+    expect(screen.queryByLabelText('Remove empty sections')).not.toBeInTheDocument();
     expect(screen.getByLabelText('File to export')).not.toBeDisabled();
     expect(screen.getByLabelText('File to export')).toHaveValue('Mappable main content');
     expect(screen.getByLabelText('Export file name')).not.toHaveValue('');
     await user.click(screen.getByLabelText('Export as fintel'));
     await waitFor(() => expect(screen.getByLabelText('Export file name')).toHaveValue(''));
     expect(screen.getByLabelText('Template')).toHaveValue('');
+    expect(screen.getByLabelText('Remove empty sections')).not.toBeChecked();
   });
 
   it('keeps the legacy flow without available templates', async () => {
@@ -134,6 +140,27 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     await waitFor(() => expect(onSubmit).toHaveBeenCalled());
     expect(onSubmit.mock.calls[0][0].fileMarkings).toEqual([{ value: 'marking-1', label: 'TLP:GREEN' }]);
     expect(onSubmit.mock.calls[0][0].exportAsFintel).toBe(exportAsFintel);
+  });
+
+  it('shows remove empty sections for template-generated modes only', async () => {
+    const { user } = testRender(
+      <StixCoreObjectFileExportForm
+        {...baseProps}
+        connectors={[{ ...BUILT_IN_HTML_TO_PDF, label: 'HTML content files to PDF' }, templateConnector]}
+        templates={templates}
+        fileOptions={[{ value: 'mappableContent', label: 'Mappable main content', fileMarkings: [] }]}
+        defaultValues={{ connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf' }}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByLabelText('Remove empty sections')).toBeInTheDocument());
+    expect(screen.getByLabelText('Remove empty sections')).not.toBeChecked();
+    await user.click(screen.getByLabelText('Export as fintel'));
+    await waitFor(() => expect(screen.queryByLabelText('Remove empty sections')).not.toBeInTheDocument());
+    await user.click(screen.getByLabelText('Connector'));
+    await user.click(await screen.findByRole('option', { name: 'Generate FINTEL from template' }));
+    await waitFor(() => expect(screen.getByLabelText('Remove empty sections')).toBeInTheDocument());
+    expect(screen.getByLabelText('Remove empty sections')).not.toBeChecked();
   });
 
   it('restores the source template page defaults after switching back to legacy export', async () => {

@@ -2,24 +2,33 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { MESSAGING$ } from '../../../../relay/environment';
-import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from './StixCoreObjectFileExport';
+import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from './StixCoreObjectFileExport';
 import StixCoreObjectContentFiles from './StixCoreObjectContentFiles';
 
-const { buildFileFromTemplate, htmlToPdfReport } = vi.hoisted(() => ({
+const { buildFileFromTemplate, htmlToPdf, htmlToPdfReport } = vi.hoisted(() => ({
   buildFileFromTemplate: vi.fn(),
+  htmlToPdf: vi.fn(),
   htmlToPdfReport: vi.fn(),
 }));
 
 vi.mock('../../../../utils/outcome_template/engine/useFileFromTemplate', () => ({
   default: () => ({ buildFileFromTemplate }),
 }));
-vi.mock('../../../../utils/htmlToPdf/htmlToPdf', () => ({ htmlToPdfReport, htmlToPdf: vi.fn() }));
+vi.mock('../../../../utils/htmlToPdf/htmlToPdf', () => ({ htmlToPdfReport, htmlToPdf }));
 vi.mock('../form/ObjectMarkingField', () => ({ default: () => null }));
 vi.mock('../form/FintelDesignField', () => ({ default: () => null }));
 vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => true }));
 vi.mock('../../../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
 
-const openExport = async (entityType = 'Report', fromContentShortcut = false) => {
+const openExport = async (
+  entityType = 'Report',
+  fromContentShortcut = false,
+  options?: {
+    defaultValues?: { connector: string; format: string; fileToExport?: string };
+    exportAsFintel?: boolean;
+    removeEmptySections?: boolean;
+  },
+) => {
   const onExportCompleted = vi.fn();
   const onClose = vi.fn();
   const result = testRender(
@@ -45,7 +54,7 @@ const openExport = async (entityType = 'Report', fromContentShortcut = false) =>
         scoEntityType={entityType}
         scoName="Test report"
         OpenFormComponent={({ onOpen }) => <button onClick={onOpen}>Export</button>}
-        defaultValues={{ connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf' }}
+        defaultValues={options?.defaultValues ?? { connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf' }}
         onExportCompleted={onExportCompleted}
         onClose={onClose}
       />
@@ -74,14 +83,30 @@ const openExport = async (entityType = 'Report', fromContentShortcut = false) =>
     });
   });
   await result.user.click(screen.getByRole('button', { name: fromContentShortcut ? 'Generate an export based on a template' : 'Export' }));
-  if (fromContentShortcut) {
+  const connectorValue = options?.defaultValues?.connector ?? BUILT_IN_HTML_TO_PDF.value;
+  const isHtmlToPdfConnector = connectorValue === BUILT_IN_HTML_TO_PDF.value;
+  const isExportAsFintel = isHtmlToPdfConnector ? options?.exportAsFintel !== false : true;
+  if (isHtmlToPdfConnector) {
     expect(screen.getByLabelText('Export as fintel')).toBeChecked();
-    expect(screen.getByLabelText('Template')).toHaveValue('');
-    expect(screen.getByLabelText('File to export')).toBeDisabled();
+    if (fromContentShortcut) {
+      expect(screen.getByLabelText('Template')).toHaveValue('');
+      expect(screen.getByLabelText('File to export')).toBeDisabled();
+    }
   }
-  await result.user.click(screen.getByLabelText('Template'));
-  await result.user.click(await screen.findByRole('option', { name: 'Briefing' }));
-  await result.user.type(screen.getByLabelText('Export file name'), 'briefing');
+  if (isHtmlToPdfConnector && !isExportAsFintel) {
+    await result.user.click(screen.getByLabelText('Export as fintel'));
+  }
+  if (connectorValue === BUILT_IN_FROM_TEMPLATE.value || isExportAsFintel) {
+    await result.user.click(screen.getByLabelText('Template'));
+    await result.user.click(await screen.findByRole('option', { name: 'Briefing' }));
+  }
+  if (options?.removeEmptySections) {
+    await result.user.click(screen.getByLabelText('Remove empty sections'));
+  }
+  const exportFileName = screen.getByLabelText('Export file name');
+  if ((exportFileName as HTMLInputElement).value === '') {
+    await result.user.type(exportFileName, 'briefing');
+  }
   await result.user.click(screen.getByRole('button', { name: 'Create' }));
   await waitFor(() => expect(result.relayEnv.mock.getAllOperations()).toHaveLength(1));
   return { ...result, onExportCompleted, onClose };
@@ -105,11 +130,13 @@ const uploadResponse = (id: string, name: string, mimetype: string) => ({
 describe('FINTEL HTML and PDF export', () => {
   beforeEach(() => {
     buildFileFromTemplate.mockReset().mockResolvedValue('<p>Generated briefing</p>');
+    htmlToPdf.mockReset().mockReturnValue({ getBlob: async () => new Blob(['PDF'], { type: 'application/pdf' }) });
     htmlToPdfReport.mockReset().mockResolvedValue({ getBlob: async () => new Blob(['PDF'], { type: 'application/pdf' }) });
   });
 
-  it('opens PDF FINTEL generation directly from the Content Files shortcut', async () => {
+  it('keeps the existing PDF conversion flow from the Content Files shortcut until FINTEL is enabled', async () => {
     const { relayEnv, onExportCompleted } = await openExport('Report', true);
+    expect(buildFileFromTemplate).toHaveBeenCalledWith('report-1', [], 'template-1', undefined, { removeEmptySections: false });
     expect(relayEnv.mock.getMostRecentOperation().request.variables.file.name).toBe('briefing.html');
     await act(async () => {
       relayEnv.mock.resolveMostRecentOperation(uploadResponse('html-1', 'briefing.html', 'text/html'));
@@ -122,15 +149,15 @@ describe('FINTEL HTML and PDF export', () => {
     await waitFor(() => expect(onExportCompleted).toHaveBeenCalledWith('pdf-1'));
   });
 
-  it.each(['Report', 'Vulnerability'])('saves HTML before rendering PDF and completes only after both uploads for %s', async (entityType) => {
-    const { relayEnv, onExportCompleted, onClose } = await openExport(entityType);
+  it.each([true, false])('forwards removeEmptySections=%s for PDF template generation', async (removeEmptySections) => {
+    const { relayEnv, onExportCompleted, onClose } = await openExport('Report', false, { removeEmptySections });
     const htmlUpload = relayEnv.mock.getMostRecentOperation();
     expect(htmlUpload.request.variables).toMatchObject({
       id: 'report-1', fileMarkings: [], fromTemplate: true, fintelTemplateId: 'template-1',
     });
     expect(htmlUpload.request.variables.file.name).toBe('briefing.html');
     expect(htmlUpload.request.variables.file.type).toBe('text/html');
-    expect(buildFileFromTemplate).toHaveBeenCalledWith('report-1', [], 'template-1');
+    expect(buildFileFromTemplate).toHaveBeenCalledWith('report-1', [], 'template-1', undefined, { removeEmptySections });
     expect(htmlToPdfReport).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled();
 
@@ -155,6 +182,62 @@ describe('FINTEL HTML and PDF export', () => {
     });
     await waitFor(() => expect(onExportCompleted).toHaveBeenCalledWith('pdf-1'));
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it.each(['Vulnerability'])('saves HTML before rendering PDF and completes only after both uploads for %s', async (entityType) => {
+    const { relayEnv, onExportCompleted, onClose } = await openExport(entityType, false, { removeEmptySections: true });
+    const htmlUpload = relayEnv.mock.getMostRecentOperation();
+    expect(htmlUpload.request.variables).toMatchObject({
+      id: 'report-1', fileMarkings: [], fromTemplate: true, fintelTemplateId: 'template-1',
+    });
+    expect(htmlUpload.request.variables.file.name).toBe('briefing.html');
+    expect(htmlUpload.request.variables.file.type).toBe('text/html');
+    expect(buildFileFromTemplate).toHaveBeenCalledWith('report-1', [], 'template-1', undefined, { removeEmptySections: true });
+
+    await act(async () => {
+      relayEnv.mock.resolve(htmlUpload, uploadResponse('html-1', 'briefing.html', 'text/html'));
+    });
+    await waitFor(() => expect(relayEnv.mock.getAllOperations()).toHaveLength(1));
+    const pdfUpload = relayEnv.mock.getMostRecentOperation();
+
+    await act(async () => {
+      relayEnv.mock.resolve(pdfUpload, uploadResponse('pdf-1', 'briefing.pdf', 'application/pdf'));
+    });
+    await waitFor(() => expect(onExportCompleted).toHaveBeenCalledWith('pdf-1'));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it.each([true, false])('forwards removeEmptySections=%s for built-in HTML template generation', async (removeEmptySections) => {
+    const { relayEnv, onExportCompleted, onClose } = await openExport('Report', false, {
+      defaultValues: { connector: BUILT_IN_FROM_TEMPLATE.value, format: 'text/html' },
+      removeEmptySections,
+    });
+    const htmlUpload = relayEnv.mock.getMostRecentOperation();
+    expect(buildFileFromTemplate).toHaveBeenCalledWith('report-1', [], 'template-1', undefined, { removeEmptySections });
+    expect(htmlUpload.request.variables.file.name).toMatch(/\.html$/);
+    expect(htmlUpload.request.variables.file.type).toBe('text/html');
+    expect(htmlToPdfReport).not.toHaveBeenCalled();
+
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation(uploadResponse('html-1', htmlUpload.request.variables.file.name, 'text/html'));
+    });
+    await waitFor(() => expect(onExportCompleted).toHaveBeenCalledWith('html-1'));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('does not call template generation for existing HTML conversion', async () => {
+    const { relayEnv, onExportCompleted } = await openExport('Report', false, {
+      defaultValues: { connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf', fileToExport: 'mappableContent' },
+      exportAsFintel: false,
+    });
+    expect(buildFileFromTemplate).not.toHaveBeenCalled();
+    expect(htmlToPdf).toHaveBeenCalledWith('mappableContent', '');
+    expect(relayEnv.mock.getMostRecentOperation().request.variables.file.name).toMatch(/\.pdf$/);
+
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation(uploadResponse('pdf-1', 'generated.pdf', 'application/pdf'));
+    });
+    await waitFor(() => expect(onExportCompleted).toHaveBeenCalledWith('pdf-1'));
   });
 
   it('stops before PDF rendering when the HTML upload fails', async () => {
