@@ -1104,30 +1104,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/icu-messageformat-parser@npm:3.5.18":
-  version: 3.5.18
-  resolution: "@formatjs/icu-messageformat-parser@npm:3.5.18"
+"@formatjs/icu-messageformat-parser@npm:3.5.19":
+  version: 3.5.19
+  resolution: "@formatjs/icu-messageformat-parser@npm:3.5.19"
   dependencies:
-    "@formatjs/icu-skeleton-parser": "npm:2.1.11"
-  checksum: 10c0/4c4ecfb9e99e4f644c934279f91f034dc607e1935d0116e7fc7524c70f2708e9847ab2b335baeb2fbecb21da6f5cb629d2d713c56cd545f189ea0f45673028e9
+    "@formatjs/icu-skeleton-parser": "npm:2.1.12"
+  checksum: 10c0/806a7b6567fd7277dfeaa2dcaf562cdd4c1c590014bc16657dad22ee2c954cfc63f5256ca8b0b4bdcdf8268f643eca9fecb6678e6161d8936f88923446496422
   languageName: node
   linkType: hard
 
-"@formatjs/icu-skeleton-parser@npm:2.1.11":
-  version: 2.1.11
-  resolution: "@formatjs/icu-skeleton-parser@npm:2.1.11"
-  checksum: 10c0/9224b5cbfd64dc1e22ff48d758582e2f36cb4e2cd58f7f1fcfd251527f52ed7a1be27998c800c6dec3b718e06c73f98318a8fd8550bb0bbb467168988c630d29
+"@formatjs/icu-skeleton-parser@npm:2.1.12":
+  version: 2.1.12
+  resolution: "@formatjs/icu-skeleton-parser@npm:2.1.12"
+  checksum: 10c0/56507b7b5e3e38f964e80efbece91ce80f2d33cbeb0533a66efd9bda55b9d17e3aa2e933a8ad56d8368840c80d4777cc200e83ef6c8e2d4f2e24563ac2c404fa
   languageName: node
   linkType: hard
 
-"@formatjs/intl@npm:4.2.1":
-  version: 4.2.1
-  resolution: "@formatjs/intl@npm:4.2.1"
+"@formatjs/intl@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@formatjs/intl@npm:6.0.0"
   dependencies:
     "@formatjs/fast-memoize": "npm:3.1.7"
-    "@formatjs/icu-messageformat-parser": "npm:3.5.18"
-    intl-messageformat: "npm:11.2.15"
-  checksum: 10c0/5fb14ef7a36e1cb0d387e5ea06c0441f1d616405838f1df2d0a5a9dae5efc308b4e7c025033e910ae2e1561b771efda39a384d0968632b5d5da617032a52fe9e
+    "@formatjs/icu-messageformat-parser": "npm:3.5.19"
+    intl-messageformat: "npm:12.0.0"
+  checksum: 10c0/7252c26262a868c9774feeb891aeff95cd0e9f3cd00eb351da9bb4014ba87d941d7acaaa92578550f374ace663ffca5073ffbec9ae1f71223fb7b5e743dec495
   languageName: node
   linkType: hard
 
@@ -9231,13 +9231,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"intl-messageformat@npm:11.2.15":
-  version: 11.2.15
-  resolution: "intl-messageformat@npm:11.2.15"
+"intl-messageformat@npm:12.0.0":
+  version: 12.0.0
+  resolution: "intl-messageformat@npm:12.0.0"
   dependencies:
     "@formatjs/fast-memoize": "npm:3.1.7"
-    "@formatjs/icu-messageformat-parser": "npm:3.5.18"
-  checksum: 10c0/868247481c9a1bf8ae5041f2264de79ea7bb9efc7f5fdd7419ae9aad30ebd2b18e5d6f611283c9efed2409338290f2628be12685043aaff56f136cf714ebfff0
+    "@formatjs/icu-messageformat-parser": "npm:3.5.19"
+  checksum: 10c0/5c35ce5ab022eea66c3fadfb46a1132f1141133a859e1c49914a18f5ce9ba836f424b4b5b1ddf574ea0e62808edcc86f096772d156b1274610a3bb250ca28b14
   languageName: node
   linkType: hard
 
@@ -12003,7 +12003,7 @@ __metadata:
     react-force-graph-2d: "npm:1.29.1"
     react-force-graph-3d: "npm:1.29.1"
     react-grid-layout: "npm:2.2.4"
-    react-intl: "npm:10.2.2"
+    react-intl: "npm:12.0.1"
     react-markdown: "npm:10.1.0"
     react-material-ui-carousel: "npm:3.4.2"
     react-mde: "npm:11.5.0"
@@ -13129,17 +13129,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-intl@npm:10.2.2":
-  version: 10.2.2
-  resolution: "react-intl@npm:10.2.2"
+"react-intl@npm:12.0.1":
+  version: 12.0.1
+  resolution: "react-intl@npm:12.0.1"
   dependencies:
-    "@formatjs/icu-messageformat-parser": "npm:3.5.18"
-    "@formatjs/intl": "npm:4.2.1"
-    intl-messageformat: "npm:11.2.15"
+    "@formatjs/icu-messageformat-parser": "npm:3.5.19"
+    "@formatjs/intl": "npm:6.0.0"
+    intl-messageformat: "npm:12.0.0"
   peerDependencies:
     "@types/react": ">=18.0.0"
     react: ">=18.0.0"
-  checksum: 10c0/c5d7477cc36c566ec63f01426a518925ee7d520ea19d306856d161ad2c0d1b11e08c534c316eefe73a7f36564ea952af332abf6b0a2fa94bc0ef104f800ba732
+  checksum: 10c0/e2d3fe4aef5c58ab03544aa07b0a771e45390eebaef16841ad69e63936f69de6ae8a37a3908ebf8e5fe4343b473ba993078f809ad1ae54bacd74de3421ad1cf2
   languageName: node
   linkType: hard
 
