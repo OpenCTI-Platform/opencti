@@ -14354,7 +14354,7 @@ type VulnerabilityEdge {
 
 enum SsvcExploitation {
   none
-  poc
+  proof_of_concept
   active
 }
 
