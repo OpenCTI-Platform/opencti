@@ -131,6 +131,10 @@ export default defineConfig([
 
       'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
       '@typescript-eslint/no-floating-promises': 'error',
+      'no-restricted-globals': ['error', {
+        name: 'fetch',
+        message: "Import fetch from 'undici' instead of using the global one, so requests and dispatchers share the same undici copy.",
+      }],
     },
   },
 
