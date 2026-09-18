@@ -18,15 +18,17 @@ export class MigrationsMetricsRecorder {
    */
   record() {
     this.set.migrations.forEach((migration) => {
-      const endTimestamp = migration.timestamp ?? 0;
-      if (migration.title in this.startTimestamps && endTimestamp > 0) {
+      const endTimestamp = migration.timestamp ?? Date.now();
+      const status = migration.timestamp ? 'success' : 'failed';
+      if (migration.title in this.startTimestamps) {
         const migrationDurationSecs = Math.floor((endTimestamp - this.startTimestamps[migration.title]) / 1000);
         this.meter.migrationDuration(migrationDurationSecs, {
           migrationTitle: migration.title,
+          status,
         });
       }
     });
-  };
+  }
 
   private meter: typeof meterManager;
   private set: MigrationSet;

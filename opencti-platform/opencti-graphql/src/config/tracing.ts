@@ -62,9 +62,11 @@ class MeterManager {
 
   migrationDuration(val: number, attributes: {
     migrationTitle: string;
+    status: 'success' | 'failed';
   }) {
     this.migrationDurationHistogram?.record(val, {
       'opencti.migration.title': attributes.migrationTitle,
+      'opencti.migration.status': attributes.status,
     });
   }
 
