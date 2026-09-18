@@ -100,4 +100,26 @@ describe('Hook: useBuildListOutcome', () => {
     expect(normalizedOutcome).toContain('<td>TLP:CLEAR</td>');
     expect(normalizedOutcome).toContain('<td>In progress</td>');
   });
+
+  it('should expose empty metadata when the list has headers but no rows', async () => {
+    const { hook, relayEnv } = testRenderHook(() => useBuildListOutcome());
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
+    const { buildListOutcome } = hook.result.current;
+
+    relayEnv.mock.queueOperationResolver((op) => {
+      return MockPayloadGenerator.generate(op, {
+        StixCoreObjectConnection() {
+          return {
+            edges: [],
+          };
+        },
+      });
+    });
+
+    const listOutcome = await buildListOutcome({}, 'entities', { includeMetadata: true });
+
+    expect(listOutcome.isEmpty).toEqual(true);
+    expect(listOutcome.html).toContain('<thead>');
+    expect(listOutcome.html).toContain('<tbody></tbody>');
+  });
 });

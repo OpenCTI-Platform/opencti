@@ -2069,6 +2069,7 @@
   "Explore XTM Hub": "XTM Hubを探索",
   "Export": "出力",
   "Export as fintel": "fintel 形式でエクスポート",
+  "Remove empty sections": "空のセクションを削除",
   "Export as image": "画像出力",
   "Export as PDF": "PDF出力",
   "Export data in CSV": "CSVでデータを出力する",
