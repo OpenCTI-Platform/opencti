@@ -31,7 +31,7 @@ export default defineConfig({
       outputFile: './test-results/report.html',
       // global coverage report options
       coverage: {
-        entryFilter: (entry) => true,
+        entryFilter: () => true,
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
       },
     }],
