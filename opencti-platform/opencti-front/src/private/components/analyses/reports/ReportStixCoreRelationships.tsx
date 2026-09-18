@@ -1,9 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { AutoFix } from 'mdi-material-ui';
-import { useTheme } from '@mui/styles';
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import {
-  stixCoreRelationshipsFragment,
   stixCoreRelationshipsLinesFragment,
   stixCoreRelationshipsLinesQuery,
 } from '@components/common/stix_core_relationships/StixCoreRelationships';
@@ -11,19 +7,19 @@ import {
   StixCoreRelationshipsLinesPaginationQuery,
   StixCoreRelationshipsLinesPaginationQuery$variables,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
-import { StixCoreRelationshipsLines_data$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLines_data.graphql';
-import DataTable from '../../../../components/dataGrid/DataTable';
-import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import ListLines from '../../../../components/list_lines/ListLines';
+import { DataColumns } from '../../../../components/list_lines';
+import ToolBar from '../../data/ToolBar';
+import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useAuth from '../../../../utils/hooks/useAuth';
-import ItemEntityType from '../../../../components/ItemEntityType';
-import ItemIcon from '../../../../components/ItemIcon';
-import { itemColor } from '../../../../utils/Colors';
+import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import type { Theme } from '../../../../components/Theme';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import ReportStixCoreRelationshipsLines from './ReportStixCoreRelationshipsLines';
+import type { ReportRelationshipNode } from './ReportStixCoreRelationshipsLine';
 
 interface ReportStixCoreRelationshipsProps {
   reportId: string;
@@ -45,61 +41,42 @@ export const buildReportRelationshipsContextFilters = (
 });
 
 const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationshipsProps> = ({ reportId }) => {
-  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const LOCAL_STORAGE_KEY = `report-${reportId}-relationships`;
 
-  const dataColumns: DataTableProps['dataColumns'] = {
-    is_inferred: {
-      id: 'is_inferred',
-      label: ' ',
-      isSortable: false,
-      percentWidth: 3,
-      render: ({ is_inferred, entity_type, draftVersion }) => {
-        if (is_inferred) {
-          const inferredColor = draftVersion ? getDraftModeColor(theme) : itemColor(entity_type);
-          return (<AutoFix style={{ color: inferredColor }} />);
-        }
-        if (draftVersion) {
-          return (<ItemIcon type={entity_type} color={getDraftModeColor(theme)} />);
-        }
-        return (<ItemIcon type={entity_type} />);
-      },
-    },
+  const dataColumns: DataColumns = {
     fromType: {
-      id: 'fromType',
       label: 'From type',
-      percentWidth: 9,
+      width: '11%',
       isSortable: false,
-      render: (node) => (
-        <ItemEntityType showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
-      ),
     },
     fromName: {
-      percentWidth: 15,
+      label: 'From name',
+      width: '16%',
+      isSortable: false,
     },
     relationship_type: {
-      percentWidth: 8,
+      label: 'Relationship type',
+      width: '12%',
+      isSortable: true,
     },
     toType: {
-      id: 'toType',
       label: 'To type',
-      percentWidth: 9,
+      width: '11%',
       isSortable: false,
-      render: (node) => (
-        <ItemEntityType showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
-      ),
     },
     toName: {
-      percentWidth: 15,
+      label: 'To name',
+      width: '16%',
+      isSortable: false,
     },
-    createdBy: { percentWidth: 8, isSortable: isRuntimeSort },
-    creator: { percentWidth: 8, isSortable: isRuntimeSort },
-    created_at: { percentWidth: 15 },
-    objectMarking: { percentWidth: 10, isSortable: isRuntimeSort },
+    createdBy: { label: 'Author', width: '9%', isSortable: isRuntimeSort },
+    created_at: { label: 'Created', width: '9%', isSortable: true },
+    objectMarking: { label: 'Marking', width: '8%', isSortable: isRuntimeSort },
   };
 
   const initialValues = {
@@ -130,31 +107,71 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
     stixCoreRelationshipsLinesQuery,
     queryPaginationOptions,
   );
-  const preloadedPaginationProps = {
-    linesQuery: stixCoreRelationshipsLinesQuery,
-    linesFragment: stixCoreRelationshipsLinesFragment,
-    queryRef,
-    nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
-    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-  } as UsePreloadedPaginationFragment<StixCoreRelationshipsLinesPaginationQuery>;
+  const {
+    selectedElements,
+    deSelectedElements,
+    selectAll,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    onToggleEntity,
+  } = useEntityToggle<ReportRelationshipNode>(LOCAL_STORAGE_KEY);
 
-  return (
-    <div style={{ height: '100%' }}>
-      {queryRef && (
-        <DataTable
+  return queryRef ? (
+    <>
+      <ListLines
+        helpers={storageHelpers}
+        sortBy={viewStorage.sortBy}
+        orderAsc={viewStorage.orderAsc}
+        dataColumns={dataColumns}
+        handleSort={storageHelpers.handleSort}
+        handleSearch={storageHelpers.handleSearch}
+        handleAddFilter={storageHelpers.handleAddFilter}
+        handleRemoveFilter={storageHelpers.handleRemoveFilter}
+        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+        handleToggleSelectAll={handleToggleSelectAll}
+        selectAll={selectAll}
+        keyword={viewStorage.searchTerm}
+        filters={filters}
+        handleToggleExports={storageHelpers.handleToggleExports}
+        openExports={viewStorage.openExports}
+        iconExtension={true}
+        numberOfElements={viewStorage.numberOfElements}
+        paginationOptions={queryPaginationOptions}
+        availableEntityTypes={['stix-core-relationship']}
+        availableRelationshipTypes={[]}
+        exportContext={{ entity_id: reportId, entity_type: 'stix-core-relationship' }}
+        noPadding={true}
+        disableCards={true}
+        entityTypes={['stix-core-relationship']}
+      >
+        <ReportStixCoreRelationshipsLines
           dataColumns={dataColumns}
-          resolvePath={(data: StixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          contextFilters={contextFilters}
-          lineFragment={stixCoreRelationshipsFragment}
-          preloadedPaginationProps={preloadedPaginationProps}
-          exportContext={{ entity_id: reportId, entity_type: 'stix-core-relationship' }}
-          container={{ id: reportId }}
+          paginationOptions={queryPaginationOptions}
+          queryRef={queryRef}
+          setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          selectAll={selectAll}
+          onToggleEntity={onToggleEntity}
         />
-      )}
-    </div>
-  );
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={contextFilters}
+          search={viewStorage.searchTerm}
+          handleClearSelectedElements={handleClearSelectedElements}
+          container={{ id: reportId }}
+          warning={true}
+          warningMessage={t_i18n('Be careful, you are about to delete the selected relationships')}
+          type="stix-core-relationship"
+        />
+      </ListLines>
+    </>
+  ) : null;
 };
 
 export default ReportStixCoreRelationships;
