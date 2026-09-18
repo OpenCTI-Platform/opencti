@@ -7085,7 +7085,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:4.1.0, eventsource-parser@npm:^4.1.0":
+"eventsource-parser@npm:4.1.1":
+  version: 4.1.1
+  resolution: "eventsource-parser@npm:4.1.1"
+  checksum: 10c0/cae2e8960409cd20cb7623b5f1f37ea41ec984e776c1c3fac0a0fe77efe292aa019e0d40427c87b5a13dbaf0b50133866afcb6bf3100dc49c2649758ebd29cbe
+  languageName: node
+  linkType: hard
+
+"eventsource-parser@npm:^4.1.0":
   version: 4.1.0
   resolution: "eventsource-parser@npm:4.1.0"
   checksum: 10c0/0591250f4f3df7ebef56ddfbba0e19aee5450d81347609d7d2417f08191060aea3fbb3aa71a02c25515b198ee17bd0c94d30190f576e0aa937c93c9e9f605e6f
@@ -10343,7 +10350,7 @@ __metadata:
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:2.0.0"
     eventsource: "npm:5.1.1"
-    eventsource-parser: "npm:4.1.0"
+    eventsource-parser: "npm:4.1.1"
     express: "npm:5.2.1"
     express-rate-limit: "npm:8.7.0"
     express-session: "npm:1.19.0"
