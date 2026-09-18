@@ -131,7 +131,7 @@ const StixSightingRelationshipCreationFromEntityLinesContainer = ({
                   hideHeaders
                   onLineClick={handleSelect}
                   icon={(row) => (
-                    <span style={{ display: 'flex', transform: 'scale(1.15)' }}>
+                    <span style={{ display: 'flex', marginLeft: 8, transform: 'scale(1.15)' }}>
                       <ItemIcon type={row.entity_type} />
                     </span>
                   )}
