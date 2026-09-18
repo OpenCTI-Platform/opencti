@@ -3,6 +3,7 @@ import readline from 'node:readline';
 import fs from 'node:fs';
 import Upload from 'graphql-upload/Upload.mjs';
 import { ApolloServer } from '@apollo/server';
+import type { FormattedExecutionResult } from 'graphql';
 import createSchema from '../../src/graphql/schema';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
@@ -199,7 +200,9 @@ const queryAsTestUser = async <T = Record<string, any>>(testUser: UserTestData, 
   return query<T>({ user, request, draftContext });
 };
 
-const query = async <T = Record<string, any>>(params: { user?: AuthUser; request: Request; draftContext?: any }) => {
+const query = async <T = Record<string, any>>(
+  params: { user?: AuthUser; request: Request; draftContext?: any },
+): Promise<FormattedExecutionResult<T>> => {
   const execContext = executionContext('test', params.user, params.draftContext ?? undefined);
   execContext.changeDraftContext = (draftId) => {
     execContext.draft_context = draftId;
@@ -209,7 +212,9 @@ const query = async <T = Record<string, any>>(params: { user?: AuthUser; request
   if (body.kind === 'single') {
     return body.singleResult;
   }
-  return body.initialResult;
+  // Incremental delivery (@defer / @stream) is not used by the test schema; the
+  // first chunk carries the same shape as a single result.
+  return body.initialResult as FormattedExecutionResult<T>;
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {

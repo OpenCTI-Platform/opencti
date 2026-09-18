@@ -410,7 +410,15 @@ const getStackTrace = () => {
   Error.captureStackTrace(obj, getStackTrace);
   return obj.stack;
 };
-export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
+export interface LockHandle {
+  signal: AbortSignal;
+  extend: () => Promise<void>;
+  acquireWaitMs: number;
+  acquireAttempts: number;
+  unlock: () => Promise<void>;
+}
+
+export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
