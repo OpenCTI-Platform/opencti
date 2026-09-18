@@ -3,11 +3,52 @@ import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
-import DataProcessingTasksPage from '../model/DataProcessingTasks.pageModel';
 import { addReport, deleteReport } from '../dataForTesting/report.data';
 import { addRelationship, deleteRelationship } from '../dataForTesting/relationship.data';
 import { graphqlQuery } from '../dataForTesting/query-utils';
-import { awaitUntilCondition, sleep } from '../utils';
+import { awaitUntilCondition } from '../utils';
+
+const waitForBackgroundTaskComplete = async (request: Parameters<typeof graphqlQuery>[0], taskId: string, timeoutMs = 180_000) => {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const response = await graphqlQuery(request, `
+      query {
+        backgroundTasks(
+          first: 1
+          filters: {
+            mode: and
+            filters: [{ key: "id", values: ["${taskId}"], operator: eq }]
+            filterGroups: []
+          }
+        ) {
+          edges {
+            node {
+              id
+              completed
+              errors {
+                message
+              }
+            }
+          }
+        }
+      }
+    `);
+    const payload = await response.json();
+    const task = payload.data?.backgroundTasks?.edges?.[0]?.node;
+
+    if (task?.errors?.length) {
+      throw new Error(`Bulk removal task failed: ${task.errors[0].message ?? 'unknown error'}`);
+    }
+    if (task?.completed === true) {
+      return task;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+
+  throw new Error(`Bulk removal task ${taskId} did not complete within ${timeoutMs}ms`);
+};
 
 /**
  * Content of the test
@@ -81,10 +122,10 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
  * Check the relationship is no longer listed in the report, but still exists globally.
  */
 test('Report relationships tab - bulk remove from container', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page, request }) => {
+  test.setTimeout(300_000);
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
   const reportDetailsPage = new ReportDetailsPage(page);
-  const tasksPage = new DataProcessingTasksPage(page);
 
   const relationshipInput = {
     relationship_type: 'targets',
@@ -119,15 +160,20 @@ test('Report relationships tab - bulk remove from container', { tag: ['@report',
     await page.getByRole('checkbox', { name: 'Select line' }).first().click();
     const toolbar = page.getByTestId('opencti-toolbar');
     await toolbar.getByRole('button', { name: 'remove' }).click();
+    const taskResponsePromise = page.waitForResponse((response) => (
+      response.url().endsWith('/graphql')
+      && response.request().method() === 'POST'
+      && response.request().postData()?.includes('listTaskAdd') === true
+    ));
     await page.getByRole('button', { name: 'Launch' }).click();
+    const taskResponse = await taskResponsePromise;
+    const taskPayload = await taskResponse.json();
+    const taskId = taskPayload.data?.listTaskAdd?.id;
+    if (!taskId) {
+      throw new Error('Bulk removal task ID was not returned by listTaskAdd');
+    }
 
-    // Background task: poll the processing tasks page until it completes.
-    const waitForTaskComplete = async () => {
-      await tasksPage.goto();
-      return page.getByText('Complete').first().isVisible();
-    };
-    await sleep(3000);
-    await awaitUntilCondition(waitForTaskComplete, 3000, 20);
+    await waitForBackgroundTaskComplete(request, taskId);
 
     await reportPage.navigateFromMenu();
     await reportPage.getItemFromList(reportName).click();
@@ -144,7 +190,15 @@ test('Report relationships tab - bulk remove from container', { tag: ['@report',
     `);
     expect((await survivingRelationship.json()).data.stixCoreRelationship?.id).toEqual(relationshipId);
   } finally {
-    await deleteReport(request, reportId);
-    await deleteRelationship(request, relationshipInput);
+    try {
+      await deleteReport(request, reportId);
+    } catch (error) {
+      console.warn(`Unable to delete report ${reportId}:`, error);
+    }
+    try {
+      await deleteRelationship(request, relationshipInput);
+    } catch (error) {
+      console.warn('Unable to delete test relationship:', error);
+    }
   }
 });

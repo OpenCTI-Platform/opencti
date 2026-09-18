@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ReportStixCoreRelationshipsLine, { ReportRelationshipNode } from './ReportStixCoreRelationshipsLine';
 import type { DataColumns } from '../../../../components/list_lines';
 
-const useFragmentMock = vi.fn();
+const useFragmentMock = vi.hoisted(() => vi.fn());
 
 vi.mock('react-relay', () => ({
   useFragment: useFragmentMock,
