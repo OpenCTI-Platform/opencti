@@ -1,12 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_INGESTION_TAXII, type StixIngestionTaxii, type StoreEntityIngestionTaxii } from './ingestion-types';
-import { convertIngestionTaxiiToStix } from './ingestion-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_INGESTION_TAXII } from './ingestion-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
-const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
+const INGESTION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'ingestion-taxii',
     name: ENTITY_TYPE_INGESTION_TAXII,
@@ -56,10 +55,6 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixIngestionTaxii) => {
-    return stix.name;
-  },
-  converter_2_1: convertIngestionTaxiiToStix,
 };
 
-registerDefinition(INGESTION_DEFINITION);
+registerInternalObjectDefinition(INGESTION_DEFINITION);

@@ -14,15 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_INGESTION_JSON, type StixIngestionJson, type StoreEntityIngestionJson } from './ingestion-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_INGESTION_JSON } from './ingestion-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { convertIngestionJsonToStix } from './ingestion-converter';
 import { ENTITY_TYPE_JSON_MAPPER } from '../internal/jsonMapper/jsonMapper-types';
 
-const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, StixIngestionJson> = {
+const INGESTION_JSON_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'ingestion-json',
     name: ENTITY_TYPE_INGESTION_JSON,
@@ -62,10 +61,6 @@ const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, Stix
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixIngestionJson) => {
-    return stix.name;
-  },
-  converter_2_1: convertIngestionJsonToStix,
 };
 
-registerDefinition(INGESTION_JSON_DEFINITION);
+registerInternalObjectDefinition(INGESTION_JSON_DEFINITION);
