@@ -1,162 +1,12 @@
-import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import Typography from '@mui/material/Typography';
-import { ExpandMore } from '@mui/icons-material';
-import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
+import React from 'react';
+import { graphql } from 'react-relay';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n from '../../../../components/i18n';
 
-const styles = (theme) => ({
-  container: {
-    padding: '20px 0 0 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  table: {
-    width: '100%',
-    backgroundColor: 'var(--bg-input-default)',
-    border: '1px solid var(--border-default)',
-    borderRadius: 4,
-    overflow: 'hidden',
-    '& a': {
-      color: 'var(--text-default)',
-      borderBottom: '1px solid var(--border-default)',
-    },
-    '& a:hover': {
-      backgroundColor: 'var(--bg-input-hover)',
-    },
-    '& a > div': {
-      height: 52,
-    },
-  },
-  noResult: {
-    padding: 20,
-  },
-});
-
-const StixSightingRelationshipCreationFromEntityLinesContainer = ({
-  t,
-  classes,
-  data,
-  handleSelect,
-}) => {
-  const [expandedPanels, setExpandedPanels] = useState({});
-  const handleChangePanel = (panelKey, expanded) => {
-    setExpandedPanels((previousExpandedPanels) => (
-      assoc(panelKey, expanded, previousExpandedPanels)
-    ));
-  };
-  const isExpanded = (type, numberOfEntities, numberOfTypes) => {
-    if (expandedPanels[type] !== undefined) {
-      return expandedPanels[type];
-    }
-    if (numberOfEntities === 1) {
-      return true;
-    }
-    return numberOfTypes === 1;
-  };
-  const stixDomainObjectsNodes = map(
-    (n) => n.node,
-    data.stixDomainObjects.edges,
-  );
-  const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
-  const stixDomainObjects = byType(stixDomainObjectsNodes);
-  const stixDomainObjectsTypes = keys(stixDomainObjects);
-  const dataColumns = {
-    name: {
-      label: t('Name'),
-      percentWidth: 100,
-      isSortable: false,
-      render: (row) => (
-        <span style={{ color: 'var(--text-default)', fontSize: 14, fontWeight: 500 }}>
-          {row.name}
-        </span>
-      ),
-    },
-  };
-
-  return (
-    <div className={classes.container}>
-      {stixDomainObjectsTypes.length > 0 ? (
-        stixDomainObjectsTypes.map((type) => (
-          <Accordion
-            key={type}
-            expanded={isExpanded(
-              type,
-              stixDomainObjects[type].length,
-              stixDomainObjectsTypes.length,
-            )}
-            onChange={(_event, expanded) => handleChangePanel(type, expanded)}
-            elevation={0}
-            disableGutters
-            sx={{ backgroundColor: 'var(--bg-input-default)' }}
-          >
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {stixDomainObjects[type].length} {t('entitie(s)')}
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails
-              classes={{ root: classes.expansionPanelContent }}
-            >
-              <div className={classes.table}>
-                <DataTableWithoutFragment
-                  data={stixDomainObjects[type]}
-                  globalCount={stixDomainObjects[type].length}
-                  dataColumns={dataColumns}
-                  storageKey={`stixSightingRelationshipCreationFromEntity_${type}`}
-                  disableNavigation
-                  disableLineSelection
-                  disableToolBar
-                  disableColumnMenu
-                  hideHeaders
-                  onLineClick={handleSelect}
-                  icon={(row) => (
-                    <span style={{ display: 'flex', marginLeft: 8, transform: 'scale(1.15)' }}>
-                      <ItemIcon type={row.entity_type} />
-                    </span>
-                  )}
-                />
-              </div>
-            </AccordionDetails>
-          </Accordion>
-        ))
-      ) : (
-        <div className={classes.noResult}>
-          {t('No entities were found for this search.')}
-        </div>
-      )}
-    </div>
-  );
-};
-
-StixSightingRelationshipCreationFromEntityLinesContainer.propTypes = {
-  handleSelect: PropTypes.func,
-  data: PropTypes.object,
-  limit: PropTypes.number,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
-};
+const LOCAL_STORAGE_KEY = 'stixSightingRelationshipCreationFromEntity';
 
 export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery = graphql`
   query StixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery(
@@ -179,149 +29,140 @@ export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQue
   }
 `;
 
-const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = createPaginationContainer(
-  StixSightingRelationshipCreationFromEntityLinesContainer,
-  {
-    data: graphql`
-      fragment StixSightingRelationshipCreationFromEntityStixDomainObjectsLines_data on Query
-      @argumentDefinitions(
-        search: { type: "String" }
-        types: { type: "[String]" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-      ) {
-        stixDomainObjects(
-          search: $search
-          types: $types
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_stixDomainObjects") {
-          edges {
-            node {
-              id
-              entity_type
-              parent_types
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on Campaign {
-                name
-                description
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on SecurityPlatform {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-                description
-              }
-              ... on Infrastructure {
-                name
-                description
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on AdministrativeArea {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-              }
-            }
-          }
+export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesFragment = graphql`
+  fragment StixSightingRelationshipCreationFromEntityStixDomainObjectsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    types: { type: "[String]" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+  ) @refetchable(queryName: "StixSightingRelationshipCreationFromEntityStixDomainObjectsLinesRefetchQuery") {
+    stixDomainObjects(
+      search: $search
+      types: $types
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_stixDomainObjects") {
+      edges {
+        node {
+          id
+          entity_type
+          parent_types
+          ...StixSightingRelationshipCreationFromEntityStixDomainObjectsLine_node
         }
       }
-    `,
-  },
-  {
-    // Relay pagination configuration for loading more domain objects.
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.stixDomainObjects;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        search: fragmentVariables.search,
-        types: fragmentVariables.types,
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
-  },
-);
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipCreationFromEntityStixDomainObjectsLines);
+export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLineFragment = graphql`
+  fragment StixSightingRelationshipCreationFromEntityStixDomainObjectsLine_node on StixDomainObject {
+    id
+    entity_type
+    parent_types
+    ... on AttackPattern { name description }
+    ... on Campaign { name description }
+    ... on CourseOfAction { name description }
+    ... on Individual { name description }
+    ... on Organization { name description }
+    ... on Sector { name description }
+    ... on System { name description }
+    ... on SecurityPlatform { name description }
+    ... on Indicator { name description }
+    ... on Infrastructure { name description }
+    ... on IntrusionSet { name description }
+    ... on Position { name description }
+    ... on City { name description }
+    ... on AdministrativeArea { name description }
+    ... on Country { name description }
+    ... on Region { name description }
+    ... on Malware { name description }
+    ... on ThreatActor { name description }
+    ... on Tool { name description }
+    ... on Vulnerability { name description }
+    ... on Incident { name description }
+  }
+`;
+
+const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
+  handleSelect,
+  search,
+  stixCoreObjectTypes,
+}) => {
+  const initialValues = {
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    openExports: false,
+  };
+  const { viewStorage, helpers } = usePaginationLocalStorage(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+    true,
+  );
+  const queryRef = useQueryLoading(
+    stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
+    {
+      search,
+      types: stixCoreObjectTypes,
+      count: 25,
+      orderBy: viewStorage.sortBy,
+      orderMode: viewStorage.orderAsc ? 'asc' : 'desc',
+    },
+  );
+
+  if (!queryRef) return null;
+
+  return (
+    <DataTable
+      dataColumns={{
+        name: {
+          label: 'Name',
+          percentWidth: 100,
+          isSortable: false,
+          render: (row) => (
+            <span style={{ color: 'var(--text-default)', fontSize: 14, fontWeight: 500 }}>
+              {row.name}
+            </span>
+          ),
+        },
+      }}
+      resolvePath={(data) => data.stixDomainObjects?.edges?.map((edge) => edge?.node)}
+      storageKey={LOCAL_STORAGE_KEY}
+      initialValues={initialValues}
+      contextFilters={emptyFilterGroup}
+      preloadedPaginationProps={{
+        linesQuery: stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
+        linesFragment: stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesFragment,
+        queryRef,
+        nodePath: ['stixDomainObjects', 'pageInfo', 'globalCount'],
+        setNumberOfElements: helpers.handleSetNumberOfElements,
+      }}
+      lineFragment={stixSightingRelationshipCreationFromEntityStixDomainObjectsLineFragment}
+      entityTypes={stixCoreObjectTypes}
+      disableNavigation
+      disableLineSelection
+      disableColumnMenu
+      hideSearch
+      hideSavedFilters
+      onLineClick={handleSelect}
+      icon={(row) => (
+        <span style={{ display: 'flex', marginLeft: 8, transform: 'scale(1.15)' }}>
+          <ItemIcon type={row.entity_type} />
+        </span>
+      )}
+    />
+  );
+};
+
+export default StixSightingRelationshipCreationFromEntityStixDomainObjectsLines;
