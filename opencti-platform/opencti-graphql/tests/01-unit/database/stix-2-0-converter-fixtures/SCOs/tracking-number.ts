@@ -25,4 +25,3 @@ export const EXPECTED_TRACKING_NUMBER = {
   labels: [],
   external_references: [],
 };
-

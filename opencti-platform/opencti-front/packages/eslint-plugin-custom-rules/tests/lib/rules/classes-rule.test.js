@@ -6,10 +6,10 @@ const ruleTester = new RuleTester({
   parser,
   parserOptions: {
     ecmaVersion: 2020,
-  }
+  },
 });
 
-ruleTester.run("classes-rule", rule, {
+ruleTester.run('classes-rule', rule, {
   valid: [
     // give me some code that won't trigger a warning
     {
@@ -60,8 +60,8 @@ ruleTester.run("classes-rule", rule, {
             right: 30,
           },
         }));
-      `
-    }
+      `,
+    },
   ],
 
   invalid: [
@@ -106,4 +106,4 @@ ruleTester.run("classes-rule", rule, {
     },
   ],
 });
-console.log("All tests passed!");
+console.log('All tests passed!');

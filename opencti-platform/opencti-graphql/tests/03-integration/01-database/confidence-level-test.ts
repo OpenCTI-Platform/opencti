@@ -4,7 +4,7 @@ import {
   computeUserEffectiveConfidenceLevel,
   controlCreateInputWithUserConfidence,
   controlUpsertInputWithUserConfidence,
-  controlUserConfidenceAgainstElement
+  controlUserConfidenceAgainstElement,
 } from '../../../src/utils/confidence-level';
 import type { AuthUser } from '../../../src/types/user';
 import { BYPASS } from '../../../src/utils/access';
@@ -12,7 +12,7 @@ import type { ConfidenceLevelOverride } from '../../../src/generated/graphql';
 
 const makeGroup = (confidence: number | null, overrides: ConfidenceLevelOverride[] = []) => ({
   id: `group_${confidence}`,
-  group_confidence_level: confidence ? { max_confidence: confidence, overrides } : null
+  group_confidence_level: confidence ? { max_confidence: confidence, overrides } : null,
 });
 
 const makeUser = (confidence: number | null, overrides: ConfidenceLevelOverride[] | null = null) => ({
@@ -37,7 +37,7 @@ describe('Confidence level utilities', () => {
     const group40WithReport90 = makeGroup(40, [{ entity_type: 'Report', max_confidence: 90 }]);
     const group40WithReport90Case20 = makeGroup(
       40,
-      [{ entity_type: 'Report', max_confidence: 90 }, { entity_type: 'Case-Rfi', max_confidence: 20 }]
+      [{ entity_type: 'Report', max_confidence: 90 }, { entity_type: 'Case-Rfi', max_confidence: 20 }],
     );
 
     // minimal subset of a real User
@@ -120,7 +120,7 @@ describe('Confidence level utilities', () => {
     const userH = {
       user_confidence_level: null,
       groups: [group40WithReport90],
-      capabilities: []
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userH as unknown as AuthUser)).toEqual({
       max_confidence: 40,
@@ -134,7 +134,7 @@ describe('Confidence level utilities', () => {
         overrides: [],
       },
       groups: [group40WithReport90],
-      capabilities: []
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userI as unknown as AuthUser)).toEqual({
       max_confidence: 30,
@@ -148,7 +148,7 @@ describe('Confidence level utilities', () => {
         overrides: [{ entity_type: 'Report', max_confidence: 50 }, { entity_type: 'Malware', max_confidence: 35 }],
       },
       groups: [group70, group40WithReport90Case20],
-      capabilities: []
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userJ as unknown as AuthUser)).toEqual({
       max_confidence: 70, // biggest values among the groups
@@ -156,7 +156,7 @@ describe('Confidence level utilities', () => {
       overrides: [
         { entity_type: 'Report', max_confidence: 50, source: { type: 'User', object: userJ } }, // from user, overwrites the Report override of group40WithReport90Case20
         { entity_type: 'Case-Rfi', max_confidence: 20, source: { type: 'Group', object: group40WithReport90Case20 } }, // from group40WithReport90Case20
-        { entity_type: 'Malware', max_confidence: 35, source: { type: 'User', object: userJ } } // from user's overrides
+        { entity_type: 'Malware', max_confidence: 35, source: { type: 'User', object: userJ } }, // from user's overrides
       ],
     });
 
@@ -166,7 +166,7 @@ describe('Confidence level utilities', () => {
         overrides: [{ entity_type: 'Report', max_confidence: 50 }, { entity_type: 'Malware', max_confidence: 35 }],
       },
       groups: [groupNull, groupNull],
-      capabilities: []
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userK as unknown as AuthUser)).toEqual(null);
   });
@@ -220,23 +220,23 @@ describe('Control confidence', () => {
     expect(controlCreateInputWithUserConfidence(
       makeUser(40, [{ entity_type: 'Report', max_confidence: 90 }]),
       makeReport(null),
-      'Report'
-    )).toEqual({ confidenceLevelToApply: 90, });
+      'Report',
+    )).toEqual({ confidenceLevelToApply: 90 });
     expect(controlCreateInputWithUserConfidence(
       makeUser(80, [{ entity_type: 'Report', max_confidence: 10 }]),
       makeReport(null),
-      'Report'
-    )).toEqual({ confidenceLevelToApply: 10, });
+      'Report',
+    )).toEqual({ confidenceLevelToApply: 10 });
     expect(controlCreateInputWithUserConfidence(
       makeUser(30, [{ entity_type: 'Malware', max_confidence: 90 }]),
       makeReport(null),
-      'Report'
-    )).toEqual({ confidenceLevelToApply: 30, });
+      'Report',
+    )).toEqual({ confidenceLevelToApply: 30 });
     expect(controlCreateInputWithUserConfidence(
       makeUser(null, [{ entity_type: 'Report', max_confidence: 90 }]),
       makeReport(null),
-      'Report'
-    )).toEqual({ confidenceLevelToApply: 90, });
+      'Report',
+    )).toEqual({ confidenceLevelToApply: 90 });
     expect(() => controlCreateInputWithUserConfidence(makeUser(null), makeReport(50), 'Report'))
       .toThrowError('User has no effective max confidence level and cannot create this element');
   });

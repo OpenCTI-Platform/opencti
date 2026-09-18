@@ -8,7 +8,7 @@ export const promoteIndicatorInput = {
 export const promoteObservableInput = {
   type: 'Domain-Name',
   DomainName: {
-    value: 'observableTestPromote.com'
+    value: 'observableTestPromote.com',
   },
 };
 

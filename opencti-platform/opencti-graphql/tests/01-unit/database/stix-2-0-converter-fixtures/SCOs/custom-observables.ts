@@ -148,4 +148,3 @@ export const EXPECTED_PERSONA = {
   labels: [],
   external_references: [],
 };
-

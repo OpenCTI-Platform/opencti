@@ -7,7 +7,7 @@ describe('XTM Hub settings helper', () => {
     const mockInput: InputSettingsData[] = [
       {
         key: 'xtm_hub_token',
-        value: ['d0e2a7ac-288b-4f46-bb45-c4557893ff47']
+        value: ['d0e2a7ac-288b-4f46-bb45-c4557893ff47'],
       },
       { key: 'xtm_hub_registration_status', value: ['registered'] },
       { key: 'normal_setting', value: ['keep'] },

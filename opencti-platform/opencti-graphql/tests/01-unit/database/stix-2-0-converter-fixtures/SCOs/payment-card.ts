@@ -27,4 +27,3 @@ export const EXPECTED_PAYMENT_CARD = {
   labels: [],
   external_references: [],
 };
-

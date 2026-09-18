@@ -38,4 +38,3 @@ export const EXPECTED_X509 = {
   subject_public_key_algorithm: 'RSA',
   x509_v3_extensions: {},
 };
-
