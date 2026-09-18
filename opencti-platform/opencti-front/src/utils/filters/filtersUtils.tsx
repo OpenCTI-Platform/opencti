@@ -29,11 +29,122 @@ export type FiltersRestrictions = {
   preventFilterValuesEditionFor?: Map<string, string[]>; // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
-export const emptyFilterGroup: FilterGroup = {
+// /!\ Frozen: this is a shared module-level object used as default value in many components.
+// Never mutate it, and never share its arrays: use cloneFilterGroup() to get a safe mutable copy.
+export const emptyFilterGroup: FilterGroup = Object.freeze({
   mode: 'and',
-  filters: [],
-  filterGroups: [],
+  filters: Object.freeze([]) as unknown as Filter[],
+  filterGroups: Object.freeze([]) as unknown as FilterGroup[],
+}) as FilterGroup;
+
+/**
+ * The single recursion over a filter group tree: bottom-up, non-mutating, frozen-input safe.
+ * `transform` is called on every group of the tree, deepest first, and always receives a group
+ * whose sub-groups have already been transformed.
+ * Identity is preserved: when neither `transform` nor the recursion changes anything, the very
+ * same object is returned, so a state setter built on it does not trigger a re-render/url re-sync.
+ * /!\ Not used by the serialization helpers (`canonicalizeFilterGroupForBackend`, `pruneEmptyFiltersAndGroups`):
+ * those rebuild groups from a property whitelist in a load-bearing order, which is the opposite
+ * of the spread-and-patch done here.
+ */
+export const mapFilterGroupTree = (
+  filterGroup: FilterGroup,
+  transform: (group: FilterGroup) => FilterGroup,
+): FilterGroup => {
+  const subGroups = filterGroup.filterGroups ?? [];
+  const newSubGroups = subGroups.map((group) => mapFilterGroupTree(group, transform));
+  const subGroupsChanged = newSubGroups.some((group, index) => group !== subGroups[index]);
+  return transform(subGroupsChanged ? { ...filterGroup, filterGroups: newSubGroups } : filterGroup);
 };
+
+/**
+ * Deep copy of a filter group, so that no array instance is shared with the source.
+ * Used when a shared/frozen filter group (typically emptyFilterGroup) is injected in a state.
+ */
+export const cloneFilterGroup = (filterGroup: FilterGroup): FilterGroup => mapFilterGroupTree(filterGroup, (group) => ({
+  ...group,
+  filters: (group.filters ?? []).map((filter) => ({
+    ...filter,
+    values: [...(filter.values ?? [])],
+  })),
+  // rebuilt unconditionally: a leaf group would otherwise keep the source (possibly frozen) array
+  filterGroups: [...(group.filterGroups ?? [])],
+}));
+
+/**
+ * Warns when `ensureFilterIds` has to regenerate an id because it was already used in the tree.
+ * A clash means some flow duplicated a subtree (a hydration path, a future "duplicate group"
+ * feature...): regeneration keeps the tree addressable, but it silently detaches the copy from
+ * its source, so the developer who created the clash must hear about it.
+ * Warn only, never throw: a duplicated id must not break a user's filter edition.
+ * `import.meta.env.DEV` is statically replaced by Vite, so this block leaves the prod bundle.
+ */
+const warnDuplicateFilterId = (id: string, kind: 'group' | 'filter') => {
+  if (import.meta.env.DEV) {
+    console.warn(`[ensureFilterIds] duplicated ${kind} id "${id}" in the filter group tree: a new id has been generated.`);
+  }
+};
+
+/**
+ * Recursion behind `ensureFilterIds`, carrying the ids already met. `mapFilterGroupTree` cannot do
+ * it — its `transform` callback receives a group and nothing else — and is left untouched for its
+ * other callers rather than widened with a context argument only this concern needs.
+ * Groups and filters share ONE id namespace: groups are addressed by `updateGroupById` /
+ * `removeFilterGroupUtil`, filters by the filter helpers, and nothing prevents a caller from
+ * mixing the two lookups; one namespace makes that confusion impossible by construction.
+ * `seenIds` is mutated while walking, the input tree never is: a new object is spread on any
+ * change, otherwise the very same reference is returned (so frozen inputs are safe).
+ */
+const ensureUniqueFilterIds = (filterGroup: FilterGroup, seenIds: Set<string>): FilterGroup => {
+  const subGroups = filterGroup.filterGroups ?? [];
+  const newSubGroups = subGroups.map((group) => ensureUniqueFilterIds(group, seenIds));
+  const subGroupsChanged = newSubGroups.some((group, index) => group !== subGroups[index]);
+
+  const filters = filterGroup.filters ?? [];
+  const newFilters = filters.map((filter) => {
+    if (!filter.id) return { ...filter, id: uuid() };
+    if (seenIds.has(filter.id)) {
+      warnDuplicateFilterId(filter.id, 'filter');
+      return { ...filter, id: uuid() };
+    }
+    seenIds.add(filter.id);
+    return filter;
+  });
+  const filtersChanged = newFilters.some((filter, index) => filter !== filters[index]);
+
+  const groupIdIsDuplicated = !!filterGroup.id && seenIds.has(filterGroup.id);
+  if (groupIdIsDuplicated) warnDuplicateFilterId(filterGroup.id as string, 'group');
+  const needsNewGroupId = !filterGroup.id || groupIdIsDuplicated;
+  const groupId = needsNewGroupId ? uuid() : (filterGroup.id as string);
+  seenIds.add(groupId);
+
+  if (!subGroupsChanged && !filtersChanged && !needsNewGroupId) return filterGroup;
+  return {
+    ...filterGroup,
+    ...(subGroupsChanged ? { filterGroups: newSubGroups } : {}),
+    ...(filtersChanged ? { filters: newFilters } : {}),
+    id: groupId,
+  };
+};
+
+/**
+ * Assigns a FRONTEND-ONLY uuid `id` to the given filter group, to every nested group and to every
+ * filter of every group, whenever it does not already have a usable one — the hydration
+ * counterpart of `canonicalizeFilterGroupForBackend` (which drops both id kinds in a single pass).
+ * Both functions must stay symmetric going forward: whatever id the canonical form loses, this one
+ * must be able to restore.
+ * - non-mutating and safe on frozen inputs (typically emptyFilterGroup);
+ * - uniqueness-enforcing: an id already used elsewhere in the tree is replaced by a fresh one,
+ *   because `updateGroupById` and `removeFilterGroupUtil` address groups by id and would otherwise
+ *   edit, or delete, several groups at once;
+ * - idempotent: an existing unique id is always preserved, and when every group and filter is
+ *   already identified the very same object (identity) is returned, so calling it twice never
+ *   triggers a state change nor a url re-sync — unlike normalizeFilterGroupForFrontend, which
+ *   regenerates a filter's id unconditionally and is unsuited to repeated hydration.
+ * /!\ Must only be called on state entry points (state initialization, setFilters), never in a
+ * render-derived value: new uuids on every render would cause endless history.replaceState churn.
+ */
+export const ensureFilterIds = (filterGroup: FilterGroup): FilterGroup => ensureUniqueFilterIds(filterGroup, new Set<string>());
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -44,6 +155,12 @@ export const ME_FILTER_VALUE = '@me';
 
 // Filter operators that do not require any values in filter.values
 export const NO_VALUES_FILTER_OPERATORS = ['nil', 'not_nil', 'has_changed', 'not_has_changed'];
+
+/** Default height (in px) of one item on the filter line rendered by `FilterIconButtonContainer`
+ * (the default/non-'small'/non-'tag' variant): each filter `Chip`, the AND/OR mode chip, and the
+ * nested filter-group chip button all line up on it. Matches MUI `Chip`'s own default height —
+ * not a themed token, just named here once so nothing on that line repeats the literal `32`. */
+export const FILTER_LINE_ITEM_HEIGHT = 32;
 
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
@@ -194,11 +311,31 @@ export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefi
   });
 };
 
-export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
+/**
+ * Shallow, structure-only check: true as soon as the group has *any* child filter or child
+ * group, regardless of whether that child is itself complete/usable (e.g. a value-less filter,
+ * or an empty nested group). Kept for live-editing call sites that need "is there structure to
+ * keep working with" rather than "is this a complete, submittable rule set" — a strict check
+ * would delete what the user is mid-typing (see `FilterFiltersInput.tsx`).
+ * Do not use this for required-filter submit gates: use `isFilterGroupNotEmpty` instead.
+ */
+export const isFilterGroupNotEmptyShallow = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
   return !!(
     filterGroup
     && (filterGroup.filters?.length > 0 || filterGroup.filterGroups?.length > 0)
   );
+};
+
+/**
+ * Strict check: true only if the group would still contain at least one usable rule after
+ * serialization (i.e. after pruning value-less filters and empty descendant groups). This is
+ * the "is this a complete, submittable rule set" semantics, and the one required-filter submit
+ * gates (disabled buttons, etc.) should use.
+ */
+export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
+  if (!filterGroup) return false;
+  const pruned = pruneEmptyFiltersAndGroups(canonicalizeFilterGroupForBackend(filterGroup as FilterGroup));
+  return isFilterGroupNotEmptyShallow(pruned);
 };
 
 export const isStringifiedFilterGroupFormatCorrect = (stringFilters: string): boolean => {
@@ -553,12 +690,13 @@ export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | unde
 //  these functions are used to sanitize the keys inside filters before serialization and saving into backend
 //  This is due to format inconsistencies between back and front formats and will be unnecessary once fixed.
 
-export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup => ({
-  ...filterGroup,
-  filters: (filterGroup.filters || []).filter(
+export const sanitizeFiltersStructure = (filterGroup: FilterGroup): FilterGroup => mapFilterGroupTree(filterGroup, (group) => ({
+  ...group,
+  filters: (group.filters || []).filter(
     (filter) => Array.isArray(filter.values) && filter.values.length > 0,
   ),
-});
+  filterGroups: group.filterGroups || [],
+}));
 
 /**
  * Normalizes a FilterGroup for backend persistence:
@@ -578,17 +716,17 @@ export function normalizeFilterGroupForBackend(
   if (!filterGroup) {
     return undefined;
   }
-  return {
-    ...filterGroup,
-    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filterGroup.filters)
-      .map((f) => ({
-        ...f,
-        key: Array.isArray(f.key) ? f.key : [f.key],
-      })),
-    filterGroups: filterGroup.filterGroups
-      .map((fg) => normalizeFilterGroupForBackend(fg))
-      .filter((fg) => fg && isFilterGroupNotEmpty(fg)),
-  } as GqlFilterGroup;
+  // strip the frontend-only ids, prune the empty filters and groups, then turn the keys into arrays
+  const cleanFilterGroup = pruneEmptyFiltersAndGroups(canonicalizeFilterGroupForBackend(filterGroup));
+  const keysToArrays = (group: FilterGroup): GqlFilterGroup => ({
+    mode: group.mode,
+    filters: group.filters.map((f) => ({
+      ...f,
+      key: Array.isArray(f.key) ? f.key : [f.key],
+    })),
+    filterGroups: group.filterGroups.map((fg) => keysToArrays(fg)),
+  } as GqlFilterGroup);
+  return keysToArrays(cleanFilterGroup);
 }
 
 /**
@@ -601,6 +739,8 @@ export const normalizeFilterGroupForFrontend = (
 ): FilterGroup => {
   return {
     ...filterGroup,
+    // frontend-only group id, preserved if the persisted group already carries one
+    id: (filterGroup as unknown as FilterGroup)?.id ?? uuid(),
     filters: filterGroup?.filters?.map((f) => {
       const key = Array.isArray(f.key) ? f.key[0] : f.key;
       // build values
@@ -938,49 +1078,26 @@ export const removeFrontendIdAndEmptyFiltersFromFilterGroupObject = (filters?: F
   if (!filters) {
     return undefined;
   }
-  return {
-    ...filters,
-    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filters.filters),
-    filterGroups: filters.filterGroups.map((group) => removeFrontendIdAndEmptyFiltersFromFilterGroupObject(group)) as FilterGroup[],
-  };
+  // strip the frontend-only ids, then prune the empty filters only (empty descendant groups are kept, as before)
+  return pruneEmptyFiltersAndGroups(canonicalizeFilterGroupForBackend(filters), false);
 };
 
 /**
- * Removes the frontend-only `id` property from a single filter.
- * For `dynamicRegardingOf` filters, also recursively cleans nested dynamic FilterGroup values.
+ * Keeps only the filters whose key is available, recursively.
  */
-const removeFrontendIdAndEmptyFiltersFromFiltersArray = (filtersArray: Filter[]): Filter[] => {
-  const removeFrontendIdFromFilter = (f: Filter): Filter => {
-    const newFilter = { ...f };
-    delete newFilter.id;
-    if (newFilter.key === 'dynamicRegardingOf') { // remove id from filters contained in dynamic values of dynamicRegardingOf filter
-      const dynamicValues = newFilter.values.filter((value) => value.key === 'dynamic')
-        .map((dynamic) => ({
-          ...dynamic,
-          values: dynamic.values.map((dynamicFilter: FilterGroup) => removeFrontendIdAndEmptyFiltersFromFilterGroupObject(dynamicFilter)),
-        }));
-      const relationshipTypeValues = newFilter.values.filter((value) => value.key === 'relationship_type');
-      newFilter.values = [...dynamicValues, ...relationshipTypeValues];
-    }
-    return newFilter;
-  };
-
-  return removeEmptyFiltersFromList(filtersArray).map((f) => removeFrontendIdFromFilter(f));
-};
+const keepAvailableFilterKeys = (filterGroup: FilterGroup, availableFilterKeys: string[]): FilterGroup => mapFilterGroupTree(filterGroup, (group) => ({
+  ...group,
+  filters: (group.filters ?? []).filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys)),
+}));
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
 export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGroup | null | undefined, availableFilterKeys: string[]): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
-  return {
-    mode: filters.mode,
-    filters: removeFrontendIdAndEmptyFiltersFromFiltersArray(filters.filters
-      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))),
-    filterGroups: filters.filterGroups
-      .map((fg) => removeIdAndIncorrectKeysFromFilterGroupObject(fg, availableFilterKeys))
-      .filter((fg) => fg && isFilterGroupNotEmpty(fg)) as FilterGroup[],
-  };
+  // ids are stripped first, then the filters with an unavailable key are removed,
+  // and only then the empty filters and the empty descendant groups are pruned
+  return pruneEmptyFiltersAndGroups(keepAvailableFilterKeys(canonicalizeFilterGroupForBackend(filters), availableFilterKeys));
 };
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (
@@ -1186,11 +1303,14 @@ export const convertOperatorToIcon = (operator: string) => {
 
 export const extractAllFilters: (filters: FilterGroup) => Filter[] = (filters: FilterGroup) => {
   const allFilters: Filter[] = [];
-  allFilters.push(...filters.filters);
-  filters.filterGroups.forEach((filterGroup) => extractAllFilters(filterGroup));
+  allFilters.push(...(filters.filters ?? []));
+  (filters.filterGroups ?? []).forEach((filterGroup) => allFilters.push(...extractAllFilters(filterGroup)));
   return allFilters;
 };
 
+/**
+ * Removes, at every nesting level, the filters whose key is not available anymore for the given types.
+ */
 export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
   const newAvailableFilterKeys = uniqueArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
   const allListedFilters = extractAllFilters(filters);
@@ -1286,3 +1406,103 @@ export const buildFiltersForCustomView = (
   }
   return JSON.parse(updatedFiltersStr);
 };
+
+// ----------------------------------------------------------------------------------------------------------------------
+// Single source of truth for cleaning a frontend filter group before sending it to the backend.
+// ----------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Rebuilds the values of a `dynamicRegardingOf` filter: only the `dynamic` values (whose nested
+ * filter groups are recursively stripped) followed by the `relationship_type` values are kept.
+ */
+const canonicalizeDynamicRegardingOfValues = (values: FilterValue[]): FilterValue[] => {
+  const dynamicValues = (values ?? [])
+    .filter((value) => value?.key === 'dynamic')
+    .map((dynamic) => ({
+      key: dynamic.key,
+      values: (dynamic.values ?? []).map((dynamicFilterGroup: FilterGroup) => canonicalizeFilterGroupForBackend(dynamicFilterGroup)),
+    }));
+  const relationshipTypeValues = (values ?? [])
+    .filter((value) => value?.key === 'relationship_type')
+    .map((relationshipType) => ({ key: relationshipType.key, values: [...(relationshipType.values ?? [])] }));
+  return [...dynamicValues, ...relationshipTypeValues];
+};
+
+/**
+ * Rebuilds a single filter in canonical form: only the properties expected by the backend, in the
+ * order `key`, `values`, `operator`, `mode`. Optional properties absent from the input are not
+ * emitted, and the frontend-only `id` is dropped by construction.
+ */
+const canonicalizeFilter = (filter: Filter): Filter => ({
+  key: filter.key,
+  values: filter.key === 'dynamicRegardingOf' ? canonicalizeDynamicRegardingOfValues(filter.values) : [...(filter.values ?? [])],
+  ...(filter.operator !== undefined ? { operator: filter.operator } : {}),
+  ...(filter.mode !== undefined ? { mode: filter.mode } : {}),
+});
+
+/**
+ * Puts a filter group in its canonical backend form, recursively. Canonical means:
+ * - only the properties the backend knows are emitted (whitelist rebuild): `mode`, `filters`,
+ *   `filterGroups` for a group, `key`, `values`, `operator`, `mode` for a filter — which is how
+ *   the frontend-only ids (filter level and group level) disappear;
+ * - always in that exact order, with absent optional properties omitted rather than set to
+ *   undefined, so two equivalent filter groups stringify to the exact same JSON. Saved-filter
+ *   comparison (savedFiltersUtils) relies on that property.
+ * Non-mutating, safe on frozen inputs.
+ *
+ * Note it does NOT prune empty filters or empty groups: compose with
+ * `pruneEmptyFiltersAndGroups` when the target is an actual backend query.
+ */
+export const canonicalizeFilterGroupForBackend = (filterGroup: FilterGroup): FilterGroup => ({
+  mode: filterGroup.mode,
+  filters: (filterGroup.filters ?? []).map((filter) => canonicalizeFilter(filter)),
+  filterGroups: (filterGroup.filterGroups ?? []).map((group) => canonicalizeFilterGroupForBackend(group)),
+});
+
+/**
+ * Stringifies a filter group on its way to the url, in canonical form: the frontend-only ids
+ * (filter level and group level) are dropped at any depth, because they are regenerated on the
+ * way back in (`ensureFilterIds`) and would otherwise churn in shared links.
+ *
+ * Takes `unknown` and falls back to a plain stringify, because url parameters carrying filters
+ * are not all proven filter groups (legacy stored shapes, timeline filters, …).
+ */
+export const stringifyFilterGroupForUrl = (filters: unknown): string => (
+  isFilterGroupFormatCorrect(filters)
+    ? JSON.stringify(canonicalizeFilterGroupForBackend(filters as FilterGroup))
+    : JSON.stringify(filters)
+);
+
+/**
+ * Prunes the nested filter groups held in the `dynamic` values of a `dynamicRegardingOf` filter.
+ */
+const pruneDynamicRegardingOfValues = (values: FilterValue[], dropEmptyGroups = true): FilterValue[] => {
+  return (values ?? []).map((value) => {
+    if (value?.key !== 'dynamic') return value;
+    return {
+      ...value,
+      values: (value.values ?? []).map((dynamicFilterGroup: FilterGroup) => pruneEmptyFiltersAndGroups(dynamicFilterGroup, dropEmptyGroups)),
+    };
+  });
+};
+
+/**
+ * Removes the empty filters (no values, except for operators valid without values like nil/not_nil)
+ * and the empty descendant filter groups. The root group is always kept, even if it ends up empty.
+ * Non-mutating, safe on frozen inputs.
+ * /!\ This is a serialization helper: like canonicalizeFilterGroupForBackend it rebuilds groups from a whitelist,
+ * so it also drops any frontend-only group property. Never use it on a state value.
+ */
+export const pruneEmptyFiltersAndGroups = (filterGroup: FilterGroup, dropEmptyGroups = true): FilterGroup => ({
+  mode: filterGroup.mode,
+  filters: removeEmptyFiltersFromList(filterGroup.filters ?? []).map((filter) => (
+    filter.key === 'dynamicRegardingOf'
+      ? { ...filter, values: pruneDynamicRegardingOfValues(filter.values, dropEmptyGroups) }
+      : filter
+  )),
+  filterGroups: (filterGroup.filterGroups ?? [])
+    .map((group) => pruneEmptyFiltersAndGroups(group, dropEmptyGroups))
+    // children are already pruned above (post-order), so a shallow check is enough and safe here —
+    // using the strict isFilterGroupNotEmpty would recurse back into this same function.
+    .filter((group) => !dropEmptyGroups || isFilterGroupNotEmptyShallow(group)),
+});

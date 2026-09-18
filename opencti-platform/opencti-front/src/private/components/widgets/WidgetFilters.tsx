@@ -1,11 +1,9 @@
 import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
-import { useTheme } from '@mui/styles';
-import { Theme } from '../../../components/Theme';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
+import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmptyShallow, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
@@ -38,7 +36,6 @@ interface WidgetFiltersProps {
 }
 
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const [filters, helpers] = useFiltersState(dataSelection.filters);
@@ -226,6 +223,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 availableEntityTypes={availableEntityTypes}
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
+                type={perspective === 'relationships' ? 'relationships' : undefined}
               />
               {isSavedFiltersAccessible && (
                 <>
@@ -312,70 +310,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         )}
       </Box>
 
-      <Box sx={{ paddingTop: 1 }}>
-        {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
-          || (!isSavedDynamicFromMode && isFilterGroupNotEmpty(filtersDynamicFrom)))
-        && (
-          <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
-          </div>
-        )
-        }
-        {isSavedDynamicFromMode ? (
-          <WidgetSavedFilterChips
-            filterId={dataSelection.dynamicFrom_id}
-            entityTypes={['Stix-Core-Object']}
-            chipColor="warning"
-          />
-        ) : (
-          <FilterIconButton
-            filters={filtersDynamicFrom}
-            helpers={helpersDynamicFrom}
-            chipColor="warning"
-            entityTypes={['Stix-Core-Object']}
-            searchContext={searchContext}
-            availableEntityTypes={[
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ]}
-            host={host}
-          />
-        )}
-
-        {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
-          || (!isSavedDynamicToMode && isFilterGroupNotEmpty(filtersDynamicTo)))
-        && (
-          <div style={{ marginTop: 8, color: theme.palette.success.main, marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
-          </div>
-        )
-        }
-        {isSavedDynamicToMode ? (
-          <WidgetSavedFilterChips
-            filterId={dataSelection.dynamicTo_id}
-            entityTypes={['Stix-Core-Object']}
-            chipColor="success"
-          />
-        ) : (
-          <FilterIconButton
-            filters={filtersDynamicTo}
-            helpers={helpersDynamicTo}
-            chipColor="success"
-            entityTypes={['Stix-Core-Object']}
-            searchContext={searchContext}
-            availableEntityTypes={[
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ]}
-            host={host}
-          />
-        )}
-
+      <Box sx={{ paddingTop: 4 }}>
         {perspective === 'relationships'
-          && (dataSelection.filters_id || isFilterGroupNotEmpty(filters))
+          && (dataSelection.filters_id || isFilterGroupNotEmptyShallow(filters))
           && (
             <div style={{ marginTop: 8, marginBottom: 4 }}>
-              {t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}
+              {t_i18n('Relationship filters: these filters apply to the relationships between the result of any dynamic source or dynamic target filters ')}
             </div>
           )
         }
@@ -392,8 +332,66 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
             entityTypes={searchContext.entityTypes}
             host={host}
+            inline
           />
         )}
+
+        {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
+          || (!isSavedDynamicFromMode && isFilterGroupNotEmptyShallow(filtersDynamicFrom)))
+        && (
+          <div style={{ marginTop: 8, marginBottom: 4 }}>
+            {t_i18n('Dynamic source filters: These filters apply a pre-query to the source entity of the relationship, max limit is 5000')}
+          </div>
+        )
+        }
+        {isSavedDynamicFromMode ? (
+          <WidgetSavedFilterChips
+            filterId={dataSelection.dynamicFrom_id}
+            entityTypes={['Stix-Core-Object']}
+          />
+        ) : (
+          <FilterIconButton
+            filters={filtersDynamicFrom}
+            helpers={helpersDynamicFrom}
+            entityTypes={['Stix-Core-Object']}
+            searchContext={searchContext}
+            availableEntityTypes={[
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ]}
+            host={host}
+            inline
+          />
+        )}
+
+        {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
+          || (!isSavedDynamicToMode && isFilterGroupNotEmptyShallow(filtersDynamicTo)))
+        && (
+          <div style={{ marginTop: 8, marginBottom: 4 }}>
+            {t_i18n('Dynamic target filters: These filters apply a pre-query to the target entity of the relationship, max limit is 5000')}
+          </div>
+        )
+        }
+        {isSavedDynamicToMode ? (
+          <WidgetSavedFilterChips
+            filterId={dataSelection.dynamicTo_id}
+            entityTypes={['Stix-Core-Object']}
+          />
+        ) : (
+          <FilterIconButton
+            filters={filtersDynamicTo}
+            helpers={helpersDynamicTo}
+            entityTypes={['Stix-Core-Object']}
+            searchContext={searchContext}
+            availableEntityTypes={[
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ]}
+            host={host}
+            inline
+          />
+        )}
+
       </Box>
     </>
   );

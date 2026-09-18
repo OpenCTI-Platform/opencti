@@ -11,7 +11,7 @@ import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
-import { Icon, IconButton as FdsIconButton, Input, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Icon, IconButton as FdsIconButton, Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -140,9 +140,21 @@ const WidgetCreationDataSelection = () => {
                       />
                     </TooltipTrigger>
                     <TooltipContent>
-                      {t_i18n(
-                        'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
-                      )}
+                      <Text variant="content-compact-bold" as="strong">{t_i18n('Filter configuration:')}</Text>
+                      <ol style={{ margin: '4px 0', paddingLeft: 16 }}>
+                        <li>{t_i18n('The source filter and the target filter each search for matching entities. Each filter can return up to 5,000 entities.')}</li>
+                        <li>{t_i18n('The relationship filter is applied only to the entities found in the first stage. If you do not set a source filter or a target filter, the relationship filter applies to all data in the platform.')}</li>
+                      </ol>
+                      <div style={{ marginTop: 8 }}>
+                        <Text variant="content-compact-bold" as="strong">{t_i18n('Warning:')}</Text>
+                        <br />
+                        {t_i18n('If a filter matches more than 5,000 entities, some results for that filter may be missing.')}
+                      </div>
+                      <div style={{ marginTop: 8 }}>
+                        <Text variant="content-compact-bold" as="strong">{t_i18n('Tip:')}</Text>
+                        <br />
+                        {t_i18n('Add more filter criteria to reduce the number of matches.')}
+                      </div>
                     </TooltipContent>
                   </Tooltip>
                 ) : undefined}
@@ -236,7 +248,7 @@ const WidgetCreationDataSelection = () => {
           }}
           onClick={() => setStep(3)}
         >
-          {t_i18n('Validate')}
+          {t_i18n('Validate filters')}
         </Button>
       </div>
 

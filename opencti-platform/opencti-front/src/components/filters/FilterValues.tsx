@@ -7,7 +7,7 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
-import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmptyShallow, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -309,7 +309,9 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               );
               if (subKey === 'dynamic') {
                 const [dynamicValue] = val.values;
-                if (!isFilterGroupNotEmpty(dynamicValue)) {
+                // shallow check: this only gates rendering of the dynamic sub-filter chip UI, must not
+                // hide a filter/group the user just added but hasn't filled in yet
+                if (!isFilterGroupNotEmptyShallow(dynamicValue)) {
                   return <div key={val.key} />;
                 }
                 return (
