@@ -1975,7 +1975,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/types@npm:7.4.12, @mui/types@npm:^7.4.12":
+"@mui/types@npm:^7.4.12":
   version: 7.4.12
   resolution: "@mui/types@npm:7.4.12"
   dependencies:
@@ -4666,7 +4666,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/estree@npm:*, @types/estree@npm:^1.0.0, @types/estree@npm:^1.0.6, @types/estree@npm:^1.0.8":
+"@types/estree@npm:*, @types/estree@npm:1.0.9, @types/estree@npm:^1.0.0, @types/estree@npm:^1.0.6, @types/estree@npm:^1.0.8":
   version: 1.0.9
   resolution: "@types/estree@npm:1.0.9"
   checksum: 10c0/3ad3286ca2988cd550dafb8f2ad599c8474868e954fa601a36655bdfefd8039f7c714b8c1c7f2ae219ffbd58bd4660e66fa7479a0120fc02d4777057d4865387
@@ -4866,6 +4866,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-relay@npm:*":
+  version: 18.2.1
+  resolution: "@types/react-relay@npm:18.2.1"
+  dependencies:
+    "@types/react": "npm:*"
+    "@types/relay-runtime": "npm:*"
+  checksum: 10c0/3cf09d22980199d099e9151de7b79ec4d35fae239dfdd881d63b0dbed2c7f7184de32624f7cc61d0a6ea89f828ee592f2a61ffcccf291318d167da8fd4810f9d
+  languageName: node
+  linkType: hard
+
 "@types/react-syntax-highlighter@npm:15.5.13":
   version: 15.5.13
   resolution: "@types/react-syntax-highlighter@npm:15.5.13"
@@ -4909,6 +4919,24 @@ __metadata:
   peerDependencies:
     "@types/react": "*"
   checksum: 10c0/f1b1e257dd7f02e1b50b2622c05a3fdcdb67045fdbbeab1f6ed7ef91e06f19d8899a3d7bd828c34bd2b243b7b7dd4c35376b947a683f5c0d56ea8a16b482f73d
+  languageName: node
+  linkType: hard
+
+"@types/relay-runtime@npm:*":
+  version: 20.1.1
+  resolution: "@types/relay-runtime@npm:20.1.1"
+  checksum: 10c0/37bb94d5bf2acb6d524bb7ba8e644ff81dba452e37385b2a037752c3ac024adaebe7f69e92130a2ece092b21526650ec4657f5d37307af89b5a1b43e11768b0d
+  languageName: node
+  linkType: hard
+
+"@types/relay-test-utils@npm:19.0.0":
+  version: 19.0.0
+  resolution: "@types/relay-test-utils@npm:19.0.0"
+  dependencies:
+    "@types/react": "npm:*"
+    "@types/react-relay": "npm:*"
+    "@types/relay-runtime": "npm:*"
+  checksum: 10c0/384c4510340726ddb71a02f9f535e8d59d584ae5883c42c8e3dae6adc1c6f69bfc568f2c2afd3d46518d96744cd7cf23fe84ec6e7e49690b1a483a8c70fc021c
   languageName: node
   linkType: hard
 
@@ -7621,7 +7649,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "eslint-plugin-custom-rules@workspace:packages/eslint-plugin-custom-rules"
   dependencies:
+    "@eslint/js": "npm:10.0.1"
+    "@stylistic/eslint-plugin": "npm:5.10.0"
+    "@types/estree": "npm:1.0.9"
     "@typescript-eslint/parser": "npm:8.70.0"
+    eslint-plugin-import: "npm:2.32.0"
+    globals: "npm:17.12.0"
+    jiti: "npm:2.7.0"
+    typescript: "npm:6.0.3"
+    typescript-eslint: "npm:8.70.0"
+    vitest: "npm:5.0.0"
   peerDependencies:
     eslint: ">=7"
   languageName: unknown
@@ -9721,7 +9758,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jiti@npm:^2.7.0":
+"jiti@npm:2.7.0, jiti@npm:^2.7.0":
   version: 2.7.0
   resolution: "jiti@npm:2.7.0"
   bin:
@@ -11384,10 +11421,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:2.30.1":
-  version: 2.30.1
-  resolution: "moment@npm:2.30.1"
-  checksum: 10c0/865e4279418c6de666fca7786607705fd0189d8a7b7624e2e56be99290ac846f90878a6f602e34b4e0455c549b85385b1baf9966845962b313699e7cb847543a
+"moment@npm:2.31.0":
+  version: 2.31.0
+  resolution: "moment@npm:2.31.0"
+  checksum: 10c0/3755b186b8ff62c565685ce69dde55bf46003c0329139be5c8dd7845cd567bfd7d02be3a13e379a25acb9e98f6b87136c4776745e440615a4f5ca8dd9a8815b9
   languageName: node
   linkType: hard
 
@@ -11914,7 +11951,6 @@ __metadata:
     "@mui/lab": "npm:5.0.0-alpha.177"
     "@mui/material": "npm:6.5.0"
     "@mui/styles": "npm:6.5.0"
-    "@mui/types": "npm:7.4.12"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.63.0"
     "@rjsf/core": "npm:6.10.0"
@@ -11939,6 +11975,7 @@ __metadata:
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-transition-group": "npm:4.4.12"
     "@types/react-virtualized": "npm:9.22.3"
+    "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:6.1.1"
     "@vitest/coverage-v8": "npm:5.0.0"
     analytics: "npm:0.8.19"
@@ -11975,6 +12012,7 @@ __metadata:
     invert-color: "npm:3.0.0"
     ipaddr.js: "npm:2.5.0"
     is-svg: "npm:6.1.0"
+    jiti: "npm:2.7.0"
     js-base64: "npm:3.9.3"
     js-file-download: "npm:0.4.12"
     jsdom: "npm:29.1.1"
@@ -11985,7 +12023,7 @@ __metadata:
     markdown-to-jsx: "npm:9.10.2"
     marked: "npm:18.0.13"
     mdi-material-ui: "npm:7.9.4"
-    moment: "npm:2.30.1"
+    moment: "npm:2.31.0"
     monocart-reporter: "npm:2.13.1"
     pdfmake: "npm:0.3.11"
     pmtiles: "npm:4.5.0"

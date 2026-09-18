@@ -63,9 +63,6 @@ const addRoleCapability = (roleId: string, capabilityId: string) => `
   }
 `;
 
-// Seeded one at a time on purpose: concurrent edits of the same entity family have been seen
-// leaving the platform with a stale view of one of them (see #18326), and the seeding is
-// small enough that the parallelism bought nothing.
 export const addRoles = async (request: APIRequestContext, roles: AddRoleInput[]) => {
   const { capabilities } = await graphqlRequest<{ capabilities: EdgesOf<NamedNode> }>(request, getCapabilities(), 'list capabilities');
   const allCapabilities = capabilities.edges.map((e) => e.node);

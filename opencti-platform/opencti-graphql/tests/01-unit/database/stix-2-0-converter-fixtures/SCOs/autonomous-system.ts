@@ -29,4 +29,3 @@ export const EXPECTED_AUTONOMOUS_SYSTEM = {
   name: 'GOOGLE',
   rir: 'ARIN',
 };
-

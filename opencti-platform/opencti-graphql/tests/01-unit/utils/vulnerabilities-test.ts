@@ -269,7 +269,7 @@ describe('Vulnerabilities Utils', () => {
   describe('updateCvssVector', () => {
     it('should update CVSS2 vector with new values', () => {
       const updates = [
-        { key: 'x_opencti_cvss_v2_access_vector', value: ['Local'] }
+        { key: 'x_opencti_cvss_v2_access_vector', value: ['Local'] },
       ];
       const result = updateCvssVector('cvss2', 'AV:N/AC:L/Au:N/C:P/I:P/A:P', updates, null) as any[];
       const vectorField = result.find((f) => f.key === 'x_opencti_cvss_v2_vector_string');
@@ -279,7 +279,7 @@ describe('Vulnerabilities Utils', () => {
 
     it('should handle Adjacent Network update in CVSS3', () => {
       const updates = [
-        { key: 'x_opencti_cvss_attack_vector', value: ['ADJACENT_NETWORK'] }
+        { key: 'x_opencti_cvss_attack_vector', value: ['ADJACENT_NETWORK'] },
       ];
       const result = updateCvssVector('cvss3', 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H', updates, null) as any[];
       const vectorField = result.find((f) => f.key === 'x_opencti_cvss_vector_string');

@@ -86,8 +86,22 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           node:22-alpine3.23 \
           sh -c 'set -eux
+            npm install -g corepack
             cd /home/workspace/opencti-platform/opencti-front
-            node script/check-utility-classes.js
+            yarn check:utility-classes
+            '
+
+    - name: Frontend verify translation
+      if: '!cancelled()'
+      run: |
+        docker run  \
+          --name frontend-verify-translation \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            yarn verify-translation
             '
 
     - name: Frontend tests
@@ -104,7 +118,7 @@ jobs:
             '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f #v7.0.0
+      uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7.1.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
@@ -118,27 +132,3 @@ jobs:
       continue-on-error: true
       run: cat runner_resource_stat.log
 
-
-  opencti-frontend-verify-translation:
-    name: Verify translation
-    runs-on: ubuntu-latest
-    steps:
-    - name: OpenCTI checkout
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-        ref: ${{ inputs.checkout_ref }}
-
-    - name: Runner information
-      continue-on-error: true
-      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
-
-    - name: Frontend verify translation
-      run: |
-        docker run  \
-          --name frontend-verify-translation \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux
-            cd /home/workspace/opencti-platform/opencti-front
-            node script/verify-translation.js
-            '

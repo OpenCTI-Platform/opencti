@@ -21,8 +21,8 @@ describe('Container resolver standard behavior', () => {
             }
           }
         `,
-        variables: { id: REPORT_RAW_ID }
-      }
+        variables: { id: REPORT_RAW_ID },
+      },
     );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.container).not.toBeNull();
@@ -44,7 +44,7 @@ describe('Container resolver standard behavior', () => {
               }
             }
           `,
-      }
+      },
     );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.containers).not.toBeNull();
@@ -66,7 +66,7 @@ describe('Container resolver standard behavior', () => {
               }
             }
           `,
-      }
+      },
     );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.attackPattern).not.toBeNull();
@@ -109,8 +109,8 @@ describe('Container resolver standard behavior', () => {
               }
             }
           `,
-        variables: { id: REPORT_RAW_ID }
-      }
+        variables: { id: REPORT_RAW_ID },
+      },
     );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.container).not.toBeNull();
@@ -146,8 +146,8 @@ describe('Container resolver standard behavior', () => {
               }
             }
           `,
-        variables: { id: REPORT_RAW_ID }
-      }
+        variables: { id: REPORT_RAW_ID },
+      },
     );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.container).not.toBeNull();
@@ -182,8 +182,8 @@ describe('Container resolver standard behavior', () => {
               }
             }
           `,
-        variables: { id: REPORT_RAW_ID }
-      }
+        variables: { id: REPORT_RAW_ID },
+      },
     );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.container).not.toBeNull();
@@ -221,8 +221,8 @@ describe('Container resolver standard behavior', () => {
               }
             }
           `,
-        variables: { id: 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c' }
-      }
+        variables: { id: 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c' },
+      },
     );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.containersObjectsOfObject).not.toBeNull();

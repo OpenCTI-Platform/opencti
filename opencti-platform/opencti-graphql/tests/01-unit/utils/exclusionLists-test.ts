@@ -8,7 +8,7 @@ const ipv4ListToTest = [
   '99.99.99.193',
   '99.86.96.0/20',
   '99.87.0.0/19',
-  '99.87.32.0/22'
+  '99.87.32.0/22',
 ];
 const ipv4ListResult = [
   '01100011010111010011110010000001',
@@ -16,7 +16,7 @@ const ipv4ListResult = [
   '01100011011000110110001111000001',
   '01100011010101100110',
   '0110001101010111000',
-  '0110001101010111001000'
+  '0110001101010111001000',
 ];
 const ipv6ListToTest = [
   '2a12:e342:200::2:1819',
@@ -24,7 +24,7 @@ const ipv6ListToTest = [
   '2c0f:f530::d00:188',
   '2c0f:fa18::/32',
   '2c0f:fce8::/33',
-  '2c0f:fe08:10::/48'
+  '2c0f:fe08:10::/48',
 ];
 const ipv6ListResult = [
   '00101010000100101110001101000010000000100000000000000000000000000000000000000000000000000000000000000000000000100001100000011001',
@@ -82,18 +82,18 @@ const ipv4ExclusionList = [{
   id: 'ipv4ListResult',
   types: [ENTITY_IPV4_ADDR],
   values: ipv4ListResult.sort(),
-  ranges: [32, 22, 20, 19]
+  ranges: [32, 22, 20, 19],
 }];
 const ipv6ExclusionList = [{
   id: 'ipv6ListResult',
   types: [ENTITY_IPV6_ADDR],
   values: ipv6ListResult.sort(),
-  ranges: [128, 48, 33, 32]
+  ranges: [128, 48, 33, 32],
 }];
 const domainExclusionList = [{
   id: 'domainExclusionList',
   types: [ENTITY_DOMAIN_NAME, ENTITY_URL],
-  values: domainNameList.sort()
+  values: domainNameList.sort(),
 }];
 
 describe('Exclusion Lists', () => {
