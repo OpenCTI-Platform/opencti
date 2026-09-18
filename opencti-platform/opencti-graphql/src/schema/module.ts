@@ -205,6 +205,9 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject, 
 };
 
 export const registerInternalObjectDefinition = (definition: InternalObjectModuleDefinition) => {
+  if (definition.type.category !== ABSTRACT_INTERNAL_OBJECT) {
+    throw UnsupportedError('Unsupported category for internal object definition', { category: definition.type.category });
+  }
   schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
   registerCommonDefinition(definition);
 };
