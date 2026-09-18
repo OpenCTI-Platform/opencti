@@ -12069,7 +12069,7 @@ __metadata:
     react-pdf: "npm:10.5.0"
     react-relay: "npm:21.0.1"
     react-relay-network-modern: "npm:6.2.2"
-    react-router: "npm:7.18.3"
+    react-router: "npm:7.18.4"
     react-syntax-highlighter: "npm:16.1.1"
     react-transition-group: "npm:4.4.5"
     react-virtualized: "npm:9.22.6"
@@ -13451,9 +13451,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:7.18.3":
-  version: 7.18.3
-  resolution: "react-router@npm:7.18.3"
+"react-router@npm:7.18.4":
+  version: 7.18.4
+  resolution: "react-router@npm:7.18.4"
   dependencies:
     cookie: "npm:^1.0.1"
     set-cookie-parser: "npm:^2.6.0"
@@ -13463,7 +13463,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10c0/77686cad916f8928e6c4aeafe5f8dc26384e84897849ff7d771ddee67af02b788c103503d029ffa442f7bf42aa47b3779440e70fc1aeae90532120fae4036b0f
+  checksum: 10c0/352d103f9d738c7bf56cbb135c0d3d44e6325d15e360f58b6e844c1f5f8cbcd4ccb2de347f14e53984683fc237505a045633e9cb92c5457a1162dae054e08a32
   languageName: node
   linkType: hard
 
