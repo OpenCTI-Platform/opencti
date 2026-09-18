@@ -8,7 +8,7 @@ import {
   encodeOidcState,
 } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
-import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs } from '../../../src/http/httpConfig';
+import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
 import type { Request, Response } from 'express';
 import type { Server } from 'node:http';
 
