@@ -14,7 +14,7 @@ if [ "$n" -ne 0 ]; then printf '%s\n' "$out" | grep -E '^/|^[[:space:]]+[0-9]+:[
 echo "eslint errors: $n"
 
 echo "== tsc =="
-(cd opencti-platform/opencti-front && npx tsc --noEmit -p tsconfig.json) || fail=1
+(cd opencti-platform/opencti-front && yarn check-ts) || fail=1
 
 echo "== select-conversion guard =="
 node fds-migration/scripts/check-select-conversion.mjs || fail=1

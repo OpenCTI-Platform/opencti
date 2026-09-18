@@ -18,7 +18,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage.enabled",
-    "check-ts": "tsc --noEmit",
+    "check-ts": "tsc -b",
     "i18n-checker": "node i18n-checker.js",
     "extract-translation": "node script/extract-i18n-keyword.js && node script/extract-label-keyword.js",
     "verify-translation": "node script/verify-translation.js",

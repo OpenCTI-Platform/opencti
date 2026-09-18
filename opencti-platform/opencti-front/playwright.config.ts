@@ -32,7 +32,7 @@ export default defineConfig({
       // global coverage report options
       coverage: {
         entryFilter: () => true,
-        sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
+        sourceFilter: (sourcePath: string) => sourcePath.startsWith('src'),
       },
     }],
   ],

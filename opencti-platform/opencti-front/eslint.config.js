@@ -92,7 +92,7 @@ export default defineConfig([
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: ['./tsconfig.front.json', './tsconfig.tool.json'],
         tsconfigRootDir: fileURLToPath(new URL('.', import.meta.url)),
         ecmaFeatures: { jsx: true },
       },
