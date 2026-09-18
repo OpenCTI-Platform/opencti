@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import { map, keys, groupBy, assoc, compose } from 'ramda';
@@ -50,108 +50,104 @@ const styles = (theme) => ({
   },
 });
 
-class StixSightingRelationshipCreationFromEntityLinesContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { expandedPanels: {} };
-  }
-
-  handleChangePanel(panelKey, event, expanded) {
-    this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
-    });
-  }
-
-  isExpanded(type, numberOfEntities, numberOfTypes) {
-    if (this.state.expandedPanels[type] !== undefined) {
-      return this.state.expandedPanels[type];
+const StixSightingRelationshipCreationFromEntityLinesContainer = ({
+  t,
+  classes,
+  data,
+  handleSelect,
+}) => {
+  const [expandedPanels, setExpandedPanels] = useState({});
+  const handleChangePanel = (panelKey, expanded) => {
+    setExpandedPanels((previousExpandedPanels) => (
+      assoc(panelKey, expanded, previousExpandedPanels)
+    ));
+  };
+  const isExpanded = (type, numberOfEntities, numberOfTypes) => {
+    if (expandedPanels[type] !== undefined) {
+      return expandedPanels[type];
     }
     if (numberOfEntities === 1) {
       return true;
     }
     return numberOfTypes === 1;
-  }
+  };
+  const stixDomainObjectsNodes = map(
+    (n) => n.node,
+    data.stixDomainObjects.edges,
+  );
+  const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
+  const stixDomainObjects = byType(stixDomainObjectsNodes);
+  const stixDomainObjectsTypes = keys(stixDomainObjects);
+  const dataColumns = {
+    name: {
+      label: t('Name'),
+      percentWidth: 100,
+      isSortable: false,
+      render: (row) => (
+        <span style={{ color: 'var(--text-default)', fontSize: 14, fontWeight: 500 }}>
+          {row.name}
+        </span>
+      ),
+    },
+  };
 
-  render() {
-    const { t, classes, data, handleSelect } = this.props;
-    const stixDomainObjectsNodes = map(
-      (n) => n.node,
-      data.stixDomainObjects.edges,
-    );
-    const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
-    const stixDomainObjects = byType(stixDomainObjectsNodes);
-    const stixDomainObjectsTypes = keys(stixDomainObjects);
-    const dataColumns = {
-      name: {
-        label: t('Name'),
-        percentWidth: 100,
-        isSortable: false,
-        render: (row) => (
-          <span style={{ color: 'var(--text-default)', fontSize: 14, fontWeight: 500 }}>
-            {row.name}
-          </span>
-        ),
-      },
-    };
-
-    return (
-      <div className={classes.container}>
-        {stixDomainObjectsTypes.length > 0 ? (
-          stixDomainObjectsTypes.map((type) => (
-            <Accordion
-              key={type}
-              expanded={this.isExpanded(
-                type,
-                stixDomainObjects[type].length,
-                stixDomainObjectsTypes.length,
-              )}
-              onChange={this.handleChangePanel.bind(this, type)}
-              elevation={0}
-              disableGutters
-              sx={{ backgroundColor: 'var(--bg-input-default)' }}
+  return (
+    <div className={classes.container}>
+      {stixDomainObjectsTypes.length > 0 ? (
+        stixDomainObjectsTypes.map((type) => (
+          <Accordion
+            key={type}
+            expanded={isExpanded(
+              type,
+              stixDomainObjects[type].length,
+              stixDomainObjectsTypes.length,
+            )}
+            onChange={(_event, expanded) => handleChangePanel(type, expanded)}
+            elevation={0}
+            disableGutters
+            sx={{ backgroundColor: 'var(--bg-input-default)' }}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography className={classes.heading}>
+                {t(`entity_${type}`)}
+              </Typography>
+              <Typography className={classes.secondaryHeading}>
+                {stixDomainObjects[type].length} {t('entitie(s)')}
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails
+              classes={{ root: classes.expansionPanelContent }}
             >
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography className={classes.heading}>
-                  {t(`entity_${type}`)}
-                </Typography>
-                <Typography className={classes.secondaryHeading}>
-                  {stixDomainObjects[type].length} {t('entitie(s)')}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                classes={{ root: classes.expansionPanelContent }}
-              >
-                <div className={classes.table}>
-                  <DataTableWithoutFragment
-                    data={stixDomainObjects[type]}
-                    globalCount={stixDomainObjects[type].length}
-                    dataColumns={dataColumns}
-                    storageKey={`stixSightingRelationshipCreationFromEntity_${type}`}
-                    disableNavigation
-                    disableLineSelection
-                    disableToolBar
-                    disableColumnMenu
-                    hideHeaders
-                    onLineClick={handleSelect}
-                    icon={(row) => (
-                      <span style={{ display: 'flex', transform: 'scale(1.15)' }}>
-                        <ItemIcon type={row.entity_type} />
-                      </span>
-                    )}
-                  />
-                </div>
-              </AccordionDetails>
-            </Accordion>
-          ))
-        ) : (
-          <div className={classes.noResult}>
-            {t('No entities were found for this search.')}
-          </div>
-        )}
-      </div>
-    );
-  }
-}
+              <div className={classes.table}>
+                <DataTableWithoutFragment
+                  data={stixDomainObjects[type]}
+                  globalCount={stixDomainObjects[type].length}
+                  dataColumns={dataColumns}
+                  storageKey={`stixSightingRelationshipCreationFromEntity_${type}`}
+                  disableNavigation
+                  disableLineSelection
+                  disableToolBar
+                  disableColumnMenu
+                  hideHeaders
+                  onLineClick={handleSelect}
+                  icon={(row) => (
+                    <span style={{ display: 'flex', transform: 'scale(1.15)' }}>
+                      <ItemIcon type={row.entity_type} />
+                    </span>
+                  )}
+                />
+              </div>
+            </AccordionDetails>
+          </Accordion>
+        ))
+      ) : (
+        <div className={classes.noResult}>
+          {t('No entities were found for this search.')}
+        </div>
+      )}
+    </div>
+  );
+};
 
 StixSightingRelationshipCreationFromEntityLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
