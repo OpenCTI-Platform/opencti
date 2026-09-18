@@ -12,7 +12,7 @@ export interface NewsFeedToastData {
   id: string;
   title: string;
   news_feed_type: string;
-  metadata: { key: string; readonly value: string | null | undefined }[];
+  metadata: readonly { readonly key: string; readonly value: string | null | undefined }[];
 }
 
 export const NEWS_FEED_TOAST_WIDTH = 450;
