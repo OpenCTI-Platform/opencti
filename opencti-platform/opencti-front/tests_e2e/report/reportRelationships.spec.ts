@@ -49,8 +49,12 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
     await reportPage.getItemFromList(reportName).click();
     await reportDetailsPage.tabs.goToRelationshipsTab();
 
-    await expect(page.getByText('E2E dashboard - Malware - month ago')).toBeVisible();
     await expect(page.getByText('targets', { exact: true })).toBeVisible();
+    await expect(page.getByText('Entity_undefined', { exact: true })).toBeHidden();
+    await expect(page.getByText('Unknown', { exact: true })).toBeHidden();
+    await expect(
+      page.locator('main a[href*="/knowledge/relations/"]').first(),
+    ).toHaveAttribute('href', /\/knowledge\/relations\//);
 
     await deleteReport(request, reportId);
     // The relationship must still exist after the report is deleted: it is only a reference,
@@ -109,6 +113,8 @@ test('Report relationships tab - bulk remove from container', { tag: ['@report',
     await reportPage.getItemFromList(reportName).click();
     await reportDetailsPage.tabs.goToRelationshipsTab();
     await expect(page.getByText('targets', { exact: true })).toBeVisible();
+    await expect(page.getByText('Entity_undefined', { exact: true })).toBeHidden();
+    await expect(page.getByText('Unknown', { exact: true })).toBeHidden();
 
     await page.getByRole('checkbox', { name: 'Select line' }).first().click();
     const toolbar = page.getByTestId('opencti-toolbar');
