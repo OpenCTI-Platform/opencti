@@ -631,6 +631,7 @@
   "can use": "可以使用",
   "can view": "可以查看",
   "Cancel": "取消",
+  "Cannot be removed: the relationship type is required while this filter has a dynamic value": "无法删除：关系类型为必填项，而此筛选器具有动态值",
   "Capabilities": "能力",
   "Capabilities in Draft": "能力草案",
   "Cards view": "卡片视图",

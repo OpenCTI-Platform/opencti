@@ -394,9 +394,10 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "nested filter group support: the 'WITH' separator chip between the two stacked subfilter editors (relationship_type / id or dynamic) of a regardingOf/dynamicRegardingOf composite filter, shared by the root FilterChipPopover and the nested-group FilterRowCompositeValue popover.",
+      "reason": "nested filter group support: the 'WITH' separator chip between the two stacked subfilter editors (relationship_type / id or dynamic) of a regardingOf/dynamicRegardingOf composite filter, shared by the root FilterChipPopover and the nested-group FilterRowCompositeValue popover. Also the selected-value tags of the entity autocomplete's renderTags: each holds its own onDelete, and the locked sole value of a disabled composite subfilter renders without one instead of a dead click.",
       "files": [
-        "opencti-platform/opencti-front/src/components/filters/fields/CompositeRegardingOfEditor.tsx"
+        "opencti-platform/opencti-front/src/components/filters/fields/CompositeRegardingOfEditor.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
       ]
     },
     {
@@ -416,10 +417,11 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "nested filter group support: full-value hover tooltip on a top-level filter chip in the filter line (regardingOf/dynamicRegardingOf chips excluded, handled by their own composite editor instead), and the full-label tooltip on a truncated entity option row in the filter value autocomplete.",
+      "reason": "nested filter group support: full-value hover tooltip on a top-level filter chip in the filter line (regardingOf/dynamicRegardingOf chips excluded, handled by their own composite editor instead), and the full-label tooltip on a truncated entity option row in the filter value autocomplete. Also the locked-value tag of the entity autocomplete (composite subfilter, isChangeBlocked): explains why that tag's delete icon is absent instead of silently doing nothing.",
       "files": [
         "opencti-platform/opencti-front/src/components/filters/FilterChipLine.tsx",
-        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx"
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
       ]
     }
   ]

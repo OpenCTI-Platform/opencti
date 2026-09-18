@@ -631,6 +631,7 @@
   "can use": "使用できる",
   "can view": "見ることができます",
   "Cancel": "キャンセル",
+  "Cannot be removed: the relationship type is required while this filter has a dynamic value": "削除できません：関係タイプは必須ですが、このフィルターには動的な値が設定されています",
   "Capabilities": "能力",
   "Capabilities in Draft": "ドラフトでの能力",
   "Cards view": "カード表示",

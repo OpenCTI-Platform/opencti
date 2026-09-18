@@ -631,6 +631,7 @@
   "can use": "verwenden können",
   "can view": "kann ansehen",
   "Cancel": "Abbrechen",
+  "Cannot be removed: the relationship type is required while this filter has a dynamic value": "Kann nicht entfernt werden: Der Beziehungstyp ist erforderlich, während dieser Filter einen dynamischen Wert hat.",
   "Capabilities": "Fähigkeiten",
   "Capabilities in Draft": "Fähigkeiten im Entwurf",
   "Cards view": "Ansicht Karten",
