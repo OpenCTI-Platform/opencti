@@ -27,7 +27,9 @@ import StixSightingRelationshipCreationForm from './StixSightingRelationshipCrea
 import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
   stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
 } from './StixSightingRelationshipCreationFromEntityStixCyberObservablesLines';
-import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
+import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
+  stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
+} from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -257,11 +259,28 @@ const StixSightingRelationshipCreationFromEntity = ({
     }
 
     return (
-      <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
-        handleSelect={handleSelectEntity}
-        search={search}
-        stixCoreObjectTypes={stixCoreObjectTypes}
-      />
+      <div>
+        <QueryRenderer
+          query={
+            stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
+          }
+          variables={{
+            count: 25,
+            ...stixDomainObjectsPaginationOptions,
+          }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
+                  handleSelect={handleSelectEntity}
+                  data={props}
+                />
+              );
+            }
+            return renderFakeList();
+          }}
+        />
+      </div>
     );
   };
 
