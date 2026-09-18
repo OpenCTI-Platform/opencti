@@ -486,7 +486,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           ? data.importFiles.edges[0]?.node
           : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
-        <Tooltip title={file?.metaData?.mimetype}>
+        <Tooltip title={b(file?.size)}>
           <span>{b(file?.size)}</span>
         </Tooltip>
       );

@@ -36,12 +36,12 @@ describe('dataTableUtils default columns — tooltip anchors', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('#4b0082');
   });
 
-  it('anchors the file_size tooltip', async () => {
+  it('anchors the file_size tooltip, on the size the cell shows', async () => {
     const { user } = renderColumn('file_size', fileData('text/plain', 42), {
       b: (value: number) => `${value} Bytes`,
     });
     await user.hover(screen.getByText('42 Bytes'));
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('text/plain');
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('42 Bytes');
   });
 
   it('anchors the number_observed tooltip', async () => {
