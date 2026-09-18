@@ -1,13 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_INGESTION_CSV, type StixIngestionCsv, type StoreEntityIngestionCsv } from './ingestion-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
-import { convertIngestionCsvToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 
-const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
+const INGESTION_CSV_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'ingestion-csv',
     name: ENTITY_TYPE_INGESTION_CSV,
@@ -43,10 +42,6 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixIngestionCsv) => {
-    return stix.name;
-  },
-  converter_2_1: convertIngestionCsvToStix,
 };
 
-registerDefinition(INGESTION_CSV_DEFINITION);
+registerInternalObjectDefinition(INGESTION_CSV_DEFINITION);
