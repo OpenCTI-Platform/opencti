@@ -6,7 +6,7 @@ import { redisInit } from './database/redis';
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { smtpIsAlive } from './database/smtp';
-import { rabbitMQInit } from './database/rabbitmq';
+import { rabbitMQInit } from './modules/connector/connector-rabbitmq';
 
 export const checkSystemDependencies = async () => {
   logApp.info('[OPENCTI] Checking dependencies statuses');

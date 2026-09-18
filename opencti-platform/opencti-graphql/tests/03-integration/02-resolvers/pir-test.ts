@@ -12,7 +12,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
-import { connectorsForWorker } from '../../../src/database/repository';
+import { connectorsForWorker } from '../../../src/modules/connector/connector-domain';
 import { pirRelationshipsDistribution, pirRelationshipsMultiTimeSeries } from '../../../src/modules/pir/pir-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';

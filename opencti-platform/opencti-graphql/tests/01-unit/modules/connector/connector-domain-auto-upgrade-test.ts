@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { BasicStoreEntityConnector } from '../../../../src/types/connector';
+import type { BasicStoreEntityConnector } from '../../../../src/modules/connector/connector-types';
 
 const {
   mockFindManagedConnectorsByCatalogId,
@@ -15,34 +15,66 @@ const {
   mockPublishUserAction: vi.fn(),
 }));
 
-vi.mock('../../../../src/modules/connector/connector-repository', () => ({
-  findManagedConnectorsByCatalogId: mockFindManagedConnectorsByCatalogId,
-}));
+vi.mock('../../../../src/modules/connector/connector-repository', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/modules/connector/connector-repository')>();
+  return {
+    ...actual,
+    findManagedConnectorsByCatalogId: mockFindManagedConnectorsByCatalogId,
+  };
+});
 
-vi.mock('../../../../src/modules/catalog/catalog-repository', () => ({
-  findLatestCompatibleCatalogContractBySlug: mockFindLatestCompatibleCatalogContractBySlug,
-}));
+vi.mock('../../../../src/modules/catalog/catalog-repository', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/modules/catalog/catalog-repository')>();
+  return {
+    ...actual,
+    findLatestCompatibleCatalogContractBySlug: mockFindLatestCompatibleCatalogContractBySlug,
+  };
+});
 
-vi.mock('../../../../src/modules/catalog/catalog-domain', () => ({
-  mapContractEntityFieldsToEmbeddedConnectorManagerContract: mockMapContractEntityFieldsToEmbeddedConnectorManagerContract,
-}));
+vi.mock('../../../../src/modules/catalog/catalog-domain', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/modules/catalog/catalog-domain')>();
+  return {
+    ...actual,
+    mapContractEntityFieldsToEmbeddedConnectorManagerContract: mockMapContractEntityFieldsToEmbeddedConnectorManagerContract,
+  };
+});
 
-vi.mock('../../../../src/database/middleware', () => ({
-  patchAttribute: mockPatchAttribute,
-}));
+vi.mock('../../../../src/database/middleware', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/database/middleware')>();
+  return {
+    ...actual,
+    patchAttribute: mockPatchAttribute,
+  };
+});
 
-vi.mock('../../../../src/listener/UserActionListener', () => ({
-  publishUserAction: mockPublishUserAction,
-}));
+vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/listener/UserActionListener')>();
+  return {
+    ...actual,
+    publishUserAction: mockPublishUserAction,
+  };
+});
 
-vi.mock('../../../../src/config/conf', () => ({
-  logApp: {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  },
-}));
+vi.mock('../../../../src/database/cache', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/database/cache')>();
+  return {
+    ...actual,
+    getEntitiesMapFromCache: vi.fn(),
+  };
+});
+
+vi.mock('../../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
+  return {
+    ...actual,
+    logApp: {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    },
+  };
+});
 
 import { autoUpgradeManagedConnectors } from '../../../../src/modules/connector/connector-domain';
 
