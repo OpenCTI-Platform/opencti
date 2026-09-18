@@ -3,7 +3,7 @@ import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } 
 import { type EntityOptions, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { pageEntitiesOrRelationsConnection, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -13,6 +13,8 @@ import type { BasicStoreCommon, BasicStoreObject, BasicConnection } from '../typ
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildRelationData } from '../database/data-builder';
 import { validateMarking } from '../utils/access';
+import { COVERED_ENTITIES_TYPE } from '../modules/securityCoverage/securityCoverage-domain';
+import { removeHasCoveredForRemovedEntities } from '../modules/securityCoverage/securityCoverage-utils';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 
@@ -97,5 +99,15 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (
   if (!isStixRefRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`, { id: stixObjectOrRelationshipId });
   }
-  return patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, relationshipType, [toId], UPDATE_OPERATION_REMOVE, opts);
+  const patchedElement = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, relationshipType, [toId], UPDATE_OPERATION_REMOVE, opts);
+  // An object removed from a covered container is no longer part of the assessed scope,
+  // so the has-covered relationships of the security coverage results must follow.
+  if (relationshipType === RELATION_OBJECT && COVERED_ENTITIES_TYPE.includes(stixObjectOrRelationship.entity_type)) {
+    // toId is a StixRef, resolve it since has-covered relationships are indexed on internal ids.
+    const removedEntity = await findById(context, user, toId);
+    if (removedEntity) {
+      await removeHasCoveredForRemovedEntities(context, stixObjectOrRelationship.internal_id, [removedEntity.internal_id]);
+    }
+  }
+  return patchedElement;
 };
