@@ -311,11 +311,31 @@ export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefi
   });
 };
 
-export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
+/**
+ * Shallow, structure-only check: true as soon as the group has *any* child filter or child
+ * group, regardless of whether that child is itself complete/usable (e.g. a value-less filter,
+ * or an empty nested group). Kept for live-editing call sites that need "is there structure to
+ * keep working with" rather than "is this a complete, submittable rule set" — a strict check
+ * would delete what the user is mid-typing (see `FilterFiltersInput.tsx`).
+ * Do not use this for required-filter submit gates: use `isFilterGroupNotEmpty` instead.
+ */
+export const isFilterGroupNotEmptyShallow = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
   return !!(
     filterGroup
     && (filterGroup.filters?.length > 0 || filterGroup.filterGroups?.length > 0)
   );
+};
+
+/**
+ * Strict check: true only if the group would still contain at least one usable rule after
+ * serialization (i.e. after pruning value-less filters and empty descendant groups). This is
+ * the "is this a complete, submittable rule set" semantics, and the one required-filter submit
+ * gates (disabled buttons, etc.) should use.
+ */
+export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
+  if (!filterGroup) return false;
+  const pruned = pruneEmptyFiltersAndGroups(canonicalizeFilterGroupForBackend(filterGroup as FilterGroup));
+  return isFilterGroupNotEmptyShallow(pruned);
 };
 
 export const isStringifiedFilterGroupFormatCorrect = (stringFilters: string): boolean => {
@@ -1482,5 +1502,7 @@ export const pruneEmptyFiltersAndGroups = (filterGroup: FilterGroup, dropEmptyGr
   )),
   filterGroups: (filterGroup.filterGroups ?? [])
     .map((group) => pruneEmptyFiltersAndGroups(group, dropEmptyGroups))
-    .filter((group) => !dropEmptyGroups || isFilterGroupNotEmpty(group)),
+    // children are already pruned above (post-order), so a shallow check is enough and safe here —
+    // using the strict isFilterGroupNotEmpty would recurse back into this same function.
+    .filter((group) => !dropEmptyGroups || isFilterGroupNotEmptyShallow(group)),
 });
