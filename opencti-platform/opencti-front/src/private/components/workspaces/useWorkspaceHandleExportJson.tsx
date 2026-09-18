@@ -2,7 +2,7 @@ import fileDownload from 'js-file-download';
 import { graphql } from 'react-relay';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { useFormatter } from 'src/components/i18n';
-import { workspaceExportHandlerQuery } from '@components/workspaces/__generated__/workspaceExportHandlerQuery.graphql';
+import { useWorkspaceHandleExportJsonQuery } from '@components/workspaces/__generated__/useWorkspaceHandleExportJsonQuery.graphql';
 
 interface workspaceToExport {
   id: string;
@@ -10,7 +10,7 @@ interface workspaceToExport {
 }
 
 const WorkspaceExportHandlerQuery = graphql`
-    query workspaceExportHandlerQuery($id: String!) {
+    query useWorkspaceHandleExportJsonQuery($id: String!) {
         workspace(id: $id) {
             toConfigurationExport
         }
@@ -21,7 +21,7 @@ const useWorkspaceHandleExportJson = () => {
   const { t_i18n } = useFormatter();
 
   const workspaceHandleExportJson = (workspace: workspaceToExport) => {
-    fetchQuery<workspaceExportHandlerQuery>(WorkspaceExportHandlerQuery, { id: workspace.id })
+    fetchQuery<useWorkspaceHandleExportJsonQuery>(WorkspaceExportHandlerQuery, { id: workspace.id })
       .toPromise()
       .then((result) => {
         if (result?.workspace?.toConfigurationExport) {
