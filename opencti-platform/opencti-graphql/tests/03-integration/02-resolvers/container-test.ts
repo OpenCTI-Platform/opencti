@@ -5,6 +5,34 @@ import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { isStixCoreObject } from '../../../src/schema/stixCoreObject';
 import { isStixCoreRelationship } from '../../../src/schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../../../src/schema/stixRefRelationship';
+import { addFilter } from '../../../src/utils/filtering/filtering-utils';
+
+const REPORT_RELATIONSHIPS_QUERY = gql`
+  query paginatedReportRelationships($filters: FilterGroup!, $first: Int!, $after: ID) {
+    stixCoreRelationships(filters: $filters, first: $first, after: $after, orderBy: created_at, orderMode: asc) {
+      edges {
+        node {
+          id
+          relationship_type
+          confidence
+          from { ... on BasicObject { id } }
+          to { ... on BasicObject { id } }
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
+
+type ReportRelationship = {
+  id: string;
+  relationship_type: string;
+  confidence: number;
+};
 
 describe('Container resolver standard behavior', () => {
   const REPORT_RAW_ID = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
@@ -193,6 +221,178 @@ describe('Container resolver standard behavior', () => {
     expect(entities.length).toEqual(15);
     const relationships = queryResult.data?.container.objects.edges.filter((e: any) => isStixCoreRelationship(e.node.entity_type));
     expect(relationships.length).toEqual(11);
+  });
+
+  it('should list and paginate only the core relationships referenced by a report', async () => {
+    const containerResult = await queryAsAdmin({
+      query: gql`
+        query reportRelationships($id: String!) {
+          container(id: $id) {
+            id
+            objects(types: ["stix-core-relationship"], first: 100) {
+              edges {
+                node {
+                  ... on StixCoreRelationship {
+                    id
+                    relationship_type
+                    confidence
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      variables: { id: REPORT_RAW_ID },
+    });
+    expect(containerResult.errors).toBeUndefined();
+    const container = containerResult.data?.container;
+    const expectedRelationships: ReportRelationship[] = container.objects.edges.map((edge: { node: ReportRelationship }) => edge.node);
+    const expectedIds = expectedRelationships.map((relationship) => relationship.id);
+    expect(expectedIds).toHaveLength(11);
+
+    const filters = addFilter(undefined, 'objects', container.id);
+    const firstPage = await queryAsAdmin({ query: REPORT_RELATIONSHIPS_QUERY, variables: { filters, first: 6 } });
+    expect(firstPage.errors).toBeUndefined();
+    const firstConnection = firstPage.data?.stixCoreRelationships;
+    expect(firstConnection.edges).toHaveLength(6);
+    expect(firstConnection.pageInfo.globalCount).toEqual(11);
+    expect(firstConnection.pageInfo.hasNextPage).toEqual(true);
+
+    const secondPage = await queryAsAdmin({
+      query: REPORT_RELATIONSHIPS_QUERY,
+      variables: { filters, first: 6, after: firstConnection.pageInfo.endCursor },
+    });
+    expect(secondPage.errors).toBeUndefined();
+    const secondConnection = secondPage.data?.stixCoreRelationships;
+    expect(secondConnection.edges).toHaveLength(5);
+    expect(secondConnection.pageInfo.globalCount).toEqual(11);
+    expect(secondConnection.pageInfo.hasNextPage).toEqual(false);
+    const actualIds = [...firstConnection.edges, ...secondConnection.edges]
+      .map((edge: { node: { id: string } }) => edge.node.id);
+    expect(actualIds.sort()).toEqual(expectedIds.sort());
+
+    const relationshipType = expectedRelationships[0].relationship_type;
+    const filteredResult = await queryAsAdmin({
+      query: REPORT_RELATIONSHIPS_QUERY,
+      variables: { filters: addFilter(filters, 'relationship_type', relationshipType), first: 100 },
+    });
+    expect(filteredResult.errors).toBeUndefined();
+    const filteredIds = expectedRelationships
+      .filter((relationship) => relationship.relationship_type === relationshipType)
+      .map((relationship) => relationship.id);
+    expect(filteredResult.data?.stixCoreRelationships.pageInfo.globalCount).toEqual(filteredIds.length);
+    expect(filteredResult.data?.stixCoreRelationships.edges.map((edge: { node: { id: string } }) => edge.node.id).sort())
+      .toEqual(filteredIds.sort());
+
+    const userFilters = {
+      ...addFilter(undefined, 'relationship_type', relationshipType),
+      mode: 'or',
+      filters: [
+        ...addFilter(undefined, 'relationship_type', relationshipType).filters,
+        ...addFilter(undefined, 'confidence', '80', 'gte').filters,
+      ],
+    } as ReturnType<typeof addFilter>;
+    const combinedResult = await queryAsAdmin({
+      query: REPORT_RELATIONSHIPS_QUERY,
+      variables: { filters: addFilter(userFilters, 'objects', container.id), first: 100 },
+    });
+    expect(combinedResult.errors).toBeUndefined();
+    const combinedIds = expectedRelationships
+      .filter((relationship) => relationship.relationship_type === relationshipType || relationship.confidence >= 80)
+      .map((relationship) => relationship.id);
+    expect(combinedResult.data?.stixCoreRelationships.pageInfo.globalCount).toEqual(combinedIds.length);
+    expect(combinedResult.data?.stixCoreRelationships.edges.map((edge: { node: { id: string } }) => edge.node.id).sort())
+      .toEqual(combinedIds.sort());
+  });
+
+  it('should require explicit report membership and preserve a shared relationship when removing it', async () => {
+    const relationshipResult = await queryAsAdmin({
+      query: gql`
+        query sharedReportRelationship($id: String!) {
+          stixCoreRelationship(id: $id) {
+            id
+            from { ... on BasicObject { id } }
+            to { ... on BasicObject { id } }
+          }
+        }
+      `,
+      variables: { id: 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02' },
+    });
+    expect(relationshipResult.errors).toBeUndefined();
+    const relationship = relationshipResult.data?.stixCoreRelationship;
+    expect(relationship).toBeTruthy();
+    const reportIds: string[] = [];
+    const createReport = async (name: string, objects: string[]) => {
+      const result = await queryAsAdmin({
+        query: gql`
+          mutation reportRelationshipListCreate($input: ReportAddInput!) {
+            reportAdd(input: $input) { id }
+          }
+        `,
+        variables: { input: { name, published: '2020-02-26T00:51:35.000Z', objects } },
+      });
+      if (result.data?.reportAdd?.id) reportIds.push(result.data.reportAdd.id);
+      expect(result.errors).toBeUndefined();
+      return result.data?.reportAdd.id as string;
+    };
+    const listRelationships = async (reportId: string) => {
+      const result = await queryAsAdmin({
+        query: REPORT_RELATIONSHIPS_QUERY,
+        variables: { filters: addFilter(undefined, 'objects', reportId), first: 100 },
+      });
+      expect(result.errors).toBeUndefined();
+      return result.data?.stixCoreRelationships;
+    };
+
+    try {
+      const reportId = await createReport('Relationship list membership test', [relationship.from.id, relationship.to.id]);
+      const sharedReportId = await createReport('Relationship list shared reference test', [relationship.id]);
+      const initiallyEmpty = await listRelationships(reportId);
+      expect(initiallyEmpty.edges).toEqual([]);
+      expect(initiallyEmpty.pageInfo.globalCount).toEqual(0);
+
+      const addResult = await queryAsAdmin({
+        query: gql`
+          mutation reportRelationshipListAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
+            reportEdit(id: $id) { relationAdd(input: $input) { id } }
+          }
+        `,
+        variables: { id: reportId, input: { toId: relationship.id, relationship_type: 'object' } },
+      });
+      expect(addResult.errors).toBeUndefined();
+      const afterAdd = await listRelationships(reportId);
+      expect(afterAdd.edges.map((edge: { node: { id: string } }) => edge.node.id)).toEqual([relationship.id]);
+      expect(afterAdd.pageInfo.globalCount).toEqual(1);
+
+      const removeResult = await queryAsAdmin({
+        query: gql`
+          mutation reportRelationshipListRemove($id: ID!, $toId: StixRef!) {
+            reportEdit(id: $id) { relationDelete(toId: $toId, relationship_type: "object") { id } }
+          }
+        `,
+        variables: { id: reportId, toId: relationship.id },
+      });
+      expect(removeResult.errors).toBeUndefined();
+      const afterRemove = await listRelationships(reportId);
+      expect(afterRemove.edges).toEqual([]);
+      expect(afterRemove.pageInfo.globalCount).toEqual(0);
+      const sharedRelationships = await listRelationships(sharedReportId);
+      expect(sharedRelationships.edges.map((edge: { node: { id: string } }) => edge.node.id)).toEqual([relationship.id]);
+      expect(sharedRelationships.pageInfo.globalCount).toEqual(1);
+    } finally {
+      for (const reportId of reportIds) {
+        const deleted = await queryAsAdmin({
+          query: gql`
+            mutation reportRelationshipListDelete($id: ID!) {
+              reportEdit(id: $id) { delete }
+            }
+          `,
+          variables: { id: reportId },
+        });
+        expect(deleted.errors).toBeUndefined();
+      }
+    }
   });
 
   it('should container containersObjectsOfObject from malware', async () => {

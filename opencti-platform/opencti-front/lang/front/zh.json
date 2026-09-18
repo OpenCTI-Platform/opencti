@@ -567,6 +567,7 @@
   "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "请注意，请为您的排除规则定义一些筛选器，否则，由于没有设置筛选器，任何指标都将匹配该规则，并具有一个排除规则",
   "Be careful, you are about to delete the selected entities": "小心，您将删除选定的实体",
   "Be careful, you are about to delete the selected entities (not the relationships)": "小心，您将删除选定的实体（而不是关系）",
+  "Be careful, you are about to delete the selected relationships": "小心，您将删除选定的关系",
   "Be careful, you are about to delete the selected observables (not the relationships)": "小心，您将删除所选的可观察对象（而不是关系）",
   "Bearer token": "承载令牌",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "因为默认情况下，草稿不会包含在工作台创建后对该实体所做的更新。",
