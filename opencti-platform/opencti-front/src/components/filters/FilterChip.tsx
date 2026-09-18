@@ -25,6 +25,7 @@ export interface FilterChipProps {
   disabled?: boolean;
   /** Absent when the filter may not be removed (read-only line, or a restricted filter key). */
   onDelete?: () => void;
+  label?: string;
   style?: CSSProperties;
 }
 
@@ -49,6 +50,7 @@ const FilterChip = forwardRef<HTMLDivElement, PropsWithChildren<FilterChipProps>
   darkenBackground = false,
   disabled = false,
   onDelete,
+  label,
   style,
   children,
 }, ref) => {
@@ -64,12 +66,7 @@ const FilterChip = forwardRef<HTMLDivElement, PropsWithChildren<FilterChipProps>
   return (
     <Box
       ref={ref}
-      // MUI's Chip (what this replaces) turns its root into a ButtonBase as soon as `onDelete`
-      // is set, which is how the whole key+values line surfaced as a single accessible button.
-      // Kept here so `getByRole('button', { name: 'Key = Value' })` still matches the chip as
-      // a whole, not just the key part that owns its own nested button.
-      role={onDelete ? 'button' : undefined}
-      tabIndex={onDelete ? 0 : undefined}
+      data-testid="filter-chip"
       sx={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -108,7 +105,7 @@ const FilterChip = forwardRef<HTMLDivElement, PropsWithChildren<FilterChipProps>
         <Box
           component="button"
           type="button"
-          aria-label={t_i18n('Remove')}
+          aria-label={label ? `${t_i18n('Remove')}: ${label}` : t_i18n('Remove')}
           onClick={onDelete}
           sx={{
             display: 'flex',

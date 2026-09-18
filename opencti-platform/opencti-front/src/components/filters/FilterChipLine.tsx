@@ -294,6 +294,7 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
               darkenBackground={darkenChipBackground}
               style={filterStyle}
               disabled={disabledPossible ? displayedFilters.length === 1 : undefined}
+              label={filterLabel}
               onDelete={
                 (isReadWriteFilter && authorizeFilterRemoving)
                   ? () => manageRemoveFilter(
