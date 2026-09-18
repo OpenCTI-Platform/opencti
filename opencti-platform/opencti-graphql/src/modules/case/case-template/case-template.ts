@@ -1,9 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
-import type { StixCaseTemplate, StoreEntityCaseTemplate } from './case-template-types';
 import { ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
-import convertCaseTemplateToStix from './case-template-converter';
 import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 import type { RefAttribute } from '../../../schema/attribute-definition';
 
@@ -25,7 +23,7 @@ const CaseTemplateToTaskTemplateRelation: RefAttribute = {
   toTypes: [ENTITY_TYPE_TASK_TEMPLATE],
 };
 
-const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCaseTemplate> = {
+const CASE_TEMPLATE_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'case-template',
     name: ENTITY_TYPE_CASE_TEMPLATE,
@@ -42,9 +40,5 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
   ],
   relations: [],
   relationsRefs: [CaseTemplateToTaskTemplateRelation],
-  representative: (stix: StixCaseTemplate) => {
-    return stix.name;
-  },
-  converter_2_1: convertCaseTemplateToStix,
 };
-registerDefinition(CASE_TEMPLATE_DEFINITION);
+registerInternalObjectDefinition(CASE_TEMPLATE_DEFINITION);
