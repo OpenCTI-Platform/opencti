@@ -631,6 +631,7 @@
   "can use": "사용할 수 있습니다",
   "can view": "보기 가능",
   "Cancel": "취소",
+  "Cannot be removed: the relationship type is required while this filter has a dynamic value": "제거할 수 없음: 관계 유형은 필수 항목이지만, 이 필터의 값은 동적으로 설정되어 있습니다.",
   "Capabilities": "기능",
   "Capabilities in Draft": "초안의 기능",
   "Cards view": "카드 보기",
