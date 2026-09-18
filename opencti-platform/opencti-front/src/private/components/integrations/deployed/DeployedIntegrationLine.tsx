@@ -111,6 +111,12 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
   })();
 
   const hasQueuedMessages = item.messagesCount != null && item.messagesCount > 0;
+  const updateBadge = item.updateAvailable ? {
+    label: item.incompatibility ? t_i18n('Incompatible') : t_i18n('Update available'),
+    color: item.incompatibility ? theme.palette.error.main : theme.palette.warning.main,
+    background: item.incompatibility ? alpha(theme.palette.error.main, 0.12) : alpha(theme.palette.warning.main, 0.12),
+    border: item.incompatibility ? alpha(theme.palette.error.main, 0.35) : alpha(theme.palette.warning.main, 0.35),
+  } : null;
 
   return (
     <Box
@@ -290,9 +296,29 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       </Box>
       {/* Status column. */}
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
-        {item.status === 'processing'
-          ? <ItemBoolean status={undefined} label={statusText} />
-          : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+        <Stack direction="column" alignItems="flex-start" gap={0.5}>
+          {updateBadge && (
+            <Box
+              sx={{
+                px: 0.75,
+                py: 0.25,
+                borderRadius: 1,
+                fontSize: 11,
+                fontWeight: 600,
+                lineHeight: 1.25,
+                color: updateBadge.color,
+                backgroundColor: updateBadge.background,
+                border: `1px solid ${updateBadge.border}`,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {updateBadge.label}
+            </Box>
+          )}
+          {item.status === 'processing'
+            ? <ItemBoolean status={undefined} label={statusText} />
+            : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+        </Stack>
       </Box>
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>

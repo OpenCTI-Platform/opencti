@@ -32,6 +32,9 @@ export interface DeployedIntegrationItem {
   throughputRate: number | null;
   lastRunDate: string | null;
   updatedAt: string | null;
+  updateAvailable: boolean;
+  latestCompatibleVersion: string | null;
+  incompatibility: boolean;
   isManaged: boolean;
   uri?: string | null;
   userName?: string | null;
@@ -153,6 +156,9 @@ const useDeployedIntegrations = ({
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
         updatedAt: connector.updated_at,
+        updateAvailable: !!connector.update_available,
+        latestCompatibleVersion: connector.latest_compatible_version ?? null,
+        incompatibility: !!connector.incompatibility,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
@@ -176,6 +182,9 @@ const useDeployedIntegrations = ({
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.current_state_date as string | null) ?? null,
         updatedAt: null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        incompatibility: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -209,6 +218,9 @@ const useDeployedIntegrations = ({
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.last_execution_date as string | null) ?? null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        incompatibility: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -248,6 +260,9 @@ const useDeployedIntegrations = ({
         throughputRate: feedQueueRate(node.id),
         lastRunDate: null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        incompatibility: false,
         isManaged: false,
         detailUrl: `/dashboard/integrations/feeds/form/${node.id}`,
         searchText: buildSearchText([node.name, node.description, builtInLabel('form')]),

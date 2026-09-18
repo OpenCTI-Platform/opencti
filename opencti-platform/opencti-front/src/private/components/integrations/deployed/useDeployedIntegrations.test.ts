@@ -113,6 +113,15 @@ describe('useDeployedIntegrations', () => {
       expect(result.current[0].status).toBe('inactive');
     });
 
+    it('keeps backend-computed update metadata on the deployed connector item', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector({ update_available: true, latest_compatible_version: '1.2.3', incompatibility: true })],
+      });
+      expect(result.current[0].updateAvailable).toBe(true);
+      expect(result.current[0].latestCompatibleVersion).toBe('1.2.3');
+      expect(result.current[0].incompatibility).toBe(true);
+    });
+
     it('reports a processing status while a managed connector is transitioning', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],

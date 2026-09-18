@@ -55,6 +55,7 @@ import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+import { getDeployedConnectorDetails } from './connectorDetails';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -296,6 +297,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const isBuffering = () => {
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
+
+  const { deployedVersion, slug: deployedSlug } = getDeployedConnectorDetails({
+    managerContractDefinition: connector.manager_contract_definition,
+    managerContractExcerpt: connector.manager_contract_excerpt,
+  });
 
   // Component for Overview content (without ConnectorWorks)
   const connectorOverviewContent = useMemo(() => (
@@ -665,10 +671,20 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Grid>
 
               {connector.is_managed && (
-                <Grid item xs={6}>
-                  <Label>{t_i18n('Instance name')}</Label>
-                  <Typography component="div" variant="body1">{connector.name}</Typography>
-                </Grid>
+                <>
+                  <Grid item xs={6}>
+                    <Label>{t_i18n('Instance name')}</Label>
+                    <Typography component="div" variant="body1">{connector.name}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Label>{t_i18n('Deployed version')}</Label>
+                    <Typography component="div" variant="body1">{deployedVersion || t_i18n('Not provided')}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Label>{t_i18n('Slug')}</Label>
+                    <Typography component="div" variant="body1">{deployedSlug || t_i18n('Not provided')}</Typography>
+                  </Grid>
+                </>
               )}
 
               <Grid item xs={6}>

@@ -13,7 +13,7 @@ import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '.
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf } from '../config/conf';
+import conf, { booleanConf, PLATFORM_VERSION } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -23,6 +23,9 @@ import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/use
 import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { buildConnectorUpdateStatus, mapContractToVersion } from '../modules/catalog/catalog-version-utils';
+import { findCatalogContractsByImageName, findCatalogContractsBySlug } from '../modules/catalog/catalog-repository';
+import { stripImageToRepositoryPath } from '../telemetry/TelemetryMeterManager';
 
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
@@ -211,6 +214,42 @@ export const connectorsForManagers = async (context, user) => {
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));
+};
+
+export const computeConnectorUpdateStatus = async (context, user, cn) => {
+  if (!cn || (!cn.manager_contract && !cn.manager_contract_image)) {
+    return {
+      update_available: false,
+      latest_compatible_version: null,
+      incompatibility: false,
+    };
+  }
+
+  const currentVersion = cn.manager_contract?.contract_version ?? null;
+  let versions = [];
+
+  if (cn.manager_contract?.slug) {
+    versions = await findCatalogContractsBySlug(context, user, cn.manager_contract.slug);
+  } else if (cn.manager_contract_image) {
+    const imageName = stripImageToRepositoryPath(cn.manager_contract_image);
+    if (imageName) {
+      versions = await findCatalogContractsByImageName(context, user, imageName);
+    }
+  }
+
+  return buildConnectorUpdateStatus(currentVersion, versions.map(mapContractToVersion), { platformVersion: PLATFORM_VERSION });
+};
+
+export const connectorsUpdateCount = async (context, user) => {
+  const elements = await connectors(context, user);
+  let count = 0;
+  for (const element of elements) {
+    const status = await computeConnectorUpdateStatus(context, user, element);
+    if (status.update_available) {
+      count += 1;
+    }
+  }
+  return count;
 };
 
 export const connectorsForWorker = async (context, user) => {
