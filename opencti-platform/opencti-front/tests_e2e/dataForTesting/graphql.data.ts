@@ -5,14 +5,7 @@ interface GraphQLResponse<T> {
   errors?: Array<{ message: string }>;
 }
 
-/**
- * Posts a GraphQL document and returns its `data`, failing loudly on any error.
- *
- * The seeding used to fire its mutations without reading the responses, so a rejected write
- * (or a request that never reached the platform) only surfaced minutes later, as an unrelated
- * failure in whichever test first relied on the missing data. Every seeding call goes through
- * here so the run fails at init, on the mutation that failed, with its message.
- */
+/** Posts a GraphQL document and returns its `data`, failing loudly on any error. */
 export const graphqlRequest = async <T>(request: APIRequestContext, query: string, description: string): Promise<T> => {
   const response = await request.post('/graphql', { data: { query } });
   if (!response.ok()) {
