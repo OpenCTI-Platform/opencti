@@ -7,10 +7,14 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import useAuth from '../../../../utils/hooks/useAuth';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { getLatestCompatibleVersion } from './utils/getLatestCompatibleVersion';
 
 const IngestionCatalogConnectorOverview = ({ connector }: { connector: IngestionConnector }) => {
   const { t_i18n } = useFormatter();
+  const { about } = useAuth();
+  const latestCompatibleVersion = getLatestCompatibleVersion(connector, about.version);
 
   return (
     <Grid container spacing={2} sx={{ marginBottom: 20 }}>
@@ -52,6 +56,13 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
               >
                 {t_i18n('Vendor contact')}
               </Button>
+            </Grid>
+
+            <Grid size={12}>
+              <Label>
+                {t_i18n('Latest Compatible Version')}
+              </Label>
+              {latestCompatibleVersion ?? t_i18n('None')}
             </Grid>
 
             <Grid size={12}>

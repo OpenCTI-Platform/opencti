@@ -34,6 +34,12 @@ export interface IngestionConnector {
   source_code: string;
   manager_supported: boolean;
   container_version: string;
+  versions?: Array<{
+    version: string;
+    support_version?: string | null;
+    min_version?: string | null;
+    min_platform_version?: string | null;
+  }> | null;
   container_image: string;
   container_type: IngestionConnectorType;
   config_schema: {
