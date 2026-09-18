@@ -67,4 +67,3 @@ export default class RetentionPage {
     return this.page.getByRole('button', { name: 'Cancel' });
   }
 }
-

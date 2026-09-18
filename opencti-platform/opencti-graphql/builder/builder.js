@@ -27,7 +27,7 @@ if (scriptName) {
 
 const buildOptions = {
   logLevel: 'info',
-  define: {'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production')},
+  define: { 'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production') },
   plugins: [
     generateEsmPlugin(),
     importGlobPlugin(),
@@ -38,13 +38,13 @@ const buildOptions = {
       assets: {
         from: ['./node_modules/@datadog/pprof/prebuilds/**/*'],
         to: ['./prebuilds'],
-      }
+      },
     }),
     copy({
       assets: {
         from: ['./node_modules/source-map/lib/mappings.wasm'],
         to: ['.'],
-      }
+      },
     }),
   ],
   entryPoints,

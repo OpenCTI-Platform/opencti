@@ -3,7 +3,18 @@ import { logApp } from '../../../src/config/conf';
 import { isEngineAlive } from '../../../src/database/engine';
 import { isStorageAlive } from '../../../src/database/raw-file-storage';
 import { rabbitMQIsAlive } from '../../../src/database/rabbitmq';
-import { adoptSharedUsageMetrics, buildHealthFailures, type DependencyStatus, getPlatformHealthStatus, getPlatformUsageMetrics, type HealthDependency, parseCachedUsageMetrics, refreshDependencyStatus, startPlatformHealthMonitor, stopPlatformHealthMonitor } from '../../../src/telemetry/platformHealthMetrics';
+import {
+  adoptSharedUsageMetrics,
+  buildHealthFailures,
+  type DependencyStatus,
+  getPlatformHealthStatus,
+  getPlatformUsageMetrics,
+  type HealthDependency,
+  parseCachedUsageMetrics,
+  refreshDependencyStatus,
+  startPlatformHealthMonitor,
+  stopPlatformHealthMonitor,
+} from '../../../src/telemetry/platformHealthMetrics';
 import { redisGetPlatformUsageMetrics, redisIsAlive } from '../../../src/database/redis';
 
 vi.mock('../../../src/database/redis', () => ({

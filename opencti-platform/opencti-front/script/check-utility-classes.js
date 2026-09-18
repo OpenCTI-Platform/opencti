@@ -32,7 +32,9 @@ function stylesheets() {
     'packages', 'filigran-design-system', 'dist', 'index.css',
   );
   const flat = path.join(ROOT, 'node_modules', '@filigran', 'design-system', 'dist', 'index.css');
-  for (const p of [lib, flat]) if (fs.existsSync(p)) { out.push(p); break; }
+  for (const p of [lib, flat]) if (fs.existsSync(p)) {
+    out.push(p); break;
+  }
   const staticDir = path.join(SRC, 'static', 'css');
   if (fs.existsSync(staticDir)) {
     for (const f of fs.readdirSync(staticDir)) if (f.endsWith('.css')) out.push(path.join(staticDir, f));
@@ -62,8 +64,9 @@ const UTILITY = /^-?(?:[a-z]+:)*(?:m|p)[tblrxy]?-\d+(?:\.\d+)?$/;
 function sourceFiles(dir, acc = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
-    if (e.isDirectory()) { if (!/__generated__|node_modules/.test(p)) sourceFiles(p, acc); }
-    else if (/\.(tsx|jsx)$/.test(p)) acc.push(p);
+    if (e.isDirectory()) {
+      if (!/__generated__|node_modules/.test(p)) sourceFiles(p, acc);
+    } else if (/\.(tsx|jsx)$/.test(p)) acc.push(p);
   }
   return acc;
 }
@@ -111,9 +114,9 @@ function main() {
   console.error('');
   for (const d of dead) console.error(`  ${d.file}:${d.line}  ${d.token}`);
   console.error(
-    '\nThese render nothing. Either the class belongs to the design system\'s published\n' +
-    'scale and the pin needs bumping, or it is outside that scale and the value has to\n' +
-    'be arbitrated with design — never hardcoded back into a style attribute.',
+    '\nThese render nothing. Either the class belongs to the design system\'s published\n'
+    + 'scale and the pin needs bumping, or it is outside that scale and the value has to\n'
+    + 'be arbitrated with design — never hardcoded back into a style attribute.',
   );
   process.exit(1);
 }

@@ -21,4 +21,4 @@ const stixCoreRelationshipFilterKeys: string[] = [
   'killChainPhases',
 ];
 
-export  default stixCoreRelationshipFilterKeys;
+export default stixCoreRelationshipFilterKeys;

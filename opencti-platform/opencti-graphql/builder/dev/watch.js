@@ -97,7 +97,9 @@ function startGraphQLSchemaWatch() {
     env: { ...process.env, NODE_ENV: 'development' },
   });
 
-  graphQLWatchProcess.on('exit', onFatalExit('GraphQL schema watcher', () => { graphQLWatchProcess = null; }));
+  graphQLWatchProcess.on('exit', onFatalExit('GraphQL schema watcher', () => {
+    graphQLWatchProcess = null;
+  }));
   graphQLWatchProcess.on('error', onProcessError('GraphQL schema watcher'));
 }
 
@@ -128,7 +130,9 @@ function startEsbuildWatch() {
   esbuildProcess.stdout.on('data', handleEsbuildOutput);
   esbuildProcess.stderr.on('data', (data) => process.stderr.write(data));
 
-  esbuildProcess.on('exit', onFatalExit('esbuild watcher', () => { esbuildProcess = null; }));
+  esbuildProcess.on('exit', onFatalExit('esbuild watcher', () => {
+    esbuildProcess = null;
+  }));
   esbuildProcess.on('error', onProcessError('esbuild watcher'));
 }
 

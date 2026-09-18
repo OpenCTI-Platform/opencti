@@ -157,7 +157,7 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      'import-newlines/enforce': ['error', { 'items': 20, 'max-len': 180 }],
+      'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
       'import/no-extraneous-dependencies': [
         'error',
         {

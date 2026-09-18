@@ -4,17 +4,17 @@ import { FunctionalError } from '../../../src/config/errors';
 
 describe('connector stream test', () => {
   it.each([
-    {uri: 'https://myremoteocti.com/path', isHttps: true},
-    {uri: 'https://myremoteocti.com/path?magic=number', isHttps: true},
-    {uri: 'https://myremoteocti.com/path#magic', isHttps: true},
-    {uri: 'https://myremoteocti.com/path/', isHttps: true},
-    {uri: 'https://myremoteocti.com/path', isHttps: true},
-    {uri: 'http://myremoteocti.com/path', isHttps: false},
-    {uri: 'http://myremoteocti.com/path?magic=number', isHttps: false},
-    {uri: 'http://myremoteocti.com/path/', isHttps: false},
-  ])('should use only base URL to query remote stream', (inputUri: {uri: string, isHttps: boolean }) => {
+    { uri: 'https://myremoteocti.com/path', isHttps: true },
+    { uri: 'https://myremoteocti.com/path?magic=number', isHttps: true },
+    { uri: 'https://myremoteocti.com/path#magic', isHttps: true },
+    { uri: 'https://myremoteocti.com/path/', isHttps: true },
+    { uri: 'https://myremoteocti.com/path', isHttps: true },
+    { uri: 'http://myremoteocti.com/path', isHttps: false },
+    { uri: 'http://myremoteocti.com/path?magic=number', isHttps: false },
+    { uri: 'http://myremoteocti.com/path/', isHttps: false },
+  ])('should use only base URL to query remote stream', (inputUri: { uri: string; isHttps: boolean }) => {
     const result = computeStreamRemoteUrl(inputUri.uri);
-    expect(result).toBe(`http${inputUri.isHttps ?'s':''}://myremoteocti.com/path/graphql`);
+    expect(result).toBe(`http${inputUri.isHttps ? 's' : ''}://myremoteocti.com/path/graphql`);
   });
 
   it('should localhost be ok', async () => {

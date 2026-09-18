@@ -26,5 +26,5 @@ export const repKillChainPhase: CsvMapperRepresentation = {
         column_name: 'M',
       },
     },
-  ]
+  ],
 };

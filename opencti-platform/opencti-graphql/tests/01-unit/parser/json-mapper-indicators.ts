@@ -1,7 +1,7 @@
 import { type JsonMapperParsed, JsonMapperRepresentationType } from '../../../src/modules/internal/jsonMapper/jsonMapper-types';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
-import {ENTITY_TYPE_CONTAINER_REPORT} from "../../../src/schema/stixDomainObject";
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 export const indicators_mapper: Partial<JsonMapperParsed> = {
   type: 'jsonMapper',

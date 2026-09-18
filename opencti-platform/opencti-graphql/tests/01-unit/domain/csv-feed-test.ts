@@ -37,7 +37,7 @@ describe('csvFeedGetCsvMapper', () => {
       name: 'Test',
       representations: [],
       separator: ',',
-      skipLineChar: ''
+      skipLineChar: '',
     });
   });
 });

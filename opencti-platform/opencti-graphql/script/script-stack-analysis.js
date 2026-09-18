@@ -34,7 +34,7 @@ if (isExecTypeBack) {
   const files = await readdir(FRONT_ASSETS_DIR);
   const mapFiles = files.filter((f) => f.endsWith('.js.map'));
   sourceMapContents = await Promise.all(
-    mapFiles.map(async (f) => JSON.parse(await readFile(join(FRONT_ASSETS_DIR, f), 'utf8')))
+    mapFiles.map(async (f) => JSON.parse(await readFile(join(FRONT_ASSETS_DIR, f), 'utf8'))),
   );
 }
 
