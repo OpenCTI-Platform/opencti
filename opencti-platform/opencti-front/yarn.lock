@@ -3820,57 +3820,57 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:6.10.0":
-  version: 6.10.0
-  resolution: "@rjsf/core@npm:6.10.0"
+"@rjsf/core@npm:6.10.1":
+  version: 6.10.1
+  resolution: "@rjsf/core@npm:6.10.1"
   dependencies:
     markdown-to-jsx: "npm:^9.8.2"
   peerDependencies:
-    "@rjsf/utils": ^6.10.0
+    "@rjsf/utils": ^6.10.1
     react: ">=18"
-  checksum: 10c0/8672d201727c3b7d831358c68739262e5aaa7385e2b51c5bcc784f4e3571d2f10c0579026110342d341b7033f97d66f875450902c4cbb1eecf4b0de72f37512b
+  checksum: 10c0/b9b82d9b031541959f727ef145bb0f3e445baf44f026ec626fda531d2f1202e860bd3fbc916ee13d177fdbe101ff76f526bf439f19e4aea635d7fc60e89238b6
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:6.10.0":
-  version: 6.10.0
-  resolution: "@rjsf/mui@npm:6.10.0"
+"@rjsf/mui@npm:6.10.1":
+  version: 6.10.1
+  resolution: "@rjsf/mui@npm:6.10.1"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
     "@mui/icons-material": ^7.0.0 || ^9.0.0
     "@mui/material": ^7.0.0 || ^9.0.0
-    "@rjsf/core": ^6.10.0
-    "@rjsf/utils": ^6.10.0
+    "@rjsf/core": ^6.10.1
+    "@rjsf/utils": ^6.10.1
     react: ">=18"
-  checksum: 10c0/dbc71d28b2333d35fcd49647bbb441f1a5e02d942435f3ccb79b1e98222696df229a81b2e04b9ec97969ce380d3fd173cb1235227471992546b734a2472b652f
+  checksum: 10c0/67b07308305067666fd2623162c723c33ec395a1d8d11006afcd95bbe15e0dce19c7a009dc3a5067947fa441ee4112d8adf90b33b975cef06fbee36553488aca
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:6.10.0":
-  version: 6.10.0
-  resolution: "@rjsf/utils@npm:6.10.0"
+"@rjsf/utils@npm:6.10.1":
+  version: 6.10.1
+  resolution: "@rjsf/utils@npm:6.10.1"
   dependencies:
-    "@x0k/json-schema-merge": "npm:^1.0.3"
+    "@x0k/json-schema-merge": "npm:^1.0.6"
     fast-equals: "npm:^6.0.0"
     fast-uri: "npm:^4.1.4"
     jsonpointer: "npm:^5.0.1"
     react-is: "npm:^18.3.1"
   peerDependencies:
     react: ">=18"
-  checksum: 10c0/4126bd78868afb9a99cdd774b800c0dcdccc810ecc67c56013aae9b421fd210311a8571dc7452d750ef102186303fbb43a227448e5338befdd3a7f8088c5ceee
+  checksum: 10c0/e176dd3abd370eff8b7ee37abad828734d6563d7d4367a25c1f5b5856be5f819ae1d0c1af480e388aec92c264a337808fcb9b1bc6a2fd0a7b0b96a5578d2887d
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv8@npm:6.10.0":
-  version: 6.10.0
-  resolution: "@rjsf/validator-ajv8@npm:6.10.0"
+"@rjsf/validator-ajv8@npm:6.10.1":
+  version: 6.10.1
+  resolution: "@rjsf/validator-ajv8@npm:6.10.1"
   dependencies:
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
   peerDependencies:
-    "@rjsf/utils": ^6.10.0
-  checksum: 10c0/696bb2ea068e51528f2bea351d0bff66f517f141026b460212acd17c966a47b303cde142306708f108ea093a7cce2e180011272fe6fdb17f8da9f9f8ecffe8b3
+    "@rjsf/utils": ^6.10.1
+  checksum: 10c0/3e6eb8b9a23317196001a3783f01986464a788f4eb94dd432db3074535c344d71b49d6fc4086ad655d8b1293fb085608f8472d5df86c671d9a3f166e076d4ea6
   languageName: node
   linkType: hard
 
@@ -5338,12 +5338,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@x0k/json-schema-merge@npm:^1.0.3":
-  version: 1.0.5
-  resolution: "@x0k/json-schema-merge@npm:1.0.5"
+"@x0k/json-schema-merge@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "@x0k/json-schema-merge@npm:1.0.6"
   dependencies:
     "@types/json-schema": "npm:^7.0.15"
-  checksum: 10c0/438ff36ef0ee9c767dffef1736e710de686e0ac94e984d3747b25f183bfaefe03d26db5852b2c5dfffe2b42c901af11d036e9d28875366bea5a6c9118c9d9f39
+  checksum: 10c0/960814abb3e763e4b37c8592eb61a6589eff9961727cf14292c880853ae7faa1d8f639269970fdefb98f480d82bdf26c9a74da97a22683a0022a7d50022ebd2d
   languageName: node
   linkType: hard
 
@@ -11973,10 +11973,10 @@ __metadata:
     "@mui/styles": "npm:6.5.0"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.63.0"
-    "@rjsf/core": "npm:6.10.0"
-    "@rjsf/mui": "npm:6.10.0"
-    "@rjsf/utils": "npm:6.10.0"
-    "@rjsf/validator-ajv8": "npm:6.10.0"
+    "@rjsf/core": "npm:6.10.1"
+    "@rjsf/mui": "npm:6.10.1"
+    "@rjsf/utils": "npm:6.10.1"
+    "@rjsf/validator-ajv8": "npm:6.10.1"
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@testing-library/dom": "npm:10.4.2"
     "@testing-library/jest-dom": "npm:7.0.1"
