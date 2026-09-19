@@ -1,6 +1,4 @@
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import type { CsvMapperOperator } from '../../../generated/graphql';
 
 export const ENTITY_TYPE_CSV_MAPPER = 'CsvMapper';
@@ -88,16 +86,6 @@ export interface BasicStoreEntityCsvMapper extends BasicStoreEntity {
 }
 
 export interface StoreEntityCsvMapper extends BasicStoreEntityCsvMapper, StoreEntity {}
-
-export interface StixCsvMapper extends StixObject {
-  name: string;
-  has_header: boolean;
-  separator: string;
-  representations: string;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
-}
 
 export interface CsvMapperConfiguration {
   name: string;

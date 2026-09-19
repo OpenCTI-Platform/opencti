@@ -1,11 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_FINTEL_TEMPLATE, type StixFintelTemplate, type StoreEntityFintelTemplate } from './fintelTemplate-types';
-import { convertFintelTemplateToStix } from './fintelTemplate-converter';
+import type { InternalObjectModuleDefinition } from '../../schema/module';
+import { registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
 
-export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTemplate, StixFintelTemplate> = {
+export const FINTEL_TEMPLATE_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'fintelTemplates',
     name: ENTITY_TYPE_FINTEL_TEMPLATE,
@@ -30,10 +29,6 @@ export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTempl
     { name: 'fintel_template_widgets', label: 'Fintel template widgets', type: 'object', format: 'flat', mandatoryType: 'external', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixFintelTemplate) => {
-    return stix.name;
-  },
-  converter_2_1: convertFintelTemplateToStix,
 };
 
-registerDefinition(FINTEL_TEMPLATE_DEFINITION);
+registerInternalObjectDefinition(FINTEL_TEMPLATE_DEFINITION);

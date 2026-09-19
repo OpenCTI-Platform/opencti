@@ -1,10 +1,8 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import type { StixManagerConfiguration, StoreEntityManagerConfiguration } from './managerConfiguration-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import convertManagerConfigurationToStix from './managerConfiguration-converter';
 
-const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfiguration, StixManagerConfiguration> = {
+const MANAGER_CONFIGURATION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'managerConfigurations',
     name: ENTITY_TYPE_MANAGER_CONFIGURATION,
@@ -29,10 +27,6 @@ const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfi
     { name: 'last_run_end_date', label: 'Last run end date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
-  representative: (stix: StixManagerConfiguration) => {
-    return stix.manager_id;
-  },
-  converter_2_1: convertManagerConfigurationToStix,
 };
 
-registerDefinition(MANAGER_CONFIGURATION_DEFINITION);
+registerInternalObjectDefinition(MANAGER_CONFIGURATION_DEFINITION);

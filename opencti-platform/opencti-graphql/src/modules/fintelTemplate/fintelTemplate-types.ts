@@ -1,6 +1,4 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import type { FintelTemplateWidget } from '../../generated/graphql';
 
 export const ENTITY_TYPE_FINTEL_TEMPLATE = 'FintelTemplate';
@@ -43,23 +41,5 @@ export interface StoreEntityFintelTemplate extends StoreEntity {
   default?: boolean;
   include_cover_page_by_default?: boolean;
   include_back_page_by_default?: boolean;
-}
-// endregion
-
-// region Stix type
-export interface StixFintelTemplate extends StixObject {
-  name: string;
-  description: string;
-  settings_types: [string];
-  instance_filters: string;
-  template_content: string;
-  fintel_template_widgets: [FintelTemplateWidget];
-  start_date: string;
-  default: boolean;
-  include_cover_page_by_default: boolean;
-  include_back_page_by_default: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 // endregion

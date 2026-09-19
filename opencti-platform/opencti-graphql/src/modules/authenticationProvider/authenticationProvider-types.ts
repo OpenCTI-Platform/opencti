@@ -1,4 +1,3 @@
-import type { StixObject } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import { AuthenticationProviderType, ExtraConfEntryType, type LdapConfiguration, type OidcConfiguration, type SamlConfiguration } from '../../generated/graphql';
 
@@ -156,12 +155,4 @@ export interface StoreEntityAuthenticationProvider<T = OidcConfiguration | SamlC
   identifier_override?: string;
   type: AuthenticationProviderType;
   configuration: T;
-}
-
-export interface StixAuthenticationProvider extends StixObject {
-  name: string;
-  description: string;
-  enabled: boolean;
-  button_label_override?: string;
-  identifier_override?: string;
 }
