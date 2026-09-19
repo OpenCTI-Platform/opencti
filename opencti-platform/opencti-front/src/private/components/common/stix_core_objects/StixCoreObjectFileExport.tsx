@@ -16,7 +16,6 @@ import {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from '@components/common/stix_core_objects/StixCoreObjectContentFiles';
-import axios from 'axios';
 import StixCoreObjectAskAI from '@components/common/stix_core_objects/StixCoreObjectAskAI';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -395,8 +394,9 @@ const StixCoreObjectFileExportComponent = ({
           fileData = stixCoreObject?.content ?? '';
         } else {
           const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(fileId)}`;
-          const fileResponse = await axios.get(url);
-          fileData = fileResponse.data;
+          const fileResponse = await fetch(url);
+          if (!fileResponse.ok) throw new Error(`Failed to fetch file content: ${fileResponse.status}`);
+          fileData = await fileResponse.text();
         }
         const name = (fileId.split('/').pop() ?? '').split('.')[0];
         const fileName = `${values.exportFileName}.pdf`;
