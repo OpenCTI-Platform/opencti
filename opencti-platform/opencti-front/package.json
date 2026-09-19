@@ -63,7 +63,6 @@
     "@types/geojson": "7946.0.16",
     "analytics": "0.8.19",
     "apexcharts": "4.7.0",
-    "axios": "1.20.0",
     "classnames": "2.5.1",
     "convert": "8.0.2",
     "d3-hierarchy": "3.1.2",

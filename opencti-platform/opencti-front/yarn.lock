@@ -12000,7 +12000,6 @@ __metadata:
     "@vitest/coverage-v8": "npm:5.0.0"
     analytics: "npm:0.8.19"
     apexcharts: "npm:4.7.0"
-    axios: "npm:1.20.0"
     babel-plugin-relay: "npm:21.0.1"
     classnames: "npm:2.5.1"
     convert: "npm:8.0.2"
