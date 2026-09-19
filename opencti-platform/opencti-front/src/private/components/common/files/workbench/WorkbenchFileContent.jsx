@@ -460,7 +460,9 @@ const WorkbenchFileContentComponent = ({
     }
   };
 
-  useEffect(() => loadFileContent(), []);
+  useEffect(() => {
+    loadFileContent();
+  }, []);
   useEffect(
     () => saveFile(),
     [
