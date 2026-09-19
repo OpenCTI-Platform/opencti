@@ -47,7 +47,6 @@
     "e2e": {
       "executor": "nx:run-commands",
       "dependsOn": [
-        { "projects": ["opencti-graphql"], "target": "wait-api" },
         { "projects": ["opencti-worker"], "target": "dev" }
       ],
       "options": {
@@ -67,6 +66,28 @@
       },
       "metadata": {
         "description": "Run the OpenCTI front in development mode"
+      }
+    },
+    "dev:watch": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn dev"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI front in development mode"
+      }
+    },
+    "dev:watch-with-graphql": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn dev:watch-with-graphql"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI front in development mode with GraphQL watch"
       }
     },
     "graphql": {

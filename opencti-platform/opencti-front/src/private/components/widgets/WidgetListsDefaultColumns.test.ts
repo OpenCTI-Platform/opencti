@@ -7,13 +7,6 @@ vi.mock('../../../utils/hooks/useAttributes', () => ({
   }),
 }));
 
-// TODO(DRAFT_WORKFLOW): remove this mock when the DRAFT_WORKFLOW flag is removed (see WidgetListsDefaultColumns.tsx).
-vi.mock('../../../utils/hooks/useHelper', () => ({
-  default: () => ({
-    isFeatureEnable: () => true,
-  }),
-}));
-
 import { getWidgetColumns, getDefaultWidgetColumns, getCustomAttributesColumns, getDefaultCustomAttributesColumns } from './WidgetListsDefaultColumns';
 
 describe('WidgetListsDefaultColumns', () => {
@@ -49,6 +42,19 @@ describe('WidgetListsDefaultColumns', () => {
       const attributes = columns.map((c) => c.attribute);
       expect(attributes).not.toContain('draft_status');
       expect(attributes).not.toContain('workflowInstance');
+    });
+
+    describe('getWidgetColumns with no entity type', () => {
+      it('returns generic Stix-Core-Object columns by default', () => {
+        const columns = getWidgetColumns('entities', undefined);
+        const attributes = columns.map((c) => c.attribute);
+        expect(attributes).toContain('entity_type');
+        expect(attributes).toContain('name');
+        expect(attributes).toContain('created_at');
+        expect(attributes).toContain('objectLabel');
+        expect(attributes).not.toContain('report_types');
+        expect(attributes).not.toContain('published');
+      });
     });
 
     it('DOES include the legacy Report columns already present in availableWidgetColumns', () => {

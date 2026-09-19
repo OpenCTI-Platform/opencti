@@ -10,7 +10,7 @@ import {
   generateNotificationMessageForInstance,
   generateNotificationMessageForInstanceWithRefs,
   generateNotificationMessageForInstanceWithRefsUpdate,
-  isRelationFromOrToMatchFilters
+  isRelationFromOrToMatchFilters,
 } from '../../../src/manager/notificationManager';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
@@ -197,13 +197,13 @@ describe('Notification manager behaviors test', async () => {
   // -- markings --
   const greenMarkingQueryResult = await queryAsAdmin({
     query: MARKING_READ_QUERY,
-    variables: { id: MARKING_TLP_GREEN }
+    variables: { id: MARKING_TLP_GREEN },
   });
   expect(greenMarkingQueryResult).not.toBeNull();
   const [greenMarkingInternalId, greenMarkingStandardId] = [greenMarkingQueryResult?.data?.markingDefinition.id, greenMarkingQueryResult?.data?.markingDefinition.standard_id];
   const redMarkingQueryResult = await queryAsAdmin({
     query: MARKING_READ_QUERY,
-    variables: { id: MARKING_TLP_RED }
+    variables: { id: MARKING_TLP_RED },
   });
   expect(redMarkingQueryResult).not.toBeNull();
   const redMarkingInternalId = redMarkingQueryResult?.data?.markingDefinition.id;
@@ -229,7 +229,7 @@ describe('Notification manager behaviors test', async () => {
         name: 'Group with green marking allowed',
         description: 'Only green marking are allowed in this group',
         group_confidence_level: { max_confidence: 100, overrides: [] },
-      }
+      },
     },
   });
   const greenGroupId = greenGroupAddResult.data.groupAdd.id;
@@ -372,9 +372,9 @@ describe('Notification manager behaviors test', async () => {
     extensions: {
       [STIX_EXT_OCTI]: {
         id: reportId,
-        type: ENTITY_TYPE_CONTAINER_REPORT
-      }
-    }
+        type: ENTITY_TYPE_CONTAINER_REPORT,
+      },
+    },
   };
   const stixRedReportWithRefs = {
     name: 'redReport_name',
@@ -386,8 +386,8 @@ describe('Notification manager behaviors test', async () => {
       [STIX_EXT_OCTI]: {
         id: redReportId,
         type: ENTITY_TYPE_CONTAINER_REPORT,
-      }
-    }
+      },
+    },
   };
   const stixGreenOrganization = {
     name: 'greenOrganization_name',
@@ -395,9 +395,9 @@ describe('Notification manager behaviors test', async () => {
     type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     extensions: {
       [STIX_EXT_OCTI]: {
-        type: ENTITY_TYPE_IDENTITY_ORGANIZATION
-      }
-    }
+        type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      },
+    },
   };
   const stixRedOrganization = {
     name: 'redOrganization_name',
@@ -405,9 +405,9 @@ describe('Notification manager behaviors test', async () => {
     type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     extensions: {
       [STIX_EXT_OCTI]: {
-        type: ENTITY_TYPE_IDENTITY_ORGANIZATION
-      }
-    }
+        type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      },
+    },
   };
   const stixMalware = {
     name: 'malware_name',
@@ -415,9 +415,9 @@ describe('Notification manager behaviors test', async () => {
     type: ENTITY_TYPE_MALWARE,
     extensions: {
       [STIX_EXT_OCTI]: {
-        type: ENTITY_TYPE_MALWARE
-      }
-    }
+        type: ENTITY_TYPE_MALWARE,
+      },
+    },
   };
   const stixSightingRelationship = {
     name: 'sighting_name',
@@ -442,8 +442,8 @@ describe('Notification manager behaviors test', async () => {
         where_sighted_values: ['report_entity'],
         where_sighted_refs: [redReportId],
         negative: false,
-      }
-    }
+      },
+    },
   };
   const stixCoreRelationship = {
     name: 'delivers relationship',
@@ -468,8 +468,8 @@ describe('Notification manager behaviors test', async () => {
         target_type: ENTITY_TYPE_MALWARE,
         target_value: ['malware_entity'],
         target_ref: malwareId,
-      }
-    }
+      },
+    },
   };
 
   it('Should generate a notification message for an instance with refs', async () => {
@@ -486,24 +486,24 @@ describe('Notification manager behaviors test', async () => {
 
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{
       instance: stixGreenOrganization,
-      action: 'added in'
+      action: 'added in',
     }, { instance: stixRedOrganization, action: 'added in' }]);
     expect(result).toEqual('[organization] greenOrganization_name,[organization] redOrganization_name added in [report] report_name');
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }]);
     expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name');
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{
       instance: stixGreenOrganization,
-      action: 'added in'
+      action: 'added in',
     }, { instance: stixMalware, action: 'removed from' }]);
     expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name,[malware] malware_name removed from [report] report_name');
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixCoreRelationship, [{
       instance: stixGreenOrganization,
-      action: 'added in'
+      action: 'added in',
     }, { instance: stixMalware, action: 'added in' }]);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name added in [relationship] attack-pattern_entity delivers malware_entity');
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, greenUser, stixCoreRelationship, [{
       instance: stixGreenOrganization,
-      action: 'removed from'
+      action: 'removed from',
     }, { instance: stixMalware, action: 'removed from' }]);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] Restricted delivers malware_entity');
   });
@@ -639,7 +639,7 @@ describe('Notification manager behaviors test', async () => {
       event: EVENT_TYPE_DELETE,
       data: {
         data: stixRedReportWithRefs,
-      }
+      },
     };
     const streamEventUpdateReport = { // update a report
       event: EVENT_TYPE_UPDATE,
@@ -654,9 +654,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/labels',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventUpdateReportContainingMalware = { // update a report containing a malware
       event: EVENT_TYPE_UPDATE,
@@ -674,21 +674,21 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/labels',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventCreateRelationship = { // create a relationship from a red attack pattern to a green malware
       event: EVENT_TYPE_CREATE,
       data: {
         data: stixCoreRelationship,
-      }
+      },
     };
     const streamEventCreateSighting = { // create a sighting from a green malware to a red report
       event: EVENT_TYPE_CREATE,
       data: {
         data: stixSightingRelationship,
-      }
+      },
     };
     const streamEventUpdateRelationship = { // update a relationship from red attack pattern to green malware
       event: EVENT_TYPE_UPDATE,
@@ -703,9 +703,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/labels',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddMalwareInRedReport = { // add a malware in a red report
       event: EVENT_TYPE_UPDATE,
@@ -723,9 +723,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/object_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventRemoveMalwareInRedReport = { // remove a malware in a red report
       event: EVENT_TYPE_UPDATE,
@@ -742,9 +742,9 @@ describe('Notification manager behaviors test', async () => {
             op: 'add',
             path: '/object_refs',
             value: [malwareStandardId],
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventRemoveMalwareInReportWithRefs = { // remove a malware in a report containing a green organization 0
       event: EVENT_TYPE_UPDATE,
@@ -762,9 +762,9 @@ describe('Notification manager behaviors test', async () => {
             op: 'add',
             path: '/object_refs',
             value: [malwareStandardId],
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddRedAttackPatternAndMalwareInReport = { // add a red attack pattern and a malware in a report
       event: EVENT_TYPE_UPDATE,
@@ -782,9 +782,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/object_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddMalwareInReportWithOtherRefs = { // add a malware in a report created by a red organization and containing an attack pattern
       event: EVENT_TYPE_UPDATE,
@@ -792,7 +792,7 @@ describe('Notification manager behaviors test', async () => {
         data: {
           ...stixReport,
           object_refs: [redAttackPatternStandardId, malwareStandardId],
-          created_by_ref: [redOrganizationStandardId]
+          created_by_ref: [redOrganizationStandardId],
         },
         context: {
           patch: [{
@@ -803,16 +803,16 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/object_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddRedOrganizationInAuthorOfRelationship = { // add a red organization as Author of a relationship
       event: EVENT_TYPE_UPDATE,
       data: {
         data: {
           ...stixCoreRelationship,
-          created_by_ref: [redOrganizationStandardId]
+          created_by_ref: [redOrganizationStandardId],
         },
         context: {
           patch: [{
@@ -823,16 +823,16 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/created_by_ref',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddGreenOrganizationInAuthorOfSighting = { // add a green organization as Author of a sighting
       event: EVENT_TYPE_UPDATE,
       data: {
         data: {
           ...stixSightingRelationship,
-          created_by_ref: [greenOrganizationStandardId]
+          created_by_ref: [greenOrganizationStandardId],
         },
         context: {
           patch: [{
@@ -843,9 +843,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/created_by_ref',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventDeleteReportWithMultipleRefs = { // delete a report containing a malware and a red attack pattern, and created by a red organization
       event: EVENT_TYPE_DELETE,
@@ -855,7 +855,7 @@ describe('Notification manager behaviors test', async () => {
           created_by_ref: [redOrganizationStandardId],
           object_refs: [malwareStandardId, redAttackPatternStandardId],
         },
-      }
+      },
     };
     const streamEventCreateReportCreatedByRedOrganization = { // create a report with a red organization in its creators
       event: EVENT_TYPE_CREATE,
@@ -864,7 +864,7 @@ describe('Notification manager behaviors test', async () => {
           ...stixReport,
           created_by_ref: [redOrganizationStandardId],
         },
-      }
+      },
     };
     const streamEventCreateReportCreatedByGreenOrganization = { // create a report with a green organization in its creators
       event: EVENT_TYPE_CREATE,
@@ -873,7 +873,7 @@ describe('Notification manager behaviors test', async () => {
           ...stixReport,
           created_by_ref: [greenOrganizationStandardId],
         },
-      }
+      },
     };
     const streamEventShareMalwareWithRedOrganization = { // share a malware with a red organization
       event: EVENT_TYPE_UPDATE,
@@ -884,8 +884,8 @@ describe('Notification manager behaviors test', async () => {
             [STIX_EXT_OCTI]: {
               type: ENTITY_TYPE_MALWARE,
               granted_refs: [redOrganizationStandardId],
-            }
-          }
+            },
+          },
         },
         context: {
           patch: [{
@@ -896,9 +896,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/granted_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventShareMalwareWithGreenOrganization = { // share a malware with a green organization
       event: EVENT_TYPE_UPDATE,
@@ -909,8 +909,8 @@ describe('Notification manager behaviors test', async () => {
             [STIX_EXT_OCTI]: {
               type: ENTITY_TYPE_MALWARE,
               granted_refs: [greenOrganizationStandardId],
-            }
-          }
+            },
+          },
         },
         context: {
           patch: [{
@@ -921,9 +921,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/granted_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventShareMalwareWithUserOrganization = { // share a malware with the user organization
       event: EVENT_TYPE_UPDATE,
@@ -934,8 +934,8 @@ describe('Notification manager behaviors test', async () => {
             [STIX_EXT_OCTI]: {
               type: ENTITY_TYPE_MALWARE,
               granted_refs: [userOrganizationStandardId],
-            }
-          }
+            },
+          },
         },
         context: {
           patch: [{
@@ -946,9 +946,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/granted_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddRedMarkingToRelationship = { // add the red marking to a relationship
       event: EVENT_TYPE_UPDATE,
@@ -966,9 +966,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/object_marking_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventRemoveRedMarkingFromReport = { // remove the red marking from a report
       event: EVENT_TYPE_UPDATE,
@@ -985,9 +985,9 @@ describe('Notification manager behaviors test', async () => {
             op: 'add',
             path: '/object_marking_refs',
             value: [MARKING_TLP_RED],
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddRedMarkingToReportContainingMalware = { // add the red marking to a report that contains a malware
       event: EVENT_TYPE_UPDATE,
@@ -1006,9 +1006,9 @@ describe('Notification manager behaviors test', async () => {
           reverse_patch: [{
             op: 'remove',
             path: '/object_marking_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     const streamEventAddRedMarkingAndModifyRefsInReport = { // modify 4 refs in a report :
       // add red in markings, remove green organization in author, add a malware and a red attack-pattern in object_refs
@@ -1033,7 +1033,7 @@ describe('Notification manager behaviors test', async () => {
             op: 'add',
             path: '/object_refs',
             value: [malwareStandardId, redAttackPatternStandardId],
-          }
+          },
           ],
           reverse_patch: [{
             op: 'remove',
@@ -1047,10 +1047,10 @@ describe('Notification manager behaviors test', async () => {
           {
             op: 'remove',
             path: '/object_refs',
-          }
-          ]
-        }
-      }
+          },
+          ],
+        },
+      },
     };
     const streamEventAddRedMarkingAndAuthorInRelationship = { // add 2 refs in a relationship : red in markings, green organization in author
       event: EVENT_TYPE_UPDATE,
@@ -1078,9 +1078,9 @@ describe('Notification manager behaviors test', async () => {
           {
             op: 'remove',
             path: '/granted_refs',
-          }]
-        }
-      }
+          }],
+        },
+      },
     };
     // -- frontend filters
     const createInstanceFilters = (instanceIds) => {
@@ -1200,7 +1200,7 @@ describe('Notification manager behaviors test', async () => {
     // -- create the triggers
     const triggersToCreate = [triggerReportUpdate, triggerReportDelete, triggerReportUpdate, triggerRedReportAllEvents, triggerMalwareAllEvents, triggerRedOrganizationAllEvents,
       triggerOrganizationsAllEvents, triggerAttackPatternAllEvents, triggerMalwareAndRedAttackPatternAllEvents,
-      triggerMalwareAndRedOrganizationAllEvents, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents
+      triggerMalwareAndRedOrganizationAllEvents, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents,
     ];
     const triggerAddQueryPromise = triggersToCreate.map((triggerInput) => queryAsAdmin({
       query: CREATE_LIVE_TRIGGER_QUERY,

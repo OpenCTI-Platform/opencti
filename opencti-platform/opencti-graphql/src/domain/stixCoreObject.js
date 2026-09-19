@@ -78,7 +78,7 @@ import { getEntitySettingFromCache } from '../modules/entitySetting/entitySettin
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
-import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
@@ -490,11 +490,7 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
-  const { objectId, types, filters = {
-    mode: 'and',
-    filters: [],
-    filterGroups: [],
-  } } = args;
+  const { objectId, types, filters = emptyFilterGroup } = args;
   let finalFilters = filters;
   const objectIds = Array.isArray(objectId) ? objectId : [objectId];
   // Here, we need to force regardingOf ID = objectID
@@ -842,7 +838,15 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
-  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false, embedded = false } = args;
+  const {
+    noTriggerImport,
+    version: fileVersion,
+    fileMarkings: file_markings,
+    importContextEntities,
+    fromTemplate = false,
+    embedded = false,
+    fintelTemplateId,
+  } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
@@ -870,6 +874,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const filePath = `${prefix}/${previous.entity_type}/${internalId}`;
     // 01. Upload the file
     const meta = { version: fileVersion?.toISOString() };
+    if (fromTemplate && fintelTemplateId) {
+      meta.fintel_template_id = fintelTemplateId;
+    }
     if (isAutoExternal) {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });

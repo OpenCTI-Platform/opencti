@@ -20,6 +20,25 @@ When clicking on the Observables tab at the top left, you see the list of all th
 
 ![Observables list](assets/observables-list-view.png)
 
+### Creating multiple observables
+
+When creating Observables manually, some observable types support multiple
+creation by pasting one value per line. This is available when OpenCTI can map
+each line to a single identifying field for the selected observable type, such
+as a domain name, an IP address, a URL, or a file hash.
+
+Some observable types cannot be created this way because they are identified
+by several fields rather than one pasted value. For example, `Software` can
+require information such as a name, vendor, version, Common Platform
+Enumeration (CPE), or Software Identification (SWID), so a single line of text
+cannot reliably describe one complete `Software` observable.
+
+For these observable types, use the standard creation form for individual
+observables. If you need to create many structured observables at once, use a
+CSV mapper and import a CSV file with columns mapped to the required fields.
+For more information, see [CSV Mappers](../administration/csv-mappers.md) and
+[Import files](import-files.md).
+
 ### Visualizing Knowledge associated with an Observable
 
 When clicking on an `Observable` in the list, you land on its Overview tab. For an Observable, the following tabs are accessible:

@@ -12,16 +12,19 @@ import Typography from '@mui/material/Typography';
 import { JsonForms } from '@jsonforms/react';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { Validator } from '@cfworker/json-schema';
-import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
+import { IngestionConnector, IngestionTypedProperty } from '@components/integrations/catalog/types';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
+import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
+import JsonFormInputRenderer, { jsonFormInputTester } from '@components/integrations/catalog/utils/JsonFormInputRenderer';
+import JsonFormEnumRenderer, { jsonFormEnumTester } from '@components/integrations/catalog/utils/JsonFormEnumRenderer';
+import JsonFormBooleanRenderer, { jsonFormBooleanTester } from '@components/integrations/catalog/utils/JsonFormBooleanRenderer';
 import reconcileManagedConnectorContractDataWithSchema, { ManagerContractProperty } from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import { augmentPasswordDescriptions, buildContractPropertyGroups } from '@components/data/connectors/utils/buildContractPropertyGroups';
-import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
+import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
-import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/data/IngestionCatalog/utils/JsonFormDeprecatedRenderer';
-import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/data/IngestionCatalog/utils/JsonFormPasswordRenderer';
+import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/integrations/catalog/utils/JsonFormDeprecatedRenderer';
+import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -29,8 +32,8 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from '../IngestionCatalog/utils/JsonFormVerticalLayout';
-import { buildOptionalPropertiesWithDeprecated, computeDeprecatedEditionVisibility, filterValuesForEditionPayload } from '../IngestionCatalog/utils/deprecatedFields';
+import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from '@components/integrations/catalog/utils/JsonFormVerticalLayout';
+import { buildOptionalPropertiesWithDeprecated, computeDeprecatedEditionVisibility, filterValuesForEditionPayload } from '@components/integrations/catalog/utils/deprecatedFields';
 
 const updateManagedConnector = graphql`
   mutation ManagedConnectorEditionMutation($input: EditManagedConnectorInput) {
@@ -58,6 +61,9 @@ const customRenderers = [
   { tester: jsonFormDeprecatedTester, renderer: JsonFormDeprecatedRenderer },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormInputTester, renderer: JsonFormInputRenderer },
+  { tester: jsonFormEnumTester, renderer: JsonFormEnumRenderer },
+  { tester: jsonFormBooleanTester, renderer: JsonFormBooleanRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
@@ -222,8 +228,8 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
               <Field
                 component={TextField}
-                style={fieldSpacingContainerStyle}
-                variant="standard"
+                className="mt-5"
+                variant="outlined"
                 name="display_name"
                 label={t_i18n('Display name')}
                 required
@@ -232,8 +238,8 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
               <Field
                 component={TextField}
-                style={fieldSpacingContainerStyle}
-                variant="standard"
+                className="mt-5"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Instance name')}
                 required

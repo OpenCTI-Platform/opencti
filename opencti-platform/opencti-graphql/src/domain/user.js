@@ -12,7 +12,6 @@ import conf, {
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
-  isFeatureEnabled,
   logApp,
 } from '../config/conf';
 import {
@@ -26,7 +25,7 @@ import {
   UnsupportedError,
 } from '../config/errors';
 import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, resetCacheForEntity } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
@@ -40,8 +39,8 @@ import {
   pageRegardingEntitiesConnection,
   storeLoadById,
 } from '../database/middleware-loader';
-import { delEditContext, notify, setEditContext } from '../database/redis';
-import { findUserSessions, killSessions, killUserSessions } from '../database/session';
+import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../database/redis';
+import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -131,6 +130,8 @@ import {
 import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
 import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
+import { hashSHA256 } from '../utils/hash';
+import { normalizeEmail } from '../utils/email';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -185,14 +186,14 @@ export const userWithOrigin = (req, user, originHeaders = {}) => {
   const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
   const tracing_headers_metadata = getRequestAuditHeaders(req);
-
+  const hashedSessionId = req?.sessionID ? hashSHA256(req.sessionID) : undefined;
   const origin = {
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
+    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata, sessionHash: hashedSessionId },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
@@ -654,12 +655,7 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
-export const FEATURE_FORCE_PASSWORD_CHANGE = 'FORCE_PASSWORD_CHANGE';
-
 export const computePasswordValidUntilFromPolicy = async (context) => {
-  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
-    return null;
-  }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validityDays = Number(settings.password_policy_validity_days ?? 0);
   if (!Number.isFinite(validityDays) || validityDays <= 0) {
@@ -694,7 +690,7 @@ export const clearAllUsersPasswordValidUntil = async (_context) => {
       },
     },
   });
-  resetCacheForEntity(ENTITY_TYPE_USER);
+  await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
 /**
@@ -797,7 +793,7 @@ export const adjustAllUsersPasswordValidUntil = async (_context, oldDays, newDay
       },
     });
   }
-  resetCacheForEntity(ENTITY_TYPE_USER);
+  await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
 export const sendEmailToUser = async (context, user, input) => {
@@ -880,18 +876,19 @@ export const sendEmailToUser = async (context, user, input) => {
 };
 
 export const addUser = async (context, user, newUser) => {
-  let userEmail;
   const userServiceAccount = newUser.user_service_account;
-  if (newUser.user_email && !userServiceAccount) {
-    userEmail = newUser.user_email.toLowerCase();
+  if (!newUser.user_email && !userServiceAccount) {
+    throw FunctionalError('User cannot be created without email');
+  }
+  const userEmail = newUser.user_email ? normalizeEmail(newUser.user_email) : `automatic+${uuid()}@opencti.invalid`;
+  if (isEmptyField(userEmail)) {
+    throw FunctionalError('The email you have provided is not valid');
+  }
+  if (newUser.user_email) {
     const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
     if (existingUser) {
       throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
     }
-  } else if (userServiceAccount) {
-    userEmail = newUser.user_email ? newUser.user_email : `automatic+${uuid()}@opencti.invalid`;
-  } else {
-    throw FunctionalError('User cannot be created without email');
   }
 
   if (isUserHasCapability(user, VIRTUAL_ORGANIZATION_ADMIN) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
@@ -1075,6 +1072,23 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 };
 
 // User related
+export const validateAndNormalizeEmailInput = async (context, userId, input) => {
+  if (input.key === 'user_email') {
+    if (!Array.isArray(input.value) || input.value.length !== 1 || typeof input.value[0] !== 'string') {
+      throw FunctionalError('The email you have provided is not valid');
+    }
+    const newEmail = normalizeEmail(input.value[0]);
+    if (isEmptyField(newEmail)) {
+      throw FunctionalError('The email you have provided is not valid');
+    }
+    input.value = [newEmail];
+    const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', newEmail, ENTITY_TYPE_USER);
+    if (existingUser && existingUser.internal_id !== userId) {
+      throw FunctionalError('User already exists', { user_id: existingUser.internal_id });
+    }
+  }
+};
+
 export const userEditField = async (context, user, userId, rawInputs) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
@@ -1091,7 +1105,13 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (userToUpdate.external && input.key === 'password_valid_until') {
       throw FunctionalError('Cannot force password change for external user', { userId });
     }
+    // Check user email is valid and not already used in case of email change
+    await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
+      // orgs admins can't update other users passwords
+      if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
+        throw ForbiddenAccess();
+      }
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
       if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
         skipThisInput = true;
@@ -1127,7 +1147,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         const draftWorkspaces = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
         const draftWorkspace = draftWorkspaces.get(draftContext);
         if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
-        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft not in an open state');
+        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft that is not in an open state');
       }
     }
     if (input.key === 'unit_system') {
@@ -1290,14 +1310,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
   // If password was expired, kill all other sessions of this user (force change scenario)
   const hasPasswordInput = inputs.some((i) => i.key === 'password');
   if (hasPasswordInput && isPasswordExpired(user)) {
-    const currentSessionId = context.req?.session?.id;
-    const userSessions = await findUserSessions(userId);
-    const otherSessionIds = userSessions
-      .filter((s) => currentSessionId && !s.id.endsWith(currentSessionId))
-      .map((s) => s.id);
-    if (otherSessionIds.length > 0) {
-      await killSessions(otherSessionIds);
-    }
+    await killOtherUserSessions(userId, context.req?.session?.id);
   }
   return userEditField(context, user, userId, inputs);
 };
@@ -1433,8 +1446,12 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   // Check in case organization admins adds non-grantable group a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+  const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
   if (isOnlyOrgaAdmin(user)) {
-    if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
+    if (input.relationship_type === RELATION_MEMBER_OF && !myGrantableGroups.includes(input.toId)) {
+      throw ForbiddenAccess();
+    }
+    if (input.relationship_type === RELATION_PARTICIPATE_TO && !myAdministratedOrganizationsIds.includes(input.toId)) {
       throw ForbiddenAccess();
     }
   }
@@ -1471,12 +1488,14 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
 };
 
 export const userIdDeleteRelation = async (context, user, userId, toId, relationshipType) => {
-  // check the user is accessible
-  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
-
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
+  if (relationshipType === RELATION_PARTICIPATE_TO) {
+    return userDeleteOrganizationRelation(context, user, userId, toId);
+  }
+  // check the user is accessible
+  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
   return userDeleteRelation(context, user, userData, toId, relationshipType);
 };
 
@@ -1514,7 +1533,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
   const { providerGroups = [], providerOrganizations = [], preventDefaultGroups = false } = opts;
-  const { autoCreateGroup = false, autoCreateOrganization = false } = opts;
+  const { autoCreateGroup = false, extendPlatformGroups = false, autoCreateOrganization = false, providerGroupsMapping = [] } = opts;
   const context = executionContext('login_provider');
   // region test the groups / organization existence and eventually auto create
   if (providerGroups.length > 0) {
@@ -1565,7 +1584,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   if (isEmptyField(email)) {
     throw ForbiddenAccess('User email not provided');
   }
-  const userEmail = email.toLowerCase();
+  const userEmail = normalizeEmail(email);
   const name = isEmptyField(providedName) ? userEmail : providedName;
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
@@ -1582,9 +1601,14 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
-    // 01 - Delete all groups relation from the user
+    // 01 - Delete group relations from the user
     const userGroups = await fullEntitiesThroughRelationsToList(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
-    const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    let deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
+    if (extendPlatformGroups) {
+      // swap to delete groups that are managed by the provider that aren't in the provided groups
+      const providerManagedGroups = providerGroupsMapping.map((mapping) => mapping.platform).filter((group) => !providerGroups.includes(group));
+      deleteGroups = userGroups.filter((o) => providerManagedGroups.includes(o.name));
+    }
     for (let index = 0; index < deleteGroups.length; index += 1) {
       const deleteGroup = deleteGroups[index];
       await userDeleteRelation(context, SYSTEM_USER, user, deleteGroup.id, RELATION_MEMBER_OF);
@@ -1625,7 +1649,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
 
 export const getUserByEmail = async (email) => {
   const context = executionContext('login');
-  return await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
+  return await elLoadBy(context, SYSTEM_USER, 'user_email', normalizeEmail(email), ENTITY_TYPE_USER);
 };
 
 export const login = async (email, password) => {
@@ -2115,9 +2139,6 @@ const internalAuthenticateUser = async (context, req, user) => {
  * @returns {boolean}
  */
 export const isPasswordExpired = (user) => {
-  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
-    return false;
-  }
   if (user.password_valid_until == null) {
     return false;
   }
@@ -2155,27 +2176,6 @@ const validateUser = (user, settings, { skipForcePasswordCheck = false } = {}) =
   }
 };
 
-export const enforceSessionLimit = async (user, settings) => {
-  if (settings.platform_session_max_concurrent && settings.platform_session_max_concurrent > 0) {
-    const sessions = await findUserSessions(user.id);
-    if (sessions.length >= settings.platform_session_max_concurrent) {
-      const sortedSessions = sessions.sort((a, b) => {
-        if (a.created < b.created) {
-          return -1;
-        }
-        if (a.created > b.created) {
-          return 1;
-        }
-        return 0;
-      });
-      const sessionsToKill = sortedSessions.slice(0, sessions.length - settings.platform_session_max_concurrent + 1);
-      await killSessions(sessionsToKill.map((s) => s.id));
-      return sessionsToKill.length;
-    }
-  }
-  return 0;
-};
-
 export const sessionAuthenticateUser = async (context, req, user, provider) => {
   let platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   let logged = platformUsers.get(user.internal_id);
@@ -2190,8 +2190,8 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged, settings, { skipForcePasswordCheck: true });
+  const numberOfKilledSessions = await killUserSessionsOverLimit(logged.id, settings.platform_session_max_concurrent);
   const withOrigin = userWithOrigin(req, logged);
-  const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session
   req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged.password_valid_until ?? null };
   req.session.session_provider = provider;
@@ -2272,7 +2272,7 @@ const initAdmin = async (context, email, password, tokenValue) => {
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
-      user_email: email,
+      user_email: normalizeEmail(email),
       password: bcrypt.hashSync(password.toString()),
       account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       external: true,
@@ -2283,7 +2283,7 @@ const initAdmin = async (context, email, password, tokenValue) => {
     const userToCreate = {
       internal_id: OPENCTI_ADMIN_UUID,
       external: true,
-      user_email: email.toLowerCase(),
+      user_email: normalizeEmail(email),
       account_status: isExternallyManaged ? ACCOUNT_STATUS_LOCKED : ACCOUNT_STATUS_ACTIVE,
       name: 'admin',
       firstname: 'Admin',

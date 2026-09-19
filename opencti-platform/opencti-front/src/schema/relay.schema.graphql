@@ -271,6 +271,7 @@ type AppMemory {
 input ExportContext {
   entity_id: String
   entity_type: String!
+  visible_columns: [String]
 }
 
 type AppDebugDistribution {
@@ -670,6 +671,7 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  to_be_deleted_at: DateTime
 }
 
 type StatusConnection {
@@ -712,6 +714,9 @@ type Synchronizer {
   user: Creator
   running: Boolean!
   current_state_date: DateTime
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -832,6 +837,7 @@ type FileMetadata {
   analysis_content_source: String
   analysis_content_type: String
   analysis_type: String
+  fintel_template_id: String
 }
 
 enum FileOrdering {
@@ -891,6 +897,9 @@ type WidgetDataSelection {
   filters: String
   dynamicFrom: String
   dynamicTo: String
+  filters_id: String
+  dynamicFrom_id: String
+  dynamicTo_id: String
   columns: [WidgetColumn!]
   instance_id: String
   sort_by: String
@@ -1012,6 +1021,7 @@ enum BackgroundTaskActionType {
   REMOVE_GROUPS
   SEND_EMAIL
   ENROLL_PLAYBOOK
+  ADD_RELATED_COVERED_ENTITIES
 }
 
 enum BackgroundTaskContextType {
@@ -1295,8 +1305,8 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_banner_text: String
   platform_banner_level: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_whitemark: Boolean
   platform_language: String
   platform_translations: String
@@ -1407,8 +1417,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_openaev_url: String
   platform_opengrc_url: String
   platform_xtmhub_url: String
@@ -1474,6 +1484,12 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_ai_has_token: Boolean!
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  platform_map_custom_file: MapCustomFile
+}
+
+type MapCustomFile {
+  name: String!
+  size: Float!
 }
 
 enum GroupsOrdering {
@@ -2961,6 +2977,7 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3082,6 +3099,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3236,6 +3254,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -3351,6 +3370,7 @@ interface Container {
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
+  workflowInstance: WorkflowInstance
 }
 
 enum NotesOrdering {
@@ -3442,6 +3462,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3591,6 +3612,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3711,6 +3733,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3858,6 +3881,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
@@ -3987,6 +4011,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4110,6 +4135,7 @@ interface Identity {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input IdentityAddInput {
@@ -4232,6 +4258,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   isUser: Boolean
   pirInformation(pirId: ID!): PirInformation
 }
@@ -4361,6 +4388,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4483,6 +4511,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4612,6 +4641,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4659,6 +4689,7 @@ enum IntrusionSetsOrdering {
   x_opencti_workflow_id
   resource_level
   primary_motivation
+  x_opencti_score
   confidence
   _score
   objectMarking
@@ -4729,6 +4760,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   locations: LocationConnection
   creators: [Creator!]
   toStix(version: Version): String
@@ -4740,6 +4772,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -4758,6 +4791,7 @@ input IntrusionSetAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -4865,6 +4899,7 @@ interface Location {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input LocationAddInput {
@@ -4988,6 +5023,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5113,6 +5149,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5233,6 +5270,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5354,6 +5392,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5403,6 +5442,7 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   is_family
+  x_opencti_score
   confidence
   _score
 }
@@ -5478,6 +5518,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   creators: [Creator!]
@@ -5490,6 +5531,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5508,6 +5550,7 @@ input MalwareAddInput {
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -5542,6 +5585,7 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  x_opencti_score
   sophistication
   resource_level
   _score
@@ -5630,6 +5674,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5651,6 +5696,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -5714,12 +5760,14 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
 
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -5842,6 +5890,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5879,221 +5928,6 @@ input ToolAddInput {
   upsertOperations: [EditInput!]
 }
 
-enum VulnerabilitiesOrdering {
-  name
-  x_opencti_cvss_base_score
-  x_opencti_cvss_base_severity
-  x_opencti_cvss_attack_vector
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
-  creator
-  confidence
-  _score
-}
-
-type VulnerabilityConnection {
-  pageInfo: PageInfo!
-  edges: [VulnerabilityEdge]
-}
-
-type VulnerabilityEdge {
-  cursor: String!
-  node: Vulnerability!
-}
-
-type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  currentUserAccessRight: String
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
-  opinions_metrics: OpinionsMetrics
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: [Assignee!]
-  objectParticipant: [Participant!]
-  avatar: OpenCtiFile
-  fintelTemplates: [FintelTemplate!]
-  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  name: String!
-  description: String
-  x_opencti_aliases: [String]
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-  pirInformation(pirId: ID!): PirInformation
-}
-
-input VulnerabilityAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  description: String
-  x_opencti_aliases: [String]
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  x_opencti_modified_at: DateTime
-  x_opencti_workflow_id: String
-  clientMutationId: String
-  update: Boolean
-  file: Upload
-  fileMarkings: [String]
-  files: [Upload]
-  filesMarkings: [[String]]
-  noTriggerImport: [Boolean]
-  embedded: [Boolean]
-  upsertOperations: [EditInput!]
-}
-
 enum IncidentsOrdering {
   name
   first_seen
@@ -6101,6 +5935,7 @@ enum IncidentsOrdering {
   incident_type
   severity
   source
+  x_opencti_score
   created
   modified
   created_at
@@ -6177,6 +6012,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   objectParticipant: [Participant!]
   creators: [Creator!]
   toStix(version: Version): String
@@ -6188,6 +6024,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -6209,6 +6046,7 @@ input IncidentAddInput {
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   createdBy: String
   objectOrganization: [String]
   objectMarking: [String]
@@ -8969,9 +8807,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | CustomView | IMEI | ICCID | IMSI | SavedFilter
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | CustomView | IMEI | ICCID | IMSI
 
@@ -9140,6 +8978,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input SecurityCoverageExpectation {
@@ -9169,6 +9008,7 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
@@ -9256,6 +9096,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
 }
 
 input StixSightingRelationshipAddInput {
@@ -9470,6 +9311,7 @@ type Query {
   rules: [Rule]
   ruleManagerInfo: RuleManager
   synchronizer(id: String!): Synchronizer
+  synchronizerLogs(id: String!): [IngestionEntry]
   synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport!
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
   synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
@@ -9578,8 +9420,6 @@ type Query {
   threatActorsGroup(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThreatActorGroupConnection
   tool(id: String): Tool
   tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ToolConnection
-  vulnerability(id: String): Vulnerability
-  vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): VulnerabilityConnection
   incident(id: String): Incident
   incidents(first: Int, after: ID, orderBy: IncidentsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IncidentConnection
   incidentsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, relationship_type: [String]): [TimeSeries]
@@ -9621,6 +9461,7 @@ type Query {
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
+  workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
@@ -9706,23 +9547,30 @@ type Query {
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionRssAddInputFromImport(file: Upload!): IngestionRssAddInputFromImport!
+  ingestionRssLogs(id: String!): [IngestionEntry]
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
+  ingestionTaxiiLogs(id: String!): [IngestionEntry]
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
+  ingestionTaxiiCollectionAddInputFromImport(file: Upload!): IngestionTaxiiCollectionAddInputFromImport!
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
   defaultIngestionGroupCount: Int
   userAlreadyExists(name: String!): Boolean
+  ingestionCsvLogs(id: String!): [IngestionEntry]
   ingestionJson(id: String!): IngestionJson
   ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
+  ingestionJsonLogs(id: String!): [IngestionEntry]
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
   indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number
   indicatorsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
+  vulnerability(id: String): Vulnerability
+  vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): VulnerabilityConnection
   decayRule(id: String!): DecayRule
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
   decayExclusionRule(id: String!): DecayExclusionRule
@@ -9775,6 +9623,7 @@ type Query {
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
+  savedFilter(id: ID!): SavedFilter
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
   pir(id: ID!): Pir
   pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection
@@ -9788,6 +9637,8 @@ type Query {
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
   securityCoverage(id: String!): SecurityCoverage
   securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
+  securityCoverageResult(id: String!): SecurityCoverageResult
+  securityCoverageResults(first: Int, after: ID, orderBy: SecurityCoverageResultOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageResultConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
@@ -9817,6 +9668,11 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+  userMergeJournal(mergeId: ID, first: Int): [UserMergeJournalEntry!]!
+  userMergeCoverage(disposition: UserMergeDisposition): UserMergeCoverage!
+  customFieldDefinition(id: String!): CustomFieldDefinition
+  customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
+  customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
 }
 
 type Subscription {
@@ -9869,6 +9725,8 @@ type SettingsEditMutations {
   updateLocalAuth(input: LocalAuthConfigInput!): Settings
   updateCertAuth(input: CertAuthConfigInput!): Settings
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings
+  uploadMapCustomFile(file: Upload!): Settings
+  deleteMapCustomFile: Settings
 }
 
 type SubTypeEditMutations {
@@ -10004,7 +9862,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
   uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
@@ -10028,7 +9886,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
@@ -10236,15 +10094,6 @@ type ToolEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Tool
 }
 
-type VulnerabilityEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
-  contextPatch(input: EditContext): Vulnerability
-  contextClean: Vulnerability
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
-}
-
 type IncidentEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Incident
@@ -10446,8 +10295,6 @@ type Mutation {
   threatActorGroupEdit(id: ID!): ThreatActorGroupEditMutations
   toolAdd(input: ToolAddInput!): Tool
   toolEdit(id: ID!): ToolEditMutations
-  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
-  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
   stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, upsertOperations: [EditInput!], AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput, AIPrompt: AIPromptAddInput, IMEI: IMEIAddInput, ICCID: ICCIDAddInput, IMSI: IMSIAddInput): StixCyberObservable
@@ -10467,6 +10314,7 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
   workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
@@ -10614,6 +10462,7 @@ type Mutation {
   ingestionRssDelete(id: ID!): ID
   ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
   ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss
+  ingestionRssResetState(id: ID!): IngestionRss
   ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
@@ -10628,6 +10477,7 @@ type Mutation {
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
   ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv
+  ingestionJsonAddInputFromImport(file: Upload!): IngestionJsonAddInputFromImport!
   ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
   ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
   ingestionJsonResetState(id: ID!): IngestionJson
@@ -10641,6 +10491,8 @@ type Mutation {
   indicatorContextClean(id: ID!): Indicator
   indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator
+  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
+  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule
   decayRuleDelete(id: ID!): ID
   decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
@@ -10695,9 +10547,8 @@ type Mutation {
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
-  smtpConfigurationAdd(input: SmtpConfigurationAddInput!): SmtpConfiguration
-  smtpConfigurationUpdate(id: ID!, input: SmtpConfigurationEditInput!): SmtpConfiguration
-  smtpConfigurationDelete(id: ID!): ID
+  smtpConfigurationEdit(input: SmtpConfigurationAddInput!): SmtpConfiguration
+  smtpConfigurationDelete: Boolean
   smtpConfigurationTest(email: String!): Boolean
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit
@@ -10744,6 +10595,10 @@ type Mutation {
   securityCoverageContextClean(id: ID!): SecurityCoverage
   securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
+  securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult
+  securityCoverageResultDelete(id: ID!): ID
+  securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -10788,6 +10643,14 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
+  dataSanityOperationStop(operation_name: String!): ID
+  userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult!
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
+  customFieldDefinitionDelete(id: ID!): ID
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
 }
 
 enum WorkflowExecutionStatus {
@@ -10803,13 +10666,14 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
   statusId: String!
+  order: Int
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
 }
 
 type WorkflowSerializedTransition {
   from: [String!]!
-  to: String!
+  to: String
   event: String!
   asyncActions: [WorkflowActionConfig!]
   syncActions: [WorkflowActionConfig!]
@@ -10821,6 +10685,7 @@ type WorkflowSchema {
   id: ID!
   name: String!
   published: Boolean!
+  hasPublishedVersion: Boolean!
   errors: [WorkflowValidationError!]
   initialState: String!
   states: [WorkflowSerializedState!]!
@@ -10852,6 +10717,7 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean
   platform_hidden_type: Boolean
   enforce_reference: Boolean
+  sync_workflow_status_by_name: Boolean
   attributes_configuration: String
   attributesDefinitions: [TypeAttribute!]!
   mandatoryAttributes: [String!]!
@@ -11025,6 +10891,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11174,6 +11041,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11281,6 +11149,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   start_time: DateTime
   stop_time: DateTime
   aliases: [String]
+  x_opencti_score: Int
   creators: [Creator!]
   toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11291,6 +11160,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11303,6 +11173,7 @@ enum EventsOrdering {
   updated_at
   objectMarking
   objectLabel
+  x_opencti_score
   x_opencti_workflow_id
   start_time
   stop_time
@@ -11330,6 +11201,7 @@ input EventAddInput {
   start_time: DateTime
   stop_time: DateTime
   aliases: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -11418,6 +11290,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -11547,6 +11420,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11833,6 +11707,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -11950,6 +11825,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12202,6 +12078,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -12320,6 +12197,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12479,6 +12357,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12611,6 +12490,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
   name: String!
@@ -12622,6 +12502,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum CaseIncidentsOrdering {
@@ -12690,6 +12571,7 @@ input CaseIncidentAddInput {
   update: Boolean
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type RfiRequestAccessConfiguration {
@@ -12758,6 +12640,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   name: String!
   description: String
   content: String
@@ -12900,6 +12783,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   name: String!
   description: String
   content: String
@@ -13038,6 +12922,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -13294,6 +13179,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   product: String!
   version: String
@@ -13430,7 +13316,7 @@ type Notifier implements InternalObject & BasicObject {
   description: String
   notifier_connector: NotifierConnector!
   notifier_connector_id: String!
-  notifier_configuration: String!
+  notifier_configuration: String
   authorized_members: [MemberAccess!]
 }
 
@@ -13551,6 +13437,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -13773,6 +13660,8 @@ type IngestionRss implements InternalObject & BasicObject {
   report_types: [String!]
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   ingestion_running: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -13872,6 +13761,8 @@ type IngestionTaxii implements InternalObject & BasicObject {
   added_after_start: DateTime
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   confidence_to_score: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -13906,6 +13797,22 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   added_after_start: String
+}
+
+enum IngestionLogLevel {
+  success
+  info
+  warn
+  error
+}
+
+type IngestionEntry {
+  timestamp: DateTime!
+  level: IngestionLogLevel!
+  type: String!
+  identifier: String!
+  message: String!
+  meta: JSON
 }
 
 input IngestionTaxiiAddInput {
@@ -13953,6 +13860,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user_id: String
   user: Creator
   authorized_members: [MemberAccess!]
+  toConfigurationExport: String!
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -13970,6 +13878,12 @@ type IngestionTaxiiCollectionConnection {
 type IngestionTaxiiCollectionEdge {
   cursor: String!
   node: IngestionTaxiiCollection!
+}
+
+type IngestionTaxiiCollectionAddInputFromImport {
+  name: String!
+  description: String
+  confidence_to_score: Boolean
 }
 
 input IngestionTaxiiCollectionAddInput {
@@ -14006,6 +13920,8 @@ type IngestionCsv implements InternalObject & BasicObject {
   current_state_hash: String
   current_state_date: DateTime
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
@@ -14118,8 +14034,33 @@ type IngestionJson implements InternalObject & BasicObject {
   user: Creator
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   markings: [String!]
   ssl_verify: Boolean
+  toConfigurationExport: String!
+}
+
+type IngestionJsonMapperFromImport {
+  id: String!
+  name: String!
+}
+
+type IngestionJsonAddInputFromImport {
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String
+  verb: String
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [IngestionHeader!]
+  query_attributes: [IngestionQueryAttribute!]
+  authentication_type: IngestionAuthType
+  ssl_verify: Boolean
+  jsonMapper: IngestionJsonMapperFromImport!
 }
 
 enum IngestionJsonOrdering {
@@ -14328,6 +14269,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -14375,6 +14317,253 @@ input IndicatorAddInput {
   embedded: [Boolean]
   basedOn: [String!]
   upsertOperations: [EditInput!]
+}
+
+enum VulnerabilitiesOrdering {
+  name
+  x_opencti_cvss_base_score
+  x_opencti_cvss_base_severity
+  x_opencti_cvss_attack_vector
+  created
+  modified
+  created_at
+  updated_at
+  x_opencti_workflow_id
+  creator
+  confidence
+  _score
+}
+
+type VulnerabilityConnection {
+  pageInfo: PageInfo!
+  edges: [VulnerabilityEdge]
+}
+
+type VulnerabilityEdge {
+  cursor: String!
+  node: Vulnerability!
+}
+
+enum SsvcExploitation {
+  none
+  poc
+  active
+}
+
+enum SsvcAutomatable {
+  no
+  yes
+}
+
+enum SsvcTechnicalImpact {
+  partial
+  total
+}
+
+type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  name: String!
+  description: String
+  x_opencti_aliases: [String]
+  x_opencti_cvss_vector_string: String
+  x_opencti_cvss_base_score: Float
+  x_opencti_cvss_base_severity: String
+  x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_attack_complexity: String
+  x_opencti_cvss_privileges_required: String
+  x_opencti_cvss_user_interaction: String
+  x_opencti_cvss_scope: String
+  x_opencti_cvss_confidentiality_impact: String
+  x_opencti_cvss_integrity_impact: String
+  x_opencti_cvss_availability_impact: String
+  x_opencti_cvss_exploit_code_maturity: String
+  x_opencti_cvss_remediation_level: String
+  x_opencti_cvss_report_confidence: String
+  x_opencti_cvss_temporal_score: Float
+  x_opencti_cvss_v2_vector_string: String
+  x_opencti_cvss_v2_base_score: Float
+  x_opencti_cvss_v2_access_vector: String
+  x_opencti_cvss_v2_access_complexity: String
+  x_opencti_cvss_v2_authentication: String
+  x_opencti_cvss_v2_confidentiality_impact: String
+  x_opencti_cvss_v2_integrity_impact: String
+  x_opencti_cvss_v2_availability_impact: String
+  x_opencti_cvss_v2_exploitability: String
+  x_opencti_cvss_v2_remediation_level: String
+  x_opencti_cvss_v2_report_confidence: String
+  x_opencti_cvss_v2_temporal_score: Float
+  x_opencti_cvss_v4_vector_string: String
+  x_opencti_cvss_v4_base_score: Float
+  x_opencti_cvss_v4_base_severity: String
+  x_opencti_cvss_v4_attack_vector: String
+  x_opencti_cvss_v4_attack_complexity: String
+  x_opencti_cvss_v4_attack_requirements: String
+  x_opencti_cvss_v4_privileges_required: String
+  x_opencti_cvss_v4_user_interaction: String
+  x_opencti_cvss_v4_confidentiality_impact_v: String
+  x_opencti_cvss_v4_confidentiality_impact_s: String
+  x_opencti_cvss_v4_integrity_impact_v: String
+  x_opencti_cvss_v4_integrity_impact_s: String
+  x_opencti_cvss_v4_availability_impact_v: String
+  x_opencti_cvss_v4_availability_impact_s: String
+  x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: SsvcExploitation
+  x_opencti_ssvc_automatable: SsvcAutomatable
+  x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
+  x_opencti_cwe: [String]
+  x_opencti_cisa_kev: Boolean
+  x_opencti_epss_score: Float
+  x_opencti_epss_percentile: Float
+  x_opencti_score: Int
+  x_opencti_first_seen_active: DateTime
+  softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  pirInformation(pirId: ID!): PirInformation
+}
+
+input VulnerabilityAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  x_opencti_aliases: [String]
+  x_opencti_cvss_vector_string: String
+  x_opencti_cvss_base_score: Float
+  x_opencti_cvss_base_severity: String
+  x_opencti_cvss_attack_vector: String
+  x_opencti_cvss_attack_complexity: String
+  x_opencti_cvss_privileges_required: String
+  x_opencti_cvss_user_interaction: String
+  x_opencti_cvss_scope: String
+  x_opencti_cvss_confidentiality_impact: String
+  x_opencti_cvss_integrity_impact: String
+  x_opencti_cvss_availability_impact: String
+  x_opencti_cvss_exploit_code_maturity: String
+  x_opencti_cvss_remediation_level: String
+  x_opencti_cvss_report_confidence: String
+  x_opencti_cvss_temporal_score: Float
+  x_opencti_cvss_v2_vector_string: String
+  x_opencti_cvss_v2_base_score: Float
+  x_opencti_cvss_v2_access_vector: String
+  x_opencti_cvss_v2_access_complexity: String
+  x_opencti_cvss_v2_authentication: String
+  x_opencti_cvss_v2_confidentiality_impact: String
+  x_opencti_cvss_v2_integrity_impact: String
+  x_opencti_cvss_v2_availability_impact: String
+  x_opencti_cvss_v2_exploitability: String
+  x_opencti_cvss_v2_remediation_level: String
+  x_opencti_cvss_v2_report_confidence: String
+  x_opencti_cvss_v2_temporal_score: Float
+  x_opencti_cvss_v4_vector_string: String
+  x_opencti_cvss_v4_base_score: Float
+  x_opencti_cvss_v4_base_severity: String
+  x_opencti_cvss_v4_attack_vector: String
+  x_opencti_cvss_v4_attack_complexity: String
+  x_opencti_cvss_v4_attack_requirements: String
+  x_opencti_cvss_v4_privileges_required: String
+  x_opencti_cvss_v4_user_interaction: String
+  x_opencti_cvss_v4_confidentiality_impact_v: String
+  x_opencti_cvss_v4_confidentiality_impact_s: String
+  x_opencti_cvss_v4_integrity_impact_v: String
+  x_opencti_cvss_v4_integrity_impact_s: String
+  x_opencti_cvss_v4_availability_impact_v: String
+  x_opencti_cvss_v4_availability_impact_s: String
+  x_opencti_cvss_v4_exploit_maturity: String
+  x_opencti_ssvc_exploitation: SsvcExploitation
+  x_opencti_ssvc_automatable: SsvcAutomatable
+  x_opencti_ssvc_technical_impact: SsvcTechnicalImpact
+  x_opencti_cwe: [String]
+  x_opencti_cisa_kev: Boolean
+  x_opencti_epss_score: Float
+  x_opencti_epss_percentile: Float
+  x_opencti_score: Int
+  x_opencti_first_seen_active: DateTime
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  x_opencti_modified_at: DateTime
+  x_opencti_workflow_id: String
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  upsertOperations: [EditInput!]
+}
+
+type VulnerabilityEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
+  contextPatch(input: EditContext): Vulnerability
+  contextClean: Vulnerability
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
 }
 
 type DecayRule implements InternalObject & BasicObject {
@@ -14548,6 +14737,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -15227,9 +15417,9 @@ input ExclusionListFileAddInput {
 }
 
 type SmtpConfiguration {
-  id: ID!
   smtp_enabled: Boolean!
   use_db_config: Boolean!
+  forced_sender_email: Boolean!
   sender_email_address: String
   hostname: String
   port: Int
@@ -15249,26 +15439,6 @@ enum SmtpAuthType {
 }
 
 input SmtpConfigurationAddInput {
-  smtp_enabled: Boolean
-  use_db_config: Boolean
-  sender_email_address: String
-  hostname: String
-  port: Int
-  use_ssl: Boolean
-  reject_unauthorized: Boolean
-  auth_type: SmtpAuthType
-  username: String
-  password: String
-  oauth_user: String
-  oauth_client_id: String
-  oauth_client_secret: String
-  oauth_issuer: String
-  oauth_access_token: String
-  oauth_refresh_token: String
-  oauth_refresh_token_expires_at: DateTime
-}
-
-input SmtpConfigurationEditInput {
   smtp_enabled: Boolean
   use_db_config: Boolean
   sender_email_address: String
@@ -15403,6 +15573,9 @@ type FintelTemplate implements BasicObject & InternalObject {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
+  default: Boolean
+  includeCoverPageByDefault: Boolean
+  includeBackPageByDefault: Boolean
 }
 
 input FintelTemplateWidgetAddInput {
@@ -15420,6 +15593,9 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+  default: Boolean
+  include_cover_page_by_default: Boolean
+  include_back_page_by_default: Boolean
 }
 
 type FintelTemplateEdge {
@@ -15737,6 +15913,7 @@ type FintelDesign implements BasicObject & InternalObject {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
 }
 
 input FintelDesignAddInput {
@@ -15746,6 +15923,7 @@ input FintelDesignAddInput {
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  default: Boolean
   file: Upload
 }
 
@@ -15762,6 +15940,7 @@ type FintelDesignConnection {
 enum FintelDesignOrdering {
   _score
   name
+  default
   created_at
 }
 
@@ -15829,6 +16008,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -15880,12 +16060,188 @@ input SecurityPlatformAddInput {
   upsertOperations: [EditInput!]
 }
 
+type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  draftVersion: DraftVersion
+  refreshed_at: DateTime
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreRelationshipsFromResults(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  coveredAttackPatterns(first: Int, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): AttackPatternCoverages
+  coveredVulnerabilities(first: Int, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): VulnerabilityCoverages
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  coveredEntitiesDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String!], fromRole: String, fromTypes: [String], toId: [String!], toRole: String, toTypes: [String], relationship_type: [String!]!, confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  pirInformation(pirId: ID!): PirInformation
+  coverage_last_result: DateTime
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [CoverageResult!]
+  external_uri: String
+  periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
+  auto_enrichment_disable: Boolean
+  objectCovered: StixDomainObject
+  toStixBundle: String
+  security_platform_type: String
+  results: [SecurityCoverageResult!]
+}
+
+enum SecurityCoverageOrdering {
+  name
+  confidence
+  created
+  created_at
+  creator
+  modified
+  updated_at
+  objectMarking
+  coverage_last_result
+  _score
+}
+
+type AttackPatternCoverages {
+  count: Int!
+  entities: [AttackPatternCoverage!]!
+}
+
+type AttackPatternCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: AttackPattern
+}
+
+type VulnerabilityCoverages {
+  count: Int!
+  entities: [VulnerabilityCoverage!]!
+}
+
+type VulnerabilityCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: Vulnerability
+}
+
+type SecurityCoverageConnection {
+  pageInfo: PageInfo!
+  edges: [SecurityCoverageEdge!]!
+}
+
+type SecurityCoverageEdge {
+  cursor: String!
+  node: SecurityCoverage!
+}
+
+input SecurityCoverageAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  objectCovered: String!
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
+  externalReferences: [String]
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  update: Boolean
+  external_uri: String
+  auto_enrichment_disable: Boolean!
+  periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String]
+  coverage_last_result: DateTime
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [SecurityCoverageExpectation!]
+  tenant_id: String
+  tenant_name: String
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
+}
+
+input SecurityCoverageSelectedEntitiesInput {
+  selected_ids: [String!]
+  filters: String
+  excluded_ids: [String!]
+  search: String
+}
+
 type CoverageResult {
   coverage_name: String!
   coverage_score: Int!
 }
 
-type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -15938,7 +16294,6 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   roles: [String]
   x_opencti_aliases: [String]
   x_opencti_reliability: String
-  security_platform_type: String
   creators: [Creator!]
   toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -15949,22 +16304,17 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
   external_uri: String
-  periodicity: String
-  duration: String
-  type_affinity: String
-  platforms_affinity: [String!]
-  auto_enrichment_disable: Boolean
-  objectCovered: StixDomainObject
-  toStixBundle: String
+  resultOf: SecurityCoverage
 }
 
-enum SecurityCoverageOrdering {
+enum SecurityCoverageResultOrdering {
   name
   confidence
   created
@@ -15973,29 +16323,26 @@ enum SecurityCoverageOrdering {
   modified
   updated_at
   objectMarking
-  coverage_last_result
   _score
 }
 
-type SecurityCoverageConnection {
+type SecurityCoverageResultConnection {
   pageInfo: PageInfo!
-  edges: [SecurityCoverageEdge!]!
+  edges: [SecurityCoverageResultEdge!]!
 }
 
-type SecurityCoverageEdge {
+type SecurityCoverageResultEdge {
   cursor: String!
-  node: SecurityCoverage!
+  node: SecurityCoverageResult!
 }
 
-input SecurityCoverageAddInput {
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
+input SecurityCoverageResultAddInput {
+  name: String
   description: String
   confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  objectCovered: String!
   created: DateTime
   modified: DateTime
   revoked: Boolean
@@ -16003,7 +16350,6 @@ input SecurityCoverageAddInput {
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
-  external_uri: String
   externalReferences: [String]
   file: Upload
   fileMarkings: [String]
@@ -16012,15 +16358,12 @@ input SecurityCoverageAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   update: Boolean
-  auto_enrichment_disable: Boolean!
-  periodicity: String
-  duration: String
-  type_affinity: String
-  platforms_affinity: [String]
+  external_uri: String
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
+  resultOf: String!
 }
 
 input AskSendOtpInput {
@@ -16237,6 +16580,7 @@ type GroupsMapping {
   groups_mapping: [MappingEntry!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean
 }
 
 input GroupsMappingInput {
@@ -16246,6 +16590,7 @@ input GroupsMappingInput {
   groups_mapping: [MappingEntryInput!]!
   auto_create_groups: Boolean!
   prevent_default_groups: Boolean!
+  extend_platform_groups: Boolean!
 }
 
 type OrganizationsMapping {
@@ -16579,6 +16924,7 @@ type CustomViewsConnection {
 enum CustomViewsOrdering {
   name
   enabled
+  default
 }
 
 type CustomViewsSettings {
@@ -16914,4 +17260,187 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+enum UserMergeRightsStrategy {
+  STRICT
+  UNION
+}
+
+enum UserMergeStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+input UserMergeOptions {
+  dryRun: Boolean = true
+  rightsStrategy: UserMergeRightsStrategy = STRICT
+  acknowledgeExposureChange: Boolean = false
+}
+
+enum UserMergeDisposition {
+  TRANSFER
+  INVALIDATE
+  CONDITIONAL
+  RETAIN
+  OUT_OF_SCOPE
+}
+
+type UserMergePlannedChange {
+  register_row_id: String!
+  entity_type: String!
+  count: Int!
+  exact: Boolean!
+  detail: String
+}
+
+type UserMergeRightsAlert {
+  register_row_id: String!
+  kind: String!
+  message: String!
+  blocking: Boolean
+}
+
+type UserMergeHandlerOutcome {
+  handler: String!
+  changes: [UserMergePlannedChange!]!
+  alerts: [UserMergeRightsAlert!]!
+  updated: Int!
+}
+
+type UserMergeExecutionReport {
+  merge_id: ID!
+  handlers: [UserMergeHandlerOutcome!]!
+  total_updated: Int!
+  coverage: UserMergeCoverage!
+}
+
+type UserMergeCoverageRow {
+  row_id: String!
+  label: String!
+  path: String!
+  disposition: UserMergeDisposition!
+  covered: Boolean!
+  handler: String
+}
+
+type UserMergeCoverage {
+  total: Int!
+  covered_count: Int!
+  uncovered_count: Int!
+  gating_uncovered_count: Int!
+  is_complete: Boolean!
+  rows: [UserMergeCoverageRow!]!
+}
+
+type UserMergeResult {
+  id: ID!
+  source_id: ID!
+  target_id: ID!
+  dry_run: Boolean!
+  rights_strategy: UserMergeRightsStrategy!
+  status: UserMergeStatus!
+  started_at: DateTime!
+  completed_at: DateTime
+  message: String
+  report: UserMergeExecutionReport
+}
+
+type UserMergeJournalEntry {
+  id: ID!
+  merge_id: ID!
+  source_id: ID!
+  target_id: ID!
+  handler: String!
+  dry_run: Boolean!
+  status: UserMergeStatus!
+  started_at: DateTime!
+  completed_at: DateTime
+  message: String
+  updated_count: Int
+  outcome: UserMergeHandlerOutcome
+}
+
+type CustomFieldValue {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+input CustomFieldValueAddInput {
+  field_id: ID!
+  field_name: String!
+  int_value: Int
+  string_value: String
+  boolean_value: Boolean
+  date_value: DateTime
+  select_value: String
+  select_values: [String!]
+}
+
+type CustomFieldEntityTypeSetting {
+  entity_type: String!
+  mandatory: Boolean!
+  default_value: String
+}
+
+type CustomFieldDefinition implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created: DateTime
+  modified: DateTime
+  name: String!
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  entity_type_settings: [CustomFieldEntityTypeSetting!]
+  multiple: Boolean!
+  description: String
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
+}
+
+enum CustomFieldDefinitionsOrdering {
+  name
+  label
+  field_type
+  created
+  _score
+}
+
+type CustomFieldDefinitionConnection {
+  pageInfo: PageInfo!
+  edges: [CustomFieldDefinitionEdge!]!
+}
+
+type CustomFieldDefinitionEdge {
+  cursor: String!
+  node: CustomFieldDefinition!
+}
+
+input CustomFieldDefinitionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  label: String!
+  field_type: String!
+  entity_types: [String!]
+  multiple: Boolean
+  description: String
+  created: DateTime
+  min_value: Int
+  max_value: Int
+  select_options: [String!]
 }

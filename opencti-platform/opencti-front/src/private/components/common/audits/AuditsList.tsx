@@ -13,22 +13,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent, ReactNode, Suspense, useCallback } from 'react';
+import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsListComponentQuery, LogsOrdering, OrderingMode } from './__generated__/AuditsListComponentQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
+import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
 const auditsListComponentQuery = graphql`
   query AuditsListComponentQuery(
@@ -115,8 +111,6 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
   host,
 }) => {
   const { t_i18n } = useFormatter();
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
 
   const buildQueryVariables = useCallback((resolvedSelection: WidgetDataSelection[]): AuditsListComponentQuery['variables'] => {
     const selection = resolvedSelection[0];
@@ -137,7 +131,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsListComponentQuery>({
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsListComponentQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -157,19 +151,14 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {(!isGrantedToSettings || !isEnterpriseEdition)
-        ? <WidgetAccessDenied />
-        : isMissingHostEntity
-          ? <WidgetNoHostEntity host={host} />
-          : (
-              <>
-                {queryRef && (
-                  <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                    <AuditsListComponent queryRef={queryRef} />
-                  </Suspense>
-                )}
-              </>
-            )}
+      <AuditsWidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <AuditsListComponent queryRef={queryRef!} />
+      </AuditsWidgetRenderContent>
     </WidgetContainer>
   );
 };

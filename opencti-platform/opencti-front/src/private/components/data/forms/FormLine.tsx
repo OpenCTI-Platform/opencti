@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -17,6 +17,7 @@ import FormPopover from './FormPopover';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ItemIcon from '../../../../components/ItemIcon';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Styles
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -27,15 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },
@@ -91,7 +84,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
       <ListItemButton
         classes={{ root: classes.item }}
         component={Link}
-        to={`/dashboard/data/ingestion/forms/${data.id}`}
+        to={`/dashboard/integrations/feeds/form/${data.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={mainEntityType} />

@@ -1,7 +1,7 @@
 import React from 'react';
 import TopBanner from '../../../components/TopBanner';
 import { useFormatter } from '../../../components/i18n';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { REGISTER_BANNER_DISMISSED_BUS, REGISTER_BANNER_DISMISSED_KEY } from '../../../utils/bannerConstants';
 
 const RegisterPlatformBanner = () => {
@@ -10,7 +10,7 @@ const RegisterPlatformBanner = () => {
 
   const text = (
     <>
-      <strong>{t_i18n('New feeds are available.')}</strong> {t_i18n('Register your platform to access and deploy them in one click.')}
+      <strong>{t_i18n('New feeds are available.')}</strong> {t_i18n('Connect your product to access and deploy these feeds in one click.')}
     </>
   );
 
@@ -18,8 +18,8 @@ const RegisterPlatformBanner = () => {
     <TopBanner
       bannerColor="gradient_blue"
       bannerText={text}
-      buttonText={t_i18n('Register Platform')}
-      onButtonClick={() => navigate('/dashboard/settings/experience')}
+      buttonText={t_i18n('Connect Product')}
+      onButtonClick={() => navigate('/redirect/connect-xtm-hub')}
       buttonSx={{ backgroundColor: '#007399', color: '#ffffff', fontWeight: 'bold' }}
       dismissible
       dismissKey={REGISTER_BANNER_DISMISSED_KEY}

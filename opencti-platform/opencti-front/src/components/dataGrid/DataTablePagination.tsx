@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import IconButton from '@common/button/IconButton';
 import { TableTuneIcon } from 'filigran-icon';
+import FiligranIcon from '@components/common/FiligranIcon';
 import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
 import NestedMenuButton from '../nested_menu/NestedMenuButton';
@@ -25,6 +26,8 @@ const DataTablePagination = ({
   const { t_i18n } = useFormatter();
 
   const {
+    columns,
+    setColumns,
     resetColumns,
     useDataTablePaginationLocalStorage: {
       viewStorage: {
@@ -59,6 +62,25 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
+  const handleToggleVisibility = (columnId: string) => {
+    setColumns((prevColumns) => prevColumns.map((column) => (
+      column.id === columnId
+        ? { ...column, visible: !column.visible }
+        : column
+    )));
+  };
+
+  const computeDataColumnOptions = () => (columns ?? [])
+    .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
+    .map((column) => ({
+      value: column.id,
+      label: t_i18n(column.label ?? column.id),
+      selected: column.visible,
+      onClick: () => handleToggleVisibility(column.id),
+      menuLevel: 1,
+      keepMenuOpen: true,
+    }));
+
   const resetTable = () => {
     resetColumns();
     helpers.handleAddProperty('pageSize', '25');
@@ -70,6 +92,14 @@ const DataTablePagination = ({
       onClick: () => resetTable(),
       menuLevel: 0,
     },
+    ...(columns.length > 0
+      ? [
+          {
+            value: 'menu-columns',
+            label: t_i18n('Columns'),
+            menuLevel: 0,
+            nestedOptions: computeDataColumnOptions(),
+          }] : []),
     {
       value: 'menu-rows-per-page',
       label: t_i18n('Rows per page'),
@@ -201,17 +231,8 @@ const DataTablePagination = ({
       </ButtonGroup>
       <Suspense>
         <NestedMenuButton
-          menuButtonProps={{
-            variant: 'outlined',
-            size: 'small',
-            color: 'primary',
-            style: {
-              padding: 6,
-              minWidth: 36,
-              border: 'none',
-            },
-          }}
-          menuButtonChildren={<TableTuneIcon />}
+          menuButtonLabel={t_i18n('Table settings')}
+          menuButtonChildren={<FiligranIcon icon={TableTuneIcon} size={20} />}
           options={nestedMenuOptions}
           menuLevels={2}
         />

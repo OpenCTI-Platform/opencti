@@ -1,7 +1,6 @@
 import argparse
+import mimetypes
 import os
-
-import magic
 
 from pycti import OpenCTIApiClient
 
@@ -51,7 +50,7 @@ def upload(file_path, description, labels, related_standard_id):
     with open(file_path, "rb") as f:
         file_data = f.read()
 
-    mime_type = magic.from_buffer(file_data, mime=True)
+    mime_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
 
     # Upload the file, returns the query response for the file upload
     kwargs = {

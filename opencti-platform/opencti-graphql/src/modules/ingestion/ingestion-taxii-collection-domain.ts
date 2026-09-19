@@ -1,7 +1,8 @@
+import type { FileHandle } from 'fs/promises';
 import { type BasicStoreEntityIngestionTaxiiCollection, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StoreEntityIngestionTaxiiCollection } from './ingestion-types';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { authorizedMembers } from '../../schema/attribute-definition';
@@ -10,6 +11,11 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiCollectionAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { INGESTION_SETINGESTIONS, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { extractContentFrom } from '../../utils/fileToContent';
+import { isCompatibleVersionWithMinimal } from '../../utils/version';
+import { FunctionalError } from '../../config/errors';
+
+const MINIMAL_TAXII_PUSH_COMPATIBLE_VERSION = '7.260722.0';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
@@ -69,6 +75,35 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII_COLLECTION, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+};
+
+export const taxiiCollectionAddInputFromImport = async (file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_TAXII_PUSH_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_TAXII_PUSH_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  return parsedData.configuration;
+};
+
+// Only the portable subset is exported: user and authorized members are
+// platform-specific and are chosen again at import time.
+export const taxiiCollectionExport = async (ingestionTaxiiCollection: BasicStoreEntityIngestionTaxiiCollection) => {
+  const { name, description, confidence_to_score } = ingestionTaxiiCollection;
+  return JSON.stringify({
+    openCTI_version: PLATFORM_VERSION,
+    type: 'taxiiPushCollections',
+    configuration: {
+      name,
+      description,
+      confidence_to_score,
+    },
+  });
 };
 
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {

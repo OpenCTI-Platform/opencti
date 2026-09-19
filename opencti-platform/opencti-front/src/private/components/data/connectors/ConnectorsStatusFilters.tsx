@@ -1,12 +1,12 @@
+import { Combobox, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import React, { ChangeEvent, useState } from 'react';
-import { Autocomplete, Stack, TextField } from '@mui/material';
-import { FilterListOffOutlined } from '@mui/icons-material';
+import { Stack } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@common/button/IconButton';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 
 export interface ConnectorsStatusFilterState {
   search: string;
@@ -62,7 +62,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
     }
   };
 
-  const hasActiveFilters = filters.search || filters.slug || filters.isManaged !== null;
+  const hasActiveFilters = !!filters.search || !!filters.slug || filters.isManaged !== null;
 
   const managedOptions = [
     { label: 'True', value: true },
@@ -81,42 +81,51 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
         isEnterpriseEdition && showManagedFilters && (
           <>
             <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement="top">
-              <Autocomplete
-                size="small"
-                sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
-                options={managedConnectorOptions}
-                value={managedConnectorOptions.find((o) => o.value === filters.slug) || null}
-                onChange={(event, option) => handleFilterChange('slug', option?.value || '')}
-                isOptionEqualToValue={(option, value) => option.value === value.value}
-                renderInput={(params) => (
-                  <TextField {...params} label={t_i18n('Managed connector')} placeholder={t_i18n('Connector')} variant="outlined" />
-                )}
-                clearOnEscape
-              />
+              <div style={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}>
+                <Combobox<{ label: string; value: string }>
+                  options={managedConnectorOptions}
+                  value={managedConnectorOptions.find((o) => o.value === filters.slug) || null}
+                  onValueChange={(option) => handleFilterChange('slug', (option as { value: string } | null)?.value || '')}
+                  isOptionEqualToValue={(a, b) => a.value === b.value}
+                  getOptionLabel={(option) => option.label}
+                >
+                  <ComboboxLabel>{t_i18n('Managed connector')}</ComboboxLabel>
+                  <ComboboxField>
+                    <ComboboxInput placeholder={t_i18n('Connector')} />
+                    <ComboboxControls>
+                      <ComboboxClear />
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent listAriaLabel={t_i18n('Managed connector')} />
+                </Combobox>
+              </div>
             </Tooltip>
 
-            <Autocomplete
-              size="small"
-              sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}
-              options={managedOptions}
-              value={managedOptions.find((o) => o.value === filters.isManaged) || null} // This will show empty when isManaged is null
-              onChange={(event, option) => handleBooleanFilterChange('isManaged', option?.value ?? null)}
-              isOptionEqualToValue={(option, value) => option.value === value.value}
-              renderInput={(params) => (
-                <TextField {...params} label={t_i18n('Manager deployment')} variant="outlined" />
-              )}
-            />
-
-            <Tooltip title={t_i18n('Clear filters')}>
-              <IconButton
-                color={hasActiveFilters ? 'primary' : 'default'}
-                onClick={handleClearFilters}
-                size="small"
-                disabled={!hasActiveFilters}
+            <div style={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}>
+              <Combobox<{ label: string; value: boolean }>
+                options={managedOptions}
+                value={managedOptions.find((o) => o.value === filters.isManaged) || null}
+                onValueChange={(option) => handleBooleanFilterChange('isManaged', (option as { value: boolean } | null)?.value ?? null)}
+                isOptionEqualToValue={(a, b) => a.value === b.value}
+                getOptionLabel={(option) => option.label}
               >
-                <FilterListOffOutlined fontSize="small" />
-              </IconButton>
-            </Tooltip>
+                <ComboboxLabel>{t_i18n('Manager deployment')}</ComboboxLabel>
+                <ComboboxField>
+                  <ComboboxInput />
+                  <ComboboxControls>
+                    <ComboboxClear />
+                    <ComboboxTrigger />
+                  </ComboboxControls>
+                </ComboboxField>
+                <ComboboxContent listAriaLabel={t_i18n('Manager deployment')} />
+              </Combobox>
+            </div>
+
+            <ClearFiltersIcon
+              hasActiveFilters={hasActiveFilters}
+              onClear={handleClearFilters}
+            />
           </>
         )
       }

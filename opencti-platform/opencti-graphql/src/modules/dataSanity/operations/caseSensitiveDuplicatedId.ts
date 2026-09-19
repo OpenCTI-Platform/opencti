@@ -10,7 +10,7 @@ import { mergeEntities } from '../../../database/middleware';
 import * as R from 'ramda';
 import type { SanityOperationRunOutput } from '../dataSanity-operations';
 
-const message = 'caseSensitiveDuplicatedId';
+const message = '[DATA_SANITY_MANAGER][caseSensitiveDuplicatedId]';
 
 export const computeCollisionGroup = async (context: AuthContext, entityType: string) => {
   const allEntities = await fullEntitiesList(
@@ -65,6 +65,7 @@ export const migrateEntityType = async (context: AuthContext, entityType: string
 
   let mergedEntities = 0;
   for (let index = 0; index < collisionGroups.length; index += 1) {
+    const startMergeTime = Date.now();
     const group = collisionGroups[index] as { entity: BasicStoreEntity; newId: string }[];
     const { newId } = group[0];
     // Sort by relation count DESC, then created_at ASC, then internal_id ASC.
@@ -80,23 +81,25 @@ export const migrateEntityType = async (context: AuthContext, entityType: string
     const sources = sorted.slice(1).map((e) => e.entity);
     try {
       if (target.standard_id !== newId) {
+        logApp.info(`${message} > updating standard_id from ${target.standard_id} to ${newId}`);
         await elUpdate(context, target._index, target.internal_id, { doc: { standard_id: newId } });
       }
-      await mergeEntities(context, DATA_SANITY_MANAGER_USER, target.internal_id, sources.map((s) => s.internal_id));
+      const allSourcesIds: string[] = sources.map((s) => s.internal_id);
+      logApp.info(`${message} > merging ${JSON.stringify(allSourcesIds)} into ${target.internal_id}`);
+      await mergeEntities(context, DATA_SANITY_MANAGER_USER, target.internal_id, allSourcesIds);
       mergedEntities += sources.length;
       // Use logApp.info so the operator can follow merge progress in the migration log channel.
       logApp.info(
         `${message} > merged ${sources.length} ${entityType} into ${target.internal_id}`
         + ` (target rel_count=${relCountByInternalId.get(target.internal_id) ?? 0},`
         + ` sources rel_count=[${sources.map((s) => relCountByInternalId.get(s.internal_id) ?? 0).join(', ')}])`
-        + ` (${index + 1}/${collisionGroups.length})`,
+        + ` (${index + 1}/${collisionGroups.length}) in ${Date.now() - startMergeTime}`,
       );
     } catch (err) {
       // Do not abort the whole migration if one group fails: log and keep going.
       logApp.error(`${message} > failed to merge group for ${newId}`, { cause: err, targetId: target.internal_id, sourceIds: sources.map((s) => s.internal_id) });
     }
   }
-
   return {
     merged: mergedEntities,
     collisions: collisionGroups.length,

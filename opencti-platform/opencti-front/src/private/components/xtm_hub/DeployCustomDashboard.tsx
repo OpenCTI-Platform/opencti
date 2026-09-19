@@ -1,6 +1,6 @@
 import React from 'react';
 import { importMutation } from '@components/workspaces/WorkspaceCreation';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { WorkspaceCreationImportMutation } from '@components/workspaces/__generated__/WorkspaceCreationImportMutation.graphql';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { resolveLink } from '../../../utils/Entity';
@@ -31,14 +31,14 @@ const DeployCustomDashboard = () => {
       },
       onError: () => {
         navigate('/dashboard');
-        MESSAGING$.notifyError('An error occurred while importing dashboard');
+        MESSAGING$.notifyError(t_i18n('An error occurred while importing dashboard'));
       },
     });
   };
 
   const onDownloadError = () => {
     navigate('/dashboard');
-    MESSAGING$.notifyError('An error occurred while importing dashboard. You have been redirected to home page.');
+    MESSAGING$.notifyError(t_i18n('An error occurred while importing dashboard. You have been redirected to home page.'));
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({
@@ -49,7 +49,7 @@ const DeployCustomDashboard = () => {
   });
 
   const onConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/redirect/connect-xtm-hub');
   };
 
   const onCancel = () => {

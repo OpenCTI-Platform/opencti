@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isOriginMatchFilterGroup, validateFilterGroupForStreamOriginMatch } from '../../../src/utils/filtering/filtering-stream-origin/stream-origin-filtering';
 import type { FilterGroup } from '../../../src/generated/graphql';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 const buildEvent = (origin?: { user_id?: string; group_ids?: string[]; organization_ids?: string[] }) => ({
   type: 'create',
@@ -8,8 +9,6 @@ const buildEvent = (origin?: { user_id?: string; group_ids?: string[]; organizat
   origin,
   data: { id: 'report--abc', type: 'report' },
 });
-
-const emptyFilterGroup = { mode: 'and', filters: [], filterGroups: [] } as unknown as FilterGroup;
 
 describe('Stream origin filtering', () => {
   describe('isOriginMatchFilterGroup', () => {

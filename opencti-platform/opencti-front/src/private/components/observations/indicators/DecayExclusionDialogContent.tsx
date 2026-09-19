@@ -4,7 +4,7 @@ import { IndicatorDetails_indicator$data } from '@components/observations/indica
 import { Stack, Typography } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import { FunctionComponent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Alert from '../../../../components/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';

@@ -3,7 +3,6 @@ import IconButton from '@common/button/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -13,7 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -27,7 +26,6 @@ import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
-import useHelper from '../../../../../utils/hooks/useHelper';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
 import CreatedByField from '../../../common/form/CreatedByField';
@@ -39,6 +37,8 @@ import { FormFieldRendererProps } from './FormFieldRenderer';
 import FormFields from './FormFields';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
+import TextareaField from '../../../../../components/TextareaField';
+import { Checkbox } from '@filigran/design-system';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -69,6 +69,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
   draftCheckbox: {
     marginTop: 20,
+    marginLeft: 0,
   },
   fieldGroup: {
     marginBottom: 20,
@@ -153,8 +154,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
   const { isForcedImportToDraft } = useImportAccess();
-  const { isFeatureEnable } = useHelper();
-  const isFormIntakeDefaultsEnabled = isFeatureEnable('FORM_INTAKE_DEFAULT_VALUES');
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
@@ -467,7 +466,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         setTimeout(() => {
           if (onSuccess) onSuccess(); // Close dialog before navigating
           const fallbackPath = isConnectorReader
-            ? '/dashboard/data/ingestion/connectors'
+            ? '/dashboard/integrations/deployed'
             : '/dashboard';
           navigate(fallbackPath);
         }, 2000); // Give user time to see the timeout message
@@ -549,9 +548,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       {!embedded && (
         <Breadcrumbs
           elements={[
-            { label: t_i18n('Data') },
-            { label: t_i18n('Ingestion'), link: isConnectorReader ? '/dashboard/data/ingestion' : undefined },
-            { label: t_i18n('Form intakes'), link: isGrantedIngestion ? '/dashboard/data/ingestion/forms' : undefined },
+            { label: t_i18n('Integrations') },
+            { label: t_i18n('Deployed'), link: isGrantedIngestion ? '/dashboard/integrations/deployed?kind=form' : undefined },
             { label: form.name, current: true },
           ]}
         />
@@ -580,15 +578,15 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           validateOnBlur={true}
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
-            const showDraftName = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
-            const showDraftDescription = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.description
+            const showDraftName = isDraft && !!(schema.draftDefaults?.name && (isBypass || schema.draftDefaults.name.isEditable));
+            const showDraftDescription = isDraft && !!(schema.draftDefaults?.description
               && (isBypass || schema.draftDefaults.description.isEditable));
-            const showDraftObjectAssignee = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectAssignee
+            const showDraftObjectAssignee = isDraft && !!(schema.draftDefaults?.objectAssignee
               && (isBypass || schema.draftDefaults.objectAssignee.isEditable));
-            const showDraftObjectParticipant = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.objectParticipant
+            const showDraftObjectParticipant = isDraft && !!(schema.draftDefaults?.objectParticipant
               && (isBypass || schema.draftDefaults.objectParticipant.isEditable));
-            const showDraftAuthor = isFormIntakeDefaultsEnabled && isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
-            const showDraftAuthorizedMembers = isFormIntakeDefaultsEnabled && isDraft
+            const showDraftAuthor = isDraft && !!(schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable));
+            const showDraftAuthorizedMembers = isDraft
               && schema.draftDefaults?.authorizedMembers?.enabled
               && (isBypass || schema.draftDefaults.authorizedMembers.isEditable);
             const showDraftSection = showDraftName
@@ -597,8 +595,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
               || showDraftObjectParticipant
               || showDraftAuthor
               || showDraftAuthorizedMembers;
-            const draftAuthorInheritanceHelper = t_i18n('', {
-              id: 'Default: Reuse {entityType} author (leave empty to inherit)',
+            const draftAuthorInheritanceHelper = t_i18n('Default: Reuse {entityType} author (leave empty to inherit)', {
               values: { entityType: t_i18n(schema.mainEntityType || 'main entity') },
             });
             return (
@@ -634,17 +631,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         <>
                           {schema.mainEntityParseField === 'textarea' ? (
                             <Field
-                              component={TextField}
-                              className={classes.parsedField}
+                              component={TextareaField}
+                              className={`${classes.parsedField} mt-5`}
                               name="mainEntityParsed"
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
                                 : 'Enter values separated by commas')}
                               rows={10}
-                              multiline={true}
-                              fullWidth={true}
-                              variant="standard"
-                              style={{ marginTop: 20 }}
                               helperText={helperText}
                             />
                           ) : (
@@ -655,7 +648,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
                                 : 'Enter values separated by commas')}
-                              variant="standard"
+                              variant="outlined"
                               fullWidth
                               helperText={helperText}
                             />
@@ -799,17 +792,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 <>
                                   {additionalEntity.parseField === 'textarea' ? (
                                     <Field
-                                      component={TextField}
-                                      className={classes.parsedField}
+                                      component={TextareaField}
+                                      className={`${classes.parsedField} mt-5`}
                                       name={fieldName}
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
                                         : 'Enter values separated by commas')}
                                       rows={10}
-                                      multiline={true}
-                                      fullWidth={true}
-                                      variant="standard"
-                                      style={{ marginTop: 20 }}
                                       helperText={helperText}
                                     />
                                   ) : (
@@ -820,7 +809,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
                                         : 'Enter values separated by commas')}
-                                      variant="standard"
+                                      variant="outlined"
                                       fullWidth
                                       helperText={helperText}
                                     />
@@ -982,8 +971,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                   control={(
                     <Checkbox
                       checked={isDraft}
-                      onChange={(e) => setIsDraft(e.target.checked)}
+                      onCheckedChange={(checked) => setIsDraft(checked === true)}
                       disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                      style={{ marginRight: 10 }}
                     />
                   )}
                   label={t_i18n('Create as draft')}

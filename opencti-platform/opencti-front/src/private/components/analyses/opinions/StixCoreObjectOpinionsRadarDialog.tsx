@@ -8,7 +8,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import type { PreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';

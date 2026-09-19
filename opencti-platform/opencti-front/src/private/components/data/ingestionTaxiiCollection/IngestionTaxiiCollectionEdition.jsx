@@ -96,7 +96,7 @@ const IngestionTaxiiCollectionEditionContainer = ({
           <Form>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -104,11 +104,11 @@ const IngestionTaxiiCollectionEditionContainer = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="description"
               label={t('Description')}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
               onSubmit={handleSubmitField}
             />
             <CreatorField

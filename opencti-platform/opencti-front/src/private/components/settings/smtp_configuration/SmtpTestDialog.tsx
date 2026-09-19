@@ -1,13 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
-import TextField from '@mui/material/TextField';
 import { DialogActions } from '@mui/material';
 import Dialog from '@common/dialog/Dialog';
 import Button from '@common/button/Button';
 import { useFormatter } from 'src/components/i18n';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { MESSAGING$ } from 'src/relay/environment';
+import { Input } from '@filigran/design-system';
 
 const smtpConfigurationTestMutation = graphql`
   mutation SmtpTestDialogMutation($email: String!) {
@@ -49,9 +49,8 @@ const SmtpTestDialog: FunctionComponent<SmtpTestDialogProps> = ({ open, onClose 
       <Alert severity="warning" variant="outlined" style={{ marginBottom: 16 }}>
         {t_i18n('This test only confirms the SMTP server accepted the message. It does not guarantee that the email was actually delivered.')}
       </Alert>
-      <TextField
+      <Input
         label={t_i18n('Email address')}
-        fullWidth={true}
         type="email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}

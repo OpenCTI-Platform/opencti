@@ -1,9 +1,8 @@
 # coding: utf-8
 
 import json
+import mimetypes
 import os
-
-import magic
 
 
 class StixDomainObject:
@@ -33,6 +32,10 @@ class StixDomainObject:
             objectOrganization {
                 id
                 standard_id
+                name
+            }
+            creators {
+                id
                 name
             }
             createdBy {
@@ -336,6 +339,7 @@ class StixDomainObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -420,6 +424,9 @@ class StixDomainObject:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name
@@ -532,6 +539,9 @@ class StixDomainObject:
                 x_opencti_cvss_v4_availability_impact_v
                 x_opencti_cvss_v4_availability_impact_s
                 x_opencti_cvss_v4_exploit_maturity
+                x_opencti_ssvc_exploitation
+                x_opencti_ssvc_automatable
+                x_opencti_ssvc_technical_impact
                 x_opencti_cwe
                 x_opencti_cisa_kev
                 x_opencti_epss_score
@@ -558,6 +568,10 @@ class StixDomainObject:
             objectOrganization {
                 id
                 standard_id
+                name
+            }
+            creators {
+                id
                 name
             }
             createdBy {
@@ -874,6 +888,7 @@ class StixDomainObject:
                 resource_level
                 primary_motivation
                 secondary_motivations
+                x_opencti_score
             }
             ... on City {
                 name
@@ -958,6 +973,9 @@ class StixDomainObject:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on ThreatActorGroup {
+                x_opencti_score
             }
             ... on Tool {
                 name
@@ -1070,6 +1088,9 @@ class StixDomainObject:
                 x_opencti_cvss_v4_availability_impact_v
                 x_opencti_cvss_v4_availability_impact_s
                 x_opencti_cvss_v4_exploit_maturity
+                x_opencti_ssvc_exploitation
+                x_opencti_ssvc_automatable
+                x_opencti_ssvc_technical_impact
                 x_opencti_cwe
                 x_opencti_cisa_kev
                 x_opencti_epss_score
@@ -1452,7 +1473,9 @@ class StixDomainObject:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             self.opencti.app_logger.info(
                 "Uploading a file in Stix-Domain-Object",
                 {"file": final_file_name, "id": id},

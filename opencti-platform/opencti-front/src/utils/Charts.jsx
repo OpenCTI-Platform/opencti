@@ -1,6 +1,6 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
-import { truncate } from './String';
+import { sanitize, truncate } from './String';
 import { isColorCloseToWhite } from './Colors';
 import { alpha } from '@mui/material/styles';
 import { shouldOpenInNewTabMouseEvent } from './domEvent';
@@ -54,6 +54,11 @@ const handleNavigate = (event, navigate, link) => {
   }
 };
 
+// theme colors are always stored as 6-digit hex (see themeValidation.ts), so any other
+// value is untrusted input and must be rejected rather than interpolated into CSS
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const sanitizeCssColor = (value, fallback) => (HEX_COLOR_REGEX.test(value) ? value : fallback);
+
 /**
  * A custom tooltip for ApexChart.
  * This tooltip only display the label of the data it hovers.
@@ -63,11 +68,16 @@ const handleNavigate = (event, navigate, link) => {
  *
  * @param {Theme} theme
  */
-const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => (`
-  <div style="background: ${theme.palette.background.nav}; color: ${theme.palette.text.primary}; padding: 2px 6px; font-size: 12px">
-    ${w.config.labels[seriesIndex]}
+export const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
+  const safeNavColor = sanitizeCssColor(theme.palette.background.nav, 'inherit');
+  const safeTextColor = sanitizeCssColor(theme.palette.text.primary, 'inherit');
+  const safeLabel = sanitize(String(w.config.labels[seriesIndex] ?? ''), true);
+  return (`
+  <div style="background: ${safeNavColor}; color: ${safeTextColor}; padding: 2px 6px; font-size: 12px">
+    ${safeLabel}
   </div>
 `);
+};
 
 /**
  * @param {Theme} theme
@@ -89,7 +99,7 @@ export const lineChartOptions = (
 ) => ({
   chart: {
     type: 'line',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     width: '100%',
@@ -183,7 +193,7 @@ export const areaChartOptions = (
 ) => ({
   chart: {
     type: 'area',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -293,7 +303,7 @@ export const verticalBarsChartOptions = (
 ) => ({
   chart: {
     type: 'bar',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -404,7 +414,7 @@ export const horizontalBarsChartOptions = (
   events: ['xAxisLabelClick'],
   chart: {
     type: 'bar',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked,
@@ -597,7 +607,8 @@ export const radarChartOptions = (
   xFormatter = null,
   chartColors = [],
   legend = false,
-  background = theme.palette.background.secondary,
+  // Ninth factory.
+  background = theme.palette.background.paper,
   size = undefined,
   handleClick = undefined,
 ) => ({
@@ -683,7 +694,8 @@ export const radarChartOptions = (
           theme.palette.mode === 'dark'
             ? 'rgba(255, 255, 255, .1)'
             : 'rgba(0, 0, 0, .1)',
-        fill: { colors: [theme.palette.background.secondary] },
+        // Coincides with the carrying surface, same rule as the chart background.
+        fill: { colors: [theme.palette.background.paper] },
       },
     },
   },
@@ -716,7 +728,7 @@ export const polarAreaChartOptions = (
   return {
     chart: {
       type: 'polarArea',
-      background: theme.palette.background.secondary,
+      background: theme.palette.background.paper,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -833,7 +845,7 @@ export const donutChartOptions = (
   return {
     chart: {
       type: 'donut',
-      background: withBackground ? theme.palette.background.secondary : 'transparent',
+      background: withBackground ? theme.palette.background.paper : 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -858,7 +870,9 @@ export const donutChartOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.secondary],
+      // The slice separator reads as the surface showing through, so it follows
+      // the surface: layer 1, not the hardcoded literal.
+      colors: [theme.palette.background.paper],
     },
     tooltip: {
       enabled: displayTooltip,
@@ -891,7 +905,7 @@ export const donutChartOptions = (
           value: {
             show: displayValue,
           },
-          background: theme.palette.background.secondary,
+          background: theme.palette.background.paper,
           size: `${size}%`,
         },
       },
@@ -915,7 +929,7 @@ export const treeMapOptions = (
   return {
     chart: {
       type: 'treemap',
-      background: theme.palette.background.secondary,
+      background: theme.palette.background.paper,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -946,7 +960,9 @@ export const treeMapOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.secondary],
+      // The slice separator reads as the surface showing through, so it follows
+      // the surface: layer 1, not the hardcoded literal.
+      colors: [theme.palette.background.paper],
     },
     legend: {
       show: true,
@@ -997,7 +1013,7 @@ export const heatMapOptions = (
 ) => ({
   chart: {
     type: 'heatmap',
-    background: theme.palette.background.secondary,
+    background: theme.palette.background.paper,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -1009,7 +1025,8 @@ export const heatMapOptions = (
     enabled: false,
   },
   stroke: {
-    colors: [theme.palette.background.secondary],
+    // Same rule as the other separators: it follows the carrying surface.
+    colors: [theme.palette.background.paper],
     width: 1,
   },
   states: {

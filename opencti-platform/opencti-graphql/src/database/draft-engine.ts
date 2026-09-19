@@ -99,6 +99,10 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
   }
 };
 
+// The ref field name is a script parameter, so a single script is compiled for every
+// relationship type instead of one per type (see script.max_compilations_rate).
+const DRAFT_APPEND_REF_SCRIPT_SOURCE = 'if (ctx._source[params.field] == null) { ctx._source[params.field] = []; }'
+  + ' ctx._source[params.field].addAll(params.ids);';
 const removeDraftDeleteLinkedRelations = async (
   context: AuthContext,
   user: AuthUser,
@@ -119,11 +123,8 @@ const removeDraftDeleteLinkedRelations = async (
     const targetId = isFromImpact ? rel.toId : rel.fromId;
     // Create params and scripted update
     const field = buildRefRelationKey(rel.relationship_type);
-    let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-    script += `ctx._source['${field}'].addAll(params['${field}']);`;
-    const source = script;
-    const params = { [field]: [targetId] };
-    return { ...dep, _id: dep._id, data: { script: { source, params } } };
+    const params = { field, ids: [targetId] };
+    return { ...dep, _id: dep._id, data: { script: { source: DRAFT_APPEND_REF_SCRIPT_SOURCE, params } } };
   }).filter((e) => e);
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
     { update: { _index: doc._index, _id: doc._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },

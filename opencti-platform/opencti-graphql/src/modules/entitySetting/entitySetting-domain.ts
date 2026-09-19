@@ -17,13 +17,13 @@ import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
-import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
-import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
-import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { BasicConnection, BasicStoreEntity } from '../../types/store';
-import { emptyPaginationResult } from '../../database/utils';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
+import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
+import { emptyPaginationResult } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 // -- LOADING --
 

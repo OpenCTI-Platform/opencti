@@ -1,10 +1,8 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Add, InfoOutlined } from '@mui/icons-material';
-import { Stack } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Fab from '@mui/material/Fab';
-import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
@@ -14,7 +12,7 @@ import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip }
 import React, { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -22,6 +20,7 @@ import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../../common/files/FileManager';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import GenerateExportTitle from '../../common/GenerateExportTitle';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -99,6 +98,14 @@ class StixCyberObservablesExportCreationComponent extends Component {
     const { orderBy, orderMode, filters, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const updatedExportContext = { ...exportContext };
+    // Only forward visible_columns for a "Current view" CSV export. The column
+    // selector is hidden for other formats, so clear it otherwise (including
+    // after the format is switched away from CSV) to avoid sending a stale
+    // hidden-field value to the export connector.
+    if (values.columns !== 'view' || values.format !== 'text/csv') {
+      updatedExportContext.visible_columns = undefined;
+    }
 
     commitMutation({
       mutation: StixCyberObservablesExportCreationMutation,
@@ -108,7 +115,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
           exportType: values.type,
           fileMarkings,
           contentMaxMarkings,
-          exportContext,
+          exportContext: updatedExportContext,
           filters,
           orderBy,
           orderMode,
@@ -135,6 +142,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
     const exportConnsPerFormat = scopesConn(connectorsExport);
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+    const visibleColumnExportEnabledFormats = ['text/csv'];
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
@@ -149,6 +157,9 @@ class StixCyberObservablesExportCreationComponent extends Component {
                 aria-label="generate-export"
               >
                 <Fab
+                  // FDS-FAB: stays on MUI. The library ships no floating action
+                  // button, so this control has nothing to convert to. Owner: the
+                  // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
                   onClick={this.handleOpen.bind(this)}
                   color="primary"
                   aria-label="Add"
@@ -166,12 +177,13 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   type: 'simple',
                   contentMaxMarkings: [],
                   fileMarkings: [],
+                  columns: 'all',
                 }}
                 validationSchema={exportValidation(t)}
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting, resetForm }) => (
+                {({ submitForm, handleReset, isSubmitting, resetForm, values }) => (
                   <Form>
                     <Dialog
                       open={this.state.open}
@@ -180,14 +192,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         this.handleClose();
                       }}
                       data-testid="StixCyberObservablesExportCreationDialog"
-                      title={(
-                        <Stack direction="row" alignItems="center" gap={1}>
-                          {t('Generate an export')}
-                          <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                            <InfoOutlined fontSize="small" color="primary" />
-                          </Tooltip>
-                        </Stack>
-                      )}
+                      title={<GenerateExportTitle />}
                     >
                       <QueryRenderer
                         query={markingDefinitionsLinesSearchQuery}
@@ -197,39 +202,39 @@ class StixCyberObservablesExportCreationComponent extends Component {
                             return (
                               <>
                                 <Field
-                                  component={SelectField}
-                                  variant="standard"
+                                  component={SelectFieldFds}
+                                  variant="outlined"
                                   name="format"
                                   label={t('Export format')}
                                   fullWidth={true}
                                   containerstyle={{ width: '100%' }}
                                 >
                                   {exportScopes.map((value, i) => (
-                                    <MenuItem
+                                    <SelectItem
                                       key={i}
                                       value={value}
                                       disabled={!isExportActive(value)}
                                     >
                                       {value}
-                                    </MenuItem>
+                                    </SelectItem>
                                   ))}
                                 </Field>
                                 <Field
-                                  component={SelectField}
-                                  variant="standard"
+                                  component={SelectFieldFds}
+                                  variant="outlined"
                                   name="type"
                                   label={t('Export type')}
                                   fullWidth={true}
                                   containerstyle={fieldSpacingContainerStyle}
                                 >
-                                  <MenuItem value="simple">
+                                  <SelectItem value="simple">
                                     {t('Simple export (just the entity)')}
-                                  </MenuItem>
-                                  <MenuItem value="full">
+                                  </SelectItem>
+                                  <SelectItem value="full">
                                     {t(
                                       'Full export (entity and first neighbours)',
                                     )}
-                                  </MenuItem>
+                                  </SelectItem>
                                 </Field>
                                 <ObjectMarkingField
                                   name="contentMaxMarkings"
@@ -245,6 +250,24 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                   filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                                   style={fieldSpacingContainerStyle}
                                 />
+                                {visibleColumnExportEnabledFormats.includes(values.format)
+                                  ? (
+                                      <Field
+                                        component={SelectFieldFds}
+                                        variant="outlined"
+                                        name="columns"
+                                        label={t('Choose column to export')}
+                                        fullWidth={true}
+                                        containerstyle={fieldSpacingContainerStyle}
+                                      >
+                                        <SelectItem value="all">
+                                          {t('All attributes')}
+                                        </SelectItem>
+                                        <SelectItem value="view">
+                                          {t('Current view')}
+                                        </SelectItem>
+                                      </Field>
+                                    ) : undefined}
                               </>
                             );
                           }

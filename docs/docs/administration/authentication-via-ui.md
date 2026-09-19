@@ -50,7 +50,8 @@ Click on the button to create a new strategy. Only the following strategies will
 - OpenID
 - SAML
 
-Each configuration has some mandatory fields. Once these are provided, you will be able to create your configuration. Providing a group mapping or an org mapping is not mandatory to create your authentication.
+Each configuration has some mandatory fields. Once these are provided, you will be able to create your configuration.
+Providing a group mapping or an org mapping is not mandatory to create your authentication.
 
 By default, a created authentication will be enabled, meaning it will be visible on your login screen. You can update this behavior by toggling off the field in the creation form.
 
@@ -83,6 +84,7 @@ By clicking on the local authentication you can manage your local password polic
 | `Number of words (split on hyphen, space) must be greater or equals to` | Enforce a minimum count of words in a password.               |
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
+| `Password validity duration in days (0 equals unlimited)`              | Define how long a password remains valid before the user is forced to change it. A value of `0` means passwords never expire. |
 
 ### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.
@@ -114,6 +116,50 @@ For SAML, the following fields are mandatory (indicated with a "*" in the form):
 
 The Private key (PEM format) is optional and is only required if you want to sign the SAML client request.
 
+
+##### Sign your SAML authentication requests
+
+Signing your SAML authentication requests means that OpenCTI (the Service Provider, or SP) cryptographically signs the `AuthnRequest` (and `LogoutRequest`/`LogoutResponse`) it sends to your Identity Provider (IdP), using a private key. The IdP then verifies this signature using the matching public certificate, ensuring the request genuinely came from your OpenCTI instance and was not tampered with.
+
+In the SAML configuration form, under the **Security & Signing** section, fill in the following fields:
+
+| Field                 | Description                                                                                                                                                                                                                                                            |
+|:----------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Private key`         | The private key (PEM format), used to sign outgoing requests. This is a secret that is stored encrypted in the database.                                                                                                                                               |
+| `Signing certificate` | The public certificate (PEM format) matching the private key above. This certificate is what you must also register on your IdP so it can verify the signature.                                                                                                        |
+| `Signature algorithm` | The algorithm used to sign the request, for example `sha256`. It must match what your IdP expects.                                                                                                                                                                     |
+| `Digest algorithm`    | The algorithm used to hash the signed content, for example `sha256`.                                                                                                                                                                                                   |
+| `SSO Binding type`    | In 'Request behavior' section. How the signed request is transmitted to the IdP: `HTTP-Redirect` (signature passed as query string parameters) or `HTTP-POST` (signature embedded in the posted XML). Choose the binding your IdP expects for authentication requests. |
+
+Note that for `Private key` and `Signing certificate` PEM, there is 2 way to use them:
+
+1. multiline: it must start by the `-----BEGIN` and ends with `-----END`, and keep the return character.
+Example (key truncated for brevity):
+```
+-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDnxI0CWT26SJzC
+kRYdcnrfaqiCcQpHzHg7AU5pF+gUjlRGDqy/O/ryEwNEmuwfaXuojaQoRA692ukR
+aSEDhCRue+esK3FUelH0SzleWxWMyzMwOZiB+DAOMo27qCI2tiFq0TU4+i1VKmO4
+HC7G+/saFoXs9cVdVEukGXEmPEp2wcU9xwUauErtgT9njEzDHS4iIm3v9RKcWT28
+...
+MM4dRhXugVQ22dWdMFNwTsowiVI7PU0nqk16H3EXAoGBAJ9qNVivHHHp0WiuIMfy
+UiB18zFRgisBvbs4GMnEziK+tWzp5aU2qAgYPOn8zM71zl9Pg3bRqQveuXGG27rP
+hXy+MTsgc/QblhVxnE8R/uK3zRFKrjtwEKOK3ixCmavZpzsabsYCmsF9YJxgvVYo
+favy+noqpadMb94wlHlvWqua
+-----END PRIVATE KEY-----
+```
+
+1. one line: it can be store as one line but the whole `-----BEGIN` and `-----END` lines should be removed.
+Example (text is cut in the middle):
+```
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBA...3zRFKrjtwEKOK3ixCmavZpzsabsYCmsF9YJxgvVYofavy+noqpadMb94wlHlvWqua
+```
+
+You can also control how OpenCTI validates the IdP's response using:
+
+- `Want assertion signed`: require the SAML assertion returned by the IdP to be signed.
+- `Want authn response signed`: require the whole SAML response returned by the IdP to be signed.
+
 !!! note "Certificates"
 
     Be careful to specify the `IdP certificate` and `Private key` using PEM format. Many systems export keys in X.509 or PKCS12 format, so you may need to convert them.
@@ -121,6 +167,48 @@ The Private key (PEM format) is optional and is only required if you want to sig
     ```bash
     openssl pkcs12 -in keystore.p12 -out newfile.pem -nodes
     ```
+
+
+!!! warning "Troubleshooting a signature error"
+
+    If your IdP rejects the request with a signature-related error:
+
+    - Double-check that the certificate registered on the IdP is **exactly** the same as the `Signing certificate` configured in OpenCTI (compare their SHA-256 fingerprints with `openssl x509 -in signing-cert.pem -noout -fingerprint -sha256`), and ensure that this certificate corresponds to the configured `Private key`.
+    - Confirm the `Signature algorithm` configured in OpenCTI matches what the IdP expects.
+    - Confirm the `SSO Binding type` matches the binding your IdP is configured to accept.
+    - If the request is rejected with an error about an unknown or invalid requester (client not found), verify that the `Issuer` value exactly matches the client/application identifier registered on your IdP, and that this client exists in the correct realm/tenant.
+
+##### Encrypt the SAML assertions
+
+Encrypting SAML assertions means that your Identity Provider (IdP) encrypts the user identity and attributes it returns, so that only OpenCTI can read them.
+This protects sensitive user data if the SAML response transits through the user's browser.
+
+Encryption always applies to the **Identity Provider to OpenCTI** direction: the IdP encrypts the assertion using your public certificate, and OpenCTI decrypts it using the matching private key.
+The authentication request sent by OpenCTI to the IdP is never encrypted, since it contains no confidential data.
+
+In the SAML configuration form, under the **Security & Signing** section, fill in the following fields:
+
+| Field                    | Description                                                                                                                                                                                                         |
+|:-------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Decryption private key` | The private key (PEM format) used to decrypt the encrypted assertions sent by the IdP. This is a secret that is stored encrypted in the database. It is mandatory to enable decryption.                             |
+| `Decryption certificate` | The public certificate (PEM format) matching the private key above. OpenCTI does not use it to decrypt: you must provide it to your IdP so it can encrypt the assertions. It can be added in SAML request metadata. |
+
+The same PEM formatting rules as for the signing fields apply (multiline with `-----BEGIN`/`-----END`, or a single line without the header and footer).
+
+On the IdP side, select algorithms supported by OpenCTI:
+
+| Setting                   | Supported values                                                               |
+|:--------------------------|:-------------------------------------------------------------------------------|
+| Assertion encryption      | `AES-128-CBC`, `AES-256-CBC`, `AES-128-GCM`, `AES-256-GCM`                     |
+| Key encryption (key wrap) | `RSA-OAEP-MGF1P` (recommended), `RSA-v1.5` (deprecated, avoid unless required) |
+
+!!! warning "Troubleshooting a decryption error"
+
+    If the login fails after the IdP has authenticated the user, with a decryption-related error:
+
+    - `key encryption algorithm ... not supported`: your IdP uses a key encryption algorithm that OpenCTI does not support. Try another one, for example `RSA-OAEP-MGF1P` on the IdP.
+    - `oaep decoding error`: either the `Decryption private key` does not match the certificate registered on the IdP, or the OAEP digest used by the IdP is not the expected one. Try another digest algorithm, for example set the OAEP digest to `SHA-1` on the IdP.
+    - `encryption algorithm ... not supported`: select one of the supported assertion encryption algorithms listed above.
 
 #### LDAP
 For LDAP, the following fields are mandatory:
@@ -190,9 +278,10 @@ The secret name (`oidc_client_secret` in this example) will appear in the **Use 
 
 Now that a configuration is defined, you can define the group mapping for all authentications (except Local).
 
-All authentications have these two options: 
+All authentications have these options: 
 - **Prevent platform default group association:** in OpenCTI you can allow some groups to be granted by default at user creation. This option allows you to define whether you want any new user created through the defined authentication to get these default groups granted by default. **By default, users will be granted platform default group**.
 - **Auto create groups:** you can decide to automatically create the groups that you have mapped. Please be aware that a group requires a role for a user to have rights [(more information)](../administration/users.md). When performing group mapping, you can enable an option to automatically create specific groups within OpenCTI.
+- **Extend platform groups:** you can decide to have the system retain groups set within OpenCTI that aren't managed by the authentication provider. This option allows you to manage assigning users to groups that are specific to OpenCTI and not have the groups overwritten when the user logs in.
 
 Then for each authentication, you need to provide: 
 - the group expression: identification of where to find the group information 
@@ -213,6 +302,80 @@ The behavior is similar to group mapping: you need to provide
 
 - the organization mapping: the mapping between the value of the organization in your provider and the organizations that exist in the platform. Be sure to type the exact same organization name as it exists in the platform to avoid organization duplication. 
 
+
+## End-to-end example: OpenID Connect with group mapping
+
+The following example walks through a complete OIDC configuration where the Identity Provider (IdP) returns group membership inside the ID token using a **custom claim**. This is a common pattern with providers such as Auth0, Azure AD, or Okta.
+
+### Context
+
+When a user authenticates, the IdP returns a JSON object (the `user_info`). Inspect this payload via the authentication logs to understand which claims are available and where your group information is located.
+
+A typical `user_info` response looks like:
+
+```json
+{
+  "sub": "waad|<tenant>|<user-id>",
+  "given_name": "Jane",
+  "family_name": "Doe",
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "email_verified": true,
+  "https://your-idp.example.com/groups": [
+    "Engineering",
+    "Product"
+  ],
+  "<platform-tenant-id>_groups": [
+    "Admin"
+  ]
+}
+```
+
+!!! note "Custom claims"
+    Standard OIDC claims (`email`, `name`, `given_name`, `family_name`) are available directly under `user_info`. Custom claims added by your IdP — such as group membership — are usually namespaced (e.g. `https://your-idp.example.com/groups`) or prefixed with a tenant identifier (e.g. `<platform-tenant-id>_groups`). Use the authentication logs to find the exact claim path.
+
+### Step 1 – Configure the OIDC provider (Configuration tab)
+
+Fill in the mandatory fields and map the standard user attributes:
+
+| Field | Example value | Notes |
+|---|---|---|
+| Configuration name | `Login with MyIdP` | Appears on the login button |
+| Issuer | `https://your-idp.example.com` | The Identity Provider base URL |
+| Client ID | `<your-client-id>` | Application client ID from your IdP |
+| Client secret | `<your-client-secret>` | Set or reference an external secret |
+| Email expression | `user_info.email` | Standard OIDC claim |
+| Name expression | `user_info.name` | Standard OIDC claim |
+| First name expression | `user_info.given_name` | Standard OIDC claim |
+| Last name expression | `user_info.family_name` | Standard OIDC claim |
+
+![OIDC Configuration tab example](assets/sso-oidc-configuration-example.png)
+
+### Step 2 – Map groups (Groups tab)
+
+Switch to the **Groups** tab to define how IdP groups are mapped to OpenCTI groups.
+
+**Groups expression** — point to the claim that contains the group list. When the claim is nested in the ID token (rather than the `user_info` endpoint), prefix it with `tokens.id_token.`:
+
+```
+tokens.id_token.<platform-tenant-id>_groups
+```
+
+!!! tip "Finding the right expression"
+    Open the authentication logs and inspect the `Details` of a login attempt. The raw token payload shows all available keys. Use `user_info.<claim>` for claims from the userinfo endpoint, or `tokens.id_token.<claim>` for claims embedded in the ID token.
+
+**Groups mapping** — map each IdP group name to the corresponding OpenCTI group:
+
+| Provider group | Platform group |
+|---|---|
+| `Admin` | `Administrators` |
+| `Reader` | `Read Only` |
+| `Analyst` | `Senior Analyst` |
+
+![OIDC Groups tab example](assets/sso-oidc-groups-example.png)
+
+!!! warning "Exact group names"
+    Group names are case-sensitive. The **Provider group** value must match exactly what the IdP returns in the claim. The **Platform group** value must match exactly the group name as it exists in OpenCTI.
 
 ## Troubleshooting an authentication
 

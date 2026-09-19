@@ -1,19 +1,17 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsNumberNumberSeriesQuery } from './__generated__/StixCoreObjectsNumberNumberSeriesQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
-import { ReactNode, Suspense } from 'react';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
+import { ReactNode } from 'react';
+import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
     query StixCoreObjectsNumberNumberSeriesQuery(
@@ -78,6 +76,8 @@ interface StixCoreObjectsNumberProps {
   host?: WidgetHost;
   config: DashboardConfig;
   refreshRate?: number | null;
+  /** The home dashboard names each card in its body, so the container title only repeats it. */
+  withoutContainerTitle?: boolean;
 }
 
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
@@ -87,18 +87,11 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ) => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { startDate, dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     types: DATA_SELECTION_TYPES,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     startDate,
     endDate: dayAgo(),
   };
@@ -114,14 +107,14 @@ const StixCoreObjectsNumber = ({
   config,
   refreshRate = null,
   host,
+  withoutContainerTitle = false,
 }: StixCoreObjectsNumberProps) => {
   const { t_i18n } = useFormatter();
-  const { translateEntityType } = useEntityTranslation();
+  const DEFAULT_TITLE = t_i18n('Entities number');
 
-  const title = parameters.title ?? t_i18n('Entities number');
-  const translatedTitle = translateEntityType(title);
+  const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -131,35 +124,28 @@ const StixCoreObjectsNumber = ({
     config,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsNumberComponent
-          queryRef={queryRef}
-          entityType={entityType}
-          label={translatedTitle}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="medium"
       height={height}
-      title={t_i18n('Entities number')}
+      title={withoutContainerTitle ? undefined : DEFAULT_TITLE}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixCoreObjectsNumberComponent
+            queryRef={queryRef!}
+            entityType={entityType}
+            label={translatedNumberLabel}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

@@ -5,17 +5,14 @@ import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import { useTheme } from '@mui/styles';
-import { ClassicEditor } from 'ckeditor5';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
-import { CSSProperties, useRef, useState } from 'react';
+import { CSSProperties, useState } from 'react';
 import useAI from '../../utils/hooks/useAI';
-import useHelper from '../../utils/hooks/useHelper';
-import { getHtmlTextContent } from '../../utils/html';
-import CKEditor from '../CKEditor';
 import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+import Box from '@mui/material/Box';
 
 interface RichTextFieldProps extends FieldProps<string> {
   disabled?: boolean;
@@ -48,62 +45,43 @@ const RichTextField = ({
 }: RichTextFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isOldEditorEnable } = useHelper();
-  const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
   const { enabled, configured } = useAI();
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
-  const RichTextEditorInstance = !isOldEditorEnable() ? (
-    <RichTextEditor
-      onTextSelection={(text) => {
-        if (onTextSelection && disabled && !fullScreen && text.length > 2) {
-          onTextSelection(text);
-        }
+  const RichTextEditorInstance = (
+    <Box
+      sx={{
+        '& .tiptap-editor-content': {
+          // Same surface as the markdown textarea, read from the token so it
+          // follows the layer the field is dropped on.
+          backgroundColor: 'var(--bg-input-default)',
+          borderRadius: 'var(--radius-sm)',
+        },
       }}
-      data={value}
-      onChange={(_, adapter) => {
-        const html = adapter.getData();
-        setFieldValue(name, html);
-        onChange?.(name, html);
-      }}
-      onBlur={() => {
-        setFieldTouched(name, true);
-        onSubmit?.(name, value);
-      }}
-      onFocus={() => onFocus?.(name)}
-      disabled={disabled}
-    />
-  ) : (
-    <CKEditor
-      onReady={(editor) => {
-        ckEditorRef.current = editor;
-        ckEditorRef.current.model.document.selection.on('change', () => {
-          if (ckEditorRef.current && onTextSelection && ckEditorRef.current.isReadOnly && !fullScreen) {
-            const htmlContent = ckEditorRef.current.data.stringify(
-              ckEditorRef.current.model.getSelectedContent(
-                ckEditorRef.current.model.document.selection,
-              ),
-            );
-            const text = getHtmlTextContent(htmlContent).trim();
-            if (text.length > 2) onTextSelection(text);
+    >
+      <RichTextEditor
+        onTextSelection={(text) => {
+          if (onTextSelection && disabled && !fullScreen && text.length > 2) {
+            onTextSelection(text);
           }
-        });
-      }}
-      data={value}
-      onChange={(_, editor) => {
-        setFieldValue(name, editor.getData());
-        onChange?.(name, editor.getData());
-      }}
-      onBlur={() => {
-        setFieldTouched(name, true);
-        onSubmit?.(name, value);
-      }}
-      onFocus={() => onFocus?.(name)}
-      disabled={disabled}
-    />
+        }}
+        data={value}
+        onChange={(_, adapter) => {
+          const html = adapter.getData();
+          setFieldValue(name, html);
+          onChange?.(name, html);
+        }}
+        onBlur={() => {
+          setFieldTouched(name, true);
+          onSubmit?.(name, value);
+        }}
+        onFocus={() => onFocus?.(name)}
+        disabled={disabled}
+      />
+    </Box>
   );
 
   const toolbarEmpty = !label && !askAi && !hasFullScreen && lastSavedValue === undefined;
@@ -142,7 +120,7 @@ const RichTextField = ({
             />
           )}
           {hasFullScreen && (
-            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)}>
+            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)} sx={{ marginBottom: '2px' }}>
               <FullscreenOutlined fontSize="small" />
             </IconButton>
           )}

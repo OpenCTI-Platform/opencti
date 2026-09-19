@@ -2,23 +2,32 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { RefreshOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
+
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import DialogActions from '@mui/material/DialogActions';
-import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
-import { FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, FunctionComponent, useEffect, useMemo, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 
 import { RichTextEditor } from '@filigran/rich-text-editor';
-import CKEditor from '../../components/CKEditor';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
@@ -29,7 +38,6 @@ import type { AgentAction } from '../../private/components/common/form/TextField
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import useAI from '../hooks/useAI';
 import { type AgentOption, fetchAgentsForIntent } from './agentApi';
-import useHelper from '../hooks/useHelper';
 import useAgentStream from './useAgentStream';
 
 // region types
@@ -107,8 +115,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const { fullyActive } = useAI();
-  const { isOldEditorEnable } = useHelper();
-  const oldEditorEnabled = isOldEditorEnable();
   const isLegacyMode = !agentMode;
 
   // Agent mode state (XTM One path)
@@ -179,7 +185,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     setAgentExecuted(false);
   };
 
-  const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
+  const handleAgentChange = (newValue: AgentOption | null) => {
     if (!newValue) return;
     setSelectedAgent(newValue);
     if (agentMode) {
@@ -200,10 +206,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         markdownFieldRef.current.scrollTop = markdownFieldRef.current.scrollHeight;
       }
     } else if (format === 'html') {
-      const selector = !oldEditorEnabled
-        ? '.tiptap-editor-content.ProseMirror'
-        : '.ck-content.ck-editor__editable.ck-editor__editable_inline';
-      const elementEditor = document.querySelector(selector);
+      const elementEditor = document.querySelector('.tiptap-editor-content.ProseMirror');
       elementEditor?.lastElementChild?.scrollIntoView();
     }
     return setContent(newContent ?? '');
@@ -230,36 +233,33 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const dialogTitle = agentMode ? (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
       <span>{t_i18n('Ask AI')}</span>
-      <Autocomplete<AgentOption>
-        sx={{ width: 220 }}
-        size="small"
+      <Combobox<AgentOption>
+        labelPosition="none"
         options={agentOptions}
-        getOptionLabel={(option) => option.name}
-        value={selectedAgent}
-        onChange={handleAgentChange}
+        getOptionLabel={(option) => option?.name ?? ''}
+        value={selectedAgent ?? null}
+        onValueChange={(next) => handleAgentChange(next as AgentOption | null)}
+        // Replaces the CircularProgress hand-mounted in the input's endAdornment.
         loading={loadingAgents}
         disabled={noAgents as boolean}
-        noOptionsText={t_i18n('Ask your administrator to configure XTM One')}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            size="small"
-            placeholder={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <>
-                  {loadingAgents ? <CircularProgress color="inherit" size={16} /> : null}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-          />
-        )}
         isOptionEqualToValue={(option, value) => option.id === value.id}
-        clearIcon={null}
-      />
+        // `clearIcon={null}` was MUI's other way of removing the clear button.
+        clearable={false}
+      >
+        <ComboboxField>
+          <ComboboxInput
+            aria-label={t_i18n('Select agent')}
+            placeholder={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
+          />
+          <ComboboxControls>
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent
+          emptyMessage={t_i18n('Ask your administrator to configure XTM One')}
+          listAriaLabel={t_i18n('Select agent')}
+        />
+      </Combobox>
     </Box>
   ) : t_i18n('Ask AI');
 
@@ -267,6 +267,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     if (!agentMode) return null;
     return (
       <IconButton
+        aria-label={t_i18n('Regenerate AI response')}
         size="small"
         onClick={handleRefresh}
         disabled={agentLoading || !selectedAgent}
@@ -278,6 +279,11 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   };
 
   // ── Content editors ───────────────────────────────────────────────────
+
+  const askAiEmbedStyle: Record<'markdown' | 'html', CSSProperties> = {
+    html: { position: 'absolute', top: 2, right: 45 },
+    markdown: { position: 'absolute', top: 2, right: 10, paddingTop: 4 },
+  };
 
   const renderContentEditors = () => (
     <>
@@ -305,7 +311,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           } : undefined}
         />
       )}
-      {format === 'html' && !oldEditorEnabled && (
+      {format === 'html' && (
         <RichTextEditor
           id="response-dialog-editor"
           data={content}
@@ -313,17 +319,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             setContent(adapter.getData());
           }}
           disabled={effectiveDisabled}
-        />
-      )}
-      {format === 'html' && oldEditorEnabled && (
-        <CKEditor
-          id="response-dialog-editor"
-          data={content}
-          onChange={(_, editor) => {
-            setContent(editor.getData());
-          }}
-          disabled={effectiveDisabled}
-          disableWatchdog={true}
         />
       )}
       {format === 'markdown' && (
@@ -363,7 +358,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           format={format}
           variant={format}
           disabled={isDisabled}
-          style={format === 'html' ? { position: 'absolute', top: 2, right: 45 } : undefined}
+          style={format === 'markdown' || format === 'html' ? askAiEmbedStyle[format] : undefined}
         />
       )}
     </>
@@ -382,20 +377,17 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         {/* Agent mode: tone selector */}
         {agentMode?.action === 'tone' && (
           <Box sx={{ mb: 2 }}>
-            <FormControl size="small" fullWidth>
-              <InputLabel id="tone-label">{t_i18n('Tone')}</InputLabel>
-              <Select
-                labelId="tone-label"
-                label={t_i18n('Tone')}
-                value={tone}
-                onChange={(event) => setTone(event.target.value)}
-                size="small"
-              >
-                <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-                <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-                <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-              </Select>
-            </FormControl>
+            <Select value={tone} onValueChange={setTone}>
+              <SelectLabel>{t_i18n('Tone')}</SelectLabel>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent aria-label={t_i18n('Tone')}>
+                <SelectItem value="tactical">{t_i18n('Tactical')}</SelectItem>
+                <SelectItem value="operational">{t_i18n('Operational')}</SelectItem>
+                <SelectItem value="strategic">{t_i18n('Strategic')}</SelectItem>
+              </SelectContent>
+            </Select>
           </Box>
         )}
 

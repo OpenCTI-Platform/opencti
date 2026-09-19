@@ -1,10 +1,10 @@
 # coding: utf-8
 
 import json
+import mimetypes
 import os
 import uuid
 
-import magic
 from stix2.canonicalization.Canonicalize import canonicalize
 
 
@@ -387,7 +387,9 @@ class ExternalReference:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             self.opencti.app_logger.info(
                 "Uploading a file in External-Reference",
                 {"file": final_file_name, "id": id},

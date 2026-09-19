@@ -9,7 +9,7 @@ import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';

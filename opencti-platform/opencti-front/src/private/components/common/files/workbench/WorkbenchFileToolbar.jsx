@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
+import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import withStyles from '@mui/styles/withStyles';
@@ -19,7 +20,7 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
 import withHooksSettingsMessagesBannerHeight from '../../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -153,7 +154,6 @@ class WorkbenchFileToolbar extends Component {
       numberOfSelectedElements,
       handleClearSelectedElements,
       submitDelete,
-      theme,
     } = this.props;
     const { displayDelete, displayApplyMarking, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -179,44 +179,46 @@ class WorkbenchFileToolbar extends Component {
             }}
           >
             <Toolbar style={{ minHeight: 54 }}>
-              <Typography
-                className={classes.title}
-                color="inherit"
-                variant="subtitle1"
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ width: '100%' }}
               >
-                <span
-                  style={{
-                    padding: '2px 5px 2px 5px',
-                    marginRight: 5,
-                    backgroundColor: theme.palette.secondary.main,
-                    color: '#ffffff',
-                  }}
-                >
-                  {numberOfSelectedElements}
-                </span>{' '}
-                {t('selected')}{' '}
-                <IconButton
-                  aria-label="clear"
-                  disabled={numberOfSelectedElements === 0}
-                  onClick={handleClearSelectedElements.bind(this)}
-                >
-                  <ClearOutlined />
-                </IconButton>
-              </Typography>
-              <IconButton
-                aria-label={t('Apply marking')}
-                disabled={numberOfSelectedElements === 0}
-                onClick={this.handleOpenApplyMarking.bind(this)}
-              >
-                <CenterFocusStrongOutlined />
-              </IconButton>
-              <IconButton
-                aria-label={t('Delete')}
-                disabled={numberOfSelectedElements === 0}
-                onClick={this.handleOpenDelete.bind(this)}
-              >
-                <DeleteOutlined />
-              </IconButton>
+                <Stack direction="row" alignItems="center" gap={1}>
+                  <Typography
+                    className={classes.title}
+                    color="inherit"
+                    variant="subtitle1"
+                  >
+                    {`${numberOfSelectedElements} ${t('selected')}`}
+                  </Typography>
+                  <IconButton
+                    aria-label="clear"
+                    disabled={numberOfSelectedElements === 0}
+                    onClick={handleClearSelectedElements.bind(this)}
+                  >
+                    <ClearOutlined />
+                  </IconButton>
+                </Stack>
+
+                <Stack direction="row" alignItems="center" gap={1}>
+                  <IconButton
+                    aria-label={t('Apply marking')}
+                    disabled={numberOfSelectedElements === 0}
+                    onClick={this.handleOpenApplyMarking.bind(this)}
+                  >
+                    <CenterFocusStrongOutlined />
+                  </IconButton>
+                  <IconButton
+                    aria-label={t('Delete')}
+                    disabled={numberOfSelectedElements === 0}
+                    onClick={this.handleOpenDelete.bind(this)}
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                </Stack>
+              </Stack>
             </Toolbar>
             <Dialog
               open={displayApplyMarking}

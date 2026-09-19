@@ -4,14 +4,14 @@ import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Content, ImageDefinition, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FintelDesign } from '@components/common/form/FintelDesignField';
-import { APP_BASE_PATH, fileUri } from '../../relay/environment';
+import { APP_BASE_PATH } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
 import { getBase64ImageFromURL, isImageFromUrlSvg } from '../Image';
 import { FONTS, detectLanguage } from './utils/pdfFonts';
 import determineOrientation from './utils/pdfOrientation';
 import setImagesWidth from './utils/pdfImageWidth';
-import setTableFullWidth, { defaultTableLayout } from './utils/pdfTableWidth';
+import setTableFullWidth, { defaultTableLayout, getMaxTableColumnCount, VERY_WIDE_TABLE_COLUMN_THRESHOLD, WIDE_TABLE_COLUMN_THRESHOLD } from './utils/pdfTableWidth';
 import addPageBreaks, { pdfPageBreaks } from './utils/pdfPageBreaks';
 import removeUnnecessaryHtml from './utils/pdfUnnecessarytHtml';
 import pdfBackground from './utils/pdfBackground';
@@ -20,6 +20,25 @@ import pdfFooter from './utils/pdfFooter';
 import { DARK, DARK_BLUE, GREY, WHITE } from './utils/constants';
 import { dateFormat } from '../Time';
 
+type PdfPageSize = 'A4' | 'A3';
+type PdfPageOrientation = 'portrait' | 'landscape';
+
+const PDF_PAGE_DIMENSIONS: Record<PdfPageSize, { width: number; height: number }> = {
+  A4: { width: 595.28, height: 841.89 },
+  A3: { width: 841.89, height: 1190.55 },
+};
+
+export const resolvePdfPageGeometry = (
+  pageSize: PdfPageSize,
+  pageOrientation: PdfPageOrientation,
+) => {
+  const dimensions = PDF_PAGE_DIMENSIONS[pageSize];
+  const pageWidth = pageOrientation === 'landscape' ? dimensions.height : dimensions.width;
+  const pageHeight = pageOrientation === 'landscape' ? dimensions.width : dimensions.height;
+  const backPageLogoMarginTop = Math.max(120, Math.round((pageHeight - 133) / 2));
+  return { pageWidth, pageHeight, backPageLogoMarginTop };
+};
+
 /**
  * NOT MEANT FOR EXPORT
  *
@@ -27,18 +46,15 @@ import { dateFormat } from '../Time';
  *
  * @param pdfMakeObject Definition of the PDF to generate.
  * @param checkOrientation True if check content to determine PDF orientation.
-
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF ready to be downloaded.
  */
 const generatePdf = (
   pdfMakeObject: TDocumentDefinitions,
   checkOrientation = false,
-  isTiptapEnabled = false,
 ) => {
   const docDefinition = { ...pdfMakeObject };
   if (checkOrientation) {
-    docDefinition.pageOrientation = determineOrientation(isTiptapEnabled);
+    docDefinition.pageOrientation = determineOrientation();
   }
   pdfMake.setTableLayouts(defaultTableLayout);
   pdfMake.setFonts(FONTS);
@@ -50,16 +66,14 @@ const generatePdf = (
  *
  * @param fileName name of the file to transform.
  * @param content The content of the file.
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdf = (
   fileName: string,
   content: string,
-  isTiptapEnabled = false,
 ) => {
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
+  htmlData = setImagesWidth(htmlData);
 
   // Improve render for markdown files.
   if (fileName && fileName.endsWith('.md')) {
@@ -91,7 +105,7 @@ export const htmlToPdf = (
     font: selectedFont,
   };
 
-  return generatePdf(pdfMakeObject, false, isTiptapEnabled);
+  return generatePdf(pdfMakeObject, false);
 };
 /**
  * Part to handle the embedded images of a file
@@ -161,8 +175,7 @@ export const resolvePdfMakeEmbeddedImages = async (
  * @param content HTML content.
  * @param templateName Name of the template used for PDF generation.
  * @param markingNames Markings of the outcome report.
- * @param fintelDesign Design of the template
- * @param isTiptapEnabled True if TipTap editor is enabled.
+ * @param fintelDesign Design of the template, optionally enriched with page options
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdfReport = async (
@@ -171,7 +184,10 @@ export const htmlToPdfReport = async (
   templateName: string,
   markingNames: string[],
   fintelDesign?: FintelDesign | null | undefined,
-  isTiptapEnabled = false,
+  pageOptions?: {
+    includeCoverPage?: boolean;
+    includeBackPage?: boolean;
+  },
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logo;
@@ -188,11 +204,17 @@ export const htmlToPdfReport = async (
   }
 
   if (!logo) {
-    logo = await getBase64ImageFromURL(fileUri(logoWhite));
+    logo = await getBase64ImageFromURL(logoWhite);
   }
 
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
+  htmlData = setImagesWidth(htmlData);
+  const maxTableColumnCount = getMaxTableColumnCount(htmlData);
+  const containsWideTable = maxTableColumnCount >= WIDE_TABLE_COLUMN_THRESHOLD;
+  const containsVeryWideTable = maxTableColumnCount >= VERY_WIDE_TABLE_COLUMN_THRESHOLD;
+  const pageSize: PdfPageSize = containsVeryWideTable ? 'A3' : 'A4';
+  const pageOrientation: PdfPageOrientation = containsWideTable ? 'landscape' : 'portrait';
+  const { pageWidth, pageHeight, backPageLogoMarginTop } = resolvePdfPageGeometry(pageSize, pageOrientation);
   htmlData = setTableFullWidth(htmlData);
   htmlData = addPageBreaks(htmlData);
 
@@ -229,9 +251,58 @@ export const htmlToPdfReport = async (
     fintelDesign?.gradiantToColor || DARK_BLUE,
   ];
   const textColor = fintelDesign?.textColor || WHITE;
+  const includeCoverPage = pageOptions?.includeCoverPage ?? true;
+  const includeBackPage = pageOptions?.includeBackPage ?? true;
+
+  const coverPage: Content[] = [
+    {
+      columns: [
+        isLogoSvg
+          ? { svg: logo, width: 133 }
+          : { image: logo, width: 133 },
+        {
+          text: dateFormat(new Date()) ?? '',
+          alignment: 'right',
+          style: ['colorWhite'],
+        },
+      ],
+    },
+    {
+      text: reportName,
+      style: ['colorWhite', selectedFont, 'textXl'],
+      marginTop: 200,
+    },
+    {
+      text: formattedTemplateName,
+      style: ['colorWhite', 'textMd'],
+      marginTop: 10,
+      pageBreak: 'after',
+    },
+  ];
+
+  const backPage: Content[] = [
+    {
+      pageBreak: 'before',
+      absolutePosition: { x: 0, y: 0 },
+      canvas: [{
+        type: 'rect',
+        x: 0,
+        y: 0,
+        w: pageWidth,
+        h: pageHeight,
+        linearGradient: linearGradiant,
+      }],
+    },
+    ...(isLogoSvg
+      ? [{ svg: logo, width: 133, alignment: 'center' as const, margin: [0, backPageLogoMarginTop, 0, 0] as [number, number, number, number] }]
+      : [{ image: logo, width: 133, alignment: 'center' as const, margin: [0, backPageLogoMarginTop, 0, 0] as [number, number, number, number] }]
+    ),
+  ];
 
   const docDefinition: TDocumentDefinitions = {
-    pageMargins: [20, 30],
+    pageMargins: containsVeryWideTable ? [8, 12] : containsWideTable ? [10, 20] : [20, 30],
+    pageSize,
+    pageOrientation,
     styles: {
       colorWhite: { color: textColor },
       colorLight: { color: GREY },
@@ -246,54 +317,17 @@ export const htmlToPdfReport = async (
     ...pdfMakeObject,
     images: normalizedImages,
     content: [
-      {
-        columns: [
-          isLogoSvg
-            ? { svg: logo, width: 133 }
-            : { image: logo, width: 133 },
-          {
-            text: dateFormat(new Date()) ?? '',
-            alignment: 'right',
-            style: ['colorWhite'],
-          },
-        ],
-      },
-      {
-        text: reportName,
-        style: ['colorWhite', selectedFont, 'textXl'],
-        marginTop: 200,
-      },
-      {
-        text: formattedTemplateName,
-        style: ['colorWhite', 'textMd'],
-        marginTop: 10,
-        pageBreak: 'after',
-      },
+      ...(includeCoverPage ? coverPage : []),
       {
         stack: pdfMakeObject.content as Content[],
       },
-      {
-        pageBreak: 'before',
-        absolutePosition: { x: 0, y: 0 },
-        canvas: [{
-          type: 'rect',
-          x: 0,
-          y: 0,
-          w: 600,
-          h: 850,
-          linearGradient: linearGradiant,
-        }],
-      },
-      ...(isLogoSvg
-        ? [{ svg: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
-        : [{ image: logo, width: 133, alignment: 'center', margin: [0, 380, 0, 0] }]
-      ),
+      ...(includeBackPage ? backPage : []),
     ] as Content[],
-    background: pdfBackground(linearGradiant),
-    header: pdfHeader(linearGradiant),
-    footer: pdfFooter(markingNames),
+    background: pdfBackground(linearGradiant, { hasCoverPage: includeCoverPage }),
+    header: pdfHeader(linearGradiant, { hasCoverPage: includeCoverPage, hasBackPage: includeBackPage }),
+    footer: pdfFooter(markingNames, { hasCoverPage: includeCoverPage, hasBackPage: includeBackPage }),
     pageBreakBefore: pdfPageBreaks,
   };
 
-  return generatePdf(docDefinition, false, isTiptapEnabled);
+  return generatePdf(docDefinition, false);
 };

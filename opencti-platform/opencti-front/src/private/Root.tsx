@@ -1,14 +1,14 @@
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { FilterDefinition, PlatformLang, UserContext } from '../utils/hooks/useAuth';
-import platformModuleHelper, { isFeatureEnable } from '../utils/platformModulesHelper';
+import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import Index from './Index';
@@ -51,8 +51,6 @@ const rootSettingsFragment = graphql`
       }
     }
     platform_language
-    platform_map_tile_server_dark
-    platform_map_tile_server_light
     platform_openaev_url
     platform_opengrc_url
     platform_xtmhub_url
@@ -508,8 +506,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
   }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
     schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
 
-  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
-  const passwordExpired = forcePasswordChangeEnabled && isPasswordExpiredFront(me);
+  const passwordExpired = isPasswordExpiredFront(me);
   const onForcePasswordChangeRoute = location.pathname.startsWith(FORCE_PASSWORD_CHANGE_PATH);
 
   if (passwordExpired && !onForcePasswordChangeRoute) {

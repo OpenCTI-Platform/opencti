@@ -1,4 +1,4 @@
-import { TIPTAP_EDITOR_SELECTOR, CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
+import { TIPTAP_EDITOR_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
 
 /**
  * Find images and apply a width in pixels on it.
@@ -13,10 +13,9 @@ import { TIPTAP_EDITOR_SELECTOR, CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT
  * @param content The content of the file.
  * @returns New content with images widths in pixels.
  */
-const setImagesWidth = (content: string, maxWidth = MAX_WIDTH_PORTRAIT, isTiptapEnabled = false) => {
+const setImagesWidth = (content: string, maxWidth = MAX_WIDTH_PORTRAIT) => {
   let updatedContent = content;
-  const selector = isTiptapEnabled ? TIPTAP_EDITOR_SELECTOR : CKEDITOR_CONTAINER_SELECTOR;
-  const elementEditor = document.querySelector(selector);
+  const elementEditor = document.querySelector(TIPTAP_EDITOR_SELECTOR);
   const fullWidth = elementEditor ? (elementEditor as HTMLElement).clientWidth : maxWidth;
 
   // 1. In case of images with width in pixels.

@@ -8,7 +8,9 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  hasPublishedWorkflowDefinition,
   publishWorkflowDefinition,
+  restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
@@ -19,6 +21,9 @@ const workflowResolvers = {
   Query: {
     workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
       return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
+    },
+    workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return hasPublishedWorkflowDefinition(context, context.user!, entityType);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
@@ -33,6 +38,9 @@ const workflowResolvers = {
     },
     workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return publishWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return restorePublishedWorkflowDefinition(context, context.user!, entityType);
     },
     workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
@@ -78,7 +86,11 @@ const workflowResolvers = {
     pendingTransition: (instance: any) => instance.pendingTransition ?? null,
   },
   WorkflowSerializedTransition: {
-    from: (transition: any) => (Array.isArray(transition.from) ? transition.from : [transition.from]),
+    from: (transition: any) => {
+      if (transition.from === null || transition.from === undefined) return [];
+      return Array.isArray(transition.from) ? transition.from : [transition.from];
+    },
+    to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
@@ -113,13 +125,37 @@ const workflowResolvers = {
   },
   EntitySetting: {
     workflow_published_version_id: (entitySetting: any, _: any, context: AuthContext) => {
-      return getWorkflowPublishedVersionId(context, entitySetting);
+      return getWorkflowPublishedVersionId(context, context.user!, entitySetting);
     },
   },
   DraftWorkspace: {
     workflowInstance: (draft: any, _: any, context: AuthContext) => {
       const draftId = draft.id || draft.internal_id;
       return getWorkflowInstance(context, context.user!, draftId);
+    },
+  },
+  StixDomainObject: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  Container: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixCoreRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixSightingRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
     },
   },
   WorkflowDefinitionMutationResult: {

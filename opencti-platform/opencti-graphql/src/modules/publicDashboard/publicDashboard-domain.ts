@@ -25,13 +25,14 @@ import {
   type QueryPublicStixRelationshipsNumberArgs,
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
-import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -49,6 +50,8 @@ import { findById as findMarkingDefinitionById } from '../../domain/markingDefin
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
 
 export const findById = (
   context: AuthContext,
@@ -138,6 +141,51 @@ export const getAllowedMarkings = async (
   return publicDashboardMarkingsIds.flatMap((id: string) => markingsMap.get(id) || []);
 };
 
+/**
+ * Creates the private manifest by resolving saved filter references
+ * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters.
+ */
+const createPrivateManifest = async (
+  context: AuthContext,
+  user: AuthUser,
+  parsedManifest: any,
+) => {
+  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
+    const widgetDefinitions = Object.values(parsedManifest.widgets);
+    await Promise.all(widgetDefinitions.map((widget: any) => resolveSavedFiltersInDataSelection(context, user, widget)));
+  }
+  return toB64(parsedManifest ?? '{}');
+};
+
+/**
+ * Creates the public manifest by stripping each widget's dataSelection
+ * to only keep display-related properties (no filters, no query data).
+ */
+const createPublicManifest = (parsedManifest: any) => {
+  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
+    const publicWidgets = Object.fromEntries(
+      Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {
+        const publicDataSelection = widget.dataSelection.map((selection: any) => {
+          return {
+            ...(selection.label && { label: selection.label }),
+            ...(selection.attribute && { attribute: selection.attribute }),
+            ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
+            ...(isNotEmptyField(selection.number) && { number: selection.number }),
+            ...(isNotEmptyField(selection.centerLat) && { centerLat: selection.centerLat }),
+            ...(isNotEmptyField(selection.centerLng) && { centerLng: selection.centerLng }),
+            ...(isNotEmptyField(selection.zoom) && { zoom: selection.zoom }),
+            ...(selection.columns && { columns: selection.columns }),
+          };
+        });
+        return [widgetId, { ...widget, dataSelection: publicDataSelection }];
+      }),
+    );
+    const publicManifest = { ...parsedManifest, widgets: publicWidgets };
+    return toB64(publicManifest);
+  }
+  return toB64(parsedManifest ?? '{}');
+};
+
 export const addPublicDashboard = async (
   context: AuthContext,
   user: AuthUser,
@@ -187,27 +235,9 @@ export const addPublicDashboard = async (
     ...(parsedManifest.config ?? {}),
     refresh_interval: dashboardRefreshInterval,
   };
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
-    Object.keys(parsedManifest.widgets).forEach((widgetId) => {
-      parsedManifest.widgets[widgetId].dataSelection = parsedManifest
-        .widgets[widgetId]
-        .dataSelection.map((selection: any) => {
-          return {
-            ...(selection.label && { label: selection.label }),
-            ...(selection.attribute && { attribute: selection.attribute }),
-            ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
-            ...(selection.number && { number: selection.number }),
-            ...(selection.centerLat && { centerLat: selection.centerLat }),
-            ...(selection.centerLng && { centerLng: selection.centerLng }),
-            ...(selection.zoom && { zoom: selection.zoom }),
-            ...(selection.columns && { columns: selection.columns }),
-          };
-        });
-    });
-  }
 
-  // Create public manifest
-  const publicManifest = toB64(parsedManifest ?? '{}');
+  const privateManifest = await createPrivateManifest(context, user, parsedManifest);
+  const publicManifest = createPublicManifest(parsedManifest);
 
   // Create publicDashboard
   const publicDashboardToCreate = {
@@ -215,7 +245,7 @@ export const addPublicDashboard = async (
     enabled: input.enabled,
     description: input.description,
     public_manifest: publicManifest,
-    private_manifest: dashboard.manifest,
+    private_manifest: privateManifest,
     dashboard_id: input.dashboard_id,
     user_id: user.id,
     uri_key: uriKey,
@@ -301,9 +331,9 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
   const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
-  context.user_inside_platform_organization = true;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-
   return { user, dataSelection, parameters };
 };
 
@@ -432,7 +462,7 @@ export const publicStixCoreObjectsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 
@@ -503,7 +533,7 @@ export const publicStixRelationshipsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 

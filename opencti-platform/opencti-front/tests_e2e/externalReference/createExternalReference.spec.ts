@@ -1,11 +1,10 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '../fixtures/baseFixtures';
 import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.pageModel';
 import ExternalReferencePage from '../model/externalReference.pageModel';
 import ExternalReferenceDetailsPage from '../model/externalReferenceDetails.pageModel';
 
-const baseDir = path.dirname(fileURLToPath(import.meta.url));
+const TEST_REPORT_PATH = fileURLToPath(new URL('assets/report.test.pdf', import.meta.url));
 
 test('Create a new external reference', { tag: ['@ce'] }, async ({ page }) => {
   const externalReferencePage = new ExternalReferencePage(page);
@@ -18,7 +17,7 @@ test('Create a new external reference', { tag: ['@ce'] }, async ({ page }) => {
   // add a new external reference
   await externalReferencePage.addNew();
   await externalReferenceForm.sourceNameField.fill('Test external reference source name field e2e');
-  await externalReferenceForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/report.test.pdf'));
+  await externalReferenceForm.associatedFileField.uploadContentFile(TEST_REPORT_PATH);
   await externalReferenceForm.getCreateButton().click();
   // open it
   await externalReferencePage.getItemFromList('Test external reference source name field e2e').click();

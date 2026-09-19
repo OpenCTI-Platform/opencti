@@ -135,8 +135,8 @@ describe('Drafts workspace domain testing', () => {
   });
 
   it('should validateDraftWorkspace as editor', async () => {
-    // Mock pushToWorkerForConnector => we don't want the bundle to be ingested for counters
-    vi.spyOn(rabbitMock, 'pushToWorkerForConnector').mockResolvedValue(true);
+    // Mock pushBundleToWorker => we don't want the bundle to be ingested for counters
+    vi.spyOn(rabbitMock, 'pushBundleToWorker').mockResolvedValue(undefined);
     const validateDraftWorkId = await validateDraftWorkspace(testContext, editorAuthUser, testDraftId);
     expect(validateDraftWorkId).toBeDefined();
   });
@@ -144,7 +144,7 @@ describe('Drafts workspace domain testing', () => {
   it('should checkDraftInContext as editor throw error on closed draft', async () => {
     await expect(async () => {
       await checkDraftInContext(testDraftContext);
-    }).rejects.toThrowError('Draft is in a locked state, no request can be done within this draft');
+    }).rejects.toThrowError('Cannot execute request in a draft that is not in an open state');
   });
 
   it('should return null draft version for non-draft index', () => {

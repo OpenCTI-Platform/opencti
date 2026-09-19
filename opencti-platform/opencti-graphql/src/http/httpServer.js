@@ -1,5 +1,6 @@
 import https from 'node:https';
 import http from 'node:http';
+import { promisify } from 'node:util';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 
 import nconf from 'nconf';
@@ -15,7 +16,7 @@ import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/c
 import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
-import { applicationSession } from '../database/session';
+import { getSessionMiddleware } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ForbiddenAccess, WorkNotALiveError } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -24,7 +25,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { buildRateLimiterOptions } from './httpUtils';
+import { applyKeepAliveTimeout, buildRateLimiterOptions } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -35,20 +36,25 @@ const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 
+const graphqlMethodRestriction = (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'OPTIONS') {
+    return next();
+  }
+  res.set('Allow', 'POST, OPTIONS');
+  return res.status(405).json({
+    name: 'MethodNotAllowedError',
+    message: 'Method Not Allowed. Use POST for GraphQL requests.',
+  });
+};
+
 export const extractWsSessionContext = async (context) => {
   const req = context.extra.request;
   const webSocket = context.extra.socket;
   // This will be run every time the client sends a subscription request
-  const wsSession = await new Promise((resolve) => {
-    // use same session parser as normal gql queries
-    const { session } = applicationSession;
-    session(req, {}, () => {
-      if (req.session) {
-        resolve(req.session);
-      }
-      return false;
-    });
-  });
+  // use same session parser as normal gql queries
+  const session = await getSessionMiddleware();
+  await promisify(session)(req, {});
+  const wsSession = req.session;
   // We have a good session. attach to context
 
   if (wsSession?.user) {
@@ -72,10 +78,12 @@ export const extractWsSessionContext = async (context) => {
 const createHttpServer = async () => {
   logApp.info('[INIT] Configuring HTTP/HTTPS server');
   const app = express();
+  // Disable the X-Powered-By header to avoid leaking framework information.
+  app.disable('x-powered-by');
   // Rate limiter must be first registered so it applies to all requests including /graphql
   // Even before session so it avoid creating session on rate limited requests.
   app.use(rateLimit(buildRateLimiterOptions()));
-  app.use(applicationSession.session);
+  app.use(await getSessionMiddleware());
   app.use(passport.initialize({}));
   const { schema, apolloServer } = createApolloServer();
   let httpServer;
@@ -100,6 +108,8 @@ const createHttpServer = async () => {
     logApp.info('[INIT] HTTP server initialization done.');
   }
   httpServer.setTimeout(REQ_TIMEOUT || MIN_20);
+  const keepAliveTimeout = applyKeepAliveTimeout(httpServer);
+  logApp.info(`[INIT] HTTP server keep-alive timeout set to ${keepAliveTimeout}ms`);
   // subscriptionServer
   const wsServer = new WebSocketServer({
     server: httpServer,
@@ -141,6 +151,7 @@ const createHttpServer = async () => {
   app.use(express.json({ limit: requestSizeLimit }));
   // IP whitelist middleware — must be after session middleware to detect session-based auth
   app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
+  app.use(`${basePath}/graphql`, graphqlMethodRestriction);
   app.use((req, res, next) => {
     // Skip graphql-upload for chatbot routes (they handle multipart themselves via Busboy)
     if (req.path.startsWith(`${basePath}/chatbot/`)) {

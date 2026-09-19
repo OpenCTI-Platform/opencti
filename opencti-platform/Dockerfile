@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.25
+# syntax=docker/dockerfile:1.27
 FROM node:22-alpine3.23 AS base
 
 
@@ -12,7 +12,7 @@ FROM base AS builder
 RUN <<EOT
   set -euxo pipefail
 
-  apk --no-cache add make g++ python3 python3-dev libmagic
+  apk --no-cache add make g++ python3 python3-dev
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   python3 -m ensurepip
   npm install -g corepack
@@ -53,6 +53,7 @@ WORKDIR /opt/opencti/opencti-front
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-front/package.json opencti-front/yarn.lock ./
 COPY opencti-front/packages/ ./packages/
+COPY opencti-front/patch/ ./patch/
 
 RUN yarn install --immutable
 
@@ -69,7 +70,7 @@ FROM base AS app
 RUN <<EOT
   set -euxo pipefail
 
-  apk --no-cache add tini python3 python3-dev libmagic
+  apk --no-cache add tini python3 python3-dev
   rm /var/log/apk.log
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   python3 -m ensurepip
@@ -89,6 +90,7 @@ WORKDIR /opt/opencti
 COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
 COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
 COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
+COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
 COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 
 ENV PYTHONUNBUFFERED="1"
@@ -106,4 +108,4 @@ EOT
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build/back.js"]
+CMD ["node", "build/back.mjs"]

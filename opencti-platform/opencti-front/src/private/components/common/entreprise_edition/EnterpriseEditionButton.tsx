@@ -1,7 +1,9 @@
 import Button from '@common/button/Button';
-import React, { useState } from 'react';
+import type { ButtonSize } from '@common/button/Button.types';
+import React, { CSSProperties, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import { RocketLaunchOutlined } from '@mui/icons-material';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import classNames from 'classnames';
@@ -19,16 +21,22 @@ const useStyles = makeStyles({
   },
 });
 
+const eeRow: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 4 };
+
 const EnterpriseEditionButton = ({
   feature,
   inLine = false,
   disabled = false,
+  withEEChip = false,
   title = 'Manage your Enterprise Edition license',
+  size = 'small',
 }: {
   feature?: string;
   inLine?: boolean;
   disabled?: boolean;
+  withEEChip?: boolean;
   title?: string;
+  size?: ButtonSize;
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -46,33 +54,37 @@ const EnterpriseEditionButton = ({
         onClose={() => setOpenEnterpriseEditionConsent(false)}
         settingsId={settingsId}
       />
-      {isAdmin ? (
-        <Button
-          size="small"
-          variant="secondary"
-          // color="ee"
-          onClick={() => setOpenEnterpriseEditionConsent(true)}
-          startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
-          disabled={disabled}
-          classes={{
-            root: classNames({
-              [classes.button]: !inLine,
-            }),
-          }}
-        >
-          {t_i18n(title)}
-        </Button>
-      ) : (
-        <Button
-          variant="secondary"
-          size="small"
-          disabled={disabled}
-          onClick={() => setFeedbackCreation(true)}
-          classes={{ root: classes.button }}
-        >
-          {t_i18n('Create a feedback')}
-        </Button>
-      )}
+      <span style={eeRow}>
+        {isAdmin ? (
+          <Button
+            size={size}
+            variant="secondary"
+            onClick={() => setOpenEnterpriseEditionConsent(true)}
+            startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
+            disabled={disabled}
+            classes={{
+              root: classNames({
+                [classes.button]: !inLine,
+              }),
+            }}
+          >
+            {t_i18n(title)}
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            size={size}
+            disabled={disabled}
+            onClick={() => setFeedbackCreation(true)}
+            classes={{ root: classes.button }}
+          >
+            {t_i18n('Create a feedback')}
+          </Button>
+        )}
+        {withEEChip && (
+          <EEChip feature={feature} clickable={false} style={{ marginInlineStart: 0 }} />
+        )}
+      </span>
       <FeedbackCreation
         openDrawer={feedbackCreation}
         handleCloseDrawer={() => setFeedbackCreation(false)}

@@ -1,7 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 
@@ -29,6 +27,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import SearchInput from '../../../../components/SearchInput';
 import { useDataTablePaginationLocalStorage } from '../../../../components/dataGrid/dataTableHooks';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -84,7 +83,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const [currentTab, setTab] = useState(0);
+  const [currentTab, setTab] = useState('overview');
 
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const groupData = usePreloadedQuery<GroupEditionContainerQuery>(groupEditionContainerQuery, groupQueryRef);
@@ -132,52 +131,76 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       disabled={disabled}
       controlledDial={UpdateGroupControlledDial}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
-          <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
-            <Tab label={t_i18n('Overview')} />
-            <Tab label={t_i18n('Roles')} />
-            <Tab label={t_i18n('Markings')} />
-            <Tab label={t_i18n('Members')} />
-            <Tab label={t_i18n('Confidences')} />
-          </Tabs>
-        </Box>
-        {currentTab === 0 && (
-          <GroupEditionOverview group={group} context={editContext} />
-        )}
-        {currentTab === 1 && roleQueryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inline} />}
-          >
-            <GroupEditionRoles group={group} queryRef={roleQueryRef} />
-          </React.Suspense>
-        )}
-        {currentTab === 2 && <GroupEditionMarkings group={group} />}
-        {currentTab === 3 && userQueryRef && (
-          <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inline} />}
-            >
-              <GroupEditionUsers
-                group={group}
-                queryRef={userQueryRef}
-                paginationOptionsForUpdater={paginationOptionsForUserEdition}
-                storageKey={LOCAL_STORAGE_KEY}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        scrollbarWidth: 'none',
+      }}
+      >
+        {/* The fill context exists only for Members, whose list must scroll inside
+            the drawer; the other four panels stay in normal flow, as before. */}
+        <Tabs
+          value={currentTab}
+          onValueChange={setTab}
+          className={currentTab === 'members' ? 'flex flex-col flex-1 min-h-0' : undefined}
+        >
+          <TabsList className="shrink-0">
+            <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+            <TabsTrigger value="roles">{t_i18n('Roles')}</TabsTrigger>
+            <TabsTrigger value="markings">{t_i18n('Markings')}</TabsTrigger>
+            <TabsTrigger value="members">{t_i18n('Members')}</TabsTrigger>
+            <TabsTrigger value="confidences">{t_i18n('Confidences')}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            <GroupEditionOverview group={group} context={editContext} />
+          </TabsContent>
+          <TabsContent value="roles">
+            {roleQueryRef && (
+              <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inline} />}
               >
-                <Box sx={{ marginTop: 2, marginBottom: 2 }}>
-                  <SearchInput
-                    variant="thin"
-                    onSubmit={helpers.handleSearch}
-                    keyword={searchTerm}
-                  />
-                </Box>
-              </GroupEditionUsers>
-            </React.Suspense>
-          </Box>
-        )}
-        {hasSetAccess && currentTab === 4 && (
-          <GroupEditionConfidence group={group} context={editContext} />
-        )}
+                <GroupEditionRoles group={group} queryRef={roleQueryRef} />
+              </React.Suspense>
+            )}
+          </TabsContent>
+          <TabsContent value="markings">
+            <GroupEditionMarkings group={group} />
+          </TabsContent>
+          <TabsContent value="members" className="flex flex-col flex-1 min-h-0">
+            {userQueryRef && (
+              <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                <React.Suspense
+                  fallback={<Loader variant={LoaderVariant.inline} />}
+                >
+                  <GroupEditionUsers
+                    group={group}
+                    queryRef={userQueryRef}
+                    paginationOptionsForUpdater={paginationOptionsForUserEdition}
+                    storageKey={LOCAL_STORAGE_KEY}
+                  >
+                    <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+                      <SearchInput
+                        variant="thin"
+                        onSubmit={helpers.handleSearch}
+                        keyword={searchTerm}
+                      />
+                    </Box>
+                  </GroupEditionUsers>
+                </React.Suspense>
+              </Box>
+            )}
+          </TabsContent>
+          <TabsContent value="confidences">
+            {hasSetAccess && (
+              <GroupEditionConfidence group={group} context={editContext} />
+            )}
+          </TabsContent>
+        </Tabs>
       </Box>
     </Drawer>
   );

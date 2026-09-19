@@ -46,12 +46,31 @@ export function refang(input) {
     .replace(/\[([a-zA-Z0-9])\]/g, '$1')
     // [:/] should map to /
     // eslint-disable-next-line no-useless-escape
-    .replace(/\[:\/\]/g, '/')
-    // // Remove literal ellipsis character
-    // .replace(/\u2026/g, '')
-    // Remove common placeholder endings (e.g., trailing [.] or ...)
-    // eslint-disable-next-line no-useless-escape
-    .replace(/(\[\.\]|\.{2,}|…)+$/g, '');
+    .replace(/\[:\/\]/g, '/');
+
+  // Remove common placeholder endings (e.g., trailing ... or …) in guaranteed
+  // linear time via a manual scan instead of a backtracking regex (a
+  // nested-quantifier regex here was the source of a ReDoS vulnerability).
+  // Mirrors the previous `(\.{2,}|…)+$` semantics: a run of 2+ dots, or a
+  // single ellipsis character, is stripped from the end (repeatedly), but a
+  // single lone trailing dot is left untouched.
+  let end = output.length;
+  for (;;) {
+    let dotRunStart = end;
+    while (dotRunStart > 0 && output[dotRunStart - 1] === '.') {
+      dotRunStart -= 1;
+    }
+    if (end - dotRunStart >= 2) {
+      end = dotRunStart;
+      continue;
+    }
+    if (end > 0 && output[end - 1] === '\u2026') {
+      end -= 1;
+      continue;
+    }
+    break;
+  }
+  output = output.slice(0, end);
 
   // Extract valid URL if present and sanitize
   const urlRegex = /https?:\/\/[^\s'"<>[\](){},;!?…]+/gi;

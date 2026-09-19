@@ -3,8 +3,9 @@ import { Field, Form, Formik, FormikErrors } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import MenuItem from '@mui/material/MenuItem';
 import Alert from '@mui/material/Alert';
+import { InfoOutlined } from '@mui/icons-material';
+import { fdsLayerClass } from '../../../../utils/fdsLayer';
 import Box from '@mui/material/Box';
 import { FormikConfig } from 'formik/dist/types';
 import JsonMapperField, { jsonMapperQuery } from '@components/common/form/JsonMapperField';
@@ -28,7 +29,7 @@ import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -56,6 +57,40 @@ interface IngestionJsonCreationContainerProps {
   open: boolean;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
   isDuplicated: boolean;
+  triggerButton?: boolean;
+  // Prefilled values coming from a configuration import (JSON file upload).
+  importedInput?: IngestionJsonImportedInput | null;
+  drawerSettings?: {
+    title: string;
+    button: string;
+  };
+}
+
+// Shape of the ingestionJsonAddInputFromImport mutation response: the feed
+// configuration plus the resolved (or created) JSON mapper reference.
+export interface IngestionJsonImportedInput {
+  name: string;
+  description?: string | null;
+  scheduling_period?: string | null;
+  uri?: string | null;
+  verb?: string | null;
+  body?: string | null;
+  pagination_with_sub_page?: boolean | null;
+  pagination_with_sub_page_attribute_path?: string | null;
+  pagination_with_sub_page_query_verb?: string | null;
+  headers?: ReadonlyArray<{ readonly name: string; readonly value: string }> | null;
+  query_attributes?: ReadonlyArray<{
+    readonly type?: string | null;
+    readonly from?: string | null;
+    readonly to?: string | null;
+    readonly data_operation?: string | null;
+    readonly state_operation?: string | null;
+    readonly default?: string | null;
+    readonly exposed?: string | null;
+  }> | null;
+  authentication_type?: string | null;
+  ssl_verify?: boolean | null;
+  jsonMapper: { readonly id: string; readonly name: string };
 }
 
 export interface IngestionJsonHeader {
@@ -104,6 +139,11 @@ interface IngestionJsonCreationProps {
   isDuplicated: boolean;
   handleClose: () => void;
   ingestionJson?: IngestionJsonEditionFragment_ingestionJson$key | null;
+  importedInput?: IngestionJsonImportedInput | null;
+  drawerSettings?: {
+    title: string;
+    button: string;
+  };
 }
 
 const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
@@ -118,7 +158,7 @@ const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
   );
 };
 
-const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionJson }) => {
+const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionJson, importedInput, drawerSettings }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const ingestionJsonData = useFragment(ingestionJsonEditionFragment, ingestionJson);
@@ -223,7 +263,41 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     });
   };
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
-  const initialValues: IngestionJsonAddInput = isDuplicated && ingestionJsonData ? {
+  // Prefill from an imported configuration: credentials, user and markings are
+  // platform-specific and are chosen by the user before creation.
+  const importedInitialValues: IngestionJsonAddInput | null = importedInput ? {
+    name: importedInput.name ?? '',
+    description: importedInput.description ?? '',
+    scheduling_period: importedInput.scheduling_period ?? 'auto',
+    uri: importedInput.uri ?? '',
+    verb: importedInput.verb ?? 'GET',
+    body: importedInput.body ?? '',
+    headers: (importedInput.headers ?? []).map(({ name, value }) => ({ name, value })),
+    query_attributes: (importedInput.query_attributes ?? []).map((attribute) => ({
+      type: attribute.type ?? '',
+      from: attribute.from ?? '',
+      to: attribute.to ?? '',
+      data_operation: attribute.data_operation ?? '',
+      state_operation: attribute.state_operation ?? '',
+      default: attribute.default ?? '',
+      exposed: attribute.exposed ?? '',
+    })),
+    pagination_with_sub_page: importedInput.pagination_with_sub_page ?? false,
+    pagination_with_sub_page_query_verb: importedInput.pagination_with_sub_page_query_verb ?? 'GET',
+    pagination_with_sub_page_attribute_path: importedInput.pagination_with_sub_page_attribute_path ?? '',
+    json_mapper_id: { label: importedInput.jsonMapper.name, value: importedInput.jsonMapper.id },
+    authentication_type: importedInput.authentication_type ?? 'none',
+    authentication_value: '',
+    user_id: '',
+    username: '',
+    password: '',
+    cert: '',
+    key: '',
+    ca: '',
+    markings: [],
+    ssl_verify: importedInput.ssl_verify ?? true,
+  } : null;
+  const duplicatedOrDefaultValues: IngestionJsonAddInput = isDuplicated && ingestionJsonData ? {
     name: `${ingestionJsonData.name} - copy`,
     description: ingestionJsonData.description,
     scheduling_period: ingestionJsonData.scheduling_period ?? 'auto',
@@ -276,6 +350,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     markings: [],
     ssl_verify: true,
   };
+  const initialValues: IngestionJsonAddInput = importedInitialValues ?? duplicatedOrDefaultValues;
 
   return (
     <Formik<IngestionJsonAddInput>
@@ -288,38 +363,38 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <IngestionSchedulingField />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="uri"
             label={t_i18n('HTTP JSON URL')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="verb"
             label={t_i18n('HTTP VERB')}
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem value="GET">GET</MenuItem>
-            <MenuItem value="POST">POST</MenuItem>
+            <SelectItem value="GET">GET</SelectItem>
+            <SelectItem value="POST">POST</SelectItem>
           </Field>
           {values.verb === 'POST' && (
             <>
@@ -350,10 +425,28 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
-          <Alert severity="info" variant="standard" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
-            <div>
+          <Alert
+            severity="info"
+            variant="standard"
+            // The icon rides inside the message, so the controls below line up with
+            // it rather than with the sentence it introduces.
+            icon={false}
+            className={fdsLayerClass(3)}
+            sx={{
+              position: 'relative',
+              marginTop: 2.5,
+              marginBottom: 2.5,
+              padding: 2,
+              backgroundColor: 'var(--bg-elevation-default)',
+              // MUI scrolls its message; the focus ring of the fields inside was
+              // being clipped by that overflow.
+              '& .MuiAlert-message': { padding: 0, width: '100%', overflow: 'visible' },
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <InfoOutlined fontSize="small" color="info" />
               {t_i18n('For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases')}
-            </div>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
                 control={<Switch />}
@@ -366,8 +459,8 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             {!!values.pagination_with_sub_page && (
               <>
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="pagination_with_sub_page_query_verb"
                   label={t_i18n('Sub pagination verb')}
                   fullWidth={true}
@@ -376,17 +469,17 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                     marginTop: 20,
                   }}
                 >
-                  <MenuItem value="GET">GET</MenuItem>
-                  <MenuItem value="POST">POST</MenuItem>
+                  <SelectItem value="GET">GET</SelectItem>
+                  <SelectItem value="POST">POST</SelectItem>
                 </Field>
 
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="pagination_with_sub_page_attribute_path"
                   label={t_i18n('Attribute path to get next uri')}
                   fullWidth={true}
-                  style={fieldSpacingContainerStyle}
+                  className="mt-5"
                 />
               </>
             )}
@@ -434,8 +527,8 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             )
           }
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="authentication_type"
             label={t_i18n('Authentication type')}
             fullWidth={true}
@@ -444,24 +537,24 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               marginTop: 20,
             }}
           >
-            <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="basic">
+            <SelectItem value="none">{t_i18n('None')}</SelectItem>
+            <SelectItem value="basic">
               {t_i18n('Basic user / password')}
-            </MenuItem>
-            <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-            <MenuItem value="certificate">
+            </SelectItem>
+            <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+            <SelectItem value="certificate">
               {t_i18n('Client certificate')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           {values.authentication_type === 'basic' && (
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="username"
                 label={t_i18n('Username')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="password"
@@ -479,11 +572,11 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="key"
@@ -491,11 +584,11 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}
@@ -528,6 +621,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               color={isCreateDisabled ? 'secondary' : 'primary'}
               onClick={() => setOpen(true)}
               disabled={!(values.uri && values.json_mapper_id)}
+              keepMui
             >
               {t_i18n('Verify')}
             </Button>
@@ -545,7 +639,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 onClick={submitForm}
                 disabled={isSubmitting || isCreateDisabled}
               >
-                {t_i18n('Create')}
+                {drawerSettings?.button ?? t_i18n('Create')}
               </Button>
             )}
           </FormButtonContainer>
@@ -574,6 +668,9 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
   open,
   paginationOptions,
   isDuplicated,
+  triggerButton = true,
+  importedInput,
+  drawerSettings,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -582,10 +679,10 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
     : null;
   return (
     <Drawer
-      title={isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed')}
+      title={drawerSettings?.title ?? (isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed'))}
       open={open}
       onClose={handleClose}
-      controlledDial={!isDuplicated ? CreateIngestionJsonControlledDial : undefined}
+      controlledDial={!isDuplicated && triggerButton ? CreateIngestionJsonControlledDial : undefined}
     >
       {({ onClose }) => (
         <IngestionJsonCreation
@@ -593,6 +690,8 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
           handleClose={onClose}
           paginationOptions={paginationOptions}
           isDuplicated={isDuplicated}
+          importedInput={importedInput}
+          drawerSettings={drawerSettings}
         />
       )}
     </Drawer>

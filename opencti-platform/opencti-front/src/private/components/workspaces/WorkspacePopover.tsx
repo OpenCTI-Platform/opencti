@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import Box from '@mui/material/Box';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import PublicDashboardCreationForm from './dashboards/public_dashboards/PublicDashboardCreationForm';
@@ -14,7 +14,7 @@ import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
 import { deleteNode, insertNode } from '../../../utils/store';
-import handleExportJson from './workspaceExportHandler';
+import useWorkspaceHandleExportJson from './useWorkspaceHandleExportJson';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
@@ -44,6 +44,7 @@ interface WorkspacePopoverProps {
 const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const { workspaceHandleExportJson } = useWorkspaceHandleExportJson();
 
   const workspace = useFragment(workspacePopoverFragment, data);
   const {
@@ -152,7 +153,7 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
 
   const handleExport = (event: UIEvent) => {
     stopEvent(event);
-    handleExportJson(workspace);
+    workspaceHandleExportJson(workspace);
   };
 
   return (

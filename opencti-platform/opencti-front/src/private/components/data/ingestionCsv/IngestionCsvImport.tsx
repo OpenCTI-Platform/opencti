@@ -7,11 +7,10 @@ import { IngestionCsvImportQuery$data } from '@components/data/ingestionCsv/__ge
 import { IngestionCsvEditionFragment_ingestionCsv$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import { FileUploadOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { RelayError } from '../../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../../utils/hooks/useXtmHubDownloadDocument';
 
 export const csvFeedImportQuery = graphql`
@@ -66,8 +65,12 @@ export const csvFeedImportQuery = graphql`
 
 interface IngestionCsvImportProps {
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
+  // Hide the upload toggle when the import is driven externally (Hub deep link).
+  hideTrigger?: boolean;
+  // Called when the prefilled creation drawer closes (creation or cancel).
+  onClose?: () => void;
 }
-const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions }) => {
+const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -88,8 +91,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           }
         })
         .catch((e) => {
-          const { errors } = (e as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
+          MESSAGING$.notifyRelayError(e);
         });
     }
   };
@@ -100,8 +102,8 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
   };
 
   const onDownloadError = () => {
-    navigate('/dashboard/data/ingestion/csv');
-    MESSAGING$.notifyError('An error occurred while importing CSV Feed configuration.');
+    navigate('/dashboard/integrations/deployed?kind=csv');
+    MESSAGING$.notifyError(t_i18n('An error occurred while importing CSV Feed configuration.'));
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({
@@ -112,7 +114,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
   });
 
   const onConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/redirect/connect-xtm-hub');
   };
 
   const onCancel = () => {
@@ -126,15 +128,17 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
         onConfirm={onConfirm}
         onCancel={onCancel}
       />
-      <ToggleButton
-        value="import"
-        size="small"
-        sx={{ marginLeft: 1 }}
-        title={t_i18n('Import a CSV Feed')}
-        onClick={() => inputFileRef?.current?.click()}
-      >
-        <FileUploadOutlined fontSize="small" color="primary" />
-      </ToggleButton>
+      {!hideTrigger && (
+        <ToggleButton
+          value="import"
+          size="small"
+          sx={{ marginLeft: 1 }}
+          title={t_i18n('Import a CSV Feed')}
+          onClick={() => inputFileRef?.current?.click()}
+        >
+          <FileUploadOutlined fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <VisuallyHiddenInput
         ref={inputFileRef}
         type="file"
@@ -146,7 +150,10 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           ...ingestCSVData,
         } as unknown as IngestionCsvEditionFragment_ingestionCsv$data}
         triggerButton={false}
-        handleClose={() => setOpen(false)}
+        handleClose={() => {
+          setOpen(false);
+          onClose?.();
+        }}
         open={open}
         paginationOptions={paginationOptions}
         drawerSettings={{

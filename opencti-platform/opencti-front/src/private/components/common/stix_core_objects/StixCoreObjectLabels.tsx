@@ -1,10 +1,11 @@
+import RawTag from '@common/tag/RawTag';
 import Tag from '@common/tag/Tag';
 import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { SyntheticEvent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import useChipOverflow from '../../data/IngestionCatalog/components/card/usecases/useChipOverflow';
+import useChipOverflow from '../../integrations/catalog/components/card/usecases/useChipOverflow';
 import { Theme } from '../../../../components/Theme';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
@@ -33,7 +34,7 @@ const StixCoreObjectLabels = ({
   // case Revoked
   if (revoked) {
     return (
-      <Tag
+      <RawTag
         variant="outlined"
         label={t_i18n('Revoked')}
         onClick={(e: SyntheticEvent) => {
@@ -73,16 +74,16 @@ const StixCoreObjectLabels = ({
                 chipRefs.current[index] = el;
               }}
             >
-              <Tag label={label.value || EMPTY_VALUE} />
+              <RawTag label={label.value || EMPTY_VALUE} />
             </div>
           ))}
         </Stack>
 
         {/* Visible chips */}
-        <Stack direction="row" gap={1} overflow="hidden" flex={1}>
+        <Stack direction="row" gap={1} overflow="hidden">
           {labels.slice(0, visibleCount).map((label) => (
             <Box key={label.id} sx={{ minWidth: 0 }}>
-              <Tag
+              <RawTag
                 label={label.value || ''}
                 color={label.color || ''}
                 onClick={(e: React.MouseEvent) => {

@@ -72,6 +72,7 @@ const DraftAuthorizedMembers = ({ data }: DraftAuthorizedMembersProps) => {
               size="default"
               onClick={() => setOpen(true)}
               variant="secondary"
+              aria-label={t_i18n('Authorized members')}
             >
               <LockOutlined fontSize="small" />
             </IconButton>

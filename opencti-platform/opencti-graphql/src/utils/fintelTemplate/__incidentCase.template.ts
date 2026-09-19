@@ -10,7 +10,7 @@ import {
 const template_content = `
 <div>
   <h2>Incident Response Report: $containerName</h2>
-  
+
   <h3>1. Details</h3>
   <table>
     <tbody>
@@ -44,14 +44,14 @@ const template_content = `
       </tr>
     </tbody>
   </table>
-  
+
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
-  
+
   <h3>2. Executive Summary</h3>
   <div>$description</div>
-  
+
   <h3>3. Incident Analysis</h3>
   <blockquote>
     <p>To be completed by the analyst. This section should clearly describe:</p>
@@ -62,40 +62,40 @@ const template_content = `
       <li><strong>Detection and response</strong>: Examine how the incident was detected and the effectiveness of the response.</li>
     </ul>
   </blockquote>
-  
+
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
-  
+
   <h3>4. Incident Response Tasks/Actions</h3>
   <div>$incidentTasksAndActions</div>
-  
+
   <h3>5. Recommendations</h3>
   <blockquote>
     <p>To be completed by the analyst. The recommendations section details the actions necessary to prevent similar incidents in the future.</p>
   </blockquote>
-  
+
   <h3>6. Indicators of Compromise (IoCs)</h3>
   <div>$incidentIOC</div>
-  
+
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
-  
+
   <h3>7. Observables</h3>
   <div>$observables</div>
-  
+
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
-  
+
   <h3>8. Tactics, Techniques, and Procedures (TTPs)</h3>
   <div>$attackPatterns</div>
-  
+
   <div class="page-break" style="page-break-after:always;">
     <span style="display:none;">&nbsp;</span>
   </div>
-  
+
   <h3>9. References</h3>
   <div>$externalReferencesURL</div>
 </div>
@@ -106,6 +106,7 @@ export const fintelTemplateIncidentResponse: FintelTemplateAddInput = {
   template_content,
   start_date: '1970-01-01T00:00:00Z',
   settings_types: ['Case-Incident'],
+  default: false,
   fintel_template_widgets: [
     widgetContainerObservables,
     widgetIncidentIOC,

@@ -150,7 +150,7 @@ You can change the default configuration of the import csv connector in your con
 In Data import section, or Data tab of an entity, when you upload a CSV, you can select a mapper to apply to the file. 
 The file will then be parsed following the representation rules set in the mapper.
 
-By default, the imported elements will be added in a new Analyst Workbench where you will be able to check the result of the import.
+By default, the imported elements will be added in a new Draft where you will be able to check the result of the import before validation. You can also choose to use an Analyst Workbench instead by changing the validation mode.
 
 <a id="default-values-for-attributes"></a>
 ## Default values for attributes

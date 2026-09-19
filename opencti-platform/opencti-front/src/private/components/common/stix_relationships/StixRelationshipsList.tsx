@@ -1,18 +1,17 @@
-import React, { ReactNode, Suspense, useRef } from 'react';
+import React, { ReactNode, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { StixRelationshipsListQuery, StixRelationshipsOrdering } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { OrderingMode } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { buildRelationshipSingleWidgetBaseQueryVariables } from 'src/components/dashboard/dashboardVizUtils';
 
 export const stixRelationshipsListQuery = graphql`
   query StixRelationshipsListQuery(
@@ -4510,26 +4509,18 @@ const StixRelationshipsListComponent = ({
 
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
 ): StixRelationshipsListQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute = selection.date_attribute?.length
-    ? selection.date_attribute
-    : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    {
-      dateAttribute,
-      isKnowledgeRelationshipWidget: true,
-    },
-  );
+  const { dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     first: selection.number ?? 50,
     orderBy: (dateAttribute as StixRelationshipsOrdering),
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-    filters: normalizeFilterGroupForBackend(filters),
-    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+    filters,
+    dynamicFrom,
+    dynamicTo,
   };
 };
 
@@ -4558,7 +4549,7 @@ const StixRelationshipsList = ({
 }: StixRelationshipsListProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -4567,24 +4558,6 @@ const StixRelationshipsList = ({
     config,
     buildQueryVariables,
   });
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsListComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          widgetId={widgetId}
-          rootRef={rootRef}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -4596,7 +4569,19 @@ const StixRelationshipsList = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixRelationshipsListComponent
+            queryRef={queryRef!}
+            dataSelection={resolvedDataSelection}
+            widgetId={widgetId}
+            rootRef={rootRef}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

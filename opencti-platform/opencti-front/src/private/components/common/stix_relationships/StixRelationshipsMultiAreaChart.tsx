@@ -1,17 +1,15 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { ReactNode, Suspense, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixRelationshipsMultiAreaChartTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiAreaChartTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { buildRelationshipMultiWidgetBaseQueryVariables } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -92,35 +90,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiAreaChartTimeSeriesQuery['variables'] => {
-  const fallbackStart = monthsAgo(12);
-  const fallbackEnd = now();
-  const startDate = config.startDate ?? fallbackStart;
-  const endDate = config.endDate ?? fallbackEnd;
-
-  const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters,
-      { startDate, endDate, isKnowledgeRelationshipWidget: true },
-    );
-
-    return {
-      field: dateAttribute,
-      filters: normalizeFilterGroupForBackend(filters),
-      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
-    };
-  });
-
-  return {
-    operation: 'count',
-    startDate,
-    endDate,
-    interval: parameters?.interval ?? 'day',
-    timeSeriesParameters,
-  };
+  return buildRelationshipMultiWidgetBaseQueryVariables(
+    resolvedDataSelection, config, parameters) as StixRelationshipsMultiAreaChartTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiAreaChartProps {
@@ -147,7 +118,7 @@ const StixRelationshipsMultiAreaChart = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -157,27 +128,6 @@ const StixRelationshipsMultiAreaChart = ({
     parameters,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsMultiAreaChartComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          parameters={parameters}
-          onMounted={(chart) => setChart(chart as ApexCharts)}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -189,7 +139,19 @@ const StixRelationshipsMultiAreaChart = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixRelationshipsMultiAreaChartComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+          onMounted={(chart) => setChart(chart as ApexCharts)}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

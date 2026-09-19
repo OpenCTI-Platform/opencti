@@ -14,7 +14,7 @@ import { PopoverProps } from '@mui/material/Popover';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -100,7 +100,7 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
         connectorId: connector.id,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector works have been cleared');
+        MESSAGING$.notifySuccess(t_i18n('The connector works have been cleared'));
         setClearing(false);
         setDisplayClearWorks(false);
       },
@@ -123,7 +123,7 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
       },
       onError: (_error) => {
         setResetting(false);
-        MESSAGING$.notifyError('Failed to reset connector state');
+        MESSAGING$.notifyError(t_i18n('Failed to reset connector state'));
       },
     });
   };
@@ -138,7 +138,7 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
       },
       onCompleted: () => {
         handleCloseDelete();
-        navigate('/dashboard/data/ingestion/connectors');
+        navigate('/dashboard/integrations/deployed');
       },
     });
   };

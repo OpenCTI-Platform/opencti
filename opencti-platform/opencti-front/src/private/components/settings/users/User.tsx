@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { Add, DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -17,7 +18,7 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
@@ -33,7 +34,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
+
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
@@ -48,6 +49,7 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import UserHistory from './UserHistory';
 import UserTokenList from './UserTokenList';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -211,7 +213,7 @@ interface UserProps {
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const { t_i18n, nsdt, fsd, fldt, fd } = useFormatter();
-  const { me, settings } = useAuth();
+  const { me } = useAuth();
   const theme = useTheme<Theme>();
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
@@ -303,7 +305,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       (a: Session, b: Session) => (timestamp(a.created) ?? 0) - (timestamp(b.created) ?? 0),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
-  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
   const passwordValidUntil = (user as { password_valid_until?: string | null }).password_valid_until;
   const passwordValidUntilDate = passwordValidUntil ? fd(passwordValidUntil) : EMPTY_VALUE;
   const isServiceAccount = user.user_service_account;
@@ -354,14 +355,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                     </pre>
                   </Grid>
-                  {forcePasswordChangeEnabled && (
-                    <Grid item xs={4}>
-                      <Label>
-                        {t_i18n('Password valid until')}
-                      </Label>
-                      {passwordValidUntilDate}
-                    </Grid>
-                  )}
+                  <Grid item xs={4}>
+                    <Label>
+                      {t_i18n('Password valid until')}
+                    </Label>
+                    {passwordValidUntilDate}
+                  </Grid>
                 </>
               )}
               {isServiceAccount && (
@@ -749,10 +748,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
       </Grid>
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSession}
         onClose={handleCloseKillSession}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill this session?')}
         </DialogContentText>
@@ -769,10 +769,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </DialogActions>
       </Dialog>
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayKillSessions}
         onClose={handleCloseKillSessions}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to kill all the sessions of this user?')}
         </DialogContentText>

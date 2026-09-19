@@ -71,6 +71,7 @@ export const ingestionTaxiiAdd = async (context: AuthContext, user: AuthUser, in
 export interface TaxiiIngestionPatch {
   current_state_cursor?: string | undefined;
   last_execution_date?: string;
+  last_execution_status?: string;
   added_after_start?: string;
 }
 

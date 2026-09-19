@@ -556,3 +556,74 @@ describe('ActionRegistry.validateDraft', () => {
     await expect(freshRegistry.validateDraft(ctx)).rejects.toThrow('Validation failed');
   });
 });
+
+// ---------------------------------------------------------------------------
+// updateAuthorizedMembers — skipAdminValidation bypass
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.updateAuthorizedMembers (skipAdminValidation)', () => {
+  let freshRegistry: Record<string, (ctx: any, params?: any) => Promise<void>>;
+  let mockEditAuthorizedMembers: ReturnType<typeof vi.fn>;
+  let mockDraftWorkspaceEditAuthorizedMembers: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    mockEditAuthorizedMembers = vi.fn().mockResolvedValue(undefined);
+    mockDraftWorkspaceEditAuthorizedMembers = vi.fn().mockResolvedValue(undefined);
+    vi.doMock('../../../src/utils/authorizedMembers', () => ({ editAuthorizedMembers: mockEditAuthorizedMembers }));
+    vi.doMock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
+      validateDraftWorkspace: vi.fn(),
+      draftWorkspaceEditAuthorizedMembers: mockDraftWorkspaceEditAuthorizedMembers,
+    }));
+    vi.doMock('../../../src/config/conf', async () => {
+      const actual = await import('../../../src/config/conf');
+      return { ...actual, logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } };
+    });
+    vi.doMock('../../../src/schema/identifier', () => ({ generateInternalId: vi.fn() }));
+    vi.doMock('../../../src/utils/access', () => ({ KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNMANAGEAUTHMEMBERS' }));
+    vi.doMock('../../../src/schema/stixRefRelationship', () => ({
+      RELATION_CREATED_BY: 'created-by',
+      RELATION_OBJECT_ASSIGNEE: 'object-assignee',
+      RELATION_OBJECT_PARTICIPANT: 'object-participant',
+    }));
+    const mod = await import('../../../src/modules/workflow/registry/workflow-actions');
+    freshRegistry = mod.ActionRegistry as any;
+  });
+
+  afterEach(() => {
+    vi.resetModules();
+    vi.restoreAllMocks();
+  });
+
+  it('passes skipAdminValidation: true when members list has no admin (non-draft entity)', async () => {
+    const ctx = {
+      user: { id: 'user-id' },
+      entity: { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' },
+      context: {},
+    };
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'some-user', access_right: 'view' }],
+    });
+    expect(mockEditAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      expect.objectContaining({ skipAdminValidation: true }),
+    );
+  });
+
+  it('passes skipAdminValidation: true when members list has no admin (DraftWorkspace)', async () => {
+    const ctx = {
+      user: { id: 'user-id' },
+      entity: { id: 'draft-id', internal_id: 'draft-id', entity_type: 'DraftWorkspace' },
+      context: {},
+    };
+    await freshRegistry.updateAuthorizedMembers(ctx, {
+      authorized_members: [{ id: 'some-user', access_right: 'view' }],
+    });
+    expect(mockDraftWorkspaceEditAuthorizedMembers).toHaveBeenCalledWith(
+      ctx.context, ctx.user,
+      'draft-id',
+      expect.any(Array),
+      { skipAdminValidation: true },
+    );
+  });
+});

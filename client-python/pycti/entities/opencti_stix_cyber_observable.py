@@ -2,9 +2,8 @@
 
 import base64
 import json
+import mimetypes
 import os
-
-import magic
 
 from .indicator.opencti_indicator_properties import INDICATOR_PROPERTIES
 from .stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
@@ -248,7 +247,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             self.opencti.app_logger.info(
                 "Uploading a file in Stix-Cyber-Observable",
                 {"file": final_file_name, "id": id},
@@ -299,7 +300,10 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         :type externalReferences: list
         :param objectOrganization: (optional) list of organization IDs
         :type objectOrganization: list
-        :param update: (optional) whether to update if exists (default: False)
+        :param update: (optional) whether to force-merge entities that ambiguously match
+            multiple existing records during creation (default: False). OpenCTI always
+            upserts data by standard id/hash regardless of this flag; it only affects the
+            rare case where a single incoming entity matches more than one existing entity.
         :type update: bool
         :param resolve_result_indicators: (optional) resolve result indicators (default: True)
         :type resolve_result_indicators: bool
@@ -1513,6 +1517,38 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     data=base64.b64decode(observable_data["payload_bin"]),
                     mime_type=observable_data["mime_type"],
                 )
+            if type == "Windows-Registry-Key" and observable_data.get("values"):
+                key_id = result["data"]["stixCyberObservableAdd"]["id"]
+                for registry_value in observable_data["values"]:
+                    value_result = self.create(
+                        observableData={
+                            "type": "windows-registry-value-type",
+                            **registry_value,
+                        },
+                        createdBy=created_by,
+                        objectMarking=object_marking,
+                        objectLabel=object_label,
+                        update=update,
+                    )
+                    if value_result is not None:
+                        self.opencti.query(
+                            """
+                                mutation StixCyberObservableAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
+                                    stixCyberObservableEdit(id: $id) {
+                                        relationAdd(input: $input) {
+                                            id
+                                        }
+                                    }
+                                }
+                            """,
+                            {
+                                "id": key_id,
+                                "input": {
+                                    "toId": value_result["id"],
+                                    "relationship_type": "values",
+                                },
+                            },
+                        )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableAdd"]
             )
@@ -1666,7 +1702,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
 
             result = self.opencti.query(
                 query,

@@ -1,25 +1,23 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import {
   StixCoreObjectsMultiHorizontalBarsDistributionQuery,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHorizontalBarsDistributionQuery.graphql';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
-import { ReactNode, Suspense } from 'react';
+import { ReactNode } from 'react';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import { ApexOptions } from 'apexcharts';
 
 const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
@@ -493,29 +491,11 @@ const buildQueryVariables = (
   const selection = resolvedDataSelection[0];
   const subSelection = resolvedDataSelection[1];
 
-  const { startDate, endDate } = computeStartEndDates(config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
 
-  const dateAttribute = selection.date_attribute?.length
-    ? selection.date_attribute
-    : 'created_at';
-
-  const subDateAttribute = subSelection?.date_attribute?.length
-    ? subSelection.date_attribute
-    : 'created_at';
-
-  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, {
-    startDate,
-    endDate,
-    dateAttribute,
-  });
-
-  const { filters: subFilters } = buildFiltersAndOptionsForWidgets(
-    subSelection?.filters,
-    {
-      startDate,
-      endDate,
-      dateAttribute: subDateAttribute,
-    },
+  const { dateAttribute: subDateAttribute, filters: subFilters } = computeWidgetFiltersForSelection(
+    subSelection,
+    config,
   );
 
   return {
@@ -525,7 +505,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
     subDistributionField: subSelection?.attribute ?? 'entity_type',
     subDistributionOperation: 'count',
@@ -533,7 +513,7 @@ const buildQueryVariables = (
     subDistributionEndDate: endDate,
     subDistributionDateAttribute: subDateAttribute,
     subDistributionTypes: DATA_SELECTION_TYPES,
-    subDistributionFilters: normalizeFilterGroupForBackend(subFilters),
+    subDistributionFilters: subFilters,
     subDistributionLimit: subSelection?.number ?? 10,
   };
 };
@@ -549,7 +529,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
   host,
 }: StixCoreObjectsMultiHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -558,24 +538,6 @@ const stixCoreObjectsMultiHorizontalBars = ({
     config,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsMultiHorizontalBarsComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          parameters={parameters}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -586,7 +548,18 @@ const stixCoreObjectsMultiHorizontalBars = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixCoreObjectsMultiHorizontalBarsComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

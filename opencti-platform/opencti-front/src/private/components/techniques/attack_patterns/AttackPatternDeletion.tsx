@@ -1,11 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { RelayError } from '../../../../relay/relayTypes';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
 const AttackPatternDeletionDeleteMutation = graphql`
@@ -19,8 +18,7 @@ const AttackPatternDeletionDeleteMutation = graphql`
 const AttackPatternDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Attack-Pattern') },
   });
   const [commit] = useApiMutation(
@@ -42,8 +40,7 @@ const AttackPatternDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen
         navigate('/dashboard/techniques/attack_patterns');
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error);
       },
     });
   };

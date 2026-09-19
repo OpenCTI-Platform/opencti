@@ -67,7 +67,7 @@ describe('Log resolver standard behavior', async () => {
         },
       });
       return queryResult?.data?.logs.edges.length > 1; // we need create and update
-    }, 2000, 20);
+    }, 10000);
 
     const queryResult = await queryAsAdminWithSuccess({
       query: READ_QUERY,

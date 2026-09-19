@@ -174,6 +174,21 @@ The rules engine comprises a set of predefined rules (named inference rules) tha
 
 ![Targeting_when_located](assets/targeting_when_located.png)
 
+#### Vulnerability propagation via software usage
+
+| Conditions                                                                  | Creations                            |
+|:----------------------------------------------------------------------------|:-------------------------------------|
+| A System A uses a Software B and this Software B has a Vulnerability C.     | The System A has the Vulnerability C |
+
+![software_has_when_software_has](assets/software_has_when_software_has.png)
+
+#### Software Vulnerability propagation to Infrastructure
+
+| Conditions                                                                                  | Creations                                    |
+|:--------------------------------------------------------------------------------------------|:---------------------------------------------|
+| An Infrastructure A consists of a Software B and this Software B has a Vulnerability C.     | The Infrastructure A has the Vulnerability C |
+
+![infra_has_when_software_has](assets/infra_has_when_software_has.png)
 
 ## Rule execution
 

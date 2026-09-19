@@ -2,6 +2,9 @@ import type { Resolvers } from '../../generated/graphql';
 import { addFintelDesign, findFintelDesignPaginated, findById, fintelDesignDelete, fintelDesignEditContext, fintelDesignEditField } from './fintelDesign-domain';
 
 const fintelDesignResolvers: Resolvers = {
+  FintelDesign: {
+    default: (fintelDesign) => Boolean(fintelDesign.default),
+  },
   Query: {
     fintelDesign: (_, { id }, context) => findById(context, context.user, id),
     fintelDesigns: (_, args, context) => {

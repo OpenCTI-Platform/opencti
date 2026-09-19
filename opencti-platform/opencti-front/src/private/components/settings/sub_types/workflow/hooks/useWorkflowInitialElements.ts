@@ -14,7 +14,7 @@ type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflo
 
 type StatusTemplate = { [key: string]: { color: string; id: string; name: string } };
 
-const convertEdgesToObject = <T extends { id: string }>(
+export const convertEdgesToObject = <T extends { id: string }>(
   connection: Connection<T | null | undefined>,
 ): Record<string, T> => {
   if (!connection) return {};
@@ -35,7 +35,7 @@ export const useWorkflowInitialElements = (
 
     const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
     // Members contains both users, groups and organizations
-    const members = {
+    const members: Record<string, { id: string; name: string; entity_type: string }> = {
       ...convertEdgesToObject(membersEdges),
       AUTHOR: { id: 'AUTHOR', name: 'Draft author (org)', entity_type: 'Dynamic from draft' },
       CREATORS: { id: 'CREATORS', name: 'Creators', entity_type: 'Dynamic from draft' },
@@ -101,7 +101,7 @@ export const useWorkflowInitialElements = (
       .map(({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => {
         const fromIds = (Array.isArray(from) ? from : [from]).join(',');
         return {
-          id: `${WorkflowNodeType.transition}-${fromIds}-${to}`,
+          id: `${WorkflowNodeType.transition}-${fromIds}-${event}-${to ?? '_unlinked'}`,
           type: WorkflowNodeType.transition,
           data: {
             event,
@@ -116,9 +116,9 @@ export const useWorkflowInitialElements = (
 
     // 3. Map transitions to edges
     const transitionEdges: Edge[] = workflowDefinition.transitions.flatMap((transition) => {
-      const fromArray = Array.isArray(transition.from) ? transition.from : [transition.from];
+      const fromArray: string[] = Array.isArray(transition.from) ? [...transition.from] : [transition.from];
       const fromIds = fromArray.join(',');
-      const transitionId = `${WorkflowNodeType.transition}-${fromIds}-${transition.to}`;
+      const transitionId = `${WorkflowNodeType.transition}-${fromIds}-${transition.event}-${transition.to ?? '_unlinked'}`;
       return [
         ...fromArray.map((fromState) => ({
           id: `e-${fromState}->${transitionId}`,
@@ -126,13 +126,13 @@ export const useWorkflowInitialElements = (
           source: fromState,
           target: transitionId,
         })),
-        {
+        ...(transition.to != null ? [{
           id: `e-${transitionId}->${transition.to}`,
           type: WorkflowNodeType.transition,
           source: transitionId,
           target: transition.to,
           markerEnd: { type: MarkerType.ArrowClosed, color: theme.palette.chip?.main },
-        },
+        }] : []),
       ];
     });
 

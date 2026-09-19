@@ -23,6 +23,7 @@ import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
+import XtmHubPermissionRequiredDialog from './settings/xtm-hub/XtmHubPermissionRequiredDialog';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -113,9 +114,8 @@ const TargetedCountriesComponent = ({ queryRef }) => {
   return (
     <LocationMiniMapTargets
       title={t_i18n('Targeted countries (Last 3 months)')}
-      center={[48.8566969, 2.3514616]}
-      countries={countries}
       zoom={2}
+      countries={countries}
     />
   );
 };
@@ -168,6 +168,7 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3}>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Intrusion-Set"
             config={config}
             parameters={{
@@ -190,6 +191,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Malware"
             config={config}
             parameters={{
@@ -212,6 +214,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Report"
             config={config}
             parameters={{
@@ -234,6 +237,7 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item xs={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Indicator"
             config={config}
             parameters={{
@@ -415,7 +419,6 @@ const DefaultDashboard = ({ timeField }) => {
             fallback={(
               <LocationMiniMapTargets
                 title={t_i18n('Targeted countries (Last 3 months)')}
-                center={[48.8566969, 2.3514616]}
                 zoom={2}
               />
             )}
@@ -588,6 +591,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
   return (
     <UserContext.Provider value={dashboardContextValue}>
       <div className={classes.root} data-testid="dashboard-page">
+        <XtmHubPermissionRequiredDialog />
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomHomeDashboard
             dashboard={defaultDashboard}

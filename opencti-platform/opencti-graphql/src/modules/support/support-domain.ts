@@ -15,7 +15,7 @@ import {
   TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
 } from '../../config/conf';
 import { downloadFile } from '../../database/raw-file-storage';
-import { loadedFilesListing, streamConverter, fileToReadStream, uploadToStorage } from '../../database/file-storage';
+import { loadedFilesListing, streamConverter, fileToReadStream, uploadToStorage, type LoadedFile } from '../../database/file-storage';
 import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
@@ -76,13 +76,21 @@ export const findAllSupportFiles = (files: string[], prefix: string): string[] =
   return allSupportFiles;
 };
 
-const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) => {
+/**
+ * Archive all files of a local folder into a single zip file written on the filesystem.
+ * The archive is finalized asynchronously; this function waits until the write stream is
+ * closed, an error occurs, or ZIP_TIMEOUT_MS is reached.
+ * @param zipLocalFolder the local folder whose files should be added to the archive.
+ * @param zipFullpath the full path (including filename) of the zip file to create.
+ */
+export const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) => {
   const archive = new ZipArchive();
   const output = fs.createWriteStream(zipFullpath);
 
   let closed = false;
+  let streamError: Error | undefined;
   output.on('error', (error) => {
-    throw FilesystemError(error, { zipFullpath });
+    streamError = error;
   });
   output.on('close', () => {
     closed = true;
@@ -93,11 +101,18 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
   archive.directory('subdir/', 'new-subdir');
   await archive.finalize();
 
-  // Wait until zip is complete, or timeout.
+  // Wait until zip is complete, an error occurs, or timeout.
   let initWaitingTime = ZIP_TIMEOUT_MS;
-  while (!closed && initWaitingTime > 0) {
+  while (!closed && !streamError && initWaitingTime > 0) {
     await wait(500);
     initWaitingTime -= 500;
+  }
+
+  if (streamError) {
+    throw FilesystemError(streamError.message, { zipFullpath });
+  }
+  if (!closed) {
+    throw FilesystemError('Zip creation timed out before completion', { zipFullpath, timeout: ZIP_TIMEOUT_MS });
   }
 };
 
@@ -130,7 +145,7 @@ export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: 
 };
 
 const downloadAllLogFiles = async (context: AuthContext, user: AuthUser, s3Directory: string, localDirectory: string) => {
-  const allSupportFiles = await loadedFilesListing(context, user, s3Directory, {});
+  const allSupportFiles = await loadedFilesListing(context, user, s3Directory, {}) as LoadedFile[];
   logApp.info('All support files', { allSupportFiles });
   for (let i = 0; i < allSupportFiles.length; i += 1) {
     const supportFile = allSupportFiles[i];

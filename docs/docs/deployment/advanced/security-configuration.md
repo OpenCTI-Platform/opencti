@@ -40,7 +40,7 @@ More information can be found in the [configuration page](../configuration.md#au
 
 ## Ingestion URL filtering
 
-To protect your platform against SSRF (Server-Side Request Forgery), you can define a list of URIs that should be blocked for all ingestion feeds (`ingestion_manager:uri_deny_list`).
+To protect your platform against SSRF (Server-Side Request Forgery), you can define a list of URIs that should be blocked for all ingestion feeds (`app:uri_deny_list`).
 
 More information can be found in the [advanced feed configuration page](../../usage/import/advanced-feed-configuration.md).
 

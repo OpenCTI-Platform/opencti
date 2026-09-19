@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import ComboboxField, { ComboboxFieldProps } from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import Field, { fieldSpacingContainerStyle } from '../../../../utils/field';
+import Field, { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DashboardFieldQuery } from './__generated__/DashboardFieldQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -56,33 +56,29 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
     queryRef,
   );
   return (
-    <Field<AutocompleteFieldProps<false>>
-      component={AutocompleteField}
+    <Field<ComboboxFieldProps>
+      component={ComboboxField}
       name="default_dashboard"
       multiple={false}
-      onChange={(name, value) => onChange(name, value?.value ?? '')}
+      onChange={(name, value) => onChange(name, (value as FieldOption | null)?.value ?? '')}
       isOptionEqualToValue={(option, { value }) => option.value === value}
-      textfieldprops={{
-        variant: 'standard',
-        label: t_i18n('Default dashboard'),
-        fullWidth: true,
-        helperText: (
-          <SubscriptionFocus context={context} fieldName="default_dashboard" />
-        ),
-      }}
+      label={t_i18n('Default dashboard')}
+      helperText={(
+        <SubscriptionFocus context={context} fieldName="default_dashboard" />
+      )}
       options={(workspaces?.edges ?? []).map(({ node: { id, name } }) => ({
         value: id,
         label: name,
         type: 'Dashboard',
       }))}
       style={fieldSpacingContainerStyle}
-      renderOption={(props, option) => (
-        <li {...props}>
+      renderOption={(option) => (
+        <>
           <div className={classes.icon} style={{ color: option.color }}>
             <ItemIcon type={option.type} />
           </div>
           <div className={classes.text}>{option.label}</div>
-        </li>
+        </>
       )}
     />
   );

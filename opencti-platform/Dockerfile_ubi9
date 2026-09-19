@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.25
+# syntax=docker/dockerfile:1.27
 FROM registry.access.redhat.com/ubi9/ubi AS base
 
 ARG PYTHON_VERSION=3.12
@@ -58,6 +58,7 @@ WORKDIR /opt/opencti/opencti-front
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-front/package.json opencti-front/yarn.lock ./
 COPY opencti-front/packages/ ./packages/
+COPY opencti-front/patch/ ./patch/
 
 RUN yarn install --immutable
 
@@ -99,6 +100,7 @@ WORKDIR /opt/opencti
 COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
 COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
 COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
+COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
 COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 
 ENV PYTHONUNBUFFERED="1"
@@ -116,4 +118,4 @@ EOT
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build/back.js"]
+CMD ["node", "build/back.mjs"]

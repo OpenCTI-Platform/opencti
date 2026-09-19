@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { InformationOutline } from 'mdi-material-ui';
 import * as Yup from 'yup';
+import Alert from '../../../../../components/Alert';
 import TextField from '../../../../../components/TextField';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
@@ -15,6 +16,9 @@ export interface FintelTemplateFormInputs {
   name: string;
   description: string | null;
   published: boolean;
+  default: boolean;
+  include_cover_page_by_default: boolean;
+  include_back_page_by_default: boolean;
 }
 
 export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
@@ -24,15 +28,17 @@ interface FintelTemplateFormProps {
   onSubmit: FormikConfig<FintelTemplateFormInputs>['onSubmit'];
   onSubmitField: (field: FintelTemplateFormInputKeys, value: unknown) => void;
   defaultValues?: FintelTemplateFormInputs;
-  isEdition?: boolean;
+  editingProps?: {
+    onDefaultToggle: (value: boolean, revert: () => void) => void;
+  };
 }
 
 const FintelTemplateForm = ({
   onClose,
   onSubmit,
   onSubmitField,
+  editingProps,
   defaultValues,
-  isEdition = false,
 }: FintelTemplateFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -40,21 +46,30 @@ const FintelTemplateForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     published: Yup.boolean().required(t_i18n('This field is required')),
+    default: Yup.boolean().required(t_i18n('This field is required')),
+    include_cover_page_by_default: Yup.boolean().required(t_i18n('This field is required')),
+    include_back_page_by_default: Yup.boolean().required(t_i18n('This field is required')),
   });
 
   const initialValues: FintelTemplateFormInputs = defaultValues ?? {
     name: '',
     description: null,
     published: false,
+    default: false,
+    include_cover_page_by_default: true,
+    include_back_page_by_default: true,
   };
 
   const updateField = async (field: FintelTemplateFormInputKeys, value: unknown) => {
-    validation.validateAt(field, { [field]: value })
-      .then(() => onSubmitField(field, value))
+    const normalizedValue = ['published', 'default', 'include_cover_page_by_default', 'include_back_page_by_default'].includes(field)
+      ? value === true || value === 'true'
+      : value;
+    validation.validateAt(field, { [field]: normalizedValue })
+      .then(() => onSubmitField(field, normalizedValue))
       .catch(() => false);
   };
 
-  const onUpdate = isEdition ? updateField : undefined;
+  const onUpdate = editingProps ? updateField : undefined;
 
   return (
     <Formik<FintelTemplateFormInputs>
@@ -63,12 +78,12 @@ const FintelTemplateForm = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting }) => {
+      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => {
         return (
           <Form>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
@@ -94,6 +109,7 @@ const FintelTemplateForm = ({
               containerstyle={{ marginTop: 20 }}
               onChange={onUpdate}
             />
+
             <Field
               component={MarkdownField}
               name="description"
@@ -104,7 +120,44 @@ const FintelTemplateForm = ({
               onSubmit={onUpdate}
             />
 
-            {!isEdition && (
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="default"
+              label={t_i18n('Set as default')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={
+                editingProps
+                  ? (_name: string, value: unknown) => {
+                      const next = value === true || value === 'true';
+                      editingProps.onDefaultToggle(next, () => setFieldValue('default', !next));
+                    }
+                  : onUpdate
+              }
+            />
+            <div style={{ marginTop: 20, fontWeight: 500 }}>{t_i18n('Export defaults')}</div>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="include_cover_page_by_default"
+              label={t_i18n('Include cover page by default')}
+              containerstyle={{ marginTop: 10 }}
+              onChange={onUpdate}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="include_back_page_by_default"
+              label={t_i18n('Include back page by default')}
+              containerstyle={{ marginTop: 10 }}
+              onChange={onUpdate}
+            />
+            <Alert
+              style={{ marginTop: 10 }}
+              content={t_i18n('These defaults pre-fill the export modal but can be overridden at export time.')}
+            />
+
+            {!editingProps && (
               <FormButtonContainer>
                 <Button
                   variant="secondary"

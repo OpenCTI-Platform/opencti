@@ -1,7 +1,7 @@
 import { useFragment, usePreloadedQuery } from 'react-relay';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import type { PreloadedQuery } from 'react-relay';
+import type { KeyType } from 'react-relay/ReactRelayTypes';
 import { GraphQLTaggedNode, OperationType } from 'relay-runtime';
-import { KeyType } from 'react-relay/relay-hooks/helpers';
 
 interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   queryRef: PreloadedQuery<QueryType>;

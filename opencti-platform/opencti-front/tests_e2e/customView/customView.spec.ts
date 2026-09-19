@@ -21,7 +21,7 @@ import SettingsCustomizationPage from 'tests_e2e/model/settingsCustomization.pag
  * 9. Export then re-import the view.
  * 10. Delete the view (and its duplicate and the imported view).
  */
-test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
+test('Custom View CRUD - golden path', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const customViewsSettingsPage = new CustomViewsSettingsPage(page);
   const customizationPage = new SettingsCustomizationPage(page);
@@ -60,8 +60,9 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   await customViewDetailsPage.widgets.openWidgetModal();
   await customViewDetailsPage.widgets.selectWidget('List');
   await customViewDetailsPage.widgets.selectPerspective('Entities');
-  await expect(page.getByText('In regards of')).toBeVisible();
-  await expect(page.getByText('CURRENT ENTITY', { exact: true })).toBeVisible();
+  // Assert the default filter chip through its button role: when the pointer hovers the chip,
+  // a tooltip duplicates the chip text and makes page-wide getByText locators ambiguous.
+  await expect(page.getByRole('button', { name: /In regards of.*CURRENT ENTITY/ })).toBeVisible();
   await customViewDetailsPage.widgets.fillLabel('Malwares');
   await customViewDetailsPage.widgets.validateFilters();
   await customViewDetailsPage.widgets.titleField.fill('Related malwares');
@@ -82,15 +83,19 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   // ─── Verify tab appears on a Campaign entity page ─────────────────────────────
   await leftBarPage.clickOnMenu('Threats', 'Campaigns');
   await campaignPage.getNthItemFromGrid(0).click();
-  // The custom view tab should be visible (single view → uses view name directly)
-  await expect(page.getByRole('tab', { name: viewName })).toBeVisible();
+  // Tab label depends on how many custom views exist:
+  // - single enabled view → tab shows the view name
+  // - multiple enabled views → tab shows generic "Custom view" dropdown
+  // Use case-insensitive regex to handle both cases.
+  await expect(page.getByRole('tab', { name: /custom view/i })).toBeVisible();
 
   // ─── Set as Default ──────────────────────────────────────────────────────────
+  // Use the list popover "Set as default" action (the edit form hides the default
+  // field in edition mode — default is set via the dedicated popover action).
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
-  await customViewsSettingsPage.getItemFromList(viewName).click();
-  await customViewDetailsPage.getEditButton().click();
-  await customViewDetailsPage.getDefaultToggle().click();
-  await customViewDetailsPage.getCloseButton().click();
+  const viewItem = customViewsSettingsPage.getItemFromList(viewName);
+  await customViewsSettingsPage.getQuickActionsButton(viewItem).click();
+  await customViewsSettingsPage.getSetAsDefaultQuickActionButton().click();
 
   // Verify the default tab is first on a Campaign entity page
   await leftBarPage.clickOnMenu('Threats', 'Campaigns');
@@ -131,11 +136,16 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   // ─── Cleanup: delete all created views ───────────────────────────────────────
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
   for (const name of [viewName, duplicateName, viewName]) {
-    const item = customViewsSettingsPage.getItemFromList(name).nth(0);
+    const items = customViewsSettingsPage.getItemFromList(name);
+    const item = items.nth(0);
     await item.waitFor({ state: 'visible', timeout: 30000 });
+    const countBeforeDelete = await items.count();
     await customViewsSettingsPage.getQuickActionsButton(item).click();
     await customViewsSettingsPage.getDeleteQuickActionButton().click();
     await customViewsSettingsPage.getConfirmButton().click();
+    // Wait for the deletion to be reflected in the list before opening the next popover,
+    // otherwise the next delete menu item anchors to a moving row and is never stable to click.
+    await expect(items).toHaveCount(countBeforeDelete - 1);
   }
   await expect(customViewsSettingsPage.getItemFromList(viewName)).toBeHidden();
 });

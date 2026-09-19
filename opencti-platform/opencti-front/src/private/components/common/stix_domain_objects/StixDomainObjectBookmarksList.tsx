@@ -7,6 +7,7 @@ import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixDomainObjectBookmarksListQuery, StixDomainObjectsOrdering } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksListQuery.graphql';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import React, { Suspense } from 'react';
@@ -222,6 +223,7 @@ const StixDomainObjectBookmarksList = ({
 
   const {
     isMissingHostEntity,
+    isMissingSavedFilters,
     isPreviewMode,
     queryRef,
   } = useDashboardViz<StixDomainObjectBookmarksListQuery>({
@@ -237,6 +239,10 @@ const StixDomainObjectBookmarksList = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

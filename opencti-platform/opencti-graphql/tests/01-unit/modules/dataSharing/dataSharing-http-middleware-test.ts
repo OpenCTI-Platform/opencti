@@ -46,9 +46,13 @@ import { createAuthenticatedContext } from '../../../../src/http/httpAuthenticat
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { resolvePublicUser } from '../../../../src/modules/dataSharing/dataSharing-utils';
 import { findById as findTaxiiCollection } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
-import { authenticateForPublic } from '../../../../src/graphql/sseMiddleware.js';
+// eslint-disable-next-line import/extensions
+import { authenticate, authenticateForPublic, sendEventWithFilteredObjectRefs } from '../../../../src/graphql/sseMiddleware.js';
+import { elFindByIds } from '../../../../src/database/engine';
+// eslint-disable-next-line import/extensions
 import { extractUserAndCollection } from '../../../../src/http/httpTaxii.js';
 import { resolveUserForFeed } from '../../../../src/http/httpRollingFeed.js';
+import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -83,7 +87,7 @@ const MOCK_STREAM_COLLECTION = {
   stream_public: true,
   stream_public_user_id: 'public-user-id',
   stream_live: true,
-  filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }),
+  filters: JSON.stringify(emptyFilterGroup),
   restricted_members: [],
 };
 
@@ -213,6 +217,185 @@ describe('authenticateForPublic middleware', () => {
 
     expect(next).toHaveBeenCalled();
     expect(req.user).toBe(mockAuthUser);
+  });
+});
+
+// ─── sendEventWithFilteredObjectRefs (object_refs redaction) ─────────────────
+
+describe('sendEventWithFilteredObjectRefs', () => {
+  const CACHED_REF = 'malware--cached';
+  const ACCESSIBLE_UNCACHED_REF = 'malware--accessible';
+  const RESTRICTED_UNCACHED_REF = 'malware--restricted';
+
+  const makeEvent = (objectRefs?: string[]) => ({
+    eventId: 'event-1',
+    eventType: 'update',
+    eventData: { data: { id: 'report--x', ...(objectRefs ? { object_refs: objectRefs } : {}) } },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Refs accessible to the user but missing from the cache (e.g. evicted) must be recovered
+  // through the access-controlled elFindByIds and kept in object_refs.
+  it('keeps accessible refs that are not in cache by resolving them through elFindByIds', async () => {
+    const cache = new Map([[CACHED_REF, 'hit']]);
+    const client = { sendEvent: vi.fn() };
+    // The access-controlled lookup returns only the accessible ref, not the restricted one
+    vi.mocked(elFindByIds).mockResolvedValue({ [ACCESSIBLE_UNCACHED_REF]: { standard_id: ACCESSIBLE_UNCACHED_REF } } as any);
+
+    const event = makeEvent([CACHED_REF, ACCESSIBLE_UNCACHED_REF, RESTRICTED_UNCACHED_REF]);
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    // Only the uncached refs are looked up, with the all-ids map option
+    expect(elFindByIds).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      [ACCESSIBLE_UNCACHED_REF, RESTRICTED_UNCACHED_REF],
+      expect.objectContaining({ toMap: true, mapWithAllIds: true }),
+    );
+    // Cached + accessible-uncached kept, restricted dropped
+    expect(event.eventData.data.object_refs).toEqual([CACHED_REF, ACCESSIBLE_UNCACHED_REF]);
+    expect(client.sendEvent).toHaveBeenCalledWith('event-1', 'update', event.eventData);
+  });
+
+  it('does not query elFindByIds when every ref is already in cache', async () => {
+    const cache = new Map([[CACHED_REF, 'hit'], [ACCESSIBLE_UNCACHED_REF, 'hit']]);
+    const client = { sendEvent: vi.fn() };
+
+    const event = makeEvent([CACHED_REF, ACCESSIBLE_UNCACHED_REF]);
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    expect(elFindByIds).not.toHaveBeenCalled();
+    expect(event.eventData.data.object_refs).toEqual([CACHED_REF, ACCESSIBLE_UNCACHED_REF]);
+    expect(client.sendEvent).toHaveBeenCalledWith('event-1', 'update', event.eventData);
+  });
+
+  it('sends the event untouched when there is no object_refs', async () => {
+    const cache = new Map();
+    const client = { sendEvent: vi.fn() };
+
+    const event = makeEvent();
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    expect(elFindByIds).not.toHaveBeenCalled();
+    expect(client.sendEvent).toHaveBeenCalledWith('event-1', 'update', event.eventData);
+  });
+});
+
+// ─── authenticate (sseMiddleware, private stream token auth) ─────────────────
+
+describe('authenticate middleware (OTP enforcement)', () => {
+  const AUTH_USER = { id: 'auth-user', user_email: 'auth@test.com', capabilities: [{ name: 'KNOWLEDGE' }], allowed_marking: [] };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns 401 when otp_mandatory is true and user_otp_validated is false (OTP already activated)', async () => {
+    // Regression: a stream must not be accessible when the platform enforces OTP
+    // and the session has not validated it -> checkOTPValidationStatus => VALIDATION_REQUIRED
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: true },
+      otp_mandatory: true,
+      user_otp_validated: false,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.statusMessage).toContain('validate your two-factor authentication');
+    expect(req.user).toBeUndefined();
+  });
+
+  it('returns 401 when otp_mandatory is true, user_otp_validated is false and OTP is not yet activated', async () => {
+    // checkOTPValidationStatus => ACTIVATION_REQUIRED
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: false },
+      otp_mandatory: true,
+      user_otp_validated: false,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.statusMessage).toContain('activate your two-factor authentication');
+  });
+
+  it('calls next() and populates req when OTP is validated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: true },
+      otp_mandatory: true,
+      user_otp_validated: true,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(req.user).toEqual({ ...AUTH_USER, otp_activated: true });
+    expect(req.userId).toBe('auth-user');
+    expect(req.capabilities).toEqual(AUTH_USER.capabilities);
+  });
+
+  it('calls next() when otp_mandatory is false and user has not self-activated OTP', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({
+      user: { ...AUTH_USER, otp_activated: false },
+      otp_mandatory: false,
+      user_otp_validated: false,
+    } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 when no user is resolved from the context', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.statusMessage).toContain('not authenticated');
+  });
+
+  it('returns 500 when context resolution throws', async () => {
+    vi.mocked(createAuthenticatedContext).mockRejectedValue(new Error('boom'));
+
+    const req = makeMockReq();
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticate(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.statusMessage).toContain('boom');
   });
 });
 

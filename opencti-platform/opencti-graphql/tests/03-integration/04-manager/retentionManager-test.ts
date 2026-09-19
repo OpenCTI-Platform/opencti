@@ -19,6 +19,7 @@ import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retenti
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { BASE_TYPE_ENTITY } from '../../../src/schema/general';
 import { generateInternalId } from '../../../src/schema/identifier';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -73,11 +74,7 @@ describe('Retention Manager tests ', () => {
     }
   `;
 
-  const emptyStringFilters = JSON.stringify({
-    mode: 'and',
-    filters: [],
-    filterGroups: [],
-  });
+  const emptyStringFilters = JSON.stringify(emptyFilterGroup);
   beforeAll(async () => {
     // create a file not modified since '2023-01-01T00:00:00.000Z'
     const fileToUpload = {

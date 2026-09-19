@@ -1,7 +1,7 @@
 import Drawer from '@components/common/drawer/Drawer';
 import React from 'react';
 import { FormikConfig } from 'formik/dist/types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import EmailTemplateForm, { EmailTemplateFormInputKeys, EmailTemplateFormInputs } from '@components/settings/email_template/EmailTemplateForm';
 import useEmailTemplateAdd from '@components/settings/email_template/useEmailTemplateAdd';
 import useEmailTemplateEdit from '@components/settings/email_template/useEmailTemplateEdit';

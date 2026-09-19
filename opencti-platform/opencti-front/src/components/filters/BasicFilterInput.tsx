@@ -21,6 +21,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
 }) => {
   return (
     <TextField
+      role="search"
       variant="outlined"
       size="small"
       fullWidth={true}
@@ -50,6 +51,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
           event.target.value,
         );
       }}
+      slotProps={{ input: { type: 'search' } }}
     />
   );
 };

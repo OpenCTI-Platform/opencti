@@ -27,4 +27,3 @@ export const EXPECTED_EMAIL_ADDR = {
   value: 'phish@evil.com',
   display_name: 'Phisher',
 };
-

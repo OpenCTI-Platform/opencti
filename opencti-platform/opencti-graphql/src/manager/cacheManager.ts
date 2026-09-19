@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { getBaseUrl, logApp, TOPIC_PREFIX } from '../config/conf';
-import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, writeCacheForEntity } from '../database/cache';
+import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, resetCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -9,7 +9,7 @@ import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/fi
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, internalFindByIds, fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
-import { pubSubSubscription } from '../database/redis';
+import { CACHE_RESET_TOPIC, pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
 import { buildCompleteUsers, resolveUserById } from '../domain/user';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
@@ -58,6 +58,7 @@ import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/ex
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -250,7 +251,9 @@ const platformUsers = (context: AuthContext) => {
       }
       // If user not available (cluster mode)
       const user = await resolveUserById(context, instance.internal_id);
-      values.push(user);
+      if (user) {
+        values.push(user);
+      }
       return values;
     }
     return values;
@@ -346,6 +349,12 @@ const platformPirs = (context: AuthContext) => {
   };
   return { values: null, fn: reloadPirs, refresh: refreshPirs };
 };
+const platformCustomFieldDefinitions = (context: AuthContext) => {
+  const reloadCustomFieldDefinitions = () => {
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]);
+  };
+  return { values: null, fn: reloadCustomFieldDefinitions };
+};
 
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
@@ -353,6 +362,7 @@ const initCacheManager = () => {
   let subscribeAdd: { topic: string; unsubscribe: () => void };
   let subscribeEdit: { topic: string; unsubscribe: () => void };
   let subscribeDelete: { topic: string; unsubscribe: () => void };
+  let subscribeReset: { topic: string; unsubscribe: () => void };
   const initCacheContent = () => {
     const context = executionContext('cache_manager');
     writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
@@ -373,6 +383,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
     writeCacheForEntity(ENTITY_TYPE_PIR, platformPirs(context));
     writeCacheForEntity(ENTITY_TYPE_DECAY_EXCLUSION_RULE, platformDecayExclusionRules(context));
+    writeCacheForEntity(ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, platformCustomFieldDefinitions(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing
@@ -387,6 +398,9 @@ const initCacheManager = () => {
       subscribeDelete = await pubSubSubscription<SubEvent>(DELETES_TOPIC, async (event) => {
         await removeCacheForEntity(event.instance);
       });
+      subscribeReset = await pubSubSubscription<{ entityType: string }>(CACHE_RESET_TOPIC, (event) => {
+        resetCacheForEntity(event.entityType);
+      });
       logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized');
     },
     shutdown: async () => {
@@ -400,6 +414,9 @@ const initCacheManager = () => {
       } catch { /* dont care */ }
       try {
         subscribeDelete.unsubscribe();
+      } catch { /* dont care */ }
+      try {
+        subscribeReset.unsubscribe();
       } catch { /* dont care */ }
       logApp.info(`[OPENCTI-MODULE] Cache manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;

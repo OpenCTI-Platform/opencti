@@ -2,8 +2,8 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
+import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
@@ -12,7 +12,7 @@ import * as R from 'ramda';
 import React, { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
@@ -92,6 +92,15 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const finalFilters = filters ?? emptyFilterGroup;
 
+    const updatedExportContext = { ...exportContext };
+    // Only forward visible_columns for a "Current view" CSV export. The column
+    // selector is hidden for other formats, so clear it otherwise (including
+    // after the format is switched away from CSV) to avoid sending a stale
+    // hidden-field value to the export connector.
+    if (values.columns !== 'view' || values.format !== 'text/csv') {
+      updatedExportContext.visible_columns = undefined;
+    }
+
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
@@ -100,7 +109,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
           exportType: 'full',
           contentMaxMarkings,
           fileMarkings,
-          exportContext,
+          exportContext: updatedExportContext,
           orderMode,
           orderBy,
           filters: removeIdAndIncorrectKeysFromFilterGroupObject(finalFilters, availableFilterKeys),
@@ -127,6 +136,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const exportConnsPerFormat = scopesConn(connectorsExport);
 
     const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
+    const visibleColumnExportEnabledFormats = ['text/csv'];
 
     return (
       <UserContext.Consumer>
@@ -143,12 +153,13 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                         format: '',
                         contentMaxMarkings: [],
                         fileMarkings: [],
+                        columns: 'all',
                       }}
                       validationSchema={exportValidation(t)}
                       onSubmit={this.onSubmit.bind(this, selectedIds, availableFilterKeys)}
                       onReset={onClose}
                     >
-                      {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+                      {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue, values }) => (
                         <Form>
                           <Dialog
                             data-testid="StixCoreRelationshipsExportCreationDialog"
@@ -158,12 +169,12 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               onClose();
                             }}
                             title={(
-                              <>
+                              <Stack direction="row" alignItems="center" gap={1}>
                                 {t('Generate an export')}
                                 <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                                  <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                                  <InfoOutlined sx={{ display: 'block' }} fontSize="medium" color="primary" />
                                 </Tooltip>
-                              </>
+                              </Stack>
                             )}
                           >
                             <QueryRenderer
@@ -174,21 +185,21 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                   return (
                                     <>
                                       <Field
-                                        component={SelectField}
-                                        variant="standard"
+                                        component={SelectFieldFds}
+                                        variant="outlined"
                                         name="format"
                                         label={t('Export format')}
                                         fullWidth={true}
                                         containerstyle={{ width: '100%' }}
                                       >
                                         {exportScopes.map((value, i) => (
-                                          <MenuItem
+                                          <SelectItem
                                             key={i}
                                             value={value}
                                             disabled={!isExportActive(value)}
                                           >
                                             {value}
-                                          </MenuItem>
+                                          </SelectItem>
                                         ))}
                                       </Field>
                                       <ObjectMarkingField
@@ -207,6 +218,25 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                         style={fieldSpacingContainerStyle}
                                         setFieldValue={setFieldValue}
                                       />
+                                      {visibleColumnExportEnabledFormats.includes(values.format)
+                                        ? (
+                                            <Field
+                                              component={SelectFieldFds}
+                                              variant="outlined"
+                                              name="columns"
+                                              label={t('Choose column to export')}
+                                              fullWidth={true}
+                                              containerstyle={fieldSpacingContainerStyle}
+                                            >
+                                              <SelectItem value="all">
+                                                {t('All attributes')}
+                                              </SelectItem>
+                                              <SelectItem value="view">
+                                                {t('Current view')}
+                                              </SelectItem>
+                                            </Field>
+                                          )
+                                        : undefined}
                                     </>
                                   );
                                 }

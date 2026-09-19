@@ -1,0 +1,84 @@
+import type { CustomFieldValue } from './custom-field-types';
+import { CUSTOM_FIELD_PREFIX } from './custom-field-types';
+import { getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
+import type { AuthContext, AuthUser } from '../../types/user';
+
+/**
+ * Flatten custom_field_values array into a flat object for STIX export.
+ * Each custom field becomes a property like x_opencti_cf_score: 5 inside the STIX extension.
+ */
+export const flattenCustomFieldValuesForStix = (customFieldValues?: CustomFieldValue[]): Record<string, any> => {
+  if (!customFieldValues || customFieldValues.length === 0) {
+    return {};
+  }
+  const result: Record<string, any> = {};
+  for (const cfv of customFieldValues) {
+    // Extract the actual value based on whichever field is set (select_values is the array channel for multi_select)
+    const value = cfv.select_values ?? cfv.int_value ?? cfv.string_value ?? cfv.boolean_value ?? cfv.date_value ?? cfv.select_value;
+    if (value !== undefined && value !== null) {
+      result[cfv.field_name] = value;
+    }
+  }
+  return result;
+};
+
+/**
+ * Convert flat STIX properties (x_opencti_cf_*) back to the nested custom_field_values array
+ * for ingestion into OpenCTI.
+ * Returns undefined if no custom field properties are found.
+ */
+export const unflattenStixToCustomFieldValues = async (
+  context: AuthContext,
+  user: AuthUser,
+  stixExtensions: Record<string, any>,
+): Promise<CustomFieldValue[] | undefined> => {
+  if (!stixExtensions) return undefined;
+
+  const customFieldValues: CustomFieldValue[] = [];
+  // Fetch the definitions once (not once per key) to avoid a redundant cache read per custom field.
+  const definitions = await getCustomFieldDefinitions(context, user);
+
+  for (const [key, value] of Object.entries(stixExtensions)) {
+    if (!key.startsWith(CUSTOM_FIELD_PREFIX)) continue;
+
+    const definition = definitions.find((def) => def.name === key);
+    if (!definition) {
+      // Skip unknown custom fields — do not auto-create definitions
+      continue;
+    }
+
+    const valueField = getCustomFieldValueField(definition.field_type);
+    const cfValue: CustomFieldValue = {
+      field_id: definition.id,
+      field_name: key,
+    };
+
+    // Set the appropriate value field
+    switch (valueField) {
+      case 'int_value':
+        cfValue.int_value = typeof value === 'number' ? value : Number(value);
+        break;
+      case 'string_value':
+        cfValue.string_value = String(value);
+        break;
+      case 'boolean_value':
+        cfValue.boolean_value = typeof value === 'boolean' ? value : value === 'true';
+        break;
+      case 'date_value':
+        cfValue.date_value = String(value);
+        break;
+      case 'select_value':
+        cfValue.select_value = String(value);
+        break;
+      case 'select_values':
+        cfValue.select_values = Array.isArray(value) ? value.map((v) => String(v)) : [String(value)];
+        break;
+      default:
+        cfValue.string_value = String(value);
+    }
+
+    customFieldValues.push(cfValue);
+  }
+
+  return customFieldValues.length > 0 ? customFieldValues : undefined;
+};

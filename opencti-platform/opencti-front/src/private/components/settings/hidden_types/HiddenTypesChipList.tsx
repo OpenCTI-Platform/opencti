@@ -1,40 +1,16 @@
-import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
+import { Chip } from '@filigran/design-system';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 4,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-  grey_chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.grey?.[700],
-    borderRadius: 4,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-}));
-
 const HiddenTypesChipList = ({
   hiddenTypes = [],
 }: {
   hiddenTypes: readonly string[];
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const hiddenTypesGlobal = useEntitySettings()
@@ -51,15 +27,17 @@ const HiddenTypesChipList = ({
         {diff.map((hiddenTypeGlobal) => (
           <Chip
             key={hiddenTypeGlobal}
-            classes={{ root: classes.grey_chip }}
+            severity="neutral"
             label={t_i18n(`entity_${hiddenTypeGlobal}`)}
+            style={{ margin: '0 5px 5px 0' }}
           />
         ))}
         {hiddenTypes.map((hiddenType) => (
           <Chip
             key={hiddenType}
-            classes={{ root: classes.chip }}
+            severity="neutral"
             label={t_i18n(`entity_${hiddenType}`)}
+            style={{ margin: '0 5px 5px 0' }}
           />
         ))}
       </FieldOrEmpty>

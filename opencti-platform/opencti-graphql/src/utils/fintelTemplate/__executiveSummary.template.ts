@@ -34,7 +34,7 @@ const executiveSummaryContent = (containerType: string) => {
   return `
     <div>
       <h2>Executive report</h2>
-      
+
       <h3>1. Details</h3>
       <table>
         <tbody>
@@ -73,14 +73,14 @@ const executiveSummaryContent = (containerType: string) => {
           </tr>
         </tbody>
       </table>
-      
+
       <h3>2. Executive Summary</h3>
       <div>$description</div>
-      
+
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
       </div>
-      
+
       <h3>3. Key points</h3>
       <blockquote>
         <p>To be completed by the analyst. The key points section details:</p>
@@ -92,11 +92,11 @@ const executiveSummaryContent = (containerType: string) => {
       </blockquote>
       <div>$threats</div>
       <div>$victims</div>
-      
+
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
       </div>
-      
+
       <h3>4. Assessment</h3>
       <blockquote>
         <p>To be completed by the analyst. The assessment section details:</p>
@@ -107,38 +107,38 @@ const executiveSummaryContent = (containerType: string) => {
         </ul>
       </blockquote>
       <div>$attackPatterns</div>
-      
+
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
       </div>
-      
+
       <h3>5. All entities & observables</h3>
       <blockquote>
         <p>This section is meant to help you draft your final outcome. It gathers all entities & observables in your container.</p>
       </blockquote>
       <div>$allEntitiesAndObservables</div>
-      
+
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
       </div>
-      
+
       <h3>6. IoCs</h3>
       <blockquote>
         <p>This section is meant to help you draft your final outcome. It gathers all indicators in your container.</p>
       </blockquote>
       <div>$indicators</div>
-      
+
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
       </div>
-      
+
       <h3>7. Data sources</h3>
       <div>$externalReferencesURL</div>
-      
+
       <div class="page-break" style="page-break-after:always;">
         <span style="display:none;">&nbsp;</span>
       </div>
-    
+
     </div>
   `;
 };
@@ -167,6 +167,7 @@ export const generateFintelTemplateExecutiveSummary = (containerType: string): F
     template_content: executiveSummaryContent(containerType),
     settings_types: [containerType],
     start_date: '1970-01-01T00:00:00Z',
+    default: false,
     fintel_template_widgets: [
       multiAttributesWidget,
       widgetContainerIndicators,

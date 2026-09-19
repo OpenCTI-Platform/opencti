@@ -3,7 +3,7 @@ import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptio
 import { Redlock } from '@sesamecare-oss/redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
-import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { mergeDeepRightAll, now } from '../utils/format';
@@ -17,6 +17,7 @@ import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -24,14 +25,14 @@ const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000
 
 const connectionName = (provider: string) => `${REDIS_PREFIX}${provider.replaceAll(' ', '_')}`;
 
-const redisOptions = async (provider: string, autoReconnect = false): Promise<RedisOptions> => {
+const redisOptions = async (provider: string, autoReconnect = false, tlsServername?: string): Promise<RedisOptions> => {
   const baseAuth = { username: conf.get('redis:username'), password: conf.get('redis:password') };
   const userPasswordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
     connectionName: connectionName(provider),
     keyPrefix: REDIS_PREFIX,
     ...userPasswordAuth,
-    tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
+    tls: USE_SSL ? { ...configureCA(REDIS_CA), ...(tlsServername ? { servername: tlsServername } : {}) } : undefined,
     retryStrategy: /* v8 ignore next */ (times) => {
       if (getStoppingState()) {
         return null;
@@ -71,7 +72,7 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 };
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
-  const redisOpts = await redisOptions(provider);
+  const redisOpts = await redisOptions(provider, false, conf.get('redis:tls_servername'));
   return {
     keyPrefix: REDIS_PREFIX,
     lazyConnect: true,
@@ -117,7 +118,8 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     const sentinelOpts = await sentinelOptions(provider, clusterNodes);
     client = new Redis(sentinelOpts);
   } else {
-    const singleOptions = await redisOptions(provider, autoReconnect);
+    const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
+    const singleOptions = await redisOptions(provider, autoReconnect, tlsServername);
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
@@ -326,6 +328,12 @@ export const getRedisVersion = async () => {
   return versionString.split(':')[1];
 };
 
+export const CACHE_RESET_TOPIC = `${TOPIC_PREFIX}CACHE_RESET_TOPIC`;
+
+export const publishCacheResetEvent = async (entityType: string) => {
+  await getClientPubSub().publish(CACHE_RESET_TOPIC, { entityType });
+};
+
 /* v8 ignore next */
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
@@ -334,9 +342,9 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     // Resolved object_refs must be dissoc from original objects as not directly used for live update
     // and can imply very large event message
     if (Array.isArray(instance)) {
-      data = (instance as any[]).map((i) => R.dissoc(INPUT_OBJECTS, i));
+      data = (instance as any[]).map(removeResolvedRefs);
     } else {
-      data = R.dissoc(INPUT_OBJECTS, instance);
+      data = removeResolvedRefs(instance);
     }
     // Direct refresh the current instance cache
     await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
@@ -344,6 +352,11 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;
+};
+
+export const removeResolvedRefs = (instance: any) => {
+  const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
+  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
 };
 
 // region user context (clientContext)
@@ -397,7 +410,15 @@ const getStackTrace = () => {
   Error.captureStackTrace(obj, getStackTrace);
   return obj.stack;
 };
-export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
+export interface LockHandle {
+  signal: AbortSignal;
+  extend: () => Promise<void>;
+  acquireWaitMs: number;
+  acquireAttempts: number;
+  unlock: () => Promise<void>;
+}
+
+export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
@@ -412,7 +433,14 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const { signal } = controller;
   const redlock = new Redlock([getClientLock()], { retryCount, retryDelay, retryJitter });
   // Get the lock
+  const acquireStart = performance.now(); // monotonic: immune to system clock adjustments
   let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
+  // A contended acquisition waits in silent retry polls (retry_delay) and emits no signal until full
+  // retry exhaustion throws a LOCK_ERROR. Expose the measured wait and the attempt count on the
+  // returned lock: recording is done by the caller (master-lock) in the MAIN process, because with
+  // app:child_locking_process this code runs in the lock child, where no metric exporter lives.
+  const acquireWaitMs = Math.round(performance.now() - acquireStart);
+  const acquireAttempts = lock.attempts.length;
   const queue = () => {
     timeout = setTimeout(
       () => {
@@ -455,6 +483,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   return {
     signal,
     extend,
+    acquireWaitMs,
+    acquireAttempts,
     unlock: async () => {
       // First, wait for an in-flight extension to finish.
       if (extension) {
@@ -759,6 +789,29 @@ export const redisClearTelemetryGauge = async (gaugeName: string) => {
 };
 // endregion - telemetry gauges
 
+// region - platform usage metrics cluster cache
+// Usage metrics are expensive to compute (full bucket scan, engine stats), so the
+// value is shared cluster wide instead of being recomputed on every node.
+const PLATFORM_USAGE_METRICS_KEY = 'platform_usage_metrics';
+
+export const redisGetPlatformUsageMetrics = async (): Promise<object | null> => {
+  const raw = await getClientBase().get(PLATFORM_USAGE_METRICS_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    logApp.error('[HEALTH] Platform usage metrics in Redis could not be parsed', { raw });
+    return null;
+  }
+};
+
+export const redisSetPlatformUsageMetrics = async (metrics: object, ttlSeconds: number) => {
+  await getClientBase().set(PLATFORM_USAGE_METRICS_KEY, JSON.stringify(metrics), 'EX', ttlSeconds);
+};
+// endregion - platform usage metrics cluster cache
+
 // region - manager stream state
 const MANAGER_EVENT_STATE_KEY = 'manager_stream_state_';
 export const redisSetManagerEventState = async (managerName: string, event_state_id: string) => {
@@ -915,6 +968,55 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
   }
 };
 
+// region ingestion log history (FIFO, last 20 per feed)
+const INGESTION_LOG_KEY_PREFIX = 'ingestion-log-';
+const INGESTION_LOG_MAX_SIZE = 20;
+
+export interface IngestionLogEntry {
+  timestamp: number;
+  level: 'success' | 'info' | 'warn' | 'error';
+  type: string;
+  identifier: string;
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
+const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
+
+export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
+  try {
+    const key = ingestionLogListKey(feedId);
+    const value = JSON.stringify({ timestamp: Date.now(), ...entry });
+    await redisTx(getClientBase(), async (tx) => {
+      tx.lpush(key, value);
+      tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
+    });
+  } catch (err) {
+    logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
+  }
+};
+
+export const redisGetIngestionLogHistory = async (feedId: string): Promise<IngestionLogEntry[]> => {
+  const listKey = ingestionLogListKey(feedId);
+  const rawList = await getClientBase().lrange(listKey, 0, INGESTION_LOG_MAX_SIZE - 1);
+  return rawList.map((s) => {
+    try {
+      return JSON.parse(s) as IngestionLogEntry;
+    } catch {
+      return null;
+    }
+  }).filter((e): e is IngestionLogEntry => e !== null);
+};
+
+export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<void> => {
+  try {
+    await getClientBase().del(ingestionLogListKey(feedId));
+  } catch (err) {
+    logApp.error('Failed to delete ingestion log history from Redis', { cause: err });
+  }
+};
+// endregion
+
 // region - XTM One registration result
 const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';
 
@@ -987,4 +1089,44 @@ export const redisSetXtmAgentResponse = async (cacheKey: string, content: string
     logApp.warn('[XTM One] Agent response cache write failed', { cause: err });
   }
 };
+
+export const redisDeleteXtmAgentResponse = async (cacheKey: string): Promise<void> => {
+  try {
+    await getClientBase().del(`${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`);
+  } catch (err) {
+    logApp.warn('[XTM One] Agent response cache eviction failed', { cause: err });
+  }
+};
 // endregion - XTM agent response cache
+
+// region user merge journal
+/**
+ * The merge journal is diagnostic, not evidential: what authorizes deleting the source
+ * account is the coverage manifest, derived from the register and the registered handlers.
+ * So it does not need to be an indexed entity — and it should not be one, because every new
+ * entity type spends from a mapping budget shared by all indices and already largely
+ * consumed, permanently, for a feature meant to run once.
+ *
+ * Keeping it out of the indices also removes a self-reference: the journal would otherwise
+ * live in a live index and carry a creator_id, the very field a merge rewrites.
+ */
+const USER_MERGE_JOURNAL_TTL = 30 * 24 * 60 * 60; // 30 days
+const USER_MERGE_JOURNAL_LIST = 'user_merge_journal_entries';
+const userMergeEntryKey = (entryId: string) => `user_merge_journal_entry_${entryId}`;
+const userMergeJournalList = (mergeId: string) => `${USER_MERGE_JOURNAL_LIST}_${mergeId}`;
+
+export const redisUserMergeJournalUpsert = async (entryId: string, mergeId: string, patch: object) => {
+  const key = userMergeEntryKey(entryId);
+  const existing = await getClientBase().get(key);
+  const entry = { ...(existing ? JSON.parse(existing) : {}), ...patch };
+  // Indexed both globally and per merge: an operator who lost the id returned by the
+  // mutation also lost the only way to name the run they need to follow.
+  await setKeyWithList(key, [USER_MERGE_JOURNAL_LIST, userMergeJournalList(mergeId)], entry, USER_MERGE_JOURNAL_TTL);
+  return entry;
+};
+
+export const redisUserMergeJournalRead = async (mergeId?: string) => {
+  const listId = mergeId ? userMergeJournalList(mergeId) : USER_MERGE_JOURNAL_LIST;
+  return keysFromList(listId, USER_MERGE_JOURNAL_TTL);
+};
+// endregion - user merge journal

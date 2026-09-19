@@ -34,16 +34,6 @@
         "description": "Lint the OpenCTI GraphQL server"
       }
     },
-    "wait-api": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "opencti-platform/opencti-graphql",
-        "command": "yarn wait-api"
-      },
-      "metadata": {
-        "description": "Wait for the API to be available"
-      }
-    },
     "test": {
       "executor": "nx:run-commands",
       "options": {
@@ -63,6 +53,28 @@
       },
       "metadata": {
         "description": "Run the OpenCTI GraphQL server in development mode"
+      }
+    },
+    "dev:watch": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn dev"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI GraphQL server with hot-reloading"
+      }
+    },
+    "dev:watch-with-graphql": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn dev:watch-with-graphql"
+      },
+      "metadata": {
+        "description": "Run the GraphQL server with schema hot-reloading"
       }
     },
     "graphql": {

@@ -4,6 +4,7 @@ import base64
 import datetime
 import io
 import json
+import mimetypes
 import os
 import re
 import shutil
@@ -12,7 +13,6 @@ import tempfile
 import threading
 from typing import Any, Dict, Optional, Tuple, Union
 
-import magic
 import requests
 
 from pycti import __version__
@@ -27,6 +27,7 @@ from pycti.api.opencti_api_trash import OpenCTIApiTrash
 from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.api.opencti_api_workspace import OpenCTIApiWorkspace
 from pycti.entities.opencti_attack_pattern import AttackPattern
+from pycti.entities.opencti_audit import Audit
 from pycti.entities.opencti_campaign import Campaign
 from pycti.entities.opencti_capability import Capability
 from pycti.entities.opencti_case_incident import CaseIncident
@@ -50,6 +51,7 @@ from pycti.entities.opencti_kill_chain_phase import KillChainPhase
 from pycti.entities.opencti_label import Label
 from pycti.entities.opencti_language import Language
 from pycti.entities.opencti_location import Location
+from pycti.entities.opencti_log import Log
 from pycti.entities.opencti_malware import Malware
 from pycti.entities.opencti_malware_analysis import MalwareAnalysis
 from pycti.entities.opencti_marking_definition import MarkingDefinition
@@ -60,6 +62,7 @@ from pycti.entities.opencti_opinion import Opinion
 from pycti.entities.opencti_report import Report
 from pycti.entities.opencti_role import Role
 from pycti.entities.opencti_security_coverage import SecurityCoverage
+from pycti.entities.opencti_security_coverage_result import SecurityCoverageResult
 from pycti.entities.opencti_settings import Settings
 from pycti.entities.opencti_stix import Stix
 from pycti.entities.opencti_stix_core_object import StixCoreObject
@@ -83,7 +86,7 @@ from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_logger import logger
 from pycti.utils.opencti_stix2 import OpenCTIStix2
-from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
+from pycti.utils.opencti_stix2_utils import NOT_PROVIDED, OpenCTIStix2Utils
 
 # Global singleton variables for proxy certificate management
 _PROXY_CERT_BUNDLE = None
@@ -249,7 +252,8 @@ class OpenCTIApiClient:
 
         # Define API
         self.api_token = token
-        self.api_url = url.rstrip("/") + "/graphql"
+        self.base_url = url.rstrip("/")
+        self.api_url = self.base_url + "/graphql"
         if provider is not None:
             provider_pattern_checker = re.compile(
                 r"^[A-Za-z]+\/\d+(?:\.[a-z]*\d+){0,}$"
@@ -317,6 +321,7 @@ class OpenCTIApiClient:
         self.language = Language(self)
         self.vulnerability = Vulnerability(self)
         self.security_coverage = SecurityCoverage(self)
+        self.security_coverage_result = SecurityCoverageResult(self)
         self.attack_pattern = AttackPattern(self)
         self.course_of_action = CourseOfAction(self)
         self.data_component = DataComponent(self)
@@ -327,6 +332,8 @@ class OpenCTIApiClient:
         self.opinion = Opinion(self)
         self.grouping = Grouping(self)
         self.indicator = Indicator(self)
+        self.audit = Audit(self)
+        self.log = Log(self)
 
         # Admin functionality
         self.capability = Capability(self)
@@ -603,6 +610,10 @@ class OpenCTIApiClient:
             cleaned = {}
             files_vars = []
             for key, val in obj.items():
+                # NOT_PROVIDED marks a value never supplied by the
+                # caller (as opposed to an explicit None/null).
+                if val is NOT_PROVIDED:
+                    continue
                 new_path = f"{path_prefix}.{key}" if path_prefix else key
                 cleaned_val, nested_files = self._extract_files(val, new_path)
                 cleaned[key] = cleaned_val
@@ -716,11 +727,11 @@ class OpenCTIApiClient:
                 proxies=self.proxies,
                 timeout=self.session_requests_timeout,
             )
-        # If no
+        # If no files, send a normal request
         else:
             r = self.session.post(
                 self.api_url,
-                json={"query": query, "variables": variables},
+                json={"query": query, "variables": query_var},
                 headers=query_headers,
                 verify=self.ssl_verify,
                 cert=self.cert,
@@ -732,19 +743,24 @@ class OpenCTIApiClient:
             result = r.json()
             if "errors" in result:
                 main_error = result["errors"][0]
-                error_name = (
-                    main_error["name"]
-                    if "name" in main_error
-                    else main_error["message"]
+                extensions = main_error.get("extensions") or {}
+                # "name" is added at top level by the platform for compatibility,
+                # fallback on the GraphQL extensions code for older platforms.
+                error_name = main_error.get("name") or extensions.get(
+                    "code", main_error["message"]
                 )
                 error_detail = {
                     "name": error_name,
                     "error_message": main_error["message"],
                 }
-                meta_data = main_error["data"] if "data" in main_error else {}
+                # Contextual attributes of the error (type, doc_code, ...) are
+                # carried in the GraphQL extensions, keep the top level lookup
+                # for backward compatibility with older platforms.
+                meta_data = main_error.get("data") or extensions.get("data") or {}
                 # Prevent logging of input as bundle is logged differently
-                if meta_data.get("input") is not None:
-                    del meta_data["input"]
+                meta_data = {
+                    key: value for key, value in meta_data.items() if key != "input"
+                }
                 value_error = {**error_detail, **meta_data}
                 raise ValueError(value_error)
             else:
@@ -792,6 +808,24 @@ class OpenCTIApiClient:
                 "Error fetching file", {"uri": fetch_uri, "error": str(e)}
             )
             return None
+
+    def fetch_opencti_file_by_id(self, file_id, binary=False, serialize=False):
+        """Get file from the OpenCTI API using its file id.
+
+        Builds the download URL from the platform base URL, avoiding the need
+        for callers to craft the storage URL themselves.
+
+        :param file_id: id of the file to fetch (e.g. an importFiles entry id)
+        :type file_id: str
+        :param binary: if True, returns raw bytes; if False, returns text, defaults to False
+        :type binary: bool, optional
+        :param serialize: if True, returns base64-encoded content, defaults to False
+        :type serialize: bool, optional
+        :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
+        :rtype: str, bytes, or None
+        """
+        fetch_uri = f"{self.base_url}/storage/get/{file_id}"
+        return self.fetch_opencti_file(fetch_uri, binary=binary, serialize=serialize)
 
     def health_check(self):
         """Submit an example request to the OpenCTI API.
@@ -1029,7 +1063,9 @@ class OpenCTIApiClient:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             query_vars = {"file": File(file_name, data, mime_type)}
             # optional file markings
             if file_markings is not None:
@@ -1110,7 +1146,9 @@ class OpenCTIApiClient:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             return self.query(
                 query,
                 {

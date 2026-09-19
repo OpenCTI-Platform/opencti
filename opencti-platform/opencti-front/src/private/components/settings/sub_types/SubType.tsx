@@ -2,7 +2,7 @@ import type { SubTypeQuery } from './__generated__/SubTypeQuery.graphql';
 import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Outlet, useParams } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router';
 import { ErrorBoundary } from '@components/Error';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -10,7 +10,6 @@ import Loader from '../../../../components/Loader';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypeMenu from './SubTypeMenu';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
@@ -28,6 +27,7 @@ export const subTypeQuery = graphql`
       settings {
         id
         availableSettings
+        sync_workflow_status_by_name
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
         ...EntitySettingsFragment_entitySetting
         ...EntitySettingAttributes_entitySetting
@@ -51,7 +51,6 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const { typesWithFintelTemplates } = useAttributes();
-  const { isFeatureEnable } = useHelper();
 
   const data = usePreloadedQuery(subTypeQuery, queryRef);
   const { isCustomViewsEnabled } = useProvideCustomViewsSettingsContext({ data });
@@ -67,8 +66,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const subTypeSettingsId = subType.settings?.id;
   if (!subTypeSettingsId) return <ErrorNotFound />;
 
-  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
-  const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+  const isDraftWorkspaceType = subType.label === 'DraftWorkspace';
 
   const isWorkflowConfigurationEnabled = !!subType.settings?.availableSettings.includes('workflow_configuration');
 

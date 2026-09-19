@@ -131,9 +131,9 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
       {({ values, isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form>
           <Field
-            style={{ marginBottom: 20 }}
+            className="mb-5"
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -144,7 +144,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             name="due_date"
             textFieldProps={{
               label: t_i18n('Due Date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
             }}
           />

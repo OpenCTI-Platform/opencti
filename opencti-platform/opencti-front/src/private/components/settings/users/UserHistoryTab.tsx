@@ -1,13 +1,14 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { DeleteOutlined, StorageOutlined } from '@mui/icons-material';
-import { Avatar, DialogActions, IconButton, Tooltip } from '@mui/material';
+import { Avatar, DialogActions, Tooltip } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { deepOrange, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
 import { useTheme } from '@mui/styles';
 import { LinkVariantPlus, LinkVariantRemove, Merge, VectorRadius } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { v4 as uuid } from 'uuid';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -134,6 +135,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
           <ItemIcon type={eventScope} size="small" />
@@ -152,6 +156,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           <Merge fontSize="small" />
         </Avatar>
@@ -172,6 +179,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
           <ItemIcon type={eventScope} size="small" />
@@ -190,6 +200,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
           <ItemIcon type={eventScope} size="small" />
@@ -208,6 +221,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           <LinkVariantPlus fontSize="small" />
         </Avatar>
@@ -225,6 +241,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
           onClick={() => commit && handleOpen()}
+          role={commit ? 'button' : undefined}
+          tabIndex={commit ? 0 : undefined}
+          aria-label={commit ? t_i18n('View commit message') : undefined}
         >
           <LinkVariantRemove fontSize="small" />
         </Avatar>
@@ -289,6 +308,9 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           color: theme.palette.text?.primary,
         }}
         onClick={() => commit && handleOpen()}
+        role={commit ? 'button' : undefined}
+        tabIndex={commit ? 0 : undefined}
+        aria-label={commit ? t_i18n('View commit message') : undefined}
       >
         {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
         <ItemIcon type={eventScope} size="small" />
@@ -313,20 +335,26 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           additionalHeaderToggleButtons={[
             <Tooltip title={t_i18n('View all entities created by user')} key="entities">
               <IconButton
-                component={Link}
-                to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-                color="primary"
+                asChild
+                variant="default"
+                priority="tertiary"
+                size="sm"
+                aria-label={t_i18n('View all entities created by user')}
+                icon={<StorageOutlined fontSize="small" />}
               >
-                <StorageOutlined fontSize="small" />
+                <Link to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`} />
               </IconButton>
             </Tooltip>,
             <Tooltip title={t_i18n('View all relationships created by user')} key="relations">
               <IconButton
-                component={Link}
-                to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-                color="primary"
+                asChild
+                variant="default"
+                priority="tertiary"
+                size="sm"
+                aria-label={t_i18n('View all relationships created by user')}
+                icon={<VectorRadius fontSize="small" />}
               >
-                <VectorRadius fontSize="small" />
+                <Link to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`} />
               </IconButton>
             </Tooltip>,
           ]}

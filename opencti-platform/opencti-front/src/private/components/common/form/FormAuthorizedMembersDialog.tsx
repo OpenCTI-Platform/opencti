@@ -3,7 +3,7 @@ import { LockPersonOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
 import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
 import { FormikHelpers } from 'formik/dist/types';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';

@@ -11,7 +11,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Campaign':
       return '/dashboard/threats/campaigns';
     case 'Connectors':
-      return '/dashboard/data/ingestion/connectors';
+      return '/dashboard/integrations/connectors';
     case 'FintelTemplate':
       return '/dashboard/settings/customization/entity_types';
     case 'FintelDesign':
@@ -21,6 +21,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Note':
       return '/dashboard/analyses/notes';
     case 'Security-Coverage':
+    case 'Security-Coverage-Result':
       return '/dashboard/analyses/security_coverages';
     case 'Observed-Data':
       return '/dashboard/events/observed_data';

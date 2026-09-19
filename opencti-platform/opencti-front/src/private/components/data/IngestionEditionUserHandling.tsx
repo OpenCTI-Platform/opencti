@@ -10,7 +10,7 @@ import { Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery } from '../../../relay/environment';

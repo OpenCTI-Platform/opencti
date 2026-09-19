@@ -35,6 +35,7 @@ const HeaderMainEntityLayout = ({
       >
         <Stack
           direction="row"
+          alignItems="center"
           sx={{
             flex: 1,
             minWidth: 0,

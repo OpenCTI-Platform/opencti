@@ -1,6 +1,8 @@
 import { getBaseUrl, getPlatformHttpProxyAgent } from '../../config/conf';
 import type { Request } from 'express';
-import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo } from 'openid-client';
+import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo, skipSubjectCheck } from 'openid-client';
+import type { CustomFetch } from 'openid-client';
+import { fetch } from 'undici';
 import type { AuthenticateOptions, StrategyOptionsWithRequest, VerifyFunctionWithRequest } from 'openid-client/passport';
 import { Strategy as OpenIDStrategy } from 'openid-client/passport';
 import type { AuthenticateCallback } from 'passport';
@@ -13,12 +15,11 @@ import { memoize } from '../../utils/memoize';
 import { createMapper } from './mappings-utils';
 import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { handleProviderLogin } from './providers';
-import { skipSubjectCheck } from 'oauth4webapi';
 import { decodeOidcState, encodeOidcState } from '../../http/httpUtils';
 
-const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
+const buildProxiedFetch = (issuerUrl: URL): CustomFetch => {
   const dispatcher = getPlatformHttpProxyAgent(issuerUrl.toString(), true);
-  return (url, options) => fetch(url, { ...options, dispatcher });
+  return (url, options) => fetch(url, { ...options, dispatcher }) as Promise<Response>;
 };
 
 export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: OidcStoreConfiguration) => {

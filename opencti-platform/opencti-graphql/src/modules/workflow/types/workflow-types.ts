@@ -157,13 +157,15 @@ export interface WorkflowConditionConfig {
 
 export interface WorkflowSerializedState {
   statusId: string;
+  /** Legacy manual order, kept for backward-compatible round-tripping; the order actually applied is always derived from the transition graph (see workflow-ordering.ts). */
+  order?: number;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
 }
 
 export interface WorkflowSerializedTransition {
   from: string | string[];
-  to: string;
+  to: string | null;
   event: string;
   comment?: string;
   /** Phase 1: async background task actions. Run before syncActions. */

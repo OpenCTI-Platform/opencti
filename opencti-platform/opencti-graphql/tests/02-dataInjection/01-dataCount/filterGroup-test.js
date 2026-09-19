@@ -26,8 +26,13 @@ import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
+import { monthsAgo, utcDate, yearsAgo } from '../../../src/utils/format';
 
 // File to test dynamic filtering with different keys, operators, modes, combinations
+
+// Converting monthsAgo and yearsAgo to iso string to be used in tests
+const isoMonthsAgo = (months) => utcDate(monthsAgo(months)).toISOString();
+const isoYearsAgo = (years) => utcDate(yearsAgo(years)).toISOString();
 
 // test queries involving dynamic filters
 
@@ -174,7 +179,7 @@ describe('Complex filters combinations for elastic queries', () => {
         name: 'Report1',
         stix_id: report1StixId,
         description: 'Report1 description',
-        published: '2023-09-26T00:47:35.000Z',
+        published: isoMonthsAgo(6),
         objectMarking: [marking1StixId, marking2StixId],
         report_types: ['threat-report'],
         confidence: 10,
@@ -186,7 +191,7 @@ describe('Complex filters combinations for elastic queries', () => {
         stix_id: report2StixId,
         description: 'Report2 description',
         lang: 'Report1',
-        published: '2023-09-15T00:51:35.000Z',
+        published: isoMonthsAgo(12),
         objectMarking: [marking2StixId],
         report_types: ['threat-report', 'internal-report'],
         confidence: 20,
@@ -196,7 +201,7 @@ describe('Complex filters combinations for elastic queries', () => {
       input: {
         name: 'Report3',
         stix_id: report3StixId,
-        published: '2021-01-10T22:00:00.000Z',
+        published: isoYearsAgo(10),
         report_types: ['internal-report'],
         confidence: 30,
       },
@@ -206,7 +211,7 @@ describe('Complex filters combinations for elastic queries', () => {
         name: 'Report4',
         description: '', // empty string
         stix_id: report4StixId,
-        published: '2023-09-15T00:51:35.000Z',
+        published: isoMonthsAgo(12),
         objectMarking: [marking2StixId, marking1StixId, marking3StixId],
         confidence: 40,
       },
@@ -216,7 +221,7 @@ describe('Complex filters combinations for elastic queries', () => {
         name: 'Report5',
         description: null,
         stix_id: report5StixId,
-        published: '2025-09-15T00:51:35.000Z',
+        published: isoMonthsAgo(1),
         report_types: ['threat-report', 'internal-report'],
         objectMarking: [],
         confidence: 11,
@@ -356,7 +361,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
   });
   it('should list entities according to filters: filters with different modes for the main filter group', async () => {
-    // (published after 20/09/2023) OR (published before 30/12/2021)
+    // (published after 9 months ago) OR (published before 5 years ago)
     let queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -367,13 +372,13 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'gt',
-              values: ['2023-09-20T00:47:35.000Z'],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
             {
               key: 'published',
               operator: 'lt',
-              values: ['2021-12-30T00:47:35.000Z'],
+              values: [isoYearsAgo(5)],
               mode: 'or',
             },
           ],
@@ -385,7 +390,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
-    // (published after 20/09/2023) AND (published before 30/12/2021)
+    // (published after 9 months ago) AND (published before 5 years ago)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -396,13 +401,13 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'gt',
-              values: ['2023-09-20T00:47:35.000Z'],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
             {
               key: 'published',
               operator: 'lt',
-              values: ['2021-12-30T00:47:35.000Z'],
+              values: [isoYearsAgo(5)],
               mode: 'or',
             },
           ],
@@ -457,7 +462,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report5')).toBeTruthy();
   });
   it('should list entities according to filters: filters and filter groups', async () => {
-    // (report_types = threat-report AND published before 30/12/2021)
+    // (report_types = threat-report AND published before 9 months ago)
     let queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -474,7 +479,7 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'lt',
-              values: ['2023-09-20T00:47:35.000Z'],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
           ],
@@ -485,7 +490,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
-    //  (published before 20/09/2023) AND (report_types = threat-report OR objects malwareXX)
+    //  (published before 9 months ago) AND (report_types = threat-report OR objects malwareXX)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -496,7 +501,7 @@ describe('Complex filters combinations for elastic queries', () => {
             {
               key: 'published',
               operator: 'lt',
-              values: ['2023-09-20T00:47:35.000Z'],
+              values: [isoMonthsAgo(9)],
               mode: 'or',
             },
           ],
@@ -526,7 +531,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
-    // (marking = marking1 AND marking2) OR (report_types = threat-report AND published before 20/09/2023)
+    // (marking = marking1 AND marking2) OR (report_types = threat-report AND published before 9 months ago)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -554,7 +559,7 @@ describe('Complex filters combinations for elastic queries', () => {
                 {
                   key: 'published',
                   operator: 'lt',
-                  values: ['2023-09-20T00:47:35.000Z'],
+                  values: [isoMonthsAgo(9)],
                   mode: 'or',
                 },
               ],
@@ -571,18 +576,6 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
   });
   it('should list entities according to filters: complex filter combination with groups and filters imbrication', async () => {
-    // (confidence > 50)
-    // OR
-    //    [(confidence > 15)
-    //    AND
-    //        [(report_types != internal-report)
-    //        OR
-    //            (report_types = (internal-report OR threat-report)
-    //            AND
-    //            marking = marking2
-    //            )
-    //        ]
-    //    ]
     const queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -1316,7 +1309,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(45);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(47);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1336,7 +1329,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 45 entities - 11 entities with a source reliability = 34
+    expect(queryResult.data.globalSearch.edges.length).toEqual(36); // 47 entities - 11 entities with a source reliability = 36
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1396,7 +1389,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(39); // 45 entities - 6 entities with source reliability equals to A = 39
+    expect(queryResult.data.globalSearch.edges.length).toEqual(41); // 47 entities - 6 entities with source reliability equals to A = 41
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1499,7 +1492,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(32); // 45 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
+    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 47 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 34
     // (computed_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -2376,7 +2369,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
   it('should list entities according to relative date time range filters', async () => {
-    // published within [2023-09-01, 2023-09-30]
+    // published within [18 months ago, 3 months ago]
     let queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -2385,7 +2378,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'and',
           filters: [{
             key: 'published',
-            values: ['2023-09-01T23:20:00.000Z', '2023-09-30T23:20:00.000Z'],
+            values: [isoMonthsAgo(18), isoMonthsAgo(3)],
             operator: 'within',
             mode: 'or',
           }],
@@ -2393,7 +2386,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in September 2023: report1, report2, report4
+    expect(queryResult.data.reports.edges.length).toEqual(3); // report1, report2, report4
     // published within last 3 years and now
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -2742,7 +2735,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(38);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
   });
   it('should list entities using complex regarding of filter', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
@@ -2790,7 +2783,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
     expect(notEqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using complex regarding of filter with force direction', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
@@ -2911,7 +2904,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using multi relationships regarding of filter', async () => {
     const generateFilters = (withRegardingOf = true, relationships = [], regardingOfOperator = 'eq', mainMode = 'and') => {

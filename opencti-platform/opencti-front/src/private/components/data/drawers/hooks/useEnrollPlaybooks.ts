@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { fetchQuery } from '../../../../../relay/environment';
 import { fetchPlaybooks } from '../enrollPlaybookDrawer.utils';
 import type { Playbook, FetchPlaybooksParams } from '../enrollPlaybookDrawer.utils';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 
 export interface UseEnrollPlaybooksParams extends FetchPlaybooksParams {
   open: boolean;
 }
 
-const fetcher = (query: unknown, variables: Record<string, unknown>) => {
+const fetcher = (query: GraphQLTaggedNode, variables: Record<string, unknown>) => {
   return fetchQuery(query, variables).toPromise() as Promise<unknown>;
 };
 

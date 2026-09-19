@@ -92,9 +92,6 @@ export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
 
   // Ingestion RSS attributes
   { attribute: 'ingestion_running', vocabularyType: 'ingestion_running_ov', label: 'Ingestion running', multiple: false },
-
-  // Container attributes
-  { attribute: 'content', vocabularyType: 'content_ov', label: 'Content', multiple: false },
 ];
 
 /**

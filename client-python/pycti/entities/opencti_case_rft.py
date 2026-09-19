@@ -38,6 +38,10 @@ class CaseRft:
                   color
                 }
             }
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -261,6 +265,10 @@ class CaseRft:
                       color
                     }
                 }
+                creators {
+                id
+                name
+            }
                 createdBy {
                     ... on Identity {
                         id

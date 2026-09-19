@@ -10,6 +10,9 @@ const fintelTemplateAddMutation = graphql`
     fintelTemplateAdd(input: $input) {
       id
       entity_type
+      default
+      includeCoverPageByDefault
+      includeBackPageByDefault
     }
   }
 `;

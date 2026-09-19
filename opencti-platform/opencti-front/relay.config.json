@@ -3,5 +3,8 @@
   "schema": "./src/schema/relay.schema.graphql",
   "language": "typescript",
   "eagerEsModules": true,
-  "excludes": ["**/relay.lsp-directives.graphql"]
+  "excludes": ["**/relay.lsp-directives.graphql"],
+  "featureFlags": {
+    "enforce_fragment_alias_where_ambiguous": { "kind": "disabled" }
+  }
 }

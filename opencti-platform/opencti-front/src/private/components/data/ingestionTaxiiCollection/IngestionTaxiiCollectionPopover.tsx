@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -13,14 +14,17 @@ import {
   IngestionTaxiiCollectionLinesPaginationQuery$variables,
 } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql';
 import { IngestionTaxiiCollectionPopoverEditionQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverEditionQuery.graphql';
+import { IngestionTaxiiCollectionPopoverExportQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverExportQuery.graphql';
 import { PopoverProps } from '@mui/material/Popover';
+import fileDownload from 'js-file-download';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
+import { fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import IngestionTaxiiCollectionEdition, { ingestionTaxiiCollectionMutationFieldPatch } from './IngestionTaxiiCollectionEdition';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const ingestionTaxiiPopoverDeletionMutation = graphql`
   mutation IngestionTaxiiCollectionPopoverDeletionMutation($id: ID!) {
@@ -40,16 +44,28 @@ const ingestionTaxiiEditionQuery = graphql`
   }
 `;
 
+const ingestionTaxiiCollectionExportQuery = graphql`
+  query IngestionTaxiiCollectionPopoverExportQuery($id: String!) {
+    ingestionTaxiiCollection(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
+
 interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
   running?: boolean | null;
   paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables | null | undefined;
+  // Called after a successful deletion (e.g. to leave the detail page).
+  onDeleteComplete?: () => void;
 }
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   ingestionTaxiiId,
   running,
   paginationOptions,
+  onDeleteComplete,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -114,8 +130,21 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        onDeleteComplete?.();
       },
     });
+  };
+
+  const handleExport = async () => {
+    handleClose();
+    const data = await fetchQuery(ingestionTaxiiCollectionExportQuery, { id: ingestionTaxiiId }).toPromise();
+    const { ingestionTaxiiCollection } = data as IngestionTaxiiCollectionPopoverExportQuery$data;
+    if (ingestionTaxiiCollection) {
+      const blob = new Blob([ingestionTaxiiCollection.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_taxiiPush_${ingestionTaxiiCollection.name}.json`;
+      fileDownload(blob, fileName);
+    }
   };
 
   const [commitStart] = useApiMutation(ingestionTaxiiCollectionMutationFieldPatch);
@@ -177,6 +206,9 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
         </MenuItem>
+        <MenuItem onClick={handleExport}>
+          {t_i18n('Export')}
+        </MenuItem>
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}
         </MenuItem>
@@ -203,10 +235,11 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         message={t_i18n('Do you want to delete this TAXII ingester?')}
       />
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayStart}
         onClose={handleCloseStart}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to start this TAXII ingester?')}
         </DialogContentText>
@@ -227,10 +260,11 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         </DialogActions>
       </Dialog>
       <Dialog
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         open={displayStop}
         onClose={handleCloseStop}
-        title={t_i18n('Are you sure?')}
       >
+        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
         <DialogContentText>
           {t_i18n('Do you want to stop this TAXII ingester?')}
         </DialogContentText>

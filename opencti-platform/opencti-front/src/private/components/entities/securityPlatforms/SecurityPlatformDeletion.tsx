@@ -1,10 +1,9 @@
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
@@ -20,9 +19,8 @@ const SecurityPlatformDeletion = ({ id, isOpen, handleClose }: { id: string; isO
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
-    values: { entity_type: ('entity_SecurityPlatform') },
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
+    values: { entity_type: t_i18n('entity_SecurityPlatform') },
   });
 
   const [commit] = useApiMutation(
@@ -43,8 +41,7 @@ const SecurityPlatformDeletion = ({ id, isOpen, handleClose }: { id: string; isO
         navigate('/dashboard/entities/security_platforms');
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error);
       },
     });
   };

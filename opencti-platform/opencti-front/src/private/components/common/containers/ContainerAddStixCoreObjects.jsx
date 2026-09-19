@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import IconButton from '@common/button/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
@@ -141,7 +141,6 @@ const ContainerAddStixCoreObjects = (props) => {
   } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext(targetStixCoreObjectTypes, filters);
 
-  const containerRef = useRef(null);
   const [mappingSearch, setMappingSearch] = useState(null);
   const [currentSelectedText, setCurrentSelectedText] = useState(selectedText);
   if (currentSelectedText !== selectedText) {
@@ -350,7 +349,7 @@ const ContainerAddStixCoreObjects = (props) => {
       >
         <QueryRenderer
           query={containerAddStixCoreObjectsLinesQuery}
-          variables={{ count: 100, ...searchPaginationOptions }}
+          variables={{ count: 25, ...searchPaginationOptions }}
           render={({ props: renderProps }) => (
             <ContainerAddStixCoreObjectsLines
               data={renderProps}
@@ -364,7 +363,6 @@ const ContainerAddStixCoreObjects = (props) => {
               onDelete={onDelete}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               mapping={mapping}
-              containerRef={containerRef}
               enableReferences={enableReferences}
               onLabelClick={helpers.handleAddFilter}
             />
@@ -388,6 +386,7 @@ const ContainerAddStixCoreObjects = (props) => {
             onClick={() => setOpen(true)}
             variant="tertiary"
             size="small"
+            aria-label={t_i18n('Add an entity to this container')}
           >
             <Add />
           </IconButton>
@@ -408,6 +407,7 @@ const ContainerAddStixCoreObjects = (props) => {
     }
     return (
       <Fab
+        /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
         onClick={() => setOpen(true)}
         color="primary"
         aria-label="Add"
@@ -430,7 +430,6 @@ const ContainerAddStixCoreObjects = (props) => {
           }
         }}
         title={t_i18n('Add entities')}
-        containerRef={containerRef}
       >
         <>
           {renderSearchResults(searchPaginationOptions)}

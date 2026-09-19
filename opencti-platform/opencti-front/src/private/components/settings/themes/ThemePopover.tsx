@@ -1,5 +1,6 @@
 import { MoreVert } from '@mui/icons-material';
-import { IconButton, Menu, MenuItem } from '@mui/material';
+import { Menu, MenuItem } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
@@ -7,7 +8,7 @@ import { ThemeManager_data$data } from '@components/settings/themes/__generated_
 import { useFormatter } from '../../../../components/i18n';
 import ThemeEdition from './ThemeEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import ThemeType from './ThemeType';
 import handleExportJson from './ThemeExportHandler';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -69,7 +70,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     theme_logo_collapsed: themeData.theme_logo_collapsed,
     theme_logo_login: themeData.theme_logo_login,
     theme_text_color: themeData.theme_text_color,
-    system_default: themeData.built_in,
+    built_in: themeData.built_in,
     theme_login_aside_color: themeData.theme_login_aside_color,
     theme_login_aside_gradient_end: themeData.theme_login_aside_gradient_end,
     theme_login_aside_gradient_start: themeData.theme_login_aside_gradient_start,
@@ -85,8 +86,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     }),
   };
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('Theme') },
   });
 
@@ -162,21 +162,17 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   return (
     <div>
       <Security
-        needs={[
-          KNOWLEDGE_KNUPDATE,
-          KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
-          KNOWLEDGE_KNUPDATE_KNDELETE,
-        ]}
+        needs={[SETTINGS_SETPARAMETERS]}
       >
         <IconButton
+          variant="default"
+          priority="tertiary"
           aria-label={t_i18n('Open menu')}
           onClick={handleOpen}
           aria-haspopup="true"
           data-testid={`${theme.name}-popover`}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
+          icon={<MoreVert />}
+        />
       </Security>
 
       <Menu
@@ -184,15 +180,20 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         open={isMenuOpen}
         onClose={handleClose}
       >
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[SETTINGS_SETPARAMETERS]}>
           <MenuItem
             onClick={handleOpenUpdate}
-            aria-label={t_i18n('Update')}
+            aria-label={theme.built_in
+              ? t_i18n('View')
+              : t_i18n('Update')
+            }
           >
-            {t_i18n('Update')}
+            {theme.built_in
+              ? t_i18n('View')
+              : t_i18n('Update')}
           </MenuItem>
         </Security>
-        <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+        <Security needs={[SETTINGS_SETPARAMETERS]}>
           <MenuItem
             onClick={handleExport}
             aria-label={t_i18n('Export')}
@@ -200,8 +201,8 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
             {t_i18n('Export')}
           </MenuItem>
         </Security>
-        {!theme.system_default && (
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        {!theme.built_in && (
+          <Security needs={[SETTINGS_SETPARAMETERS]}>
             <MenuItem
               onClick={handleOpenDelete}
               aria-label={t_i18n('Delete')}

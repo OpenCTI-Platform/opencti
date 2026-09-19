@@ -870,6 +870,25 @@ describe('User has no settings capability and is organization admin query behavi
             }
         }
     `;
+  const USER_RELATION_ADD_PARTICIPATE_TO_QUERY = gql`
+    mutation UserRelationAddParticipateTo($id: ID!, $toId: ID!) {
+      userEdit(id: $id) {
+        relationAdd(input: { toId: $toId, relationship_type: "participate-to" }) {
+          id
+          entity_type
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_PARTICIPATE_TO_QUERY = gql`
+    mutation UserRelationDeleteParticipateTo($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "participate-to") {
+          id
+        }
+      }
+    }
+  `;
 
   afterAll(async () => {
     // remove the capability to administrate the Organization
@@ -954,6 +973,38 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data?.userAdd.name).toEqual('User');
     userInternalId = user.data?.userAdd.id;
   });
+  it('should not create user in an organization the org admin does not administrate', async () => {
+    const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+    const USER_TO_CREATE_WRONG_ORG = {
+      input: {
+        name: 'User wrong org',
+        password: 'user',
+        user_email: 'user.wrongorg@mail.com',
+        objectOrganization: [notAdministratedOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_ORG,
+    });
+  });
+  it('should not create user with a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    const USER_TO_CREATE_WRONG_GROUP = {
+      input: {
+        name: 'User wrong group',
+        password: 'user',
+        user_email: 'user.wronggroup@mail.com',
+        objectOrganization: [testOrganizationId],
+        groups: [notGrantableGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_GROUP,
+    });
+  });
   it('should list users from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: LIST_QUERY,
@@ -962,6 +1013,18 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data?.users.edges.length).toEqual(3);
     expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data?.users.edges.map((n: any) => n.node.id).includes(userId)))
       .toBeTruthy();
+  });
+  it('Org admins should NOT update password for other users', async () => {
+    const variables = {
+      id: userInternalId,
+      input: [
+        { key: 'password', value: 'new_password' },
+      ],
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables,
+    });
   });
   it('should update user from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
@@ -998,6 +1061,24 @@ describe('User has no settings capability and is organization admin query behavi
       variables: {
         id: ADMIN_USER.id,
         organizationId: testOrganizationId,
+      },
+    });
+  });
+  it('should not add participate-to relation if target organization is not administrated', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+  });
+  it('should not delete participate-to relation if target organization is not administrated', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
       },
     });
   });
@@ -1051,6 +1132,26 @@ describe('User has no settings capability and is organization admin query behavi
       },
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
+  });
+  it('should add participate-to relation if target organization is administrated', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: USER_RELATION_ADD_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+    expect(queryResult.data.userEdit.relationAdd.entity_type).toEqual('participate-to');
+  });
+  it('should delete participate-to relation if target organization is administrated', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: USER_RELATION_DELETE_PARTICIPATE_TO_QUERY,
+      variables: {
+        id: userInternalId,
+        toId: platformOrganizationId,
+      },
+    });
+    expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
   });
   it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
     const queryResult = await queryAsAdminWithSuccess({

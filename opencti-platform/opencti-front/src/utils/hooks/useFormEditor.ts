@@ -1,7 +1,6 @@
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { UseMutationConfig } from 'react-relay';
+import type { GraphQLTaggedNode, MutationParameters } from 'relay-runtime';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
-import { MutationParameters } from 'relay-runtime';
 import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
 import useConfidenceLevel from './useConfidenceLevel';
 import useApiMutation from './useApiMutation';

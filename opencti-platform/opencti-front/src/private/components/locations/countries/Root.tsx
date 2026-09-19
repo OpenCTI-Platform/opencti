@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';

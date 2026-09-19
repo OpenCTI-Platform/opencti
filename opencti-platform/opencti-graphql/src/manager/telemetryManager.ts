@@ -2,7 +2,7 @@ import { defaultResource, resourceFromAttributes } from '@opentelemetry/resource
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { booleanConf, DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
 import {
@@ -60,6 +60,7 @@ import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfigurati
 import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
+import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
@@ -69,6 +70,8 @@ import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationP
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -106,6 +109,7 @@ const booleanTrueFilter = (key: string) => ({
 });
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
+const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics'
   : 'https://telemetry.filigran.io/v1/metrics';
@@ -485,7 +489,9 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Connectors information
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const activeConnectors = connectors.filter((c) => c.active);
+    const oaevConnectors = connectors.filter((c) => c.name.toLowerCase().startsWith('openaev coverage'));
     manager.setActiveConnectorsCount(activeConnectors.length);
+    manager.setOaevConnectorsCount(oaevConnectors.length);
     // Breakdown by catalog identity (see computeActiveConnectorsByIdentity):
     // composer-managed connectors resolve to the catalog contract slug
     // through their stored container image; manually registered connectors
@@ -546,10 +552,18 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion SSO providers
 
     // region Security Coverages
-    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-      types: [ENTITY_TYPE_SECURITY_COVERAGE],
-    });
+    const [
+      securityCoveragesCount,
+      securityCoverageResultsCount,
+      relationshipsHasCoveredCount,
+    ] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE_RESULT] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_HAS_COVERED] }),
+    ]);
     manager.setSecurityCoveragesCount(securityCoveragesCount);
+    manager.setSecurityCoverageResultsCount(securityCoverageResultsCount);
+    manager.setRelationshipsHasCoveredCount(relationshipsHasCoveredCount);
     // endregion
 
     // region Shared saved filters
@@ -693,6 +707,22 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIndexedFilesCount(indexedFilesCount);
     // endregion
 
+    try {
+      const streamInfo = await rawFetchStreamInfo();
+      manager.setRedisStreamEventsCount(streamInfo.streamSize ?? 0);
+    } catch (streamErr) {
+      logApp.debug('[TELEMETRY] Could not fetch redis stream info, skipping redis stream events count', { cause: streamErr });
+      manager.setRedisStreamEventsCount(-1);
+    }
+    try {
+      const offloadedStreamEventsCount = await countOffloadedStreamEvents();
+      manager.setOffloadedStreamEventsCount(offloadedStreamEventsCount);
+    } catch (offloadErr) {
+      logApp.debug('[TELEMETRY] Could not count offloaded stream events, skipping offloaded stream events count', { cause: offloadErr });
+      manager.setOffloadedStreamEventsCount(-1);
+    }
+    // endregion
+
     // region Telemetry user events
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
@@ -803,7 +833,7 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: TELEMETRY_MANAGER_KEY,
   },
-  enabledByConfig: true,
+  enabledByConfig: TELEMETRY_MANAGER_ENABLED,
   enabledToStart(): boolean {
     return this.enabledByConfig;
   },

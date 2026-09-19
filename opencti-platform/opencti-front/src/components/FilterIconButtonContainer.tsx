@@ -4,7 +4,15 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
+import {
+  convertOperatorToIcon,
+  filterOperatorsWithIcon,
+  FilterSearchContext,
+  FiltersRestrictions,
+  isFilterEditable,
+  NO_VALUES_FILTER_OPERATORS,
+  useFilterDefinition,
+} from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
@@ -239,10 +247,10 @@ const FilterIconButtonContainer: FunctionComponent<
         );
         const isNotLastFilter = index < displayedFilters.length - 1;
 
-        const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq')
+        const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
-        // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
+          // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
         const chipBackgroundColorStyle = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
@@ -255,17 +263,27 @@ const FilterIconButtonContainer: FunctionComponent<
                 filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
                   ? undefined
                   : (
-                      <FilterValues
-                        label={keyLabel}
-                        tooltip={true}
-                        currentFilter={currentFilter}
-                        handleSwitchLocalMode={handleSwitchLocalMode}
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                        redirection={redirection}
-                        entityTypes={entityTypes}
-                        filtersRestrictions={filtersRestrictions}
-                        host={host}
-                      />
+                      // As inline content the key, the values and the operator sat on three different baselines.
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '4px',
+                        }}
+                      >
+                        <FilterValues
+                          label={keyLabel}
+                          tooltip={true}
+                          currentFilter={currentFilter}
+                          handleSwitchLocalMode={handleSwitchLocalMode}
+                          filtersRepresentativesMap={filtersRepresentativesMap}
+                          redirection={redirection}
+                          entityTypes={entityTypes}
+                          filtersRestrictions={filtersRestrictions}
+                          host={host}
+                        />
+                      </Box>
                     )
               }
             >
@@ -300,6 +318,7 @@ const FilterIconButtonContainer: FunctionComponent<
                   }}
                   label={(
                     <Stack
+                      alignItems="center"
                       direction="row"
                       gap={0.5}
                       sx={{

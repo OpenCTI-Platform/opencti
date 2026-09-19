@@ -1,8 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import RoleEditionOverview from './RoleEditionOverview';
@@ -15,6 +12,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { RootRoleEditionQuery$data } from './__generated__/RootRoleEditionQuery.graphql';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const RoleEditionFragment = graphql`
   fragment RoleEdition_role on Role {
@@ -43,7 +41,7 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('overview');
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
   const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -67,28 +65,25 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
     >
       {role ? (
         <>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-              <Tab label={t_i18n('Overview')} />
-              <Tab label={t_i18n('Capabilities')} />
-              <Tab
-                disabled={!isEnterpriseEdition}
-                label={(
-                  <Box>
-                    {t_i18n('Capabilities in Draft')}
-                    <EEChip clickable={false} />
-                  </Box>
-                )}
-              />
-            </Tabs>
-          </Box>
-          {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
-          {currentTab === 1 && queryRef && (
-            <RoleEditionCapabilities role={role} queryRef={queryRef} />
-          )}
-          {currentTab === 2 && queryRef && (
-            <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
-          )}
+          <Tabs value={currentTab} onValueChange={setCurrentTab}>
+            <TabsList>
+              <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+              <TabsTrigger value="capabilities">{t_i18n('Capabilities')}</TabsTrigger>
+              <TabsTrigger value="capabilities-draft" disabled={!isEnterpriseEdition}>
+                {t_i18n('Capabilities in Draft')}
+                <EEChip clickable={false} />
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+              <RoleEditionOverview role={role} context={role.editContext} />
+            </TabsContent>
+            <TabsContent value="capabilities">
+              {queryRef && <RoleEditionCapabilities role={role} queryRef={queryRef} />}
+            </TabsContent>
+            <TabsContent value="capabilities-draft">
+              {queryRef && <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />}
+            </TabsContent>
+          </Tabs>
         </>
       )
         : (<Loader />)}

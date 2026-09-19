@@ -15,8 +15,7 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
+
 const localStrategyFormQuery = graphql`
   query LocalStrategyFormQuery {
     settings {
@@ -90,8 +89,6 @@ interface LocalStrategyFormProps {
 const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { settings: appSettings } = useAuth();
-  const forcePasswordChangeEnabled = isFeatureEnable(appSettings, 'FORCE_PASSWORD_CHANGE');
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
   const isConfigurationFromEnv = settings.is_authentication_by_env ?? false;
@@ -189,7 +186,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
+            variant="outlined"
             name="password_policy_min_length"
             label={t_i18n('Number of chars must be greater or equals to')}
             fullWidth
@@ -197,8 +194,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="password_policy_max_length"
             label={`${t_i18n('Number of chars must be lower or equals to')} (${t_i18n('0 equals no maximum')})`}
             fullWidth
@@ -206,8 +203,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="password_policy_min_symbols"
             label={t_i18n('Number of symbols must be greater or equals to')}
             fullWidth
@@ -215,8 +212,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="password_policy_min_numbers"
             label={t_i18n('Number of digits must be greater or equals to')}
             fullWidth
@@ -224,8 +221,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="password_policy_min_words"
             label={t_i18n('Number of words (split on hyphen, space) must be greater or equals to')}
             fullWidth
@@ -233,8 +230,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="password_policy_min_lowercase"
             label={t_i18n('Number of lowercase chars must be greater or equals to')}
             fullWidth
@@ -242,23 +239,21 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           <Field
             component={TextField}
             type="number"
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="password_policy_min_uppercase"
             label={t_i18n('Number of uppercase chars must be greater or equals to')}
             fullWidth
           />
-          {forcePasswordChangeEnabled && (
-            <Field
-              component={TextField}
-              type="number"
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="password_policy_validity_days"
-              label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
-              fullWidth
-            />
-          )}
+          <Field
+            component={TextField}
+            type="number"
+            variant="outlined"
+            className="mt-5"
+            name="password_policy_validity_days"
+            label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
+            fullWidth
+          />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="secondary"

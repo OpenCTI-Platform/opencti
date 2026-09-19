@@ -1,3 +1,4 @@
+import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
@@ -48,7 +49,17 @@ import {
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import {
+  ClientAbortError,
+  ComplexSearchError,
+  ConfigurationError,
+  DatabaseError,
+  EngineShardsError,
+  FunctionalError,
+  LockTimeoutError,
+  TYPE_LOCK_ERROR,
+  UnsupportedError,
+} from '../config/errors';
 import {
   isStixRefRelationship,
   isStixRefUnidirectionalRelationship,
@@ -65,7 +76,6 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_REF_RELATIONSHIP,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -94,7 +104,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -142,23 +152,14 @@ import {
   type AttributeDefinition,
   authorizedMembers,
   baseType,
-  booleanMapping,
-  dateMapping,
   entityType as entityTypeAttribute,
   id as idAttribute,
   internalId,
-  longStringFormats,
-  numericMapping,
-  shortMapping,
-  shortStringFormats,
   standardId,
-  textMapping,
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
-import { schemaTypesDefinition } from '../schema/schema-types';
-import { INTERNAL_RELATIONSHIPS, isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { rule_definitions } from '../rules/rules-definition';
+import { isInternalRelationship, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
@@ -195,14 +196,14 @@ import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
+import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
 import { isEsScriptFilterEnabled } from './engine-config';
 import { AbortError } from 'node-fetch';
+import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY: number = conf.get('elasticsearch:max_concurrency');
-export const ES_DEFAULT_WILDCARD_PREFIX: boolean = booleanConf('elasticsearch:search_wildcard_prefix', false);
-export const ES_DEFAULT_FUZZY: boolean = booleanConf('elasticsearch:search_fuzzy', false);
 export const ES_INIT_MAPPING_MIGRATION: string = conf.get('elasticsearch:internal_init_mapping_migration') || 'off'; // off / old / standard
 export const ES_IS_OLD_MAPPING: boolean = ES_INIT_MAPPING_MIGRATION === 'old';
 export const ES_IS_INIT_MIGRATION: boolean = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
@@ -581,6 +582,22 @@ export const isTransitoryError = (error: any): boolean => {
     return true;
   }
   return false;
+};
+
+// covers both engine clients: node-fetch's AbortError (ElkClient) and
+// OpenSearch's RequestAbortedError.
+export const isClientAbortError = (err: any): boolean => {
+  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
+};
+
+// Use this instead of throwing DatabaseError directly when catching an error
+// from an abort-signal-aware engine call, so a client abort isn't misclassified
+// as a genuine engine failure.
+export const wrapEngineError = (reason: string, err: any, data: Record<string, any> = {}): GraphQLError => {
+  if (isClientAbortError(err)) {
+    return ClientAbortError(reason, { cause: err, ...data });
+  }
+  return DatabaseError(reason, { cause: err, ...data });
 };
 
 export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
@@ -1150,95 +1167,6 @@ const updateCoreSettings = async (): Promise<void> => {
   }
 };
 
-// Engine mapping generation on attributes definition
-const attributeMappingGenerator = (entityAttribute: AttributeDefinition): any => {
-  if (entityAttribute.type === 'string') {
-    if (shortStringFormats.includes(entityAttribute.format)) {
-      return shortMapping;
-    }
-    if (longStringFormats.includes(entityAttribute.format)) {
-      return textMapping;
-    }
-    throw UnsupportedError('Cant generated string mapping', { format: entityAttribute.format });
-  }
-  if (entityAttribute.type === 'date') {
-    return dateMapping;
-  }
-  if (entityAttribute.type === 'numeric') {
-    return numericMapping(entityAttribute.precision);
-  }
-  if (entityAttribute.type === 'boolean') {
-    return booleanMapping;
-  }
-  if (entityAttribute.type === 'object') {
-    // For flat object
-    if (entityAttribute.format === 'flat') {
-      return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
-    }
-    // For standard object
-    const properties: Record<string, any> = {};
-    for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
-      const mapping = entityAttribute.mappings[i];
-      properties[mapping.name] = attributeMappingGenerator(mapping);
-    }
-    const config: { dynamic: string; properties: any; type?: string } = { dynamic: 'strict', properties };
-    // Add nested option if needed
-    if (entityAttribute.format === 'nested') {
-      config.type = 'nested';
-    }
-    return config;
-  }
-  throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
-};
-const ruleMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
-  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
-  for (let attrIndex = 0; attrIndex < rule_definitions.length; attrIndex += 1) {
-    const rule = rule_definitions[attrIndex];
-    schemaProperties[`i_rule_${rule.id}`] = {
-      dynamic: 'strict',
-      properties: {
-        explanation: shortMapping,
-        dependencies: shortMapping,
-        hash: shortMapping,
-        data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
-      },
-    };
-  }
-  return schemaProperties;
-};
-const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
-  const databaseRelationshipsName = [
-    STIX_SIGHTING_RELATIONSHIP,
-    ...STIX_CORE_RELATIONSHIPS,
-    ...INTERNAL_RELATIONSHIPS,
-    ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP),
-  ];
-  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
-  for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
-    const relName = databaseRelationshipsName[attrIndex];
-    schemaProperties[`rel_${relName}`] = {
-      dynamic: 'strict',
-      properties: {
-        internal_id: shortMapping,
-        inferred_id: shortMapping,
-      },
-    };
-  }
-  return schemaProperties;
-};
-const attributesMappingGenerator = (): Record<string, any> => {
-  const entityAttributes = schemaAttributesDefinition.getAllAttributes();
-  const schemaProperties: Record<string, any> = {};
-  for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
-    const entityAttribute = entityAttributes[attrIndex];
-    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute);
-  }
-  return schemaProperties;
-};
-
-export const engineMappingGenerator = (): Record<string, any> => {
-  return { ...attributesMappingGenerator(), ...ruleMappingGenerator(), ...denormalizeRelationsMappingGenerator() };
-};
 const computeIndexSettings = (rolloverAlias: string | null | undefined): any => {
   if (engine instanceof ElkClient) {
     // Rollover alias can be undefined for platform initialized <= 5.8
@@ -1277,206 +1205,6 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
   };
 };
 
-// Only useful for option ES_INIT_RETRO_MAPPING_MIGRATION
-// This mode let the platform initialize old mapping protection before direct stop
-// Its only useful when old platform needs to be reindex
-const getRetroCompatibleMappings = (): any => {
-  const flattenedType = engine instanceof ElkClient ? 'flattened' : 'flat_object';
-  return {
-    internal_id: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    standard_id: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    user_email: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    name: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          normalizer: 'string_normalizer',
-          ignore_above: 512,
-        },
-      },
-    },
-    height: {
-      type: 'nested',
-      properties: {
-        measure: { type: 'float' },
-        date_seen: { type: 'date' },
-      },
-    },
-    weight: {
-      type: 'nested',
-      properties: {
-        measure: { type: 'float' },
-        date_seen: { type: 'date' },
-      },
-    },
-    timestamp: {
-      type: 'date',
-    },
-    created: {
-      type: 'date',
-    },
-    created_at: {
-      type: 'date',
-    },
-    modified: {
-      type: 'date',
-    },
-    modified_at: {
-      type: 'date',
-    },
-    indexed_at: {
-      type: 'date',
-    },
-    uploaded_at: {
-      type: 'date',
-    },
-    first_seen: {
-      type: 'date',
-    },
-    last_seen: {
-      type: 'date',
-    },
-    start_time: {
-      type: 'date',
-    },
-    stop_time: {
-      type: 'date',
-    },
-    published: {
-      type: 'date',
-    },
-    valid_from: {
-      type: 'date',
-    },
-    valid_until: {
-      type: 'date',
-    },
-    observable_date: {
-      type: 'date',
-    },
-    event_date: {
-      type: 'date',
-    },
-    received_time: {
-      type: 'date',
-    },
-    processed_time: {
-      type: 'date',
-    },
-    completed_time: {
-      type: 'date',
-    },
-    ctime: {
-      type: 'date',
-    },
-    mtime: {
-      type: 'date',
-    },
-    atime: {
-      type: 'date',
-    },
-    current_state_date: {
-      type: 'date',
-    },
-    confidence: {
-      type: 'integer',
-    },
-    attribute_order: {
-      type: 'integer',
-    },
-    base_score: {
-      type: 'integer',
-    },
-    is_family: {
-      type: 'boolean',
-    },
-    number_observed: {
-      type: 'integer',
-    },
-    x_opencti_negative: {
-      type: 'boolean',
-    },
-    default_assignation: {
-      type: 'boolean',
-    },
-    x_opencti_detection: {
-      type: 'boolean',
-    },
-    x_opencti_order: {
-      type: 'integer',
-    },
-    import_expected_number: {
-      type: 'integer',
-    },
-    import_processed_number: {
-      type: 'integer',
-    },
-    x_opencti_score: {
-      type: 'integer',
-    },
-    connections: {
-      type: 'nested',
-    },
-    manager_setting: {
-      type: flattenedType,
-    },
-    context_data: {
-      properties: {
-        input: { type: flattenedType },
-      },
-    },
-    size: {
-      type: 'integer',
-    },
-    lastModifiedSinceMin: {
-      type: 'integer',
-    },
-    lastModified: {
-      type: 'date',
-    },
-    metaData: {
-      properties: {
-        order: {
-          type: 'integer',
-        },
-        inCarousel: {
-          type: 'boolean',
-        },
-        messages: { type: flattenedType },
-        errors: { type: flattenedType },
-      },
-    },
-  };
-};
-
 const updateIndexTemplate = async (name: string, mapping_properties: Record<string, any>): Promise<any> => {
   // compute pattern to be retro compatible for platform < 5.9
   // Before 5.9, only one pattern for all indices
@@ -1489,7 +1217,7 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
       template: {
         settings: computeIndexSettings(name),
         mappings: ES_IS_OLD_MAPPING ? {
-          properties: getRetroCompatibleMappings(),
+          properties: getRetroCompatibleMappings(engine),
         } : {
           // Global option to prevent elastic to try any magic
           dynamic: 'strict' as const,
@@ -1546,7 +1274,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
   // Update core settings
   await updateCoreSettings();
   // Reset the templates
-  const mappingProperties = engineMappingGenerator();
+  const mappingProperties = engineMappingGenerator(engine);
   const templates = await elPlatformTemplates();
   for (let index = 0; index < templates.length; index += 1) {
     const template = templates[index];
@@ -1631,7 +1359,11 @@ export const elDeleteIndex = async (index: string) => {
     logApp.error('Error deleting indexes:', error);
   }
 };
-export const elCreateIndex = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
+export const elCreateIndex = async (index: string) => {
+  const mappingProperties = engineMappingGenerator(engine);
+  return elCreateIndexWithMapping(index, mappingProperties);
+};
+const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;
@@ -1654,10 +1386,10 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES):
   await updateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
-  const mappingProperties = engineMappingGenerator();
+  const mappingProperties = engineMappingGenerator(engine);
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
-    const createdIndex = await elCreateIndex(index, mappingProperties);
+    const createdIndex = await elCreateIndexWithMapping(index, mappingProperties);
     if (createdIndex) {
       createdIndices.push(oebp(createdIndex));
     }
@@ -1797,6 +1529,7 @@ const REL_DEFAULT_FETCH = [
   `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
   // DEFAULT (LOW VOLUME)
   `${REL_INDEX_PREFIX}${RELATION_COVERED}${REL_DEFAULT_SUFFIX}`,
+  `${REL_INDEX_PREFIX}${RELATION_RESULT_OF}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,
@@ -1871,6 +1604,9 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 // region elastic common loader.
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
+};
+const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
+  return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
 };
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
@@ -1992,7 +1728,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
     logApp.debug('[SEARCH] elInternalLoadById', { query });
     const searchType = `${ids} (${types ? (types as string[]).join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-      throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
+      throw wrapEngineError('Find direct ids fail', err, { query: JSON.stringify(query), searchType });
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
@@ -2154,17 +1890,23 @@ type ProcessSearchArgs = {
   useWildcardPrefix?: boolean;
   historyFiltering?: boolean;
 };
+
+// Hard cap user-provided search input to limit normalization + query parsing cost
+const MAX_SEARCH_LENGTH = 512;
+
 function processSearch(
   search: string,
   args: ProcessSearchArgs,
 ): { exactSearch: string[]; querySearch: string[] } {
-  const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
+  const { useWildcardPrefix } = args;
+  const boundedSearch = search.length > MAX_SEARCH_LENGTH ? search.slice(0, MAX_SEARCH_LENGTH) : search;
+
   let decodedSearch;
   try {
-    decodedSearch = decodeURIComponent(refang(search))
+    decodedSearch = decodeURIComponent(refang(boundedSearch))
       .trim();
   } catch (_e) {
-    decodedSearch = refang(search).trim();
+    decodedSearch = refang(boundedSearch).trim();
   }
   let remainingSearch = decodedSearch;
   const exactSearch = (decodedSearch.match(/"[^"]+"/g) || []) //
@@ -2181,12 +1923,9 @@ function processSearch(
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
-    const cleanElement = specialElasticCharsEscape(partialElement);
+    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(partialElement);
     if (isNotEmptyField(cleanElement)) {
       querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
-      if (ES_DEFAULT_FUZZY) {
-        querySearch.push(`${cleanElement}~`);
-      }
     }
   }
   return {
@@ -2459,6 +2198,20 @@ export const buildLocalMustFilter = (validFilter: any) => {
                   query: nestedSearchValue.toString(),
                 },
               });
+            } else if (['contains', 'not_contains', 'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'].includes(nestedOperator)) {
+              // Substring/prefix/suffix match on a nested string field, mirroring the non-nested handling:
+              // wildcarded query_string on the .keyword sub-field, routed to must (positive) or must_not (negated).
+              const target = nestedOperator.startsWith('not_') ? nestedMustNot : nestedShould;
+              const val = specialElasticCharsEscape(nestedSearchValue).replace(/\s/g, '\\ ');
+              let query;
+              if (nestedOperator === 'contains' || nestedOperator === 'not_contains') {
+                query = `*${val}*`;
+              } else if (nestedOperator === 'starts_with' || nestedOperator === 'not_starts_with') {
+                query = `${val}*`;
+              } else {
+                query = `*${val}`;
+              }
+              target.push({ query_string: { query, analyze_wildcard: true, fields: [`${nestedFieldKey}.keyword`] } } as any);
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
               nestedShould.push({
                 range: {
@@ -2476,13 +2229,18 @@ export const buildLocalMustFilter = (validFilter: any) => {
           }
         }
       }
-      const should = {
-        bool: {
-          should: nestedShould,
-          minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
-        },
-      };
-      nestedMust.push(should);
+      // Only add a should clause when there is at least one positive condition; a negated-only
+      // operator (not_eq / not_contains / nil ...) puts its clause in nestedMustNot and must not
+      // be paired with an empty should (minimum_should_match would otherwise match nothing).
+      if (nestedShould.length > 0) {
+        const should = {
+          bool: {
+            should: nestedShould,
+            minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
+          },
+        };
+        nestedMust.push(should);
+      }
     }
     const nestedQuery = {
       path: headKey,
@@ -2674,7 +2432,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               script: {
                 script: {
                   source: `
-                    def fieldValues = doc['${buildFieldForScriptQuery(headKey)}'];
+                    def fieldValues = doc[params.field];
                     if (fieldValues == null || fieldValues.length == 0) return false;
                     def filterValues = params.values;
                     if (params.mode == 'and') {
@@ -2685,6 +2443,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
                     return false;
                   `,
                   params: {
+                    field: buildFieldForScriptQuery(headKey),
                     values,
                     mode: localFilterMode,
                   },
@@ -2700,9 +2459,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
             });
           } else if (operator === 'wildcard' || operator === 'not_wildcard') {
             const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+            const val = specialElasticCharsEscape(values[i].toString());
             targets.push({
               query_string: {
-                query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
+                query: values[i] === '*' ? values[i] : `"${val}"`,
                 fields: arrayKeys,
               },
             });
@@ -2736,16 +2496,15 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 fields: arrayKeys.map((k) => `${k}.keyword`),
               },
             });
-          } else if (operator === 'script' || operator === 'internal_script') {
-            if (operator === 'script' && !isEsScriptFilterEnabled()) {
+          } else if (operator === 'script') {
+            if (!isEsScriptFilterEnabled()) {
               throw UnsupportedError('Filter script is not allowed', { filter: validFilter });
-            } else {
-              valuesFiltering.push({
-                script: {
-                  script: values[i].toString(),
-                },
-              });
             }
+            valuesFiltering.push({
+              script: {
+                script: values[i].toString(),
+              },
+            });
           } else if (operator === 'search') {
             const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
             const bool = {
@@ -2755,7 +2514,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               },
             };
             valuesFiltering.push(bool);
-          } else { // range operators
+          } else if (RANGE_OPERATORS.includes(operator)) { // range operators
             if (arrayKeys.length > 1) {
               throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
             }
@@ -2764,6 +2523,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 [headKey]: { [operator]: values[i] },
               },
             });
+          } else {
+            throw UnsupportedError('Not supported filter operator', { filter: validFilter, filterOperator: operator });
           }
         }
       }
@@ -3069,6 +2830,11 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   endDate?: any;
   dateAttribute?: string | null;
   includeAuthorities?: boolean | null;
+  /**
+   * Trusted, internal-only raw Painless script clauses (ANDed with the rest of the query).
+   * MUST NEVER be populated from user/GraphQL/JSON input.
+   */
+  internalScriptFilters?: string[];
 };
 const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   const {
@@ -3092,6 +2858,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     dateAttribute = null,
     includeAuthorities = false,
     noRegardingOfFilterIdsCheck = false,
+    internalScriptFilters = [],
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
     return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
@@ -3104,6 +2871,12 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
+  // Trusted, internal-only raw Painless script clauses. These never go through the filter
+  // grammar (buildLocalMustFilter / checkAndConvertFilters): they can only be populated by
+  // hardcoded backend TS code, never by user/GraphQL/JSON input.
+  internalScriptFilters.forEach((source) => {
+    mustFilters.push({ script: { script: { source } } });
+  });
   // Add special keys to filters
   const specialFiltersContent: any = [];
   if (ids.length > 0 || startDate || endDate || (types !== null && types.length > 0)) {
@@ -3343,7 +3116,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   } catch (err: any) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-    throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
+    throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query: JSON.stringify(query), queryArguments: options });
   }
 };
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
@@ -3483,7 +3256,7 @@ export const elCardinalityCount = async (
   };
   const searchType = `Aggregations (${field})`;
   const cardinalityData = await elRawSearch(context, user, searchType, cardinalityQuery).catch((err) => {
-    throw DatabaseError('Cardinality computing fail', { cause: err, cardinalityQuery });
+    throw wrapEngineError('Cardinality computing fail', err, { cardinalityQuery: JSON.stringify(cardinalityQuery) });
   });
   return cardinalityData.aggregations.cardinality_count.value;
 };
@@ -3586,12 +3359,15 @@ export const elAggregationCount = async (
 ): Promise<{ label: string; value: any; count: number }[]> => {
   const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
+  const queryField = buildFieldForQuery(field);
+  // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
+  const isKeywordField = queryField.endsWith('.keyword');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     genres: {
       terms: {
-        field: buildFieldForQuery(field),
+        field: queryField,
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -3604,6 +3380,9 @@ export const elAggregationCount = async (
       },
     },
   };
+  if (isKeywordField) {
+    body.aggs.genres.terms.missing = 'unknown';
+  }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
@@ -3716,14 +3495,6 @@ export const elAggregationRelationsCount = async (
                 aggs: {
                   parent: {
                     reverse_nested: {},
-                    aggs: {
-                      weight: {
-                        sum: {
-                          field: 'i_inference_weight',
-                          missing: 1,
-                        },
-                      },
-                    },
                   },
                 },
               },
@@ -3741,14 +3512,6 @@ export const elAggregationRelationsCount = async (
             : `${field}.keyword`,
           size: MAX_AGGREGATION_SIZE,
         },
-        aggs: {
-          weight: {
-            sum: {
-              field: 'i_inference_weight',
-              missing: 1,
-            },
-          },
-        },
       },
     };
   }
@@ -3760,11 +3523,11 @@ export const elAggregationRelationsCount = async (
       if (isAggregationConnection) {
         const { buckets } = data.aggregations.connections.filtered.genres;
         if (field === 'internal_id') {
-          return buckets.map((b: any) => ({ label: b.key, value: b.parent.weight.value }));
+          return buckets.map((b: any) => ({ label: b.key, value: b.parent.doc_count }));
         }
         // entity_type
         const filteredBuckets = buckets.filter((b: any) => !(isAbstract(pascalize(b.key)) || isAbstract(b.key)));
-        return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
+        return R.map((b) => ({ label: pascalize(b.key), value: b.parent.doc_count }), filteredBuckets);
       }
       const { buckets } = data.aggregations.genres;
       return buckets.map((b: any) => {
@@ -3774,7 +3537,7 @@ export const elAggregationRelationsCount = async (
         } else if (!isIdFields) {
           label = pascalize(b.key);
         }
-        return { label, value: b.weight.value };
+        return { label, value: b.doc_count };
       });
     })
     .catch((e) => {
@@ -3870,7 +3633,7 @@ export const elAggregationsList = async (
   };
   const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
   const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-    throw DatabaseError('Aggregations computing list fail', { cause: err, query });
+    throw wrapEngineError('Aggregations computing list fail', err, { query: JSON.stringify(query) });
   });
   const aggsMap = Object.keys(data.aggregations);
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b: { key: string }) => b.key))));
@@ -4034,16 +3797,102 @@ export const elAttributeValues = async (
 };
 // endregion
 
+// The list of per-item errors considered transient: elasticsearch refused the item under load or contention,
+// the operation was NOT applied and can be resubmitted as-is.
+const BULK_ITEM_TRANSIENT_ERRORS = [
+  'es_rejected_execution_exception',
+  'circuit_breaking_exception',
+  'too_many_requests',
+  'unavailable_shards_exception',
+  'version_conflict_engine_exception', // only after retry_on_conflict is exhausted
+];
+const isTransientBulkItemError = (itemResult: any): boolean => {
+  return itemResult.status === 429 || BULK_ITEM_TRANSIENT_ERRORS.includes(itemResult.error?.type);
+};
+const bulkItemResult = (item: any) => item.index ?? item.update ?? item.delete ?? item.create;
+
 export const elBulk = async (context: AuthContext, args: any) => {
-  return elRawBulk(context, args).then((data) => {
-    if (data.errors) {
-      const errors = data.items.map((i: any) => i.index?.error || i.update?.error).filter((f: any) => f !== undefined);
-      if (errors.filter((err: any) => err.type !== DOCUMENT_MISSING_EXCEPTION).length > 0) {
-        throw DatabaseError('Bulk indexing fail', { errors });
+  const data = await elRawBulk(context, args);
+  if (!data.errors) {
+    return data;
+  }
+  // So, from here, we have a partial failure (HTTP 200 for the top-level HTTP response, but with per-item errors).
+  // We need to retry the failed items, but only the transient ones. Permanent errors will be reported.
+  // -> Succeeded items are already applied and must not be resubmitted;
+  // -> Failed items are guaranteed not applied on Elasticsearch side. So we retry only the failed transient ones.
+
+  const { body, ...bulkArgs } = args;
+  const operations: Array<{ lines: any[]; index: number }> = [];
+  for (let i = 0; i < body.length; i += 1) {
+    // We need to group the bulk lines into operations, because the bulk API is a sequence of action lines and source lines.
+    // And for that we need to know if the action is a delete or not, because delete has no source line.
+    const isDelete = body[i].delete !== undefined;
+    const lines = isDelete ? [body[i]] : [body[i], body[i + 1]];
+    operations.push({ lines, index: operations.length });
+    i += lines.length - 1;
+  }
+  const bulkId = generateInternalId().substring(0, 8);
+  const finalItems: any[] = new Array(operations.length);
+  let pending = operations;
+  let response = data;
+
+  // Start the retry loop, with exponential backoff.
+  for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
+    if (attempt > 0) {
+      response = await elRawBulk(context, { ...bulkArgs, body: pending.flatMap((operation) => operation.lines) });
+    }
+    const items = response.items ?? [];
+    const retryable: typeof pending = [];
+    const transientErrors: any[] = [];
+    const permanentErrors: any[] = [];
+    for (let k = 0; k < items.length; k += 1) {
+      const operation = pending[k];
+      finalItems[operation.index] = items[k];
+      const itemResult = bulkItemResult(items[k]);
+      const error = itemResult?.error;
+      if (!error || error.type === DOCUMENT_MISSING_EXCEPTION) {
+        // We skip this case of missing document,
+        // because it is a tolerated update of an already deleted document (the document is not there, but the operation is considered successful).
+        continue;
+      }
+      if (isTransientBulkItemError(itemResult)) {
+        // This is a transient error, we will retry this operation in the next loop iteration.
+        retryable.push(operation);
+        transientErrors.push(error);
+      } else {
+        permanentErrors.push(error);
       }
     }
-    return data;
-  });
+    if (permanentErrors.length > 0) {
+      // So here we have permanent errors, we cannot continue, we need to throw an error with the details of the permanent errors.
+      throw DatabaseError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: permanentErrors });
+    }
+    if (retryable.length === 0) {
+      if (attempt > 0) {
+        logApp.info('[SEARCH] Bulk recovered after partial failures', { bulkId, attempts: attempt + 1, opsTotal: operations.length });
+      }
+      return { ...response, items: finalItems, errors: finalItems.some((item) => item && bulkItemResult(item)?.error !== undefined) };
+    }
+    if (attempt === BULK_MAX_RETRIES) {
+      // We have exhausted the maximum number of retries, we need to throw an error with the details of the transient errors.
+      throw DatabaseError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: transientErrors });
+    }
+    const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
+    const errorTypes: Record<string, number> = {};
+    transientErrors.forEach((error) => {
+      errorTypes[error.type] = (errorTypes[error.type] ?? 0) + 1;
+    });
+    logApp.warn(`[SEARCH] Bulk partial failure, retrying failed items in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, {
+      bulkId,
+      opsTotal: operations.length,
+      opsOk: operations.length - retryable.length,
+      opsRetrying: retryable.length,
+      errorTypes,
+    });
+    await wait(delayMs);
+    pending = retryable;
+  }
+  return response;
 };
 /* v8 ignore next */
 export const elIndex = async (
@@ -4102,10 +3951,30 @@ export const elUpdate = async (
         () => (engine as OpenClient).update(updateRequest),
       );
     } catch (err: any) {
-      throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+      throw wrapEngineError('Update indexing fail', err, { documentId, entityType, ...extendedErrors({ documentBody }) });
     }
   };
   return retryElOperations(updateOperation);
+};
+// Field names are passed as script parameters and never interpolated in the source.
+// Interpolating them would create one script per field combination, and every distinct
+// source has to be compiled by the engine, quickly exhausting script.max_compilations_rate.
+export const EL_REPLACE_SCRIPT_SOURCE = 'for (entry in params.replacements.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }'
+  + ' for (key in params.removals) { ctx._source.remove(key); }';
+export const buildReplaceScriptParams = (doc: Record<string, any>) => {
+  const replacements: Record<string, any> = {};
+  const removals: string[] = [];
+  const entries = Object.entries(doc);
+  for (let index = 0; index < entries.length; index += 1) {
+    const [key, val] = entries[index];
+    // We clean the attribute only if data is null or undefined
+    if (val === undefined || val === null) {
+      removals.push(key);
+    } else {
+      replacements[key] = val;
+    }
+  }
+  return { replacements, removals };
 };
 export const elReplace = async (
   context: AuthContext,
@@ -4114,20 +3983,8 @@ export const elReplace = async (
   documentBody: any,
 ) => {
   const doc = R.dissoc('_index', documentBody.doc);
-  const entries = Object.entries(doc);
-  const rawSources = [];
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key, val] = entries[index];
-    // We clean the attribute only if data is null or undefined
-    if (val === undefined || val === null) {
-      rawSources.push(`ctx._source.remove('${key}')`);
-    } else {
-      rawSources.push(`ctx._source['${key}'] = params['${key}']`);
-    }
-  }
-  const source = R.join(';', rawSources);
   return elUpdate(context, indexName, documentId, {
-    script: { source, params: doc },
+    script: { source: EL_REPLACE_SCRIPT_SOURCE, params: buildReplaceScriptParams(doc) },
   });
 };
 export const elDelete = (indexName: string, documentId: string) => {
@@ -4472,6 +4329,8 @@ export const copyLiveElementToDraft = async (
   const allDraftIds = allDrafts.map((d) => d.internal_id);
   const addDraftIdScript = {
     script: {
+      // draftId is a script parameter, never interpolated: interpolating it would compile
+      // a new script for every draft ever created (see script.max_compilations_rate).
       source: `
         if (ctx._source.containsKey('draft_ids')) {
           for (int i=ctx._source['draft_ids'].length-1; i>=0; i--) {
@@ -4479,12 +4338,12 @@ export const copyLiveElementToDraft = async (
               ctx._source['draft_ids'].remove(i);
             }
           }
-          ctx._source['draft_ids'].add('${draftContext}');
+          ctx._source['draft_ids'].add(params.draftId);
         }
         else
-          {ctx._source.draft_ids = ['${draftContext}']}
+          {ctx._source.draft_ids = [params.draftId]}
       `,
-      params: { allDraftIds },
+      params: { allDraftIds, draftId: draftContext },
     },
   };
   await elUpdate(context, element._index, element.internal_id, addDraftIdScript);
@@ -4750,7 +4609,82 @@ const prepareIndexing = async (context: AuthContext, user: AuthUser, elements: R
 const validateElementsToIndex = (context: AuthContext, user: AuthUser, elements: Record<string, any>[]) => {
   const draftContext = getDraftContext(context, user);
   // If any element to index is not supported in draft, raise exception
-  if (draftContext && elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot index unsupported element in draft context');
+  if (draftContext && elements.some((e) => !isDraftSupportedEntity(e))) {
+    throw UnsupportedError('Cannot index unsupported element in draft context');
+  }
+};
+type DenormalizedRefTarget = { relation: string; field: string; elements: any[] };
+// Field names are script parameters and never interpolated in the source. Interpolating them
+// would compile one script per combination of ref relationship types carried by an entity,
+// which grows with the powerset of the ref types and quickly exhausts script.max_compilations_rate.
+export const EL_DENORMALIZED_REFS_SCRIPT_SOURCE = `
+  for (ref in params.appended_refs) {
+    if (ctx._source[ref.field] == null) { ctx._source[ref.field] = []; }
+    ctx._source[ref.field].addAll(ref.ids);
+  }
+  for (ref in params.distinct_refs) {
+    if (ctx._source[ref.field] == null) { ctx._source[ref.field] = []; }
+    for (id in ref.ids) {
+      if (!ctx._source[ref.field].contains(id)) { ctx._source[ref.field].add(id); }
+    }
+  }
+  for (field in params.timestamp_fields) { ctx._source[field] = params.updated_at; }
+  if (params.pir_ids != null) {
+    if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+      ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
+      ctx._source['pir_information'].addAll(params.new_pir_information);
+    } else { ctx._source['pir_information'] = params.new_pir_information; }
+  }
+`;
+export const buildDenormalizedRefsScriptParams = (targetsElements: DenormalizedRefTarget[], updatedAt: string) => {
+  const appendedRefs: { field: string; ids: string[] }[] = [];
+  const distinctRefs: { field: string; ids: string[] }[] = [];
+  const timestampFields: string[] = [];
+  const addTimestampField = (field: string) => {
+    if (!timestampFields.includes(field)) timestampFields.push(field);
+  };
+  let pirIds: string[] | null = null;
+  let newPirInformation: any[] | null = null;
+  for (let index = 0; index < targetsElements.length; index += 1) {
+    const target = targetsElements[index];
+    const field = buildRefRelationKey(target.relation, target.field);
+    const ids = target.elements.map((e: any) => e.id);
+    if (isStixRefUnidirectionalRelationship(target.relation)) {
+      // don't try to add unidirectional ref rel if already present (issue#7535)
+      distinctRefs.push({ field, ids });
+    } else {
+      appendedRefs.push({ field, ids });
+    }
+    const fromSide = target.elements.find((e: any) => e.side === 'from');
+    const toSide = target.elements.find((e: any) => e.side === 'to');
+    if (fromSide && isStixRefRelationship(target.relation)) {
+      // updated_at and modified only updated for ref relationships
+      if (isUpdatedAtObject(fromSide.type)) addTimestampField('updated_at');
+      if (isModifiedObject(fromSide.type)) addTimestampField('modified');
+    }
+    // freshness of an entity updated for any relationship
+    if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
+      addTimestampField('refreshed_at');
+    }
+    // Add Pir information for in-pir relationships
+    if (target.relation === RELATION_IN_PIR) {
+      // remove pir_information concerning the pir and add the new pir_information
+      newPirInformation = target.elements.map((e: any) => ({
+        pir_id: e.id,
+        pir_score: e.pir_score,
+        last_pir_score_date: updatedAt,
+      }));
+      pirIds = ids;
+    }
+  }
+  return {
+    updated_at: updatedAt,
+    appended_refs: appendedRefs,
+    distinct_refs: distinctRefs,
+    timestamp_fields: timestampFields,
+    pir_ids: pirIds,
+    new_pir_information: newPirInformation,
+  };
 };
 export const elIndexElements = async (
   context: AuthContext,
@@ -4822,64 +4756,8 @@ export const elIndexElements = async (
         return { relation: relType, field: refField, elements: resolvedData };
       });
       // Create params and scripted update
-      const params: any = { updated_at: now() };
-      const sources = targetsElements.map((t) => {
-        const field = buildRefRelationKey(t.relation, t.field);
-        let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        if (isStixRefUnidirectionalRelationship(t.relation)) {
-          // don't try to add unidirectional ref rel if already present (issue#7535)
-          script += `for(refId in params['${field}']) {
-          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
-        } else {
-          script += `ctx._source['${field}'].addAll(params['${field}']);`;
-        }
-        const fromSide = t.elements.find((e: any) => e.side === 'from');
-        const toSide = t.elements.find((e: any) => e.side === 'to');
-        if (fromSide && isStixRefRelationship(t.relation)) {
-          // updated_at and modified only updated for ref relationships
-          if (isUpdatedAtObject(fromSide.type)) {
-            script += 'ctx._source[\'updated_at\'] = params.updated_at;';
-          }
-          if (isModifiedObject(fromSide.type)) {
-            script += 'ctx._source[\'modified\'] = params.updated_at;';
-          }
-        }
-        // freshness of an entity updated for any relationship
-        if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
-          script += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
-        }
-        // Add Pir information for in-pir relationships
-        if (t.relation === RELATION_IN_PIR) {
-          // remove pir_information concerning the pir and add the new pir_information
-          script += `
-            if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
-              ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
-              ctx._source['pir_information'].addAll(params.new_pir_information);
-            } else { ctx._source['pir_information'] = params.new_pir_information; }
-          `;
-        }
-        return script;
-      });
-      // Concat sources scripts by adding a ';' between each script to close each final script line
-      const source = sources.length > 1 ? R.join(' ', sources) : `${R.head(sources)}`;
-      // Construct params
-      for (let index = 0; index < targetsElements.length; index += 1) {
-        const targetElement = targetsElements[index];
-        params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e: any) => e.id);
-      }
-      // Add new_pir_information params
-      const pirElements = targetsElements.filter((e) => e.relation === RELATION_IN_PIR);
-      for (let index = 0; index < pirElements.length; index += 1) {
-        const pirElement = pirElements[index];
-        params.new_pir_information = pirElement.elements
-          .map((e: any) => ({
-            pir_id: e.id,
-            pir_score: e.pir_score,
-            last_pir_score_date: params.updated_at,
-          }));
-        params.pir_ids = pirElement.elements.map((e: any) => e.id);
-      }
-      return { ...entity, id: entityId, data: { script: { source, params } } };
+      const params = buildDenormalizedRefsScriptParams(targetsElements, now());
+      return { ...entity, id: entityId, data: { script: { source: EL_DENORMALIZED_REFS_SCRIPT_SOURCE, params } } };
     });
     // bulk update elements (denormalized relations)
     if (elementsToUpdate.length > 0) {
@@ -5100,6 +4978,23 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
     return oebp(engineIndicesStats)._all.primaries;
   };
   return retryElOperations(statsOperation);
+};
+
+// Branches are kept separate: ELK types the metric as an array, OpenSearch as a string,
+// and their client signatures are not mutually assignable.
+// Scoped to `${ES_INDEX_PREFIX}*` (not '*'): on a cluster shared with other applications,
+// a plain wildcard would sum every index in the cluster, not just OpenCTI's own size.
+const fetchEngineUsedSize = async (): Promise<number> => {
+  if (engine instanceof ElkClient) {
+    const engineIndicesStats = await engine.indices.stats({ index: `${ES_INDEX_PREFIX}*`, metric: ['store'], expand_wildcards: 'all' as any });
+    return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
+  }
+  const engineIndicesStats = await engine.indices.stats({ index: `${ES_INDEX_PREFIX}*`, metric: 'store', expand_wildcards: 'all' as any });
+  return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
+};
+
+export const getEngineUsedSize = async (): Promise<number> => {
+  return retryElOperations(fetchEngineUsedSize);
 };
 
 export const isEngineAlive = async () => {

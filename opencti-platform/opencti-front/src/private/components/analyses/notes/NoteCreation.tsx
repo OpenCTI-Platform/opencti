@@ -105,6 +105,7 @@ interface NoteFormProps {
   defaultCreatedBy?: FieldOption;
   defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
+  marginTop?: boolean;
 }
 
 export const NOTE_TYPE = 'Note';
@@ -116,6 +117,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  marginTop,
 }) => {
   const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -223,10 +225,11 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             name="created"
             textFieldProps={{
               label: t_i18n('Publication date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               required: mandatoryAttributes.includes('created'),
             }}
+            sx={marginTop ? { marginTop: 2 } : undefined}
           />
           <Field
             component={TextField}
@@ -234,7 +237,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             label={t_i18n('Abstract')}
             required={(mandatoryAttributes.includes('attribute_abstract'))}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             askAi={true}
           />
           <Field
@@ -265,19 +268,19 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             entityType="Note"
             containerStyle={fieldSpacingContainerStyle}
           />
-          <Field
-            component={SliderField}
-            name="likelihood"
-            required={(mandatoryAttributes.includes('likelihood'))}
-            label={t_i18n('Likelihood')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
+          <div style={fieldSpacingContainerStyle}>
+            <Field
+              component={SliderField}
+              name="likelihood"
+              required={(mandatoryAttributes.includes('likelihood'))}
+              label={t_i18n('Likelihood')}
+            />
+          </div>
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
-              style={{ marginTop: 10 }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
           )}
@@ -355,6 +358,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab
+          /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
           onClick={() => setOpen(true)}
           color="secondary"
           aria-label="Add"
@@ -371,6 +375,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
             inputValue={inputValue}
             updater={updater}
             onClose={() => setOpen(false)}
+            marginTop
           />
         </Dialog>
       </div>

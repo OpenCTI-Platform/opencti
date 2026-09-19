@@ -32,8 +32,8 @@ vi.mock('../../../common/form/ObjectParticipantField', () => ({
 }));
 
 // Mock useParams
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
   return {
     ...actual,
     useParams: () => ({ formId: 'form-id' }),
@@ -67,9 +67,6 @@ const defaultMockForm = makeMockForm({
 // entitySettings: { edges: [] } is required to match what FormView expects from the user context
 const mockUserContext = createMockUserContext({
   entitySettings: { edges: [] },
-  settings: {
-    platform_feature_flags: [{ id: 'FORM_INTAKE_DEFAULT_VALUES', enable: true }],
-  },
 });
 
 const resolveAndWait = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], form: object) => {

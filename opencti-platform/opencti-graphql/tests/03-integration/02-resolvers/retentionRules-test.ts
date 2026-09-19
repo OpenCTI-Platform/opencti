@@ -3,8 +3,7 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import type { RetentionRuleAddInput } from '../../../src/generated/graphql';
 import { RetentionRuleScope, RetentionUnit } from '../../../src/generated/graphql';
-import { testContext } from '../../utils/testQuery';
-import { checkRetentionRule } from '../../../src/modules/retentionRules/retentionRules-domain';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 // ---------------------------------------------------------------------------
 // GraphQL fragments
@@ -89,7 +88,7 @@ const CHECK_RETENTION_RULE = gql`
 // Shared fixtures
 // ---------------------------------------------------------------------------
 
-const emptyFilters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+const jsonEmptyFilters = JSON.stringify(emptyFilterGroup);
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -110,7 +109,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should create a knowledge retention rule', async () => {
       const input: RetentionRuleAddInput = {
         name: '[Integration] Knowledge rule',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 30,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.Knowledge,
@@ -128,7 +127,7 @@ describe('RetentionRules module – integration tests', () => {
       expect(rule.scope).toBe('knowledge');
       expect(rule.max_retention).toBe(30);
       expect(rule.retention_unit).toBe('days');
-      expect(rule.filters).toBe(emptyFilters);
+      expect(rule.filters).toBe(jsonEmptyFilters);
       expect(rule.last_execution_date).toBeNull();
       expect(rule.last_deleted_count).toBeNull();
       expect(rule.remaining_count).toBeNull();
@@ -139,7 +138,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should create a file retention rule', async () => {
       const input: RetentionRuleAddInput = {
         name: '[Integration] File rule',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 7,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.File,
@@ -162,7 +161,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should create a workbench retention rule with hours unit', async () => {
       const input: RetentionRuleAddInput = {
         name: '[Integration] Workbench rule',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 48,
         retention_unit: RetentionUnit.Hours,
         scope: RetentionRuleScope.Workbench,
@@ -187,7 +186,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should create a history retention rule', async () => {
       const input: RetentionRuleAddInput = {
         name: '[Integration] History rule',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 365,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.History,
@@ -215,7 +214,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should create an activity retention rule', async () => {
       const input: RetentionRuleAddInput = {
         name: '[Integration] Activity rule',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 365,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.Activity,
@@ -382,7 +381,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should return a count for knowledge scope', async () => {
       const input: RetentionRuleAddInput = {
         name: 'check knowledge',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 1,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.Knowledge,
@@ -401,7 +400,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should return a count for file scope', async () => {
       const input: RetentionRuleAddInput = {
         name: 'check file',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 1,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.File,
@@ -420,7 +419,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should return a count for workbench scope', async () => {
       const input: RetentionRuleAddInput = {
         name: 'check workbench',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 1,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.Workbench,
@@ -441,7 +440,7 @@ describe('RetentionRules module – integration tests', () => {
       // max_retention: 3650 days means "entries not updated in 10 years" → 0 in a fresh test env, which is valid.
       const input: RetentionRuleAddInput = {
         name: 'check history',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 3650,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.History,
@@ -461,7 +460,7 @@ describe('RetentionRules module – integration tests', () => {
       // A 1-minute window may or may not match entries depending on test suite duration – just verify it returns a number.
       const input: RetentionRuleAddInput = {
         name: 'check history short window',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 1,
         retention_unit: RetentionUnit.Minutes,
         scope: RetentionRuleScope.History,
@@ -531,7 +530,7 @@ describe('RetentionRules module – integration tests', () => {
       // Verifies the activity code path executes and returns a number.
       const input: RetentionRuleAddInput = {
         name: 'check activity',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 3650,
         retention_unit: RetentionUnit.Days,
         scope: RetentionRuleScope.Activity,
@@ -550,7 +549,7 @@ describe('RetentionRules module – integration tests', () => {
     it('should return a number for activity scope with a short retention window', async () => {
       const input: RetentionRuleAddInput = {
         name: 'check activity short window',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 1,
         retention_unit: RetentionUnit.Minutes,
         scope: RetentionRuleScope.Activity,
@@ -594,7 +593,7 @@ describe('RetentionRules module – integration tests', () => {
       // A very short retention (1 minute) should find elements modified before 1 minute ago – likely 0 in a fresh test run
       const input: RetentionRuleAddInput = {
         name: 'check short retention',
-        filters: emptyFilters,
+        filters: jsonEmptyFilters,
         max_retention: 1,
         retention_unit: RetentionUnit.Minutes,
         scope: RetentionRuleScope.Knowledge,
@@ -608,7 +607,6 @@ describe('RetentionRules module – integration tests', () => {
       const count = response.data?.retentionRuleCheck;
       expect(typeof count).toBe('number');
     });
-
   });
 
   // -------------------------------------------------------------------------

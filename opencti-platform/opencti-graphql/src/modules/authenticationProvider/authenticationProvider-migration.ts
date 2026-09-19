@@ -105,6 +105,7 @@ const migrateHeadersAuthIfNeeded = async (context: AuthContext, user: AuthUser) 
         groups_mapping: parseMappingStrings(config?.groups_management?.groups_mapping),
         auto_create_groups: config?.groups_management?.auto_create_group ?? false,
         prevent_default_groups: config?.groups_management?.prevent_default_groups ?? false,
+        extend_platform_groups: config?.groups_management?.extend_platform_groups ?? false,
       },
       organizations_mapping: {
         default_organizations: config?.organizations_management?.organizations_default ?? [],
@@ -147,6 +148,7 @@ const migrateCertAuthIfNeeded = async (context: AuthContext, user: AuthUser) => 
         groups_mapping: [],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       },
       organizations_mapping: {
         default_organizations: [],

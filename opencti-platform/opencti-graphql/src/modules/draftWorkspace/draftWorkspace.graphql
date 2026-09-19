@@ -141,7 +141,7 @@ type Query {
         endDate: DateTime
         filters: FilterGroup
         search: String
-    ): Number @auth(for: [KNOWLEDGE]) @ff(flags: ["DRAFT_WORKFLOW"], softFail: true, defaultValue: "null")
+    ): Number @auth(for: [KNOWLEDGE])
     draftWorkspacesTimeSeries(
         field: String!
         operation: StatsOperation!
@@ -150,7 +150,7 @@ type Query {
         interval: String!
         filters: FilterGroup
         search: String
-    ): [TimeSeries] @auth(for: [KNOWLEDGE]) @ff(flags: ["DRAFT_WORKFLOW"], softFail: true, defaultValue: "null")
+    ): [TimeSeries] @auth(for: [KNOWLEDGE])
     draftWorkspacesDistribution(
         field: String!
         startDate: DateTime
@@ -161,7 +161,7 @@ type Query {
         order: String
         filters: FilterGroup
         search: String
-    ): [Distribution] @auth(for: [KNOWLEDGE]) @ff(flags: ["DRAFT_WORKFLOW"], softFail: true, defaultValue: "null")
+    ): [Distribution] @auth(for: [KNOWLEDGE])
 }
 
 type DraftEntityField {

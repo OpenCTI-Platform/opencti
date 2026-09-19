@@ -8,6 +8,7 @@ import { objectOrganization } from '../../schema/stixRefRelationship';
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
+import { revoked } from '../../schema/attribute-definition';
 
 const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource, Stix2DataSource> = {
   type: {
@@ -40,6 +41,7 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_mitre_platforms', label: 'Platforms', type: 'string', format: 'vocabulary', vocabularyCategory: 'platforms_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
     { name: 'collection_layers', label: 'Layers', type: 'string', format: 'vocabulary', vocabularyCategory: 'collection_layers_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { ...revoked, isFilterable: true },
   ],
   relations: [
     {

@@ -1,19 +1,30 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import ipaddr from 'ipaddr.js';
+import { rawUploadWithMetadata, deleteFileFromStorage, getFileMetadata } from '../database/raw-file-storage';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  isUserHasCapability,
+  SETTINGS_SET_ACCESSES,
+  SETTINGS_SETAUTH,
+  SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETMANAGEXTMHUB,
+  SETTINGS_SETPARAMETERS,
+  SETTINGS_SECURITYACTIVITY,
+  SYSTEM_USER,
+} from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
@@ -128,8 +139,9 @@ export const getSettings = async (context) => {
     platform_demo: ENABLED_DEMO_MODE,
     platform_modules: clusterInfo.modules,
     platform_reference_attachment: conf.get('app:reference_attachment'),
-    platform_map_tile_server_dark: nconf.get('app:map_tile_server_dark'),
-    platform_map_tile_server_light: nconf.get('app:map_tile_server_light'),
+    // Deprecated: kept in the GraphQL schema for API backward-compatibility, no longer configurable.
+    platform_map_tile_server_dark: null,
+    platform_map_tile_server_light: null,
     platform_openaev_url: nconf.get('xtm:openaev_url'),
     platform_opengrc_url: nconf.get('xtm:opengrc_url'),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
@@ -173,8 +185,32 @@ export const settingsEditContext = async (context, user, settingsId, input) => {
   return await notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
 };
 
-const ACCESS_SETTINGS_RESTRICTED_KEYS = [
+const PUBLIC_SETTINGS_KEYS = [
+  'platform_theme',
+  'platform_theme_dark_background',
+  'platform_theme_dark_paper',
+  'platform_theme_dark_nav',
+  'platform_theme_dark_primary',
+  'platform_theme_dark_secondary',
+  'platform_theme_dark_accent',
+  'platform_theme_dark_logo',
+  'platform_theme_dark_logo_collapsed',
+  'platform_theme_dark_logo_login',
+  'platform_theme_light_background',
+  'platform_theme_light_paper',
+  'platform_theme_light_nav',
+  'platform_theme_light_primary',
+  'platform_theme_light_secondary',
+  'platform_theme_light_accent',
+  'platform_theme_light_logo',
+  'platform_theme_light_logo_collapsed',
+  'platform_theme_light_logo_login',
+  'platform_translations',
+];
+
+const SETTINGS_SET_ACCESS_KEYS = [
   'platform_organization',
+  'view_all_users',
   'otp_mandatory',
   'password_policy_min_length',
   'password_policy_max_length',
@@ -184,9 +220,10 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
   'password_policy_validity_days',
+  'smtp_configuration',
 ];
 
-const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
+const SETTINGS_SET_PARAMETERS_KEYS = [
   'filigran_chatbot_ai_cgu_status',
   'platform_ai_enabled',
   'platform_title',
@@ -200,8 +237,6 @@ const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'platform_consent_message',
   'platform_consent_confirm_text',
   'platform_no_access_message',
-  'platform_map_tile_server_dark',
-  'platform_map_tile_server_light',
   'platform_session_idle_timeout',
   'platform_session_timeout',
   'platform_session_max_concurrent',
@@ -211,11 +246,11 @@ const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'platform_reference_attachment',
 ];
 
-const CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS = [
+const SETTINGS_SET_CUSTOMIZATION_KEYS = [
   'platform_notifier_auto_trigger_assignee',
 ];
 
-const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
+const SETTINGS_SET_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_token',
   'xtm_hub_registration_user_id',
   'xtm_hub_last_connectivity_check',
@@ -227,23 +262,50 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_available_news_feed_types',
 ];
 
+const SETTINGS_SECURITY_ACTIVITY_KEYS = [
+  'activity_listeners_ids',
+];
+
+const SETTINGS_SET_AUTH_KEYS = [
+  'headers_auth',
+  'local_auth',
+  'cert_auth',
+  'platform_ip_whitelist',
+  'platform_ip_whitelist_enabled',
+  'platform_ip_whitelist_exclusion_ids',
+];
+
+const ALLOWED_SETTINGS_KEYS_BY_CAPABILITY = {
+  [SETTINGS_SET_ACCESSES]: SETTINGS_SET_ACCESS_KEYS,
+  [SETTINGS_SETPARAMETERS]: SETTINGS_SET_PARAMETERS_KEYS,
+  [SETTINGS_SETCUSTOMIZATION]: SETTINGS_SET_CUSTOMIZATION_KEYS,
+  [SETTINGS_SETMANAGEXTMHUB]: SETTINGS_SET_MANAGE_XTMHUB_KEYS,
+  [SETTINGS_SECURITYACTIVITY]: SETTINGS_SECURITY_ACTIVITY_KEYS,
+  [SETTINGS_SETAUTH]: SETTINGS_SET_AUTH_KEYS,
+};
+
+const buildAuthorizedSettingsKeys = (user) => {
+  const allowed = new Set(PUBLIC_SETTINGS_KEYS);
+  Object.entries(ALLOWED_SETTINGS_KEYS_BY_CAPABILITY).forEach(([capability, keys]) => {
+    if (isUserHasCapability(user, capability)) {
+      keys.forEach((key) => allowed.add(key));
+    }
+  });
+  return allowed;
+};
+
 export const settingsEditField = async (context, user, settingsId, input) => {
-  const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
-  const hasSetParameterCapability = isUserHasCapability(user, SETTINGS_SETPARAMETERS);
-  const hasSetCustomizationCapability = isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION);
-  const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
-  const keysUserCannotModify = [
-    ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
-    ...(hasSetParameterCapability ? [] : PARAMETERS_SETTINGS_RESTRICTED_KEYS),
-    ...(hasSetCustomizationCapability ? [] : CUSTOMIZATION_SETTINGS_RESTRICTED_KEYS),
-    ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
-  ];
+  const hasBypassCapability = isUserHasCapability(user, BYPASS);
+  const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
+  const allowedKeys = buildAuthorizedSettingsKeys(user);
+  const unauthorizedKeys = [...new Set(input
+    .map((i) => i.key)
+    .filter((key) => !allowedKeys.has(key)))];
+  if (!hasBypassCapability && unauthorizedKeys.length > 0) {
+    throw ForbiddenAccess('You are not allowed to edit some settings fields.', { unauthorizedKeys });
+  }
 
-  const dataWithRestrictKeys = keysUserCannotModify.length === 0
-    ? input
-    : input.filter((i) => !keysUserCannotModify.includes(i.key));
-
-  const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, dataWithRestrictKeys) : dataWithRestrictKeys;
+  const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, input) : input;
 
   const settings = await getSettings(context);
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
@@ -342,6 +404,41 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+const MAP_CUSTOM_FILE_KEY = 'maps/world.pmtiles';
+
+export const uploadMapCustomFile = async (context, user, file) => {
+  const { createReadStream, filename } = await file;
+  const stream = createReadStream();
+  const contentDisposition = `attachment; filename="${filename}"`;
+  await rawUploadWithMetadata(MAP_CUSTOM_FILE_KEY, stream, contentDisposition);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'uploads map custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'map_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const deleteMapCustomFile = async (context, user) => {
+  await deleteFileFromStorage(MAP_CUSTOM_FILE_KEY);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'deletes map custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'map_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const getMapCustomFileInfo = async () => {
+  return getFileMetadata(MAP_CUSTOM_FILE_KEY);
 };
 
 export const getCriticalAlerts = async (context, user) => {

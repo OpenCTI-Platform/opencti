@@ -11,13 +11,20 @@ import {
   getRedisVersion,
   lockResource,
   PLAYBOOK_EXECUTIONS_MAX_LENGTH,
+  CACHE_RESET_TOPIC,
+  publishCacheResetEvent,
+  pubSubSubscription,
   redisAddIngestionHistory,
   redisClearTelemetry,
+  redisDeleteIngestionLogHistory,
   redisGetForgotPasswordOtp,
   redisGetIngestionHistory,
+  redisGetIngestionLogHistory,
   redisGetTelemetry,
+  redisDeleteXtmAgentResponse,
   redisGetXtmAgentResponse,
   redisInit,
+  redisPushIngestionLog,
   redisPlaybookUpdate,
   redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
@@ -25,6 +32,7 @@ import {
   setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { awaitUntilCondition } from '../../utils/testQueryHelper';
 
 const ingestionHistoryKey = (feedId) => `ingestion-${feedId}-history`;
 
@@ -184,6 +192,22 @@ describe('Redis XTM agent response cache', () => {
     expect(cached.cached_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
+  it('should evict a cached agent response on demand', async () => {
+    // Used to drop an approval notice cached by an earlier build: the write guard
+    // in the proxy cannot reach an entry Redis already holds.
+    const cacheKey = `agent-cache-evict-${uuid()}`;
+    await redisSetXtmAgentResponse(cacheKey, 'I need approval before running: opencti_delete_entity.', 60);
+    expect(await redisGetXtmAgentResponse(cacheKey)).not.toBeNull();
+
+    await redisDeleteXtmAgentResponse(cacheKey);
+
+    expect(await redisGetXtmAgentResponse(cacheKey)).toBeNull();
+  });
+
+  it('should be a no-op when evicting a key that does not exist', async () => {
+    await expect(redisDeleteXtmAgentResponse(`agent-cache-absent-${uuid()}`)).resolves.toBeUndefined();
+  });
+
   it('should expire a cached agent response after the TTL elapses', async () => {
     const cacheKey = `agent-cache-ttl-${uuid()}`;
     const ttlSeconds = 1;
@@ -315,5 +339,112 @@ describe('Redis ingestion history', () => {
     expect(history).toHaveLength(20);
     expect(history[0].messages).toEqual(['msg-24']);
     expect(history[19].messages).toEqual(['msg-5']);
+  });
+});
+
+describe('Redis ingestion logs', () => {
+  it('should add and read ingestion logs', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+
+    await redisPushIngestionLog(feedId, {
+      level: 'error',
+      type: 'taxii',
+      identifier: feedId,
+      message: 'an-error',
+      meta: { source: 'test' },
+    });
+
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(1);
+    expect(logs[0].level).toBe('error');
+    expect(logs[0].message).toBe('an-error');
+    expect(logs[0].meta).toEqual({ source: 'test' });
+  });
+
+  it('should keep only the latest 20 ingestion logs', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+
+    for (let i = 0; i < 25; i += 1) {
+      await redisPushIngestionLog(feedId, {
+        level: i % 2 === 0 ? 'info' : 'error',
+        type: 'taxii',
+        identifier: feedId,
+        message: `log-${i}`,
+        meta: { i },
+      });
+    }
+
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(20);
+    expect(logs[0].message).toBe('log-24');
+    expect(logs[19].message).toBe('log-5');
+  });
+
+  it('should delete ingestion logs history', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+    await redisPushIngestionLog(feedId, {
+      level: 'warn',
+      type: 'taxii',
+      identifier: feedId,
+      message: 'to-delete',
+      meta: {},
+    });
+
+    await redisDeleteIngestionLogHistory(feedId);
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(0);
+  });
+});
+
+describe('Redis publishCacheResetEvent', () => {
+  it('should publish a cache reset event that subscribers receive', async () => {
+    const receivedEvents = [];
+    const subscription = await pubSubSubscription(CACHE_RESET_TOPIC, (event) => {
+      receivedEvents.push(event);
+    });
+
+    try {
+      await publishCacheResetEvent('User');
+
+      await awaitUntilCondition(
+        async () => receivedEvents.some((e) => e.entityType === 'User'),
+        3000,
+        { intervalMs: 10, message: 'No cache reset event received for User' },
+      );
+
+      expect(receivedEvents.length).toBeGreaterThanOrEqual(1);
+      const userEvent = receivedEvents.find((e) => e.entityType === 'User');
+      expect(userEvent).toBeDefined();
+      expect(userEvent.entityType).toBe('User');
+    } finally {
+      subscription.unsubscribe();
+    }
+  });
+
+  it('should publish distinct events for different entity types', async () => {
+    const receivedEvents = [];
+    const subscription = await pubSubSubscription(CACHE_RESET_TOPIC, (event) => {
+      receivedEvents.push(event);
+    });
+
+    try {
+      await publishCacheResetEvent('User');
+      await publishCacheResetEvent('Settings');
+
+      await awaitUntilCondition(
+        async () => receivedEvents.some((e) => e.entityType === 'User') && receivedEvents.some((e) => e.entityType === 'Settings'),
+        3000,
+        { intervalMs: 10, message: 'Cache reset events not received for both User and Settings' },
+      );
+
+      expect(receivedEvents.length).toBeGreaterThanOrEqual(2);
+      expect(receivedEvents.some((e) => e.entityType === 'User')).toBe(true);
+      expect(receivedEvents.some((e) => e.entityType === 'Settings')).toBe(true);
+    } finally {
+      subscription.unsubscribe();
+    }
   });
 });

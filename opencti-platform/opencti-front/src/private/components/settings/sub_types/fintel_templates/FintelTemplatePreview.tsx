@@ -8,7 +8,6 @@ import { useFormatter } from '../../../../../components/i18n';
 import FintelTemplatePreviewForm, { FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
-import useHelper from '../../../../../utils/hooks/useHelper';
 import PdfViewer from '../../../../../components/PdfViewer';
 import { FintelTemplatePreview_template$key } from './__generated__/FintelTemplatePreview_template.graphql';
 import Card from '../../../../../components/common/card/Card';
@@ -57,8 +56,6 @@ const FintelTemplatePreview = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
-  const { isOldEditorEnable } = useHelper();
-  const tiptapEnabled = !isOldEditorEnable();
   const { editorValue } = useFintelTemplateContext();
 
   const [pdf, setPdf] = useState<File>();
@@ -84,7 +81,7 @@ const FintelTemplatePreview = ({
       instance_filters: null,
     };
     const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, template);
-    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign, tiptapEnabled);
+    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign);
     const blob = await PDF.getBlob();
     const file = new File([blob], 'Preview.pdf', { type: blob.type });
     setPdf(file);

@@ -1,3 +1,4 @@
+import type { APIRequestContext } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
 
@@ -10,7 +11,7 @@ const CHANGE_PASSWORD_PATH = '/dashboard/change-password';
 /**
  * Run a GraphQL mutation/query as the admin (uses the stored auth session).
  */
-const graphql = async (request: any, query: string, variables?: Record<string, unknown>) => {
+const graphql = async (request: APIRequestContext, query: string, variables?: Record<string, unknown>) => {
   const response = await request.post('/graphql', {
     data: variables ? { query, variables } : { query },
   });
@@ -20,7 +21,7 @@ const graphql = async (request: any, query: string, variables?: Record<string, u
 /**
  * Find a user by email and return their id.
  */
-const findUserIdByEmail = async (request: any, email: string): Promise<string | null> => {
+const findUserIdByEmail = async (request: APIRequestContext, email: string): Promise<string | null> => {
   const result = await graphql(request, `
     query {
       users(search: "${email}") {
@@ -28,14 +29,14 @@ const findUserIdByEmail = async (request: any, email: string): Promise<string | 
       }
     }
   `);
-  const user = result.data.users.edges.find((e: any) => e.node.user_email === email);
+  const user = result.data.users.edges.find((e: { node: { id: string; user_email: string } }) => e.node.user_email === email);
   return user ? user.node.id : null;
 };
 
 /**
  * Create the test user if it doesn't exist.
  */
-const ensureTestUser = async (request: any): Promise<string> => {
+const ensureTestUser = async (request: APIRequestContext): Promise<string> => {
   let userId = await findUserIdByEmail(request, TEST_USER_EMAIL);
   if (!userId) {
     const result = await graphql(request, `
@@ -55,7 +56,7 @@ const ensureTestUser = async (request: any): Promise<string> => {
 /**
  * Set password_valid_until on a user (admin operation).
  */
-const setPasswordValidUntil = async (request: any, userId: string, value: string | null) => {
+const setPasswordValidUntil = async (request: APIRequestContext, userId: string, value: string | null) => {
   const valueStr = value ? `"${value}"` : 'null';
   await graphql(request, `
     mutation {
@@ -69,7 +70,7 @@ const setPasswordValidUntil = async (request: any, userId: string, value: string
   `);
 };
 
-test.describe('Force password change - navigation blocking', { tag: ['@ce'] }, () => {
+test.describe('Force password change - navigation blocking', { tag: ['@ce', '@groupff'] }, () => {
   let testUserId: string;
 
   test.beforeEach(async ({ request }) => {

@@ -55,8 +55,8 @@ rustup component add rustfmt
 ### 4. Generate Development Keys
 
 ```bash
-# Generate RSA private key for development
-openssl genrsa -out private_key_4096.pem 4096
+# Generate RSA private key for development (PKCS#8 format, as required by XTM Composer)
+openssl genpkey -algorithm RSA -out private_key_4096.pem -pkeyopt rsa_keygen_bits:4096
 ```
 
 ### 5. Create Development Configuration

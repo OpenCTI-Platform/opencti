@@ -9,12 +9,11 @@ import { ImportFilesContentFileLine_file$data } from '@components/data/import/__
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import React, { useEffect, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
@@ -24,7 +23,6 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -50,7 +48,6 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   onSuccess,
   isDraftContext = false,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
@@ -251,7 +248,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       enableReinitialize={true}
       initialValues={{
         connector_id: '',
-        validation_mode: isDraftContext ? 'draft' : 'workbench',
+        validation_mode: 'draft',
         configuration: '',
         objectMarking: [],
         ...draftInitialValues,
@@ -277,8 +274,8 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               title={t_i18n('Launch an import')}
             >
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth={true}
@@ -295,80 +292,76 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                     connector?.xtm_one_intent ? intentAgentCounts[connector.xtm_one_intent] : undefined,
                   );
                   return (
-                    <MenuItem
+                    <SelectItem
                       key={connector?.id}
-                      value={connector?.id}
+                      value={connector?.id ?? ''}
                       disabled={disabled || !connector?.active || noAgents}
                     >
                       {connector?.name}
                       {noAgents ? ` (${t_i18n('No agent available')})` : ''}
-                    </MenuItem>
+                    </SelectItem>
                   );
                 })}
               </Field>
               {isXtmOneConfigured && selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="configuration"
                   label={t_i18n('Select agent')}
                   fullWidth={true}
                   containerstyle={{ marginTop: 20, width: '100%' }}
                 >
                   {availableAgents.map((agent) => (
-                    <MenuItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
+                    <SelectItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
                       {agent.name}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
                 </Field>
               )}
               {!isDraftContext && (
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="validation_mode"
                   label={t_i18n('Validation mode')}
                   fullWidth={true}
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                 >
-                  <MenuItem value="workbench">Workbench</MenuItem>
-                  <MenuItem value="draft">Draft</MenuItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="workbench">Workbench</SelectItem>
                 </Field>
               )}
               {values.validation_mode === 'draft' && (
                 <>
-                  {isFeatureEnable('DRAFT_WORKFLOW') && (
-                    <>
-                      <Field
-                        component={MarkdownField}
-                        name="description"
-                        label={t_i18n('Description')}
-                        required={mandatoryAttributes.includes('description')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={fieldSpacingContainerStyle}
-                        askAi={true}
-                      />
-                      <ObjectAssigneeField
-                        name="objectAssignee"
-                        style={fieldSpacingContainerStyle}
-                        required={mandatoryAttributes.includes('objectAssignee')}
-                      />
-                      <ObjectParticipantField
-                        name="objectParticipant"
-                        style={fieldSpacingContainerStyle}
-                        required={mandatoryAttributes.includes('objectParticipant')}
-                      />
-                      <CreatedByField
-                        name="createdBy"
-                        required={mandatoryAttributes.includes('createdBy')}
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    </>
-                  )}
+                  <Field
+                    component={MarkdownField}
+                    name="description"
+                    label={t_i18n('Description')}
+                    required={mandatoryAttributes.includes('description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={fieldSpacingContainerStyle}
+                    askAi={true}
+                  />
+                  <ObjectAssigneeField
+                    name="objectAssignee"
+                    style={fieldSpacingContainerStyle}
+                    required={mandatoryAttributes.includes('objectAssignee')}
+                  />
+                  <ObjectParticipantField
+                    name="objectParticipant"
+                    style={fieldSpacingContainerStyle}
+                    required={mandatoryAttributes.includes('objectParticipant')}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    required={mandatoryAttributes.includes('createdBy')}
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
                   <Field
                     name="authorized_members"
                     component={AuthorizedMembersField}
@@ -384,8 +377,8 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               )}
               {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="configuration"
                   label={t_i18n('Configuration')}
                   fullWidth={true}
@@ -393,9 +386,9 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   onChange={handleSetCsvMapper}
                 >
                   {selectedConnector?.configurations?.map((config) => (
-                    <MenuItem key={config.id} value={config.configuration}>
+                    <SelectItem key={config.id} value={config.configuration}>
                       {config.name}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
                 </Field>
               ) : (

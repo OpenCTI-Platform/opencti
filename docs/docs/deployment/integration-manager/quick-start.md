@@ -12,10 +12,10 @@ Before starting, ensure you have:
 
 ## Step 1: Generate RSA private key
 
-Generate a 4096-bit RSA private key for authentication:
+Generate a 4096-bit RSA private key for authentication. XTM Composer requires the key in PKCS#8 PEM format (`BEGIN PRIVATE KEY`), which `openssl genpkey` produces directly:
 
 ```bash
-openssl genrsa -out private_key_4096.pem 4096
+openssl genpkey -algorithm RSA -out private_key_4096.pem -pkeyopt rsa_keygen_bits:4096
 ```
 
 ## Step 2: Basic configuration

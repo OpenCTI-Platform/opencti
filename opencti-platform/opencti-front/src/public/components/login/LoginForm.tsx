@@ -3,10 +3,7 @@ import { TextField } from 'formik-mui';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
-import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
-import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { Stack } from '@mui/material';
@@ -25,11 +22,17 @@ interface LoginFormValues {
 }
 
 interface RelayResponseError extends Error {
-  res?: RelayResponsePayload;
+  res?: {
+    errors?: {
+      message?: string;
+      extensions?: {
+        code?: string;
+      };
+    }[];
+  };
 }
 
 const LoginForm = () => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setValue, email } = useLoginContext();
 
@@ -44,7 +47,7 @@ const LoginForm = () => {
       onCompleted: () => window.location.reload(),
       onError: (error: RelayResponseError) => {
         const firstError = error.res?.errors?.at?.(0);
-        const errorCode = (firstError as { extensions?: { code?: string } } | undefined)?.extensions?.code;
+        const errorCode = firstError?.extensions?.code;
         if (errorCode === 'PASSWORD_CHANGE_REQUIRED') {
           setValue('email', input.email);
           setValue('forcePasswordChange', true);
@@ -99,7 +102,7 @@ const LoginForm = () => {
               label={t_i18n('Password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              className="mt-4"
             />
             <Stack
               mt={3}

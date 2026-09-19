@@ -6,8 +6,6 @@ import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { WarningAmberOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
@@ -20,6 +18,8 @@ import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
 import type { CertStrategyFormQuery } from './__generated__/CertStrategyFormQuery.graphql';
 import type { CertStrategyFormMutation } from './__generated__/CertStrategyFormMutation.graphql';
+import TextareaField from '../../../../components/TextareaField';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const certStrategyFormQuery = graphql`
   query CertStrategyFormQuery {
@@ -46,6 +46,7 @@ const certStrategyFormQuery = graphql`
           }
           auto_create_groups
           prevent_default_groups
+          extend_platform_groups
         }
         organizations_mapping {
           default_organizations
@@ -87,6 +88,7 @@ const certStrategyFormMutation = graphql`
             }
             auto_create_groups
             prevent_default_groups
+            extend_platform_groups
           }
           organizations_mapping {
             default_organizations
@@ -126,6 +128,7 @@ interface CertStrategyFormValues {
     groups_mapping: MappingEntry[];
     auto_create_groups: boolean;
     prevent_default_groups: boolean;
+    extend_platform_groups: boolean;
   };
   organizations_mapping: {
     default_organizations: string[];
@@ -152,7 +155,7 @@ interface CertStrategyFormProps {
 const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState('configuration');
 
   const data = useLazyLoadQuery<CertStrategyFormQuery>(certStrategyFormQuery, {});
   const settings = data.settings;
@@ -185,6 +188,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
       groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
       auto_create_groups: gm?.auto_create_groups ?? false,
       prevent_default_groups: gm?.prevent_default_groups ?? false,
+      extend_platform_groups: gm?.extend_platform_groups ?? false,
     },
     organizations_mapping: {
       default_organizations: [...(om?.default_organizations ?? [])],
@@ -222,6 +226,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
               .map((m) => ({ provider: m.provider, platform: m.platform })),
             auto_create_groups: values.groups_mapping.auto_create_groups,
             prevent_default_groups: values.groups_mapping.prevent_default_groups,
+            extend_platform_groups: values.groups_mapping.extend_platform_groups,
           },
           organizations_mapping: {
             default_organizations: values.organizations_mapping.default_organizations.filter((s) => s.trim() !== ''),
@@ -254,81 +259,75 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
     >
       {({ handleReset, submitForm, isSubmitting, dirty }) => (
         <Form>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-              <Tab label={t_i18n('Configuration')} />
-              <Tab label={t_i18n('Groups')} />
-              <Tab label={t_i18n('Organizations')} />
-            </Tabs>
-          </Box>
+          <Tabs value={currentTab} onValueChange={setCurrentTab}>
+            <TabsList>
+              <TabsTrigger value="configuration">{t_i18n('Configuration')}</TabsTrigger>
+              <TabsTrigger value="groups">{t_i18n('Groups')}</TabsTrigger>
+              <TabsTrigger value="organizations">{t_i18n('Organizations')}</TabsTrigger>
+            </TabsList>
 
-          {/* Tab 0: Configuration */}
-          {currentTab === 0 && (
-            <>
-              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginTop: 2.5, gap: 0 }}>
+            <TabsContent value="configuration">
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginTop: 2.5, gap: 0 }}>
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="enabled"
+                    label={t_i18n('Enable client certificate authentication')}
+                    containerstyle={{ marginTop: 0, marginRight: 0 }}
+                  />
+                  {!settings.platform_https_enabled && (
+                    <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
+                      <span style={{ display: 'inline-flex', marginLeft: 4 }}>
+                        <IconButton
+                          aria-label={t_i18n('Client certificate requires the platform to be configured with HTTPS')}
+                          size="small"
+                          disabled
+                          sx={{
+                            padding: 0.25,
+                            color: 'warning.main',
+                            '&.Mui-disabled': { color: 'warning.main', opacity: 1 },
+                          }}
+                        >
+                          <WarningAmberOutlined fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                </Box>
                 <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="enabled"
-                  label={t_i18n('Enable client certificate authentication')}
-                  containerstyle={{ marginTop: 0, marginRight: 0 }}
+                  component={TextareaField}
+                  name="description"
+                  label={t_i18n('Description')}
+                  rows={3}
+                  className="mt-5"
                 />
-                {!settings.platform_https_enabled && (
-                  <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
-                    <span style={{ display: 'inline-flex', marginLeft: 4 }}>
-                      <IconButton
-                        aria-label={t_i18n('Client certificate requires the platform to be configured with HTTPS')}
-                        size="small"
-                        disabled
-                        sx={{
-                          padding: 0.25,
-                          color: 'warning.main',
-                          '&.Mui-disabled': { color: 'warning.main', opacity: 1 },
-                        }}
-                      >
-                        <WarningAmberOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-              </Box>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t_i18n('Description')}
-                fullWidth
-                multiline
-                rows={3}
-                style={{ marginTop: 20 }}
-              />
-              <AuthProviderUserInfoFields
-                fieldPrefix="user_info_mapping"
-                emailPlaceholder="subject.emailAddress"
-                namePlaceholder="subject.CN"
-                firstnamePlaceholder={t_i18n('Leave empty if not available')}
-                lastnamePlaceholder={t_i18n('Leave empty if not available')}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="button_label_override"
-                label={t_i18n('Login button label')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-            </>
-          )}
+                <AuthProviderUserInfoFields
+                  fieldPrefix="user_info_mapping"
+                  emailPlaceholder="subject.emailAddress"
+                  namePlaceholder="subject.CN"
+                  firstnamePlaceholder={t_i18n('Leave empty if not available')}
+                  lastnamePlaceholder={t_i18n('Leave empty if not available')}
+                />
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  name="button_label_override"
+                  label={t_i18n('Login button label')}
+                  fullWidth
+                  className="mt-5"
+                />
+              </>
+            </TabsContent>
 
-          {/* Tab 1: Groups */}
-          {currentTab === 1 && (
-            <AuthProviderGroupsFields />
-          )}
+            <TabsContent value="groups">
+              <AuthProviderGroupsFields />
+            </TabsContent>
 
-          {/* Tab 2: Organizations */}
-          {currentTab === 2 && (
-            <AuthProviderOrganizationsFields />
-          )}
+            <TabsContent value="organizations">
+              <AuthProviderOrganizationsFields />
+            </TabsContent>
+          </Tabs>
 
           {/* Shared Cancel / Update buttons */}
           <div style={{ marginTop: 20, textAlign: 'right' }}>

@@ -19,6 +19,9 @@ type FintelTemplate implements BasicObject & InternalObject {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
+  default: Boolean
+  includeCoverPageByDefault: Boolean
+  includeBackPageByDefault: Boolean
 }
 
 # Mutation
@@ -34,6 +37,9 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+  default: Boolean
+  include_cover_page_by_default: Boolean
+  include_back_page_by_default: Boolean
 }
 
 # Relay connections

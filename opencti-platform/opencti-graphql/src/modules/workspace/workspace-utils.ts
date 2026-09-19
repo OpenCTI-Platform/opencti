@@ -90,7 +90,17 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
   });
 };
 
-export const convertWidgetsIds = async (context: AuthContext, user: AuthUser, widgetDefinitions: any[], from: 'internal' | 'stix') => {
+/**
+ * Converts entity IDs within widget filter definitions between internal and STIX formats.
+ * On export (from='internal'): internal IDs are replaced with standard STIX IDs.
+ * On import (from='stix'): STIX IDs are replaced back with internal IDs.
+ */
+export const convertWidgetsIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  widgetDefinitions: any[],
+  from: 'internal' | 'stix',
+) => {
   // First iteration: resolve all the ids to translate
   const resolvingIds: string[] = [];
   widgetDefinitions.forEach((widgetDefinition: any) => {

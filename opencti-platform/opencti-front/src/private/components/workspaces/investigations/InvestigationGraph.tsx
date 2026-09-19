@@ -139,6 +139,14 @@ const investigationGraphObjectsFragment = graphql`
               name
               description
             }
+            ... on SecurityCoverage {
+              name
+              description
+            }
+            ... on SecurityCoverageResult {
+              name
+              description
+            }
             ... on Individual {
               name
             }
@@ -149,6 +157,12 @@ const investigationGraphObjectsFragment = graphql`
               name
             }
             ... on System {
+              name
+            }
+            ... on SecurityPlatform {
+              name
+            }
+            ... on SecurityCoverage {
               name
             }
             ... on Indicator {

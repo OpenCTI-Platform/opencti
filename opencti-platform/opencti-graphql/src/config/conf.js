@@ -37,7 +37,6 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
-import { ENTITY_TYPE_SMTP_CONFIGURATION } from '../modules/smtpConfiguration/smtpConfiguration-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
@@ -47,6 +46,7 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTempla
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -279,14 +279,14 @@ const auditLogger = winston.createLogger({
 export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = '.support';
 export const SUPPORT_LOG_FILE_PREFIX = 'support';
 const supportLogger = winston.createLogger({
-  level: 'warn',
+  level: 'info',
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
   transports: [new DailyRotateFile({
     filename: SUPPORT_LOG_FILE_PREFIX,
     dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
     maxFiles: 3,
     maxSize: '10m',
-    level: 'warn',
+    level: 'info',
   })],
 });
 
@@ -326,8 +326,7 @@ export const logApp = {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
       const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
       appLogger.log(level, message, data);
-      // Only add in support package starting warn level
-      if (appLogger.isLevelEnabled('warn')) {
+      if (supportLogger.isLevelEnabled(level)) {
         supportLogger.log(level, message, data);
       }
     }
@@ -594,6 +593,17 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
+// Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
+export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
+
+// User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
+export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
+
+// Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
+// check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
+// entity types with a published WorkflowDefinition behave as before this change.
+export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
@@ -722,6 +732,10 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_ADDED_TOPIC`,
   },
+  [ENTITY_TYPE_SECURITY_COVERAGE_RESULT]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_RESULT_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_RESULT_ADDED_TOPIC`,
+  },
   [ENTITY_TYPE_DECAY_RULE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_DELETE_TOPIC`,
@@ -736,11 +750,6 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_ADDED_TOPIC`,
-  },
-  [ENTITY_TYPE_SMTP_CONFIGURATION]: {
-    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SMTP_CONFIGURATION_EDIT_TOPIC`,
-    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SMTP_CONFIGURATION_DELETE_TOPIC`,
-    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SMTP_CONFIGURATION_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_DISSEMINATION_LIST]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DISSEMINATION_LIST_EDIT_TOPIC`,

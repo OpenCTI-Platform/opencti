@@ -51,6 +51,7 @@ type DataTableComponentProps = Pick<DataTableProps,
   | 'pageSize'
   | 'actionsColumnWidth'
   | 'enableInfiniteScroll'
+  | 'searchTerm'
 >;
 
 const DataTableComponent = ({
@@ -82,6 +83,7 @@ const DataTableComponent = ({
   onLineClick,
   onSort,
   emptyStateMessage,
+  searchTerm,
   pageSize,
   actionsColumnWidth,
   enableInfiniteScroll = false,
@@ -153,9 +155,9 @@ const DataTableComponent = ({
         return R.mergeDeepRight(extendedColumnsMap.get(key) as DataTableColumn, {
           ...column,
           // Override column config with what we have in local storage
-          order: useLocalStorage && currentColumn?.index ? currentColumn?.index : index,
-          visible: useLocalStorage && currentColumn?.visible ? currentColumn?.visible : true,
-          percentWidth: useLocalStorage && currentColumn?.percentWidth ? currentColumn?.percentWidth : percentWidth,
+          order: useLocalStorage && currentColumn?.index !== undefined ? currentColumn?.index : index,
+          visible: useLocalStorage && currentColumn?.visible !== undefined ? currentColumn?.visible : true,
+          percentWidth: useLocalStorage && currentColumn?.percentWidth !== undefined ? currentColumn?.percentWidth : percentWidth,
         });
       }),
       // inject "navigate" action (chevron) if navigable and no specific actions defined
@@ -313,6 +315,7 @@ const DataTableComponent = ({
             pageSize={currentPageSize}
             hideHeaders={hideHeaders}
             emptyStateMessage={emptyStateMessage}
+            searchTerm={searchTerm}
           />
         </React.Suspense>
       </div>

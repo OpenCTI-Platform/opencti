@@ -2,11 +2,11 @@ import Workflow from './workflow/Workflow';
 import { ReactFlowProvider } from 'reactflow';
 import { ErrorBoundary } from '../../Error';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import useQueryLoading, { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from './__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from './__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import Loader from '../../../../components/Loader';
-import { Suspense } from 'react';
+import { Suspense, useCallback } from 'react';
 
 export const workflowQuery = graphql`
   query SubTypeWorkflowQuery($entityType: String!, $allowDraft: Boolean) {
@@ -14,6 +14,7 @@ export const workflowQuery = graphql`
       id
       name
       published
+      hasPublishedVersion
       errors {
         type
         message
@@ -25,6 +26,7 @@ export const workflowQuery = graphql`
       initialState
       states {
         statusId
+        order
         onExit{
           type
           params
@@ -118,9 +120,11 @@ export const extractWorkflowMembersIds = (
 
 interface WorkflowWithDependenciesProps {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
+  onRefetch: () => void;
+  entityType: string;
 }
 
-const WorkflowWithDependencies = ({ queryRef }: WorkflowWithDependenciesProps) => {
+const WorkflowWithDependencies = ({ queryRef, onRefetch, entityType }: WorkflowWithDependenciesProps) => {
   const { workflowDefinition } = usePreloadedQuery<SubTypeWorkflowQuery>(workflowQuery, queryRef);
   const memberIds = extractWorkflowMembersIds(workflowDefinition);
 
@@ -136,16 +140,25 @@ const WorkflowWithDependencies = ({ queryRef }: WorkflowWithDependenciesProps) =
 
   return (
     <Suspense fallback={<Loader />}>
-      <Workflow queryRef={queryRef} depsQueryRef={depsQueryRef} />
+      <Workflow queryRef={queryRef} depsQueryRef={depsQueryRef} onRefetch={onRefetch} entityType={entityType} />
     </Suspense>
   );
 };
 
-const SubTypeWorkflow = () => {
-  const workflowQueryRef = useQueryLoading<SubTypeWorkflowQuery>(
+interface SubTypeWorkflowProps {
+  entityType?: string;
+}
+
+const SubTypeWorkflow = ({ entityType = 'DraftWorkspace' }: SubTypeWorkflowProps) => {
+  const [workflowQueryRef, loadWorkflowQuery] = useQueryLoadingWithLoadQuery<SubTypeWorkflowQuery>(
     workflowQuery,
-    { entityType: 'DraftWorkspace', allowDraft: true },
+    { entityType, allowDraft: true },
+    { fetchPolicy: 'network-only' },
   );
+
+  const handleRefetch = useCallback(() => {
+    loadWorkflowQuery({ entityType, allowDraft: true }, { fetchPolicy: 'network-only' });
+  }, [loadWorkflowQuery, entityType]);
 
   if (!workflowQueryRef) {
     return <Loader />;
@@ -156,7 +169,7 @@ const SubTypeWorkflow = () => {
       <ErrorBoundary>
         <div style={{ width: '100%', height: 'calc(100vh - 250px)', marginBottom: '-50px' }}>
           <ReactFlowProvider>
-            <WorkflowWithDependencies queryRef={workflowQueryRef} />
+            <WorkflowWithDependencies queryRef={workflowQueryRef} onRefetch={handleRefetch} entityType={entityType} />
           </ReactFlowProvider>
         </div>
       </ErrorBoundary>

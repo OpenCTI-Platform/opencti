@@ -15,10 +15,10 @@ describe('Hook: useBuildAttributesOutcome', () => {
     vi.restoreAllMocks();
   });
 
-  it('should throw an error if no instance ID is given', () => {
+  it('should throw an error if no instance ID is given', async () => {
     const { hook, relayEnv } = testRenderHook(() => useBuildAttributesOutcome());
     // We want fetchQuery function to use the test env of Relay.
-    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
     const { buildAttributesOutcome } = hook.result.current;
 
     // Fake data returned by the query.
@@ -27,13 +27,13 @@ describe('Hook: useBuildAttributesOutcome', () => {
     });
 
     const call = () => buildAttributesOutcome('id_XX', { columns: [] });
-    expect(call).rejects.toThrowError('The attribute widget should refers to an instance');
+    await expect(call).rejects.toThrowError('The attribute widget should refers to an instance');
   });
 
   it('should return resolved variables of the widget', async () => {
     const { hook, relayEnv } = testRenderHook(() => useBuildAttributesOutcome());
     // We want fetchQuery function to use the test env of Relay.
-    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
     const { buildAttributesOutcome } = hook.result.current;
 
     // Fake data returned by the query.

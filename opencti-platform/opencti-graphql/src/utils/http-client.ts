@@ -24,6 +24,7 @@ export interface GetHttpClient {
     username: string;
     password: string;
   };
+  beforeRedirect?: (options: Record<string, any>, responseDetails: Record<string, any>, requestDetails: Record<string, any>) => void;
 }
 
 // Extract the HTTP response from an axios-like error if present.
@@ -48,14 +49,16 @@ export const getResponseError = (error: unknown): HttpResponseError | null => {
 };
 
 const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHttpAgent: HttpAgent, defaultHttpsAgent: HttpsAgent) => {
-  const agentUri = baseURL ? `${baseURL}${uri}` : uri;
+  // If uri is already absolute (e.g. after a redirect), don't prepend baseURL
+  // Using this regex avoids mis-detecting a `http://` fragment in the query string as a URI scheme
+  const agentUri = (baseURL && !/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(uri)) ? `${baseURL}${uri}` : uri;
   return {
     httpAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpAgent,
     httpsAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpsAgent,
     proxy: false, // Disable direct proxy protocol in http adapter
   };
 };
-export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth }: GetHttpClient) => {
+export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect }: GetHttpClient) => {
   // Build a default https agent to force query options if no proxy is setup
   const cert = isNotEmptyField(certificates?.cert) ? fromBase64(certificates?.cert) : undefined;
   const key = isNotEmptyField(certificates?.key) ? fromBase64(certificates?.key) : undefined;
@@ -70,6 +73,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     headers,
     auth,
     withCredentials: true,
+    beforeRedirect,
   });
   // Override methods to setup correct http agents
   return {

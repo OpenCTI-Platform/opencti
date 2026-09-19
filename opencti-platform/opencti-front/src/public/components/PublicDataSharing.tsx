@@ -6,7 +6,7 @@ import PublicFeedLines from '@components/data/feeds/PublicFeedLines';
 import React from 'react';
 import { loadQuery, usePreloadedQuery } from 'react-relay';
 import type { Theme } from '../../components/Theme';
-import { environment, fileUri } from '../../relay/environment';
+import { environment } from '../../relay/environment';
 import { LoginRootPublicQuery } from '../__generated__/LoginRootPublicQuery.graphql';
 import { rootPublicQuery } from '../LoginRoot';
 import logoLight from '../../static/images/logo_light.png';
@@ -48,7 +48,7 @@ const PublicDataSharing = () => {
     <>
       <div className={classes.container}>
         <img
-          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
+          src={loginLogo && loginLogo.length > 0 ? loginLogo : theme.palette.mode === 'dark' ? logoDark : logoLight}
           alt="logo"
           className={classes.logo}
         />

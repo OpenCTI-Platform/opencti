@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 
 export type ConnectorType = 'INTERNAL_ENRICHMENT' | 'EXTERNAL_IMPORT' | 'INTERNAL_EXPORT_FILE' | 'INTERNAL_IMPORT_FILE';
 
@@ -18,33 +17,33 @@ type ConnectorTypedProperty<K extends keyof ConnectorTypeMap = keyof ConnectorTy
 };
 
 interface ConnectorContract {
-  title: string,
-  slug: string,
-  description: string,
-  short_description: string,
-  logo: string,
-  use_cases: string[],
-  verified: boolean,
-  last_verified_date: string,
-  playbook_supported: boolean,
-  max_confidence_level: number,
-  support_version: string,
-  subscription_link: string,
-  source_code: string,
-  manager_supported: boolean,
-  container_version: string,
-  container_image: string,
-  container_type: ConnectorType,
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo: string;
+  use_cases: string[];
+  verified: boolean;
+  last_verified_date: string;
+  playbook_supported: boolean;
+  max_confidence_level: number;
+  support_version: string;
+  subscription_link: string;
+  source_code: string;
+  manager_supported: boolean;
+  container_version: string;
+  container_image: string;
+  container_type: ConnectorType;
   config_schema: {
-    $schema: string,
-    $id: string,
-    type: string,
+    $schema: string;
+    $id: string;
+    type: string;
     properties: {
-      [key: string]: ConnectorTypedProperty
-    },
-    required: string[],
-    additionalProperties: boolean,
-  }
+      [key: string]: ConnectorTypedProperty;
+    };
+    required: string[];
+    additionalProperties: boolean;
+  };
 }
 
 interface Catalog {
@@ -59,8 +58,8 @@ class CatalogHelper {
   private catalog: Catalog;
 
   constructor() {
-    const catalogPath = path.join(__dirname, 'opencti-manifest.json');
-    const catalogContent = fs.readFileSync(catalogPath, 'utf8');
+    const catalogUrl = new URL('opencti-manifest.json', import.meta.url);
+    const catalogContent = fs.readFileSync(catalogUrl, 'utf8');
     this.catalog = JSON.parse(catalogContent);
   }
 
@@ -85,7 +84,6 @@ class CatalogHelper {
     return this.catalog.contracts.filter((contract) => contract.manager_supported);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getMinimalConfig(connector: ConnectorContract, overrides: Record<string, any> = {}): Array<{ key: string; value: string }> {
     const config: Array<{ key: string; value: string }> = [];
 
@@ -128,17 +126,14 @@ class CatalogHelper {
     return config;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getRequiredFields(connector: ConnectorContract): string[] {
     return connector.config_schema.required || [];
   }
 
-  // eslint-disable-next-line class-methods-use-this
   isManagerSupported(connector: ConnectorContract): boolean {
     return connector.manager_supported === true;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   getConnectorType(connector: ConnectorContract): string {
     return connector.container_type;
   }
@@ -147,13 +142,13 @@ class CatalogHelper {
   getTestSafeConnector(): ConnectorContract {
     // In test catalog, the ipinfo connector has slug 'test-enrichment'
     const safeConnectors = this.catalog.contracts.filter(
-      (c) => c.manager_supported && c.verified && c.slug === 'test-enrichment'
+      (c) => c.manager_supported && c.verified && c.slug === 'test-enrichment',
     );
 
     if (safeConnectors.length === 0) {
       // Fallback to any verified and manager supported connector
       const fallbackConnectors = this.catalog.contracts.filter(
-        (c) => c.manager_supported && c.verified
+        (c) => c.manager_supported && c.verified,
       );
 
       if (fallbackConnectors.length === 0) {
@@ -177,7 +172,7 @@ class CatalogHelper {
   getAlternativeTestConnector(): ConnectorContract | undefined {
     // Try to find CVE connector as an alternative
     const alternatives = this.catalog.contracts.filter(
-      (c) => c.manager_supported && c.verified && c.slug === 'cve'
+      (c) => c.manager_supported && c.verified && c.slug === 'cve',
     );
 
     return alternatives[0];
@@ -197,7 +192,7 @@ class CatalogHelper {
 
     // Validate at least one connector has test indicators
     const hasTestConnectors = this.catalog.contracts.some(
-      (c) => c.description.toLowerCase().includes('test') || c.description.toLowerCase().includes('dummy')
+      (c) => c.description.toLowerCase().includes('test') || c.description.toLowerCase().includes('dummy'),
     );
 
     if (!hasTestConnectors) {

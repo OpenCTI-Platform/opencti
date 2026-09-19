@@ -7,6 +7,7 @@ import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ItemScore from '../../../../components/ItemScore';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
 import { Stack } from '@mui/material';
@@ -47,6 +48,12 @@ class EventDetailsComponent extends Component {
                 {t('End date')}
               </Label>
               {fldt(event.stop_time)}
+              <Label
+                sx={{ marginTop: 2 }}
+              >
+                {t('Score')}
+              </Label>
+              <ItemScore score={event.x_opencti_score} />
             </Grid>
           </Grid>
         </Card>
@@ -69,6 +76,7 @@ const EventDetails = createFragmentContainer(EventDetailsComponent, {
       event_types
       start_time
       stop_time
+      x_opencti_score
     }
   `,
 });

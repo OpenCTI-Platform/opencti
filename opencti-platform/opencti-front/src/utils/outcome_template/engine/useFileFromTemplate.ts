@@ -81,7 +81,7 @@ const useFileFromTemplate = () => {
           }
         } catch (error) {
           outcome = `${t_i18n('An error occurred while retrieving data for this widget:')}${error ?? ''}`;
-          MESSAGING$.notifyError('One of the widgets has not been resolved.');
+          MESSAGING$.notifyError(t_i18n('One of the widgets has not been resolved.'));
         }
         template_content = template_content.replace(`$${templateWidget.variable_name}`, outcome);
       }

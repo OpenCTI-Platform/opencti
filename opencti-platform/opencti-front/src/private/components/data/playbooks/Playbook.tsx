@@ -15,8 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
+import type { PreloadedQuery } from 'react-relay';
 import { ReactFlowProvider } from 'reactflow';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { ErrorBoundary } from '../../Error';
 import PlaybookHeader from './PlaybookHeader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';

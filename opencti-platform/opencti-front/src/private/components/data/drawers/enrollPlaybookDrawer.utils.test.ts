@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mapIdsResponse, mapFiltersResponse, sortPlaybooks, fetchPlaybooks } from './enrollPlaybookDrawer.utils';
 import type { IdsResponseData, FiltersResponseData, Playbook } from './enrollPlaybookDrawer.utils';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 const ENRICH_OBSERVABLE = {
   id: 'playbook-enrich-observable',
@@ -125,7 +126,7 @@ describe('fetchPlaybooks', () => {
 
   it('calls fetcher with filters, search and excludedIds when isSelectAll is true', async () => {
     const fetcher = vi.fn().mockResolvedValue(filtersResponseFixture);
-    const filters = { mode: 'and' as const, filters: [], filterGroups: [] };
+    const filters = emptyFilterGroup;
     await fetchPlaybooks({ isSelectAll: true, filters, search: 'malware', excludedIds: [NOTIFY_ON_MALWARE.id] }, fetcher);
     expect(fetcher).toHaveBeenCalledWith(expect.anything(), {
       filters,

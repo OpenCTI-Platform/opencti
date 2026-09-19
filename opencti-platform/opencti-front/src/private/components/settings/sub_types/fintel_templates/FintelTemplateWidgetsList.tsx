@@ -1,12 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { List, Alert, Typography } from '@mui/material';
 import Button from '@common/button/Button';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 import FintelTemplateWidgetDefault from './FintelTemplateWidgetDefault';
 import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Widget } from '../../../../../utils/widget/widget';
 import { SELF_ID } from '../../../../../utils/filters/filtersUtils';
+import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 
 export interface FintelTemplateWidget {
   variable_name: string;
@@ -31,6 +32,8 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
 
   const widgetSelfInstance = widgets.find(({ widget }) => widget.dataSelection[0].instance_id === SELF_ID);
   const widgetsNoSelf = widgets.filter(({ widget }) => widget.dataSelection[0].instance_id !== SELF_ID);
+  const hasWideTableWidget = widgets.some(({ widget }) => widget.dataSelection
+    .some((selection) => (selection.columns?.length ?? 0) >= WIDE_TABLE_COLUMN_THRESHOLD));
 
   return (
     <>
@@ -39,8 +42,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
           {t_i18n('First, create widgets detailing which data to get. Then, copy paste the widget name in your template.')}
         </Typography>
         <Typography variant="body2">
-          {t_i18n('', {
-            id: 'Find examples on our documentation.',
+          {t_i18n('Find examples on our documentation.', {
             values: {
               link: (
                 <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
@@ -59,8 +61,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
             sx={{ marginLeft: 2, marginRight: 2 }}
             onClick={() => onUpdateWidget(widgetSelfInstance)}
           >
-            {t_i18n('', {
-              id: 'Add attributes of the instance',
+            {t_i18n('Add attributes of the instance', {
               values: { type: subTypeId ?? '' },
             })}
           </Button>
@@ -68,8 +69,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
           <FintelTemplateWidgetAttribute
             variableName={widgetSelfInstance.variable_name}
             widget={widgetSelfInstance.widget}
-            title={t_i18n('', {
-              id: 'Attributes of the instance',
+            title={t_i18n('Attributes of the instance', {
               values: { type: subTypeId ?? '' },
             })}
           />
@@ -83,6 +83,14 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       >
         {t_i18n('Add related data')}
       </Button>
+
+      {hasWideTableWidget && (
+        <Alert severity="warning" sx={{ marginLeft: 2, marginRight: 2, marginTop: 1 }}>
+          {t_i18n('More than {threshold} columns selected — when applied the export will switch to landscape format.', {
+            values: { threshold: WIDE_TABLE_COLUMN_THRESHOLD },
+          })}
+        </Alert>
+      )}
 
       <List>
         {widgetsNoSelf.length === 0 && (
@@ -106,8 +114,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
                 : undefined
               }
               variableName={isSelfAttributeWidget
-                ? t_i18n('', {
-                    id: 'Attributes of the instance',
+                ? t_i18n('Attributes of the instance', {
                     values: { type: subTypeId ?? '' },
                   })
                 : variable_name

@@ -23,17 +23,24 @@ import {
   findJsonMapperForIngestionById,
   ingestionJsonEditField,
   ingestionJsonResetState,
+  jsonFeedAddInputFromImport,
+  jsonFeedExport,
   testJsonIngestionMapping,
 } from './ingestion-json-domain';
-import { removeAuthenticationCredentials } from './ingestion-common';
+import { findIngestionLogsForFeed, removeAuthenticationCredentials } from './ingestion-common';
 import { decryptIngestionCredential } from './ingestion-common';
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { loadCreator } from '../../database/members';
+import type { BasicStoreEntityIngestionJson } from './ingestion-types';
 
 const ingestionJsonResolvers: Resolvers = {
   Query: {
     ingestionJson: (_, { id }, context) => findById(context, context.user, id),
     ingestionJsons: (_, args, context) => findJsonIngestionPaginated(context, context.user, args),
+    ingestionJsonLogs: async (_: unknown, { id }: { id: string }, context) => {
+      await findById(context, context.user, id);
+      return findIngestionLogsForFeed(id);
+    },
   },
   IngestionJson: {
     authentication_value: async (ingestionJson) => {
@@ -43,8 +50,13 @@ const ingestionJsonResolvers: Resolvers = {
     user: (ingestionJson, _, context) => loadCreator(context, context.user, ingestionJson.user_id),
     connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
+    toConfigurationExport: (ingestionJson, _, context) => jsonFeedExport(context, context.user, ingestionJson),
+    ingestionLogs: (ingestionJson: BasicStoreEntityIngestionJson) => findIngestionLogsForFeed(ingestionJson.internal_id),
   },
   Mutation: {
+    ingestionJsonAddInputFromImport: (_, { file }, context) => {
+      return jsonFeedAddInputFromImport(context, context.user, file);
+    },
     ingestionJsonTester: (_, { input }, context) => {
       return testJsonIngestionMapping(context, context.user, input);
     },

@@ -30,6 +30,34 @@ const LIST_QUERY = gql`
   }
 `;
 
+const LIST_SCORE_QUERY = gql`
+  query intrusionSets(
+    $first: Int
+    $after: ID
+    $orderBy: IntrusionSetsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+    $search: String
+  ) {
+    intrusionSets(
+      first: $first
+      after: $after
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+      search: $search
+    ) {
+      edges {
+        node {
+          id
+          name
+          x_opencti_score
+        }
+      }
+    }
+  }
+`;
+
 const READ_QUERY = gql`
   query intrusionSet($id: String!) {
     intrusionSet(id: $id) {
@@ -38,6 +66,17 @@ const READ_QUERY = gql`
       name
       description
       toStix
+    }
+  }
+`;
+
+const READ_SCORE_QUERY = gql`
+  query intrusionSet($id: String!) {
+    intrusionSet(id: $id) {
+      id
+      standard_id
+      name
+      x_opencti_score
     }
   }
 `;
@@ -52,6 +91,7 @@ describe('Intrusion set resolver standard behavior', () => {
           id
           name
           description
+          x_opencti_score
         }
       }
     `;
@@ -61,6 +101,7 @@ describe('Intrusion set resolver standard behavior', () => {
         name: 'Intrusion set',
         stix_id: intrusionSetStixId,
         description: 'Intrusion set description',
+        x_opencti_score: 40,
       },
     };
     const intrusionSet = await queryAsAdmin({
@@ -70,6 +111,7 @@ describe('Intrusion set resolver standard behavior', () => {
     expect(intrusionSet).not.toBeNull();
     expect(intrusionSet.data.intrusionSetAdd).not.toBeNull();
     expect(intrusionSet.data.intrusionSetAdd.name).toEqual('Intrusion set');
+    expect(intrusionSet.data.intrusionSetAdd.x_opencti_score).toEqual(40);
     intrusionSetInternalId = intrusionSet.data.intrusionSetAdd.id;
   });
   it('should intrusion set loaded by internal id', async () => {
@@ -78,6 +120,13 @@ describe('Intrusion set resolver standard behavior', () => {
     expect(queryResult.data.intrusionSet).not.toBeNull();
     expect(queryResult.data.intrusionSet.id).toEqual(intrusionSetInternalId);
     expect(queryResult.data.intrusionSet.toStix.length).toBeGreaterThan(5);
+  });
+  it('should read intrusion set score value', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_SCORE_QUERY, variables: { id: intrusionSetInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.intrusionSet).not.toBeNull();
+    expect(queryResult.data.intrusionSet.id).toEqual(intrusionSetInternalId);
+    expect(queryResult.data.intrusionSet.x_opencti_score).toEqual(40);
   });
   it('should intrusion set loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetStixId } });
@@ -105,6 +154,63 @@ describe('Intrusion set resolver standard behavior', () => {
       variables: { id: intrusionSetInternalId, input: { key: 'name', value: ['Intrusion set - test'] } },
     });
     expect(queryResult.data.intrusionSetEdit.fieldPatch.name).toEqual('Intrusion set - test');
+  });
+  it('should update intrusion set score using field patch', async () => {
+    const UPDATE_QUERY = gql`
+      mutation IntrusionSetEdit($id: ID!, $input: [EditInput]!) {
+        intrusionSetEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            x_opencti_score
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: intrusionSetInternalId,
+        input: { key: 'x_opencti_score', value: '55' },
+      },
+    });
+    expect(queryResult.data.intrusionSetEdit.fieldPatch.x_opencti_score).toEqual(55);
+
+    const readResult = await queryAsAdmin({ query: READ_SCORE_QUERY, variables: { id: intrusionSetInternalId } });
+    expect(readResult.data.intrusionSet.x_opencti_score).toEqual(55);
+  });
+  it('should list intrusion sets ordered by score', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_SCORE_QUERY,
+      variables: {
+        first: 10,
+        orderBy: 'x_opencti_score',
+        orderMode: 'desc',
+        search: 'Intrusion set - test',
+      },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.intrusionSets.edges.length).toBeGreaterThanOrEqual(1);
+    expect(queryResult.data.intrusionSets.edges[0].node.id).toEqual(intrusionSetInternalId);
+    expect(queryResult.data.intrusionSets.edges[0].node.x_opencti_score).toEqual(55);
+  });
+  it('should filter intrusion sets by score', async () => {
+    const scoreFilter = {
+      mode: 'and',
+      filters: [{ key: ['x_opencti_score'], values: ['55'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    const queryResult = await queryAsAdmin({
+      query: LIST_SCORE_QUERY,
+      variables: {
+        first: 10,
+        filters: scoreFilter,
+        search: 'Intrusion set - test',
+      },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.intrusionSets.edges.length).toEqual(1);
+    expect(queryResult.data.intrusionSets.edges[0].node.id).toEqual(intrusionSetInternalId);
+    expect(queryResult.data.intrusionSets.edges[0].node.x_opencti_score).toEqual(55);
   });
   it('should context patch intrusion set', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -155,7 +261,7 @@ describe('Intrusion set resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({
+    await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
         id: intrusionSetInternalId,
@@ -165,7 +271,18 @@ describe('Intrusion set resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.length).toEqual(1);
+    const READ_MARKINGS_QUERY = gql`
+      query intrusionSet($id: String!) {
+        intrusionSet(id: $id) {
+          id
+          objectMarking {
+            id
+          }
+        }
+      }
+    `;
+    const readResult = await queryAsAdmin({ query: READ_MARKINGS_QUERY, variables: { id: intrusionSetInternalId } });
+    expect(readResult.data.intrusionSet.objectMarking.length).toEqual(1);
   });
   it('should delete relation in intrusion set', async () => {
     const RELATION_DELETE_QUERY = gql`

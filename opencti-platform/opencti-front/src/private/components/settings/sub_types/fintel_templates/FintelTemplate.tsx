@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import FintelTemplatePreview from './FintelTemplatePreview';
 import { FintelTemplateProvider } from './FintelTemplateContext';
 import FintelTemplateContentEditor from './FintelTemplateContentEditor';
@@ -17,7 +17,16 @@ import { KNOWLEDGE } from '../../../../../utils/hooks/useGranted';
 export const fintelTemplateQuery = graphql`
   query FintelTemplateQuery($id: ID!, $targetType: String!) {
     entitySettingByType(targetType: $targetType) {
-      id 
+      id
+      fintelTemplates(orderBy: name, orderMode: asc) {
+        edges {
+          node {
+            id
+            name
+            default
+          }
+        }
+      }
     }
     fintelTemplate(id: $id) {
       ...FintelTemplateTabs_template
@@ -34,14 +43,20 @@ interface FintelTemplateProps {
 }
 
 const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
+  const { templateId } = useParams<{ templateId?: string }>();
   const { fintelTemplate, entitySettingByType } = usePreloadedQuery(fintelTemplateQuery, queryRef);
   if (!fintelTemplate || !entitySettingByType) return <ErrorNotFound />;
+
+  const currentDefaultName = entitySettingByType.fintelTemplates?.edges
+    .find(({ node }) => node.default && node.id !== templateId)
+    ?.node.name;
 
   return (
     <FintelTemplateProvider>
       <div style={{ marginRight: FINTEL_TEMPLATE_SIDEBAR_WIDTH }}>
         <FintelTemplateHeader
           entitySettingId={entitySettingByType.id}
+          currentDefaultName={currentDefaultName}
           data={fintelTemplate}
         />
 

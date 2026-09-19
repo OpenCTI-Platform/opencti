@@ -30,6 +30,10 @@ class Channel:
             spec_version
             created_at
             updated_at
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -114,6 +118,10 @@ class Channel:
             spec_version
             created_at
             updated_at
+            creators {
+                id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import Drafts from '../../drafts/Drafts';
 import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
 import ImportFilesContent from './ImportFilesContent';

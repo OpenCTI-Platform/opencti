@@ -39,6 +39,7 @@ input SavedFilterAddInput {
 
 
 type Query {
+    savedFilter(id: ID!): SavedFilter @auth
     savedFilters(
         first: Int
         after: ID

@@ -7,7 +7,7 @@ import { TAXIIAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
-import { elCount, elList } from '../database/engine';
+import { elCount, elList, elFindByIds } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -26,11 +26,14 @@ import {
 } from '../database/utils';
 import {
   BYPASS,
+  checkOTPValidationStatus,
   computeUserMemberAccessIds,
   isUserCanAccessStixElement,
+  isUserCanAccessStreamUpdateEvent,
   isUserHasCapability,
   isUserInPlatformOrganization,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  OTPValidationStatus,
   SYSTEM_USER,
 } from '../utils/access';
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
@@ -93,10 +96,26 @@ const createBroadcastClient = (channel) => {
   };
 };
 
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'stream');
     if (context.user) {
+      const otpStatus = checkOTPValidationStatus(context);
+      if (otpStatus !== OTPValidationStatus.VALID) {
+        switch (otpStatus) {
+          case OTPValidationStatus.ACTIVATION_REQUIRED:
+            res.statusMessage = 'You must activate your two-factor authentication to access this resource';
+            break;
+          case OTPValidationStatus.VALIDATION_REQUIRED:
+            res.statusMessage = 'You must validate your two-factor authentication to access this resource';
+            break;
+          default:
+            res.statusMessage = 'You are not authenticated, please check your credentials';
+            break;
+        }
+        sendErrorStatus(req, res, 401);
+        return;
+      }
       req.context = context;
       req.userId = context.user.id;
       req.user = context.user;
@@ -186,8 +205,22 @@ export const authenticateForPublic = async (req, res, next) => {
     user: context.user ?? SYSTEM_USER,
     id: req.params.id,
   });
+  const otpValidationStatus = checkOTPValidationStatus(context);
   if (error || (!collection?.stream_public && !context.user)) {
     res.statusMessage = 'You are not authenticated, please check your credentials';
+    sendErrorStatus(req, res, 401);
+  } else if (!collection?.stream_public && otpValidationStatus !== OTPValidationStatus.VALID) {
+    switch (otpValidationStatus) {
+      case OTPValidationStatus.ACTIVATION_REQUIRED:
+        res.statusMessage = 'You must activate your two-factor authentication to access this resource';
+        break;
+      case OTPValidationStatus.VALIDATION_REQUIRED:
+        res.statusMessage = 'You must validate your two-factor authentication to access this resource';
+        break;
+      default:
+        res.statusMessage = 'You are not authenticated, please check your credentials';
+        break;
+    }
     sendErrorStatus(req, res, 401);
   } else {
     try {
@@ -247,6 +280,33 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
   }
   // Return flattened results in reverse order (deepest dependencies first)
   return allResolvedElements.flat();
+};
+
+// before sending the event, sendEventWithFilteredObjectRefs removes from object_refs list all the ids of the entities the user cannot access
+// By using entities in the cache to avoid reloading all of them
+// And by checking the ids that are not in the cache to load only the missing ones
+export const sendEventWithFilteredObjectRefs = async (
+  context,
+  user,
+  cache,
+  client,
+  eventToSend,
+) => {
+  let objectsRefs = eventToSend.eventData.data.object_refs;
+  if (objectsRefs?.length > 0) {
+    const objectsRefsNotFoundInCache = objectsRefs.filter((ref) => !cache.has(ref));
+    const objectRefsAccessibleNotFoundInCache = objectsRefsNotFoundInCache?.length > 0
+      ? (await elFindByIds(
+          context,
+          user,
+          objectsRefsNotFoundInCache,
+          { baseData: true, baseFields: ['internal_id', 'standard_id'], indices: READ_STIX_INDICES, toMap: true, mapWithAllIds: true })
+        )
+      : {};
+    objectsRefs = objectsRefs.filter((ref) => cache.has(ref) || objectRefsAccessibleNotFoundInCache[ref] !== undefined);
+    eventToSend.eventData.data.object_refs = objectsRefs;
+  }
+  return client.sendEvent(eventToSend.eventId, eventToSend.eventType, eventToSend.eventData);
 };
 
 const createSseMiddleware = () => {
@@ -601,6 +661,7 @@ const createSseMiddleware = () => {
     }
     return undefined;
   };
+
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
     try {
@@ -674,22 +735,30 @@ const createSseMiddleware = () => {
                     const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters, eventContext);
                     if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
                       if (isOriginVisible) {
-                        await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
+                        // If the user no longer has access to the entity, we need to remove the context
+                        // and replace the (now-restricted) current data with the previous, already-visible
+                        // document, to avoid leaking the post-update state (e.g. new markings, changed fields)
+                        const deleteEventData = { ...eventData, data: previous, context: {} };
+                        await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: EVENT_TYPE_DELETE, eventData: deleteEventData });
                         cache.set(stix.id, 'hit');
                       }
                     } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
                       if (isOriginVisible) {
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                          // If the user didn't have access to the element before the update
+                          // we need to remove the context from the create event to avoid leaking information on the update context
+                          const createEventData = { ...eventData, context: {} };
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: EVENT_TYPE_CREATE, eventData: createEventData });
                           cache.set(stix.id, 'hit');
                         }
                       }
                     } else if (isCurrentlyVisible) { // Just an update
-                      if (isOriginVisible) {
+                      const userHasAccessToUpdateEvent = isOriginVisible ? await isUserCanAccessStreamUpdateEvent(user, eventData) : false;
+                      if (isOriginVisible && userHasAccessToUpdateEvent) {
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       }
@@ -714,7 +783,7 @@ const createSseMiddleware = () => {
                         // At least one container is matching the filter, so publishing the event
                         if (countRelatedContainers > 0) {
                           await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       }
@@ -723,13 +792,13 @@ const createSseMiddleware = () => {
                     if (isOriginVisible) {
                       if (type === EVENT_TYPE_DELETE) {
                         if (publishDeletion) {
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       } else { // Create and merge
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       }

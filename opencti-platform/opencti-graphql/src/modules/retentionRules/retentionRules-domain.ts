@@ -16,6 +16,7 @@ import { getParentTypes } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
+import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
@@ -59,7 +60,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
   // filters must be a valid json
   let { filters } = input;
   if (!filters) { // filters is undefined or an empty string
-    filters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+    filters = JSON.stringify(emptyFilterGroup);
   }
   try {
     JSON.parse(filters);

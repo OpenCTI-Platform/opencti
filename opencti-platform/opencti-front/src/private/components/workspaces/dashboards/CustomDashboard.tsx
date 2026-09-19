@@ -16,8 +16,9 @@ import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
-import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
+import { CustomDashboardExportQuery } from './__generated__/CustomDashboardExportQuery.graphql';
 import { Box } from '@mui/material';
+import { useFormatter } from 'src/components/i18n';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -74,31 +75,13 @@ const dashboardExportQuery = graphql`
     }
 `;
 
-const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
-  const data = await fetchQuery(dashboardExportWidgetQuery, { id, widgetId: widget.id })
-    .toPromise() as CustomDashboardWidgetExportQuery$data;
-  if (!data.workspace) {
-    MESSAGING$.notifyError('Failed to export widget');
-    return null;
-  }
-  return data.workspace.toWidgetExport;
-};
-
-const onExport = async (id: string) => {
-  const data = await fetchQuery(dashboardExportQuery, { id })
-    .toPromise() as CustomDashboardExportQuery$data;
-  if (!data.workspace) {
-    return null;
-  }
-  return data.workspace.toConfigurationExport;
-};
-
 interface CustomDashboardProps {
   data: CustomDashboard_workspace$key;
   noToolbar?: boolean;
 }
 
 const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
+  const { t_i18n } = useFormatter();
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
@@ -106,6 +89,36 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     || workspace.currentUserAccessRight === 'edit';
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
   const userCanEdit = userHasEditAccess && userHasUpdateCapa;
+
+  const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
+    try {
+      const data = await fetchQuery(dashboardExportWidgetQuery, { id, widgetId: widget.id })
+        .toPromise() as CustomDashboardWidgetExportQuery$data;
+      const exportString = data.workspace?.toWidgetExport;
+      if (!exportString) {
+        MESSAGING$.notifyError(t_i18n('Failed to export widget'));
+        return null;
+      }
+      return exportString;
+    } catch (e) {
+      MESSAGING$.notifyRelayError(e);
+      return null;
+    }
+  };
+
+  const onExport = async (id: string) => {
+    try {
+      const data = await fetchQuery<CustomDashboardExportQuery>(dashboardExportQuery, { id })
+        .toPromise();
+      if (!data?.workspace) {
+        return null;
+      }
+      return data.workspace.toConfigurationExport;
+    } catch (e) {
+      MESSAGING$.notifyRelayError(e);
+      return null;
+    }
+  };
 
   const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;

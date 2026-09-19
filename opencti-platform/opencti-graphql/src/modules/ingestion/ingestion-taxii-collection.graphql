@@ -15,6 +15,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
     user_id: String
     user: Creator
     authorized_members: [MemberAccess!] @auth(for: [INGESTION_SETINGESTIONS])
+    toConfigurationExport: String!
 }
 enum IngestionTaxiiCollectionOrdering {
     name
@@ -31,6 +32,12 @@ type IngestionTaxiiCollectionEdge {
     node: IngestionTaxiiCollection!
 }
 
+type IngestionTaxiiCollectionAddInputFromImport {
+    name: String!
+    description: String
+    confidence_to_score: Boolean
+}
+
 # Queries
 type Query {
     ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection @auth(for: [INGESTION])
@@ -43,6 +50,9 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionTaxiiCollectionConnection @auth(for: [INGESTION])
+    ingestionTaxiiCollectionAddInputFromImport(
+        file: Upload!
+    ): IngestionTaxiiCollectionAddInputFromImport! @auth(for: [INGESTION])
 }
 
 # Mutations

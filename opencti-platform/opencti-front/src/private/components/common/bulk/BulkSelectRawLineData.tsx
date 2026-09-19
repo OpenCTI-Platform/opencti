@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
-import { BulkEntityTypeInfo, entityNameHeaderWidth, entityTypeHeaderWidth, matchHeaderWidth } from '@components/common/bulk/dialog/BulkRelationDialog';
+import { BulkEntityTypeInfo } from '@components/common/bulk/dialog/BulkRelationDialog';
 import { DeleteOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import { Autocomplete } from '@mui/material';
+import { Chip, Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxLabel, ComboboxInput, ComboboxTrigger, type ChipSeverity } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 
 interface BulkSelectRawLineDataProps {
   entity: BulkEntityTypeInfo;
@@ -38,6 +38,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   isSubmitting,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const isSearchTermEmpty = entity.searchTerm === '';
   const isMatchingRelationship = entity.selectedEntityType.legitRelations.includes(selectedRelationType);
 
@@ -47,12 +48,12 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
     return t_i18n('Incompatible');
   };
 
-  const getChipColor = () => {
-    if (!entity.isExisting && isMatchingRelationship) return 'error';
+  const getChipColor = (): ChipSeverity => {
+    if (!entity.isExisting && isMatchingRelationship) return 'critical';
     if (entity.isMatchingEntity && isMatchingRelationship) {
-      return 'success';
+      return 'low';
     }
-    return 'warning';
+    return 'high';
   };
 
   const handleChangeEntityType = (newEntityType: string) => {
@@ -86,36 +87,44 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   };
 
   return (
-    <Box sx={{
-      display: 'flex',
-      gap: '15px',
-      paddingBottom: '5px',
-      paddingLeft: '5px',
-    }}
-    >
-      <Box sx={{ minWidth: `${entityTypeHeaderWidth}px` }}>
-        <Autocomplete
-          autoHighlight
-          disableClearable
-          disabled={isSearchTermEmpty || isSubmitting}
-          noOptionsText={t_i18n('No available options')}
-          disablePortal
+    <>
+      <Box>
+        <Combobox<autocompleteOptionsType>
           options={getAutocompleteOptions()}
-          onChange={(event, selectedOption) => {
-            handleChangeEntityType(selectedOption.value.toEntitytype);
+          value={getAutocompleteValue() ?? null}
+          onValueChange={(selectedOption) => {
+            const picked = selectedOption as autocompleteOptionsType | null;
+            if (picked) handleChangeEntityType(picked.value.toEntitytype);
           }}
-          value={getAutocompleteValue()}
+          disabled={isSearchTermEmpty || isSubmitting}
+          clearable={false}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(a, b) => a.value.toEntitytype === b.value.toEntitytype}
           groupBy={(option) => option.groupLabel}
-          sx={{ borderBottom: 'none' }}
-          renderInput={(params) => (
-            <TextField
-              sx={{ minWidth: '150px' }}
-              {...params}
-            />
-          )}
-        />
+          className="min-w-[150px]"
+        >
+          <ComboboxLabel>{t_i18n('Entity type')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxInput aria-label={t_i18n('Entity type')} />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent
+            emptyMessage={t_i18n('No available options')}
+            listAriaLabel={t_i18n('Entity type')}
+          />
+        </Combobox>
       </Box>
-      <Box sx={{ minWidth: `${entityNameHeaderWidth}px` }}>
+      <Box
+        tabIndex={0}
+        sx={{
+          '&:focus-visible': {
+            boxShadow: `0 0 0 2px ${theme.palette.text.primary}`,
+          },
+        }}
+      >
+        <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.light }} id={`representation-label-${entityIndex}`}>{t_i18n('Representation')}</Typography>
         <Typography
           sx={{
             fontSize: '0.9rem',
@@ -124,16 +133,23 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
             display: 'flex',
             alignItems: 'center',
           }}
-          variant="h3"
+          variant="body1"
         >
           {truncate(isSearchTermEmpty ? entity.searchTerm : entity.representative, 20)}
         </Typography>
       </Box>
-      <Box sx={{ minWidth: `${matchHeaderWidth}px` }}>
+      <Box
+        tabIndex={0}
+        sx={{
+          display: 'flex', flexDirection: 'column', '&:focus-visible': {
+            boxShadow: `0 0 0 2px ${theme.palette.text.primary}`,
+          },
+        }}
+      >
+        <Typography variant="body2" sx={{ mb: 1.5, color: theme.palette.text.light }} id={`match-status-label-${entityIndex}`}>{t_i18n('Relationship match status')}</Typography>
         <Chip
-          style={{ borderRadius: '4px' }}
           label={getRelationMatchStatus()}
-          color={getChipColor()}
+          severity={getChipColor()}
         />
       </Box>
       <Box>
@@ -148,7 +164,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           <DeleteOutlined />
         </IconButton>
       </Box>
-    </Box>
+    </>
   );
 };
 

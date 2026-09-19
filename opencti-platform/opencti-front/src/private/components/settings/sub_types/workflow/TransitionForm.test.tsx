@@ -6,8 +6,8 @@ import TransitionForm from './TransitionForm';
 import testRender from '../../../../../utils/tests/test-render';
 import { WorkflowActionType, CommentMode } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
-import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 // ---------------------------------------------------------------------------
 // Mock heavy sub-components with no relevance to the tested logic
@@ -39,11 +39,11 @@ vi.mock('../../../common/form/ObjectOrganizationField', () => ({
 // ---------------------------------------------------------------------------
 // Helper: render TransitionForm inside a Formik context
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn()) => {
+const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <TransitionForm />
+        <TransitionForm entityType={entityType} />
       </Form>
     </Formik>,
   );
@@ -311,7 +311,6 @@ describe('TransitionForm – rendering', () => {
   });
 
   it('renders WorkflowConditionFilters when conditions are defined', () => {
-    const emptyFilterGroup: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
     expect(screen.getByTestId('workflow-condition-filters')).toBeDefined();
   });
@@ -331,7 +330,6 @@ describe('TransitionForm – rendering', () => {
 // EE / CE gating
 // ---------------------------------------------------------------------------
 describe('TransitionForm – EE / CE gating', () => {
-  const emptyFilterGroup: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
   const eeActions = [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }];
 
   it('disables EE-only switches in CE', () => {
@@ -399,5 +397,34 @@ describe('TransitionForm – EE / CE gating', () => {
     // 'auto' is CSS default so it serializes as '' in jsdom; just confirm it's not 'none'
     expect(wrapper.style.pointerEvents).not.toBe('none');
     expect(wrapper.style.opacity).not.toBe('0.5');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// entityType-based section visibility
+// ---------------------------------------------------------------------------
+describe('TransitionForm – entityType-based section visibility', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('renders "Draft validation" section for entityType DraftWorkspace', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'DraftWorkspace');
+    expect(screen.queryByText(/draft validation/i)).not.toBeNull();
+  });
+
+  it('hides "Draft validation" section for a non-DraftWorkspace entityType', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByText(/draft validation/i)).toBeNull();
+  });
+
+  it('hides "Authorized members" section for a non-supported entityType', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByRole('heading', { name: /authorized members/i })).toBeNull();
+  });
+
+  it('renders "Authorized members" section for a Container entityType that supports authorized members', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Report');
+    expect(screen.queryByRole('heading', { name: /authorized members/i })).not.toBeNull();
   });
 });
