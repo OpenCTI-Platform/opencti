@@ -4761,12 +4761,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.20.2":
-  version: 22.20.2
-  resolution: "@types/node@npm:22.20.2"
+"@types/node@npm:22.20.3":
+  version: 22.20.3
+  resolution: "@types/node@npm:22.20.3"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/1940dbec0c65a454c3651a282970fbfc998e0f0a5492bf5e067d8d9185f0c47cacc0d028153c481c4e6ecd19381ab03bf3f2efadb0cfacd702e74b6d5e4b212e
+  checksum: 10c0/27034f3f66d7044494f0be7b20b17eecbb1f6deab9e2ea8b004d79e896f4a90cde954da9a433a145e800f3db3e5c5c4761a65366434997c77102ba364dcbedd0
   languageName: node
   linkType: hard
 
@@ -5273,9 +5273,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-v8@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/coverage-v8@npm:5.0.0"
+"@vitest/coverage-v8@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/coverage-v8@npm:5.0.1"
   dependencies:
     "@bcoe/v8-coverage": "npm:^1.0.2"
     "@vitest/istanbul-lib-coverage": "npm:^1.0.0"
@@ -5286,12 +5286,12 @@ __metadata:
     std-env: "npm:^4.2.0"
     tinyrainbow: "npm:^3.1.1"
   peerDependencies:
-    "@vitest/browser": 5.0.0
-    vitest: 5.0.0
+    "@vitest/browser": 5.0.1
+    vitest: 5.0.1
   peerDependenciesMeta:
     "@vitest/browser":
       optional: true
-  checksum: 10c0/6d7f102af8f11f69df21ba343b4d101fbdb39ce5568bd2686c72cdf44e03934889328df297ebe4e12dbe1bc5e0a6d565bb9dfaf2fbca1958bf5e7770c7dc9675
+  checksum: 10c0/7f6dba018b7cd3303c625ff0c906bab971eef00214fac5d7edfd7ab3991bccbe7edf47f89273f49f7d2161e16fbdcc2b9938efd16f2da3bab8c31bf83777349e
   languageName: node
   linkType: hard
 
@@ -5311,12 +5311,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/mocker@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/mocker@npm:5.0.0"
+"@vitest/mocker@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/mocker@npm:5.0.1"
   dependencies:
     "@jridgewell/trace-mapping": "npm:0.3.31"
-    "@vitest/spy": "npm:5.0.0"
+    "@vitest/spy": "npm:5.0.1"
     estree-walker: "npm:^3.0.3"
     magic-string: "npm:^1.2.3"
   peerDependencies:
@@ -5327,14 +5327,14 @@ __metadata:
       optional: true
     vite:
       optional: true
-  checksum: 10c0/b1dde0ef270e8f9401204cb19c798114de416c3cf31e1d44d0029c4281b33e9a799251e3015aaaa2bdf5858c97a56857812dcf1e04dcfd4ebeedf194e6bcf3e6
+  checksum: 10c0/21f0456c7452d7f65449fc0f43f1ccbf222d353eb11fcf511b78b5b8c4ae38ac9ca286b56936d91856c483575cd86688f1b6dc00f02ffd85ed1108b12cf219cd
   languageName: node
   linkType: hard
 
-"@vitest/spy@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@vitest/spy@npm:5.0.0"
-  checksum: 10c0/7521b4ef803bc89974a738cead7d3fcd789af805f3ea3f496108fc802b2bc09b22fe8e7a3cc0be3f92b647427aea528657e3e87dd0201e432f56e62f84f25ba8
+"@vitest/spy@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@vitest/spy@npm:5.0.1"
+  checksum: 10c0/88838f6dda5237f0a40c365598ce7112922611e9157b390ca90c11760ae8697c37214f621263bfbe12e2bd27234df577cbbecc93de003ced366d23be24383c37
   languageName: node
   linkType: hard
 
@@ -7658,7 +7658,7 @@ __metadata:
     jiti: "npm:2.7.0"
     typescript: "npm:6.0.3"
     typescript-eslint: "npm:8.70.0"
-    vitest: "npm:5.0.0"
+    vitest: "npm:5.0.1"
   peerDependencies:
     eslint: ">=7"
   languageName: unknown
@@ -10126,9 +10126,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:6.35.1":
-  version: 6.35.1
-  resolution: "knip@npm:6.35.1"
+"knip@npm:6.36.0":
+  version: 6.36.0
+  resolution: "knip@npm:6.36.0"
   dependencies:
     fdir: "npm:^6.5.0"
     formatly: "npm:^0.7.0"
@@ -10146,7 +10146,7 @@ __metadata:
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: 10c0/728d9637d9c4b51862ba7db88075dc7b32234da523537685e70e32075f8d7a7f058a6ce77e401c78c0dbdb6d89be7648bab8d770e2fdf557f003fd6d37717d0d
+  checksum: 10c0/cafe43d2af21675e46d4dd69f984c900709ed0fe495beb902ab7369a165c8559e48dabcaacf73f3dbf699357449d68e4df0cdcb424f733f359494c45bd40fdfc
   languageName: node
   linkType: hard
 
@@ -11985,7 +11985,7 @@ __metadata:
     "@types/d3-scale": "npm:4.0.9"
     "@types/geojson": "npm:7946.0.16"
     "@types/html-to-pdfmake": "npm:2.4.5"
-    "@types/node": "npm:22.20.2"
+    "@types/node": "npm:22.20.3"
     "@types/qrcode": "npm:1.5.6"
     "@types/ramda": "npm:0.32.0"
     "@types/react": "npm:19.3.0"
@@ -11997,7 +11997,7 @@ __metadata:
     "@types/react-virtualized": "npm:9.22.3"
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:6.1.1"
-    "@vitest/coverage-v8": "npm:5.0.0"
+    "@vitest/coverage-v8": "npm:5.0.1"
     analytics: "npm:0.8.19"
     apexcharts: "npm:4.7.0"
     axios: "npm:1.20.0"
@@ -12037,7 +12037,7 @@ __metadata:
     js-file-download: "npm:0.4.12"
     jsdom: "npm:29.1.1"
     json5: "npm:2.2.3"
-    knip: "npm:6.35.1"
+    knip: "npm:6.36.0"
     license-checker-rseidelsohn: "npm:5.0.1"
     maplibre-gl: "npm:6.10.0"
     markdown-to-jsx: "npm:9.10.3"
@@ -12093,7 +12093,7 @@ __metadata:
     vite: "npm:8.3.0"
     vite-plugin-monaco-editor: "npm:1.1.0"
     vite-plugin-relay: "npm:2.1.0"
-    vitest: "npm:5.0.0"
+    vitest: "npm:5.0.1"
     yup: "npm:1.7.1"
   dependenciesMeta:
     core-js:
@@ -15768,12 +15768,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:5.0.0":
-  version: 5.0.0
-  resolution: "vitest@npm:5.0.0"
+"vitest@npm:5.0.1":
+  version: 5.0.1
+  resolution: "vitest@npm:5.0.1"
   dependencies:
     "@types/chai": "npm:^5.2.2"
-    "@vitest/mocker": "npm:5.0.0"
+    "@vitest/mocker": "npm:5.0.1"
     chai: "npm:^6.2.2"
     es-module-lexer: "npm:^2.3.2"
     expect-type: "npm:^1.4.0"
@@ -15789,12 +15789,12 @@ __metadata:
     "@edge-runtime/vm": "*"
     "@opentelemetry/api": ^1.9.0
     "@types/node": ^22.0.0 || >=24.0.0
-    "@vitest/browser-playwright": 5.0.0
-    "@vitest/browser-preview": 5.0.0
+    "@vitest/browser-playwright": 5.0.1
+    "@vitest/browser-preview": 5.0.1
     "@vitest/browser-webdriverio": ^5.0.0-beta.5 || >=5.0.0
-    "@vitest/coverage-istanbul": 5.0.0
-    "@vitest/coverage-v8": 5.0.0
-    "@vitest/ui": 5.0.0
+    "@vitest/coverage-istanbul": 5.0.1
+    "@vitest/coverage-v8": 5.0.1
+    "@vitest/ui": 5.0.1
     happy-dom: "*"
     jsdom: "*"
     vite: ^6.4.0 || ^7.0.0 || ^8.0.0
@@ -15825,7 +15825,7 @@ __metadata:
       optional: false
   bin:
     vitest: ./vitest.mjs
-  checksum: 10c0/de56a0f2e989949e42cdf31150ef5c0c138c04950d14b158f618f8bd4dc9b7f1e9a20c98a2763c9fef0d2b5a97d86456a73dd18ebb8b2b99dd0837efd8688634
+  checksum: 10c0/1b49fe8eb7274ffd43ca5a29cccbcc942cf991488020a74114f3a725a1168c549d47820715b8ed3f521a0cd9ccc0013ab9511cc6e0f8e0a5bdfb751e3ddc4d2d
   languageName: node
   linkType: hard
 
