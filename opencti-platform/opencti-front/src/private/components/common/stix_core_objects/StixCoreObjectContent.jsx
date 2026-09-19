@@ -267,36 +267,37 @@ class StixCoreObjectContentComponent extends Component {
     );
   }
 
-  async loadFileContent() {
+  loadFileContent() {
     const { stixCoreObject } = this.props;
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
       ...getFilesFromTemplate(stixCoreObject),
     ];
-    this.setState({ isLoading: true });
-    const { currentFileId } = this.state;
-    if (!currentFileId) {
-      return this.setState({ isLoading: false });
-    }
-    const currentFile = files.find((f) => f.id === currentFileId);
-    const currentFileType = currentFile && currentFile.metaData.mimetype;
-    if (currentFileType === 'application/pdf') {
-      this.props.setEditorHeaderDisabled(true);
-      return this.setState({ isLoading: false });
-    }
-    this.props.setEditorHeaderDisabled(false);
+    this.setState({ isLoading: true }, async () => {
+      const { currentFileId } = this.state;
+      if (!currentFileId) {
+        return this.setState({ isLoading: false });
+      }
+      const currentFile = files.find((f) => f.id === currentFileId);
+      const currentFileType = currentFile && currentFile.metaData.mimetype;
+      if (currentFileType === 'application/pdf') {
+        this.props.setEditorHeaderDisabled(true);
+        return this.setState({ isLoading: false });
+      }
+      this.props.setEditorHeaderDisabled(false);
 
-    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
-      currentFileId,
-    )}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
-    const content = await res.text();
-    return this.setState({
-      initialContent: content,
-      currentContent: content,
-      isLoading: false,
+      const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
+        currentFileId,
+      )}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+      const content = await res.text();
+      return this.setState({
+        initialContent: content,
+        currentContent: content,
+        isLoading: false,
+      });
     });
   }
 
