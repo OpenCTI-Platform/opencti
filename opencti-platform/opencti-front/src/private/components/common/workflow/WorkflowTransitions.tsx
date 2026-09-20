@@ -43,6 +43,8 @@ import { relayErrorHandling } from '../../../../relay/environment';
 import WorkflowBypassStatus, { ItemStatusWorkflow } from './WorkflowBypassStatus';
 import Button from '@common/button/Button';
 
+const COMMENT_FIELD_ID = 'workflow-transition-comment';
+
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
   entityType?: string;
@@ -270,7 +272,19 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   if (!open && !disabled) setWizard(null);
                 }}
               >
-                <DialogContent>
+                <DialogContent
+                  // Radix focuses the first focusable element on open, which is the
+                  // close button: when there is a comment to write (sometimes
+                  // mandatory, the only action of this step), it gets the focus.
+                  // TextareaField does not forward a ref, so it is found by id.
+                  onOpenAutoFocus={(event) => {
+                    const commentField = document.getElementById(COMMENT_FIELD_ID);
+                    if (commentField) {
+                      event.preventDefault();
+                      commentField.focus();
+                    }
+                  }}
+                >
                   <DialogTitle className="flex flex-col gap-6">
                     <Text variant="title-md">{wizard.event}</Text>
 
@@ -296,6 +310,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                             </DialogDescription>
                             <Field
                               component={TextareaField}
+                              id={COMMENT_FIELD_ID}
                               name="comment"
                               label={t_i18n('Comment')}
                               required={wizard.commentMode === CommentMode.required && !canBypassMandatoryFields}

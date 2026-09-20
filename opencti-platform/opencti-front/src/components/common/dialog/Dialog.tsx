@@ -31,18 +31,29 @@ const Dialog = ({
   fullScreen = false,
   ...dialogProps
 }: DialogProps) => {
+  const paperSlotProps = dialogProps.slotProps?.paper;
+  // Only the plain-object form is supported here (no current caller uses the
+  // function-form slot props); fall back to empty so spreading stays safe.
+  const callerPaperSlotProps = typeof paperSlotProps === 'function' ? {} : (paperSlotProps ?? {});
   return (
     <MUIDialog
       {...dialogProps}
       fullScreen={fullScreen}
       onClose={onClose}
       slotProps={{
+        // Callers rely on other slots (e.g. `transition.onEntered` for focus
+        // management), so their slotProps must be preserved, not replaced.
+        ...dialogProps.slotProps,
         paper: {
-          className: fdsLayerClass(SURFACE_LAYER),
+          ...callerPaperSlotProps,
+          className: [fdsLayerClass(SURFACE_LAYER), callerPaperSlotProps?.className]
+            .filter(Boolean)
+            .join(' '),
           sx: {
             ...layerInputVars,
             paddingTop: 3,
             paddingBottom: 3,
+            ...callerPaperSlotProps?.sx,
           },
         },
       }}
