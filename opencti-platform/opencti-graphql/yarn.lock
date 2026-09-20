@@ -5927,10 +5927,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"content-type@npm:3.1.0":
-  version: 3.1.0
-  resolution: "content-type@npm:3.1.0"
-  checksum: 10c0/b64a6da38541cdbd177ebc4d6f4dcbebdb28a3d0b14466dd451b6f7cf50bf7c6d93b04abd41c11e7f30dd436b4bed2b23c24a4eef4c52383f73c978ba975b83f
+"content-type@npm:3.1.1":
+  version: 3.1.1
+  resolution: "content-type@npm:3.1.1"
+  checksum: 10c0/a9ff3f2afac5aae1356f545e19fc0d6dca644ee3bf694b788f178185954bfe46ba51ca309950e40e07681290da0b7934652fdb5b7fa4ec1e7d43cb71bd703e1f
   languageName: node
   linkType: hard
 
@@ -10322,7 +10322,7 @@ __metadata:
     chokidar: "npm:5.0.0"
     compression: "npm:1.8.2"
     content-disposition: "npm:3.0.0"
-    content-type: "npm:3.1.0"
+    content-type: "npm:3.1.1"
     convert: "npm:8.0.2"
     cors: "npm:2.8.6"
     csv-parse: "npm:7.0.2"
