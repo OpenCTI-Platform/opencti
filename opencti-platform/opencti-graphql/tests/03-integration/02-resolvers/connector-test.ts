@@ -284,6 +284,22 @@ describe('Connector resolver standard behaviour', () => {
     expect(connector.data.registerConnector.slug).toEqual('test-connector');
   });
 
+  it('should register connector with the "rolling" version', async () => {
+    const CONNECTOR_TO_CREATE = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: 'rolling',
+      },
+    };
+    const connector = await queryAsUserWithSuccess(USER_CONNECTOR, { query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
+    expect(connector.data.registerConnector.version).toEqual('rolling');
+  });
+
   it('should reject connector registration with an invalid semver version', async () => {
     const CONNECTOR_TO_CREATE = {
       input: {

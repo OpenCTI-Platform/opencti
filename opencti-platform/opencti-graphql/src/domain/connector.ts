@@ -347,7 +347,7 @@ export const registerConnector = async (
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null, xtm_one_intent = null } = connectorData;
   const { version = null, slug = null } = connectorData;
-  if (!isEmptyField(version) && !semver.valid(version)) {
+  if (!isEmptyField(version) && !semver.valid(version) && version !== 'rolling') {
     throw ValidationError('Connector version is not a valid semantic version', 'version', { version });
   }
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
