@@ -1,5 +1,5 @@
 import TextField from '@mui/material/TextField';
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect, useRef } from 'react';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface BasicFilterInputProps {
@@ -19,6 +19,17 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
   label,
   type,
 }) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // The operator select is rendered before this field, so removing autoFocus
+  // made it take an extra Tab to reach the value. This field is mounted once
+  // per popover open (the operator select does not remount it), so focusing
+  // on mount restores "open and type" without stealing focus on later
+  // operator changes.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
     <TextField
       role="search"
@@ -28,6 +39,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
       id={filter?.id ?? `${filterKey}-id`}
       label={label}
       type={type}
+      inputRef={inputRef}
       defaultValue={filterValues[0]}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
