@@ -70,6 +70,15 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
   // The product field reports (name, value), not a DOM event.
   const handleChangeNewTag = (_: string, value: string) => setNewTag(value);
 
+  // Escape mirrors the toggle button: it dismisses the inline field without
+  // creating a tag, so keyboard users are not stuck once they have tabbed in.
+  const handleInlineTagInputKeyDown = (key: string) => {
+    if (key === 'Escape') {
+      setNewTag('');
+      setIsTagInputOpen(false);
+    }
+  };
+
   const handleManageTags = (tagList: string[], message: string) => {
     commit({
       variables: {
@@ -149,6 +158,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                     aria-label="tag field"
                     placeholder={t_i18n('New tag')}
                     onChange={handleChangeNewTag}
+                    onKeyDown={handleInlineTagInputKeyDown}
                     value={newTag}
                   />
                 </Form>
