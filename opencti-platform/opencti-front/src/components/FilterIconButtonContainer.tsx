@@ -2,6 +2,8 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import { CloseOutlined } from '@mui/icons-material';
+import { IconButton } from '@filigran/design-system';
 import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import {
@@ -353,6 +355,21 @@ const FilterIconButtonContainer: FunctionComponent<
                           filterOperator,
                         )
                       : undefined
+                  }
+                  // The default MUI cancel icon is mouse-only (no tabIndex of
+                  // its own); a real, separately focusable button lets
+                  // keyboard users remove a filter without needing to know
+                  // the chip-focus + Backspace/Delete shortcut.
+                  deleteIcon={
+                    (isReadWriteFilter && authorizeFilterRemoving) ? (
+                      <IconButton
+                        variant="default"
+                        priority="tertiary"
+                        size="sm"
+                        aria-label={t_i18n('Remove filter')}
+                        icon={<CloseOutlined fontSize="small" />}
+                      />
+                    ) : undefined
                   }
                 />
               </Box>
