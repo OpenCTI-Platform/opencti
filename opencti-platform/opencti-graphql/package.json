@@ -163,7 +163,7 @@
     "passport-local": "1.0.0",
     "python-shell": "5.0.0",
     "ramda": "0.32.0",
-    "rate-limiter-flexible": "11.2.0",
+    "rate-limiter-flexible": "11.2.1",
     "re2": "1.26.1",
     "sanitize-html": "2.17.7",
     "semver": "7.8.5",
