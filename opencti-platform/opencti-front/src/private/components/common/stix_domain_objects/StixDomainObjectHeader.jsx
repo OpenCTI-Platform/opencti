@@ -680,6 +680,12 @@ const StixDomainObjectHeader = (props) => {
           onClose={handleToggleOpenAliases}
           title={t_i18n('Entity aliases')}
           size="small"
+          slotProps={{
+            // The shared TextField wrapper does not forward a ref, so focus
+            // is restored via the input's id once the dialog has fully
+            // entered (only action of this dialog, replacing autoFocus).
+            transition: { onEntered: () => document.getElementById('new-alias-input')?.focus() },
+          }}
         >
           <Formik
             initialValues={{ new_alias: '' }}
@@ -692,6 +698,7 @@ const StixDomainObjectHeader = (props) => {
                   component={TextField}
                   variant="outlined"
                   name="new_alias"
+                  id="new-alias-input"
                   placeholder={t_i18n('New alias')}
                   onChange={handleChangeNewAlias}
                   value={newAlias}
