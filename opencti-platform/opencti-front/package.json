@@ -146,7 +146,7 @@
     "@testing-library/user-event": "14.6.7",
     "@types/d3-scale": "4.0.9",
     "@types/html-to-pdfmake": "2.4.5",
-    "@types/node": "22.20.2",
+    "@types/node": "22.20.3",
     "@types/qrcode": "1.5.6",
     "@types/ramda": "0.32.0",
     "@types/react": "19.3.0",
@@ -158,7 +158,7 @@
     "@types/react-virtualized": "9.22.3",
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "6.1.1",
-    "@vitest/coverage-v8": "5.0.0",
+    "@vitest/coverage-v8": "5.0.1",
     "babel-plugin-relay": "21.0.1",
     "dom-accessibility-api": "0.7.1",
     "esbuild": "0.28.2",
@@ -172,7 +172,7 @@
     "i18n-auto-translation": "2.2.3",
     "jiti": "2.7.0",
     "jsdom": "29.1.1",
-    "knip": "6.35.1",
+    "knip": "6.36.0",
     "license-checker-rseidelsohn": "5.0.1",
     "monocart-reporter": "2.13.1",
     "relay-compiler": "21.0.1",
@@ -182,7 +182,7 @@
     "vite": "8.3.0",
     "vite-plugin-monaco-editor": "1.1.0",
     "vite-plugin-relay": "2.1.0",
-    "vitest": "5.0.0"
+    "vitest": "5.0.1"
   },
   "resolutions": {
     "@filigran/chatbot/lodash": "4.18.1",
