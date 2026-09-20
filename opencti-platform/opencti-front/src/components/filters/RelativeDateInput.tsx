@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { ClearOutlined, DateRangeOutlined } from '@mui/icons-material';
 import { IconButton } from '@filigran/design-system';
@@ -29,6 +29,17 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // The operator select is rendered before this field, so removing autoFocus
+  // made it take an extra Tab to reach the value. Only the first field
+  // ("From") should claim focus on open; the second ("To") is reached
+  // naturally via Tab from the first.
+  useEffect(() => {
+    if (valueOrder === 0) {
+      inputRef.current?.focus();
+    }
+  }, [valueOrder]);
 
   const generateErrorMessage = (values: string[]) => {
     const newValue = values[valueOrder];
@@ -100,6 +111,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         fullWidth={true}
         id={filter?.id ?? `${filterKey}-id`}
         label={label}
+        inputRef={inputRef}
         value={dateInput[valueOrder]}
         onChange={(event) => handleChangeValue(event.target.value)}
         onKeyDown={(event) => {
