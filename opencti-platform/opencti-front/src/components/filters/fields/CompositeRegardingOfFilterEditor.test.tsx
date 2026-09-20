@@ -98,7 +98,7 @@ describe('CompositeRegardingOfFilterEditor (relationship type of a dynamicRegard
   it('can be emptied while no dynamic filter is defined', () => {
     renderEditor(withoutDynamic);
     expect(screen.getByRole('button', { name: 'Remove Targets' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Clear')).toBeInTheDocument();
+    expect(screen.getByLabelText('Clear all')).toBeInTheDocument();
     expect(screen.getByLabelText('Operator')).not.toBeDisabled();
   });
 
@@ -106,7 +106,7 @@ describe('CompositeRegardingOfFilterEditor (relationship type of a dynamicRegard
     renderEditor(withDynamic);
     expect(screen.getByText('Targets')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove Targets' })).toBeNull();
-    expect(screen.queryByLabelText('Clear')).toBeNull();
+    expect(screen.queryByLabelText('Clear all')).toBeNull();
     expect(screen.getByLabelText('Operator')).toBeDisabled();
   });
 });

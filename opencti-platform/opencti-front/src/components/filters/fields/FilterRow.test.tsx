@@ -135,7 +135,7 @@ describe('FilterRow', () => {
       renderRow(withoutDynamic);
       const relationshipType = screen.getByTestId('filter-row-relationship-type');
       expect(within(relationshipType).getByRole('button', { name: 'Remove Targets' })).toBeInTheDocument();
-      expect(within(relationshipType).getByLabelText('Clear')).toBeInTheDocument();
+      expect(within(relationshipType).getByLabelText('Clear all')).toBeInTheDocument();
       expect(within(screen.getByTestId('filter-row-operator-select')).getByLabelText('Condition')).not.toBeDisabled();
     });
 
@@ -144,7 +144,7 @@ describe('FilterRow', () => {
       const relationshipType = screen.getByTestId('filter-row-relationship-type');
       expect(within(relationshipType).getByText('Targets')).toBeInTheDocument();
       expect(within(relationshipType).queryByRole('button', { name: 'Remove Targets' })).toBeNull();
-      expect(within(relationshipType).queryByLabelText('Clear')).toBeNull();
+      expect(within(relationshipType).queryByLabelText('Clear all')).toBeNull();
       expect(within(screen.getByTestId('filter-row-operator-select')).getByLabelText('Condition')).toBeDisabled();
     });
   });
