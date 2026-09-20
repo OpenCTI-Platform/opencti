@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Button from '@common/button/Button';
 import { Box, Stack, TextField } from '@mui/material';
 import { useTheme } from '@mui/styles';
@@ -20,6 +20,14 @@ interface ImportFilesFreeTextProps {
 const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesFreeTextProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const contentInputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // The free-text form replaces the dropzone in an already open dialog, so no
+  // dialog-level focus trap re-arms and the previous trigger button unmounts.
+  // Explicitly focus the content field on mount to avoid losing keyboard focus.
+  useEffect(() => {
+    contentInputRef.current?.focus();
+  }, []);
 
   const createFileFreeText = (
     { content }: FileFreeTextType,
@@ -65,6 +73,7 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               name="content"
               rows="10"
               variant="outlined"
+              inputRef={contentInputRef}
               InputProps={{ sx: { background: theme.palette.background.paper } }}
               InputLabelProps={{ shrink: true }}
               slotProps={{
