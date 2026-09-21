@@ -274,7 +274,7 @@ describe('Connector resolver standard behaviour', () => {
   it('should update trigger filters for internal import connectors', async () => {
     const filters = JSON.stringify({
       mode: 'and',
-      filters: [{ key: 'entity_type', values: ['Indicator'] }],
+      filters: [{ key: ['entity_type'], values: ['Indicator'] }],
       filterGroups: [],
     });
     const queryResult = await queryAsAdminWithSuccess({
