@@ -9,6 +9,8 @@ import { htmlToPdf, htmlToPdfReport } from '../htmlToPdf';
 
 beforeAll(async () => {
   pdfMake.addVirtualFileSystem(fonts);
+  const cjkFonts = ['NotoSansJP-Regular.ttf', 'NotoSansJP-Bold.ttf', 'NotoSansKR-Regular.ttf', 'NotoSansKR-Bold.ttf'];
+  pdfMake.addVirtualFileSystem(Object.fromEntries(cjkFonts.map((name) => [name, readFileSync(`public/assets/static/${name}`).toString('base64')])));
   const pdf = pdfMake.createPdf({ content: '' });
   const stream = await pdf.getStream() as unknown as {
     provideFont: (family: string, bold: boolean, italics: boolean) => {
@@ -49,6 +51,16 @@ describe('Utils: setTableFullWidth', () => {
     expect(percentages[0]).toBeGreaterThan(percentages[1]);
   });
 
+  it.each(['\u65e5\u672c\u8a9e', '\ud55c\uad6d\uc5b4'])('preserves CJK demand when the browser underestimates %s glyphs', (text) => {
+    const measurement = { font: '', measureText: () => ({ width: 0 }) };
+    vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValueOnce(measurement as unknown as CanvasRenderingContext2D);
+    const { percentages } = prepareTable(`<table><tr><td>ID</td><td>${text.repeat(10)}</td><td>Status</td></tr></table>`);
+    expect(percentages[1]).toBeGreaterThan(percentages[0]);
+    expect(percentages[1]).toBeGreaterThan(percentages[2]);
+    expect(percentages[1]).toBeLessThanOrEqual(60.01);
+    expect(percentages.reduce((total, width) => total + width, 0)).toBeCloseTo(100, 8);
+  });
+
   it.each([1, 2, 4, 8, 12])('keeps balanced content balanced across %i columns', (columnCount) => {
     const { percentages } = prepareTable(`<table><tr>${'<td>Equal content</td>'.repeat(columnCount)}</tr></table>`);
     percentages.forEach((width) => expect(width).toBeCloseTo(100 / columnCount, 8));
@@ -77,6 +89,24 @@ describe('Utils: setTableFullWidth', () => {
     expect(imageWidth).toBeCloseTo(500 * percentages[1] / 100 - 22, 8);
   });
 
+  it.each(['thead', 'tbody'])('clamps rowspans to their %s section before PDF conversion', (section) => {
+    const html = `<table><${section}><tr><th rowspan="3">Group</th><th>Heading</th></tr></${section}><tbody><tr><td>A</td><td>B</td></tr></tbody></table>`;
+    const { table, percentages } = prepareTable(html);
+    expect(getMaxTableColumnCount(html)).toBe(2);
+    expect(table.querySelector('th')!.rowSpan).toBe(1);
+    const converted = htmlToPdfmake(table.outerHTML) as unknown as { table: { body: unknown[][] } }[];
+    expect(converted[0].table.body.map((row) => row.length)).toEqual([2, 2]);
+    expect(percentages).toHaveLength(2);
+  });
+
+  it('expands rowspan zero to the remaining rows of its section', () => {
+    const html = '<table><tbody><tr><td rowspan="0">Group</td><td>A</td></tr><tr><td>B</td></tr></tbody><tbody><tr><td>C</td><td>D</td></tr></tbody></table>';
+    const { table } = prepareTable(html);
+    expect(table.querySelector('td')!.rowSpan).toBe(2);
+    const converted = htmlToPdfmake(table.outerHTML) as unknown as { table: { body: unknown[][] } }[];
+    expect(converted[0].table.body.map((row) => row.length)).toEqual([2, 2, 2]);
+  });
+
   it.each(['Data', ''])('reserves space for nested table padding with "%s" cells', (value) => {
     const nested = `<table><tr>${`<td>${value}</td>`.repeat(4)}</tr></table>`;
     const { table, percentages } = prepareTable(`<table><tr><td>${'Description '.repeat(200)}</td><td>ID</td><td>Status</td><td>${nested}</td></tr></table>`);
@@ -91,6 +121,14 @@ describe('Utils: setTableFullWidth', () => {
     vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValueOnce(null);
     const { percentages } = prepareTable('<table><tr><td>ID</td><td>A longer description</td></tr></table>');
     expect(percentages).toEqual([50, 50]);
+  });
+
+  it('scales overflowing minimum widths proportionally for dense nested tables', () => {
+    const nested = `<table><tr>${'<td>Data</td>'.repeat(4)}</tr></table>`;
+    const { percentages } = prepareTable(`<table><tr><td>${nested}</td><td>ID</td></tr></table>`, 100);
+    expect(percentages[0] / percentages[1]).toBeCloseTo((4 * 34 + 22) / 34, 8);
+    expect(percentages.reduce((total, width) => total + width, 0)).toBeCloseTo(100, 8);
+    percentages.forEach((width) => expect(width).toBeGreaterThan(0));
   });
 
   it.each([4, 8, 12])('counts %i columns in a body wider than its grouped header', (columnCount) => {
@@ -167,12 +205,50 @@ vi.mock('./pdfFonts', async (importOriginal) => {
     italics: 'Roboto-Italic.ttf',
     bolditalics: 'Roboto-MediumItalic.ttf',
   };
-  return { ...actual, FONTS: { Roboto: localFont, Geologica: localFont } };
+  return {
+    ...actual,
+    FONTS: {
+      Roboto: localFont,
+      Geologica: localFont,
+      NotoSansJp: { normal: 'NotoSansJP-Regular.ttf', bold: 'NotoSansJP-Bold.ttf' },
+      NotoSansKr: { normal: 'NotoSansKR-Regular.ttf', bold: 'NotoSansKR-Bold.ttf' },
+    },
+  };
 });
 
 vi.mock('../../Image', () => ({ getBase64ImageFromURL: async () => '' }));
 
 describe('PDF table layout', () => {
+  const cjkCases = ['\u65e5\u672c\u8a9e', '\ud55c\uad6d\uc5b4'].flatMap((text) => [8, 12].flatMap((columnCount) => (
+    ['HTML', 'Markdown', 'Fintel'].map((exportType) => ({ text, columnCount, exportType }))
+  )));
+
+  it.each(cjkCases)('renders $text in $columnCount columns within $exportType page bounds using Noto fonts', async ({ text, columnCount, exportType }) => {
+    const headers = Array(columnCount).fill(text);
+    const values = [text.repeat(30), ...Array(columnCount - 1).fill(text)];
+    const html = `<table><thead><tr>${headers.map((header) => `<th>${header}</th>`).join('')}</tr></thead><tbody><tr>${values.map((value) => `<td>${value}</td>`).join('')}</tr></tbody></table>`;
+    const markdown = `| ${headers.join(' | ')} |\n| ${headers.map(() => '---').join(' | ')} |\n| ${values.join(' | ')} |`;
+    const pdf = exportType === 'Fintel'
+      ? await htmlToPdfReport('Report', html, 'Template', [], null, { includeCoverPage: false, includeBackPage: false })
+      : htmlToPdf(exportType === 'Markdown' ? 'report.md' : 'report.html', exportType === 'Markdown' ? markdown : html);
+    const document = await getDocument({ data: new Uint8Array(await pdf.getBuffer()) }).promise;
+    try {
+      expect(document.numPages).toBe(1);
+      const page = await document.getPage(1);
+      const width = exportType === 'Fintel' ? (columnCount === 12 ? 1190.55 : 841.89) : 595.28;
+      const margin = exportType === 'Fintel' ? (columnCount === 12 ? 8 : 10) : 40;
+      expect(page.getViewport({ scale: 1 }).width).toBeCloseTo(width, 2);
+      const items = (await page.getTextContent()).items.filter((item) => 'str' in item);
+      expect(items.map((item) => item.str).join('').replace(/\s/g, '')).toBe([...headers, ...values].join(''));
+      items.forEach((item) => {
+        expect(item.transform[4]).toBeGreaterThanOrEqual(margin - 0.01);
+        expect(item.transform[4] + item.width).toBeLessThanOrEqual(width - margin + 0.01);
+      });
+    } finally {
+      await document.destroy();
+    }
+  });
+
   it('reduces row height by allocating more width to descriptive content', async () => {
     const description = 'The investigation identified suspicious activity affecting several systems across the organization. '.repeat(3);
     const html = `<table><thead><tr><th>ID</th><th>Description</th><th>Status</th></tr></thead><tbody><tr><td>42</td><td>${description}</td><td>Open</td></tr></tbody></table><p>EndMarker</p>`;
@@ -212,7 +288,7 @@ describe('PDF table layout', () => {
 
   const exportCases = ['table helper', 'HTML', 'Markdown', 'Fintel'].flatMap((exportType) => (
     [{ exportType, spanningHeader: false }, { exportType, spanningHeader: true }]
-  )).flatMap((exportCase) => [4, 8, 12].map((columnCount) => ({ ...exportCase, columnCount })))
+  )).flatMap((exportCase) => [4, 7, 8, 11, 12].map((columnCount) => ({ ...exportCase, columnCount })))
     .flatMap((exportCase) => (exportCase.columnCount === 4 ? ['width only', 'height attribute', 'inline height'] : ['width only'])
       .map((imageSize) => ({ ...exportCase, imageSize })));
 

@@ -6,6 +6,23 @@ export const VERY_WIDE_TABLE_COLUMN_THRESHOLD = 12;
 
 const TABLE_PADDING = 10;
 const TABLE_BORDER = 1;
+const CJK_GLYPHS = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\u3000-\u303f\uff01-\uff60\uffe0-\uffe6]/gu;
+
+interface TableRenderConfig {
+  layout: 'default' | 'compact' | 'ultraCompact';
+  padding: number;
+  fontSize: number;
+}
+
+const getTableRenderConfig = (columnCount: number): TableRenderConfig => {
+  if (columnCount >= VERY_WIDE_TABLE_COLUMN_THRESHOLD) {
+    return { layout: 'ultraCompact', padding: 1, fontSize: 8 };
+  }
+  if (columnCount >= WIDE_TABLE_COLUMN_THRESHOLD) {
+    return { layout: 'compact', padding: 2, fontSize: 9 };
+  }
+  return { layout: 'default', padding: TABLE_PADDING, fontSize: 12 };
+};
 
 const getTableCells = (table: HTMLTableElement) => {
   const occupiedUntil: number[] = [];
@@ -13,9 +30,9 @@ const getTableCells = (table: HTMLTableElement) => {
     let column = 0;
     return Array.from(row.cells).map((cell) => {
       while (occupiedUntil[column] > rowIndex) column += 1;
-      const position = { cell, column };
       const remainingRows = (row.parentElement?.children.length ?? 1) - row.sectionRowIndex;
       const rowSpan = cell.rowSpan === 0 ? remainingRows : Math.min(cell.rowSpan, remainingRows);
+      const position = { cell, column, rowSpan };
       for (let offset = 0; offset < cell.colSpan; offset += 1) {
         occupiedUntil[column + offset] = rowIndex + rowSpan;
       }
@@ -30,8 +47,7 @@ const getTableColumnCount = (table: HTMLTableElement) => getTableCells(table)
 
 const getColumnMinimumWidths = (table: HTMLTableElement): number[] => {
   const columnCount = getTableColumnCount(table);
-  const padding = columnCount >= VERY_WIDE_TABLE_COLUMN_THRESHOLD ? 1 : columnCount >= WIDE_TABLE_COLUMN_THRESHOLD ? 2 : TABLE_PADDING;
-  const fontSize = columnCount >= VERY_WIDE_TABLE_COLUMN_THRESHOLD ? 8 : columnCount >= WIDE_TABLE_COLUMN_THRESHOLD ? 9 : 12;
+  const { padding, fontSize } = getTableRenderConfig(columnCount);
   const spacing = 2 * padding + 2 * TABLE_BORDER;
   const minimums = Array<number>(columnCount).fill(spacing + fontSize);
   getTableCells(table).forEach(({ cell, column }) => {
@@ -50,11 +66,10 @@ const allocateColumnWidths = (
   table: HTMLTableElement,
   columnCount: number,
   tableWidth: number,
-  padding: number,
-  fontSize: number,
-  fontFamily: string,
+  renderConfig: TableRenderConfig & { fontFamily: string },
   context: CanvasRenderingContext2D | null,
 ) => {
+  const { padding, fontSize, fontFamily } = renderConfig;
   const equalWidth = tableWidth / columnCount;
   if (!context) return Array<number>(columnCount).fill(equalWidth);
 
@@ -65,7 +80,12 @@ const allocateColumnWidths = (
   getTableCells(table).forEach(({ cell, column }) => {
     context.font = `${cell.tagName === 'TH' ? 'bold ' : ''}${fontSize}pt ${fontFamily}`;
     const text = (cell.textContent ?? '').replace(/\s+/g, ' ').trim();
-    const textWidth = context.measureText(text).width * 0.75;
+    const measuredWidth = context.measureText(text).width * 0.75;
+    const cjkGlyphCount = text.match(CJK_GLYPHS)?.length ?? 0;
+    const cjkMinimumWidth = cjkGlyphCount > 0
+      ? cjkGlyphCount * fontSize + context.measureText(text.replace(CJK_GLYPHS, '')).width * 0.75
+      : 0;
+    const textWidth = Math.max(measuredWidth, cjkMinimumWidth);
     const demand = (textWidth + spacing) / cell.colSpan;
     for (let offset = 0; offset < cell.colSpan; offset += 1) {
       desired[column + offset] = Math.max(desired[column + offset], demand);
@@ -73,8 +93,9 @@ const allocateColumnWidths = (
   });
 
   const widths = getColumnMinimumWidths(table).map((width) => Math.max(minimum, width));
-  let remaining = tableWidth - widths.reduce((total, width) => total + width, 0);
-  if (remaining < 0) return Array<number>(columnCount).fill(equalWidth);
+  const minimumTotal = widths.reduce((total, width) => total + width, 0);
+  let remaining = tableWidth - minimumTotal;
+  if (remaining < 0) return widths.map((width) => width * tableWidth / minimumTotal);
   const maximums = widths.map((width) => Math.max(maximum, width));
   while (remaining > 0.01) {
     const needs = desired.map((width, column) => (
@@ -117,28 +138,20 @@ const setTableFullWidth = (content: string, contentWidth = 515.28) => {
   container.querySelectorAll('table').forEach((table) => {
     const nbColumns = getTableColumnCount(table);
     if (nbColumns) {
-      const isWideTable = nbColumns >= WIDE_TABLE_COLUMN_THRESHOLD;
-      const isVeryWideTable = nbColumns >= VERY_WIDE_TABLE_COLUMN_THRESHOLD;
-      let layout: 'default' | 'compact' | 'ultraCompact' = 'default';
-      let fontSize: number | undefined;
-      if (isVeryWideTable) {
-        layout = 'ultraCompact';
-        fontSize = 8;
-      } else if (isWideTable) {
-        layout = 'compact';
-        fontSize = 9;
-      }
-      if (fontSize !== undefined) table.style.fontSize = `${fontSize}pt`;
-      const padding = isVeryWideTable ? 1 : isWideTable ? 2 : TABLE_PADDING;
+      const renderConfig = { ...getTableRenderConfig(nbColumns), fontFamily };
+      const { layout, fontSize, padding } = renderConfig;
+      const isWideTable = layout !== 'default';
+      if (isWideTable) table.style.fontSize = `${fontSize}pt`;
       const parentCell = table.parentElement?.closest('td, th');
       const tableWidth = (parentCell && cellWidths.get(parentCell)) || contentWidth;
-      const widths = allocateColumnWidths(table, nbColumns, tableWidth, padding, fontSize ?? 12, fontFamily, context);
+      const widths = allocateColumnWidths(table, nbColumns, tableWidth, renderConfig, context);
       table.setAttribute('data-pdfmake', JSON.stringify({
         layout,
         widths: widths.map((width) => `${100 * width / tableWidth}%`),
         ...(isWideTable ? { fontSize, noWrap: false } : {}),
       }));
-      getTableCells(table).forEach(({ cell, column }) => {
+      getTableCells(table).forEach(({ cell, column, rowSpan }) => {
+        if (cell.rowSpan !== rowSpan) cell.rowSpan = rowSpan;
         const allocatedWidth = widths.slice(column, column + cell.colSpan).reduce((total, width) => total + width, 0);
         const cellWidth = Math.max(1, allocatedWidth - 2 * padding - 2 * TABLE_BORDER);
         cellWidths.set(cell, cellWidth);
