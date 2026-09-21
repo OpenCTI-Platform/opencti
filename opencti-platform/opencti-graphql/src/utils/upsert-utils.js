@@ -126,6 +126,8 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     }
     // number_seen counts observation events: accumulate on every upsert, defaulting the increment to 1
     // (unlike number_observed which is the total count and only accumulates when the observation window changes)
+    // Like number_observed, the computed counters are then subject to the standard confidence-level upsert policy
+    // applied by generateAttributesInputsForUpsert: a lower confidence ingestion does not override existing counters
     const incomingNumberSeen = isNotEmptyField(updatePatch.number_seen) ? updatePatch.number_seen : 1;
     const existingNumberSeen = isNotEmptyField(resolvedElement.number_seen) ? resolvedElement.number_seen : 1;
     updatePatch.number_seen = existingNumberSeen + incomingNumberSeen;

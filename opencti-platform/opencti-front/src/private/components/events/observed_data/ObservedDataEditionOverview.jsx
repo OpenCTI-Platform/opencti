@@ -82,6 +82,8 @@ const observedDataMutationRelationDelete = graphql`
 `;
 
 const OBSERVED_DATA_TYPE = 'Observed-Data';
+// Optional counters can be cleared from the form: an empty input removes the attribute
+const OPTIONAL_COUNTERS = ['number_seen', 'max_distinct_count'];
 
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
@@ -150,11 +152,17 @@ const ObservedDataEditionOverviewComponent = (props) => {
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalValue = value;
+      let valueToValidate = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
+      if (OPTIONAL_COUNTERS.includes(name) && value === '') {
+        // Yup.number() rejects an empty string: validate the cleared counter as null, the patch sends an empty value
+        finalValue = null;
+        valueToValidate = null;
+      }
       observedDataValidator
-        .validateAt(name, { [name]: value })
+        .validateAt(name, { [name]: valueToValidate })
         .then(() => {
           editor.fieldPatch({
             variables: {

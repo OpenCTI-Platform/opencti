@@ -75,6 +75,8 @@ An `Observed Data` carries three counters that are consolidated each time the sa
 - `Number seen`: the number of observation events, i.e. the number of times the `Observed Data` has been seen or ingested. It is accumulated on every ingestion (by 1 by default, or by the value provided by the source) and defaults to 1 at creation.
 - `Max distinct count`: the maximum number of distinct sources (users, endpoints, etc.) having observed the data at a single point in time. On ingestion, the highest of the existing and incoming values is kept. It stays empty until a source provides it.
 
+`Number seen` and `Max distinct count` are non-negative integers. Like `Number observed`, they follow the standard [confidence level](reliability-confidence.md) policy on ingestion: an ingestion with a lower confidence level than the existing `Observed Data` does not modify them (it only initializes them when they are still empty).
+
 Combined, these counters make it possible to distinguish a single host sending one large batch of requests (`Number observed = 60000`, `Number seen = 1`, `Max distinct count = 1`) from a widely deployed beaconing candidate (`Number observed = 60000`, `Number seen = 60000`, `Max distinct count = 60000`).
 
 ### Visualizing Knowledge associated with an Observed Data

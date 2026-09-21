@@ -639,5 +639,35 @@ describe('middleware upsertElement test', () => {
       }, confidenceForUpsert);
       expect(patch.max_distinct_count).toBeUndefined();
     });
+
+    it('should apply the counters through the standard confidence-level upsert policy', () => {
+      const lowerConfidence = { confidenceLevelToApply: 10, isConfidenceMatch: false };
+      const input = {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+        number_seen: 2,
+        max_distinct_count: 60000,
+      };
+      // The counters are computed whatever the confidence...
+      const resolvedElement = { ...baseObservedData, number_seen: 3, max_distinct_count: 10 };
+      const lowerPatch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, input, lowerConfidence);
+      expect(lowerPatch.number_seen).toEqual(5);
+      expect(lowerPatch.max_distinct_count).toEqual(60000);
+      // ... but, like number_observed, a lower confidence ingestion does not override the existing counters
+      const lowerInputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, lowerPatch, lowerConfidence);
+      expect(lowerInputs.find((i) => i.key === 'number_seen')).toBeUndefined();
+      expect(lowerInputs.find((i) => i.key === 'max_distinct_count')).toBeUndefined();
+      // ... while a matching confidence applies them
+      const matchingInputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, lowerPatch, confidenceForUpsert);
+      expect(matchingInputs.find((i) => i.key === 'number_seen')).toEqual({ key: 'number_seen', value: [5] });
+      expect(matchingInputs.find((i) => i.key === 'max_distinct_count')).toEqual({ key: 'max_distinct_count', value: [60000] });
+      // Counters missing on a legacy element are initialized even by a lower confidence ingestion (empty field consolidation)
+      const legacyElement = { ...baseObservedData };
+      const legacyPatch = buildUpdatePatchForUpsert(ADMIN_USER, legacyElement, type, input, lowerConfidence);
+      const legacyInputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, legacyElement, type, legacyPatch, lowerConfidence);
+      expect(legacyInputs.find((i) => i.key === 'number_seen')).toEqual({ key: 'number_seen', value: [3] }); // already seen once + 2
+      expect(legacyInputs.find((i) => i.key === 'max_distinct_count')).toEqual({ key: 'max_distinct_count', value: [60000] });
+    });
   });
 });
