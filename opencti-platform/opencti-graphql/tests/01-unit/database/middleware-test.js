@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
-import { generateAttributesInputsForUpsert, generateRefsInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
+import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert, generateRefsInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 
@@ -548,6 +548,96 @@ describe('middleware upsertElement test', () => {
       const inputs = generateRefsInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert, true);
 
       expect(inputs.length).toEqual(0);
+    });
+  });
+
+  describe('middleware buildUpdatePatchForUpsert with observed data counters', () => {
+    const type = 'Observed-Data';
+    const confidenceForUpsert = { confidenceLevelToApply: 100, isConfidenceMatch: true };
+    const baseObservedData = {
+      id: 'observed-data-uuid-internal',
+      internal_id: 'observed-data-uuid-internal',
+      standard_id: 'observed-data-uuid-standard',
+      first_observed: '2026-09-01T00:00:00.000Z',
+      last_observed: '2026-09-10T00:00:00.000Z',
+      number_observed: 100,
+    };
+
+    it('should accumulate number_observed only when the observation window changes', () => {
+      const resolvedElement = { ...baseObservedData };
+      // same window: number_observed not accumulated
+      const samePatch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+      }, confidenceForUpsert);
+      expect(samePatch.number_observed).toEqual(50);
+      // extended window: number_observed accumulated
+      const extendedPatch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-12T00:00:00.000Z',
+        number_observed: 50,
+      }, confidenceForUpsert);
+      expect(extendedPatch.number_observed).toEqual(150);
+    });
+
+    it('should accumulate number_seen on every upsert with a default increment of 1', () => {
+      const resolvedElement = { ...baseObservedData, number_seen: 3 };
+      // no incoming number_seen: increment by 1, even when the observation window is unchanged
+      const defaultPatch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+      }, confidenceForUpsert);
+      expect(defaultPatch.number_seen).toEqual(4);
+      // incoming number_seen: accumulate the provided value
+      const providedPatch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+        number_seen: 5,
+      }, confidenceForUpsert);
+      expect(providedPatch.number_seen).toEqual(8);
+    });
+
+    it('should default number_seen to 1 on legacy elements without the attribute', () => {
+      const resolvedElement = { ...baseObservedData }; // no number_seen on the existing element
+      const patch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+      }, confidenceForUpsert);
+      expect(patch.number_seen).toEqual(2); // existing element already seen once + this upsert
+    });
+
+    it('should keep the maximum value of max_distinct_count', () => {
+      const resolvedElement = { ...baseObservedData, max_distinct_count: 10 };
+      // lower incoming value: keep the existing maximum
+      const lowerPatch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+        max_distinct_count: 5,
+      }, confidenceForUpsert);
+      expect(lowerPatch.max_distinct_count).toEqual(10);
+      // higher incoming value: take the new maximum
+      const higherPatch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+        max_distinct_count: 60000,
+      }, confidenceForUpsert);
+      expect(higherPatch.max_distinct_count).toEqual(60000);
+    });
+
+    it('should not set max_distinct_count when neither side provides it', () => {
+      const resolvedElement = { ...baseObservedData };
+      const patch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, {
+        first_observed: '2026-09-01T00:00:00.000Z',
+        last_observed: '2026-09-10T00:00:00.000Z',
+        number_observed: 50,
+      }, confidenceForUpsert);
+      expect(patch.max_distinct_count).toBeUndefined();
     });
   });
 });
