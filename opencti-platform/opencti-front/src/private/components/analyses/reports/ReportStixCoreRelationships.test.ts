@@ -8,7 +8,10 @@ describe('buildReportRelationshipsContextFilters', () => {
 
     expect(result).toEqual({
       mode: 'and',
-      filters: [{ key: 'objects', values: ['report-id'], operator: 'eq', mode: 'or' }],
+      filters: [
+        { key: 'objects', values: ['report-id'], operator: 'eq', mode: 'or' },
+        { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
+      ],
       filterGroups: [],
     });
   });
@@ -22,7 +25,10 @@ describe('buildReportRelationshipsContextFilters', () => {
 
     const result = buildReportRelationshipsContextFilters('report-id', userFilters);
 
-    expect(result.filters).toEqual([{ key: 'objects', values: ['report-id'], operator: 'eq', mode: 'or' }]);
+    expect(result.filters).toEqual([
+      { key: 'objects', values: ['report-id'], operator: 'eq', mode: 'or' },
+      { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
+    ]);
     expect(result.filterGroups).toEqual([userFilters]);
     // The mandatory filter and the user filters are combined with AND: user filters,
     // however permissive ('or' mode), can never widen the query outside the report.
