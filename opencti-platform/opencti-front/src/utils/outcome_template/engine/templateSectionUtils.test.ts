@@ -29,6 +29,16 @@ describe('templateSectionUtils', () => {
     expect(isSemanticallyEmptyHtmlFragment('<svg><circle r="10"></circle></svg>')).toBe(false);
   });
 
+  it('should resolve and retain hyphenated variable names', () => {
+    const content = buildTemplateContentWithOptionalSectionPruning(
+      '<div><h2>Keep</h2><p>$foo-bar</p></div>',
+      [{ variableName: 'foo-bar', replacement: 'Filled', isEmpty: false }],
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual('<div><h2>Keep</h2><p>Filled</p></div>');
+  });
+
   it('should keep pre-heading text and treat h4 content as part of its h3 section', () => {
     const content = buildTemplateContentWithOptionalSectionPruning(
       '<main><p>Preamble</p><h3>Empty</h3><h4>$empty</h4><h3>Keep</h3><p>Static</p></main>',

@@ -21,7 +21,7 @@ type TemplateSection = {
   shouldKeep?: boolean;
 };
 
-const VARIABLE_PATTERN = /\$([A-Za-z0-9_]+)/g;
+const VARIABLE_PATTERN = /\$([A-Za-z0-9_-]+)/g;
 const MEANINGFUL_MEDIA_SELECTOR = 'img, svg, canvas, video, audio, iframe, object, embed';
 
 const normalizeTextValue = (value: string) => value
