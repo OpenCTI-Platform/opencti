@@ -13,7 +13,7 @@ import type { WidgetHost } from '../utils/widget/widget';
 export const filterValuesContentQuery = graphql`
     query FilterValuesContentQuery($filters: FilterGroup!, $isMeValueForbidden: Boolean) {
         filtersRepresentatives(filters: $filters, isMeValueForbidden: $isMeValueForbidden) {
-            id
+            representativeId: id
             value
             entity_type
             color

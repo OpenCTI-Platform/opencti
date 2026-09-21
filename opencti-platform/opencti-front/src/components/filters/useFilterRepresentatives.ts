@@ -30,7 +30,7 @@ const useFilterRepresentatives = ({
 
   const filtersRepresentativesMap = useMemo(
     () => new Map<string, FilterRepresentative>(
-      filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
+      filtersRepresentatives.map((n: FilterRepresentative) => [n.representativeId, n]),
     ),
     [filtersRepresentatives],
   );
