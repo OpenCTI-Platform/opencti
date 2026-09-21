@@ -1,11 +1,3 @@
-import type { ExportBundleWorkspacesQuery$data } from '../__generated__/ExportBundleWorkspacesQuery.graphql';
-import type { ExportBundlePlaybooksQuery$data } from '../__generated__/ExportBundlePlaybooksQuery.graphql';
-import type { ExportBundleFormsQuery$data } from '../__generated__/ExportBundleFormsQuery.graphql';
-import type { ExportBundleCustomViewsQuery$data } from '../__generated__/ExportBundleCustomViewsQuery.graphql';
-import type { ExportBundleIngestionCsvsQuery$data } from '../__generated__/ExportBundleIngestionCsvsQuery.graphql';
-import type { ExportBundleIngestionJsonsQuery$data } from '../__generated__/ExportBundleIngestionJsonsQuery.graphql';
-import type { ExportBundleIngestionRsssQuery$data } from '../__generated__/ExportBundleIngestionRsssQuery.graphql';
-import type { ExportBundleIngestionTaxiisQuery$data } from '../__generated__/ExportBundleIngestionTaxiisQuery.graphql';
 import type { ExportInstanceConfig } from './exportBundleInstanceTypes';
 import {
   workspacesQuery,
@@ -17,6 +9,14 @@ import {
   ingestionRsssQuery,
   ingestionTaxiisQuery,
 } from './exportBundleInstanceQueries';
+import { ExportBundlePlaybooksQuery$data } from '@components/settings/experience/__generated__/ExportBundlePlaybooksQuery.graphql';
+import { ExportBundleFormsQuery$data } from '@components/settings/experience/__generated__/ExportBundleFormsQuery.graphql';
+import { ExportBundleWorkspacesQuery$data } from '@components/settings/experience/__generated__/ExportBundleWorkspacesQuery.graphql';
+import { ExportBundleCustomViewsQuery$data } from '@components/settings/experience/__generated__/ExportBundleCustomViewsQuery.graphql';
+import { ExportBundleIngestionCsvsQuery$data } from '@components/settings/experience/__generated__/ExportBundleIngestionCsvsQuery.graphql';
+import { ExportBundleIngestionTaxiisQuery$data } from '@components/settings/experience/__generated__/ExportBundleIngestionTaxiisQuery.graphql';
+import { ExportBundleIngestionJsonsQuery$data } from '@components/settings/experience/__generated__/ExportBundleIngestionJsonsQuery.graphql';
+import { ExportBundleIngestionRsssQuery$data } from '@components/settings/experience/__generated__/ExportBundleIngestionRsssQuery.graphql';
 
 const dashboardsFilters = {
   mode: 'and',
