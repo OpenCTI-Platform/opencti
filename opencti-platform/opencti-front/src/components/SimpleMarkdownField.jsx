@@ -77,11 +77,19 @@ const MarkdownField = (props) => {
           : setSelectedTab(tab))
         }
         generateMarkdownPreview={(markdown) => Promise.resolve(
-          <MarkdownDisplay
-            content={markdown}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />,
+          // Preview mode is read-only Markdown rendering, not an interactive
+          // control: onMouseUp here only captures a mouse text-selection so
+          // callers relying on `onSelect` (see the `onSelect` prop above)
+          // still work in preview mode, since the native `select` event only
+          // fires on form elements (the write-mode textarea), not on a
+          // generic rendered `<div>`.
+          <div onMouseUp={() => internalOnSelect()}>
+            <MarkdownDisplay
+              content={markdown}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />
+          </div>,
         )
         }
         l18n={{
