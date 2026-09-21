@@ -1,5 +1,6 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
+import { v4 as uuid } from 'uuid';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
@@ -114,6 +115,36 @@ const LIST_CONNECTORS_QUERY = gql`
   }
 `;
 
+const LIST_IMPORT_CONNECTORS_QUERY = gql`
+  query ListImportConnectors {
+    connectorsForImport {
+      id
+      name
+      connector_type
+      connector_trigger_filters
+    }
+  }
+`;
+
+const LIST_WORKER_CONNECTORS_QUERY = gql`
+  query ListWorkerConnectors {
+    connectorsForWorker {
+      id
+      name
+      connector_type
+    }
+  }
+`;
+
+const UPDATE_CONNECTOR_TRIGGER_QUERY = gql`
+  mutation UpdateConnectorTrigger($id: ID!, $input: [EditInput]!) {
+    updateConnectorTrigger(id: $id, input: $input) {
+      id
+      connector_trigger_filters
+    }
+  }
+`;
+
 const READ_CONNECTOR_QUERY = gql`
   query GetConnectors($id: String!) {
     connector(id: $id) {
@@ -150,6 +181,8 @@ const DELETE_CONNECTOR_QUERY = gql`
 
 const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
 const TEST_CN_NAME = 'TestConnector';
+const TEST_IMPORT_CN_ID = uuid();
+const TEST_IMPORT_CN_NAME = 'TestInternalImportConnector';
 
 beforeAll(async () => {
   const CONNECTOR_TO_CREATE = {
@@ -170,9 +203,24 @@ beforeAll(async () => {
   expect(connector.data.registerConnector).not.toBeNull();
   expect(connector.data.registerConnector.name).toEqual(TEST_CN_NAME);
   expect(connector.data.registerConnector.id).toEqual(TEST_CN_ID);
+
+  const importConnector = await queryAsUserWithSuccess(USER_CONNECTOR, {
+    query: CREATE_CONNECTOR_QUERY,
+    variables: {
+      input: {
+        id: TEST_IMPORT_CN_ID,
+        name: TEST_IMPORT_CN_NAME,
+        type: 'INTERNAL_IMPORT_FILE',
+        scope: 'application/json',
+        auto: true,
+        only_contextual: false,
+      },
+    },
+  });
+  expect(importConnector.data.registerConnector.id).toEqual(TEST_IMPORT_CN_ID);
 });
 
-const CREATED_CN_COUNT = 1;
+const CREATED_CN_COUNT = 2;
 const BUILT_IN_CN_COUNT = BACKGROUND_TASK_QUEUES + 2;
 
 describe('Connector resolver standard behaviour', () => {
@@ -180,11 +228,12 @@ describe('Connector resolver standard behaviour', () => {
   it('should list all connectors', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: LIST_CONNECTORS_QUERY, variables: {} });
     expect(queryResult.data.connectors).toBeDefined();
-    // currently 7 : 1 created (TestConnector) + 6 built-in connectors (4 background tasks + import csv + draft validation)
+    // 8 connectors: 2 created connectors and 6 built-in connectors (4 background tasks, import csv, and draft validation)
     expect(queryResult.data.connectors.length).toEqual(CREATED_CN_COUNT + BUILT_IN_CN_COUNT);
-    // TestConnector created above
+    // Connectors created above
     expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID)).toBeDefined();
     expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID).name).toEqual(TEST_CN_NAME);
+    expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_IMPORT_CN_ID)).toBeDefined();
     // 6 built-in connectors
     expect(queryResult.data.connectors.filter((c: Connector) => c.built_in).length).toEqual(BUILT_IN_CN_COUNT);
     // check background tasks built_in connectors
@@ -193,6 +242,53 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connectors.filter((c: Connector) => c.id === IMPORT_CSV_CONNECTOR.id).length).toEqual(1);
     // check built_in draft validation connector
     expect(queryResult.data.connectors.filter((c: Connector) => c.id === DRAFT_VALIDATION_CONNECTOR.id).length).toEqual(1);
+  });
+
+  it('should expose internal import connectors through the dedicated endpoint', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: LIST_IMPORT_CONNECTORS_QUERY,
+      variables: {},
+    });
+
+    expect(queryResult.data.connectorsForImport).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: TEST_IMPORT_CN_ID,
+        name: TEST_IMPORT_CN_NAME,
+        connector_type: 'INTERNAL_IMPORT_FILE',
+      }),
+    ]));
+  });
+
+  it('should expose registered connectors through the worker endpoint', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: LIST_WORKER_CONNECTORS_QUERY,
+      variables: {},
+    });
+
+    expect(queryResult.data.connectorsForWorker).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: TEST_CN_ID, name: TEST_CN_NAME }),
+      expect.objectContaining({ id: TEST_IMPORT_CN_ID, name: TEST_IMPORT_CN_NAME }),
+    ]));
+  });
+
+  it('should update trigger filters for internal import connectors', async () => {
+    const filters = JSON.stringify({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Indicator'] }],
+      filterGroups: [],
+    });
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_CONNECTOR_TRIGGER_QUERY,
+      variables: {
+        id: TEST_IMPORT_CN_ID,
+        input: [{ key: 'connector_trigger_filters', value: [filters] }],
+      },
+    });
+
+    expect(queryResult.data.updateConnectorTrigger).toEqual({
+      id: TEST_IMPORT_CN_ID,
+      connector_trigger_filters: filters,
+    });
   });
   it('should create work', async () => {
     const WORK_TO_CREATE = {
@@ -527,9 +623,10 @@ describe('Capability checks', () => {
 });
 
 afterAll(async () => {
-  // Delete the connector
-  await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
-  // Verify is no longer found
+  await Promise.all([
+    queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } }),
+    queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_IMPORT_CN_ID } }),
+  ]);
   const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
   expect(queryResult).not.toBeNull();
   expect(queryResult.data?.connector).toBeNull();

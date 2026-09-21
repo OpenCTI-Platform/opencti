@@ -96,7 +96,7 @@ vi.mock('lru-cache', () => {
 
 import { updateExpectationsNumber } from '../../../src/domain/work';
 import { buildSplitMessages, getQueueConsumersByType, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
-import { getConnectorQueueSize } from '../../../src/modules/connector/connector-rabbitmq';
+import { connectorConfig, getConnectorQueueSize, getInternalBackgroundTaskQueues, getInternalQueues } from '../../../src/modules/connector/connector-rabbitmq';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 describe('rabbitmq: metrics', () => {
@@ -206,6 +206,43 @@ describe('rabbitmq: getConnectorQueueSize', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('connector RabbitMQ configuration', () => {
+    it('should build the connector queue configuration with callback and dead-letter routing', () => {
+      const config = connectorConfig('connector-123', 'https://connector.example/callback');
+
+      expect(config).toMatchObject({
+        listen: 'opencti_listen_connector-123',
+        listen_routing: 'opencti_listen_routing_connector-123',
+        listen_exchange: 'opencti_amqp.connector.exchange',
+        push: 'opencti_push_connector-123',
+        push_routing: 'opencti_push_routing_connector-123',
+        push_exchange: 'opencti_amqp.worker.exchange',
+        listen_callback_uri: 'https://connector.example/callback',
+        dead_letter_routing: 'opencti_listen_routing_too-large-bundle',
+      });
+    });
+
+    it('should expose all internal queues including every background task queue', () => {
+      const backgroundTaskQueues = getInternalBackgroundTaskQueues();
+      const internalQueues = getInternalQueues();
+
+      expect(backgroundTaskQueues).toHaveLength(4);
+      expect(backgroundTaskQueues).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          id: 'background-task-0',
+          scope: 'Background-Task',
+          type: 'internal',
+        }),
+      ]));
+      expect(internalQueues).toEqual(expect.arrayContaining([
+        expect.objectContaining({ id: 'too-large-bundle' }),
+        expect.objectContaining({ id: 'playbook' }),
+        expect.objectContaining({ id: 'sync' }),
+        ...backgroundTaskQueues,
+      ]));
+    });
   });
 
   afterEach(() => {
