@@ -6,6 +6,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import ItemIcon from '../../../../components/ItemIcon';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
@@ -61,6 +62,7 @@ const ReportStixCoreRelationshipsLine = ({
   selectAll,
 }: ReportStixCoreRelationshipsLineProps) => {
   const classes = useStyles();
+  const { fsd } = useFormatter();
   const relationship = useFragment(stixCoreRelationshipsFragment, node as never) as ReportRelationshipNode;
   const from = relationship.from;
   const to = relationship.to;
@@ -116,7 +118,7 @@ const ReportStixCoreRelationshipsLine = ({
               {relationship.createdBy?.name ?? EMPTY_VALUE}
             </div>
             <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
-              {relationship.created_at ?? EMPTY_VALUE}
+              {relationship.created_at ? fsd(relationship.created_at) : EMPTY_VALUE}
             </div>
             <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
               {isRestricted ? EMPTY_VALUE : relationship.objectMarking?.[0]?.definition ?? EMPTY_VALUE}
