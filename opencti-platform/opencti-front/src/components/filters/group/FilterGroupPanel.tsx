@@ -43,7 +43,11 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
   };
 
   const handleAddCondition = () => {
-    const filterKey = availableFilterKeys[0];
+    // Match the order the key select displays (alphabetical by label), not the raw
+    // availableFilterKeys order, so the pre-selected filter is the first one shown.
+    const filterKey = [...availableFilterKeys]
+      .sort((a, b) => t_i18n(getFilterDefinitionFromFilterKeysMap(a, filterKeysMap)?.label ?? a)
+        .localeCompare(t_i18n(getFilterDefinitionFromFilterKeysMap(b, filterKeysMap)?.label ?? b)))[0];
     if (!filterKey) return;
     const filterDefinition = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
     helpers?.handleAddFilterWithEmptyValue(getDefaultFilterObject(filterKey, filterDefinition), groupId);

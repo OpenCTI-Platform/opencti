@@ -132,7 +132,7 @@ describe('Component: FilterGroupPanel', () => {
     const { user } = renderPanel(group);
     await user.click(screen.getByTestId('filter-group-add-condition-group-1-1'));
     expect(helpers.handleAddFilterWithEmptyValue).toHaveBeenCalledTimes(1);
-    expect(helpers.handleAddFilterWithEmptyValue).toHaveBeenCalledWith(expect.objectContaining({ key: 'name' }), 'group-1-1');
+    expect(helpers.handleAddFilterWithEmptyValue).toHaveBeenCalledWith(expect.objectContaining({ key: 'description' }), 'group-1-1');
   });
 
   it('adds a sub-group in that group', async () => {
