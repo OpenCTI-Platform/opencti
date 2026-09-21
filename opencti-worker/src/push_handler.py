@@ -108,7 +108,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             # sync_id to this queue's own trusted connector_id, matching the
             # sync/inflight staging path the platform used, instead of trusting a
             # value read from the message content.
-            self.api.set_connector_id(self.connector_id)
+            self.api.connector_id = self.connector_id
             work_id = data.get("work_id")
             self.api.set_work_id(work_id)
 
@@ -253,6 +253,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         | "rules_rescan"  # Rescan a rule (massive operation in UI)
                         | "enrichment"  # Ask for enrichment (massive operation in UI)
                         | "clear_access_restriction"  # Clear access members (massive operation in UI)
+                        | "add_related_covered_entities"  # Create has-covered relationships
                         | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
                         data_object = content["data"]

@@ -20,7 +20,8 @@ export default defineConfig([
       '**/__generated__/**',
       '**/fds-tokens.generated.ts',
       '**/fds-tokens.generated.meta.json',
-      'extract-i18n-keyword.js',
+      '**/extract-i18n-keyword.js',
+      'eslint.config.js',
       'playwright.config.ts',
       'vite.config.ts',
       'vitest.config.ts',
@@ -160,6 +161,8 @@ export default defineConfig([
       'import/no-extraneous-dependencies': [
         'error',
         {
+          // includeTypes because `import type` of an undeclared package is skipped by default.
+          includeTypes: true,
           devDependencies: [
             'src/utils/tests/*.{ts,tsx}',
             '**/*.test.{ts,tsx}',

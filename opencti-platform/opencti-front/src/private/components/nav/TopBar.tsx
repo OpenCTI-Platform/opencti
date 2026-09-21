@@ -301,7 +301,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     <TooltipTrigger asChild>
                       <TopBarIconLink
                         aria-label={t_i18n('Alerts')}
-                        to="/dashboard/profile/notifications/alerts"
+                        to="/dashboard/profile/notifications"
                         active={location.pathname.startsWith('/dashboard/profile/notifications')}
                         icon={<NotificationsOutlined fontSize="medium" />}
                         // Marks the control, never the glyph: the glyph sits in an aria-hidden

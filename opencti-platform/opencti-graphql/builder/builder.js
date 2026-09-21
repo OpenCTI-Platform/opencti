@@ -5,11 +5,13 @@ import graphqlLoaderPluginPkg from '@luckycatfactory/esbuild-graphql-loader';
 import nativeNodePlugin from './plugin/native.node.plugin.js';
 import nodeGypBuildShimPlugin from './plugin/node-gyp-build-shim.plugin.js';
 import { generateEsmPlugin } from './plugin/generate-esm-plugin.js';
+import { BUILD_ENTRY_POINTS } from './entry-points.js';
 
 const { default: importGlobPlugin } = importGlobPluginPkg;
 const { default: graphqlLoaderPlugin } = graphqlLoaderPluginPkg;
 
-const args = process.argv.slice(2);
+const args = process.argv.slice(2).filter((a) => a !== '--watch');
+const isWatch = process.argv.includes('--watch');
 const arg = args.shift();
 const isScript = arg === '--script';
 const isDev = isScript || arg === '--development';
@@ -20,16 +22,10 @@ const entryPoints = [];
 if (scriptName) {
   entryPoints.push(scriptName);
 } else {
-  entryPoints.push(...[
-    'src/back.ts',
-    'src/lock/child-lock.manager.ts',
-    'script/script-clean-relations.js',
-    'script/script-insert-dataset.js',
-    'src/utils/safeEjs.worker.ts'
-  ]);
+  entryPoints.push(...BUILD_ENTRY_POINTS);
 }
 
-await esbuild.build({
+const buildOptions = {
   logLevel: 'info',
   define: {'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production')},
   plugins: [
@@ -66,4 +62,55 @@ await esbuild.build({
   external: [
     'apollo-server-errors', // required by graphql-constraint-directive in dead code when using Apollo 4+
   ],
-});
+};
+
+if (isWatch) {
+  let buildCount = 0;
+
+  // Log rebuild events so the watch runner (builder/dev/watch.js) can detect them
+  const watchPlugin = {
+    name: 'watch-plugin',
+    setup(build) {
+      let startTime;
+      build.onStart(() => {
+        startTime = Date.now();
+        buildCount += 1;
+        if (buildCount > 1) {
+          console.log('🔨 Rebuilding...');
+        }
+      });
+      build.onEnd((result) => {
+        const duration = Date.now() - startTime;
+        if (result.errors.length > 0) {
+          console.error(`❌ Build failed with ${result.errors.length} error(s)`);
+          // Notify the parent so it can cancel any pending restart
+          if (process.send && buildCount > 1) {
+            process.send({ type: 'rebuild-failed' });
+          }
+        } else if (buildCount === 1) {
+          console.log('✅ Initial build complete');
+          // Signal the parent (builder/dev/watch.js) via IPC that the initial
+          // build is done so it can start the app process.
+          if (process.send) {
+            process.send({ type: 'initial-build-complete' });
+          }
+        } else {
+          console.log(`✅ Rebuild complete in ${duration}ms`);
+          // Signal the parent to restart the app process.
+          if (process.send) {
+            process.send({ type: 'rebuild-complete' });
+          }
+        }
+      });
+    },
+  };
+
+  const context = await esbuild.context({
+    ...buildOptions,
+    plugins: [...buildOptions.plugins, watchPlugin],
+  });
+  await context.watch();
+  console.log('👀 Watching for changes...');
+} else {
+  await esbuild.build(buildOptions);
+}

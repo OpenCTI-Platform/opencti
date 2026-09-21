@@ -39,7 +39,7 @@ jobs:
             yarn build
             '
 
-    - name: Frontend type checking and linting
+    - name: Frontend type checking, linting and dependency check
       run: |
         docker run  \
           --name frontend-lint \
@@ -50,6 +50,9 @@ jobs:
             cd /home/workspace/opencti-platform/opencti-front
             yarn check-ts
             yarn lint
+            # --dependencies only: the wider knip report (unused files and exports) still has a
+            # large pre-existing backlog on both workspaces, so only declaration drift is enforced.
+            yarn knip --dependencies
             '
 
     - name: Accessible names of converted design-system fields
@@ -101,7 +104,7 @@ jobs:
             '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f #v7.0.0
+      uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7.1.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json

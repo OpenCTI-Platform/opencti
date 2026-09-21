@@ -19,7 +19,6 @@ const TEST_COMPOSER_PUBLIC_KEY = '-----BEGIN RSA PUBLIC KEY-----\nMIICCgKCAgEAk8
 // The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer.
 // This enables authentic integration testing (assuming the XTM Composer is available in the CI) without the need to rewrite the test suite.
 // Set to true for faster tests, false for realistic XTM Composer behavior.
-// The wait budgets of the else branches are unverified: they never run while this is true.
 const FORCE_POLLING = true;
 
 // Mutations

@@ -304,7 +304,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         id = kwargs.get("id", None)
         storage_key = kwargs.get("storage_key", None)
         file_name = kwargs.get("file_name", None)
-        sync_id = kwargs.get("sync_id", None) or self.opencti.get_connector_id()
+        sync_id = kwargs.get("sync_id", None) or self.opencti.connector_id
         file_markings = kwargs.get("fileMarkings", None)
         version = kwargs.get("version", None)
         mime_type = kwargs.get("mime_type", None)

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as middleware from '../../../src/database/middleware';
+import * as middlewareLoader from '../../../src/database/middleware-loader';
 import * as fileStorage from '../../../src/database/file-storage';
 import * as access from '../../../src/utils/access';
 import * as draftContext from '../../../src/utils/draftContext';
@@ -9,7 +10,7 @@ import * as entitySettingUtils from '../../../src/modules/entitySetting/entitySe
 import * as engine from '../../../src/database/engine';
 import * as streamHandler from '../../../src/database/stream/stream-handler';
 import * as userActionListener from '../../../src/listener/UserActionListener';
-import { stixCoreObjectImportPush, stixCoreObjectImportPushRef } from '../../../src/domain/stixCoreObject';
+import { batchInternalRels, stixCoreObjectImportPush, stixCoreObjectImportPushRef } from '../../../src/domain/stixCoreObject';
 
 describe('stix core object domain import push', () => {
   beforeEach(() => {
@@ -171,5 +172,87 @@ describe('stix core object domain import push ref (sync file reference mode)', (
 
     const [, , , , calledCopyProps] = copySpy.mock.calls[0];
     expect((calledCopyProps as { externalReferenceId?: string }).externalReferenceId).toBeDefined();
+  });
+});
+
+describe('batchInternalRels', () => {
+  const mockContext = {} as never;
+  const mockUser = { id: 'user--1' } as never;
+
+  const author = {
+    id: 'org--internal-id',
+    internal_id: 'org--internal-id',
+    standard_id: 'identity--d4551de9-4b9c-570e-a51c-d3c321eb9a8d',
+    entity_type: 'Organization',
+    parent_types: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Identity'],
+    name: 'Secret Org',
+  };
+
+  const createdByDefinition = {
+    databaseName: 'rel_created-by.internal_id',
+    multiple: false,
+    toTypes: ['Organization'],
+  } as any;
+
+  const objectsDefinition = {
+    databaseName: 'rel_object.internal_id',
+    multiple: true,
+    toTypes: ['Organization'],
+  } as any;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns the real author when the user has access', async () => {
+    vi.spyOn(middlewareLoader, 'internalFindByIds').mockResolvedValue({ [author.internal_id]: author } as never);
+    vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+
+    const element = { [createdByDefinition.databaseName]: author.internal_id };
+    const [result] = await batchInternalRels(mockContext, mockUser, [{ element, definition: createdByDefinition }]);
+
+    expect(result).toEqual(author);
+  });
+
+  it('returns a restricted author with an obfuscated standard_id when access is denied', async () => {
+    vi.spyOn(middlewareLoader, 'internalFindByIds').mockResolvedValue({ [author.internal_id]: author } as never);
+    vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(false);
+
+    const element = { [createdByDefinition.databaseName]: author.internal_id };
+    const [result] = await batchInternalRels(mockContext, mockUser, [{ element, definition: createdByDefinition }]);
+
+    expect(result.name).toBe('Restricted');
+    // standard_id must stay obfuscated: pycti drops restricted createdBy refs
+    // entirely from STIX exports, so exposing the real id here would only leak
+    // the entity's identity to a user with no access to it.
+    expect(result.standard_id).toBe('Restricted');
+  });
+
+  it('restricts individual entries within a multiple ref while keeping standard_id obfuscated', async () => {
+    const secondAuthor = {
+      ...author,
+      id: 'org--internal-id-2',
+      internal_id: 'org--internal-id-2',
+      standard_id: 'identity--2c3b6ef1-3e0d-5a3b-9a3a-7a7f5b0f6b2a',
+      name: 'Visible Org',
+    };
+    vi.spyOn(middlewareLoader, 'internalFindByIds').mockResolvedValue({
+      [author.internal_id]: author,
+      [secondAuthor.internal_id]: secondAuthor,
+    } as never);
+    vi.spyOn(access, 'isUserCanAccessStoreElement').mockImplementation(async (_ctx, _user, resolved: any) => {
+      return resolved.internal_id === secondAuthor.internal_id;
+    });
+
+    const element = { [objectsDefinition.databaseName]: [author.internal_id, secondAuthor.internal_id] };
+    const [result] = await batchInternalRels(mockContext, mockUser, [{ element, definition: objectsDefinition }]);
+
+    expect(result).toHaveLength(2);
+    const restricted = result.find((e: any) => e.id === author.internal_id) as any;
+    const visible = result.find((e: any) => e.internal_id === secondAuthor.internal_id);
+
+    expect(restricted.name).toBe('Restricted');
+    expect(restricted.standard_id).toBe('Restricted');
+    expect(visible).toEqual(secondAuthor);
   });
 });

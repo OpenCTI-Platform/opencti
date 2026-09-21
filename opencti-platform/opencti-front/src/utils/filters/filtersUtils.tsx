@@ -4,6 +4,7 @@ import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
+import useHelper from '../hooks/useHelper';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
@@ -158,6 +159,23 @@ export const stixFilters = [
   'incident_type',
   'description',
 ];
+
+// SSVC filter keys, only available in the schema when the SSVC_ATTRIBUTES feature flag is enabled
+// (see vulnerability.ts attribute definitions and schema-attributes.ts featureFlag filtering)
+// TODO(#17568): once the SSVC_ATTRIBUTES feature flag is dropped, move these keys back into
+// stixFilters above (in the same place they used to be) and delete ssvcFilters + useStixFilters;
+// replace every `useStixFilters()` call site with the plain `stixFilters` import again.
+const ssvcFilters = [
+  'x_opencti_ssvc_exploitation',
+  'x_opencti_ssvc_automatable',
+  'x_opencti_ssvc_technical_impact',
+];
+
+// stixFilters, extended with the SSVC filter keys when the SSVC_ATTRIBUTES feature flag is enabled
+export const useStixFilters = () => {
+  const { isFeatureEnable } = useHelper();
+  return isFeatureEnable('SSVC_ATTRIBUTES') ? [...stixFilters, ...ssvcFilters] : stixFilters;
+};
 
 // ----------------------------------------------------------------------------------------------------------------------
 // utilities

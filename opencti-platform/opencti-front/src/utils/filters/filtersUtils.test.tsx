@@ -18,6 +18,7 @@ import {
   serializeFilterGroupForBackend,
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
+  useStixFilters,
   GqlFilterGroup,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
@@ -1531,5 +1532,27 @@ describe('isDraftWorkspaceFilterGroup', () => {
   it('should return true when entity_type value is an object with id property', () => {
     const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
     expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+});
+
+describe('useStixFilters', () => {
+  it('should not include the SSVC filter keys when the SSVC_ATTRIBUTES feature flag is disabled', () => {
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [] } }) },
+    );
+    expect(hook.result.current).not.toContain('x_opencti_ssvc_exploitation');
+    expect(hook.result.current).not.toContain('x_opencti_ssvc_automatable');
+    expect(hook.result.current).not.toContain('x_opencti_ssvc_technical_impact');
+  });
+
+  it('should include the SSVC filter keys when the SSVC_ATTRIBUTES feature flag is enabled', () => {
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [{ id: 'SSVC_ATTRIBUTES', enable: true }] } }) },
+    );
+    expect(hook.result.current).toContain('x_opencti_ssvc_exploitation');
+    expect(hook.result.current).toContain('x_opencti_ssvc_automatable');
+    expect(hook.result.current).toContain('x_opencti_ssvc_technical_impact');
   });
 });

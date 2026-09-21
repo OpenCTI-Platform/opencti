@@ -1,5 +1,15 @@
 import { APIRequestContext } from '@playwright/test';
 import { getGroups } from './group.data';
+import { graphqlRequest } from './graphql.data';
+
+interface NamedNode {
+  id: string;
+  name: string;
+}
+
+interface EdgesOf<T> {
+  edges: Array<{ node: T }>;
+}
 
 export const getUsers = () => `
   query {
@@ -47,28 +57,43 @@ const addUserGroup = (userId: string, groupId: string) => `
   }
 `;
 
-export const addUsers = async (request: APIRequestContext, users: AddUserInput[]) => {
-  const groupsResponse = await request.post('/graphql', { data: { query: getGroups() } });
-  const groupsResponseData = JSON.parse((await groupsResponse.body()).toString());
-  const groups = groupsResponseData.data.groups.edges.map((e: any) => e.node);
-
-  const existingUsersResponse = await request.post('/graphql', { data: { query: getUsers() } });
-  const existingUsersResponseData = JSON.parse((await existingUsersResponse.body()).toString());
-  const existingUsers = existingUsersResponseData.data.users.edges.map((e: any) => e.node.name);
-
-  await Promise.all(users.map(async (user) => {
-    if (!existingUsers.includes(user.name)) {
-      const addUserResponse = await request.post('/graphql', { data: { query: addUser(user) } });
-
-      if (user.groups && user.groups.length > 0) {
-        const userGroups = groups.filter((group: any) => user.groups?.includes(group.name));
-        const addUserResponseData = JSON.parse((await addUserResponse.body()).toString());
-        const userId = addUserResponseData.data.userAdd.id;
-
-        await Promise.all(userGroups.map(async (group: any) => {
-          await request.post('/graphql', { data: { query: addUserGroup(userId, group.id) } });
-        }));
+const getUserGroups = (userId: string) => `
+  query {
+    user(id: "${userId}") {
+      groups {
+        edges {
+          node {
+            name
+          }
+        }
       }
     }
-  }));
+  }
+`;
+
+export const addUsers = async (request: APIRequestContext, users: AddUserInput[]) => {
+  const { groups } = await graphqlRequest<{ groups: EdgesOf<NamedNode> }>(request, getGroups(), 'list groups');
+  const allGroups = groups.edges.map((e) => e.node);
+
+  const { users: existing } = await graphqlRequest<{ users: EdgesOf<NamedNode> }>(request, getUsers(), 'list users');
+  const existingUsers = new Map(existing.edges.map((e) => [e.node.name, e.node.id]));
+
+  for (const user of users) {
+    let userId = existingUsers.get(user.name);
+    if (!userId) {
+      const { userAdd } = await graphqlRequest<{ userAdd: NamedNode }>(request, addUser(user), `create user ${user.name}`);
+      userId = userAdd.id;
+      for (const groupName of user.groups) {
+        const group = allGroups.find((g) => g.name === groupName);
+        if (!group) throw new Error(`create user ${user.name}: unknown group ${groupName}`);
+        await graphqlRequest(request, addUserGroup(userId, group.id), `add user ${user.name} to group ${groupName}`);
+      }
+    }
+    const { user: resolved } = await graphqlRequest<{ user: { groups: EdgesOf<{ name: string }> } }>(request, getUserGroups(userId), `read groups of user ${user.name}`);
+    const resolvedGroups = resolved.groups.edges.map((e) => e.node.name);
+    const missing = user.groups.filter((g) => !resolvedGroups.includes(g));
+    if (missing.length > 0) {
+      throw new Error(`user ${user.name} is stored without the group(s) ${missing.join(', ')}: the platform resolves [${resolvedGroups.join(', ')}]`);
+    }
+  }
 };

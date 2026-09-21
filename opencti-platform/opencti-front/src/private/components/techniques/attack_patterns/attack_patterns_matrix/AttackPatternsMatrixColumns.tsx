@@ -349,10 +349,12 @@ const AttackPatternsMatrixColumns = ({
                     <ListItemIcon><InfoOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>View</ListItemText>
                   </MenuItem>
-                  <MenuItem onClick={() => handleAddAttackPattern(selectedAttackPattern)}>
-                    <ListItemIcon><AddCircleOutlineOutlined fontSize="small" /></ListItemIcon>
-                    <ListItemText>Add</ListItemText>
-                  </MenuItem>
+                  {!isCoverage && (
+                    <MenuItem onClick={() => handleAddAttackPattern(selectedAttackPattern)}>
+                      <ListItemIcon><AddCircleOutlineOutlined fontSize="small" /></ListItemIcon>
+                      <ListItemText>Add</ListItemText>
+                    </MenuItem>
+                  )}
                 </>
               )}
             </Menu>

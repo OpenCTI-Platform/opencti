@@ -23,9 +23,7 @@ const IndicatorKnowledge = ({ indicatorId }: IndicatorKnowledgeProps) => (
     <Route
       path="/relations/:relationId"
       element={(
-        <StixCoreRelationship
-          entityId={indicatorId}
-        />
+        <StixCoreRelationship />
       )}
     />
     <Route
