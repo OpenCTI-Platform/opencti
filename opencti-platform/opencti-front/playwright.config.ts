@@ -101,16 +101,17 @@ export default defineConfig({
       // setup projects being forced to re-run in every CI shard that filters 'chromium' tests by
       // --grep (Playwright always fully runs a project's dependencies, ignoring --grep/--grep-invert).
       //
-      // Split in two ('workflow e2e (1)'/'workflow e2e (2)') so CI can run them as separate matrix
-      // jobs on separate runner VMs - real CPU isolation, unlike raising Playwright's `workers`
-      // count within a single VM, whose CPU is already mostly consumed by the ES/RabbitMQ/platform
-      // backend containers (measured ~7.6min of shared setup cost is paid again per shard, but each
-      // shard then runs its half of the specs on its own dedicated 4 vCPUs).
-      // Balanced by measured duration: shard 1 carries the long threatAdvisoryHappyFlow.spec.ts.
+      // Split in three so CI can run them as separate matrix jobs on separate runner VMs - real CPU
+      // isolation, unlike raising Playwright's `workers` count within a single VM, whose CPU is
+      // already mostly consumed by the ES/RabbitMQ/platform backend containers (measured ~7.6min of
+      // shared setup cost is paid again per shard, but each shard then runs its slice of specs on
+      // its own dedicated 4 vCPUs).
+      // Balanced by measured duration: threatAdvisoryHappyFlow.spec.ts alone (~14min) is the longest
+      // single file and can't be split further (its two tests share a `describe.serial` block), so
+      // it gets its own shard; the remaining five specs are split ~evenly across the other two.
       name: 'workflow e2e (1)',
       testMatch: [
         'drafts/threatAdvisoryHappyFlow.spec.ts',
-        'drafts/threatAdvisoryRejectionByManagerOrgA.spec.ts',
       ],
       use: {
         ...devices['Desktop Chrome'],
@@ -128,7 +129,23 @@ export default defineConfig({
       testMatch: [
         'drafts/draftsList.spec.ts',
         'drafts/threatAdvisoryOrgSharingRetry.spec.ts',
+      ],
+      use: {
+        ...devices['Desktop Chrome'],
+        trace: 'retain-on-failure',
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+        viewport: {
+          width: 1920,
+          height: 1080
+        }
+      },
+      dependencies: ['init data', 'workflow setup', 'form intake setup'],
+    },
+    {
+      name: 'workflow e2e (3)',
+      testMatch: [
         'drafts/threatAdvisoryRejectionByAnalystOrgC.spec.ts',
+        'drafts/threatAdvisoryRejectionByManagerOrgA.spec.ts',
         'drafts/threatAdvisoryRejectionByManagerOrgC.spec.ts',
       ],
       use: {
