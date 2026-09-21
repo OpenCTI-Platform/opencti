@@ -1,8 +1,15 @@
 import { screen, waitFor } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { QueryRenderer as ReactRelayQueryRenderer, useRelayEnvironment } from 'react-relay';
+import type { QueryRendererProps } from 'react-relay';
+import type { CacheConfig, FetchPolicy, OperationType } from 'relay-runtime';
 import { describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
+
+type MockQueryRendererProps = Omit<QueryRendererProps<OperationType>, 'environment'> & {
+  cacheConfig?: CacheConfig | null;
+  fetchPolicy?: FetchPolicy;
+};
 
 // The app-level QueryRenderer (src/relay/environment.tsx) hardcodes the singleton
 // production `environment`, bypassing the RelayEnvironmentProvider context used by
@@ -11,9 +18,9 @@ vi.mock('../../../../relay/environment', async () => {
   const actual = await vi.importActual<typeof import('../../../../relay/environment')>('../../../../relay/environment');
   return {
     ...actual,
-    QueryRenderer: (props: Record<string, unknown>) => {
+    QueryRenderer: (props: MockQueryRendererProps) => {
       const environment = useRelayEnvironment();
-      return <ReactRelayQueryRenderer environment={environment} {...props} />;
+      return <ReactRelayQueryRenderer<OperationType> environment={environment} {...props} />;
     },
   };
 });
