@@ -46,6 +46,8 @@ def resolve(connector_root=None):
                     data = json.loads(path.read_text(encoding="utf-8"))
                 except (OSError, ValueError):
                     continue
+                if not isinstance(data, dict):
+                    continue
                 version = _clean(data.get("version") or data.get("container_version"))
                 if version:
                     return version, _clean(data.get("slug")), source
