@@ -23,6 +23,7 @@
   "{count} managers": "{count} managers",
   "{count} objects selected": "{count} objects selected",
   "{count} results": "{count} results",
+  "{count} connector update available": "{count} connector update available",
   "{count} tool calls": "{count} tool calls",
   "{count} transfers": "{count} transfers",
   "{count}d ago": "{count}d ago",

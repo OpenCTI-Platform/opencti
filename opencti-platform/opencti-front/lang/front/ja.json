@@ -23,6 +23,7 @@
   "{count} managers": "{count} 件のマネージャ",
   "{count} objects selected": "{count}オブジェクトを選択",
   "{count} results": "{count}件の結果",
+  "{count} connector update available": "{count} 件のコネクタ更新を利用できます",
   "{count} tool calls": "ツール呼び出し {count} 件",
   "{count} transfers": "転送 {count} 件",
   "{count}d ago": "{count} 日前",

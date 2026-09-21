@@ -23,6 +23,7 @@
   "{count} managers": "{count} 个管理器",
   "{count} objects selected": "选择了 {count} 个对象",
   "{count} results": "{count} 个结果",
+  "{count} connector update available": "有 {count} 个连接器更新可用",
   "{count} tool calls": "{count} 次工具调用",
   "{count} transfers": "{count} 次转接",
   "{count}d ago": "{count} 天前",

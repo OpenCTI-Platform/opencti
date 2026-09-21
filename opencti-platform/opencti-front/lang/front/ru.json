@@ -23,6 +23,7 @@
   "{count} managers": "Менеджеров: {count}",
   "{count} objects selected": "выбранные объекты",
   "{count} results": "{count} результатов",
+  "{count} connector update available": "Доступно обновление {count} коннектора",
   "{count} tool calls": "{count} вызовов инструментов",
   "{count} transfers": "{count} передач",
   "{count}d ago": "{count} дн. назад",
