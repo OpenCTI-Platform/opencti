@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.connector.opencti_connector import OpenCTIConnector
 
@@ -26,59 +24,73 @@ def _connector():
 
 def test_register_sends_version_and_slug():
     api = MagicMock()
-    api.query.return_value = {"data": {"registerConnector": {"id": "connector-id"}}}
+    api.query.side_effect = [
+        {
+            "data": {
+                "__type": {
+                    "inputFields": [
+                        {"name": "version"},
+                        {"name": "slug"},
+                    ]
+                }
+            }
+        },
+        {"data": {"registerConnector": {"id": "connector-id"}}},
+    ]
 
     result = OpenCTIApiConnector(api).register(_connector())
 
     assert result == {"id": "connector-id"}
-    variables = api.query.call_args.args[1]
+    variables = api.query.call_args_list[1].args[1]
     assert variables["input"]["version"] == "1.2.3"
     assert variables["input"]["slug"] == "test-connector"
-    api.query.assert_called_once()
+    assert api.query.call_count == 2
 
 
-def test_register_retries_without_version_and_slug_for_older_platform():
+def test_register_omits_version_and_slug_for_older_platform():
     api = MagicMock()
     api.query.side_effect = [
-        ValueError(
-            {
-                "name": "GRAPHQL_VALIDATION_FAILED",
-                "error_message": (
-                    'Field "version" is not defined by type '
-                    '"RegisterConnectorInput".'
-                ),
+        {
+            "data": {
+                "__type": {
+                    "inputFields": [
+                        {"name": "id"},
+                        {"name": "name"},
+                    ]
+                }
             }
-        ),
+        },
         {"data": {"registerConnector": {"id": "connector-id"}}},
     ]
-    connector = _connector()
 
-    result = OpenCTIApiConnector(api).register(connector)
+    result = OpenCTIApiConnector(api).register(_connector())
 
     assert result == {"id": "connector-id"}
-    first_variables = connector.to_input()
-    legacy_variables = connector.to_input()
-    legacy_variables["input"].pop("version")
-    legacy_variables["input"].pop("slug")
-    first_call, second_call = api.query.call_args_list
-    assert first_call.args[0] == second_call.args[0]
-    assert first_call.args[1] == first_variables
-    assert second_call.args[1] == legacy_variables
+    variables = api.query.call_args_list[1].args[1]
+    assert "version" not in variables["input"]
+    assert "slug" not in variables["input"]
     api.app_logger.info.assert_called_once()
 
 
-def test_register_does_not_retry_other_errors():
+def test_register_caches_registration_metadata_support():
     api = MagicMock()
-    error = ValueError(
+    api.query.side_effect = [
         {
-            "name": "VALIDATION_ERROR",
-            "error_message": "Connector version is not a valid semantic version",
-        }
-    )
-    api.query.side_effect = error
+            "data": {
+                "__type": {
+                    "inputFields": [
+                        {"name": "version"},
+                        {"name": "slug"},
+                    ]
+                }
+            }
+        },
+        {"data": {"registerConnector": {"id": "connector-id"}}},
+        {"data": {"registerConnector": {"id": "connector-id"}}},
+    ]
+    api_connector = OpenCTIApiConnector(api)
 
-    with pytest.raises(ValueError) as raised:
-        OpenCTIApiConnector(api).register(_connector())
+    api_connector.register(_connector())
+    api_connector.register(_connector())
 
-    assert raised.value is error
-    api.query.assert_called_once()
+    assert api.query.call_count == 3
