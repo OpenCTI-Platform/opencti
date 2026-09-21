@@ -51,6 +51,19 @@ def test_health_check_refreshes_compatibility():
     api_client = OpenCTIApiClient.__new__(OpenCTIApiClient)
     api_client.app_logger = MagicMock()
     api_client.compatibility = MagicMock()
+    api_client.query = MagicMock(return_value={"data": {"about": {"version": "7.0.0"}}})
 
     assert api_client.health_check() is True
+    api_client.query.assert_called_once()
     api_client.compatibility.refresh.assert_called_once()
+
+
+def test_health_check_succeeds_when_compatibility_refresh_fails():
+    api_client = OpenCTIApiClient.__new__(OpenCTIApiClient)
+    api_client.app_logger = MagicMock()
+    api_client.compatibility = MagicMock()
+    api_client.compatibility.refresh.side_effect = ValueError("Introspection disabled")
+    api_client.query = MagicMock(return_value={"data": {"about": {"version": "7.0.0"}}})
+
+    assert api_client.health_check() is True
+    api_client.app_logger.warning.assert_called_once()

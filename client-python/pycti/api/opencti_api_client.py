@@ -837,11 +837,25 @@ class OpenCTIApiClient:
         """
         try:
             self.app_logger.info("Health check (platform version)...")
-            self.compatibility.refresh()
-            return True
+            test = self.query("""
+                  query healthCheck {
+                    about {
+                      version
+                    }
+                  }
+                """)
+            if test is not None:
+                try:
+                    self.compatibility.refresh()
+                except Exception as err:  # pylint: disable=broad-except
+                    self.app_logger.warning(
+                        "Unable to refresh API compatibility", {"reason": str(err)}
+                    )
+                return True
         except Exception as err:  # pylint: disable=broad-except
             self.app_logger.error(str(err))
             return False
+        return False
 
     def not_empty(self, value):
         """Check if a value is empty for str, list and int.
