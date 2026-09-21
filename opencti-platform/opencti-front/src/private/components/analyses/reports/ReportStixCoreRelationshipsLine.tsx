@@ -77,8 +77,9 @@ const ReportStixCoreRelationshipsLine = ({
     <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      component={Link}
-      to={relationshipLink ?? '#'}
+      component={relationshipLink ? Link : 'div'}
+      disabled={!relationshipLink}
+      {...(relationshipLink ? { to: relationshipLink } : {})}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
