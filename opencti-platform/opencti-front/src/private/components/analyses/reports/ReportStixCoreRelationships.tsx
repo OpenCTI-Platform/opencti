@@ -1,8 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-  stixCoreRelationshipsLinesFragment,
-  stixCoreRelationshipsLinesQuery,
-} from '@components/common/stix_core_relationships/StixCoreRelationships';
+import { stixCoreRelationshipsLinesQuery } from '@components/common/stix_core_relationships/StixCoreRelationships';
 import {
   StixCoreRelationshipsLinesPaginationQuery,
   StixCoreRelationshipsLinesPaginationQuery$variables,
@@ -16,7 +13,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import type { Theme } from '../../../../components/Theme';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import ReportStixCoreRelationshipsLines from './ReportStixCoreRelationshipsLines';
 import type { ReportRelationshipNode } from './ReportStixCoreRelationshipsLine';
@@ -36,7 +32,10 @@ export const buildReportRelationshipsContextFilters = (
   userFilters: FilterGroup | undefined,
 ): FilterGroup => ({
   mode: 'and',
-  filters: [{ key: 'objects', values: [reportId], operator: 'eq', mode: 'or' }],
+  filters: [
+    { key: 'objects', values: [reportId], operator: 'eq', mode: 'or' },
+    { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
+  ],
   filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
 });
 
