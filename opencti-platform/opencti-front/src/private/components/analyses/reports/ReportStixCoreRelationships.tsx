@@ -22,10 +22,8 @@ interface ReportStixCoreRelationshipsProps {
 }
 
 /**
- * Builds the filters sent to `stixCoreRelationships`, scoped to the relationships referenced
- * by the report (rel_object), never entities-to-entities relationships that merely happen to
- * connect two objects of the report. The 'objects' filter is mandatory and stays outside
- * `userFilters` so it can never be widened or removed by the user.
+ * Builds the filters sent to `stixCoreRelationships`, scoped to relationships
+ * that belong to the Report container.
  */
 export const buildReportRelationshipsContextFilters = (
   reportId: string,
@@ -164,7 +162,7 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
           handleClearSelectedElements={handleClearSelectedElements}
           container={{ id: reportId }}
           warning={true}
-          warningMessage={t_i18n('Be careful, you are about to delete the selected relationships')}
+          warningMessage={t_i18n('Be careful, you are about to remove the selected relationships from the container')}
           type="stix-core-relationship"
         />
       </ListLines>
