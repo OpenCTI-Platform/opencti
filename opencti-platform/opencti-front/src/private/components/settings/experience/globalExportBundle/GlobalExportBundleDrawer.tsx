@@ -20,7 +20,7 @@ import ExportBundleCategoryFlat from './ExportBundleCategoryFlat';
 import ExportBundleCategoryPlaceholder from './ExportBundleCategoryPlaceholder';
 import ExportBundleCategoryChecklist from './ExportBundleCategoryChecklist';
 import { EXPORT_INSTANCE_CONFIGS } from './exportBundleInstances';
-import type { PlatformBundleDrawerExportQuery$data } from '../__generated__/PlatformBundleDrawerExportQuery.graphql';
+import { PlatformBundleDrawerExportQuery$data } from '@components/settings/experience/__generated__/PlatformBundleDrawerExportQuery.graphql';
 
 const platformBundleDrawerExportQuery = graphql`
   query PlatformBundleDrawerExportQuery($entityTypes: [String!]!, $selections: [GlobalExportSelectionInput!]) {
