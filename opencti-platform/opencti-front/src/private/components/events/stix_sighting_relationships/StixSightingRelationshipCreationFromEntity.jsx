@@ -16,7 +16,6 @@ import { useState } from 'react';
 import { graphql } from 'react-relay';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
-import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -141,14 +140,13 @@ const StixSightingRelationshipCreationFromEntity = ({
   const [targetEntity, setTargetEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [search, setSearch] = useState('');
   const [commit] = useApiMutation(
     stixSightingRelationshipCreationFromEntityMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Sighting')} ${t_i18n('successfully created')}` },
   );
   const stixDomainObjectsPaginationOptions = {
-    search,
+    search: '',
     types: stixCoreObjectTypes,
     orderBy: 'created_at',
     orderMode: 'desc',
@@ -204,10 +202,6 @@ const StixSightingRelationshipCreationFromEntity = ({
     setTargetEntity(null);
   };
 
-  const handleSearch = (keyword) => {
-    setSearch(keyword);
-  };
-
   const handleSelectEntity = (stixDomainObject) => {
     setStep(1);
     setTargetEntity(stixDomainObject);
@@ -259,7 +253,7 @@ const StixSightingRelationshipCreationFromEntity = ({
     return (
       <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
         handleSelect={handleSelectEntity}
-        search={targetStixCyberObservableTypes?.length > 0 ? search : undefined}
+        entityId={entityId}
         stixCoreObjectTypes={stixCoreObjectTypes}
       />
     );
@@ -279,7 +273,7 @@ const StixSightingRelationshipCreationFromEntity = ({
           stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
         }
         variables={{
-          search,
+          search: '',
           types: targetStixCyberObservableTypes,
           count: 50,
           orderBy: 'created_at',
@@ -317,7 +311,7 @@ const StixSightingRelationshipCreationFromEntity = ({
     const hasObservableResults = targetStixCyberObservableTypes?.length > 0;
     return (
       <Stack gap={2}>
-        {hasObservableResults && search.length === 0 && (
+        {hasObservableResults && (
           <Alert
             severity="info"
             variant="outlined"
@@ -327,14 +321,6 @@ const StixSightingRelationshipCreationFromEntity = ({
               'This panel shows by default the latest created entities, use the search to find more.',
             )}
           </Alert>
-        )}
-        {hasObservableResults && (
-          <div>
-            <SearchInput
-              keyword={search}
-              onSubmit={handleSearch}
-            />
-          </div>
         )}
         {renderSearchResults()}
       </Stack>
@@ -417,10 +403,11 @@ const StixSightingRelationshipCreationFromEntity = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Create a sighting')}
+        containerStyle={{ overflow: 'hidden' }}
         header={step === 0 && (
           <StixDomainObjectCreation
             display={open}
-            inputValue={search}
+            inputValue=""
             paginationOptions={stixDomainObjectsPaginationOptions}
             stixDomainObjectTypes={stixCoreObjectTypes}
             controlledDialStyles={{ float: 'right' }}

@@ -101,7 +101,9 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
   handleSelect,
   search,
   stixCoreObjectTypes,
+  entityId,
 }) => {
+  const storageKey = `${LOCAL_STORAGE_KEY}-${entityId ?? 'unknown'}-${stixCoreObjectTypes.join('-')}`;
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -110,7 +112,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
     openExports: false,
   };
   const { viewStorage, helpers } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
+    storageKey,
     initialValues,
     true,
   );
@@ -147,7 +149,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
         },
       }}
       resolvePath={(data) => data.stixDomainObjects?.edges?.map((edge) => edge?.node)}
-      storageKey={LOCAL_STORAGE_KEY}
+      storageKey={storageKey}
       initialValues={initialValues}
       contextFilters={contextFilters}
       preloadedPaginationProps={{
@@ -162,7 +164,6 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
       disableNavigation
       disableLineSelection
       disableColumnMenu
-      hideSearch={search !== undefined}
       hideSavedFilters
       onLineClick={handleSelect}
       icon={(row) => (
