@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildDenormalizedRefsScriptParams, buildLocalMustFilter, buildReplaceScriptParams, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
+import { buildDenormalizedRefsScriptParams, buildReplaceScriptParams, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
+import { buildLocalMustFilter } from '../../../src/database/engine-query-builder';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import * as engineConfig from '../../../src/database/engine-config';

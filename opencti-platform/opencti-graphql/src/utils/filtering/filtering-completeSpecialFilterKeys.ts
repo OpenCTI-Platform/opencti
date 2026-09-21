@@ -56,7 +56,8 @@ import { authorizedMembers, type ComplexAttribute } from '../../schema/attribute
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
-import { computeQueryIndices, elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
+import { elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
+import { computeQueryIndices } from '../../database/engine-query-builder';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { isUserHasCapability, PIRAPI } from '../access';
