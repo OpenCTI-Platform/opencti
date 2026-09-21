@@ -1,6 +1,6 @@
 # Entities
 
-OpenCTI's Entity objects provide a comprehensive framework for modeling various targets and attack victims within your threat intelligence data. With five distinct Entity object types, you can represent sectors, events, organizations, systems, and individuals. This robust classification empowers you to contextualize threats effectively, enhancing the depth and precision of your analysis.
+OpenCTI's Entity objects provide a comprehensive framework for modeling various targets and attack victims within your threat intelligence data. With five distinct Entity object types, you can represent sectors, events, organizations, systems, individuals, and citizenship documents. This robust classification empowers you to contextualize threats effectively, enhancing the depth and precision of your analysis.
 
 When you click on "Entities" in the left-side bar, you access all the "Entities" tabs, visible on the top bar on the left. By default, the user directly access the "Sectors" tab, but can navigate to the other tabs as well.
 
@@ -11,6 +11,7 @@ From the `Entities` section, users can access the following tabs:
 - `Organizations`: groups with specific aims such as companies and government entities.
 - `Systems`: technologies such as platforms and software.
 - `Individuals`: real persons.
+- `CitizenshipDocuments`: an official record or certificate that proves a person belongs to a specific country and holds the rights and responsibilities of a citizen.
 
 
 ## Sectors
@@ -148,3 +149,32 @@ Furthermore, an Individual can be observed from an "Author" perspective. It is p
 - Overview: The "Latest created relationships" and "Latest containers about the object" panels are replaced by the "Latest containers authored by this entity" panel.
 - Knowledge: A tab that presents an overview of the data authored by the Individual (i.e. counters and a graph).
 - Analyses: The list of all Analyses (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) for which the Individual is the author.
+
+
+## Citizenship Documents
+
+### General presentation
+
+Citizenship Documents are official records issued by a government that prove a person’s legal status as a citizen of that country. These documents are used to verify identity, nationality, and eligibility for rights and benefits associated with citizenship. This category includes targeted, use, and forgery of citizenship documents. Modeling citizenship documents enables you to analyze threats related to specific people and their identity, enhancing investigations into identity theift, impersonation, or other targeted attacks.
+
+Common examples include:
+- A birth certificate showing birth within the country
+- A naturalization certificate
+- A certificate of citizenship
+- A passport
+- A drivers license 
+- Consular Report of Birth Abroad (CRBA) for individuals born overseas to citizen parents
+
+When clicking on the Citizenship Documents tab at the top left, you see the list of all the Citizenship Documents you have access to, in respect with your [allowed marking definitions](../administration/users.md).
+
+### Visualizing Knowledge associated with an Citizenship Documents
+
+When clicking on an `Citizenship Documents` in the list, you land on its Overview tab. For an Citizenship Document, the following tabs are accessible:
+
+- Overview: as described [here](overview.md#overview-section).
+- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Citizenship Document. Different thematic views are proposed to easily see the related entities, the threats, the locations, etc. linked to the Citizenship Document. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to preview, manage and write deliverable associated with the Citizenship Document. For example an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
+- Analyses: as described [here](overview.md#analyses-section).
+- Sightings: a table containing all `Sightings` relationships corresponding to Citizenship Documents in which an `Indicator` (IP, domain name, url, etc.) is sighted during an attack against the Citizenship Document.
+- Data: as described [here](overview.md#data-section).
+- History: as described [here](overview.md#history-section).
