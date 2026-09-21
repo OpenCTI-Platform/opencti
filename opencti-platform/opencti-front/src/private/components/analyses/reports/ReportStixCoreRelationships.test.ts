@@ -3,7 +3,7 @@ import { buildReportRelationshipsContextFilters } from './ReportStixCoreRelation
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 describe('buildReportRelationshipsContextFilters', () => {
-  it('scopes the query to the report objects, with no user filters', () => {
+  it('keeps the relationship type constraint, with no user filters', () => {
     const result = buildReportRelationshipsContextFilters('report-id', undefined);
 
     expect(result).toEqual({
@@ -16,7 +16,7 @@ describe('buildReportRelationshipsContextFilters', () => {
     });
   });
 
-  it('keeps the report membership filter mandatory, nesting user filters instead of merging them', () => {
+  it('keeps user filters nested under the relationship type constraint', () => {
     const userFilters: FilterGroup = {
       mode: 'or',
       filters: [{ key: 'relationship_type', values: ['uses'], operator: 'eq', mode: 'or' }],
@@ -30,8 +30,7 @@ describe('buildReportRelationshipsContextFilters', () => {
       { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
     ]);
     expect(result.filterGroups).toEqual([userFilters]);
-    // The mandatory filter and the user filters are combined with AND: user filters,
-    // however permissive ('or' mode), can never widen the query outside the report.
+    // The relationship type filter and user filters are combined with AND.
     expect(result.mode).toEqual('and');
   });
 

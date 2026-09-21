@@ -53,10 +53,10 @@ const waitForBackgroundTaskComplete = async (request: Parameters<typeof graphqlQ
 /**
  * Content of the test
  * -------------------
- * Create a relationship and a report referencing it (via the API, for speed and determinism).
+ * Create a relationship and a report referencing it (via the API).
  * Open the report's Relationships tab.
  * Check that the referenced relationship is listed.
- * Check that removing the report does not remove the relationship itself.
+ * Check that deleting the report does not remove the relationship itself.
  */
 test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page, request }) => {
   const leftNavigation = new LeftBarPage(page);
@@ -73,7 +73,10 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
   const relationshipId = (await relationshipResponse.json()).data.stixCoreRelationshipAdd.id;
 
   const reportName = `Report with relationships - ${uuid()}`;
-  const reportResponse = await addReport(request, { name: reportName, objects: [relationshipId] });
+  const reportResponse = await addReport(request, {
+    name: reportName,
+    objects: [relationshipId],
+  });
   const reportId = (await reportResponse.json()).data.reportAdd.id;
 
   try {
@@ -117,9 +120,9 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
  * Content of the test
  * -------------------
  * Create a relationship and a report referencing it (via the API).
- * Select it in the Relationships tab and launch the "Remove from the container" bulk action.
+ * Select it in the Relationships tab and launch the remove-from-container bulk action.
  * Wait for the background task to complete.
- * Check the relationship is no longer listed in the report, but still exists globally.
+ * Check the relationship is removed from the Report but still exists globally.
  */
 test('Report relationships tab - bulk remove from container', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page, request }) => {
   test.setTimeout(300_000);
@@ -137,7 +140,10 @@ test('Report relationships tab - bulk remove from container', { tag: ['@report',
   const relationshipId = (await relationshipResponse.json()).data.stixCoreRelationshipAdd.id;
 
   const reportName = `Report with relationships for bulk remove - ${uuid()}`;
-  const reportResponse = await addReport(request, { name: reportName, objects: [relationshipId] });
+  const reportResponse = await addReport(request, {
+    name: reportName,
+    objects: [relationshipId],
+  });
   const reportId = (await reportResponse.json()).data.reportAdd.id;
 
   try {
@@ -159,12 +165,12 @@ test('Report relationships tab - bulk remove from container', { tag: ['@report',
 
     await page.getByRole('checkbox', { name: 'Select line' }).first().click();
     const toolbar = page.getByTestId('opencti-toolbar');
-    await toolbar.getByRole('button', { name: 'remove' }).click();
     const taskResponsePromise = page.waitForResponse((response) => (
       response.url().endsWith('/graphql')
       && response.request().method() === 'POST'
       && response.request().postData()?.includes('listTaskAdd') === true
     ));
+    await toolbar.getByRole('button', { name: 'remove' }).click();
     await page.getByRole('button', { name: 'Launch' }).click();
     const taskResponse = await taskResponsePromise;
     const taskPayload = await taskResponse.json();
@@ -180,7 +186,7 @@ test('Report relationships tab - bulk remove from container', { tag: ['@report',
     await reportDetailsPage.tabs.goToRelationshipsTab();
     await expect(page.getByText('targets', { exact: true })).toBeHidden();
 
-    // The relationship must still exist globally: it was only removed from the report.
+    // The relationship was removed from the Report but remains globally available.
     const survivingRelationship = await graphqlQuery(request, `
       query {
         stixCoreRelationship(id: "${relationshipId}") {
