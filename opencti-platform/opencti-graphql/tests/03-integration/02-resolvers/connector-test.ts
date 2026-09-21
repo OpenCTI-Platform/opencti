@@ -127,6 +127,7 @@ const READ_CONNECTOR_QUERY = gql`
       connector_type
       connector_scope
       connector_state
+      version
       connector_queue_details {
         messages_number
         messages_size
@@ -301,6 +302,19 @@ describe('Connector resolver standard behaviour', () => {
   });
 
   it('should reject connector registration with an invalid semver version', async () => {
+    const VALID_CONNECTOR = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: 'rolling',
+      },
+    };
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: CREATE_CONNECTOR_QUERY, variables: VALID_CONNECTOR });
+
     const CONNECTOR_TO_CREATE = {
       input: {
         id: TEST_CN_ID,
@@ -314,6 +328,11 @@ describe('Connector resolver standard behaviour', () => {
     };
     const queryResult = await queryAsAdmin({ query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
     expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors).toHaveLength(1);
+    expect(queryResult.errors?.[0].message).toBe('Connector version is not a valid semantic version');
+
+    const persistedConnector = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    expect(persistedConnector.data.connector.version).toEqual('rolling');
   });
 
   it('should legacy ping still works (without connector_info)', async () => {
