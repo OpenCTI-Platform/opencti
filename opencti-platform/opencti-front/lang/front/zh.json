@@ -784,6 +784,7 @@
   "Connector catalog | Ingestion | Data": "连接器目录 | 输入 | 数据",
   "Connector catalogs": "连接器目录",
   "Connector configuration": "连接器配置",
+  "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "连接器的部署需要 OpenCTI 企业版。在社区版中，此配置为只读。",
   "Connector name": "连接器名称",
   "Connector type": "连接器类型",
   "Connector types": "连接器类型数",

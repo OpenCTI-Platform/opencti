@@ -784,6 +784,7 @@
   "Connector catalog | Ingestion | Data": "커넥터 카탈로그 | 수집 | 데이터",
   "Connector catalogs": "커넥터 카탈로그",
   "Connector configuration": "커넥터 구성",
+  "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "커넥터를 배포하려면 OpenCTI Enterprise Edition이 필요합니다. Community Edition에서는 이 구성이 읽기 전용입니다.",
   "Connector name": "커넥터 이름",
   "Connector type": "커넥터 유형",
   "Connector types": "커넥터 유형 수",
