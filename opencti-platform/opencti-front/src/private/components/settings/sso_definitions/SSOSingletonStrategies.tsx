@@ -100,7 +100,13 @@ const SSOSingletonStrategiesContent = () => {
               label={isEnabled ? t_i18n('Active') : t_i18n('Disabled')}
               status={isEnabled}
             />
-            {showEE && <span onClickCapture={(e) => e.stopPropagation()}><EEChip /></span>}
+            {showEE && (
+              // This wrapper only stops the click from bubbling up to the
+              // row's own click handler; EEChip's own onClick already
+              // handles activation and stops propagation itself.
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+              <span onClick={(e) => e.stopPropagation()}><EEChip /></span>
+            )}
             {showCertHttpsInfo && (
               <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
                 <IconButton
