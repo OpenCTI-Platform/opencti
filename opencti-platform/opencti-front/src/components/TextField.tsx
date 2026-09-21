@@ -8,7 +8,11 @@ import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 import useAI from '../utils/hooks/useAI';
 
-export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
+// MUI's own `ref` (via `FormControlProps`) points at the root `<div>`, but this
+// component forwards its ref to the actual `<input>` instead — the two are
+// incompatible, so the inherited one is dropped in favour of `RefAttributes<HTMLInputElement>`
+// (added automatically by `React.forwardRef` below).
+export type TextFieldProps = Omit<FieldProps<string> & MuiTextFieldProps, 'ref'> & {
   detectDuplicate?: string[];
   askAi?: boolean;
   startAdornment?: ReactNode;
@@ -21,10 +25,25 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   endIcon?: React.ComponentProps<typeof Input>['endIcon'];
   /** Slot beside the label; the only place an info icon can go once a number field owns the trailing slot. */
   infoTooltip?: React.ComponentProps<typeof Input>['infoTooltip'];
+  /**
+   * Formik's `<Field component={...}>` only turns `innerRef` into a real `ref`
+   * when `component` is a DOM tag string — for a custom component like this one
+   * it is passed through as a plain prop instead, so it must be handled here.
+   */
+  innerRef?: (instance: HTMLInputElement | null) => void;
 };
 
-const TextField = (props: TextFieldProps) => {
-  const { detectDuplicate, onBeforePaste, startAdornment, askAi, endIcon, infoTooltip, ...htmlProps } = props;
+const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>((props, forwardedRef) => {
+  // autoFocus is destructured out and never forwarded: jsx-a11y/no-autofocus
+  // forbids it as a generic escape hatch. Callers that need focus-on-mount
+  // should use `ref`/`innerRef` (Formik's Field prop) and focus it themselves,
+  // typically from a Dialog's `slotProps.transition.onEntered`.
+  const { detectDuplicate, onBeforePaste, startAdornment, askAi, endIcon, infoTooltip, innerRef, autoFocus: _autoFocus, ...htmlProps } = props;
+  const setRef = useCallback((node: HTMLInputElement | null) => {
+    if (typeof forwardedRef === 'function') forwardedRef(node);
+    else if (forwardedRef) forwardedRef.current = node;
+    innerRef?.(node);
+  }, [forwardedRef, innerRef]);
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
@@ -124,7 +143,7 @@ const TextField = (props: TextFieldProps) => {
   // Props the design-system Input can actually place.
   const placeable = new Set([
     'id', 'name', 'type', 'label', 'required', 'placeholder', 'disabled',
-    'autoFocus', 'className', 'value', 'error', 'helperText', 'variant',
+    'className', 'value', 'error', 'helperText', 'variant',
     'fullWidth', 'onChange', 'onFocus', 'onBlur', 'onKeyDown', 'onSubmit',
   ]);
   // Native <input> attributes are placeable too: the Input spreads them onto
@@ -156,6 +175,7 @@ const TextField = (props: TextFieldProps) => {
   if (!outOfContract) {
     return (
       <Input
+        ref={setRef}
         id={props.id}
         name={name}
         type={props.type as 'text' | 'password' | 'number' | 'email' | undefined}
@@ -166,7 +186,6 @@ const TextField = (props: TextFieldProps) => {
         required={props.required}
         placeholder={props.placeholder}
         disabled={props.disabled}
-        autoFocus={props.autoFocus}
         className={props.className}
         value={(value as string) ?? ''}
         error={showError ? (meta.error as string) : undefined}
@@ -185,6 +204,7 @@ const TextField = (props: TextFieldProps) => {
   return (
     <MuiTextField
       {...otherProps}
+      inputRef={setRef}
       value={value ?? ''}
       error={showError}
       helperText={showError ? meta.error : helper}
@@ -201,6 +221,8 @@ const TextField = (props: TextFieldProps) => {
       }}
     />
   );
-};
+});
+
+TextField.displayName = 'TextField';
 
 export default TextField;
