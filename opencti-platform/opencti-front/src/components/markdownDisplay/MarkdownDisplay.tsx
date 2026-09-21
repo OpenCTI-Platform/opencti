@@ -13,6 +13,7 @@ import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/core/markdownImagePre
 import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
 import { normalizeEmbeddedImageDestinations, resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
 import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
+import { useFormatter } from '../i18n';
 
 const markdownStyle: React.CSSProperties = {
   overflowWrap: 'break-word',
@@ -95,6 +96,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   enableImagePreviewModal = false,
 }) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
@@ -171,6 +173,10 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
             event.stopPropagation();
             setPreviewImageIndex(imageIndex);
           }}
+          // A valid Markdown image can have an empty alt (`![](url)`); once
+          // wrapped in a button, that would leave a focusable control with
+          // no accessible name, so fall back to a generic translated label.
+          aria-label={alt || t_i18n('Image preview')}
           style={{
             border: 'none',
             padding: 0,
