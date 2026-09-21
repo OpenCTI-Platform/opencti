@@ -57,7 +57,11 @@ export default class FiltersPageModel {
   }
 
   async removeLastFilter() {
-    await expect(this.root.getByTestId('CancelIcon').last()).toBeVisible();
-    await this.root.getByTestId('CancelIcon').last().click({ force: true });
+    // The filter chip's remove button used to be MUI Chip's default
+    // mouse-only deleteIcon (CancelIcon); it is now a real, keyboard-focusable
+    // IconButton with an explicit aria-label, so target that instead.
+    const removeFilterButton = this.root.getByRole('button', { name: 'Remove filter' }).last();
+    await expect(removeFilterButton).toBeVisible();
+    await removeFilterButton.click({ force: true });
   }
 }
