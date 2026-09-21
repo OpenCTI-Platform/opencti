@@ -15,7 +15,7 @@ import conf, {
 } from './config/conf';
 import httpServer from './http/httpServer';
 import expiredManager from './manager/expiredManager';
-import connectorManager from './manager/connectorManager';
+import connectorManager from './modules/connector/connector-manager';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './connector/importCsv/importCsv-configuration';
 import importCsvConnector from './connector/importCsv/importCsv-connector';
 import taskManager from './manager/taskManager';
