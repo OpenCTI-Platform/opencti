@@ -15,6 +15,7 @@
 // intents: a producer that is itself deferred still counts as "certain, pending".
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerMetrics } from './sequencer-metrics';
+import { intentOwnIds } from './sequencer-intent';
 import type { SequencerIntent } from './sequencer-intent';
 
 export interface LaneEntry {
@@ -80,7 +81,7 @@ export class DeferredLanes {
     if (lane) lane.push(entry); else this.lanes.set(laneKey, [entry]);
     this.count += 1;
     this.bytes += intent.sizeBytes;
-    intent.candidateIds.forEach((id) => this.residents.set(id, (this.residents.get(id) ?? 0) + 1));
+    intentOwnIds(intent).forEach((id) => this.residents.set(id, (this.residents.get(id) ?? 0) + 1)); // own ids (fix 2026-09-21)
     if (entry.waitingOn.size > 0) {
       this.waiting += 1;
       entry.waitingOn.forEach((id) => {
@@ -142,7 +143,7 @@ export class DeferredLanes {
       if (lane.length === 0) this.lanes.delete(laneKey);
       this.count -= 1;
       this.bytes -= head.intent.sizeBytes;
-      head.intent.candidateIds.forEach((id) => {
+      intentOwnIds(head.intent).forEach((id) => {
         const current = this.residents.get(id);
         if (current === undefined) return;
         if (current <= 1) this.residents.delete(id); else this.residents.set(id, current - 1);

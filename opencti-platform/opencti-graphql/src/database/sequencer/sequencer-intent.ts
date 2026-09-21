@@ -95,3 +95,17 @@ export const buildIntent = (args: BuildIntentArgs): SequencerIntent => {
     promise,
   };
 };
+
+// Own identity vs endpoint references (2026-09-21). A relation's candidateIds carry its
+// endpoints (fromId, toId: cheap intake candidates, plan B2), which is right for lock keys
+// and pre-resolution but wrong wherever "who produces id X" is asked: a relation is never
+// the producer of its endpoints, and its endpoints are dependencies, not own ids.
+export const intentEndpointIds = (intent: SequencerIntent): string[] => {
+  if (intent.kind !== 'relation') return [];
+  return [intent.input.fromId, intent.input.toId].filter((id): id is string => typeof id === 'string' && id.length > 0);
+};
+
+export const intentOwnIds = (intent: SequencerIntent): string[] => {
+  const endpoints = new Set(intentEndpointIds(intent));
+  return endpoints.size === 0 ? intent.candidateIds : intent.candidateIds.filter((id) => !endpoints.has(id));
+};

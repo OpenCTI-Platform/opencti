@@ -330,3 +330,44 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(plan.parked).toEqual([]);
   });
 });
+
+// Fix 2026-09-21: intake-shaped relations (candidateIds carry stix id AND fromId/toId) must
+// still plan their endpoints. Every test above passes candidateIds: [] for relations, which
+// hid the defect: the own-id filter on candidateIds dropped every endpoint dependency.
+describe('sequencer batch plan: relation endpoints with intake-shaped candidate ids', () => {
+  const relOf = (from: string, to: string, stixId: string, extra: Record<string, any> = {}) => intentOf({
+    kind: 'relation',
+    input: { fromId: from, toId: to, stix_id: stixId },
+    candidateIds: [stixId, from, to],
+    referencedIds: [from, to],
+    ...extra,
+  });
+  const orgResolved = (id: string) => (id === 'identity--org' ? 'int-org' : null);
+
+  it('orders a relation after its in-batch endpoint producer, with a dependsOn edge', () => {
+    const malware = intentOf({ kind: 'entity', input: { name: 'M' }, candidateIds: ['malware--m', 'malware--m-stix'] });
+    const rel = relOf('malware--m-stix', 'identity--org', 'relationship--1');
+    const plan = buildBatchPlan([rel, malware], orgResolved);
+    const pos = (i: any) => plan.order.findIndex((g) => g.leader === i);
+    expect(pos(malware)).toBeLessThan(pos(rel));
+    expect(plan.order[pos(rel)].dependsOn).toEqual([pos(malware)]);
+  });
+
+  it('never admits a relation whose endpoint is absent: queued producer defers, declared member waits, external parks', () => {
+    const queued = relOf('malware--q', 'identity--org', 'relationship--q');
+    const member = relOf('malware--w', 'identity--org', 'relationship--w', { memberRefIds: new Set(['malware--w']) });
+    const external = relOf('malware--x', 'identity--org', 'relationship--x');
+    const plan = buildBatchPlan([queued, member, external], orgResolved, new Set(), { queueHas: (id) => id === 'malware--q', memberWaitLimit: 2 });
+    expect(plan.order).toEqual([]);
+    expect(plan.deferred.map((d) => [d.intent, d.reason])).toEqual([[queued, 'queued_producer'], [member, 'member_wait']]);
+    expect(plan.parked.map((p) => p.intent)).toEqual([external]);
+  });
+
+  it('a relation is never the producer of its endpoints for another relation', () => {
+    const r1 = relOf('malware--m', 'identity--org', 'relationship--1');
+    const r2 = relOf('malware--m', 'identity--other', 'relationship--2');
+    const plan = buildBatchPlan([r1, r2], (id) => (id.startsWith('identity--') ? `int-${id}` : null), new Set(), { queueHas: () => false });
+    expect(plan.order).toEqual([]);
+    expect(plan.parked.map((p) => p.intent)).toEqual([r1, r2]);
+  });
+});

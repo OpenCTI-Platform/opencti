@@ -15,6 +15,7 @@
 //     unresolved with no in-batch producer -> parked (the loop holds it until a later batch
 //     resolves it or its deadline passes, then applies it through the unchanged path).
 // Cycles are broken by (phase, arrival) order; a parked intent always has a deadline.
+import { intentEndpointIds, intentOwnIds } from './sequencer-intent';
 import type { SequencerIntent } from './sequencer-intent';
 
 export interface CoalesceGroup {
@@ -115,16 +116,20 @@ export const canonicalKey = (intent: SequencerIntent, resolveId: (id: string) =>
 const AUTO_CREATED_REF_PREFIXES = ['label--', 'external-reference--', 'kill-chain-phase--', 'vocabulary--'];
 const isAutoCreatedRef = (id: string): boolean => AUTO_CREATED_REF_PREFIXES.some((prefix) => id.startsWith(prefix));
 
+// Fix 2026-09-21: the own set is the intent's OWN ids, never its endpoints. candidateIds
+// carry fromId/toId for relations (intake shape, plan B2), so filtering on candidateIds
+// dropped every endpoint from the hard dependencies: relations were admitted with absent
+// endpoints, failed at apply (MISSING_REFERENCE) and went through retention. Found on
+// MITRE at chunk 48 (601 retained per run, all relation endpoints, probe 2026-09-21).
 const hardDependencyIds = (intent: SequencerIntent): string[] => {
-  if (intent.kind !== 'relation') return [];
-  const own = new Set(intent.candidateIds);
-  return [intent.input.fromId, intent.input.toId]
-    .filter((id) => typeof id === 'string' && id.length > 0 && !own.has(id));
+  const own = new Set(intentOwnIds(intent));
+  return intentEndpointIds(intent).filter((id) => !own.has(id));
 };
 
 const softDependencyIds = (intent: SequencerIntent): string[] => {
-  const own = new Set(intent.candidateIds);
-  return intent.referencedIds.filter((id) => typeof id === 'string' && id.length > 0 && !own.has(id));
+  const own = new Set(intentOwnIds(intent));
+  const endpoints = new Set(intentEndpointIds(intent)); // hard, handled above
+  return intent.referencedIds.filter((id) => typeof id === 'string' && id.length > 0 && !own.has(id) && !endpoints.has(id));
 };
 
 // P2 (plan 0009 s9.7): a same-target intent with a different input chains behind the
@@ -298,7 +303,8 @@ export const buildBatchPlan = (
   // order after step 1, which provides existence.
   const producers = new Map<string, number>();
   groups.forEach((group, index) => {
-    group.leader.candidateIds.forEach((id) => {
+    // own ids only (fix 2026-09-21): a relation is not the producer of its endpoints
+    intentOwnIds(group.leader).forEach((id) => {
       if (!producers.has(id)) producers.set(id, index);
     });
   });

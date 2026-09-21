@@ -35,7 +35,7 @@ import { SEQUENCER_CONFIG } from './sequencer-config';
 import { DeferredLanes } from './sequencer-lanes';
 import { sequencerMetrics } from './sequencer-metrics';
 import { SequencerQueue } from './sequencer-queue';
-import { buildIntent } from './sequencer-intent';
+import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { setCurrentBatchLock } from './sequencer-batch-lock';
@@ -475,7 +475,8 @@ const runBatchLoop = async () => {
     lanes.defer(laneKey, intent, waitingOn);
   };
   const laneAdmitCap = Math.max(1, Math.floor(SEQUENCER_CONFIG.maxBatchSize * SEQUENCER_CONFIG.deferredReadmitRatio));
-  const settledIds = (intents: SequencerIntent[]): string[] => intents.flatMap((i) => i.candidateIds);
+  // own ids only (fix 2026-09-21): a settled relation does not wake the waiters of its endpoints
+  const settledIds = (intents: SequencerIntent[]): string[] => intents.flatMap((i) => intentOwnIds(i));
   let parked: ParkedIntent[] = [];
   let rootFailureSamples = 0; // s9.9.3 bounded root-attribution sampling
   // resolve-ahead: intents grabbed from the queue during the previous batch's commit,
@@ -559,7 +560,7 @@ const runBatchLoop = async () => {
     // this batch at all. Says whether a batch-local written index has anything to close.
     let batchOwnIds: Set<string> | null = null;
     const classifyMissing = (missing: string[], outcome: 'parked' | 'deferred' | 'failed' | 'final') => {
-      const own = batchOwnIds ?? new Set<string>(plan.order.flatMap((g) => [g.leader, ...g.absorbed].flatMap((i) => i.candidateIds)));
+      const own = batchOwnIds ?? new Set<string>(plan.order.flatMap((g) => [g.leader, ...g.absorbed].flatMap((i) => intentOwnIds(i))));
       batchOwnIds = own;
       const written = new Set(writtenIds);
       missing.forEach((id) => {
@@ -602,7 +603,7 @@ const runBatchLoop = async () => {
       }
       sequencerMetrics.intent('failed', intent.kind);
       intent.reject(err);
-      lanes.wake(intent.candidateIds, 'failed');
+      lanes.wake(intentOwnIds(intent), 'failed');
     });
     // s9.10.2: dead SOFT member refs were stripped in the plan; the intents apply without
     // them. Counted per stripped id; first occurrences sampled for live diagnosis.
@@ -782,16 +783,7 @@ const runBatchLoop = async () => {
         // apply_concurrency. The apply phase is then recorded once per batch (wall time).
         const tApply = Date.now();
         const groupIntents = (i: number) => [plan.order[i].leader, ...plan.order[i].absorbed];
-        const ownIdsOf = (i: number) => {
-          const ids = new Set<string>();
-          groupIntents(i).forEach((it) => {
-            const endpoints = it.kind === 'relation' ? new Set([it.input.fromId, it.input.toId]) : new Set();
-            it.candidateIds.forEach((id) => {
-              if (!endpoints.has(id)) ids.add(id);
-            });
-          });
-          return ids;
-        };
+        const ownIdsOf = (i: number) => new Set<string>(groupIntents(i).flatMap((it) => intentOwnIds(it)));
         const refIdsOf = (i: number) => {
           const ids = new Set<string>();
           groupIntents(i).forEach((it) => {

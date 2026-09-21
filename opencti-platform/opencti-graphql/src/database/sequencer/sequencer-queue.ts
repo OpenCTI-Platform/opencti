@@ -4,6 +4,7 @@
 // round-robin by source (applicant_id) so one flooding connector cannot starve the others.
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerMetrics } from './sequencer-metrics';
+import { intentOwnIds } from './sequencer-intent';
 import type { SequencerIntent } from './sequencer-intent';
 
 export class SequencerQueue {
@@ -50,14 +51,16 @@ export class SequencerQueue {
     return this.candidateIndex.has(id);
   }
 
+  // the index answers "is a PRODUCER of id X queued": own ids only, a queued relation
+  // does not stand for its endpoints (fix 2026-09-21)
   private indexAdd(intent: SequencerIntent) {
-    intent.candidateIds.forEach((id) => {
+    intentOwnIds(intent).forEach((id) => {
       this.candidateIndex.set(id, (this.candidateIndex.get(id) ?? 0) + 1);
     });
   }
 
   private indexRemove(intent: SequencerIntent) {
-    intent.candidateIds.forEach((id) => {
+    intentOwnIds(intent).forEach((id) => {
       const current = this.candidateIndex.get(id);
       if (current === undefined) return;
       if (current <= 1) this.candidateIndex.delete(id);
