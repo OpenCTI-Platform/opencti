@@ -142,6 +142,15 @@ const StixCoreObjectFileExportForm = ({
     }
   }, [isOpen]);
 
+  // Focus the connector field once step 2 mounts (clicking a format Card in
+  // step 1 sets stepIndex synchronously, so unlike a Dialog's own open
+  // transition there's no animated mount to race here).
+  useEffect(() => {
+    if (isOpen && stepIndex === 1) {
+      document.getElementById('stix-core-object-file-export-connector-input')?.focus();
+    }
+  }, [isOpen, stepIndex]);
+
   const handleSelectedContentMaxMarkingsChange = (
     values: FieldOption[] | undefined,
     setFieldValue: (field: string, value: unknown) => void,
@@ -462,13 +471,13 @@ const StixCoreObjectFileExportForm = ({
                   <Field
                     component={ComboboxField}
                     name="connector"
+                    id="stix-core-object-file-export-connector-input"
                     disabled={!values.format}
                     style={fieldSpacingContainerStyle}
                     options={connectors}
                     isOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
                     renderOption={(option: FieldOption) => option.label}
                     label={t_i18n('Connector')}
-                    autoFocus
                   />
                   {values.connector && (
                     <>
