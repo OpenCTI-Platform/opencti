@@ -568,6 +568,7 @@
   "Be careful, you are about to delete the selected entities": "Attention, vous êtes sur le point de supprimer les entités sélectionnées",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Attention, vous êtes sur le point de supprimer les entités sélectionnées (pas les relations)",
   "Be careful, you are about to delete the selected relationships": "Attention, vous êtes sur le point de supprimer les relations sélectionnées",
+  "Be careful, you are about to remove the selected relationships from the container": "Attention, vous êtes sur le point de retirer les relations sélectionnées du conteneur",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Attention, vous êtes sur le point de supprimer les observables sélectionnés (pas les relations)",
   "Bearer token": "Token d'authentification",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "En effet, par défaut, le brouillon n'inclut pas les mises à jour apportées à l'entité après la création du tableau de bord.",

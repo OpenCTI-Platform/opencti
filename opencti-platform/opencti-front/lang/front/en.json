@@ -568,6 +568,7 @@
   "Be careful, you are about to delete the selected entities": "Be careful, you are about to delete the selected entities",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Be careful, you are about to delete the selected entities (not the relationships)",
   "Be careful, you are about to delete the selected relationships": "Be careful, you are about to delete the selected relationships",
+  "Be careful, you are about to remove the selected relationships from the container": "Be careful, you are about to remove the selected relationships from the container",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Be careful, you are about to delete the selected observables (not the relationships)",
   "Bearer token": "Bearer token",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "Because by default the draft won't include the updates made on the entity after the creation of the workbench.",

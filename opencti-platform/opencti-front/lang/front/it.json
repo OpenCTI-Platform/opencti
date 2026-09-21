@@ -568,6 +568,7 @@
   "Be careful, you are about to delete the selected entities": "Attenzione, stai per eliminare le entità selezionate",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Attenzione, stai per eliminare le entità selezionate (non le relazioni)",
   "Be careful, you are about to delete the selected relationships": "Attenzione, stai per eliminare le relazioni selezionate",
+  "Be careful, you are about to remove the selected relationships from the container": "Attenzione, stai per rimuovere le relazioni selezionate dal contenitore",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Attenzione, stai per eliminare gli osservabili selezionati (non le relazioni)",
   "Bearer token": "Token Bearer",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "Questo perché, per impostazione predefinita, la bozza non includerà gli aggiornamenti apportati all'entità dopo la creazione del workbench.",

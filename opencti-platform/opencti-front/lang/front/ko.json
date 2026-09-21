@@ -568,6 +568,7 @@
   "Be careful, you are about to delete the selected entities": "주의하십시오, 선택한 엔터티를 삭제하려고 합니다",
   "Be careful, you are about to delete the selected entities (not the relationships)": "주의하십시오, 선택한 엔터티를 삭제하려고 합니다 (관계는 제외)",
   "Be careful, you are about to delete the selected relationships": "주의하십시오, 선택한 관계를 삭제하려고 합니다",
+  "Be careful, you are about to remove the selected relationships from the container": "주의하십시오, 선택한 관계를 컨테이너에서 제거하려고 합니다",
   "Be careful, you are about to delete the selected observables (not the relationships)": "주의하십시오, 선택한 관찰 가능 항목을 삭제하려고 합니다 (관계는 제외)",
   "Bearer token": "베어러 토큰",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "기본적으로 초안에는 워크벤치 생성 후 엔티티에 적용된 업데이트 내용이 포함되지 않기 때문입니다.",

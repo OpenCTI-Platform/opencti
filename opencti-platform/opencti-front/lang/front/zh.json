@@ -568,6 +568,7 @@
   "Be careful, you are about to delete the selected entities": "小心，您将删除选定的实体",
   "Be careful, you are about to delete the selected entities (not the relationships)": "小心，您将删除选定的实体（而不是关系）",
   "Be careful, you are about to delete the selected relationships": "小心，您将删除选定的关系",
+  "Be careful, you are about to remove the selected relationships from the container": "小心，您将从容器中移除选定的关系",
   "Be careful, you are about to delete the selected observables (not the relationships)": "小心，您将删除所选的可观察对象（而不是关系）",
   "Bearer token": "承载令牌",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "因为默认情况下，草稿不会包含在工作台创建后对该实体所做的更新。",

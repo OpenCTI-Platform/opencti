@@ -568,6 +568,7 @@
   "Be careful, you are about to delete the selected entities": "Будьте осторожны, вы собираетесь удалить выбранные сущности.",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Будьте осторожны, вы собираетесь удалить выбранные сущности (не связи).",
   "Be careful, you are about to delete the selected relationships": "Будьте осторожны, вы собираетесь удалить выбранные связи.",
+  "Be careful, you are about to remove the selected relationships from the container": "Будьте осторожны, вы собираетесь удалить выбранные связи из контейнера.",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Будьте осторожны, вы собираетесь удалить выбранные объекты наблюдения (не отношения).",
   "Bearer token": "Токен Bearer",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "Поскольку по умолчанию черновик не будет включать изменения, внесенные в объект после создания рабочей среды.",
