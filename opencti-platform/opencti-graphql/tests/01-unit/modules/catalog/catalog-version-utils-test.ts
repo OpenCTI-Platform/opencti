@@ -90,4 +90,3 @@ describe('catalog-version-utils', () => {
     expect(onUnparsableSupportVersion).toHaveBeenCalledTimes(1);
   });
 });
-

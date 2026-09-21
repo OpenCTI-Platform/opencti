@@ -125,4 +125,3 @@ describe('catalog-logo-storage', () => {
     expect(getMimeTypeFromImageExtension('.unknown')).toBeUndefined();
   });
 });
-
