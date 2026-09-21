@@ -189,8 +189,36 @@ class OpenCTIApiConnector:
                 }
             }
            """
-        result = self.api.query(query, connector.to_input())
+        variables = connector.to_input()
+        try:
+            result = self.api.query(query, variables)
+        except ValueError as error:
+            if not self._is_unsupported_registration_metadata_error(error):
+                raise
+            self.api.app_logger.info(
+                "Connector version and slug are not supported by this OpenCTI "
+                "platform; retrying registration without them"
+            )
+            legacy_variables = connector.to_input()
+            legacy_variables["input"].pop("version", None)
+            legacy_variables["input"].pop("slug", None)
+            result = self.api.query(query, legacy_variables)
         return result["data"]["registerConnector"]
+
+    @staticmethod
+    def _is_unsupported_registration_metadata_error(error: ValueError) -> bool:
+        """Return whether registration failed on version/slug input support."""
+        details = error.args[0] if error.args else ""
+        if isinstance(details, dict):
+            message = str(details.get("error_message", ""))
+        else:
+            message = str(details)
+        unsupported_field = '"version"' in message or '"slug"' in message
+        return (
+            "RegisterConnectorInput" in message
+            and unsupported_field
+            and "is not defined" in message
+        )
 
     def unregister(self, _id: str) -> Dict:
         """Unregister a connector with OpenCTI.
