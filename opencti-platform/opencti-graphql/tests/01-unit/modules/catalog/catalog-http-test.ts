@@ -103,4 +103,3 @@ describe('catalog-http', () => {
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'storage failure' });
   });
 });
-

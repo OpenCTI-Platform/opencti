@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FunctionalError } from '../../../src/config/errors';
-import {
-  computeManagerConnectorContract,
-  computeManagerConnectorExcerpt,
-  computeManagerConnectorImage,
-} from '../../../src/database/repository';
+import { computeManagerConnectorContract, computeManagerConnectorExcerpt, computeManagerConnectorImage } from '../../../src/database/repository';
 
 const connectorWithContract = () => ({
   id: 'connector-1',
@@ -80,4 +76,3 @@ describe('repository manager contract helpers', () => {
     await expect(computeManagerConnectorImage(connector as any)).rejects.toThrowError(FunctionalError('Invalid manager contract snapshot').message);
   });
 });
-
