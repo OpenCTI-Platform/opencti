@@ -11,7 +11,7 @@ import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import type { SxProps } from '@mui/material/styles';
 import { useFormatter } from 'src/components/i18n';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery } from '../../../../../relay/environment';
 import type { ExportInstanceConfig, InstanceItem } from './exportBundleInstances';
 
 export type InstanceSelectionMode = 'none' | 'all' | 'partial';

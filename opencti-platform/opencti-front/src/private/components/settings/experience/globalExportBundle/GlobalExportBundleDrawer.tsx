@@ -2,14 +2,9 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import { Input, Checkbox } from '@filigran/design-system';
+import { Input } from '@filigran/design-system';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
-import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import DownloadOutlined from '@mui/icons-material/DownloadOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import fileDownload from 'js-file-download';
@@ -18,11 +13,14 @@ import Button from '@common/button/Button';
 import { useFormatter } from 'src/components/i18n';
 import type { Theme } from 'src/components/Theme';
 import Drawer from '@components/common/drawer/Drawer';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery } from '../../../../../relay/environment';
 import { EXPORT_CATEGORIES, getDefaultCheckedCategoryItems } from './globalExportBundleDrawer-utils';
 import ExportBundleInstancesAccordion, { InstanceSelectionMode } from './ExportBundleInstancesAccordion';
+import ExportBundleCategoryFlat from './ExportBundleCategoryFlat';
+import ExportBundleCategoryPlaceholder from './ExportBundleCategoryPlaceholder';
+import ExportBundleCategoryChecklist from './ExportBundleCategoryChecklist';
 import { EXPORT_INSTANCE_CONFIGS } from './exportBundleInstances';
-import type { PlatformBundleDrawerExportQuery$data } from './__generated__/PlatformBundleDrawerExportQuery.graphql';
+import type { PlatformBundleDrawerExportQuery$data } from '../__generated__/PlatformBundleDrawerExportQuery.graphql';
 
 const platformBundleDrawerExportQuery = graphql`
   query PlatformBundleDrawerExportQuery($entityTypes: [String!]!, $selections: [GlobalExportSelectionInput!]) {
@@ -179,69 +177,37 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
             {EXPORT_CATEGORIES.map((category) => {
               if (category.kind === 'placeholder') {
                 return (
-                  <Accordion key={category.key} disableGutters expanded={false} sx={{ ...accordionSx, opacity: 0.5 }}>
-                    <AccordionSummary sx={{ cursor: 'default' }}>
-                      <FormControlLabel
-                        control={<Checkbox disabled checked={false} style={{ marginRight: 10, marginLeft: 10 }} />}
-                        label={<Typography fontWeight="bold">{t_i18n(category.label)}</Typography>}
-                      />
-                    </AccordionSummary>
-                  </Accordion>
+                  <ExportBundleCategoryPlaceholder
+                    key={category.key}
+                    category={category}
+                    accordionSx={accordionSx}
+                  />
                 );
               }
 
               if (category.kind === 'flat') {
                 const checked = checkedCategoryItems[category.key]?.includes(category.key) ?? false;
                 return (
-                  <Box key={category.key} sx={{ ...accordionSx, px: 2, py: 1.5 }}>
-                    <FormControlLabel
-                      control={<Checkbox checked={checked} onCheckedChange={handleToggleFlatCategory(category.key)} style={{ marginRight: 10, marginLeft: 10 }} />}
-                      label={<Typography fontWeight="bold">{t_i18n(category.label)}</Typography>}
-                    />
-                  </Box>
+                  <ExportBundleCategoryFlat
+                    key={category.key}
+                    category={category}
+                    checked={checked}
+                    onToggle={handleToggleFlatCategory(category.key)}
+                    accordionSx={accordionSx}
+                  />
                 );
               }
 
               const items = category.items ?? [];
-              const checked = checkedCategoryItems[category.key] ?? [];
-              const allChecked = items.length > 0 && checked.length === items.length;
-              const someChecked = checked.length > 0 && checked.length < items.length;
-
               return (
-                <Accordion key={category.key} disableGutters sx={accordionSx}>
-                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                    <FormControlLabel
-                      onClick={(e) => e.stopPropagation()}
-                      control={(
-                        <Checkbox
-                          checked={someChecked ? 'indeterminate' : allChecked}
-                          style={{ marginRight: 10, marginLeft: 10 }}
-                          onCheckedChange={handleToggleCategoryAll(category.key, items.map((item) => item.key))}
-                        />
-                      )}
-                      label={(
-                        <Typography fontWeight="bold">
-                          {t_i18n(category.label)} ({checked.length}/{items.length})
-                        </Typography>
-                      )}
-                    />
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', paddingLeft: 5, paddingTop: 0, marginTop: -1 }}>
-                    {items.map((item) => (
-                      <FormControlLabel
-                        key={item.key}
-                        control={(
-                          <Checkbox
-                            checked={checked.includes(item.key)}
-                            onCheckedChange={handleToggleCategoryItem(category.key, item.key)}
-                            style={{ marginRight: 10, marginLeft: 10 }}
-                          />
-                        )}
-                        label={t_i18n(item.label)}
-                      />
-                    ))}
-                  </AccordionDetails>
-                </Accordion>
+                <ExportBundleCategoryChecklist
+                  key={category.key}
+                  category={category}
+                  checkedKeys={checkedCategoryItems[category.key] ?? []}
+                  onToggleAll={handleToggleCategoryAll(category.key, items.map((item) => item.key))}
+                  onToggleItem={(itemKey) => handleToggleCategoryItem(category.key, itemKey)}
+                  accordionSx={accordionSx}
+                />
               );
             })}
 

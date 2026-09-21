@@ -38,7 +38,7 @@ import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import Divider from '@mui/material/Divider';
 import useHelper from 'src/utils/hooks/useHelper';
-import GlobalExportBundleDrawer from '../settings/experience/GlobalExportBundleDrawer';
+import GlobalExportBundleDrawer from './experience/globalExportBundle/GlobalExportBundleDrawer';
 
 export enum CGUStatus {
   pending = 'pending',
