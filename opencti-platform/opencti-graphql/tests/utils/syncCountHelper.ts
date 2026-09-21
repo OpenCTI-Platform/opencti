@@ -89,6 +89,8 @@ testUpdatedCounter.indicator = 30;
 testUpdatedCounter.label = 1;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
+// Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen
+testUpdatedCounter['observed-data'] = 1;
 testUpdatedCounter.opinion = 6;
 testUpdatedCounter['email-addr'] = 1;
 testUpdatedCounter.event = 1;

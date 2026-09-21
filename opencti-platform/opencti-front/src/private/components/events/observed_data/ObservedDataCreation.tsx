@@ -46,12 +46,18 @@ const observedDataCreationMutation = graphql`
 
 const OBSERVED_DATA_TYPE = 'Observed-Data';
 
+// Optional counters are submitted as null when the field is left empty
+const parseOptionalInt = (value: number | string) => {
+  const parsed = parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
 interface ObservedDataAddInput {
   objects: { value: string }[];
   first_observed: Date | null;
   last_observed: Date | null;
   number_observed: number;
-  number_seen: number;
+  number_seen: number | string;
   max_distinct_count: number | string;
   confidence: number | undefined;
   createdBy: FieldOption | undefined;
@@ -115,8 +121,8 @@ export const ObservedDataCreationForm: FunctionComponent<
       first_observed: values.first_observed ? parse(values.first_observed).format() : null,
       last_observed: values.last_observed ? parse(values.last_observed).format() : null,
       number_observed: parseInt(String(values.number_observed), 10),
-      number_seen: Number.isNaN(parseInt(String(values.number_seen), 10)) ? null : parseInt(String(values.number_seen), 10),
-      max_distinct_count: Number.isNaN(parseInt(String(values.max_distinct_count), 10)) ? null : parseInt(String(values.max_distinct_count), 10),
+      number_seen: parseOptionalInt(values.number_seen),
+      max_distinct_count: parseOptionalInt(values.max_distinct_count),
       confidence: parseInt(String(values.confidence), 10),
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),

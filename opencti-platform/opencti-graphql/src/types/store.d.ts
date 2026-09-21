@@ -390,8 +390,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_detection: boolean;
   // number
   number_observed: number;
-  number_seen: number;
-  max_distinct_count: number;
+  number_seen?: number; // optional, absent on legacy observed data
+  max_distinct_count?: number; // optional, absent until a producer provides it
   confidence: number;
   latitude: string;
   longitude: string;
