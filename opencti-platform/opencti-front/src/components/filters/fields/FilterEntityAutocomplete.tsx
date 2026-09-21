@@ -1,8 +1,6 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-// fds:keep-mui Combobox has no endAdornment slot for the search-scope selector (gap #155) — see fds-migration/LIBRARY-FEEDBACK.md
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
-// fds:keep-mui paired with the Autocomplete above (renderInput), converts with it once gap #155 lands
 import TextField from '@mui/material/TextField';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Dispatch, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
@@ -101,9 +99,6 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       isOptionEqualToValue={(option, val) => option.value === val.value}
       renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => {
         const { key, onDelete, className } = getTagProps({ index });
-        // The sole value of a locked filter cannot be removed (isChangeBlocked): showing a
-        // delete icon that silently does nothing is worse than not showing one, so this chip
-        // drops it and explains why instead.
         const isLockedValue = disabled && tagValue.length === 1;
         if (!isLockedValue) {
           return <Chip key={key} className={className} label={option.label} onDelete={() => onDelete(index)} />;
@@ -116,7 +111,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {t_i18n('Cannot be removed: the relationship type is required while this filter has a dynamic value')}
+              {t_i18n('Cannot be removed: the relationship type is required when a filter is configured')}
             </TooltipContent>
           </Tooltip>
         );

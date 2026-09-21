@@ -223,14 +223,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         }}
       />
       {shortcutsButton}
-      {/* The picker's own field is rendered but wrapped in a zero-size/hidden container -
-          only its popper (rendered through a portal, unaffected by the hidden container) is
-          visible, explicitly anchored to the whole field container above (not just the small
-          icon) via `slotProps.popper.anchorEl`, so it opens at the same position as the native
-          mode's own popper - fixing both the old top-left bug (the whole picker, including its
-          anchor, used to be hidden via `sx={{ display: 'none' }}`) and the visual mismatch
-          between the two modes. Once a date is accepted here, the component switches to the
-          native segmented field above on the next render. */}
       {isDatePickerOpen && (
         <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} aria-hidden>
           <DateTimePicker

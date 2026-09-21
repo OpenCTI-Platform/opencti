@@ -8,9 +8,7 @@ import ItemIcon from '../../ItemIcon';
 interface FilterEntityOptionProps {
   option: FilterOptionValue;
   checked: boolean;
-  /** The last remaining value of a locked filter cannot be unselected. */
   disabled: boolean;
-  /** Props MUI injects on the option element, `key` already extracted by the caller. */
   liProps: HTMLAttributes<HTMLLIElement>;
 }
 
@@ -43,7 +41,6 @@ const FilterEntityOption: FunctionComponent<FilterEntityOptionProps> = ({
             pointerEvents: disabled ? 'none' : undefined,
           }}
         >
-          {/* NOT `presentational`, deliberately — see fds-migration/MIGRATION-DECISIONS.md#filter-value-checkbox-role. */}
           <Checkbox checked={checked} disabled={disabled} aria-label={option.label} />
           <ItemIcon type={option.type} color={option.color} />
           <span>

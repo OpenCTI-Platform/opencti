@@ -24,7 +24,7 @@ const buildDefinition = (filterKey: string, type: string, label: string): Filter
   multiple: false,
   subEntityTypes: ['Stix-Core-Object'],
   elementsForFilterValuesSearch: [],
-} as unknown as FilterDefinition);
+} as FilterDefinition);
 
 const filterKeysSchema = new Map([
   ['Stix-Core-Object', new Map([
@@ -51,7 +51,7 @@ const buildHelpers = () => ({
   handleChangeRepresentationFilter: vi.fn(),
   handleReplaceFilterValues: vi.fn(),
   handleChangeFilterKey: vi.fn(),
-}) as unknown as handleFilterHelpers & Record<string, ReturnType<typeof vi.fn>>;
+}) as handleFilterHelpers & Record<string, ReturnType<typeof vi.fn>>;
 
 import FilterGroupPanel from './FilterGroupPanel';
 import { FilterEditorProvider } from '../fields/FilterEditorContext';
