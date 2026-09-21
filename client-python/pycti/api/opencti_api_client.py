@@ -16,6 +16,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 import requests
 
 from pycti import __version__
+from pycti.api.opencti_api_compatibility import OpenCTIApiCompatibility
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_draft import OpenCTIApiDraft
 from pycti.api.opencti_api_internal_file import OpenCTIApiInternalFile
@@ -268,6 +269,7 @@ class OpenCTIApiClient:
         )
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
+        self.compatibility = OpenCTIApiCompatibility(self)
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
         self.notification = OpenCTIApiNotification(self)
@@ -835,19 +837,11 @@ class OpenCTIApiClient:
         """
         try:
             self.app_logger.info("Health check (platform version)...")
-            test = self.query("""
-                  query healthCheck {
-                    about {
-                      version
-                    }
-                  }
-                """)
-            if test is not None:
-                return True
+            self.compatibility.refresh()
+            return True
         except Exception as err:  # pylint: disable=broad-except
             self.app_logger.error(str(err))
             return False
-        return False
 
     def not_empty(self, value):
         """Check if a value is empty for str, list and int.

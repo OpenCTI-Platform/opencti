@@ -24,83 +24,27 @@ def _connector():
 
 def test_register_sends_version_and_slug():
     api = MagicMock()
-    api.query.side_effect = [
-        {
-            "data": {
-                "__type": {
-                    "inputFields": [
-                        {"name": "version"},
-                        {"name": "slug"},
-                    ]
-                }
-            }
-        },
-        {"data": {"registerConnector": {"id": "connector-id"}}},
-    ]
+    api.compatibility.connector_registration_metadata = True
+    api.query.return_value = {"data": {"registerConnector": {"id": "connector-id"}}}
 
     result = OpenCTIApiConnector(api).register(_connector())
 
     assert result == {"id": "connector-id"}
-    variables = api.query.call_args_list[1].args[1]
+    variables = api.query.call_args.args[1]
     assert variables["input"]["version"] == "1.2.3"
     assert variables["input"]["slug"] == "test-connector"
-    assert api.query.call_count == 2
+    api.query.assert_called_once()
 
 
 def test_register_omits_version_and_slug_for_older_platform():
     api = MagicMock()
-    api.query.side_effect = [
-        {
-            "data": {
-                "__type": {
-                    "inputFields": [
-                        {"name": "id"},
-                        {"name": "name"},
-                    ]
-                }
-            }
-        },
-        {"data": {"registerConnector": {"id": "connector-id"}}},
-    ]
+    api.compatibility.connector_registration_metadata = False
+    api.query.return_value = {"data": {"registerConnector": {"id": "connector-id"}}}
 
     result = OpenCTIApiConnector(api).register(_connector())
 
     assert result == {"id": "connector-id"}
-    variables = api.query.call_args_list[1].args[1]
+    variables = api.query.call_args.args[1]
     assert "version" not in variables["input"]
     assert "slug" not in variables["input"]
     api.app_logger.info.assert_called_once()
-
-
-def test_register_rechecks_registration_metadata_support():
-    api = MagicMock()
-    api.query.side_effect = [
-        {
-            "data": {
-                "__type": {
-                    "inputFields": [
-                        {"name": "version"},
-                        {"name": "slug"},
-                    ]
-                }
-            }
-        },
-        {"data": {"registerConnector": {"id": "connector-id"}}},
-        {
-            "data": {
-                "__type": {
-                    "inputFields": [
-                        {"name": "version"},
-                        {"name": "slug"},
-                    ]
-                }
-            }
-        },
-        {"data": {"registerConnector": {"id": "connector-id"}}},
-    ]
-    api_connector = OpenCTIApiConnector(api)
-
-    api_connector.register(_connector())
-    api_connector.register(_connector())
-
-    assert api.query.call_count == 4
