@@ -66,18 +66,10 @@ export const registerPendingRefsEsOps = (ops: EsOps) => {
   esOps = ops;
 };
 
-// Per-apply sink for stripped refs (same module-holder pattern as the write buffer: the
-// batch loop applies intents SERIALLY, so a single slot is race-free). applyGroup arms it
-// around each leader.apply(); inputResolveRefs pushes into it when stripping. A slot
-// carried on the context does NOT work: the 'applying' scoped context is a spread COPY
-// built inside the apply closure, so the loop never sees what middleware writes on it
-// (first validation campaign: strips fired, zero records persisted, refs lost).
-export interface StrippedRef { targetRef: string; relType: string }
-let currentStripSink: StrippedRef[] | null = null;
-export const setCurrentStripSink = (sink: StrippedRef[] | null) => {
-  currentStripSink = sink;
-};
-export const getCurrentStripSink = () => currentStripSink;
+// Per-apply sink for stripped refs: an AsyncLocalStorage store since the concurrent apply of
+// 2026-09-21 (see sequencer-strip-sink.ts); middleware keeps importing getCurrentStripSink here.
+export { getCurrentStripSink, withStripSink } from './sequencer-strip-sink';
+export type { StrippedRef } from './sequencer-strip-sink';
 
 const byTarget = new Map<string, Map<string, PendingRefRecord>>();
 const byId = new Map<string, PendingRefRecord>();

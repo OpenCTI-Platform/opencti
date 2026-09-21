@@ -108,6 +108,7 @@
       "coalesce_update_events": true,
       "bundle_intake": false,
       "park_soft_refs": false,
+      "apply_concurrency": 1,
       "origin": "worker"
     },
     "locked_account_statuses": {

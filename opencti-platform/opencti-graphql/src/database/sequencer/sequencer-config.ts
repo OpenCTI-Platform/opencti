@@ -31,6 +31,7 @@ export interface SequencerConfig {
   // Warm-up only: per-batch state (absence cache, dedup prefetch) is NOT computed ahead,
   // and the end-of-batch evict/clear still runs after the warm, wiping anything stale.
   resolveAhead: boolean;
+  applyConcurrency: number;
   pendingRefExpiryS: number;
   // s9.8.2 bounded member wait: plan passes spent waiting for a declared in-bundle member
   // before the ref is declared dead. With strip_reconcile on, a dead strip is recorded and
@@ -71,6 +72,9 @@ const readConfig = (): SequencerConfig => {
     parkSoftRefs: booleanConf('app:ingestion_sequencer:park_soft_refs', false),
     stripReconcile: booleanConf('app:ingestion_sequencer:strip_reconcile', false),
     resolveAhead: booleanConf('app:ingestion_sequencer:resolve_ahead', false),
+    // rung 5 (2026-09-21): concurrent apply of independent groups within a batch, level by
+    // level on the plan's dependsOn edges; 1 = the sequential path measured through the study
+    applyConcurrency: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:apply_concurrency') ?? 1))),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
     // B10 (2026-09-16): a deferral waiting on a queued producer is re-admitted when the

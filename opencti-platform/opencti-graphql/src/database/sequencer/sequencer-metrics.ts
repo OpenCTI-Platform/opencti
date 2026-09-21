@@ -18,6 +18,8 @@ class SequencerMetrics {
 
   private batchPhaseSeconds: Histogram | null = null;
 
+  private applyLevelsHist: Histogram | null = null;
+
   private identityMap: Counter | null = null;
 
   private parkSeconds: Histogram | null = null;
@@ -79,6 +81,11 @@ class SequencerMetrics {
       valueType: ValueType.DOUBLE,
       description: 'Batch phase duration in seconds (resolve, order, apply, commit, events)',
       advice: { explicitBucketBoundaries: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10] },
+    });
+    this.applyLevelsHist = meter.createHistogram('opencti_sequencer_apply_levels', {
+      valueType: ValueType.INT,
+      description: 'Dependency levels applied per batch when apply_concurrency > 1 (1 = every group independent)',
+      advice: { explicitBucketBoundaries: [1, 2, 3, 4, 6, 8, 12, 16, 24] },
     });
     this.identityMap = meter.createCounter('opencti_sequencer_identity_map', {
       valueType: ValueType.INT,
@@ -183,6 +190,10 @@ class SequencerMetrics {
 
   phase(phase: BatchPhase, seconds: number) {
     this.batchPhaseSeconds?.record(seconds, { phase });
+  }
+
+  applyLevels(levels: number) {
+    this.applyLevelsHist?.record(levels);
   }
 
   mapEvent(event: MapEvent, count = 1) {

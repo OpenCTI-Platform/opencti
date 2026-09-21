@@ -23,16 +23,9 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndex, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
-import {
-  buildPendingRecords,
-  fireReconcile,
-  initPendingRefs,
-  matchCreatedElement,
-  persistPendingRecords,
-  registerPendingRefsEsOps,
-  setCurrentStripSink,
-} from './sequencer-pending-refs';
+import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps, withStripSink } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
+import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
 import { deferIntents, fireResubmit, initPendingIntents, matchLandedIntents, pendingIntentsAccepting, registerPendingIntentsEsOps } from './sequencer-pending-intents';
 import { DeferredMissingReferenceError } from '../../config/errors';
 import { flushSequencerEvents } from '../stream/stream-handler';
@@ -363,22 +356,18 @@ const applyGroup = async (
   pendings: PendingResolution[],
   strippedInputs: StrippedRefInput[],
   onFailure: (group: CoalesceGroup, err: unknown) => void,
+  recordPhase = true,
 ): Promise<boolean> => {
   const { leader, absorbed } = group;
   const t0 = Date.now();
   let success = true;
-  // s9.12.3 strip-and-reconcile: arm the per-apply sink (module holder, applies are
-  // serial). Strips from nested re-entrant creates land in the same sink and get
-  // attributed to the leader element (documented POC approximation).
+  // s9.12.3 strip-and-reconcile: the per-apply sink travels with the apply's async context
+  // (AsyncLocalStorage), so concurrent applies of one batch each collect their own strips.
+  // Strips from nested re-entrant creates land in the same sink and get attributed to the
+  // leader element (documented POC approximation).
   const stripSink: StrippedRef[] = [];
   try {
-    setCurrentStripSink(stripSink);
-    let result;
-    try {
-      result = await leader.apply();
-    } finally {
-      setCurrentStripSink(null);
-    }
+    const result = await withStripSink(stripSink, () => leader.apply());
     const element = result?.element ?? result;
     if (element?.internal_id) {
       // read-your-writes for later intents of THIS batch (E2); evicted at commit (D4a).
@@ -435,7 +424,7 @@ const applyGroup = async (
     success = false;
     onFailure(group, err);
   }
-  sequencerMetrics.phase('apply', (Date.now() - t0) / 1000);
+  if (recordPhase) sequencerMetrics.phase('apply', (Date.now() - t0) / 1000);
   return success;
 };
 
@@ -722,7 +711,8 @@ const runBatchLoop = async () => {
       // a cycle), bounded to FAILED_PRODUCER_DEFER_LIMIT; at the limit the group applies
       // through today's path, so degradation is never a new loss class.
       const failedAt: boolean[] = new Array(plan.order.length).fill(false);
-      for (let i = 0; i < plan.order.length; i += 1) {
+      const { applyConcurrency } = SEQUENCER_CONFIG;
+      const processGroup = async (i: number) => {
         const group = plan.order[i];
         const failedDep = (group.dependsOn ?? []).some((d) => failedAt[d]);
         if (failedDep && (group.leader.failedProducerDefers ?? 0) < FAILED_PRODUCER_DEFER_LIMIT) {
@@ -733,7 +723,7 @@ const runBatchLoop = async () => {
             sequencerMetrics.intent('deferred', intent.kind);
             sequencerMetrics.deferReason('failed_producer');
           });
-          continue;
+          return;
         }
         // s9.9.3 root attribution: a failure with NO failed in-batch producer is a
         // cascade ROOT: count it by code and sample the first ones
@@ -753,8 +743,26 @@ const runBatchLoop = async () => {
           }
           onApplyFailure(g, err);
         };
-        const ok = await applyGroup(group, writtenIds, pendings, strippedInputs, onFailure);
+        const ok = await applyGroup(group, writtenIds, pendings, strippedInputs, onFailure, applyConcurrency <= 1);
         if (!ok) failedAt[i] = true;
+      };
+      if (applyConcurrency <= 1) {
+        // the path measured through the whole study: plan order, one apply at a time
+        for (let i = 0; i < plan.order.length; i += 1) await processGroup(i);
+      } else {
+        // rung 5 (2026-09-21): groups without an in-batch edge between them apply concurrently,
+        // level by level (a level's producers are all settled before its consumers start, so
+        // the failed-producer skip reads settled state). The writer stays one loop and one
+        // commit: only the ES round trips of independent intents overlap, bounded by
+        // apply_concurrency. The apply phase is then recorded once per batch (wall time).
+        const tApply = Date.now();
+        const byLevel = groupIndicesByLevel(computeApplyLevels(plan.order));
+        for (let lvl = 0; lvl < byLevel.length; lvl += 1) {
+          const indices = byLevel[lvl] ?? [];
+          if (indices.length > 0) await runBounded(indices, applyConcurrency, (i) => processGroup(i));
+        }
+        sequencerMetrics.applyLevels(byLevel.length);
+        sequencerMetrics.phase('apply', (Date.now() - tApply) / 1000);
       }
       setCurrentWriteBuffer(null); // flush must not re-buffer
       // resolve-ahead: while the commit bulk awaits ES, grab the queued intents of the
