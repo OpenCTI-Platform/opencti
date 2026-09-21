@@ -72,7 +72,7 @@ def test_register_omits_version_and_slug_for_older_platform():
     api.app_logger.info.assert_called_once()
 
 
-def test_register_caches_registration_metadata_support():
+def test_register_rechecks_registration_metadata_support():
     api = MagicMock()
     api.query.side_effect = [
         {
@@ -86,6 +86,16 @@ def test_register_caches_registration_metadata_support():
             }
         },
         {"data": {"registerConnector": {"id": "connector-id"}}},
+        {
+            "data": {
+                "__type": {
+                    "inputFields": [
+                        {"name": "version"},
+                        {"name": "slug"},
+                    ]
+                }
+            }
+        },
         {"data": {"registerConnector": {"id": "connector-id"}}},
     ]
     api_connector = OpenCTIApiConnector(api)
@@ -93,4 +103,4 @@ def test_register_caches_registration_metadata_support():
     api_connector.register(_connector())
     api_connector.register(_connector())
 
-    assert api.query.call_count == 3
+    assert api.query.call_count == 4

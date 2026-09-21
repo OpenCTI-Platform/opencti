@@ -20,7 +20,6 @@ class OpenCTIApiConnector:
         :type api: OpenCTIApiClient
         """
         self.api = api
-        self._registration_metadata_supported = None
 
     def read(self, connector_id: str) -> Dict:
         """Read the connector and its details.
@@ -201,25 +200,21 @@ class OpenCTIApiConnector:
         return result["data"]["registerConnector"]
 
     def _supports_registration_metadata(self) -> bool:
-        """Check once whether RegisterConnectorInput supports version and slug."""
-        if self._registration_metadata_supported is None:
-            query = """
-                query RegisterConnectorInputFields {
-                    __type(name: "RegisterConnectorInput") {
-                        inputFields {
-                            name
-                        }
+        """Check whether RegisterConnectorInput supports version and slug."""
+        query = """
+            query RegisterConnectorInputFields {
+                __type(name: "RegisterConnectorInput") {
+                    inputFields {
+                        name
                     }
                 }
-            """
-            result = self.api.query(query)
-            input_type = result.get("data", {}).get("__type") or {}
-            input_fields = input_type.get("inputFields") or []
-            field_names = {field["name"] for field in input_fields}
-            self._registration_metadata_supported = {"version", "slug"}.issubset(
-                field_names
-            )
-        return self._registration_metadata_supported
+            }
+        """
+        result = self.api.query(query)
+        input_type = result.get("data", {}).get("__type") or {}
+        input_fields = input_type.get("inputFields") or []
+        field_names = {field["name"] for field in input_fields}
+        return {"version", "slug"}.issubset(field_names)
 
     def unregister(self, _id: str) -> Dict:
         """Unregister a connector with OpenCTI.
