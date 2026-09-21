@@ -28,7 +28,11 @@ class OpenCTIApiCompatibility:
                     }
                 }
             """
-            result = self.api.query(query)
+            try:
+                result = self.api.query(query)
+            except Exception:
+                self._connector_registration_metadata = False
+                raise
             data = result.get("data", {})
             self._platform_version = (data.get("about") or {}).get("version")
             input_type = data.get("registerConnectorInput") or {}
@@ -42,7 +46,14 @@ class OpenCTIApiCompatibility:
     def _ensure_loaded(self) -> None:
         with self._lock:
             if self._connector_registration_metadata is None:
-                self.refresh()
+                try:
+                    self.refresh()
+                except Exception as err:  # pylint: disable=broad-except
+                    self._connector_registration_metadata = False
+                    self.api.app_logger.warning(
+                        "Unable to detect API compatibility; using legacy behavior",
+                        {"reason": str(err)},
+                    )
 
     @property
     def platform_version(self) -> Optional[str]:

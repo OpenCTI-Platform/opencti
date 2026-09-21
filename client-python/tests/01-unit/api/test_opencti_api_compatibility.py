@@ -47,6 +47,17 @@ def test_refresh_updates_compatibility_after_backend_change():
     assert api.query.call_count == 2
 
 
+def test_introspection_failure_uses_legacy_compatibility():
+    api = MagicMock()
+    api.query.side_effect = ValueError("Introspection disabled")
+    compatibility = OpenCTIApiCompatibility(api)
+
+    assert compatibility.connector_registration_metadata is False
+    api.app_logger.warning.assert_called_once()
+    assert compatibility.connector_registration_metadata is False
+    api.query.assert_called_once()
+
+
 def test_health_check_refreshes_compatibility():
     api_client = OpenCTIApiClient.__new__(OpenCTIApiClient)
     api_client.app_logger = MagicMock()
