@@ -139,7 +139,6 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
         numberOfElements={viewStorage.numberOfElements}
         paginationOptions={queryPaginationOptions}
         availableEntityTypes={['stix-core-relationship']}
-        availableRelationshipTypes={[]}
         exportContext={{ entity_id: reportId, entity_type: 'stix-core-relationship' }}
         noPadding={true}
         disableCards={true}
