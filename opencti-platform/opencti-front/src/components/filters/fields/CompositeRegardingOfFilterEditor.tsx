@@ -8,7 +8,7 @@ import FilterOperatorSelect from './FilterOperatorSelect';
 import FilterValueInput from './FilterValueInput';
 import { FILTER_VALUE_POPOVER_MIN_WIDTH } from './filterFieldLayout';
 
-export interface CompositeRegardingOfEditorProps {
+export interface CompositeRegardingOfFilterEditorProps {
   filter?: Filter;
   filterKey: string;
   inputValues: FilterEditorInputValue[];
@@ -27,7 +27,7 @@ export interface CompositeRegardingOfEditorProps {
  * Used by both the root FilterChipPopover and the nested-group FilterRowCompositeValue popover,
  * so the two can never drift apart.
  */
-const CompositeRegardingOfEditor: FunctionComponent<CompositeRegardingOfEditorProps> = ({
+const CompositeRegardingOfFilterEditor: FunctionComponent<CompositeRegardingOfFilterEditorProps> = ({
   filter,
   filterKey,
   inputValues,
@@ -100,4 +100,4 @@ const CompositeRegardingOfEditor: FunctionComponent<CompositeRegardingOfEditorPr
   );
 };
 
-export default CompositeRegardingOfEditor;
+export default CompositeRegardingOfFilterEditor;

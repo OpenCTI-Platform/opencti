@@ -23,7 +23,7 @@ const buildDefinition = (filterKey: string, type: string, label: string, subFilt
   subEntityTypes: ['Stix-Core-Object'],
   elementsForFilterValuesSearch: [],
   ...(subFilters ? { subFilters } : {}),
-} as unknown as FilterDefinition);
+} as FilterDefinition);
 
 const filterKeysSchema = new Map([
   ['Stix-Core-Object', new Map([
@@ -39,9 +39,22 @@ const filterKeysSchema = new Map([
 const userContext = createMockUserContext({ schema: { filterKeysSchema } });
 
 const buildHelpers = () => ({
+  handleSwitchGlobalMode: vi.fn(),
+  handleSwitchLocalMode: vi.fn(),
+  handleRemoveRepresentationFilter: vi.fn(),
+  handleRemoveFilterById: vi.fn(),
   handleChangeOperatorFilters: vi.fn(),
   handleAddSingleValueFilter: vi.fn(),
-}) as unknown as handleFilterHelpers & Record<string, ReturnType<typeof vi.fn>>;
+  handleAddRepresentationFilter: vi.fn(),
+  handleAddFilterWithEmptyValue: vi.fn(),
+  handleAddFilterGroup: vi.fn(),
+  handleRemoveFilterGroup: vi.fn(),
+  handleClearAllFilters: vi.fn(),
+  getLatestAddFilterId: vi.fn(),
+  handleChangeRepresentationFilter: vi.fn(),
+  handleReplaceFilterValues: vi.fn(),
+  handleChangeFilterKey: vi.fn(),
+}) as handleFilterHelpers & Record<string, ReturnType<typeof vi.fn>>;
 
 type SetInputValuesMock = Dispatch<SetStateAction<FilterEditorInputValue[]>> & ReturnType<typeof vi.fn>;
 
@@ -63,7 +76,7 @@ describe('FilterOperatorSelect', () => {
 
   beforeEach(() => {
     helpers = buildHelpers();
-    setInputValues = vi.fn() as unknown as SetInputValuesMock;
+    setInputValues = vi.fn() as SetInputValuesMock;
   });
 
   it('changes the operator of a plain filter without touching its value', async () => {

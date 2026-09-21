@@ -72,7 +72,7 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
               variant="body2"
               sx={{ marginBottom: theme.spacing(2), width: '100%', contain: 'inline-size' }}
             >
-              {t_i18n('This filter group contains nested filter groups. The full content is displayed below for reference. It can be edited via the API or directly from the filters line on the entity page.')}
+              {t_i18n('This filter group contains nested filter groups. The full content is displayed below for reference. It can be edited directly from the filters line on the entity page.')}
             </Typography>
             <Typography
               variant="h3"

@@ -110,7 +110,7 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
               data-testid={`filter-group-add-condition-link-${groupId ?? 'root'}`}
               style={{ textDecoration: 'underline', padding: 0, minWidth: 'auto' }}
             >
-              {t_i18n('add a filter rule')}
+              {t_i18n('add a condition')}
             </Button>
           </Box>
         )}

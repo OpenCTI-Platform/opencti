@@ -6,7 +6,7 @@ import { FilterSearchContext, useFilterDefinition } from '../../utils/filters/fi
 import type { WidgetHost } from '../../utils/widget/widget';
 import { FilterRepresentative } from './FiltersModel';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
-import CompositeRegardingOfEditor from './fields/CompositeRegardingOfEditor';
+import CompositeRegardingOfFilterEditor from './fields/CompositeRegardingOfFilterEditor';
 import { FilterEditorProvider, useFilterEditorContext } from './fields/FilterEditorContext';
 import FilterOperatorSelect from './fields/FilterOperatorSelect';
 import FilterValueInput from './fields/FilterValueInput';
@@ -89,7 +89,7 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
 
   if (filterDefinition?.subFilters && filterDefinition.subFilters.length > 1) {
     return (
-      <CompositeRegardingOfEditor
+      <CompositeRegardingOfFilterEditor
         filter={filter}
         filterKey={filterKey}
         inputValues={inputValues}
