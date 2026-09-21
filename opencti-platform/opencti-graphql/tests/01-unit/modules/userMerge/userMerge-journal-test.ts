@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
 
 let journalEntries: unknown[] = [];
+const upserts: Record<string, unknown>[] = [];
 
 // One-based indices of the upsert calls Redis should reject. An entry costs two calls, opening
 // then closing, and the journal is deliberately asymmetrical between the two.
 let rejectedUpsertCalls: number[] = [];
 let upsertCallCount = 0;
-const upserts: Record<string, unknown>[] = [];
 
 vi.mock('../../../../src/database/redis', () => ({
   redisUserMergeJournalRead: async () => journalEntries,
@@ -20,7 +21,6 @@ vi.mock('../../../../src/database/redis', () => ({
 }));
 
 const { journalRefusal, resolveMergeStartedAt, withJournalEntry } = await import('../../../../src/modules/userMerge/userMerge-journal');
-const { UserMergeStatus } = await import('../../../../src/modules/userMerge/userMerge-types');
 
 const FALLBACK = new Date('2025-06-01T12:00:00.000Z');
 
@@ -37,6 +37,7 @@ const handlerOutcome = { handler: 'handler-a', changes: [], alerts: [], updated:
 
 describe('journal resilience to a broken redis', () => {
   beforeEach(() => {
+    upserts.length = 0;
     upsertCallCount = 0;
     rejectedUpsertCalls = [];
   });
@@ -108,6 +109,46 @@ describe('merge start resolution', () => {
     expect(await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toEqual(FALLBACK);
   });
 });
+const runInput = { mergeId: 'merge-1', sourceId: 'source-id', targetId: 'target-id', handler: 'scalar-user-references', dryRun: false };
+
+const failWith = (data?: Record<string, unknown>) => {
+  const err = new Error('User merge bulk update aborted') as Error & { extensions?: unknown };
+  if (data) {
+    err.extensions = { data };
+  }
+  return err;
+};
+
+const closingEntry = () => upserts[upserts.length - 1];
+
+describe('journal entry of a failed handler', () => {
+  beforeEach(() => {
+    upserts.length = 0;
+    upsertCallCount = 0;
+    rejectedUpsertCalls = [];
+  });
+
+  // A bulk rewrite that aborts has already written part of what it selected. Reporting zero reads
+  // as "nothing was touched", which is the one conclusion an operator must not draw.
+  it('should record how far the handler got before failing', async () => {
+    await withJournalEntry(runInput, async () => {
+      throw failWith({ updated: 2999, total: 11697 });
+    }).catch(() => undefined);
+    expect(closingEntry()).toMatchObject({ status: UserMergeStatus.Failed, updated_count: 2999 });
+  });
+
+  it('should report zero when the failure says nothing about what it wrote', async () => {
+    await withJournalEntry(runInput, async () => {
+      throw failWith();
+    }).catch(() => undefined);
+    expect(closingEntry()).toMatchObject({ status: UserMergeStatus.Failed, updated_count: 0 });
+  });
+
+  it('should keep reporting the outcome count on success', async () => {
+    await withJournalEntry(runInput, async () => ({ updated: 42 }) as never);
+    expect(closingEntry()).toMatchObject({ status: UserMergeStatus.Success, updated_count: 42 });
+  });
+});
 
 const refusalInput = { mergeId: 'merge-1', sourceId: 'source-id', targetId: 'target-id', handler: 'user-runtime-state' };
 
@@ -123,7 +164,7 @@ describe('journal entry of a refusal', () => {
   it('should name the handler that diverged and carry the reason', async () => {
     await journalRefusal(refusalInput, 'Platform state changed between the dry pass and the real pass, nothing was written: real only [user.password|User|2|true]');
     expect(upserts[0]).toMatchObject({ handler: 'user-runtime-state', merge_id: 'merge-1' });
-    expect(upserts[1]).toMatchObject({
+    expect(closingEntry()).toMatchObject({
       status: UserMergeStatus.Failed,
       updated_count: 0,
       message: expect.stringContaining('real only [user.password|User|2|true]'),
