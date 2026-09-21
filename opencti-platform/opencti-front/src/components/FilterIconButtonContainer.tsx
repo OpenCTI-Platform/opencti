@@ -305,6 +305,14 @@ const FilterIconButtonContainer: FunctionComponent<
                       : null
                   }
                   variant={chipVariant}
+                  // Restores the Chip's previous ButtonBase/role="button" rendering
+                  // (previously a side effect of `onDelete` being set) now that
+                  // `onDelete`/`deleteIcon` were removed in favor of a separate
+                  // sibling remove button (see comment below). This chip itself
+                  // has no click handler of its own — the label's real <button>s
+                  // (FilterValues) and the sibling remove button below already
+                  // provide the interactive/keyboard behavior.
+                  clickable={(isReadWriteFilter && authorizeFilterRemoving) || undefined}
                   sx={{
                     ...filterStyle,
                     ...chipBackgroundColorStyle,
