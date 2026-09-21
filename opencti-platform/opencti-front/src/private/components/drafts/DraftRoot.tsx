@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useCallback, useEffect } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import DraftEntities from '@components/drafts/DraftEntities';
 import DraftRelationships from '@components/drafts/DraftRelationships';
@@ -22,6 +22,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import useSwitchDraft from './useSwitchDraft';
+import useDraftAutoEnter from './useDraftAutoEnter';
 import useDraftCommentPopup from './useDraftCommentPopup';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
@@ -139,19 +140,17 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
 
   // switch to draft
   const { enterDraft } = useSwitchDraft();
-
-  useEffect(() => {
-    if (!isDraftReadOnly && (!draftContext || draftContext.id !== draftId)) {
-      enterDraft(draftId, {
-        onCompleted: () => {
-          MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
-        },
-        onError: (error) => {
-          MESSAGING$.notifyRelayError(error);
-        },
-      });
-    }
-  }, [draftContext, draftId, enterDraft, isDraftReadOnly, t_i18n]);
+  const enterThisDraft = useCallback((id: string) => {
+    enterDraft(id, {
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
+      },
+      onError: (error) => {
+        MESSAGING$.notifyRelayError(error);
+      },
+    });
+  }, [enterDraft, t_i18n]);
+  useDraftAutoEnter({ draftId, disabled: isDraftReadOnly, enterDraft: enterThisDraft });
 
   useEffect(() => {
     // Refresh
