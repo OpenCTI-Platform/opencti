@@ -1,11 +1,11 @@
-import type { ExportBundleWorkspacesQuery$data } from './__generated__/ExportBundleWorkspacesQuery.graphql';
-import type { ExportBundlePlaybooksQuery$data } from './__generated__/ExportBundlePlaybooksQuery.graphql';
-import type { ExportBundleFormsQuery$data } from './__generated__/ExportBundleFormsQuery.graphql';
-import type { ExportBundleCustomViewsQuery$data } from './__generated__/ExportBundleCustomViewsQuery.graphql';
-import type { ExportBundleIngestionCsvsQuery$data } from './__generated__/ExportBundleIngestionCsvsQuery.graphql';
-import type { ExportBundleIngestionJsonsQuery$data } from './__generated__/ExportBundleIngestionJsonsQuery.graphql';
-import type { ExportBundleIngestionRsssQuery$data } from './__generated__/ExportBundleIngestionRsssQuery.graphql';
-import type { ExportBundleIngestionTaxiisQuery$data } from './__generated__/ExportBundleIngestionTaxiisQuery.graphql';
+import type { ExportBundleWorkspacesQuery$data } from '../__generated__/ExportBundleWorkspacesQuery.graphql';
+import type { ExportBundlePlaybooksQuery$data } from '../__generated__/ExportBundlePlaybooksQuery.graphql';
+import type { ExportBundleFormsQuery$data } from '../__generated__/ExportBundleFormsQuery.graphql';
+import type { ExportBundleCustomViewsQuery$data } from '../__generated__/ExportBundleCustomViewsQuery.graphql';
+import type { ExportBundleIngestionCsvsQuery$data } from '../__generated__/ExportBundleIngestionCsvsQuery.graphql';
+import type { ExportBundleIngestionJsonsQuery$data } from '../__generated__/ExportBundleIngestionJsonsQuery.graphql';
+import type { ExportBundleIngestionRsssQuery$data } from '../__generated__/ExportBundleIngestionRsssQuery.graphql';
+import type { ExportBundleIngestionTaxiisQuery$data } from '../__generated__/ExportBundleIngestionTaxiisQuery.graphql';
 import type { ExportInstanceConfig } from './exportBundleInstanceTypes';
 import {
   workspacesQuery,
