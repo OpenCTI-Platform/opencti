@@ -85,6 +85,62 @@ describe('NavBarView', () => {
     );
   });
 
+  it('keeps a badge count out of the row text so the tooltip does not read it as part of the label', () => {
+    renderNav({
+      groups: [{
+        id: 'main',
+        items: [{
+          id: 'integrations',
+          label: 'Integrations',
+          icon: null,
+          link: '/dashboard/integrations',
+          badge: { content: 11, accessibleText: '11 connector update available' },
+        }],
+      }],
+    });
+    const link = screen.getByRole('link', { name: 'Integrations' });
+    expect(link).toHaveTextContent('Integrations');
+    expect(link).not.toHaveTextContent('11');
+  });
+
+  it('shows the badge tooltip from the integration count phrase on hover', async () => {
+    const { user } = renderNav({
+      groups: [{
+        id: 'main',
+        items: [{
+          id: 'integrations',
+          label: 'Integrations',
+          icon: null,
+          link: '/dashboard/integrations',
+          badge: { content: 11, accessibleText: '11 connector update available' },
+        }],
+      }],
+    });
+
+    await user.hover(screen.getByText('11'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
+  });
+
+  it('keeps the badge visible when the rail is collapsed', async () => {
+    const { user } = renderNav({
+      collapsed: true,
+      groups: [{
+        id: 'main',
+        items: [{
+          id: 'integrations',
+          label: 'Integrations',
+          icon: null,
+          link: '/dashboard/integrations',
+          badge: { content: 11, accessibleText: '11 connector update available' },
+        }],
+      }],
+    });
+
+    expect(screen.queryByText('11', { selector: 'span[aria-hidden="true"]' })).not.toBeInTheDocument();
+    await user.hover(screen.getByRole('link', { name: 'Integrations' }).parentElement?.querySelector('.absolute > span[aria-hidden="true"]') as HTMLElement);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
+  });
+
   it('leaves a submenu parent non-navigable while the rail is expanded', () => {
     renderNav({ collapsed: false });
     const parent = screen.getByRole('button', { name: /Threats/ });

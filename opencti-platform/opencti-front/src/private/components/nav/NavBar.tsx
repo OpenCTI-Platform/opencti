@@ -1,4 +1,4 @@
-import { Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, ProductSwitcher } from '@filigran/design-system';
+import { Badge, Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, ProductSwitcher, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
@@ -21,7 +21,8 @@ import { NavBarQuery } from './__generated__/NavBarQuery.graphql';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import MadeByFiligran from './MadeByFiligran';
 import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from './navBarConstants';
-import useNavMenu, { NavGroup, NavItem, NavSubItem } from './useNavMenu';
+import useNavMenuWithBadges from './useNavMenuWithBadges';
+import { NavGroup, NavItem, NavSubItem } from './useNavMenu';
 
 const OPENAEV_FALLBACK_URL = 'https://filigran.io/solutions/open-aev/';
 const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
@@ -57,6 +58,33 @@ export interface NavBarViewProps {
   footer: React.ReactNode;
   navLabel: string;
 }
+
+const renderNavItemBadge = (badge: NonNullable<NavItem['badge']>, anchored = true, compact = false) => {
+  const badgeNode = (
+    <Badge
+      bareAnchor={anchored && !compact ? 'md' : false}
+      content={badge.content}
+      dot={compact}
+      accessibleText={badge.accessibleText}
+      {...(anchored ? { children: <span className="inline-flex h-4 w-4 shrink-0" aria-hidden="true" /> } : {})}
+    />
+  );
+
+  if (!badge.accessibleText) {
+    return badgeNode;
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex" aria-hidden="true">
+          {badgeNode}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="right">{badge.accessibleText}</TooltipContent>
+    </Tooltip>
+  );
+};
 
 export const NavBarView: React.FC<NavBarViewProps> = ({
   groups,
@@ -113,14 +141,33 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
 
   const renderItem = (item: NavItem) => {
     if (!item.subItems || item.subItems.length === 0) {
+      const rowBody = (
+        <Link
+          to={item.link}
+          aria-label={item.label}
+          aria-current={isRouteSelected(pathname, item.link, item.exact) ? 'page' : undefined}
+        >
+          {renderRowBody(item.icon, item.label)}
+        </Link>
+      );
+
+      console.log('collapsed', collapsed);
+
+      if (item.badge) {
+        return (
+          <div key={item.id} className="relative">
+            <NavbarItem asChild tooltipLabel={item.label}>{rowBody}</NavbarItem>
+            <div className="absolute inset-y-0 right-2 flex items-center">
+              {renderNavItemBadge(item.badge, true, collapsed)}
+            </div>
+
+          </div>
+        );
+      }
+
       return (
         <NavbarItem key={item.id} asChild tooltipLabel={item.label}>
-          <Link
-            to={item.link}
-            aria-current={isRouteSelected(pathname, item.link, item.exact) ? 'page' : undefined}
-          >
-            {renderRowBody(item.icon, item.label)}
-          </Link>
+          {rowBody}
         </NavbarItem>
       );
     }
@@ -194,7 +241,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   const flowOffset = `${settingsMessagesBannerHeight}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const data = usePreloadedQuery<NavBarQuery>(navBarQuery, queryRef);
-  const groups = useNavMenu();
+  const groups = useNavMenuWithBadges();
 
   const [navOpen, setNavOpen] = useState(readNavOpen());
   const [openSubmenus, setOpenSubmenus] = useState<string[]>(readSelectedMenu());

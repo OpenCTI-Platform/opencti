@@ -108,12 +108,18 @@ export interface NavSubItem {
   granted?: boolean;
 }
 
+export interface NavItemBadge {
+  content: number;
+  accessibleText: string;
+}
+
 export interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
   link: string;
   exact?: boolean;
+  badge?: NavItemBadge;
   subItems?: NavSubItem[];
 }
 

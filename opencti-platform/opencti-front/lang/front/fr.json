@@ -22,6 +22,7 @@
   "{count} iterations": "{count} itérations",
   "{count} objects selected": "{count} objets sélectionnés",
   "{count} results": "{count} résultats",
+  "{count} connector update available": "{count} mise à jour du connecteur disponible",
   "{count} tool calls": "{count} appels d’outils",
   "{count} transfers": "{count} transferts",
   "{count}d ago": "il y a {count} j",
