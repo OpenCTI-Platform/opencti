@@ -5,6 +5,11 @@ services:
     restart: unless-stopped
     ports:
       - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   opencti-dev-redis-insight:
     container_name: opencti-dev-redis-insight
     image: redislabs/redisinsight:latest
@@ -12,6 +17,13 @@ services:
     ports:
       - 8001:8001
       - 5540:5540
+    # BusyBox image: TCP probe through node, which ships in the image
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(5540,'127.0.0.1').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
     image: elasticsearch:8.19.21
@@ -34,6 +46,12 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
     image: kibana:8.19.21
@@ -44,6 +62,12 @@ services:
       - 5601:5601
     depends_on:
       - opencti-dev-elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status > /dev/null || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
   opencti-dev-smtp:
     container_name: opencti-dev-smtp
     image: maildev/maildev:2.2.1
@@ -51,6 +75,12 @@ services:
     ports:
       - 1025:1025
       - 1080:1080
+    # Probes 1025 (SMTP), the port the platform actually consumes
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(1025,'127.0.0.1').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
   # Disabled by default, to run use:
   # podman compose --profile opensearch up -d
@@ -119,6 +149,12 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 
   ## Telemetry + tracing dependencies
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
