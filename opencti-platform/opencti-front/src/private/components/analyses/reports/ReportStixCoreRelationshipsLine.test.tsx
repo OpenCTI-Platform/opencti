@@ -39,9 +39,14 @@ vi.mock('../../../../utils/Entity', () => ({
   resolveLink: (entityType: string) => `/dashboard/${entityType}`,
 }));
 
-vi.mock('../../../../components/i18n', () => ({
-  useFormatter: () => ({ fsd: (date: string) => date }),
-}));
+vi.mock('../../../../components/i18n', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../components/i18n')>();
+
+  return {
+    ...actual,
+    useFormatter: () => ({ fsd: (date: string) => date }),
+  };
+});
 
 const dataColumns: DataColumns = {
   fromType: { label: 'From type', width: '11%', isSortable: false },
