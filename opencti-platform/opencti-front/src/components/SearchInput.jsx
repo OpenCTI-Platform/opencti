@@ -24,6 +24,7 @@ import useAI from '../utils/hooks/useAI';
 import { fetchAgentsForIntent } from '../utils/ai/agentApi';
 import { NLQ_INTENT } from '../private/components/common/ai/AINLQ';
 import { useChatbot } from '../private/components/chatbox/ChatbotContext';
+import { hexToRGB } from '../utils/Colors';
 
 const MODE_SEARCH = 'search';
 const MODE_BULK = 'bulk';
@@ -65,6 +66,11 @@ const SearchInput = (props) => {
   const [nlqAgentsFetched, setNlqAgentsFetched] = useState(false);
   // Track the default agent slug so clicking NLQ toggle auto-selects it
   const [defaultNlqSlug, setDefaultNlqSlug] = useState(null);
+  // Shared hover state for the whole split-button: hovering EITHER the
+  // icon-toggle zone or the caret zone must tint the entire wrapper as one
+  // continuous button (matching the original single-<ToggleButton> look),
+  // not just the sub-zone under the pointer.
+  const [isNlqSplitHovered, setIsNlqSplitHovered] = useState(false);
 
   useEffect(() => {
     // Don't sync when in bulk mode: navigating to /search_bulk clears the URL
@@ -264,36 +270,37 @@ const SearchInput = (props) => {
 
   const isCGUStatusPending = useXtmOne && !fullyActive;
   const nlqNoAgentAvailable = useXtmOne && nlqAgentsFetched && nlqAgents.length === 0;
+  const nlqSplitDisabled = nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin);
+  const hasCaret = useXtmOne && nlqAgents.length > 0;
+
+  // Same focus-visible ring color the MuiToggleButtonGroup theme override
+  // gives every ToggleButton in this bar (mode-dependent, defined in
+  // ThemeDark/ThemeLight) — reproduced here for the caret <button>, which
+  // isn't a ToggleButton so doesn't get it for free (see .nlq-split-caret
+  // in index.css).
+  const nlqCaretFocusRingColor = theme.palette.mode === 'dark' ? '#BDFFED' : '#74E9CA';
 
   const aiColor = theme.palette.ai?.main;
-  const nlqToggleButtonSx = {
-    ...toggleButtonSx,
-    width: 'auto', // wider than standard because it contains icon + caret
-    minWidth: 36,
-    px: 1,
-    // Always show AI/pink color on the NLQ button — use !important to beat MUI's default ToggleButton color
-    color: `${aiColor} !important`,
-    '&.Mui-selected': {
-      backgroundColor: aiColor ? `${aiColor}24` : undefined,
-      color: `${aiColor} !important`,
-      borderColor: aiColor,
-      '&:hover': {
-        backgroundColor: aiColor ? `${aiColor}30` : undefined,
-      },
-    },
-    '&:hover': {
-      backgroundColor: aiColor ? `${aiColor}12` : undefined,
-    },
-    ...(isNLQActivated && {
-      backgroundColor: aiColor ? `${aiColor}18` : undefined,
-      borderColor: aiColor,
-    }),
-    // Keep AI/pink color even when disabled (no agents available)
-    '&.Mui-disabled': {
-      color: `${aiColor} !important`,
-      opacity: 0.5,
-    },
-  };
+  // Single source of truth for the split-button's background: both the
+  // icon-toggle zone and the caret zone must render the SAME tint at the
+  // SAME time (driven by shared hover state, not each zone's own hover).
+  // Idle/hover-while-unselected match the tint the app-wide
+  // MuiToggleButtonGroup theme override applies to every other button in
+  // this control (theme.palette.primary.main alpha). Once in AI mode
+  // (selected) AND hovered, the background switches to the AI color instead,
+  // so hovering the active AI button reads as distinctly "AI" rather than
+  // generic-selected. Both the ToggleButton and the caret <button> have
+  // their own background neutralized to transparent so this wrapper
+  // background is the only thing visible.
+  const nlqSplitBackground = (() => {
+    if (nlqSplitDisabled) return 'transparent';
+    if (isNLQActivated) {
+      return isNlqSplitHovered && aiColor
+        ? hexToRGB(aiColor, 0.3)
+        : hexToRGB(theme.palette.primary.main, 0.25);
+    }
+    return isNlqSplitHovered ? hexToRGB(theme.palette.primary.main, 0.15) : 'transparent';
+  })();
 
   return (
     <>
@@ -351,57 +358,102 @@ const SearchInput = (props) => {
             </ToggleButton>
           </Tooltip>
 
-          {/* NLQ split button — icon toggles NLQ, caret opens agent selector */}
+          {/* NLQ split button — icon toggles NLQ, caret opens agent selector.
+              The icon toggle and the caret are two real, independently
+              focusable elements (a <button> cannot validly nest another),
+              but they share one background driven by React state so they
+              still read, hover, and highlight as a single button, matching
+              the rest of the segmented control (no visible outer border). */}
           {isAIEnabled && (
-            <Tooltip
-              title={(isCGUStatusPending && !isAdmin)
-                ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
-                : nlqNoAgentAvailable
-                  ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
-                  : isNLQActivated && selectedAgent
-                    ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
-                    : t_i18n('Ask AI')}
+            <span
+              onMouseEnter={() => setIsNlqSplitHovered(true)}
+              onMouseLeave={() => setIsNlqSplitHovered(false)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'stretch',
+                height: 36,
+                borderRadius: theme.shape.borderRadius,
+                backgroundColor: nlqSplitBackground,
+                // No overflow: hidden here — both zones have their own
+                // background/border-radius fully neutralized (transparent,
+                // 0), so nothing needs clipping to this wrapper's rounded
+                // corners, and clipping would also cut off each zone's
+                // focus-visible ring when tabbing through them.
+                opacity: nlqSplitDisabled ? 0.5 : 1,
+              }}
             >
-              <span>
-                <ToggleButton
-                  value={mode}
-                  selected={isNLQActivated}
-                  sx={nlqToggleButtonSx}
-                  onClick={handleNlqToggleClick}
-                  disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
-                >
-                  {/* Plain elements, not MUI layout: the segmented control is the only MUI left in the bar and its
-                      inside must not add more — see TopBar.libraryOnly.test.ts, RETIRED. */}
-                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+              <Tooltip
+                title={(isCGUStatusPending && !isAdmin)
+                  ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
+                  : nlqNoAgentAvailable
+                    ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
+                    : isNLQActivated && selectedAgent
+                      ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
+                      : t_i18n('Ask AI')}
+              >
+                <span>
+                  <ToggleButton
+                    value={mode}
+                    selected={isNLQActivated}
+                    disableRipple
+                    disableFocusRipple
+                    sx={{
+                      height: '100%',
+                      minWidth: 36,
+                      width: hasCaret ? 36 : 'auto',
+                      px: 1,
+                      border: '0 !important',
+                      borderRadius: `${theme.shape.borderRadius}px !important`,
+                      textTransform: 'none',
+                      // Neutralized to transparent (with !important, since
+                      // the app-wide MuiToggleButtonGroup theme override
+                      // would otherwise tint this zone on its own hover):
+                      // the wrapping <span> above is the single source of
+                      // truth for the background, so both this zone and the
+                      // caret tint/untint together, as one continuous button.
+                      backgroundColor: 'transparent !important',
+                      color: `${aiColor} !important`,
+                      '&.Mui-disabled': { color: `${aiColor} !important` },
+                    }}
+                    onClick={handleNlqToggleClick}
+                    disabled={nlqSplitDisabled}
+                  >
                     <FiligranIcon
                       icon={LogoXtmOneIcon}
                       size="small"
                       color="ai"
                     />
-                    {/* Caret click zone — larger hit area with visual separator */}
-                    {useXtmOne && nlqAgents.length > 0 && (
-                      <span
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginLeft: 4,
-                          paddingLeft: 4,
-                          borderLeft: `1px solid ${isNLQActivated ? theme.palette.ai?.main + '40' : theme.palette.divider}`,
-                          cursor: 'pointer',
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenNlqMenu(e);
-                        }}
-                      >
-                        <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
-                      </span>
-                    )}
-                  </div>
-                </ToggleButton>
-              </span>
-            </Tooltip>
+                  </ToggleButton>
+                </span>
+              </Tooltip>
+              {hasCaret && (
+                <Tooltip title={t_i18n('Choose AI agent')}>
+                  <button
+                    type="button"
+                    aria-label={t_i18n('Choose AI agent')}
+                    className="nlq-split-caret"
+                    onClick={handleOpenNlqMenu}
+                    disabled={nlqSplitDisabled}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingLeft: 4,
+                      paddingRight: 4,
+                      border: 0,
+                      borderLeft: `1px solid ${isNLQActivated ? `${aiColor}40` : theme.palette.divider}`,
+                      background: 'transparent',
+                      color: aiColor,
+                      cursor: nlqSplitDisabled ? 'default' : 'pointer',
+                      '--nlq-caret-focus-color': nlqCaretFocusRingColor,
+                      '--nlq-caret-focus-radius': `${theme.shape.borderRadius}px`,
+                    }}
+                  >
+                    <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
+                  </button>
+                </Tooltip>
+              )}
+            </span>
           )}
         </ToggleButtonGroup>
 
