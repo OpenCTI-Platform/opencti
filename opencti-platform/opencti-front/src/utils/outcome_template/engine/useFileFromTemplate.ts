@@ -86,7 +86,7 @@ const useFileFromTemplate = () => {
     const filters = buildFiltersForTemplateWidgets(widget.dataSelection[0]?.filters ?? undefined, containerId, maxContentMarkings);
 
     try {
-      let outcome: WidgetOutcome;
+      let outcome: WidgetOutcome = { html: '', isEmpty: true };
       if (widget.type === 'list') {
         outcome = includeMetadata
           ? normalizeWidgetOutcome(await buildListOutcome(
@@ -107,7 +107,7 @@ const useFileFromTemplate = () => {
               ),
               isEmpty: false,
             };
-      } else {
+      } else if (widget.type === 'donut') {
         const { dynamicFrom, dynamicTo } = widget.dataSelection[0];
         outcome = includeMetadata
           ? normalizeWidgetOutcome(await buildDonutOutcome({

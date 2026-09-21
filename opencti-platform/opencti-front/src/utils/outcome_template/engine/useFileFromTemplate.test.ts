@@ -139,6 +139,35 @@ describe('Hook: useFileFromTemplate', () => {
     expect(content).toEqual('<div><h1>Remaining section</h1><p>Body</p></div>');
   });
 
+  it('should not send unsupported widget types through the donut resolver', async () => {
+    const { hook } = testRenderHook(() => useFileFromTemplate());
+    const { buildFileFromTemplate } = hook.result.current;
+
+    const content = await buildFileFromTemplate(
+      'aaaID',
+      [],
+      undefined,
+      {
+        id: 'testTemplate',
+        name: 'Test template',
+        fintel_template_widgets: [{
+          id: 'ZZZ',
+          variable_name: 'unknownWidget',
+          widget: {
+            type: 'unsupported-widget-type',
+            dataSelection: [{
+              filters: null,
+            }],
+          },
+        }],
+        template_content: 'Value: $unknownWidget',
+      } as never,
+    );
+
+    expect(buildListOutcomeMock).not.toHaveBeenCalled();
+    expect(content).toEqual('Value: ');
+  });
+
   it('should preserve legacy output exactly when remove empty sections is disabled', async () => {
     buildListOutcomeMock.mockImplementation(async () => '');
     const { hook } = testRenderHook(() => useFileFromTemplate());
