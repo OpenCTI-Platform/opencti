@@ -1020,7 +1020,7 @@ describe('User has no settings capability and is organization admin query behavi
   it('Org admins should NOT update user_service_account without SETTINGS_SETACCESSES capability', async () => {
     // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
     // Even for a user of its own administrated organization, editing user_service_account must be forbidden.
-    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: [{ key: 'user_service_account', value: [true] }] },
     });
