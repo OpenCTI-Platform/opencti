@@ -78,6 +78,7 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
     objects: [relationshipId],
   });
   const reportId = (await reportResponse.json()).data.reportAdd.id;
+  let reportDeleted = false;
 
   try {
     await reportPage.goto();
@@ -101,6 +102,7 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
     ).toHaveAttribute('href', /\/knowledge\/relations\//);
 
     await deleteReport(request, reportId);
+    reportDeleted = true;
     // The relationship must still exist after the report is deleted: it is only a reference,
     // deleting the report must not cascade-delete relationships it merely referenced.
     const survivingRelationship = await graphqlQuery(request, `
@@ -112,6 +114,13 @@ test('Report relationships tab', { tag: ['@report', '@knowledge', '@mutation', '
     `);
     expect((await survivingRelationship.json()).data.stixCoreRelationship?.id).toEqual(relationshipId);
   } finally {
+    if (!reportDeleted) {
+      try {
+        await deleteReport(request, reportId);
+      } catch (error) {
+        console.warn(`Unable to delete report ${reportId}:`, error);
+      }
+    }
     await deleteRelationship(request, relationshipInput);
   }
 });
