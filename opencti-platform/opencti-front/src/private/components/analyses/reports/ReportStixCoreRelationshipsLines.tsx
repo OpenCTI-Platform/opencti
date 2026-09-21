@@ -4,7 +4,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
+import {
+  StixCoreRelationshipsLinesPaginationQuery,
+  StixCoreRelationshipsLinesPaginationQuery$variables,
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$key } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLines_data.graphql';
 import { stixCoreRelationshipsLinesFragment, stixCoreRelationshipsLinesQuery } from '@components/common/stix_core_relationships/StixCoreRelationships';
 import ReportStixCoreRelationshipsLine, { ReportStixCoreRelationshipsLineDummy, ReportRelationshipNode } from './ReportStixCoreRelationshipsLine';
