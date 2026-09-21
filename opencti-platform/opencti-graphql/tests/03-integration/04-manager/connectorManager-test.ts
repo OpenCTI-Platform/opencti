@@ -9,7 +9,7 @@ import { ConnectorType } from '../../../src/generated/graphql';
 import { elIndex } from '../../../src/database/engine';
 import { ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
 import { INDEX_HISTORY, RABBIT_QUEUE_PREFIX } from '../../../src/database/utils';
-import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
+import { deleteCompletedWorks } from '../../../src/modules/connector/connector-manager';
 import type { BasicStoreEntityConnector } from '../../../src/modules/connector/connector-types';
 import type { Work } from '../../../src/types/work';
 import { metrics } from '../../../src/database/rabbitmq';
