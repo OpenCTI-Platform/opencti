@@ -12,6 +12,32 @@ describe('sequencer apply levels', () => {
     expect(computeApplyLevels([{ dependsOn: [3] }, { dependsOn: [-1] }, { dependsOn: [1] }])).toEqual([0, 0, 1]);
   });
 
+  it('keeps planner phases as barriers when a phase function is given', () => {
+    // two entities (phase 0), two relations (phase 1) without recorded edges, one container (phase 2)
+    const order = [{}, {}, {}, {}, {}];
+    const phases = [0, 0, 1, 1, 2];
+    expect(computeApplyLevels(order, { phaseOf: (i) => phases[i] })).toEqual([0, 0, 1, 1, 2]);
+    // a recorded edge inside a phase still deepens: relation 3 depends on relation 2
+    const withEdge = [{}, {}, {}, { dependsOn: [2] }, {}];
+    expect(computeApplyLevels(withEdge, { phaseOf: (i) => phases[i] })).toEqual([0, 0, 1, 2, 3]);
+    expect(computeApplyLevels([{}, {}], { phaseOf: () => 1 })).toEqual([0, 0]);
+  });
+
+  it('serializes groups that own a common identity and lets unrelated ones run together', () => {
+    // groups 0 and 2 are the same malware under two STIX ids (shared standard id); group 1 is another entity
+    const own = [['malware--std', 'malware--stix-a'], ['tool--x'], ['malware--std', 'malware--stix-b'], ['tool--y']];
+    expect(computeApplyLevels([{}, {}, {}, {}], { ownIdsOf: (i) => own[i] })).toEqual([0, 0, 1, 0]);
+  });
+
+  it('orders a group after the in-batch owner of an id it references, and keeps hub readers parallel', () => {
+    // group 0 creates technique T; groups 1, 2, 3 are relations to T (they reference T, they do not own it)
+    const own = [['attack-pattern--T'], ['relationship--1'], ['relationship--2'], ['relationship--3']];
+    const refs = [[], ['malware--m1', 'attack-pattern--T'], ['malware--m2', 'attack-pattern--T'], ['malware--m3', 'attack-pattern--T']];
+    expect(computeApplyLevels([{}, {}, {}, {}], { ownIdsOf: (i) => own[i], refIdsOf: (i) => refs[i] })).toEqual([0, 1, 1, 1]);
+    // a reference to an id nobody in the batch owns adds nothing
+    expect(computeApplyLevels([{}, {}], { ownIdsOf: () => [], refIdsOf: () => ['identity--elsewhere'] })).toEqual([0, 0]);
+  });
+
   it('groups indices by contiguous level, in plan order inside a level', () => {
     expect(groupIndicesByLevel([0, 1, 1, 2, 0])).toEqual([[0, 4], [1, 2], [3]]);
     expect(groupIndicesByLevel([])).toEqual([]);

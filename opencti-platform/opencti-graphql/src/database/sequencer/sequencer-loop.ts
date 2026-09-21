@@ -37,7 +37,7 @@ import { sequencerMetrics } from './sequencer-metrics';
 import { SequencerQueue } from './sequencer-queue';
 import { buildIntent } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
-import { buildBatchPlan, canonicalKey } from './sequencer-batch-plan';
+import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
 import { setCurrentBatchLock } from './sequencer-batch-lock';
 import type { CoalesceGroup } from './sequencer-batch-plan';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
@@ -756,7 +756,30 @@ const runBatchLoop = async () => {
         // commit: only the ES round trips of independent intents overlap, bounded by
         // apply_concurrency. The apply phase is then recorded once per batch (wall time).
         const tApply = Date.now();
-        const byLevel = groupIndicesByLevel(computeApplyLevels(plan.order));
+        const groupIntents = (i: number) => [plan.order[i].leader, ...plan.order[i].absorbed];
+        const ownIdsOf = (i: number) => {
+          const ids = new Set<string>();
+          groupIntents(i).forEach((it) => {
+            const endpoints = it.kind === 'relation' ? new Set([it.input.fromId, it.input.toId]) : new Set();
+            it.candidateIds.forEach((id) => {
+              if (!endpoints.has(id)) ids.add(id);
+            });
+          });
+          return ids;
+        };
+        const refIdsOf = (i: number) => {
+          const ids = new Set<string>();
+          groupIntents(i).forEach((it) => {
+            if (it.kind === 'relation') [it.input.fromId, it.input.toId].forEach((id) => {
+              if (typeof id === 'string') ids.add(id);
+            });
+            (it.referencedIds ?? []).forEach((id) => ids.add(id));
+          });
+          return ids;
+        };
+        const byLevel = groupIndicesByLevel(computeApplyLevels(plan.order, {
+          phaseOf: (i) => classifyPhase(plan.order[i].leader), ownIdsOf, refIdsOf,
+        }));
         for (let lvl = 0; lvl < byLevel.length; lvl += 1) {
           const indices = byLevel[lvl] ?? [];
           if (indices.length > 0) await runBounded(indices, applyConcurrency, (i) => processGroup(i));
