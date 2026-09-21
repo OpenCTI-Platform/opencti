@@ -53,6 +53,16 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(plan.chainedSteps).toBe(0);
   });
 
+  it('keys an unknown entity on its standard id: twins asserted under two STIX ids share one chain, the second defers (2026-09-21)', () => {
+    // the same malware from two ATT&CK collections: same standard id first, different STIX ids and inputs
+    const enterprise = intentOf({ kind: 'entity', input: { name: 'Industroyer', stix_id: 'malware--1d8d' }, candidateIds: ['malware--4f2e', 'malware--1d8d'] });
+    const ics = intentOf({ kind: 'entity', input: { name: 'Industroyer', stix_id: 'malware--e401' }, candidateIds: ['malware--4f2e', 'malware--e401'] });
+    const other = intentOf({ kind: 'entity', input: { name: 'Other' }, candidateIds: ['malware--zzzz', 'malware--0000'] });
+    const plan = buildBatchPlan([enterprise, ics, other], noResolve);
+    expect(plan.order.map((g) => g.leader)).toEqual([enterprise, other]);
+    expect(plan.deferred).toEqual([{ intent: ics, reason: 'unresolved_target' }]);
+  });
+
   it('chains a different input on a RESOLVED entity target behind the previous write (P2 merge-fold)', () => {
     const a = intentOf({ kind: 'entity', input: { name: 'ACME', aliases: ['A1'] }, candidateIds: ['identity--org'] });
     const b = intentOf({ kind: 'entity', input: { name: 'ACME', aliases: ['A2'] }, candidateIds: ['identity--org'] });

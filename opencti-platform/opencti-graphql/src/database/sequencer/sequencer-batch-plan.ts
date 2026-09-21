@@ -88,7 +88,13 @@ export const canonicalKey = (intent: SequencerIntent, resolveId: (id: string) =>
   // boundary's candidate ids were empty for all entities, so all of them collided on "e:"
   // and one applied per batch while the rest deferred).
   if (intent.candidateIds.length === 0) return `e:!${intent.id}`;
-  return `e:${[...intent.candidateIds].sort().join(',')}`;
+  // Key on the STANDARD id alone (getInputIds puts it first: it IS the entity's identity), not
+  // on the whole candidate list. Found 2026-09-21 (MITRE, chunk 48 and concurrent apply): the
+  // same malware asserted by two bundles under two STIX ids had two candidate lists, hence two
+  // keys, two groups in one batch, and the second create never saw the first's fresh in-batch
+  // write: two documents per standard id. With one key the twins share a chain and the second
+  // defers one batch, as every same-target different-input creation on an unknown target does.
+  return `e:${intent.candidateIds[0]}`;
 };
 
 // D2 v3 (2026-08-25, after the batchEwp series under worker-side concurrency): three
