@@ -12,6 +12,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
+import { Chip } from '@filigran/design-system';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -298,22 +299,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
         <Stack direction="column" alignItems="flex-start" gap={0.5}>
           {updateBadge && (
-            <Box
-              sx={{
-                px: 0.75,
-                py: 0.25,
-                borderRadius: 1,
-                fontSize: 11,
-                fontWeight: 600,
-                lineHeight: 1.25,
-                color: updateBadge.color,
-                backgroundColor: updateBadge.background,
-                border: `1px solid ${updateBadge.border}`,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {updateBadge.label}
-            </Box>
+            <Chip severity={item.incompatibility ? 'high' : 'info'} label={updateBadge.label} />
           )}
           {item.status === 'processing'
             ? <ItemBoolean status={undefined} label={statusText} />

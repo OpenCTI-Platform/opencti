@@ -11,6 +11,7 @@ import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
+import { Chip } from '@filigran/design-system';
 
 interface StatusDotProps {
   item: DeployedIntegrationItem;
@@ -94,6 +95,13 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
     if (item.status === 'processing') return <ItemBoolean status={undefined} label={statusText} />;
     return <ItemBoolean status={item.status === 'active'} label={statusText} />;
   })();
+
+  const updateBadge = item.updateAvailable ? {
+    label: item.incompatibility ? t_i18n('Incompatible') : t_i18n('Update available'),
+    color: item.incompatibility ? theme.palette.error.main : theme.palette.warning.main,
+    background: item.incompatibility ? alpha(theme.palette.error.main, 0.12) : alpha(theme.palette.warning.main, 0.12),
+    border: item.incompatibility ? alpha(theme.palette.error.main, 0.35) : alpha(theme.palette.warning.main, 0.35),
+  } : null;
 
   return (
     <Box
@@ -248,9 +256,12 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+          <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+            {updateBadge && (
+              <Chip severity={item.incompatibility ? 'high' : 'info'} label={updateBadge.label} />
+            )}
             {statusChip}
-          </Box>
+          </Stack>
         </Stack>
       </Card>
     </Box>

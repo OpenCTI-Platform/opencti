@@ -55,6 +55,7 @@ interface DeployedFacetSidebarProps {
     typeCounts: Record<string, number>;
     statusCounts: Record<string, number>;
     kindCounts: Record<string, number>;
+    updateAvailableCount: number;
   };
 }
 
@@ -175,6 +176,17 @@ const DeployedFacetSidebar = ({
               onToggle={() => onFiltersChange((prev) => ({ ...prev, statuses: toggleValue(prev.statuses, status) }))}
             />
           ))}
+        </Box>
+
+        <Box sx={dividedGroupSx}>
+          <FacetGroupLabel>{t_i18n('Version')}</FacetGroupLabel>
+          <FacetCheckbox
+            checked={filters.updateAvailable}
+            count={facets.updateAvailableCount}
+            icon={AutorenewOutlined}
+            label={t_i18n('Update available')}
+            onToggle={() => onFiltersChange((prev) => ({ ...prev, updateAvailable: !prev.updateAvailable }))}
+          />
         </Box>
       </Box>
     </Box>
