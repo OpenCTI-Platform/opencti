@@ -116,7 +116,10 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
         const blob = new Blob([base64ToBytes(result.globalConfigurationExport)], { type: 'application/zip' });
         const safeBundleName = bundleName.trim().replace(/[^a-z0-9-_]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80);
         const suffix = safeBundleName ? `_${safeBundleName}` : '';
-        const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
         fileDownload(blob, `${year}${month}${day}_opencti_config_export${suffix}.zip`);
       }
     } finally {
