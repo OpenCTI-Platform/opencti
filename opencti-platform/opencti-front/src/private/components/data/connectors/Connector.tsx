@@ -54,7 +54,7 @@ import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+import { Chip, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import { getDeployedConnectorDetails } from './connectorDetails';
 
 const interval$ = interval(FIVE_SECONDS);
@@ -302,6 +302,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     managerContractDefinition: connector.manager_contract_definition,
     managerContractExcerpt: connector.manager_contract_excerpt,
   });
+  const compatibleUpdateVersion = connector.update_available
+    ? connector.latest_compatible_version?.trim() || null
+    : null;
 
   // Component for Overview content (without ConnectorWorks)
   const connectorOverviewContent = useMemo(() => (
@@ -668,6 +671,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   <Grid item xs={6}>
                     <Label>{t_i18n('Deployed version')}</Label>
                     <Typography component="div" variant="body1">{deployedVersion || t_i18n('Not provided')}</Typography>
+                    {compatibleUpdateVersion && (
+                      <Box sx={{ marginTop: 1 }}>
+                        <Chip severity="high" label={`${t_i18n('Update available')}: ${compatibleUpdateVersion}`} />
+                      </Box>
+                    )}
                   </Grid>
                   <Grid item xs={6}>
                     <Label>{t_i18n('Slug')}</Label>
@@ -723,6 +731,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     checkLastRunExistingInState,
     checkLastRunIsNumber,
     lastRunConverted,
+    compatibleUpdateVersion,
     theme,
     t_i18n,
     nsdt,
@@ -1124,6 +1133,8 @@ const Connector = createRefetchContainer(
           messages_number
           messages_size
         }
+        update_available
+        latest_compatible_version
         updated_at
         created_at
         config {
