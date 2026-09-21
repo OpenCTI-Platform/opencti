@@ -7,7 +7,7 @@ import { meterManager } from '../../config/tracing';
 
 export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred' | 'retained';
 export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events' | 'resolve_ahead';
-export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent';
+export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'written_hit' | 'written_shielded';
 
 class SequencerMetrics {
   private intents: Counter | null = null;
@@ -49,6 +49,8 @@ class SequencerMetrics {
   private memberDeadStrippedCounter: Counter | null = null;
 
   private rootFailures: Counter | null = null;
+
+  private missingRefOrigins: Counter | null = null;
 
   private searchCallers: Counter | null = null;
 
@@ -151,6 +153,10 @@ class SequencerMetrics {
       valueType: ValueType.INT,
       description: 'Deferrals by reason (P2 residual reasons + s9.8 certainty reasons queued_producer/member_wait)',
     });
+    this.missingRefOrigins = meter.createCounter('opencti_sequencer_missing_ref_origin_total', {
+      valueType: ValueType.INT,
+      description: 'Reference ids missing at apply, by origin (written_in_map, written_evicted, in_batch, outside) and outcome (parked, deferred, failed, final); written-index probe 2026-09-21',
+    });
     this.memberDeadCounter = meter.createCounter('opencti_sequencer_member_dead_total', {
       valueType: ValueType.INT,
       description: 'Intents rejected final: an in-bundle ref whose producer never arrived (its creation failed), s9.8.2',
@@ -251,6 +257,10 @@ class SequencerMetrics {
 
   deferReason(reason: string) {
     this.deferReasons?.add(1, { reason });
+  }
+
+  missingRefOrigin(origin: string, outcome: string) {
+    this.missingRefOrigins?.add(1, { origin, outcome });
   }
 
   memberDead(count = 1) {

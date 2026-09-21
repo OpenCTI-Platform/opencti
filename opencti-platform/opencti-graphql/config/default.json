@@ -109,6 +109,7 @@
       "bundle_intake": false,
       "park_soft_refs": false,
       "apply_concurrency": 1,
+      "identity_map_written_index": false,
       "origin": "worker"
     },
     "locked_account_statuses": {

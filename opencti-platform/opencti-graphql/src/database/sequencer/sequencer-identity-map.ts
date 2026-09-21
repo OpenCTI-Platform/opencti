@@ -13,6 +13,13 @@
 // merges partially covered by the EDIT event on the post-merge target (its x_opencti_stix_ids
 // then include the absorbed sources' stix ids, so their keys cascade-evict; remaining source
 // keys age out by TTL until the Stage D merge barrier evicts explicitly), TTL last.
+// Written index (2026-09-21, knob identity_map_written_index): the elements the RUNNING batch
+// applied are also pinned in a batch-local index, consulted first and immune to invalidation,
+// barrier clears, LRU and TTL until the loop drops it at commit. Under the batch lock the
+// sequencer is the single writer of those keys: a mid-batch invalidation of an own write is
+// the previous batch's own event coming back through pub/sub, or an external actor racing the
+// lock; both re-read from ES at the next batch anyway. Same single-writer caveat as the
+// negative cache below.
 import { getInstanceIds } from '../../schema/identifier';
 import { BASE_TYPE_RELATION } from '../../schema/general';
 import { extractEntityRepresentativeName } from '../entity-representative';
@@ -59,6 +66,11 @@ export class SequencerIdentityMap {
 
   private absentTyped = new Map<string, string[]>();
 
+  // written index: entries applied by the running batch, by internal id, plus id -> internal id
+  private written = new Map<string, MapEntry>();
+
+  private writtenIndex = new Map<string, string>();
+
   size() {
     return this.byInternalId.size;
   }
@@ -71,6 +83,14 @@ export class SequencerIdentityMap {
   }
 
   private lookup(id: string): MapEntry | undefined {
+    if (SEQUENCER_CONFIG.writtenIndex) {
+      const writtenInternalId = this.writtenIndex.get(id);
+      const writtenEntry = writtenInternalId ? this.written.get(writtenInternalId) : undefined;
+      if (writtenEntry) {
+        sequencerMetrics.mapEvent('written_hit');
+        return writtenEntry;
+      }
+    }
     const internalId = this.idIndex.get(id);
     if (!internalId) return undefined;
     const entry = this.byInternalId.get(internalId);
@@ -144,14 +164,49 @@ export class SequencerIdentityMap {
     this.store(element, element);
   }
 
+  // Apply result of the running batch (read-your-writes for its later intents, E2). With the
+  // written index on, the entry is also pinned batch-locally until clearWritten().
+  ingestWritten(element: any, withRefsBasis: boolean) {
+    this.store(element, withRefsBasis ? element : null);
+    if (!SEQUENCER_CONFIG.writtenIndex) return;
+    const internalId = element.internal_id;
+    const entry = internalId ? this.byInternalId.get(internalId) : undefined;
+    if (!entry) return;
+    const previous = this.written.get(internalId);
+    if (previous) previous.keys.forEach((k) => this.writtenIndex.delete(k));
+    this.written.set(internalId, entry);
+    entry.keys.forEach((k) => this.writtenIndex.set(k, internalId));
+  }
+
+  clearWritten() {
+    this.written.clear();
+    this.writtenIndex.clear();
+  }
+
+  writtenSize() {
+    return this.written.size;
+  }
+
   evict(ids: string[], reason: 'write' | 'invalidate' = 'invalidate') {
     const internalIds = new Set<string>();
     ids.forEach((id) => {
-      const internalId = this.idIndex.get(id);
+      const internalId = this.idIndex.get(id) ?? this.writtenIndex.get(id);
       if (internalId) internalIds.add(internalId);
     });
     internalIds.forEach((internalId) => {
+      if (reason === 'invalidate' && SEQUENCER_CONFIG.writtenIndex && this.written.has(internalId)) {
+        // an own write of the running batch: shielded until the loop's commit-time evict
+        sequencerMetrics.mapEvent('written_shielded');
+        return;
+      }
       this.removeEntry(internalId);
+      if (reason === 'write') {
+        const pinned = this.written.get(internalId);
+        if (pinned) {
+          pinned.keys.forEach((k) => this.writtenIndex.delete(k));
+          this.written.delete(internalId);
+        }
+      }
       sequencerMetrics.mapEvent(reason === 'write' ? 'evict' : 'invalidate');
     });
   }
@@ -207,6 +262,8 @@ export class SequencerIdentityMap {
     this.idIndex.clear();
     this.clearAbsent();
     if (count > 0) sequencerMetrics.mapEvent('invalidate', count);
+    // the written index is batch-local: it survives a whole-map clear, the loop drops it at commit
+    if (this.written.size > 0) sequencerMetrics.mapEvent('written_shielded', this.written.size);
   }
 
   // Serve hook called from elFindByIds through context.sequencer.resolutions (no import in

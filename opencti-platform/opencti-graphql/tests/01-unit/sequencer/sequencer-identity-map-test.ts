@@ -163,3 +163,65 @@ describe('sequencer identity map (plan 0009 C3/C5)', () => {
     expect(served?.misses).toEqual(['malware--gone']);
   });
 });
+
+// written index (2026-09-21): batch-local pin of the running batch's own writes
+describe('sequencer identity map written index', () => {
+  const savedWritten = SEQUENCER_CONFIG.writtenIndex;
+  beforeAll(() => {
+    SEQUENCER_CONFIG.mode = 'batch';
+    SEQUENCER_CONFIG.identityMapSize = 100;
+    SEQUENCER_CONFIG.identityMapTtlS = 600;
+    SEQUENCER_CONFIG.writtenIndex = true;
+  });
+  afterAll(() => {
+    SEQUENCER_CONFIG.mode = savedMode;
+    SEQUENCER_CONFIG.identityMapSize = savedSize;
+    SEQUENCER_CONFIG.identityMapTtlS = savedTtl;
+    SEQUENCER_CONFIG.writtenIndex = savedWritten;
+  });
+
+  it('keeps an own write through an invalidation and a whole-map clear, until the commit evict', async () => {
+    const map = new SequencerIdentityMap();
+    map.ingestWritten(element('int1', 'malware--aaa', 'Malware', { x_opencti_stix_ids: ['malware--bbb'] }), false);
+    const ctx = executionContext('test');
+    map.evict(['malware--bbb']); // pub/sub EDIT or barrier invalidation mid-batch
+    const served = await map.serveBare(ctx, bypassUser, ['malware--aaa'], {});
+    expect(served?.hits.map((h) => h.internal_id)).toEqual(['int1']);
+    map.clear(); // update-by-query barrier with an unknown scope
+    expect(map.resolveInternalId('malware--bbb')).toBe('int1');
+    expect(map.writtenSize()).toBe(1);
+    map.evict(['int1'], 'write'); // the loop's commit-time evict
+    expect(map.writtenSize()).toBe(0);
+    expect(map.hasBare('malware--aaa')).toBe(false);
+  });
+
+  it('survives the LRU bound and is dropped by clearWritten', () => {
+    SEQUENCER_CONFIG.identityMapSize = 2;
+    const map = new SequencerIdentityMap();
+    map.ingestWritten(element('w', 's--w'), false);
+    map.ingestBare([element('a', 's--a'), element('b', 's--b'), element('c', 's--c')]);
+    expect(map.size()).toBe(2);
+    expect(map.hasBare('s--w')).toBe(true);
+    map.clearWritten();
+    expect(map.hasBare('s--w')).toBe(false);
+    SEQUENCER_CONFIG.identityMapSize = 100;
+  });
+
+  it('a later write of the same element replaces the pinned entry', () => {
+    const map = new SequencerIdentityMap();
+    map.ingestWritten(element('int1', 'malware--aaa'), false);
+    map.ingestWritten({ ...element('int1', 'malware--aaa'), name: 'v2' }, false);
+    expect(map.peekBare('malware--aaa')?.name).toBe('v2');
+    expect(map.writtenSize()).toBe(1);
+  });
+
+  it('with the knob off, an invalidation drops an own write as before', () => {
+    SEQUENCER_CONFIG.writtenIndex = false;
+    const map = new SequencerIdentityMap();
+    map.ingestWritten(element('int1', 'malware--aaa'), false);
+    map.evict(['malware--aaa']);
+    expect(map.hasBare('malware--aaa')).toBe(false);
+    expect(map.writtenSize()).toBe(0);
+    SEQUENCER_CONFIG.writtenIndex = true;
+  });
+});

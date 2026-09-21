@@ -48,6 +48,7 @@ let loopStarted = false;
 let loopDead = false;
 let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
 let strippedSamples = 0; // s9.10.2: bounded dead-soft-strip sampling
+let missingInBatchSamples = 0; // written-index probe: bounded sampling of refs produced in the batch
 // s9.9: batches a group may be skipped for a failed in-batch producer before it applies
 // through today's path anyway
 const FAILED_PRODUCER_DEFER_LIMIT = 2;
@@ -376,11 +377,7 @@ const applyGroup = async (
       // the result REPLACES the basis: the next chain step diffs against it instead of the
       // stale stored element. A creation result is never a valid basis (buildEntityData
       // strips the ref input fields): bare ingest only.
-      if (sequencerIdentityMap.hasWithRefs(element.internal_id)) {
-        sequencerIdentityMap.ingestWithRefs(element);
-      } else {
-        sequencerIdentityMap.ingestBare([element]);
-      }
+      sequencerIdentityMap.ingestWritten(element, sequencerIdentityMap.hasWithRefs(element.internal_id));
       getInstanceIds(element).forEach((id: string) => writtenIds.push(id));
       // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (pushed into the
       // sink by inputResolveRefs) become pending-ref inputs, persisted with the batch at
@@ -554,6 +551,28 @@ const runBatchLoop = async () => {
     const deferrals: { intent: SequencerIntent; absorbed: SequencerIntent[]; missing: string[]; err: unknown }[] = [];
     const hardRefIds = (intent: SequencerIntent): string[] => [intent.input.fromId, intent.input.toId]
       .filter((id): id is string => typeof id === 'string' && id.length > 0);
+    const writtenIds: string[] = [];
+    // written-index probe (2026-09-21): where does a reference missing at apply come from?
+    // written_*: this batch already applied its producer (in_map: the map still holds it, so
+    // the resolver never asked the map; evicted: a mid-batch invalidation dropped it);
+    // in_batch: the producer is co-batched but not applied yet, or failed; outside: not in
+    // this batch at all. Says whether a batch-local written index has anything to close.
+    let batchOwnIds: Set<string> | null = null;
+    const classifyMissing = (missing: string[], outcome: 'parked' | 'deferred' | 'failed' | 'final') => {
+      const own = batchOwnIds ?? new Set<string>(plan.order.flatMap((g) => [g.leader, ...g.absorbed].flatMap((i) => i.candidateIds)));
+      batchOwnIds = own;
+      const written = new Set(writtenIds);
+      missing.forEach((id) => {
+        let origin = 'outside';
+        if (written.has(id)) origin = sequencerIdentityMap.peekBare(id) ? 'written_in_map' : 'written_evicted';
+        else if (own.has(id)) origin = 'in_batch';
+        sequencerMetrics.missingRefOrigin(origin, outcome);
+        if (origin !== 'outside' && missingInBatchSamples < 20) {
+          missingInBatchSamples += 1;
+          logApp.info('[SEQUENCER] missing reference produced in this batch', { id, origin, outcome });
+        }
+      });
+    };
     const t0 = Date.now();
     const plan = buildBatchPlan(batch, (id) => sequencerIdentityMap.resolveInternalId(id), forceDirect, {
       parkSoftRefs: SEQUENCER_CONFIG.parkSoftRefs,
@@ -572,6 +591,7 @@ const runBatchLoop = async () => {
     // NOW with the FINAL error code (distinct from MISSING_REFERENCE_ERROR on purpose):
     // pycti's retry classifier reports the object once and drops it, no retry budget burnt.
     plan.finalMissing.forEach(({ intent, missing }) => {
+      classifyMissing(missing, 'final');
       sequencerMetrics.memberDead();
       const err = MissingReferenceFinalError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' });
       // retry-gap option 1: a "dead" member is usually just LATE (verdict 31): retain the
@@ -667,9 +687,14 @@ const runBatchLoop = async () => {
     const onApplyFailure = (group: CoalesceGroup, err: unknown) => {
       const { leader, absorbed } = group;
       const isMissingRef = (err as any)?.extensions?.code === 'MISSING_REFERENCE_ERROR';
+      const missingIds = (): string[] => {
+        const unresolved: unknown = (err as any)?.extensions?.data?.unresolvedIds ?? (err as any)?.data?.unresolvedIds;
+        return Array.isArray(unresolved) && unresolved.length > 0 ? unresolved.map(String) : hardRefIds(leader);
+      };
       const known = parkedMeta.get(leader.id);
       const deadline = known?.deadline ?? (Date.now() + SEQUENCER_CONFIG.parkDeadlineMs);
       if (SEQUENCER_CONFIG.parkSoftRefs && isMissingRef && !forceDirect.has(leader.id) && deadline > Date.now()) {
+        classifyMissing(missingIds(), 'parked');
         const parkedAt = known?.parkedAt ?? Date.now();
         sequencerMetrics.intent('parked', leader.kind);
         parked.push({ intent: leader, deadline, parkedAt });
@@ -683,11 +708,12 @@ const runBatchLoop = async () => {
       // RETAINED (pending intents store) when the caller asked for it, instead of failing
       // into a retry ladder that no longer exists on the chunk path
       if (isMissingRef && leader.context?.deferMissingRefs && pendingIntentsAccepting()) {
-        const unresolved: unknown = (err as any)?.extensions?.data?.unresolvedIds ?? (err as any)?.data?.unresolvedIds;
-        const missing = Array.isArray(unresolved) && unresolved.length > 0 ? unresolved.map(String) : hardRefIds(leader);
+        const missing = missingIds();
+        classifyMissing(missing, 'deferred');
         deferrals.push({ intent: leader, absorbed, missing, err });
         return;
       }
+      if (isMissingRef) classifyMissing(missingIds(), 'failed');
       sequencerMetrics.intent('failed', leader.kind);
       leader.reject(err);
       // absorbed asserted the same input on the same target: they fail identically today
@@ -697,7 +723,6 @@ const runBatchLoop = async () => {
       });
       lanes.wake(settledIds([leader, ...absorbed]), 'failed'); // B10: waiters re-plan
     };
-    const writtenIds: string[] = [];
     const strippedInputs: StrippedRefInput[] = [];
     const buffer = new SequencerWriteBuffer();
     const pendings: PendingResolution[] = [];
@@ -892,6 +917,7 @@ const runBatchLoop = async () => {
       setCurrentWriteBuffer(null);
       setCurrentBatchLock(null);
       if (writtenIds.length > 0) sequencerIdentityMap.evict(writtenIds, 'write');
+      sequencerIdentityMap.clearWritten(); // batch-local: the next batch re-reads its writes from ES
       // s10.3: absence and prefetches are only valid while this batch's lock is held
       sequencerIdentityMap.clearAbsent();
       dedupPrefetch.clear();
