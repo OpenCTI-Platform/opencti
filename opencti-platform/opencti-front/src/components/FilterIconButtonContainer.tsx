@@ -293,6 +293,8 @@ const FilterIconButtonContainer: FunctionComponent<
                 sx={{
                   padding: '0',
                   display: 'flex',
+                  alignItems: 'center',
+                  gap: '2px',
                 }}
               >
                 <Chip
@@ -347,31 +349,29 @@ const FilterIconButtonContainer: FunctionComponent<
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
-                  onDelete={
-                    (isReadWriteFilter && authorizeFilterRemoving)
-                      ? () => manageRemoveFilter(
-                          currentFilter.id,
-                          filterKey,
-                          filterOperator,
-                        )
-                      : undefined
-                  }
-                  // The default MUI cancel icon is mouse-only (no tabIndex of
-                  // its own); a real, separately focusable button lets
-                  // keyboard users remove a filter without needing to know
-                  // the chip-focus + Backspace/Delete shortcut.
-                  deleteIcon={
-                    (isReadWriteFilter && authorizeFilterRemoving) ? (
-                      <IconButton
-                        variant="default"
-                        priority="tertiary"
-                        size="sm"
-                        aria-label={t_i18n('Remove filter')}
-                        icon={<CloseOutlined fontSize="small" />}
-                      />
-                    ) : undefined
-                  }
                 />
+                {/*
+                  A separate, sibling remove button — not MUI Chip's
+                  onDelete/deleteIcon slot — because Chip itself becomes a
+                  focusable ButtonBase (role="button", tabIndex 0) as soon as
+                  onDelete is set. Nesting a focusable IconButton inside that
+                  focusable Chip would create invalid, ambiguous nested
+                  interactive controls for assistive tech.
+                */}
+                {(isReadWriteFilter && authorizeFilterRemoving) && (
+                  <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
+                    aria-label={t_i18n('Remove filter')}
+                    icon={<CloseOutlined fontSize="small" />}
+                    onClick={() => manageRemoveFilter(
+                      currentFilter.id,
+                      filterKey,
+                      filterOperator,
+                    )}
+                  />
+                )}
               </Box>
             </Tooltip>
             {isNotLastFilter && (
