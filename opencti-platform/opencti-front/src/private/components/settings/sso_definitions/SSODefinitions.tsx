@@ -294,7 +294,12 @@ const SSODefinitions = () => {
                   : undefined
               }
             />
-            {!isEnterpriseEdition && <span onClickCapture={(e) => e.stopPropagation()}><EEChip /></span>}
+            {!isEnterpriseEdition && (
+              // This wrapper only stops the click from bubbling up to the
+              // row's own click handler; EEChip's own onClick already
+              // handles activation and stops propagation itself.
+              <span onClick={(e) => e.stopPropagation()}><EEChip /></span>
+            )}
           </Box>
         );
       },
