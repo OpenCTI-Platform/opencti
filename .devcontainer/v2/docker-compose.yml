@@ -1,0 +1,107 @@
+# =============================================================================
+#  OpenCTI — dev container stack (v2, mise)
+# =============================================================================
+# This file adds exactly ONE service: `workspace`, the development container
+# carrying the toolchains. All infrastructure comes from the include below,
+# which stays the single source of truth: no service is duplicated here.
+#
+#   docker compose -f .devcontainer/v2/docker-compose.yml up -d
+#
+# In normal use VS Code or JetBrains drives this file through
+# .devcontainer/v2/devcontainer.json.
+# =============================================================================
+
+# Pins the project name to the one the historical compose already uses, so the
+# named volumes (esdata, essnapshots) are THE SAME. Without this line the dev
+# container would start from empty volumes and replay a full Elasticsearch
+# reindexing.
+name: opencti-dev
+
+include:
+  - ../../opencti-platform/opencti-dev/docker-compose.yml
+
+services:
+  workspace:
+    container_name: opencti-dev-workspace
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    # Bringing the platform up belongs to the container, not to the editor.
+    # `postStartCommand` would be the specified place for it, but JetBrains does
+    # not run it -- its log shows a single "Launch lifecycle script command",
+    # for postCreateCommand -- so anything hung there would work in VS Code only.
+    #
+    # `;` and not `&&`: whatever post-start.sh decides, including refusing to
+    # start on a workspace that is not provisioned yet, the container must stay
+    # up for the editor to attach to.
+    # Invoked through `bash`, like postCreateCommand is, rather than relying on
+    # the executable bit -- which does not survive every checkout.
+    command: bash -c "bash /workspaces/opencti/.devcontainer/v2/post-start.sh; sleep infinity"
+
+    volumes:
+      # The repository, editable live from the host IDE.
+      - ../..:/workspaces/opencti:cached
+
+      # --- named volumes: they mask the bind mount ---------------------------
+      # re2 and node-calls-python are compiled (dependenciesMeta ... built: true).
+      # The host's macOS binaries are unusable on Linux, and the reverse is also
+      # true, so every node_modules must belong to the container.
+      - node_modules_root:/workspaces/opencti/node_modules
+      - node_modules_graphql:/workspaces/opencti/opencti-platform/opencti-graphql/node_modules
+      - node_modules_front:/workspaces/opencti/opencti-platform/opencti-front/node_modules
+      - node_modules_front_pkg:/workspaces/opencti/opencti-platform/opencti-front/packages/eslint-plugin-custom-rules/node_modules
+
+      # builder/plugin/native.node.plugin.js makes esbuild copy the .node
+      # binaries into build/. The host ones are Mach-O arm64: loading them in the
+      # container yields "invalid ELF header".
+      - graphql_build:/workspaces/opencti/opencti-platform/opencti-graphql/build
+
+      # Virtual environment managed by mise (mise.toml: _.python.venv). The host
+      # one holds darwin .so files and must never be visible from the container.
+      - venv:/workspaces/opencti/.venv
+
+      # Runtimes installed by mise: avoids re-downloading node and python on
+      # every image rebuild.
+      - mise_data:/home/vscode/.local/share/mise
+
+      # Yarn 4 global cache (enableGlobalCache is on by default).
+      - yarn_cache:/home/vscode/.yarn
+
+    environment:
+      # CONTAINER-SIDE hostnames, and the only place they are needed. Host mode
+      # has no counterpart to write: config/default.json already targets
+      # localhost for all five, which is precisely what a developer running the
+      # platform outside Docker requires. These lines make the container the
+      # exception, not the rule.
+      # No conditional branching in the code: nconf gives environment variables
+      # the highest precedence, with the `__` convention mapping
+      # app:admin:token -> APP__ADMIN__TOKEN.
+      ELASTICSEARCH__URL: http://opencti-dev-elasticsearch:9200
+      REDIS__HOSTNAME: opencti-dev-redis
+      MINIO__ENDPOINT: opencti-dev-minio
+      RABBITMQ__HOSTNAME: opencti-dev-rabbitmq
+      SMTP__HOSTNAME: opencti-dev-smtp
+
+    depends_on:
+      # The five services the platform actually consumes at startup: src/boot.ts
+      # calls checkSystemDependencies() and exits with code 1 if any of them is
+      # unreachable.
+      opencti-dev-elasticsearch: { condition: service_healthy }
+      opencti-dev-redis: { condition: service_healthy }
+      opencti-dev-rabbitmq: { condition: service_healthy }
+      opencti-dev-minio: { condition: service_healthy }
+      opencti-dev-smtp: { condition: service_healthy }
+      # kibana and redis-insight are deliberately absent: they are convenience
+      # UIs, not dependencies. Waiting on them would add ~60s to every dev
+      # container start without guaranteeing anything more.
+
+volumes:
+  node_modules_root:
+  node_modules_graphql:
+  node_modules_front:
+  node_modules_front_pkg:
+  graphql_build:
+  venv:
+  mise_data:
+  yarn_cache:

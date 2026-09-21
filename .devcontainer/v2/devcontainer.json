@@ -1,0 +1,109 @@
+// =============================================================================
+//  OpenCTI — dev container definition (v2, mise)
+// =============================================================================
+// devcontainer.json is a SPECIFICATION, not a VS Code file. It is implemented by
+// VS Code, by JetBrains Remote Development, and by the `devcontainer` CLI.
+// Nothing essential below lives in `customizations`, so the setup behaves the
+// same whichever of them opens it.
+//
+// Developers who would rather not use containers at all get the same runtimes
+// from the same mise.toml, natively on their machine. See the README.
+// =============================================================================
+{
+  "name": "OpenCTI (mise)",
+
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+
+  // Must match the paths pre-created in the Dockerfile, which are the mount
+  // points of the named volumes.
+  "workspaceFolder": "/workspaces/opencti",
+
+  // Without this, some clients (JetBrains, and the CLI when resolving config)
+  // enable every compose profile and start opensearch, keycloak, mokapi and the
+  // whole telemetry stack alongside the workspace -- 9 extra containers, one of
+  // them reserving a 2 GB JVM heap. Listing only `workspace` starts it plus the
+  // services it depends_on, and nothing else. The optional profiles stay
+  // available on demand from opencti-platform/opencti-dev/docker-compose.yml.
+  "runServices": ["workspace"],
+
+  // `vscode` is simply the uid 1000 user of the Microsoft base image; the name
+  // is historical. Every implementation honouring `remoteUser` runs as it.
+  "remoteUser": "vscode",
+
+  // Linux only, and a no-op elsewhere: aligns the container user's uid/gid with
+  // the host user's, so files written from the IDE belong to the developer on
+  // the host. macOS needs nothing, VirtioFS already remaps ownership.
+  "updateRemoteUserUID": true,
+
+  "containerEnv": {
+    // PATH is deliberately NOT set here. Prepending the mise shims requires the
+    // ${containerEnv:PATH} substitution, which the VS Code extension resolves
+    // but the `devcontainer` CLI passes through literally, leaving a container
+    // with no /usr/bin on PATH. It is set in the Dockerfile instead, where it
+    // resolves at build time and applies to every client.
+    "NODE_ENV": "development"
+  },
+
+  // Provisioning: runtimes, yarn, then the dependencies of the four apps.
+  // `postCreateCommand` is part of the specification and runs once per container
+  // creation on every implementation, so provisioning never depends on which IDE
+  // opened the workspace. It is invoked through `bash` rather than relying on the
+  // executable bit, which does not survive every checkout.
+  //
+  // The path is relative to `workspaceFolder`. The script re-anchors itself
+  // anyway, so running it by hand from anywhere behaves identically -- that is
+  // the fallback for anyone attaching with a plain `docker exec`.
+  "postCreateCommand": "bash .devcontainer/v2/post-create.sh",
+
+  // There is deliberately NO `postStartCommand` here. Bringing the platform up on
+  // every start is the container's job, through the `command:` of the workspace
+  // service -- see docker-compose.yml. The specified hook would be the natural
+  // place for it, but JetBrains never runs it: its log records one single
+  // "Launch lifecycle script command", for postCreateCommand. Putting the start
+  // back here would quietly make the feature work in VS Code only.
+
+  // The single way these ports reach the host. There is deliberately no `ports:`
+  // mapping in docker-compose.yml: it would bind 127.0.0.1:3000 as soon as the
+  // container starts, and the IDE forwarder -- finding the port taken -- would
+  // silently fall back to 3001.
+  //
+  // The consequence is that a workspace started by hand, with `docker compose up`
+  // and no IDE attached, publishes nothing. Reach it from inside the container,
+  // or attach an editor.
+  "forwardPorts": [4000, 3000],
+  "portsAttributes": {
+    "4000": { "label": "GraphQL API" },
+    "3000": { "label": "Frontend (Vite)" }
+  },
+
+  // The compose project is shared with opencti-platform/opencti-dev (same
+  // project name), so tearing it down on IDE exit would also stop the
+  // infrastructure a developer may still be using from a terminal.
+  "shutdownAction": "none",
+
+  // Optional per-IDE hints. Nothing here is required for the environment to work.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "graphql.vscode-graphql",
+        "ms-python.python"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "eslint.workingDirectories": [
+          "opencti-platform/opencti-graphql",
+          "opencti-platform/opencti-front"
+        ]
+      }
+    },
+    "jetbrains": {
+      "settings": {
+        "com.intellij:app:HttpConfigurable.use_proxy_pac": true
+      },
+      "backend": "IntelliJ"
+    }
+  }
+}

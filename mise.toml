@@ -1,0 +1,254 @@
+# =============================================================================
+#  OpenCTI — single source of truth for runtime versions
+# =============================================================================
+# This file applies to all three environments: the dev container
+# (.devcontainer/v2), the host machine, and CI.
+#
+#   mise trust && mise install
+#
+# Versions are pinned exactly so they stay reproducible over time: two
+# developers installing two weeks apart get the same binary.
+#
+#   node 22.23.2  matches cimg/node:22.23.2 (CircleCI packaging jobs) and the
+#                 node:22-alpine3.23 line used by the production images; stays
+#                 below the `<23` ceiling set in renovate.json5.
+#
+#   python 3.12   imposed, not chosen: opencti-graphql/config/default.json
+#                 hardcodes `lib/python3.12/site-packages` in
+#                 app.python_execution_venv. That path is read by
+#                 src/python/pythonBridge.js and passed to py.addImportPath().
+#                 On any other minor the backend still starts but silently
+#                 loses pycti, yara-python and pysigma.
+# =============================================================================
+
+[tools]
+node = "22.23.2"
+python = "3.12"
+
+# Only used by `mise watch`, which is how the API is restarted on a source
+# change. It is pinned here rather than left to each developer so that the
+# command exists identically in the container, on the host and in CI.
+watchexec = "latest"
+
+[env]
+# maildev listens on 1025, where config/default.json expects the standard 25, and
+# boot.ts refuses to start on an unreachable SMTP. The same value is right in the
+# container and on the host, so it belongs here rather than in a local file.
+#
+# There is deliberately no dotenv loaded from this file. A `.env` at the root
+# would be visible from BOTH the host and the dev container -- they share the
+# bind mount -- and mise applies it OVER the inherited environment. One developer
+# writing `ELASTICSEARCH__URL=http://localhost:9200` for their host would silently
+# override the hostnames docker-compose.yml gives the container, and the platform
+# would fail to boot there with no hint pointing at the culprit.
+SMTP__PORT = "1025"
+
+# Virtual environment managed by mise, inside the repository.
+# Replaces the historical `<repo>/../.python-venv` convention, which placed the
+# venv OUTSIDE the repository and therefore shared it across sibling checkouts.
+_.python.venv = { path = ".venv", create = true }
+
+# Read by scripts/with_python_virtual_env.mjs, which backs the `deps:venv`,
+# `dev:venv`, `build:venv` and `test:venv` scripts of the root package.json.
+VENV_PATH = "{{config_root}}/.venv"
+
+# Overrides app.python_execution_venv through the nconf `__` convention.
+# The default in config/default.json points outside the repository; this brings
+# it back to the venv managed above. Same value on the host and in the container.
+APP__PYTHON_EXECUTION_VENV = "{{config_root}}/.venv/lib/python3.12/site-packages"
+
+# =============================================================================
+#  Tasks
+# =============================================================================
+# The same commands in the dev container, on the host and in CI: they are
+# declared here, not in the container, precisely so that no step exists in only
+# one of the three environments.
+#
+#   mise tasks          list them
+#   mise run setup      provision a fresh checkout
+#
+# These tasks deliberately do NOT re-encode the build order. Nx already owns it
+# in the project.json files -- `opencti-graphql:install` and
+# `opencti-worker:install` both declare `dependsOn: client-python:install`, so
+# pycti is installed, editable, before anything imports it. Duplicating that
+# graph here would give us a second source of truth that silently drifts.
+#
+# Run these through `mise run` (or from a shell where `mise activate` has run),
+# never by calling the shims directly: the mise environment is what puts
+# `.venv/bin` first, and therefore what makes `pip` install into the virtual
+# environment rather than into mise's own Python installation.
+# =============================================================================
+
+[tasks."setup:yarnrc"]
+description = "Copy .yarnrc.yml into the two app directories (first install only)"
+# opencti-graphql/.yarnrc.yml and opencti-front/.yarnrc.yml are gitignored, yet
+# `yarn install` needs them: each application is its own Yarn project -- there is
+# no `workspaces` field at the root -- and the settings that matter for an
+# install (nodeLinker, nmHoistingLimits, enableScripts, npmMinimalAgeGate) live
+# in opencti-platform/.yarnrc.yml. Without the copy, the install silently runs
+# with Yarn's defaults: PnP instead of node_modules, and the build scripts of re2
+# and node-calls-python disabled.
+#
+# Existing files are never overwritten: a developer may have added a local
+# npmRegistries entry.
+run = '''
+set -e
+for app in opencti-graphql opencti-front; do
+  target="opencti-platform/$app/.yarnrc.yml"
+  if [ -f "$target" ]; then
+    echo "  $target already present"
+  else
+    cp opencti-platform/.yarnrc.yml "$target"
+    echo "  $target created"
+  fi
+done
+'''
+
+[tasks."setup:deps"]
+description = "Install the dependencies of every application"
+depends = ["setup:yarnrc"]
+# Two steps, and the first is not optional: `yarn deps` is an Nx command, and Nx
+# itself is a devDependency of the root package.json. Without the root install
+# there is no `nx` to run.
+#
+# `yarn deps` then walks every project.json declaring an `install` target:
+# client-python (pip, editable), opencti-graphql (yarn + its Python
+# requirements), opencti-front (yarn), opencti-worker (pip) and docs (mkdocs).
+# The docs are not worth a special case -- two extra packages in the venv.
+#
+# This is also where the native modules are compiled. re2 and node-calls-python
+# are the two entries re-enabled through `dependenciesMeta ... built: true` in
+# opencti-graphql/package.json, and node-calls-python builds against the headers
+# of the Python resolved here -- mise's, which is the whole point of pinning it.
+run = '''
+set -e
+
+# The one place this file branches on the operating system, and it is a linker
+# problem, not a design choice.
+#
+# node-calls-python asks `python3-config --ldflags --embed` where libpython is.
+# Under mise on macOS that answers `-lpython3.12 -ldl -framework CoreFoundation`
+# -- the name of the library, and no `-L` telling clang where it lives. The
+# build then fails with `ld: library 'python3.12' not found` although the dylib
+# is right there in mise's install. Linux answers with the path and needs none
+# of this.
+#
+# LDFLAGS is the second half: the dylib's install name is
+# `@rpath/libpython3.12.dylib`, so without an rpath the module would link and
+# then fail to load.
+if [ "$(uname)" = "Darwin" ]; then
+  python_lib="$(python3-config --prefix)/lib"
+  export LIBRARY_PATH="${python_lib}${LIBRARY_PATH:+:$LIBRARY_PATH}"
+  export LDFLAGS="-Wl,-rpath,${python_lib}${LDFLAGS:+ $LDFLAGS}"
+fi
+
+yarn install
+yarn deps
+'''
+
+[tasks."setup:config"]
+description = "Generate config/development.json if it is missing"
+# The platform refuses to boot without app:encryption_key: platformCrypto.ts
+# throws a ConfigurationError unless it decodes to at least 32 bytes. And
+# config/default.json ships "ChangeMe" as the admin token, which is not a valid
+# UUID.
+#
+# The admin password is the one value deliberately NOT generated: a developer
+# types it at every login, and a per-checkout secret means looking the file up
+# every time, on a platform that is only ever reachable from this machine. The
+# encryption key and the API token stay random -- nothing has to memorise them.
+#
+# The file is gitignored and never overwritten -- it usually holds credentials
+# the developer has already used to log in.
+run = '''
+set -e
+config="opencti-platform/opencti-graphql/config/development.json"
+if [ -f "$config" ]; then
+  echo "  $config already exists -- left untouched"
+  exit 0
+fi
+node -e '
+  const { randomUUID, randomBytes } = require("node:crypto");
+  const fs = require("node:fs");
+  const token = randomUUID();
+  const password = "AdminPassword123";
+  fs.writeFileSync(process.argv[1], JSON.stringify({
+    app: {
+      admin: { email: "admin@opencti.io", password, token },
+      encryption_key: randomBytes(32).toString("base64"),
+    },
+  }, null, 2) + "\n");
+  console.log(`  ${process.argv[1]} created`);
+  console.log(`  login admin@opencti.io / ${password}`);
+  console.log(`  api token ${token}`);
+' "$config"
+'''
+
+[tasks.setup]
+description = "Provision a fresh checkout: dependencies and development config"
+depends = ["setup:deps", "setup:config"]
+
+[tasks.dev]
+description = "Run the API and the frontend together, both reloading on a change"
+# The one command a developer runs. It deliberately does NOT go through
+# `nx run-many --target dev`: that target starts the API with `yarn start`, which
+# builds once and never looks at the sources again.
+#
+# Starting two long-running tasks is all the ordering this needs, so declaring it
+# here costs nothing -- the API and the frontend do not wait for each other, the
+# frontend simply proxies to :4000 once it answers. Everything that does have an
+# order, the installs, is still Nx's business and stays out of this file.
+#
+# The worker is not included. It is not needed to see the application, and it
+# holds a queue connection that makes it noisier to restart: `mise run dev:worker`.
+depends = ["dev:back", "dev:front"]
+
+[tasks."dev:back"]
+description = "Run the GraphQL API alone (port 4000), restarted on every change"
+# Restarting on a change belongs to whatever launched the process, not to the
+# application's build script -- so watchexec drives it from here, and
+# builder/builder.js stays the one-shot builder the production build also uses.
+#
+# `yarn start` is not reused: it re-runs graphql-codegen and re-fetches the
+# connectors manifest over the network, and neither should happen because someone
+# saved a file. Both are produced once here, only if missing, and the watched
+# command is then just esbuild plus the process.
+#
+# The cost is a cold bundle on every change -- esbuild's incremental state only
+# lives inside a process that survives, and here nothing does. Roughly ten seconds
+# more per cycle, against no watch logic anywhere in the repository.
+dir = "{{config_root}}/opencti-platform/opencti-graphql"
+run = '''
+set -e
+[ -f src/__generated__/opencti-manifest.json ] || yarn get-connectors-manifest
+[ -f src/generated/graphql.ts ] || yarn build:types
+exec watchexec --restart --watch src --watch script --exts ts,js,mjs,graphql \
+  'node builder/builder.js --development && exec node --enable-source-maps build/back.mjs'
+'''
+
+[tasks."dev:front"]
+description = "Run the frontend alone (port 3000, proxies to the API)"
+# No `--host` here. It used to carry `--host 0.0.0.0`, which is right in the dev
+# container and wrong on a laptop: the same task would expose an unauthenticated
+# dev server to whatever network the machine is on. Vite's own default -- the
+# loopback -- is the safe one, and this task is shared by both environments.
+#
+# Should the container turn out to need a wider bind, the flag belongs in
+# .devcontainer/v2/post-start.sh, which is the only file that concerns it alone.
+run = "yarn nx run opencti-front:dev"
+
+[tasks."dev:worker"]
+description = "Run the Python worker (Nx starts the API first, it depends on it)"
+run = "yarn nx run opencti-worker:dev"
+
+[tasks.seed]
+description = "Load the development dataset into a running platform"
+# A freshly initialized platform holds nothing but its admin user, which makes
+# most of the UI impossible to look at. This imports the two sample bundles the
+# repository already ships for its own tests -- DATA-TEST-STIX2_v2 and poisonivy.
+#
+# It goes through the GraphQL API at the address and token read from
+# config/development.json, so the platform has to be up: run it from a second
+# terminal, once `mise run dev` answers.
+dir = "{{config_root}}/opencti-platform/opencti-graphql"
+run = "yarn insert:dev"
