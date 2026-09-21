@@ -14,5 +14,5 @@ export const repIndividual: CsvMapperRepresentation = {
         column_name: 'A',
       },
     },
-  ]
+  ],
 };

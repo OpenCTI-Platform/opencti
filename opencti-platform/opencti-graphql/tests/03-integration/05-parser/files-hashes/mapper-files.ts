@@ -6,6 +6,6 @@ export const csvMapperFile: Partial<CsvMapperParsed> = {
   has_header: true,
   separator: ',',
   representations: [
-    repFile
-  ]
+    repFile,
+  ],
 };

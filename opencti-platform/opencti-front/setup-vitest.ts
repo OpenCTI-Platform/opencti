@@ -1,5 +1,5 @@
 import { cleanup } from '@testing-library/react';
-import * as matchers from "@testing-library/jest-dom/matchers";
+import * as matchers from '@testing-library/jest-dom/matchers';
 import { expect, afterEach, vi } from 'vitest';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

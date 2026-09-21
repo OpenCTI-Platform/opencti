@@ -47,7 +47,9 @@ test('Security Coverage CRUD', { tag: ['@securityCoverage', '@mutation'] }, asyn
   await securityCoverageForm.chooseManualCreation();
   // Step 2
   await securityCoverageForm.selectEntityFromList(reportScName);
-  // Step 3
+  // Step 3 : select entities to cover (none for an empty report)
+  await securityCoverageForm.goToNextStep();
+  // Step 4
   const securityCoverageName = `Security Coverage - ${uuid()}`;
   await securityCoverageForm.nameField.fill(securityCoverageName);
   await expect(securityCoverageForm.getCreateButton()).toBeDisabled();

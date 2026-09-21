@@ -87,6 +87,10 @@
       }
     },
     "health_access_key": "ChangeMe",
+    "health_monitoring": {
+      "dependency_check_interval": 30000,
+      "usage_metrics_interval": 300000
+    },
     "request_timeout": 1200000,
     "keep_alive_timeout": 65000,
     "session_timeout": 1200000,
@@ -301,6 +305,10 @@
     "lock_key": "indicator_decay_manager_lock",
     "batch_size": 10000,
     "interval": 60000
+  },
+  "platform_usage_metrics_manager": {
+    "enabled": true,
+    "lock_key": "platform_usage_metrics_manager_lock"
   },
   "garbage_collection_manager": {
     "enabled": true,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { InsertChartOutlined, InsightsOutlined, LibraryBooksOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { InsertChartOutlined, InsightsOutlined, IntegrationInstructionsOutlined, LibraryBooksOutlined, NotificationsOutlined } from '@mui/icons-material';
 import { getNewsFeedIcon, getNewsFeedLabel, isKnownNewsFeedType } from './NewsFeed';
 
 describe('isKnownNewsFeedType', () => {
@@ -7,6 +7,7 @@ describe('isKnownNewsFeedType', () => {
     ['RESOURCE_CUSTOM_DASHBOARD', true],
     ['RESOURCE_PLAYBOOK', true],
     ['RESOURCE_CUSTOM_VIEW', true],
+    ['RESOURCE_INTEGRATION', true],
     ['RESOURCE_SOMETHING_NEW', false],
     ['', false],
     ['resource_playbook', false], // case sensitive
@@ -23,6 +24,7 @@ describe('getNewsFeedIcon', () => {
     ['RESOURCE_CUSTOM_DASHBOARD', InsertChartOutlined],
     ['RESOURCE_PLAYBOOK', LibraryBooksOutlined],
     ['RESOURCE_CUSTOM_VIEW', InsightsOutlined],
+    ['RESOURCE_INTEGRATION', IntegrationInstructionsOutlined],
     ['RESOURCE_SOMETHING_NEW', NotificationsOutlined], // unknown type
     ['', NotificationsOutlined], // empty type
     ['toString', NotificationsOutlined], // inherited Object property
@@ -36,6 +38,7 @@ describe('getNewsFeedLabel', () => {
     ['RESOURCE_CUSTOM_DASHBOARD', 'New Custom Dashboard'],
     ['RESOURCE_PLAYBOOK', 'New Playbook'],
     ['RESOURCE_CUSTOM_VIEW', 'New Custom View'],
+    ['RESOURCE_INTEGRATION', 'New Integration'],
     ['RESOURCE_SOMETHING_NEW', undefined], // unknown type
     ['', undefined], // empty type
   ])('returns the correct label for %s', (type, expectedLabel) => {

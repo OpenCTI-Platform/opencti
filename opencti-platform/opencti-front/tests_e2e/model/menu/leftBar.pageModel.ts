@@ -16,11 +16,6 @@ import { expect } from '../../fixtures/baseFixtures';
  * The public method names and signatures are unchanged: 20 spec files call
  * them and this migration must not ripple into them.
  */
-// Bounds a single attempt of the menu navigation, so a step taken on a stale layout is
-// abandoned and retried instead of consuming the whole budget of the retry loop.
-const STEP_TIMEOUT = 10_000;
-const NAVIGATION_TIMEOUT = 60_000;
-
 export default class LeftBarPage {
   constructor(private page: Page) {}
 

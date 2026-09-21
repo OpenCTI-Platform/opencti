@@ -1,4 +1,6 @@
 import { Environment, FetchPolicy, Observable, RecordSource, SelectorStoreUpdater, Store } from 'relay-runtime';
+import type { GraphQLSubscriptionConfig } from 'relay-runtime';
+import type { RequestParameters, Variables } from 'relay-runtime';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -29,25 +31,27 @@ const MESSENGER$ = new Subject<ServiceMessage[]>().pipe(
 ) as Subject<ServiceMessage[]>;
 export const MESSAGING$ = {
   messages: MESSENGER$,
-  notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
-  notifyRelayError: (error) => {
-    const messages = (error.res.errors ?? []).map((e) => ({
+  notifyError: (text: unknown) => MESSENGER$.next([{ type: 'error', text }]),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped error API, see the note on commitMutation
+  notifyRelayError: (error: any) => {
+    const errors: RelayError['res']['errors'] = error.res.errors ?? [];
+    const messages = errors.map((e) => ({
       type: 'error',
       text: e.message,
       fullError: e,
     }));
     MESSENGER$.next(messages);
   },
-  notifyCustomRelayError: (error, errorMessageMap) => {
+  notifyCustomRelayError: (error: RelayError, errorMessageMap: Record<string, string | ReactNode>) => {
     const messages = (error.res.errors ?? []).map((e) => ({
       type: 'error',
-      text: errorMessageMap[e.name] ?? e.message,
+      text: errorMessageMap[e.name ?? ''] ?? e.message,
       fullError: e,
     }));
     MESSENGER$.next(messages);
   },
-  notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
-  notifyNLQ: (text) => MESSENGER$.next([{ type: 'nlq', text }]),
+  notifySuccess: (text: unknown) => MESSENGER$.next([{ type: 'message', text }]),
+  notifyNLQ: (text: unknown) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),
 };
@@ -69,20 +73,21 @@ const contextPath = isEmptyPath || basePath === '/' ? '' : basePath;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
 // Create Network
-let subscriptionClient;
+let subscriptionClient: ReturnType<typeof createClient> | undefined;
 const loc = window.location;
 const isSecure = loc.protocol === 'https:' ? 's' : '';
 const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
-const subscribeFn = (request, variables) => {
+const subscribeFn = (request: RequestParameters, variables: Variables) => {
   if (!subscriptionClient) {
     // Lazy creation of the subscription client to connect only after auth
     subscriptionClient = createClient({
       url: subscriptionUrl,
     });
   }
+  const client = subscriptionClient;
   return Observable.create((sink) => {
-    return subscriptionClient.subscribe({
-      query: request.text,
+    return client.subscribe({
+      query: request.text as string,
       operationName: request.name,
       variables,
     }, sink);
@@ -102,7 +107,7 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
 });
 const store = new Store(new RecordSource());
 const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
-const getDataID = (fieldValue, typeName) => {
+const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
   const id = fieldValue?.id;
   if (!id) return null;
   if (namespacedTypenames.has(typeName)) {
@@ -162,13 +167,14 @@ export const defaultCommitMutation = {
 };
 
 export const relayErrorHandling = (
-  error,
+  error: Error,
   setSubmitting?: (submitted: boolean) => void,
-  onError?: (e, message) => void,
+  onError?: (e: Error, messages: { type: string; text: unknown }[]) => void,
 ) => {
   if (setSubmitting) setSubmitting?.(false);
-  if (error && error.res && error.res.errors) {
-    const passwordChangeRequired = error.res.errors.some(
+  const relayError = error as unknown as RelayError;
+  if (relayError && relayError.res && relayError.res.errors) {
+    const passwordChangeRequired = relayError.res.errors.some(
       (e) => e?.extensions?.code === 'PASSWORD_CHANGE_REQUIRED',
     );
     if (passwordChangeRequired) {
@@ -178,31 +184,39 @@ export const relayErrorHandling = (
       }
       return;
     }
-    const authRequired = error.res.errors.filter(
+    const authRequired = relayError.res.errors.filter(
       (e) => (e?.data?.type ?? e.message) === 'authentication',
     );
     if (authRequired.length > 0) {
       MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
     } else if (onError) {
-      const messages = buildErrorMessages(error);
+      const messages = buildErrorMessages(relayError);
       MESSAGING$.messages.next(messages);
       onError(error, messages);
     } else {
-      const messages = buildErrorMessages(error);
+      const messages = buildErrorMessages(relayError);
       MESSAGING$.messages.next(messages);
     }
   }
 };
 
-export const extractSimpleError = (error) => {
-  if (error && error.res && error.res.errors) {
-    const messages = buildErrorMessages(error);
-    return messages[0].text;
-  }
-  return 'Unknown error';
-};
-
 // Relay functions
+// The mutation API of this module is untyped, and so is the error shape its
+// callers hand back. Both are spelled `any` rather than left implicit, so the
+// remaining work is greppable while the rest of the workspace stays strict.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface CommitMutationArgs {
+  mutation: any;
+  variables: any;
+  updater?: any;
+  optimisticUpdater?: any;
+  optimisticResponse?: any;
+  onCompleted?: any;
+  onError?: any;
+  setSubmitting?: any;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 export const commitMutation = ({
   mutation,
   variables,
@@ -212,7 +226,7 @@ export const commitMutation = ({
   onCompleted,
   onError,
   setSubmitting,
-}) => CM(environment, {
+}: CommitMutationArgs) => CM(environment, {
   mutation,
   variables,
   updater,
@@ -222,7 +236,7 @@ export const commitMutation = ({
   onError: (error) => relayErrorHandling(error, setSubmitting, onError),
 });
 
-export const requestSubscription = (args) => RS(environment, args);
+export const requestSubscription = <T extends OperationType>(args: GraphQLSubscriptionConfig<T>) => RS<T>(environment, args);
 
 export const fetchQuery = <T extends OperationType>(
   query: GraphQLTaggedNode,
@@ -233,7 +247,8 @@ export const commitLocalUpdate = (updater: SelectorStoreUpdater) => CLU(environm
 
 export const handleErrorInForm = (
   e: Error,
-  setErrors: (e) => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped error API, see the note on commitMutation
+  setErrors: (e: any) => void,
 ) => {
   const error = e as unknown as RelayError;
   const formattedError = R.head(error.res.errors ?? []);
@@ -252,9 +267,11 @@ export const handleErrorInForm = (
   }
 };
 
-export const handleError = (error) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped error API, see the note on commitMutation
+export const handleError = (error: any) => {
   if (error && error.res && error.res.errors) {
-    const messages = (error.res.errors ?? []).map(
+    const errors: RelayError['res']['errors'] = error.res.errors ?? [];
+    const messages = errors.map(
       (e) => ({
         type: 'error',
         text: e?.data?.message ?? e.message,

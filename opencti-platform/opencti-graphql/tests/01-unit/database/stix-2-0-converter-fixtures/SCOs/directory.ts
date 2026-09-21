@@ -32,4 +32,3 @@ export const EXPECTED_DIRECTORY = {
   atime: '2026-01-03T00:00:00.000Z',
   contains_refs: [],
 };
-

@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { describe, expect, it } from 'vitest';
-import { elLoadById, } from '../../../src/database/engine';
+import { elLoadById } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   allFieldsContributingToStandardId,
@@ -10,7 +10,7 @@ import {
   isStandardIdDowngraded,
   isStandardIdSameWay,
   isStandardIdUpgraded,
-  MARKING_TLP_CLEAR_ID
+  MARKING_TLP_CLEAR_ID,
 } from '../../../src/schema/identifier';
 import { ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
@@ -72,7 +72,7 @@ describe('Identifier generation test', () => {
       hashes: {
         MD5: '757a71f0fbd6b3d993be2a213338d1f2',
         'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e7',
-        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02'
+        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02',
       },
     };
     // File move to MD5 way
@@ -82,7 +82,7 @@ describe('Identifier generation test', () => {
       hashes: {
         MD5: '757a71f0fbd6b3d993be2a213338d1f2',
         'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e7',
-        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02'
+        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02',
       },
     };
     const isUpgraded = isStandardIdUpgraded(file, changeFile);
@@ -109,7 +109,7 @@ describe('Identifier generation test', () => {
       entity_type: 'StixFile',
       hashes: {
         MD5: '757a71f0fbd6b3d993be2a213338d1f2',
-        'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e7'
+        'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e7',
       },
     };
     // Test adding a key element
@@ -119,7 +119,7 @@ describe('Identifier generation test', () => {
       hashes: {
         MD5: '757a71f0fbd6b3d993be2a213338d1f2',
         'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e7',
-        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02'
+        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02',
       },
     };
     let isUpgraded = isStandardIdUpgraded(file, changeFile);
@@ -140,7 +140,7 @@ describe('Identifier generation test', () => {
       entity_type: 'StixFile',
       hashes: {
         MD5: '757a71f0fbd6b3d993be2a213338d1f2',
-        'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e8'
+        'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e8',
       },
     };
     isUpgraded = isStandardIdUpgraded(file, changeFile);
@@ -152,7 +152,7 @@ describe('Identifier generation test', () => {
       hashes: {
         MD5: '757a71f0fbd6b3d993be2a213338d1f2',
         'SHA-1': 'ebe874c468d4b1b78fa4b3a7b3653b45db0da0e8',
-        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02'
+        'SHA-256': '19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02',
       },
     };
     isUpgraded = isStandardIdUpgraded(file, changeFile);
@@ -192,7 +192,7 @@ describe('Function allFieldsContributingToStandardId', () => {
 describe('Function generateHashedObservableStandardIds', () => {
   const hashes = {
     MD5: '025ad219ece1125a8f5a0e74e32676cb',
-    'SHA-1': 'c1750bee9c1f7b5dd6f025b645ab6eba5df94175'
+    'SHA-1': 'c1750bee9c1f7b5dd6f025b645ab6eba5df94175',
   };
 
   it('should return empty array if no entity_type', () => {
@@ -203,7 +203,7 @@ describe('Function generateHashedObservableStandardIds', () => {
   it('should return empty array if not hash observable', () => {
     const ids = generateHashedObservableStandardIds({
       hashes,
-      entity_type: ENTITY_TYPE_SETTINGS
+      entity_type: ENTITY_TYPE_SETTINGS,
     });
     expect(ids).toEqual([]);
   });
@@ -211,7 +211,7 @@ describe('Function generateHashedObservableStandardIds', () => {
   it('should return empty array if no hashes', () => {
     const ids = generateHashedObservableStandardIds({
       hashes: {},
-      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
+      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
     });
     expect(ids).toEqual([]);
   });
@@ -219,7 +219,7 @@ describe('Function generateHashedObservableStandardIds', () => {
   it('should return the list of ids of hashes', () => {
     const ids = generateHashedObservableStandardIds({
       hashes,
-      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
+      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
     });
     expect(ids).toEqual([
       'file--cd03138e-eb70-5409-b5df-2f53bee7a1e1',

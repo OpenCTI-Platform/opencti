@@ -429,9 +429,9 @@ const TasksList = ({ data, options }) => {
                         variant="secondary"
                         onClick={() => handleDeleteTask(task.id)}
                         size="small"
+                        startIcon={<Delete />}
                       >
-                        <Delete fontSize="small" />
-                    &nbsp;&nbsp;{t_i18n('Delete')}
+                        {t_i18n('Delete')}
                       </Button>
                     )
                   : (
@@ -441,9 +441,9 @@ const TasksList = ({ data, options }) => {
                           variant="outlined"
                           onClick={() => handleDeleteTask(task.id)}
                           size="small"
+                          startIcon={<Delete />}
                         >
-                          <Delete fontSize="small" />
-                      &nbsp;&nbsp;{t_i18n('Delete')}
+                          {t_i18n('Delete')}
                         </Button>
                       </Security>
                     )

@@ -26,4 +26,3 @@ export const EXPECTED_URL = {
   value: 'https://example.com/malware',
   score: 80,
 };
-
