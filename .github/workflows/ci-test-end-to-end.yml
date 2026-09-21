@@ -32,25 +32,31 @@ jobs:
             grep_args: '--grep @group1 --project=chromium'
             dev_features: '[]'
             artifact_suffix: '-group1'
-          - name: "e2e workflow tests (1/2)"
+          - name: "e2e workflow tests (1/3)"
             # Dedicated shard for the workflow/form-intake setup chain and everything that depends
-            # on it. Isolated in its own Playwright projects ('workflow e2e (1)'/'(2)', see
+            # on it. Isolated in its own Playwright projects ('workflow e2e (1)'/'(2)'/'(3)', see
             # playwright.config.ts) so this expensive setup doesn't get forced to re-run in the
             # other shards too - Playwright always fully runs a project's dependencies regardless
             # of --grep/--grep-invert filters.
-            # Split across two CI jobs (real, separate runner VMs) rather than raising Playwright's
+            # Split across three CI jobs (real, separate runner VMs) rather than raising Playwright's
             # `workers` count within one job: the backend containers (ES/RabbitMQ/platform/worker)
             # already consume most of a single runner's CPU, so extra in-VM workers just thrash
             # instead of parallelizing. Each shard re-pays the ~7.6min setup cost, but then runs its
-            # half of the specs on its own dedicated CPU budget. Balanced by measured spec duration.
+            # slice of the specs on its own dedicated CPU budget. Balanced by measured spec duration
+            # (shard 1 carries threatAdvisoryHappyFlow.spec.ts alone since it's the single longest
+            # file and can't be split further).
             # Temporarily collect all workflow failures while stabilizing this shard.
             grep_args: '--project="workflow e2e (1)" --max-failures=0'
             dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
             artifact_suffix: '-workflow-1'
-          - name: "e2e workflow tests (2/2)"
+          - name: "e2e workflow tests (2/3)"
             grep_args: '--project="workflow e2e (2)" --max-failures=0'
             dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
             artifact_suffix: '-workflow-2'
+          - name: "e2e workflow tests (3/3)"
+            grep_args: '--project="workflow e2e (3)" --max-failures=0'
+            dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
+            artifact_suffix: '-workflow-3'
 
     steps:
       - name: OpenCTI checkout
