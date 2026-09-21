@@ -259,7 +259,7 @@ const StixSightingRelationshipCreationFromEntity = ({
     return (
       <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
         handleSelect={handleSelectEntity}
-        search={search}
+        search={targetStixCyberObservableTypes?.length > 0 ? search : undefined}
         stixCoreObjectTypes={stixCoreObjectTypes}
       />
     );
@@ -314,9 +314,10 @@ const StixSightingRelationshipCreationFromEntity = ({
   };
 
   const renderSelectEntity = () => {
+    const hasObservableResults = targetStixCyberObservableTypes?.length > 0;
     return (
       <Stack gap={2}>
-        {search.length === 0 && (
+        {hasObservableResults && search.length === 0 && (
           <Alert
             severity="info"
             variant="outlined"
@@ -327,12 +328,14 @@ const StixSightingRelationshipCreationFromEntity = ({
             )}
           </Alert>
         )}
-        <div>
-          <SearchInput
-            keyword={search}
-            onSubmit={handleSearch}
-          />
-        </div>
+        {hasObservableResults && (
+          <div>
+            <SearchInput
+              keyword={search}
+              onSubmit={handleSearch}
+            />
+          </div>
+        )}
         {renderSearchResults()}
       </Stack>
     );

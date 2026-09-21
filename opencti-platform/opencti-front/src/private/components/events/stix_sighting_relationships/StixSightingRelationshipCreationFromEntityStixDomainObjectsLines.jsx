@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const LOCAL_STORAGE_KEY = 'stixSightingRelationshipCreationFromEntity';
@@ -16,6 +16,7 @@ export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQue
     $cursor: ID
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
+    $filters: FilterGroup
   ) {
     ...StixSightingRelationshipCreationFromEntityStixDomainObjectsLines_data
       @arguments(
@@ -25,6 +26,7 @@ export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQue
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -38,6 +40,7 @@ export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesFra
     cursor: { type: "ID" }
     orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
   ) @refetchable(queryName: "StixSightingRelationshipCreationFromEntityStixDomainObjectsLinesRefetchQuery") {
     stixDomainObjects(
       search: $search
@@ -46,6 +49,7 @@ export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesFra
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
+      filters: $filters
     ) @connection(key: "Pagination_stixDomainObjects") {
       edges {
         node {
@@ -110,14 +114,19 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
     initialValues,
     true,
   );
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    stixCoreObjectTypes,
+    viewStorage.filters,
+  );
   const queryRef = useQueryLoading(
     stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
     {
-      search,
+      search: search ?? viewStorage.searchTerm,
       types: stixCoreObjectTypes,
       count: 25,
       orderBy: viewStorage.sortBy,
       orderMode: viewStorage.orderAsc ? 'asc' : 'desc',
+      filters: contextFilters,
     },
   );
 
@@ -140,7 +149,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
       resolvePath={(data) => data.stixDomainObjects?.edges?.map((edge) => edge?.node)}
       storageKey={LOCAL_STORAGE_KEY}
       initialValues={initialValues}
-      contextFilters={emptyFilterGroup}
+      contextFilters={contextFilters}
       preloadedPaginationProps={{
         linesQuery: stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
         linesFragment: stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesFragment,
@@ -153,7 +162,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
       disableNavigation
       disableLineSelection
       disableColumnMenu
-      hideSearch
+      hideSearch={search !== undefined}
       hideSavedFilters
       onLineClick={handleSelect}
       icon={(row) => (
