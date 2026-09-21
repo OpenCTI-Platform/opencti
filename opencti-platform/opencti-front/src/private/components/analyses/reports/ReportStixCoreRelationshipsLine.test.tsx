@@ -8,9 +8,14 @@ import type { DataColumns } from '../../../../components/list_lines';
 
 const useFragmentMock = vi.hoisted(() => vi.fn());
 
-vi.mock('react-relay', () => ({
-  useFragment: useFragmentMock,
-}));
+vi.mock('react-relay', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-relay')>();
+
+  return {
+    ...actual,
+    useFragment: useFragmentMock,
+  };
+});
 
 vi.mock('@filigran/design-system', () => ({
   Checkbox: ({ checked, ...props }: { checked: boolean; 'aria-label': string }) => (
