@@ -148,7 +148,7 @@ jobs:
             sh -c 'set -eux;
                 cd /home/workspace/opencti-platform/opencti-front
                 npm install -g corepack
-                yarn install
+                yarn workspaces focus opencti-front
                 yarn playwright install --with-deps chromium
                 yarn test:e2e ${{ matrix.grep_args }}
               '

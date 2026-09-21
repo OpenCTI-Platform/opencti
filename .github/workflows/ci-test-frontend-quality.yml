@@ -35,7 +35,7 @@ jobs:
           sh -c 'set -eux
             npm install -g corepack
             cd /home/workspace/opencti-platform/opencti-front
-            yarn install
+            yarn workspaces focus opencti-front
             yarn build
             '
 
@@ -44,6 +44,7 @@ jobs:
         docker run  \
           --name frontend-lint \
           -v ${{ github.workspace }}:/home/workspace \
+          -e NODE_OPTIONS=--max_old_space_size=8192 \
           node:22-alpine3.23 \
           sh -c 'set -eux
             npm install -g corepack
@@ -53,6 +54,21 @@ jobs:
             # --dependencies only: the wider knip report (unused files and exports) still has a
             # large pre-existing backlog on both workspaces, so only declaration drift is enforced.
             yarn knip --dependencies
+            '
+
+    - name: Custom ESLint rules quality checks
+      run: |
+        docker run  \
+          --name eslint-plugin-custom-rules-quality \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/eslint-plugin-custom-rules
+            yarn check-ts
+            yarn lint
+            yarn knip --dependencies
+            yarn test
             '
 
     - name: Accessible names of converted design-system fields

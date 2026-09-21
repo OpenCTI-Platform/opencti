@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1.27
+# Built from the repository root: docker build -f opencti-worker/Dockerfile_fips .
 FROM filigran/alpine-python-fips:python3.12
 
-COPY src /opt/opencti-worker
+COPY opencti-worker/src /opt/opencti-worker
 WORKDIR /opt/opencti-worker
 
-RUN --mount=type=bind,source=requirements.txt,target=requirements.txt <<EOT
+RUN --mount=type=bind,source=opencti-worker/requirements.txt,target=requirements.txt <<EOT
     set -euxo pipefail
 
     apk --no-cache add -t .pip_deps git

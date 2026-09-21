@@ -1,0 +1,40 @@
+# Build context of every image is the repository root: the Yarn workspace keeps its
+# lockfile and configuration there, and no Dockerfile can read outside its context.
+# Only what the Dockerfiles copy is kept.
+*
+
+# Yarn workspace
+!.yarnrc.yml
+!package.json
+!yarn.lock
+!opencti-platform/eslint-plugin-custom-rules/package.json
+!opencti-platform/opencti-front
+!opencti-platform/opencti-graphql
+
+# worker
+!opencti-worker/requirements.txt
+!opencti-worker/src
+
+# never sent to the daemon, whatever the rules above
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.idea
+**/.env
+**/.eslintcache
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/__generated__
+**/__pycache__
+**/*.py[cod]
+opencti-platform/opencti-front/config/development.json
+opencti-platform/opencti-front/.env.local
+opencti-platform/opencti-front/.env.development.local
+opencti-platform/opencti-front/.env.test.local
+opencti-platform/opencti-front/.env.production.local
+opencti-platform/opencti-graphql/config/development.json
+opencti-platform/opencti-graphql/config/production.json
+opencti-platform/opencti-graphql/config/local.json
+opencti-platform/opencti-graphql/logs
