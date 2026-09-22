@@ -139,7 +139,7 @@
     "js-deep-equals": "2.1.1",
     "jsonpath-plus": "10.4.0",
     "jwt-decode": "4.0.0",
-    "lru-cache": "11.5.2",
+    "lru-cache": "11.5.3",
     "luxon": "3.7.2",
     "marked": "18.0.13",
     "migrate": "2.1.0",
