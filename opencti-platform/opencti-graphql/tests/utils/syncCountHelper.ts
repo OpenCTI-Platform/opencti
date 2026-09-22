@@ -49,7 +49,8 @@ testCreatedCounter['marking-definition'] = 23;
 testCreatedCounter.narrative = 1;
 testCreatedCounter['network-traffic'] = 1;
 testCreatedCounter.note = 5;
-testCreatedCounter['observed-data'] = 1;
+// 1 in the dataset + 2 created by observedData-domain-test
+testCreatedCounter['observed-data'] = 3;
 testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
@@ -89,6 +90,9 @@ testUpdatedCounter.indicator = 30;
 testUpdatedCounter.label = 1;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
+// Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen (1)
+// + 2 upserts in observedData-domain-test
+testUpdatedCounter['observed-data'] = 3;
 testUpdatedCounter.opinion = 6;
 testUpdatedCounter['email-addr'] = 1;
 testUpdatedCounter.event = 1;
@@ -147,6 +151,7 @@ testDeletedCounter['marking-definition'] = 12;
 testDeletedCounter.narrative = 1;
 testDeletedCounter['network-traffic'] = 1;
 testDeletedCounter.note = 4;
+testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-domain-test
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;

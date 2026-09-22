@@ -254,6 +254,12 @@ export const getRetroCompatibleMappings = (engine: ElkClient | OpenClient): any 
     number_observed: {
       type: 'integer',
     },
+    number_seen: {
+      type: 'integer',
+    },
+    max_distinct_count: {
+      type: 'integer',
+    },
     x_opencti_negative: {
       type: 'boolean',
     },
