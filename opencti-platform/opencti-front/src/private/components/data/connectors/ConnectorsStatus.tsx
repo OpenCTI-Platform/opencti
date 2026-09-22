@@ -23,7 +23,7 @@ import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryLoader } from 'react-relay';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { interval } from 'rxjs';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -374,6 +374,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 color="primary"
                                 disabled={!canDeleteConnector(connector as unknown as Connector_connector$data)}
                                 size="default"
+                                aria-label={t_i18n('Reset the connector state')}
                               >
                                 <PlaylistRemoveOutlined />
                               </IconButton>
@@ -388,6 +389,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               color="primary"
                               disabled={!canDeleteConnector(connector as unknown as Connector_connector$data)}
                               size="default"
+                              aria-label={t_i18n('Clear this connector')}
                             >
                               <DeleteOutlined />
                             </IconButton>

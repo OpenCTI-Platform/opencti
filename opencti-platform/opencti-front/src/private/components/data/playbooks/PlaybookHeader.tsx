@@ -145,6 +145,7 @@ const PlaybookHeaderComponent = ({
                   divider={openExecution !== lastExecution.id}
                   onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
                   }
+                  aria-expanded={openExecution === lastExecution.id}
                 >
                   <ListItemIcon style={{ marginLeft: 10 }}>
                     <ItemIcon type="Playbook" color={theme.palette.primary.main} />

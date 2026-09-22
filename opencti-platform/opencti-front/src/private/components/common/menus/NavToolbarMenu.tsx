@@ -1,5 +1,5 @@
 import React, { FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import Drawer from '@mui/material/Drawer';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
@@ -86,9 +86,11 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
 
     if (entry.isEE) {
       return (
-        <Stack direction="row">
+        <Stack direction="row" alignItems="center">
           <TruncatedText>{translatedLabel}</TruncatedText>
-          <EEChip />
+          {/* Small variant: this is a navigation row, not a page heading, and
+              the medium chip crowded the label. */}
+          <EEChip size="sm" />
         </Stack>
       );
     }

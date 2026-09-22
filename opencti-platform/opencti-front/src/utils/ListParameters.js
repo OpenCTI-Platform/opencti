@@ -87,11 +87,13 @@ export const saveViewParameters = (
   saveParamsToLocalStorage(localStorageKey, params);
   // Apply params in history
   const searchParams = buildParamsFromHistory(params);
-  const newUrl = `${APP_BASE_PATH}${location.pathname}?${searchParams}`;
+  const relativeUrl = `${location.pathname}?${searchParams}`;
   if (refresh) {
-    navigate(newUrl, { replace: true });
+    // navigate() already prepends APP_BASE_PATH via the router's basename
+    navigate(relativeUrl, { replace: true });
   } else {
-    window.history.replaceState(null, '', newUrl);
+    // history.replaceState is a native browser API, not router-aware
+    window.history.replaceState(null, '', `${APP_BASE_PATH}${relativeUrl}`);
   }
 };
 

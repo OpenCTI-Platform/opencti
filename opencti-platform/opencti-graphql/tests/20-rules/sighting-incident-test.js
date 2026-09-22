@@ -61,6 +61,6 @@ describe('Sighting incident rule', () => {
       await disableRule(RuleSightingIncident.id);
       await assertInferencesSize(ENTITY_TYPE_INCIDENT, 0);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

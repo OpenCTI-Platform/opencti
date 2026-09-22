@@ -6,6 +6,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { patchSync } from '../domain/connector';
+import { resolveSyncedWorkflowId } from '../domain/status';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
@@ -19,6 +21,7 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { clearSyncConsumerMetrics, storeSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
 import { InterruptibleTimer } from './interruptible-timer';
+import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
   extractMarkdownImageReferences,
@@ -33,6 +36,76 @@ const WAIT_TIME_ACTION = 2000;
 const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_000;
 
 const waitLoopTimer = new InterruptibleTimer();
+
+const isStringTooLongError = (error) => {
+  const errorMessage = error?.message ?? '';
+  return error?.code === 'ERR_STRING_TOO_LONG'
+    || errorMessage.includes('Cannot create a string longer than')
+    // JSON.stringify throws a plain RangeError with this message (no error code) when the
+    // resulting string would exceed Node's max string length.
+    || (error instanceof RangeError && errorMessage.includes('Invalid string length'));
+};
+
+const dropAttachedFilesData = (syncData) => {
+  const files = syncData?.extensions?.[STIX_EXT_OCTI]?.files;
+  if (!Array.isArray(files) || files.length === 0) {
+    return [];
+  }
+
+  const droppedFiles = [];
+  for (let index = 0; index < files.length; index += 1) {
+    const file = files[index];
+    if (typeof file?.data === 'string' && file.data.length > 0) {
+      droppedFiles.push({
+        fileUri: file.uri,
+        dataLength: file.data.length,
+      });
+      delete file.data;
+    }
+  }
+  return droppedFiles;
+};
+
+const encodeEventPayloadToBase64 = (payload) => Buffer.from(payload, 'utf-8').toString('base64');
+
+const buildSyncEventContent = ({
+  syncId,
+  lastEventId,
+  eventType,
+  syncData,
+  eventContext,
+  encodeToBase64 = encodeEventPayloadToBase64,
+  logger = logApp,
+}) => {
+  const buildPayload = () => JSON.stringify({
+    id: lastEventId,
+    type: eventType,
+    data: syncData,
+    context: eventContext,
+  });
+  try {
+    return encodeToBase64(buildPayload());
+  } catch (encodingError) {
+    if (!isStringTooLongError(encodingError)) {
+      throw encodingError;
+    }
+    const droppedFiles = dropAttachedFilesData(syncData);
+    if (droppedFiles.length === 0) {
+      throw encodingError;
+    }
+    logger.error('[OPENCTI] Sync: Event payload too large, dropping attached files data and retrying.', {
+      id: syncId,
+      eventId: lastEventId,
+      entityId: syncData?.extensions?.[STIX_EXT_OCTI]?.id,
+      entityType: syncData?.extensions?.[STIX_EXT_OCTI]?.type,
+      droppedFilesCount: droppedFiles.length,
+      droppedFiles,
+      code: encodingError.code,
+      message: encodingError.message,
+    });
+    return encodeToBase64(buildPayload());
+  }
+};
 
 const hasEmbeddedStorageRef = (markdown) => {
   return markdown.includes('embedded/')
@@ -61,7 +134,31 @@ const extractStorageRelativePath = (candidateUri) => {
   return normalizedUri.substring(pathIndex).replace(/^\/+/, '');
 };
 
-const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
+// Percent-encode each segment of a relative storage path so that reserved characters
+// present in filenames (e.g. '#', '?', ...) are not interpreted as URL fragment/query
+// delimiters by the HTTP client. Idempotent: already-encoded segments are not double-encoded.
+export const encodeStorageRelativePath = (relativePath) => {
+  return relativePath
+    .split('/')
+    .map((segment) => {
+      if (segment === '') {
+        return segment;
+      }
+      // Decode first so that already-encoded input is not double-encoded,
+      // then re-encode reserved characters consistently.
+      let decodedSegment;
+      try {
+        decodedSegment = decodeURIComponent(segment);
+      } catch {
+        // Malformed percent-sequence (e.g. a literal '%'): keep the raw segment as-is.
+        decodedSegment = segment;
+      }
+      return encodeURIComponent(decodedSegment);
+    })
+    .join('/');
+};
+
+export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   if (typeof storageUri !== 'string') {
     return null;
   }
@@ -78,7 +175,7 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
       const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
       if (normalizedPath.startsWith('embedded/')) {
         const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-        return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+        return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
       }
       return null;
     } catch {
@@ -88,16 +185,155 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
 
   const extractedPath = extractStorageRelativePath(trimmedStorageUri);
   if (extractedPath) {
-    return `${httpBase(syncUri)}${extractedPath}`;
+    return `${httpBase(syncUri)}${encodeStorageRelativePath(extractedPath)}`;
   }
 
   const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
   if (normalizedPath.startsWith('embedded/')) {
     const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-    return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
+    return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
   }
 
   return null;
+};
+
+export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
+  const { uri } = sync;
+  const processingData = { ...data };
+  const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
+  const markdownEntityContext = {
+    entityType: octiExtension.type,
+    entityId: octiExtension.id,
+  };
+  const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
+  const remoteWorkflowId = processingData.extensions[STIX_EXT_OCTI].workflow_id;
+  const remoteWorkflowStatusName = processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
+  const remoteWorkflowStatusScope = processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
+  if (remoteWorkflowId) {
+    const entitySetting = await getEntitySettingFromCache(executionContext('sync_manager'), octiExtension.type);
+    const syncWorkflowStatusByName = entitySetting?.sync_workflow_status_by_name ?? false;
+    // Not opted in: keep the raw remote workflow_id untouched, same as pre-existing behavior.
+    if (syncWorkflowStatusByName) {
+      const localWorkflowId = await resolveSyncedWorkflowId(executionContext('sync_manager'), SYSTEM_USER, octiExtension.type, remoteWorkflowStatusScope, remoteWorkflowStatusName);
+      if (localWorkflowId) {
+        processingData.extensions[STIX_EXT_OCTI].workflow_id = localWorkflowId;
+      } else {
+        delete processingData.extensions[STIX_EXT_OCTI].workflow_id;
+      }
+    }
+    delete processingData.extensions[STIX_EXT_OCTI].workflow_status_name;
+    delete processingData.extensions[STIX_EXT_OCTI].workflow_status_scope;
+  }
+  const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
+  for (let index = 0; index < entityFiles.length; index += 1) {
+    const entityFile = entityFiles[index];
+    const { uri: fileUri } = entityFile;
+    try {
+      const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
+      if (!fetchUri) {
+        logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
+        continue;
+      }
+      const response = await httpClient.get(fetchUri);
+      try {
+        entityFile.data = Buffer.from(response.data).toString('base64');
+      } catch (encodingError) {
+        if (isStringTooLongError(encodingError)) {
+          const attachmentByteLength = Buffer.isBuffer(response?.data)
+            ? response.data.length
+            : response?.data?.byteLength;
+          logApp.error('[OPENCTI] Sync: Attached file too large to encode, skipping file data.', {
+            fileUri,
+            entityId: markdownEntityContext.entityId,
+            entityType: markdownEntityContext.entityType,
+            attachmentByteLength,
+            code: encodingError.code,
+            message: encodingError.message,
+          });
+          continue;
+        }
+        throw encodingError;
+      }
+    } catch (e) {
+      logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
+    }
+  }
+
+  const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
+    const embeddedReferences = extractMarkdownImageReferences(markdown)
+      .filter((reference) => reference.isEmbeddedStorage);
+    if (embeddedReferences.length === 0) {
+      return markdown;
+    }
+
+    const uriByReferenceUrl = new Map();
+    const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
+
+    for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
+      const embeddedStorageUri = uniqueReferenceUrls[i];
+      try {
+        const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
+        if (!fetchUri) {
+          logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
+            embeddedStorageUri,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+          continue;
+        }
+        const response = await httpClient.get(fetchUri);
+        const headerMimeType = extractMimeTypeFromHeader(response);
+        const pathMimeType = mime.lookup(embeddedStorageUri);
+        const detectedMime = headerMimeType || (pathMimeType || null);
+
+        if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
+          logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
+            embeddedStorageUri,
+            mimeType: detectedMime,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+          continue;
+        }
+
+        const base64Data = Buffer.from(response.data).toString('base64');
+        uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
+      } catch (e) {
+        logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
+          embeddedStorageUri,
+          message: e.message,
+        });
+        uriByReferenceUrl.set(embeddedStorageUri, null);
+      }
+    }
+
+    const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+      return uriByReferenceUrl.get(reference.url) ?? undefined;
+    });
+
+    return rewrittenMarkdown;
+  };
+
+  const resolveEmbeddedImagesMarkdownFields = async (payload) => {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return;
+    }
+
+    for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
+      const key = MARKDOWN_FIELD_KEYS[i];
+      const value = payload[key];
+      if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
+        payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
+      } else if (Array.isArray(value)) {
+        for (let j = 0; j < value.length; j += 1) {
+          if (typeof value[j] === 'string' && hasEmbeddedStorageRef(value[j])) {
+            value[j] = await resolveEmbeddedImagesInMarkdownDescription(value[j]);
+          }
+        }
+      }
+    }
+  };
+
+  await resolveEmbeddedImagesMarkdownFields(processingData);
+  return { data: processingData, previous_standard: idOperation?.value };
 };
 
 const syncManagerInstance = (syncId) => {
@@ -133,110 +369,6 @@ const syncManagerInstance = (syncId) => {
       }
     }
   };
-  const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
-    const { uri } = sync;
-    const processingData = { ...data };
-    const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
-    const markdownEntityContext = {
-      entityType: octiExtension.type,
-      entityId: octiExtension.id,
-    };
-    // Reverse patch the id if modified
-    const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
-    // Handle file enrichment
-    const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
-    for (let index = 0; index < entityFiles.length; index += 1) {
-      const entityFile = entityFiles[index];
-      const { uri: fileUri } = entityFile;
-      try {
-        const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
-        if (!fetchUri) {
-          logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
-          continue;
-        }
-        const response = await httpClient.get(fetchUri);
-        entityFile.data = Buffer.from(response.data).toString('base64');
-      } catch (e) {
-        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
-      }
-    }
-
-    const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
-      const embeddedReferences = extractMarkdownImageReferences(markdown)
-        .filter((reference) => reference.isEmbeddedStorage);
-      if (embeddedReferences.length === 0) {
-        return markdown;
-      }
-
-      const uriByReferenceUrl = new Map();
-      const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
-
-      for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
-        const embeddedStorageUri = uniqueReferenceUrls[i];
-        try {
-          const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
-          if (!fetchUri) {
-            logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
-              embeddedStorageUri,
-            });
-            uriByReferenceUrl.set(embeddedStorageUri, null);
-            continue;
-          }
-          const response = await httpClient.get(fetchUri);
-          const headerMimeType = extractMimeTypeFromHeader(response);
-          const pathMimeType = mime.lookup(embeddedStorageUri);
-          const detectedMime = headerMimeType || (pathMimeType || null);
-
-          if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
-            logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
-              embeddedStorageUri,
-              mimeType: detectedMime,
-            });
-            uriByReferenceUrl.set(embeddedStorageUri, null);
-            continue;
-          }
-
-          const base64Data = Buffer.from(response.data).toString('base64');
-          uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
-        } catch (e) {
-          logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
-            embeddedStorageUri,
-            message: e.message,
-          });
-          uriByReferenceUrl.set(embeddedStorageUri, null);
-        }
-      }
-
-      const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
-        return uriByReferenceUrl.get(reference.url) ?? undefined;
-      });
-
-      return rewrittenMarkdown;
-    };
-
-    const resolveEmbeddedImagesMarkdownFields = async (payload) => {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        return;
-      }
-
-      for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
-        const key = MARKDOWN_FIELD_KEYS[i];
-        const value = payload[key];
-        if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
-          payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
-        } else if (Array.isArray(value)) {
-          for (let j = 0; j < value.length; j += 1) {
-            if (typeof value[j] === 'string' && hasEmbeddedStorageRef(value[j])) {
-              value[j] = await resolveEmbeddedImagesInMarkdownDescription(value[j]);
-            }
-          }
-        }
-      }
-    };
-
-    await resolveEmbeddedImagesMarkdownFields(processingData);
-    return { data: processingData, previous_standard: idOperation?.value };
-  };
   const saveCurrentState = async (context, type, eventId) => {
     const currentTime = new Date().getTime();
     const [time] = eventId.split('-');
@@ -263,6 +395,8 @@ const syncManagerInstance = (syncId) => {
       running = true;
       logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
       const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+      const syncLogger = createIngestionLogger(sync.internal_id, sync.name, 'sync');
+      syncLogger.info('Feed execution started');
       const synchronized = sync.synchronized ?? false;
       const { ssl_verify: ssl = false } = sync;
       const token = await decryptSynchronizerCredential(sync.token);
@@ -290,6 +424,13 @@ const syncManagerInstance = (syncId) => {
               connectionId = connectedData.connectionId;
               connectedAt = new Date().toISOString();
               logApp.info(`[OPENCTI] Sync ${syncId}: listening ${sseUri} with id ${connectionId}`);
+              await patchSync(context, SYSTEM_USER, syncId, {
+                last_execution_date: new Date().toISOString(),
+                last_execution_status: 'success',
+              });
+              await syncLogger.success('Feed execution succeeded', {
+                connection_id: connectionId,
+              });
               continue;
             }
             // Handle heartbeat - just save state, no data to process
@@ -318,8 +459,13 @@ const syncManagerInstance = (syncId) => {
             while (!processed && running) {
               try {
                 const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
-                const enrichedEvent = JSON.stringify({ id: lastEventId, type: eventType, data: syncData, context: eventContext });
-                const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
+                const content = buildSyncEventContent({
+                  syncId,
+                  lastEventId,
+                  eventType,
+                  syncData,
+                  eventContext,
+                });
                 await pushBundleToWorker(context, SYSTEM_USER, sync.internal_id, {
                   type: 'event',
                   event_id,
@@ -335,6 +481,11 @@ const syncManagerInstance = (syncId) => {
                 logApp.error('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
                   cause: processingError, id: syncId, manager: 'SYNC_MANAGER',
                 });
+                await patchSync(context, SYSTEM_USER, syncId, {
+                  last_execution_date: new Date().toISOString(),
+                  last_execution_status: 'error',
+                });
+                await syncLogger.error('Feed execution failed', buildIngestionErrorMeta(processingError));
                 await wait(5000);
               }
             }
@@ -348,6 +499,11 @@ const syncManagerInstance = (syncId) => {
           logApp.warn('[OPENCTI] Sync stream error, reconnecting...', {
             id: syncId, manager: 'SYNC_MANAGER', cause: streamError,
           });
+          await patchSync(context, SYSTEM_USER, syncId, {
+            last_execution_date: new Date().toISOString(),
+            last_execution_status: 'error',
+          });
+          await syncLogger.error('Feed execution failed', buildIngestionErrorMeta(streamError));
           await wait(5000);
         }
       }
@@ -457,4 +613,5 @@ const initSyncManager = () => {
 };
 const syncManager = initSyncManager();
 
+export { isStringTooLongError, dropAttachedFilesData, buildSyncEventContent };
 export default syncManager;

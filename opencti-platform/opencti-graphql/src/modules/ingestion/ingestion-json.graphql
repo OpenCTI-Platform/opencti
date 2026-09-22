@@ -42,6 +42,8 @@ type IngestionJson implements InternalObject & BasicObject {
     user: Creator
     ingestion_running: Boolean
     last_execution_date: DateTime
+    last_execution_status: String
+    ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
     markings: [String!]
     ssl_verify: Boolean
     toConfigurationExport: String!
@@ -100,6 +102,7 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionJsonConnection @auth(for: [INGESTION])
+    ingestionJsonLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
 }
 
 # Mutations

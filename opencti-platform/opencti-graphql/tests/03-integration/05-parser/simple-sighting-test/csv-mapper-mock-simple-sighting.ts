@@ -21,7 +21,7 @@ export const csvMapperMockSimpleSighting: Partial<CsvMapperParsed> = {
             column_name: 'A',
           },
         },
-      ]
+      ],
     }, {
       id: 'representation02',
       type: CsvMapperRepresentationType.Entity,
@@ -35,7 +35,7 @@ export const csvMapperMockSimpleSighting: Partial<CsvMapperParsed> = {
             column_name: 'B',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representation01-SIGHTING-representation02',
@@ -48,13 +48,13 @@ export const csvMapperMockSimpleSighting: Partial<CsvMapperParsed> = {
           key: 'from',
           based_on: {
             representations: ['representation01'],
-          }
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: ['representation02'],
-          }
+          },
         },
         {
           key: 'confidence',
@@ -80,7 +80,7 @@ export const csvMapperMockSimpleSighting: Partial<CsvMapperParsed> = {
             column_name: 'F',
           },
         },
-      ]
+      ],
     },
-  ]
+  ],
 };

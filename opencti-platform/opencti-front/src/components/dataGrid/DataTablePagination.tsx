@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import IconButton from '@common/button/IconButton';
 import { TableTuneIcon } from 'filigran-icon';
+import FiligranIcon from '@components/common/FiligranIcon';
 import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
 import NestedMenuButton from '../nested_menu/NestedMenuButton';
@@ -230,17 +231,8 @@ const DataTablePagination = ({
       </ButtonGroup>
       <Suspense>
         <NestedMenuButton
-          menuButtonProps={{
-            variant: 'outlined',
-            size: 'small',
-            color: 'primary',
-            style: {
-              padding: 6,
-              minWidth: 36,
-              border: 'none',
-            },
-          }}
-          menuButtonChildren={<TableTuneIcon />}
+          menuButtonLabel={t_i18n('Table settings')}
+          menuButtonChildren={<FiligranIcon icon={TableTuneIcon} size={20} />}
           options={nestedMenuOptions}
           menuLevels={2}
         />

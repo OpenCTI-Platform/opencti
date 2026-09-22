@@ -1,4 +1,23 @@
 import type { SortResults } from '@elastic/elasticsearch/lib/api/types';
+import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
+import type { Metric } from '../modules/metrics/metrics';
+import type { PirInformation } from '../modules/pir/pir-types';
+import {
+  INPUT_ASSIGNEE,
+  INPUT_CREATED_BY,
+  INPUT_DOMAIN_FROM,
+  INPUT_DOMAIN_TO,
+  INPUT_EXTERNAL_REFS,
+  INPUT_GRANTED_REFS,
+  INPUT_IN_PIR,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS,
+  INPUT_PARTICIPANT,
+} from '../schema/general';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import { RELATION_IN_PIR, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import {
   INPUT_BCC,
   INPUT_BELONGS_TO,
@@ -37,28 +56,9 @@ import {
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT_PARTICIPANT,
 } from '../schema/stixRefRelationship';
-import {
-  INPUT_ASSIGNEE,
-  INPUT_CREATED_BY,
-  INPUT_DOMAIN_FROM,
-  INPUT_DOMAIN_TO,
-  INPUT_EXTERNAL_REFS,
-  INPUT_GRANTED_REFS,
-  INPUT_IN_PIR,
-  INPUT_KILLCHAIN,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_OBJECTS,
-  INPUT_PARTICIPANT,
-} from '../schema/general';
-import type { StixId } from './stix-2-1-common';
-import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
-import type { windows_integrity_level_enum, ssh_key_type_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
-import { RELATION_MEMBER_OF, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
-import type { Metric } from '../modules/metrics/metrics';
-import type { PirInformation } from '../modules/pir/pir-types';
-import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
+import type { StixId } from './stix-2-1-common';
+import type { ssh_key_type_enum, windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
 
 interface Representative {
   main: string;
@@ -335,48 +335,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // Course-Of-Action specific
   x_opencti_threat_hunting: string;
   x_opencti_log_sources: Array<string>;
-  // CVSS3
-  x_opencti_cvss_vector_string: string;
-  x_opencti_cvss_base_severity: string;
-  x_opencti_cvss_attack_vector: string;
-  x_opencti_cvss_attack_complexity: string;
-  x_opencti_cvss_privileges_required: string;
-  x_opencti_cvss_user_interaction: string;
-  x_opencti_cvss_scope: string;
-  x_opencti_cvss_confidentiality_impact: string;
-  x_opencti_cvss_integrity_impact: string;
-  x_opencti_cvss_availability_impact: string;
-  x_opencti_cvss_exploit_code_maturity: string;
-  x_opencti_cvss_remediation_level: string;
-  x_opencti_cvss_report_confidence: string;
-  // CVSS2
-  x_opencti_cvss_v2_vector_string: string;
-  x_opencti_cvss_v2_access_vector: string;
-  x_opencti_cvss_v2_access_complexity: string;
-  x_opencti_cvss_v2_authentication: string;
-  x_opencti_cvss_v2_confidentiality_impact: string;
-  x_opencti_cvss_v2_integrity_impact: string;
-  x_opencti_cvss_v2_availability_impact: string;
-  x_opencti_cvss_v2_exploitability: string;
-  x_opencti_cvss_v2_remediation_level: string;
-  x_opencti_cvss_v2_report_confidence: string;
-  // CVSS4
-  x_opencti_cvss_v4_vector_string: string;
-  x_opencti_cvss_v4_base_severity: string;
-  x_opencti_cvss_v4_attack_vector: string;
-  x_opencti_cvss_v4_attack_complexity: string;
-  x_opencti_cvss_v4_attack_requirements: string;
-  x_opencti_cvss_v4_privileges_required: string;
-  x_opencti_cvss_v4_user_interaction: string;
-  x_opencti_cvss_v4_confidentiality_impact_v: string;
-  x_opencti_cvss_v4_confidentiality_impact_s: string;
-  x_opencti_cvss_v4_integrity_impact_v: string;
-  x_opencti_cvss_v4_integrity_impact_s: string;
-  x_opencti_cvss_v4_availability_impact_v: string;
-  x_opencti_cvss_v4_availability_impact_s: string;
-  x_opencti_cvss_v4_exploit_maturity: string;
   // Others
-  x_opencti_cwe: string;
   x_opencti_main_observable_type: string;
   x_opencti_lastname: string;
   x_opencti_firstname: string;
@@ -421,7 +380,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   first_observed: Date;
   last_observed: Date;
   // custom
-  x_opencti_first_seen_active: Date;
   x_opencti_modified_at: Date;
   // boolean
   revoked: boolean;
@@ -430,9 +388,10 @@ interface BasicStoreEntity extends BasicStoreCommon {
   password_valid_until: Date | null;
   // custom
   x_opencti_detection: boolean;
-  x_opencti_cisa_kev: boolean;
   // number
   number_observed: number;
+  number_seen?: number; // optional, absent on legacy observed data
+  max_distinct_count?: number; // optional, absent until a producer provides it
   confidence: number;
   latitude: string;
   longitude: string;
@@ -442,16 +401,6 @@ interface BasicStoreEntity extends BasicStoreCommon {
   likelihood: number;
   x_opencti_order: number;
   x_opencti_score: number;
-  x_opencti_epss_score: number;
-  x_opencti_epss_percentile: number;
-  // CVSS3
-  x_opencti_cvss_base_score: number;
-  x_opencti_cvss_temporal_score: number;
-  // CVSS2
-  x_opencti_cvss_v2_base_score: number;
-  x_opencti_cvss_v2_temporal_score: number;
-  // CVSS4
-  x_opencti_cvss_v4_base_score: number;
   // PIR
   pir_information?: Array<PirInformation>;
   // Custom fields
@@ -701,6 +650,9 @@ interface BasicWorkflowStatus extends BasicStoreEntity {
   template_id: string;
   type: string;
   scope: StatusScope;
+  // Set when a republish orphans this Status; the cleanup manager hard-deletes it once past this
+  // date if it is still unreferenced. Absent/undefined means "not pending deletion".
+  to_be_deleted_at?: Date;
 }
 
 interface BasicTaskEntity extends BasicStoreEntity {

@@ -395,30 +395,15 @@ describe('check safeRenderClient error handling and worker termination detection
   });
 });
 
-describe('check safeRender with escape function', () => {
-  it('should allow escape function in templates when provided via options', () => {
-    // Use <%- %> (raw output) to avoid double-escaping when escape() is called explicitly
+describe('check safeRender with escape', () => {
+  it('should allow escape function in templates', () => {
     const template = '<% function parseLink(text) { return escape(text); } %><%- parseLink("<script>alert(1)</script>") %>';
-    const data = {};
-    const escapeFunc = (str: any) => String(str).replace(/[&<>"']/g, (char) => {
-      const escapeMap: Record<string, string> = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      };
-      return escapeMap[char] || char;
-    });
-
-    const result = safeRender(template, data, { escape: escapeFunc });
-    expect(result).toContain('&lt;script&gt;');
-    expect(result).toContain('&lt;/script&gt;');
+    const result = safeRender(template, {});
+    expect(result).toEqual('%3Cscript%3Ealert%281%29%3C/script%3E');
     expect(result).not.toContain('<script>');
   });
 
   it('should work with parseMarkdownLink function pattern from simplified email template', () => {
-    // Use <%- %> (raw output) to avoid double-escaping when escape() is called explicitly
     const template = `
       <% function parseMarkdownLink(text) {
         if (!text) return '';
@@ -432,26 +417,13 @@ describe('check safeRender with escape function', () => {
         }
         return text;
       } %>
-      <%- parseMarkdownLink('Check this [link](http://example.com)') %>
+      <%- parseMarkdownLink('Check this [my link](http://example.com)') %>
     `;
-    const data = {};
-    const escapeFunc = (str: any) => String(str).replace(/[&<>"']/g, (char) => {
-      const escapeMap: Record<string, string> = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      };
-      return escapeMap[char] || char;
-    });
-
-    const result = safeRender(template, data, { escape: escapeFunc });
-    expect(result).toContain('<a href="http://example.com">link</a>');
+    const result = safeRender(template, {});
+    expect(result).toContain('Check this <a href="http%3A//example.com">my link</a>');
   });
 
   it('should work with parseMarkdownLink and special characters', () => {
-    // Use <%- %> (raw output) to avoid double-escaping when escape() is called explicitly
     const template = `
       <% function parseMarkdownLink(text) {
         if (!text) return '';
@@ -467,22 +439,101 @@ describe('check safeRender with escape function', () => {
       } %>
       <%- parseMarkdownLink('[<script>malicious</script>](javascript:alert(1))') %>
     `;
-    const data = {};
-    const escapeFunc = (str: any) => String(str).replace(/[&<>"']/g, (char) => {
-      const escapeMap: Record<string, string> = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-      };
-      return escapeMap[char] || char;
-    });
-
-    const result = safeRender(template, data, { escape: escapeFunc });
-    // The escape function should escape the special characters
+    const result = safeRender(template, {});
     expect(result).not.toContain('<script>');
-    expect(result).toContain('&lt;script&gt;');
+    expect(result).toContain('<a href="javascript%3Aalert%281">%3Cscript%3Emalicious%3C/script%3E</a>');
+  });
+
+  it('should let the template data shadow escape', () => {
+    expect(safeRender('<%- escape("a b:c") %>', { escape: (s: string) => s.toUpperCase() })).toEqual('A B:C');
+  });
+});
+
+describe('check safeRender does not leak host globals through a defined binding', () => {
+  const hostGlobals = ['process', 'global', 'Buffer', 'fetch', 'WebAssembly', 'crypto', 'setTimeout', 'structuredClone'];
+  it.each(hostGlobals)('blocks %s smuggled through a dead parameter', (name) => {
+    const formula = `(() => { function dead(${name}) { return ${name}; } return typeof ${name}; })()`;
+    expect(() => safeRender(`<?- ${formula} ?>`, {}, { delimiter: '?' })).toThrow(VerifierIllegalAccessError);
+  });
+  it.each(hostGlobals)('blocks %s smuggled through a local var', (name) => {
+    expect(() => safeRender(`<?- (function () { var ${name}; return typeof ${name}; })() ?>`, {}, { delimiter: '?' })).toThrow(VerifierIllegalAccessError);
+  });
+  it.each(hostGlobals)('blocks %s written through a destructuring assignment', (name) => {
+    expect(() => safeRender(`<?- ([${name}] = [1], 1) ?>`, {}, { delimiter: '?' })).toThrow(VerifierIllegalAccessError);
+  });
+});
+
+describe('check safeRender renders with data keys that are reserved words', () => {
+  it.each(['class', 'return', 'for', 'default', 'with', 'in'])('renders when a data key is the reserved word "%s"', (key) => {
+    expect(safeRender('static content', { [key]: 1 })).toEqual('static content');
+  });
+});
+
+describe('check safeRender keeps shared globals intact', () => {
+  const render = (formula: string) => safeRender(`<?- ${formula} ?>`, {}, { delimiter: '?' });
+
+  const writeForms: [string, string][] = [
+    ['simple assignment', '(escape = 1, typeof escape)'],
+    ['compound assignment', '(escape += 1, typeof escape)'],
+    ['postfix update', '(escape++, typeof escape)'],
+    ['prefix update', '(++escape, typeof escape)'],
+    ['array destructuring', '([escape] = [1], typeof escape)'],
+    ['object destructuring shorthand', '({escape} = { escape: 1 }, typeof escape)'],
+    ['object destructuring renamed', '({ x: escape } = { x: 1 }, typeof escape)'],
+    ['nested destructuring', '(({ a: [escape] } = { a: [1] }), typeof escape)'],
+  ];
+  it.each(writeForms)('does not let a template corrupt escape via %s', (_label, formula) => {
+    const before = (globalThis as unknown as { escape: unknown }).escape;
+    void render(formula);
+    expect((globalThis as unknown as { escape: unknown }).escape).toBe(before);
+  });
+
+  it('does not let a template corrupt Object', () => {
+    const before = globalThis.Object;
+    void render('([Object] = [1], typeof Object)');
+    expect(globalThis.Object).toBe(before);
+  });
+
+  it('rejects the constructor gadget even when a template reassigns String', () => {
+    const before = globalThis.String;
+    const payload = '(String = function (n) { return { startsWith: function () { return false }, toString: function () { return n } } }, '
+      + '({})["constructor"]["constructor"]("return 1")())';
+    expect(() => render(payload)).toThrow(VerifierIllegalAccessError);
+    expect(globalThis.String).toBe(before);
+  });
+
+  it('still exposes the allow-listed globals to templates', () => {
+    expect(render("escape('a b')")).toEqual('a%20b');
+    expect(render('String(42)')).toEqual('42');
+    expect(render("Object.keys({ a: 1, b: 2 }).join(',')")).toEqual('a,b');
+    expect(render('Math.max(1, 2, 3)')).toEqual('3');
+  });
+});
+
+describe('check safeRender resolves escaped keys before checking them', () => {
+  const guardShadow = (key: string) => '<% const o = { "' + key + '": function (x) { return x; } }; %>'
+    + '<% with (o) { %><%- (() => 0)["constructor"]("return 42")() %><% } %>';
+
+  const escapedReservedKeys = [
+    ['unicode escape', '____s\\u0061fe____property'],
+    ['braced unicode escape', '____s\\u{61}fe____property'],
+    ['hex escape', '____s\\x61fe____property'],
+  ];
+  it.each(escapedReservedKeys)('blocks a guard key hidden with a %s', (_label, key) => {
+    expect(() => safeRender(guardShadow(key), {})).toThrow(VerifierIllegalAccessError);
+  });
+
+  it('blocks a forbidden property spelled with an escape', () => {
+    expect(() => safeRender('<%- ({ "con\\u0073tructor": 1 })["a"] %>', {})).toThrow(VerifierIllegalAccessError);
+    expect(() => safeRender('<%- ({ "__pro\\u0074o__": 1 })["a"] %>', {})).toThrow(VerifierIllegalAccessError);
+  });
+
+  it('rejects an escaped key even when it resolves to a harmless name', () => {
+    expect(() => safeRender('<%- Object.keys({ "caf\\u00e9": 1 })[0] %>', {})).toThrow(VerifierIllegalAccessError);
+  });
+
+  it('still accepts an escape inside a string value', () => {
+    expect(safeRender('<%- "caf\\u00e9" %>', {})).toEqual('caf\u00e9');
   });
 });
 

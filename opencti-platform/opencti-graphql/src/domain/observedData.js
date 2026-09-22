@@ -7,7 +7,7 @@ import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject'
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
@@ -108,7 +108,9 @@ export const addObservedData = async (context, user, observedData) => {
       input: observedData,
     });
   }
-  const observedDataResult = await createEntity(context, user, observedData, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+  // number_seen counts observation events: a newly created observed data has been seen once by default
+  const observedDataInput = { ...observedData, number_seen: isEmptyField(observedData.number_seen) ? 1 : observedData.number_seen };
+  const observedDataResult = await createEntity(context, user, observedDataInput, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, observedDataResult, user);
 };
 // endregion

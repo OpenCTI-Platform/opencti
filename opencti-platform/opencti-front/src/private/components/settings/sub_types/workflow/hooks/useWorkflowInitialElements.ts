@@ -35,7 +35,7 @@ export const useWorkflowInitialElements = (
 
     const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
     // Members contains both users, groups and organizations
-    const members = {
+    const members: Record<string, { id: string; name: string; entity_type: string }> = {
       ...convertEdgesToObject(membersEdges),
       AUTHOR: { id: 'AUTHOR', name: 'Draft author (org)', entity_type: 'Dynamic from draft' },
       CREATORS: { id: 'CREATORS', name: 'Creators', entity_type: 'Dynamic from draft' },

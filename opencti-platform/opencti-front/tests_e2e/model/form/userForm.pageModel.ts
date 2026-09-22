@@ -12,8 +12,12 @@ export default class UserFormPage {
     return this.getNameInput().fill(name);
   }
 
+  // No `.getByLabel(...)` hop on either of these: the pivot forwards `data-*`
+  // to the library Input, which places everything but `className` on the
+  // native <input>. The test id IS the input now, where MUI put it on the
+  // field's root wrapper and the descendant lookup was needed.
   getEmailInput() {
-    return this.page.getByTestId('user-creation-email-address-input').getByLabel('Email address');
+    return this.page.getByTestId('user-creation-email-address-input');
   }
 
   async fillEmailInput(email: string) {
@@ -22,7 +26,7 @@ export default class UserFormPage {
   }
 
   getPasswordInput() {
-    return this.page.getByTestId('user-creation-password-input').getByLabel('Password');
+    return this.page.getByTestId('user-creation-password-input');
   }
 
   async fillPasswordInput(password: string) {

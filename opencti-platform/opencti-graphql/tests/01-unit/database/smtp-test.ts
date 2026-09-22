@@ -12,8 +12,14 @@ vi.mock('openid-client', () => ({
 // `vi.mock` is hoisted to the top of the file — regular `const` would not be
 // initialized when the factory runs.
 const nodemailerMocks = vi.hoisted(() => {
+  type SentMailInfo = {
+    messageId: string;
+    accepted?: string[];
+    rejected?: string[];
+    rejectedErrors?: { recipient: string; message: string }[];
+  };
   const verify = vi.fn(async () => true);
-  const sendMail = vi.fn(async () => ({ messageId: 'stub' }));
+  const sendMail = vi.fn(async (): Promise<SentMailInfo> => ({ messageId: 'stub' }));
   const createTransport = vi.fn(() => ({ verify, sendMail }));
   return { verify, sendMail, createTransport };
 });
@@ -60,6 +66,8 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
       if (typeof value === 'boolean') return value;
       return actual.booleanConf(key, fallback);
     },
+    // Spy on logApp.warn/info so we can assert log calls without hitting real transports.
+    logApp: { ...actual.logApp, warn: vi.fn(), info: vi.fn() },
   };
 });
 
@@ -86,6 +94,7 @@ vi.mock('../../../src/modules/smtpConfiguration/smtpConfiguration-crypto', () =>
   decryptSmtpSecret: vi.fn(async (v: string | null | undefined) => v),
 }));
 
+import { logApp } from '../../../src/config/conf';
 import {
   __resetSmtpCachesForTests,
   buildSmtpAuth as buildSmtpAuthImpl,
@@ -520,6 +529,34 @@ describe('createSmtpTransporter — DB vs JSON config, sendMail, smtpIsAlive', (
     const callOptions = (nodemailerCreateTransport.mock.calls[0] as any[])[0];
     expect(callOptions.auth).toHaveProperty('user', 'user@company.com');
     expect(typeof callOptions.auth.pass).toBe('string');
+  });
+
+  it('sendMail should log a warning when nodemailer reports partially rejected recipients', async () => {
+    (logApp.warn as unknown as ReturnType<typeof vi.fn>).mockClear();
+    nodemailerSendMail.mockResolvedValueOnce({
+      messageId: 'stub',
+      accepted: ['ok@example.com'],
+      rejected: ['bad@example.com'],
+      rejectedErrors: [{ recipient: 'bad@example.com', message: 'mailbox unavailable' }],
+    });
+    await sendMail(
+      { from: 'f', to: ['ok@example.com', 'bad@example.com'], bcc: '', subject: 's', html: 'h', attachments: [] },
+      { kind: 'test' },
+    );
+    expect(logApp.warn).toHaveBeenCalledTimes(1);
+    expect(logApp.warn).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+      kind: 'test',
+      accepted: 1,
+      rejected: ['bad@example.com'],
+      rejectedErrors: [{ recipient: 'bad@example.com', message: 'mailbox unavailable' }],
+    }));
+  });
+
+  it('sendMail should not log a warning when all recipients are accepted', async () => {
+    (logApp.warn as unknown as ReturnType<typeof vi.fn>).mockClear();
+    nodemailerSendMail.mockResolvedValueOnce({ messageId: 'stub', accepted: ['ok@example.com'], rejected: [] });
+    await sendMail({ from: 'f', to: 'ok@example.com', bcc: '', subject: 's', html: 'h', attachments: [] }, {});
+    expect(logApp.warn).not.toHaveBeenCalled();
   });
 
   it('should not send and not call createTransport when smtp_enabled is false in DB', async () => {

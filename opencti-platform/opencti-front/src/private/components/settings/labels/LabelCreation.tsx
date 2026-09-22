@@ -124,7 +124,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
               <Form>
                 <Field
                   component={SimpleTextField}
-                  variant="standard"
+                  variant="outlined"
                   name="value"
                   label={t_i18n('Value')}
                   fullWidth={true}
@@ -179,7 +179,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
               >
                 <Field
                   component={SimpleTextField}
-                  variant="standard"
+                  variant="outlined"
                   name="value"
                   label={t_i18n('Value')}
                   fullWidth={true}

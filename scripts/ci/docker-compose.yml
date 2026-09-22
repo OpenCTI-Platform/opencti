@@ -11,7 +11,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: elasticsearch:8.19.19
+    image: elasticsearch:8.19.21
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -32,13 +32,12 @@ services:
   minio:
     container_name: minio
     profiles: ["backend"]
-    image: minio/minio:latest
+    image: pgsty/silo:latest
     networks:
       - runner-docker-network
     ports:
       - "9000:9000"
       - "9001:9001"
-      - "35300:35300"
     environment:
       MINIO_ROOT_USER: ChangeMe
       MINIO_ROOT_PASSWORD: ChangeMe

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { graphql } from 'react-relay';
 import { ShortTextOutlined } from '@mui/icons-material';
 import VocabularyPopover from '@components/settings/attributes/VocabularyPopover';

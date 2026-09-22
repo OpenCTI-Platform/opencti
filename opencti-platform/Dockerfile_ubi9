@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.26
+# syntax=docker/dockerfile:1.27
 FROM registry.access.redhat.com/ubi9/ubi AS base
 
 ARG PYTHON_VERSION=3.12
@@ -100,6 +100,7 @@ WORKDIR /opt/opencti
 COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
 COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
 COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
+COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
 COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 
 ENV PYTHONUNBUFFERED="1"

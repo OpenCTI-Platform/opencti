@@ -87,7 +87,12 @@
       }
     },
     "health_access_key": "ChangeMe",
+    "health_monitoring": {
+      "dependency_check_interval": 30000,
+      "usage_metrics_interval": 300000
+    },
     "request_timeout": 1200000,
+    "keep_alive_timeout": 65000,
     "session_timeout": 1200000,
     "session_cookie": false,
     "child_locking_process": {
@@ -138,8 +143,7 @@
       "file_max_size": 10000000
     },
     "performance_logger": false,
-    "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark3/{z}/{x}/{y}.png",
-    "map_tile_server_light": "https://map.opencti.io/styles/filigran-light3/{z}/{x}/{y}.png",
+    "map_bundled_file_path": "./static/maps/world.pmtiles",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
@@ -321,6 +325,10 @@
     "batch_size": 10000,
     "interval": 60000
   },
+  "platform_usage_metrics_manager": {
+    "enabled": true,
+    "lock_key": "platform_usage_metrics_manager_lock"
+  },
   "garbage_collection_manager": {
     "enabled": true,
     "lock_key": "garbage_collection_manager_lock",
@@ -405,11 +413,13 @@
     "mode": "single",
     "namespace": "",
     "hostname": "localhost",
+    "tls_servername": "",
     "use_ssl": false,
     "ca": [],
     "port": 6379,
     "host_ip_family": 4,
-    "trimming": 2000000
+    "trimming": 2000000,
+    "max_event_length": 0
   },
   "elasticsearch": {
     "index_prefix": "opencti",

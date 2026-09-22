@@ -102,8 +102,8 @@ describe('Exclusion list resolver', () => {
               description: 'test_description_file',
               exclusion_list_entity_types: ENTITY_IPV4_ADDR,
               file: upload,
-            }
-          }
+            },
+          },
         });
         exclusionListFileResponse = result?.data?.exclusionListFileAdd as ExclusionListResponse;
       });
@@ -129,8 +129,8 @@ describe('Exclusion list resolver', () => {
           query: FIELD_PATCH_MUTATION,
           variables: {
             id: exclusionListFileResponse.id,
-            file: upload
-          }
+            file: upload,
+          },
         });
         expect(fieldPatch?.data?.exclusionListFieldPatch.exclusion_list_values_count).toBe(4);
         expect(fieldPatch?.data?.exclusionListFieldPatch.exclusion_list_file_size).toBe(37);
@@ -177,8 +177,8 @@ describe('Exclusion list resolver', () => {
         await queryAsAdminWithSuccess({
           query: DELETE_MUTATION,
           variables: {
-            id: exclusionListFileResponse?.id
-          }
+            id: exclusionListFileResponse?.id,
+          },
         });
       });
 

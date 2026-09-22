@@ -46,11 +46,19 @@ const observedDataCreationMutation = graphql`
 
 const OBSERVED_DATA_TYPE = 'Observed-Data';
 
+// Optional counters are submitted as null when the field is left empty
+const parseOptionalInt = (value: number | string) => {
+  const parsed = parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
 interface ObservedDataAddInput {
   objects: { value: string }[];
   first_observed: Date | null;
   last_observed: Date | null;
   number_observed: number;
+  number_seen: number | string;
+  max_distinct_count: number | string;
   confidence: number | undefined;
   createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
@@ -90,7 +98,15 @@ export const ObservedDataCreationForm: FunctionComponent<
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_observed: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    number_observed: Yup.number(),
+    // Counters are non-negative integers, mirroring the backend schema validation
+    number_observed: Yup.number().integer(t_i18n('The value must be an integer'))
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
+    number_seen: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
+    max_distinct_count: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
     confidence: Yup.number().nullable(),
   }, mandatoryAttributes);
   const observedDataValidator = useDynamicSchemaCreationValidation(
@@ -111,6 +127,8 @@ export const ObservedDataCreationForm: FunctionComponent<
       first_observed: values.first_observed ? parse(values.first_observed).format() : null,
       last_observed: values.last_observed ? parse(values.last_observed).format() : null,
       number_observed: parseInt(String(values.number_observed), 10),
+      number_seen: parseOptionalInt(values.number_seen),
+      max_distinct_count: parseOptionalInt(values.max_distinct_count),
       confidence: parseInt(String(values.confidence), 10),
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
@@ -145,6 +163,8 @@ export const ObservedDataCreationForm: FunctionComponent<
     first_observed: null,
     last_observed: null,
     number_observed: 1,
+    number_seen: 1,
+    max_distinct_count: '',
     confidence: defaultConfidence,
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
@@ -173,7 +193,7 @@ export const ObservedDataCreationForm: FunctionComponent<
             textFieldProps={{
               label: t_i18n('First observed'),
               required: (mandatoryAttributes.includes('first_observed')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -184,20 +204,40 @@ export const ObservedDataCreationForm: FunctionComponent<
             textFieldProps={{
               label: t_i18n('Last observed'),
               required: (mandatoryAttributes.includes('last_observed')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="number_observed"
             type="number"
             label={t_i18n('Number observed')}
             required={(mandatoryAttributes.includes('number_observed'))}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
+          />
+          <Field
+            component={TextField}
+            variant="outlined"
+            name="number_seen"
+            type="number"
+            label={t_i18n('Number seen')}
+            required={(mandatoryAttributes.includes('number_seen'))}
+            fullWidth={true}
+            className="mt-5"
+          />
+          <Field
+            component={TextField}
+            variant="outlined"
+            name="max_distinct_count"
+            type="number"
+            label={t_i18n('Max distinct count')}
+            required={(mandatoryAttributes.includes('max_distinct_count'))}
+            fullWidth={true}
+            className="mt-5"
           />
           <ConfidenceField
             entityType="Observed-Data"

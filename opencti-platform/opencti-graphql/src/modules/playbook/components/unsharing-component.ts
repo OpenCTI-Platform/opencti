@@ -8,7 +8,7 @@ import { internalFindByIds } from '../../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
-import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 
 export interface UnsharingConfiguration {
   organizations: string[] | { label: string; value: string }[];
@@ -54,9 +54,10 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_UNSHARING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_UNSHARING_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+  executor: async ({ dataInstanceId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components', AUTOMATION_MANAGER_USER);
     const { organizations, applyToElements, applyWithFilters } = playbookNode.configuration;
+    const eventContext = buildPlaybookEventContext(event);
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
     const organizationsByIds = await internalFindByIds<BasicStoreEntityOrganization>(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -72,7 +73,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const isInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
-      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       if (isInScope && isMatchingFilters) {
         const currentElementGrantedRefs = element.extensions[STIX_EXT_OCTI].granted_refs ?? [];
         const newGrantedRefs = currentElementGrantedRefs.filter((o) => !organizationIds.includes(o));

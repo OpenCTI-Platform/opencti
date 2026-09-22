@@ -64,6 +64,6 @@ describe('Attribute use rule when merging', () => {
       // Clean
       await internalDeleteElementById(testContext, SYSTEM_USER, threat.internal_id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

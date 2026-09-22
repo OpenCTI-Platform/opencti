@@ -1,0 +1,155 @@
+/* Host prerequisites for @filigran/design-system.
+   Rules marked FDS-WORKAROUND are TEMPORARY: each one names the condition that
+   retires it, and the matching numbered entry in fds-migration/LIBRARY-FEEDBACK.md
+   carries the full rationale and the removal test.
+   Loaded after the library stylesheet and after the product's index.css. */
+
+/* HOST CONCERN, not library debt, and not a workaround: the product's
+   navigation icons come from MUI, which renders them at 24px; the library's
+   navigation rows are designed around 16px glyphs. Scoped to the navigation so
+   no other MUI icon in the application is affected. Permanent for as long as
+   MUI icons are fed into library slots — it disappears with the icons, not with
+   a pin bump. */
+.app-navbar .MuiSvgIcon-root {
+  font-size: 16px;
+}
+
+/* FDS-WORKAROUND #8: the rail does not defend its width — remove when the <nav> carries shrink-0 — see fds-migration/LIBRARY-FEEDBACK.md #8 */
+.app-navbar {
+  flex: 0 0 auto;
+}
+
+/* FDS-WORKAROUND #38: the rail anchors and stacks itself, because the library's
+   Navbar declares neither — remove when the component ships a documented
+   default the host can override — see fds-migration/LIBRARY-FEEDBACK.md #38
+
+   `left: 0` reproduces what the legacy MUI docked Drawer did. `z-index: 1200`
+   does NOT, and the difference is deliberate — see below.
+
+   `left: 0` — the rail already carries `position: sticky` from the rail-height
+   workaround (NavBar.tsx, FDS-WORKAROUND #11), but sticky only anchors on the
+   axes it is given an inset for. With `top` alone it held vertically and rode
+   the horizontal scroll: measured drift of -376px at a 1024px viewport, -120px
+   at 1280px, i.e. exactly the content overflow, which took the rail off screen.
+   Adding the horizontal inset anchors it to the scrollport instead, and does so
+   for ANY overflow — the offset is resolved against the viewport, not against
+   the content width, so a wider page cannot push it further.
+   It stays in flow, so the 48/180px column it occupies is still reserved and
+   the content does not shift; that is why this is not `position: fixed`, which
+   would have needed a spacer element the way the MUI Drawer did.
+
+   `z-index: 1200` — the rail had no stacking level at all (`auto`), so the four
+   full-width bars that paint their background across the whole viewport and
+   offset only their CONTENT (`padding-left`) painted OVER it: measured
+   `z-index: 1` beating the rail at the pixel on the knowledge graph and the
+   timeline.
+
+   1200 is ONE NOTCH ABOVE the legacy rail, not parity with it. The legacy
+   Drawer's paper carried `z-index: 1200`, but that paper sat inside the stacking
+   context its own root created: the root was a FLEX ITEM of the shell with
+   `z-index: 999`, and z-index applies to flex items even when they are static.
+   So the rail's effective level against outside siblings was 999, and the
+   paper's 1200 only ordered things within it. Chosen anyway, because the four
+   bars this defends against sit at `z-index: 1` and a value in the 1000-1199
+   band would have left the rail below the application header (1100) it stands
+   beside. Consequence, measured: anything positioned in 1000-1199 that OVERLAPS
+   the rail would now pass under it, where it passed over the legacy rail. On
+   every screen reachable on a seeded instance — dashboard, list, knowledge graph
+   and overview, rail open and collapsed — the only element in that band is the
+   application header, which starts exactly where the rail ends and never
+   overlaps it. Still below the system banner (1202) and the library overlays
+   (1300).
+
+   ONE element does flip, and it is deliberately left alone: the Suspense
+   fallback of the top bar (TopBar.tsx, `classes.appBar`) is an
+   `AppBar position="fixed"` at `theme.zIndex.drawer - 1` = 1199, full width from
+   x=0, so it overlaps the rail and now passes UNDER it where it passed over the
+   legacy rail. Do NOT "fix" this by giving it a left offset. That bar is the
+   loading placeholder and it is EMPTY — it carries no content to hide — so a rail
+   that stays visible while the bar loads is better than a placeholder painting
+   over the navigation. Nothing is masked either way; the only difference is which
+   of the two the user sees during the wait, and the rail is the more useful
+   answer.
+
+   Fragile by construction, and knowingly left so: those four bars rely on this
+   stacking to hide a background they paint anyway, and the robust fix would be
+   to offset their margin rather than their content, the way
+   private/components/data/ToolBar.jsx:97 already does. */
+.app-navbar {
+  left: 0;
+  z-index: 1200;
+}
+
+/* Host stacking level for the library's overlays — retired FDS-WORKAROUND #5 — see fds-migration/LIBRARY-FEEDBACK.md #5
+
+   1400, not 1300. MUI's Dialog and Drawer sit at 1300, and a library overlay
+   sharing that level only wins by the order the two portals are inserted into
+   <body> — measured on OpenAEV, where the same 1300 lost as soon as a Dialog
+   mounted after the panel. 1400 is above every MUI modal level (Dialog/Drawer
+   1300, Snackbar 1400 is the only tie and it is not stacked against a field),
+   so a Combobox panel opened inside a Dialog resolves without a tie-break. */
+:root {
+  --fds-z-overlay: 1400;
+}
+
+/* FDS-WORKAROUND #40: the product's global anchor reset removes the breadcrumb
+   link's underline on hover and on focus — remove when index.css no longer
+   neutralises text-decoration on `a:hover` / `a:focus` — see
+   fds-migration/LIBRARY-FEEDBACK.md #40
+
+   `index.css` carries `a, a:hover, a:visited, a:focus { text-decoration: none }`.
+   At rest the library wins: `.underline` (0,1,0) beats the bare `a` (0,0,1),
+   measured `text-decoration-line: underline` in both modes. On hover and on
+   focus it loses: `a:hover` and `a:focus` are (0,1,1), one pseudo-class above
+   the utility, so the shorthand resets the line to `none` — measured, both
+   modes, and it also resets the thickness the library sets to `from-font`.
+
+   That underline is not decoration: since the library's 2026-08-20 redesign a
+   linked and an unlinked entry paint the SAME colour token, so the underline is
+   the only thing that says which entry is clickable. It survives at rest, which
+   is where the 1.4.1 cue has to be, so nothing is non-conforming today — but the
+   cue disappearing exactly when the user reaches the link is not the component's
+   contract, and no gate in either repository can see it.
+
+   Scoped to the landmark through `#page-breadcrumb`, the id this product's own
+   wrapper always sets and which the data grid already keys a height on. The
+   global rule itself is old, broad, and not this migration's to remove: deleting
+   it would change anchor rendering across the whole application. Same treatment
+   as the `:focus { outline: 0 }` of entry #35. */
+#page-breadcrumb a:hover,
+#page-breadcrumb a:focus {
+  text-decoration-line: underline;
+  text-decoration-thickness: from-font;
+}
+
+/* FDS-WORKAROUND #60: a data-coloured Chip hands its label the system ink and the
+   14px Content/base size on an inner span, so a status node cannot state its own
+   colour or its 12px label — remove when the Chip carries the data colour through
+   to the label — see fds-migration/LIBRARY-FEEDBACK.md #60 */
+.workflow-status-node span {
+  font-size: 12px;
+  font-weight: 600;
+  color: inherit;
+}
+
+/* HOST CONCERN, not library debt: the dashboard's refresh control is a Button and
+   a Select trigger read as one segmented control. The library ships no
+   `rounded-l-none`/`rounded-r-none`, so the seam is squared here; the negative
+   margin collapses the two 1px borders into a single line. Scoped to the one
+   control by its id. */
+#dashboard-refresh-control > button:first-of-type {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  /* The same subtle border as the trigger beside it, so the pair reads as one
+     control rather than a tonal button glued to a neutral one. Declared here
+     rather than as a class: the button's own secondary border is a class too,
+     and this sheet is loaded after the library's. */
+  border: 1px solid var(--border-elevation-subtle);
+}
+
+#dashboard-refresh-control [role='combobox'] {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+

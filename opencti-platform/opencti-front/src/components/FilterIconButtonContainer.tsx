@@ -250,7 +250,7 @@ const FilterIconButtonContainer: FunctionComponent<
         const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
-        // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
+          // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
         const chipBackgroundColorStyle = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
@@ -263,17 +263,27 @@ const FilterIconButtonContainer: FunctionComponent<
                 filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
                   ? undefined
                   : (
-                      <FilterValues
-                        label={keyLabel}
-                        tooltip={true}
-                        currentFilter={currentFilter}
-                        handleSwitchLocalMode={handleSwitchLocalMode}
-                        filtersRepresentativesMap={filtersRepresentativesMap}
-                        redirection={redirection}
-                        entityTypes={entityTypes}
-                        filtersRestrictions={filtersRestrictions}
-                        host={host}
-                      />
+                      // As inline content the key, the values and the operator sat on three different baselines.
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '4px',
+                        }}
+                      >
+                        <FilterValues
+                          label={keyLabel}
+                          tooltip={true}
+                          currentFilter={currentFilter}
+                          handleSwitchLocalMode={handleSwitchLocalMode}
+                          filtersRepresentativesMap={filtersRepresentativesMap}
+                          redirection={redirection}
+                          entityTypes={entityTypes}
+                          filtersRestrictions={filtersRestrictions}
+                          host={host}
+                        />
+                      </Box>
                     )
               }
             >
@@ -308,6 +318,7 @@ const FilterIconButtonContainer: FunctionComponent<
                   }}
                   label={(
                     <Stack
+                      alignItems="center"
                       direction="row"
                       gap={0.5}
                       sx={{

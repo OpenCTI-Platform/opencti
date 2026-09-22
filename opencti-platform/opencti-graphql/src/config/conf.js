@@ -46,6 +46,7 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTempla
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -595,6 +596,14 @@ export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEAT
 // Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
 export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
 
+// User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
+export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
+
+// Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
+// check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
+// entity types with a published WorkflowDefinition behave as before this change.
+export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
@@ -722,6 +731,10 @@ export const BUS_TOPICS = {
   [ENTITY_TYPE_SECURITY_COVERAGE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_SECURITY_COVERAGE_RESULT]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_RESULT_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_RESULT_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_DECAY_RULE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_EDIT_TOPIC`,

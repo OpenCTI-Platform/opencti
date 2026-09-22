@@ -1,5 +1,4 @@
 import React, { CSSProperties, FunctionComponent, useMemo, useRef, useState } from 'react';
-import Checkbox from '@mui/material/Checkbox';
 import { DragIndicatorOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello-pangea/dnd';
@@ -12,6 +11,7 @@ import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dat
 import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
 import { useDataTableContext } from './DataTableContext';
+import { Checkbox } from '@filigran/design-system';
 
 const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
   dataTableToolBarComponent,
@@ -68,6 +68,10 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
       ? theme.palette.background.accent
       : 'transparent',
     minWidth: startColumnWidth,
+    // The row is a 42px flex line whose default `align-items: stretch` made this slot full height while the 16px
+    // library checkbox stayed at its top edge, so the box sat above the column labels it belongs to.
+    display: 'flex',
+    alignItems: 'center',
   };
 
   const showToolbar = (numberOfSelectedElements > 0 && !disableToolBar)
@@ -79,16 +83,10 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
         <div data-testid="dataTableCheckAll" style={checkboxStyle}>
           {(startsWithAction && !removeSelectAll) && (
             <Checkbox
+              aria-label={t_i18n('Select all')}
               checked={selectAll}
-              sx={{
-                marginRight: 1,
-                flex: '0 0 auto',
-                paddingLeft: 0,
-                '&:hover': {
-                  background: 'transparent',
-                },
-              }}
-              onChange={handleToggleSelectAll}
+              className="mx-2"
+              onCheckedChange={() => handleToggleSelectAll?.()}
               disabled={!handleToggleSelectAll}
             />
           )}
@@ -144,6 +142,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
                               >
                                 <DragIndicatorOutlined fontSize="small" />
                                 <Checkbox
+                                  aria-label={c.label}
                                   onClick={() => handleToggleVisibility(c.id)}
                                   checked={c.visible}
                                 />

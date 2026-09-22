@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { createSearchParams, useNavigate } from 'react-router-dom';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import { createSearchParams, useNavigate } from 'react-router';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
 import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
@@ -10,6 +10,7 @@ import StixCoreObjectFileExportForm, {
   StixCoreObjectFileExportFormInputs,
   StixCoreObjectFileExportFormProps,
 } from '@components/common/form/StixCoreObjectFileExportForm';
+import type { FintelDesign } from '@components/common/form/FintelDesignField';
 import {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation,
   StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables,
@@ -60,6 +61,7 @@ const stixCoreObjectFileExportQuery = graphql`
             name
             metaData {
               mimetype
+              fintel_template_id
             }
             objectMarking {
               id
@@ -79,6 +81,7 @@ const stixCoreObjectFileExportQuery = graphql`
             name
             metaData {
               mimetype
+              fintel_template_id
             }
             objectMarking {
               id
@@ -91,11 +94,13 @@ const stixCoreObjectFileExportQuery = graphql`
           }
         }
       }
-      ... on Container {
+      ... on StixDomainObject {
         fintelTemplates {
           id
           name
           default
+          includeCoverPageByDefault
+          includeBackPageByDefault
         }
         filesFromTemplate(first: 500) {
           edges {
@@ -104,6 +109,7 @@ const stixCoreObjectFileExportQuery = graphql`
               name
               metaData {
                 mimetype
+                fintel_template_id
               }
               objectMarking {
                 id
@@ -204,6 +210,7 @@ const StixCoreObjectFileExportComponent = ({
         id: o.id,
         name: getMainRepresentative(o),
       })),
+      fintelTemplateId: e.node.metaData?.fintel_template_id ?? null,
     };
   });
   // Artificially add mappable content in possible exports
@@ -220,7 +227,9 @@ const StixCoreObjectFileExportComponent = ({
   const templateOptions = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
-    isDefault: t.default,
+    isDefault: t.default ?? false,
+    include_cover_page_by_default: t.includeCoverPageByDefault ?? true,
+    include_back_page_by_default: t.includeBackPageByDefault ?? true,
   }));
 
   const defaultTemplate = templateOptions.find((t) => t.isDefault);
@@ -259,6 +268,15 @@ const StixCoreObjectFileExportComponent = ({
   const [commitUploadFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
   );
+  const [commitUploadFintelFile] = useMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
+    stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+  );
+  const buildFintelDesignOptions = (values: StixCoreObjectFileExportFormInputs): FintelDesign => ({
+    file_id: values.fintelDesign?.value.file_id ?? null,
+    gradiantFromColor: values.fintelDesign?.value.gradiantFromColor ?? null,
+    gradiantToColor: values.fintelDesign?.value.gradiantToColor ?? null,
+    textColor: values.fintelDesign?.value.textColor ?? null,
+  });
 
   /**
    * Export using "built-in" connector.
@@ -267,29 +285,51 @@ const StixCoreObjectFileExportComponent = ({
    * @param helpers Formik helpers to manage form.
    */
   const submitExportBuiltIn: typeof onSubmitExport = async (values, helpers) => {
+    const isFintelPdf = values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.exportAsFintel;
     if ((!values.fileToExport && !values.template) || !values.exportFileName) {
       throw Error(t_i18n('Invalid form to export a template'));
     }
     const { setSubmitting, resetForm } = helpers;
-    const uploadFile = (variables: StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables) => {
-      commitUploadFile({
+    let htmlSaved = false;
+    const commitUpload = isFintelPdf ? commitUploadFintelFile : commitUploadFile;
+    const uploadFile = (
+      variables: StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables,
+      completeExport = true,
+    ) => new Promise<void>((resolve, reject) => {
+      commitUpload({
         variables,
-        onCompleted: (result) => {
-          setSubmitting(false);
-          if (result.stixCoreObjectEdit?.importPush) {
-            onExportCompleted?.(result.stixCoreObjectEdit.importPush.id);
+        onCompleted: (result, errors) => {
+          if (isFintelPdf && (errors?.length || !result.stixCoreObjectEdit?.importPush)) {
+            reject(new Error(t_i18n('Error trying to export the file')));
+            return;
           }
-          resetForm();
-          close();
+          if (completeExport) {
+            setSubmitting(false);
+            if (result.stixCoreObjectEdit?.importPush) {
+              onExportCompleted?.(result.stixCoreObjectEdit.importPush.id);
+            }
+            resetForm();
+            close();
+          }
+          resolve();
         },
-        onError: () => {
-          resetForm();
-          close();
+        onError: (error) => {
+          if (isFintelPdf) {
+            reject(error);
+          } else {
+            resetForm();
+            close();
+            resolve();
+          }
         },
       });
-    };
+    });
 
     try {
+      // Guard callers that bypass Formik validation.
+      if (isFintelPdf && !values.template) {
+        throw Error(t_i18n('Invalid form to export a template'));
+      }
       if (values.template !== null) {
         const templateId = values.template.value;
         const fileMarkings = values.fileMarkings.map(({ value }) => value);
@@ -305,24 +345,45 @@ const StixCoreObjectFileExportComponent = ({
           const fileName = `${values.exportFileName}.html`;
           const blob = new Blob([templateContent], { type: 'text/html' });
           const file = new File([blob], fileName, { type: blob.type });
-          uploadFile({
+          await uploadFile({
             id: scoId,
             fileMarkings,
             fromTemplate: true,
+            fintelTemplateId: templateId,
             file,
           });
         } else {
-          // Export fintel template directly in PDF without HTML step.
+          if (isFintelPdf) {
+            await uploadFile({
+              id: scoId,
+              fileMarkings,
+              fromTemplate: true,
+              fintelTemplateId: templateId,
+              file: new File([templateContent], `${values.exportFileName}.html`, { type: 'text/html' }),
+            }, false);
+            htmlSaved = true;
+          }
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value);
+          const PDF = await htmlToPdfReport(
+            scoName ?? '',
+            templateContent,
+            templateName,
+            fileMarkingNames,
+            buildFintelDesignOptions(values),
+            {
+              includeCoverPage: values.includeCoverPage,
+              includeBackPage: values.includeBackPage,
+            },
+          );
           const blob = await PDF.getBlob();
-          uploadFile({
+          await uploadFile({
             id: scoId,
             fileMarkings,
             file: new File([blob], fileName, { type: blob.type }),
             fromTemplate: true,
+            fintelTemplateId: templateId,
           });
         }
       } else if (values.fileToExport !== null) {
@@ -341,10 +402,20 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value)
+          ? await htmlToPdfReport(
+              scoName ?? '',
+              fileData,
+              name,
+              fileMarkingNames,
+              buildFintelDesignOptions(values),
+              {
+                includeCoverPage: values.includeCoverPage,
+                includeBackPage: values.includeBackPage,
+              },
+            )
           : htmlToPdf(fileId, fileData);
         const blob = await PDF.getBlob();
-        uploadFile({
+        await uploadFile({
           id: scoId,
           fileMarkings,
           file: new File([blob], fileName, { type: blob.type }),
@@ -352,6 +423,13 @@ const StixCoreObjectFileExportComponent = ({
         });
       }
     } catch (e) {
+      if (isFintelPdf) {
+        setSubmitting(false);
+        MESSAGING$.notifyError(htmlSaved
+          ? t_i18n('The HTML file was saved, but the PDF export failed')
+          : t_i18n('Error trying to export the file'));
+        return;
+      }
       MESSAGING$.notifyError(t_i18n('Error trying to export the file'));
       throw e;
     }

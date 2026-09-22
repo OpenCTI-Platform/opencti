@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { type FormikConfig } from 'formik';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
 import { fetchQuery as relayFetchQuery, graphql } from 'react-relay';

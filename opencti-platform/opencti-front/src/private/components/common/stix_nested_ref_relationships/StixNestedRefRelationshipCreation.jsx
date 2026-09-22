@@ -10,7 +10,6 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
@@ -19,12 +18,14 @@ import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { truncate } from '../../../../utils/String';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
+import { List, ListItemButton } from '@mui/material';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -525,8 +526,8 @@ class StixNestedRefRelationshipCreation extends Component {
                 </div>
               </div>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
@@ -534,9 +535,9 @@ class StixNestedRefRelationshipCreation extends Component {
               >
                 {R.map(
                   (type) => (
-                    <MenuItem key={type} value={type}>
+                    <SelectItem key={type} value={type}>
                       {t(`relationship_${type}`)}
-                    </MenuItem>
+                    </SelectItem>
                   ),
                   relationshipTypes,
                 )}
@@ -549,7 +550,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 name="start_time"
                 textFieldProps={{
                   label: t('Start time'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
@@ -559,7 +560,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 name="stop_time"
                 textFieldProps={{
                   label: t('Stop time'),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
@@ -608,9 +609,10 @@ class StixNestedRefRelationshipCreation extends Component {
           </IconButton>
           <Typography variant="h6">{t('Select a relationship')}</Typography>
         </div>
-        <div className={classes.container}>
+        <List component="div" className={classes.container}>
           {existingRelations.map((relation) => (
-            <div
+            <ListItemButton
+              focusVisibleClassName="focus-visible"
               key={relation.node.id}
               className={classes.relation}
               onClick={this.handleSelectRelation.bind(this, relation.node)}
@@ -715,9 +717,10 @@ class StixNestedRefRelationshipCreation extends Component {
                 </div>
               </div>
               <div className="clearfix" />
-            </div>
+            </ListItemButton>
           ))}
-          <div
+          <ListItemButton
+            focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={this.handleChangeStep.bind(this)}
           >
@@ -807,8 +810,8 @@ class StixNestedRefRelationshipCreation extends Component {
               </div>
             </div>
             <div className="clearfix" />
-          </div>
-        </div>
+          </ListItemButton>
+        </List>
       </div>
     );
   }
@@ -837,6 +840,9 @@ class StixNestedRefRelationshipCreation extends Component {
         open={open}
         anchor="right"
         elevation={1}
+        // This creation drawer mounts MUI's Drawer directly instead of the shared one, so it has to declare its
+        // own layer: a drawer is a layer-2 surface and its fields read the layer from the paper.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}

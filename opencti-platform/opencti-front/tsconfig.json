@@ -1,38 +1,24 @@
 {
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.front.json" },
+    { "path": "./tsconfig.tool.json" }
+  ],
   "compilerOptions": {
     "target": "es2024",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
-    "allowJs": true,
-    "noImplicitAny": false, // changed to true by default in TS 6.0, to be changed to true in the future
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "strict": true,
+    "allowJs": true,
+    "noImplicitAny": true,
+    "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "paths": {
-      "@common/*": ["./src/components/common/*"],
-      "@components/*": ["./src/private/components/*"],
-      "src/*": ["./src/*"],
-      "tests_e2e/*": ["./tests_e2e/*"]
-    },
-    "types": ["@testing-library/jest-dom", "vite/client"]
-  },
-  "include": [
-    "src", "index.d.ts", ".eslintrc.js", "tests_e2e"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+    "composite": true,
+    "isolatedModules": true
+  }
 }

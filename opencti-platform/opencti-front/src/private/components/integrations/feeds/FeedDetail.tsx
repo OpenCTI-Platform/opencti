@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
@@ -11,9 +11,14 @@ import IngestionTaxiiPopover from '@components/data/ingestionTaxii/IngestionTaxi
 import IngestionTaxiiCollectionPopover from '@components/data/ingestionTaxiiCollection/IngestionTaxiiCollectionPopover';
 import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopover';
 import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPopover';
+import IngestionRssLogsTab from '@components/data/ingestionRss/IngestionRssLogsTab';
 import FormView from '@components/data/forms/view/FormView';
+import FeedStartStopButton from '@components/integrations/feeds/FeedStartStopButton';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import IngestionTaxiiLogsTab from '@components/data/ingestionTaxii/IngestionTaxiiLogsTab';
+import IngestionCsvLogsTab from '@components/data/ingestionCsv/IngestionCsvLogsTab';
+import IngestionJsonLogsTab from '@components/data/ingestionJson/IngestionJsonLogsTab';
+import SyncLogsTab from '@components/data/sync/SyncLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -31,6 +36,7 @@ import TitleMainEntity from '../../../../components/common/typography/TitleMainE
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
 import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../../utils/hooks/useGranted';
+import { paperBg } from '../paperSurface';
 
 const feedDetailSyncQuery = graphql`
   query FeedDetailSyncQuery($id: String!) {
@@ -41,6 +47,7 @@ const feedDetailSyncQuery = graphql`
       stream_id
       running
       current_state_date
+      last_execution_status
       listen_deletion
       no_dependencies
       ssl_verify
@@ -194,6 +201,7 @@ export interface FeedDetailNode {
   queue_messages?: number | null;
   added_after_start?: string | null;
   current_state_date?: string | null;
+  last_execution_status?: string | null;
   current_state_cursor?: string | null;
   current_state_hash?: string | null;
   last_execution_date?: string | null;
@@ -243,13 +251,13 @@ const FeedActionsPopover = ({ kind, node }: FeedActionsPopoverProps) => {
     case 'sync':
       return <SyncPopover syncId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
     case 'rss':
-      return <IngestionRssPopover ingestionRssId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
+      return <IngestionRssPopover ingestionRssId={node.id} running={running} showStartStop={false} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
     case 'taxii':
-      return <IngestionTaxiiPopover ingestionTaxiiId={node.id} running={running} setStateValue={noop} onDeleteComplete={onDeleteComplete} />;
+      return <IngestionTaxiiPopover ingestionTaxiiId={node.id} running={running} showStartStop={false} setStateValue={noop} onDeleteComplete={onDeleteComplete} />;
     case 'taxii-push':
       return <IngestionTaxiiCollectionPopover ingestionTaxiiId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
     case 'csv':
-      return <IngestionCsvPopover ingestionCsvId={node.id} running={running} setStateHash={noop} onDeleteComplete={onDeleteComplete} />;
+      return <IngestionCsvPopover ingestionCsvId={node.id} running={running} showStartStop={false} setStateHash={noop} onDeleteComplete={onDeleteComplete} />;
     case 'json':
     default:
       return <IngestionJsonPopover ingestionJsonId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
@@ -284,8 +292,11 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
-  // Only TAXII feeds get the Overview / Works / Logs tabs, mirroring the
-  // connector detail page. Other feed kinds keep the single-page layout.
+  // TAXII, CSV, RSS, JSON and stream feeds get tabs. Stream feeds don't expose
+  // works, so they only display Overview + Logs.
+  const hasTabs = kind === 'taxii' || kind === 'csv' || kind === 'rss' || kind === 'json' || kind === 'sync';
+  const hasWorksTab = hasTabs && kind !== 'sync';
+  const logsTabIndex = hasWorksTab ? 2 : 1;
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -348,7 +359,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               justifyContent: 'center',
               borderRadius: 1,
               border: `1px solid ${theme.palette.divider}`,
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: paperBg(theme),
             }}
           >
             <Icon sx={{ fontSize: 28, color: theme.palette.primary.main }} />
@@ -405,22 +416,27 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           {/* Same gate as the legacy feed list lines: read-only INGESTION
               users do not get the mutation actions. */}
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <FeedActionsPopover kind={kind} node={node} />
+            <>
+              <FeedActionsPopover kind={kind} node={node} />
+              {(kind === 'rss' || kind === 'csv' || kind === 'taxii') && (
+                <FeedStartStopButton kind={kind} id={node.id} running={running} />
+              )}
+            </>
           </Security>
         </Stack>
       </Stack>
 
-      {kind === 'taxii' && (
+      {hasTabs && (
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label={t_i18n('Overview')} />
-            <Tab label={t_i18n('Works')} disabled={!isConnectorReader} />
+            {hasWorksTab && <Tab label={t_i18n('Works')} disabled={!isConnectorReader} />}
             {isIngestionFeedLogsEnabled && <Tab label={t_i18n('Logs')} />}
           </Tabs>
         </Box>
       )}
 
-      {(kind !== 'taxii' || tabValue === 0) && (
+      {(!hasTabs || tabValue === 0) && (
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 7 }}>
             <Card title={t_i18n('Configuration')}>
@@ -559,15 +575,21 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
 
       {/* Works of the feed's technical queue connector (in progress and
           completed), exactly like the connector detail pages. Synchronizers
-          consume streams directly and never register works. For TAXII feeds
+          consume streams directly and never register works. For tabbed feeds
           this now lives in its own "Works" tab instead of the single page. */}
-      {isConnectorReader && kind !== 'sync' && (kind !== 'taxii' || tabValue === 1) && (
+      {isConnectorReader && hasWorksTab && (!hasTabs || tabValue === 1) && (
         <ConnectorWorksSection connectorId={connectorIdFromIngestId(node.id)} />
       )}
 
-      {/* "Logs" tab content, TAXII feeds only. */}
-      {isIngestionFeedLogsEnabled && kind === 'taxii' && tabValue === 2 && (
-        <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />
+      {/* "Logs" tab content for TAXII, CSV, RSS, JSON and stream feeds. */}
+      {isIngestionFeedLogsEnabled && hasTabs && tabValue === logsTabIndex && (
+        <>
+          {kind === 'sync' && <SyncLogsTab feedId={node.id} feedName={node.name} />}
+          {kind === 'taxii' && <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />}
+          {kind === 'csv' && <IngestionCsvLogsTab feedId={node.id} feedName={node.name} />}
+          {kind === 'rss' && <IngestionRssLogsTab feedId={node.id} feedName={node.name} />}
+          {kind === 'json' && <IngestionJsonLogsTab feedId={node.id} feedName={node.name} />}
+        </>
       )}
     </PageContainer>
   );

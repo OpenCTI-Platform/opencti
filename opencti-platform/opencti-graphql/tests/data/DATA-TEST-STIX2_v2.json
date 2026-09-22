@@ -8,7 +8,9 @@
       "spec_version": "2.1",
       "name": "ANSSI",
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "created": "2020-02-23T23:40:53.575Z",
       "modified": "2020-02-27T08:45:39.351Z",
       "x_opencti_organization_type": "CSIRT",
@@ -49,7 +51,9 @@
       "sophistication": "expert",
       "resource_level": "organization",
       "primary_motivation": "personal-gain",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "type": "threat-actor",
@@ -65,7 +69,9 @@
       "sophistication": "expert",
       "resource_level": "individual",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "threat-actor--8e4cce1a-194c-564a-8125-80fe784dff3a",
@@ -117,7 +123,9 @@
           "type": "file"
         }
       },
-      "object_refs": ["malware--faa5b705-cf44-4e50-8472-29e5fec43c3c"]
+      "object_refs": [
+        "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c"
+      ]
     },
     {
       "id": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
@@ -125,7 +133,9 @@
       "spec_version": "2.1",
       "name": "Consulting",
       "identity_class": "class",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "description": "Private entities providing expert advice in a specific field to external entities.",
       "created": "2020-02-23T23:40:53.582Z",
       "modified": "2020-03-07T10:48:51.034Z"
@@ -136,7 +146,9 @@
       "spec_version": "2.1",
       "name": "Information Technologies Consulting",
       "identity_class": "class",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "description": "Includes Managed Services Providers (MSPs).",
       "created": "2020-02-23T23:40:53.582Z",
       "modified": "2020-03-24T07:26:32.754Z"
@@ -159,15 +171,21 @@
       "type": "report",
       "spec_version": "2.1",
       "name": "A demo report for testing purposes",
-      "labels": ["report"],
+      "labels": [
+        "report"
+      ],
       "description": "Report for testing purposes (random data).",
       "published": "2020-03-01T14:02:48.111Z",
       "created": "2020-03-01T14:02:55.327Z",
       "modified": "2020-03-01T14:09:48.078Z",
-      "report_types": ["threat-report"],
+      "report_types": [
+        "threat-report"
+      ],
       "confidence": 3,
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ],
       "object_refs": [
         "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
         "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
@@ -203,11 +221,15 @@
       "spec_version": "2.1",
       "abstract": "This is a note",
       "content": "This is a note about a malware and an intrusion set",
-      "labels": ["note"],
+      "labels": [
+        "note"
+      ],
       "created": "2020-03-02T15:02:55.327Z",
       "modified": "2020-03-02T15:09:48.078Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ],
       "object_refs": [
         "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
         "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
@@ -221,11 +243,15 @@
       "spec_version": "2.1",
       "explanation": "This is the explanation of the opinion",
       "opinion": "strongly-agree",
-      "labels": ["opinion"],
+      "labels": [
+        "opinion"
+      ],
       "created": "2020-03-02T15:02:55.327Z",
       "modified": "2020-03-02T15:09:48.078Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ],
       "object_refs": [
         "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
         "note--573f623c-bf68-4f19-9500-d618f0d00af0",
@@ -240,7 +266,9 @@
       "type": "malware",
       "spec_version": "2.1",
       "name": "Paradise Ransomware",
-      "labels": ["malware"],
+      "labels": [
+        "malware"
+      ],
       "description": "MalwareHunterTeam discovered a new Paradise Ransomware variant that uses the extension _V.0.0.0.1{paradise@all-ransomware.info}.prt and drops a ransom note named PARADISE_README_paradise@all-ransomware.info.txt.",
       "created": "2019-09-30T16:38:26.000Z",
       "modified": "2020-01-14T14:01:48.288Z",
@@ -274,11 +302,17 @@
       "type": "malware",
       "spec_version": "2.1",
       "name": "Spelevo EK",
-      "labels": ["ryuk", "TrickBot", "COVID-19"],
+      "labels": [
+        "ryuk",
+        "TrickBot",
+        "COVID-19"
+      ],
       "description": "Exploit Kit",
       "created": "2020-02-04T14:48:31.601Z",
       "modified": "2020-02-04T14:48:31.601Z",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "software--b0debdba-74e7-4463-ad2a-34334ee66d8d",
@@ -295,10 +329,16 @@
       "submitted": "2023-02-15T23:00:00.000Z",
       "spec_version": "2.1",
       "result_name": "Spelevo EK analysis",
-      "labels": ["ryuk", "TrickBot", "COVID-19"],
+      "labels": [
+        "ryuk",
+        "TrickBot",
+        "COVID-19"
+      ],
       "created": "2021-02-04T14:48:31.601Z",
       "modified": "2021-02-04T14:48:31.601Z",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ],
       "operating_system_ref": "software--b0debdba-74e7-4463-ad2a-34334ee66d8d"
     },
     {
@@ -311,20 +351,26 @@
       "created": "2022-03-01T14:07:14.316Z",
       "modified": "2022-03-01T14:07:14.316Z",
       "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
       "type": "campaign",
       "spec_version": "2.1",
       "name": "A new campaign",
-      "labels": ["campaign"],
+      "labels": [
+        "campaign"
+      ],
       "description": "A test campaign",
       "first_seen": "2020-02-27T08:45:43.365Z",
       "last_seen": "2020-02-27T08:45:43.365Z",
       "created": "2020-02-29T14:48:31.601Z",
       "modified": "2020-02-29T14:48:31.601Z",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "tracking-number--93cb4798-56cf-5131-8373-8fe7d4a7c62c",
@@ -335,7 +381,9 @@
       "x_opencti_type": "Tracking-Number",
       "type": "tracking-number",
       "x_opencti_created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "credential--8e0a834a-c233-5c50-8186-adde10a69f02",
@@ -346,8 +394,12 @@
       "x_opencti_type": "Credential",
       "type": "credential",
       "x_opencti_created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
-      "x_opencti_labels": ["note"],
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "x_opencti_labels": [
+        "note"
+      ],
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
@@ -359,16 +411,23 @@
       "last_seen": "2020-02-27T08:45:47.779Z",
       "created": "2020-03-25T14:48:31.601Z",
       "modified": "2020-03-25T14:48:31.601Z",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
       "type": "identity",
       "spec_version": "2.1",
       "name": "CIRCL",
-      "x_opencti_aliases": ["Computer Incident", "Incident"],
+      "x_opencti_aliases": [
+        "Computer Incident",
+        "Incident"
+      ],
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "created": "2020-02-25T22:23:20.648Z",
       "modified": "2020-02-25T22:23:20.648Z",
       "x_opencti_reliability": "B - Usually reliable"
@@ -388,7 +447,9 @@
       "type": "indicator",
       "spec_version": "2.1",
       "name": "www.xolod-teplo.ru",
-      "labels": ["indicator"],
+      "labels": [
+        "indicator"
+      ],
       "description": "download location",
       "pattern_type": "stix",
       "pattern": "[domain-name:value = 'www.xolod-teplo.ru']",
@@ -397,14 +458,18 @@
       "created": "2020-02-25T22:25:59.717Z",
       "modified": "2020-02-25T22:25:59.717Z",
       "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
     },
     {
       "id": "indicator--51640662-9c78-4402-932f-1d4531624723",
       "type": "indicator",
       "spec_version": "2.1",
       "name": "www.one-clap.jp",
-      "labels": ["indicator"],
+      "labels": [
+        "indicator"
+      ],
       "description": "download location",
       "pattern_type": "stix",
       "pattern": "[domain-name:value = 'www.one-clap.jp']",
@@ -413,7 +478,9 @@
       "created": "2020-02-25T22:25:59.714Z",
       "modified": "2020-02-25T22:25:59.714Z",
       "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
     },
     {
       "type": "sighting",
@@ -422,8 +489,12 @@
       "created": "2016-08-06T20:08:31.000Z",
       "modified": "2016-09-06T20:08:31.000Z",
       "sighting_of_ref": "indicator--51640662-9c78-4402-932f-1d4531624723",
-      "observed_data_refs": ["observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"],
-      "where_sighted_refs": ["identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132"],
+      "observed_data_refs": [
+        "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"
+      ],
+      "where_sighted_refs": [
+        "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132"
+      ],
       "first_seen": "2016-08-06T20:08:31.000Z",
       "last_seen": "2016-08-07T20:08:31.000Z",
       "count": 12,
@@ -434,7 +505,9 @@
       "type": "indicator",
       "spec_version": "2.1",
       "name": "2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957",
-      "labels": ["indicator"],
+      "labels": [
+        "indicator"
+      ],
       "description": "CMSTAR Variants Identified in Phishing Campaign",
       "pattern_type": "stix",
       "pattern": "[file:hashes.'SHA-256' = '2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957']",
@@ -443,7 +516,9 @@
       "created": "2020-02-25T22:25:17.453Z",
       "modified": "2020-02-25T22:25:17.453Z",
       "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
     },
     {
       "id": "sighting--579a46af-a339-400d-809e-b92101fe7de8",
@@ -452,7 +527,9 @@
       "created": "2016-08-06T20:08:31.000Z",
       "modified": "2016-09-06T20:08:31.000Z",
       "sighting_of_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
-      "where_sighted_refs": ["location--5acd8b26-51c2-4608-86ed-e9edd43ad971"],
+      "where_sighted_refs": [
+        "location--5acd8b26-51c2-4608-86ed-e9edd43ad971"
+      ],
       "first_seen": "2016-08-06T20:08:31.000Z",
       "last_seen": "2016-08-07T20:08:31.000Z",
       "count": 8,
@@ -464,11 +541,15 @@
       "spec_version": "2.1",
       "name": "Allied Universal",
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "description": "US-based security company.",
       "created": "2020-02-04T15:10:55.068Z",
       "modified": "2020-02-04T15:10:55.068Z",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
     },
     {
       "id": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
@@ -476,7 +557,9 @@
       "spec_version": "2.1",
       "name": "John Doe",
       "identity_class": "individual",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "created": "2020-03-27T08:39:45.676Z",
       "modified": "2020-03-27T08:39:45.676Z"
     },
@@ -512,7 +595,9 @@
       "spec_version": "2.1",
       "name": "ANSSI - Sous-direction Opérations",
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "created": "2020-02-23T23:40:53.575Z",
       "modified": "2020-02-27T08:45:39.351Z",
       "x_opencti_organization_type": "CSIRT"
@@ -536,11 +621,15 @@
       "spec_version": "2.1",
       "name": "Southwire",
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "description": "Leading wire and cables US-based manufacturer.",
       "created": "2020-01-08T16:05:17.311Z",
       "modified": "2020-01-08T16:05:17.311Z",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
     },
     {
       "id": "identity--062f72b1-7caf-4112-ab92-6211f7e7abc8",
@@ -548,7 +637,9 @@
       "spec_version": "2.1",
       "name": "Energy",
       "identity_class": "class",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "description": "Public and private entities operating to extract, store, transport and process fuel, entities managing energy plants and energy storage and distribution and entities managing fuel waste.",
       "created": "2020-02-23T23:40:53.576Z",
       "modified": "2020-02-23T23:40:53.576Z"
@@ -559,7 +650,9 @@
       "spec_version": "2.1",
       "name": "The MITRE Corporation",
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "created": "2017-06-01T00:00:00.000Z",
       "modified": "2017-06-01T00:00:00.000Z"
     },
@@ -580,12 +673,16 @@
       "spec_version": "2.1",
       "x_mitre_id": "T1369",
       "name": "Spear phishing messages with malicious links",
-      "labels": ["attack-pattern"],
+      "labels": [
+        "attack-pattern"
+      ],
       "description": "This technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.\n\nEmails with malicious links are designed to get a user to click on the link in order to deliver malware payloads. (Citation: GoogleDrive Phishing) (Citation: RSASEThreat)",
       "created": "2017-12-14T16:46:06.044Z",
       "modified": "2018-10-17T00:14:20.652Z",
       "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
-      "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
+      "object_marking_refs": [
+        "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+      ],
       "kill_chain_phases": [
         {
           "kill_chain_name": "mitre-pre-attack",
@@ -651,7 +748,9 @@
       "created": "2020-03-01T14:07:14.316Z",
       "modified": "2020-03-01T14:07:14.316Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "relationship--f6c3a68d-bfb5-48ea-a9b7-59db3465eac1",
@@ -663,7 +762,9 @@
       "created": "2020-03-01T14:07:14.316Z",
       "modified": "2020-03-01T14:07:14.316Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "location--bc9f5d2c-7209-4b24-903e-587c7cf00ab1",
@@ -671,7 +772,9 @@
       "spec_version": "2.1",
       "name": "Europe",
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "description": "Europe",
       "created": "2019-10-26T14:55:55.895Z",
       "modified": "2020-02-27T08:45:38.165Z",
@@ -688,21 +791,29 @@
       "created": "2020-03-01T14:07:14.316Z",
       "modified": "2020-03-01T14:07:14.316Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
       "type": "intrusion-set",
       "spec_version": "2.1",
       "name": "APT41",
-      "aliases": ["Winnti"],
-      "labels": ["intrusion-set"],
+      "aliases": [
+        "Winnti"
+      ],
+      "labels": [
+        "intrusion-set"
+      ],
       "description": "[APT41](https://attack.mitre.org/groups/G0096) is a group that carries out Chinese state-sponsored espionage activity in addition to financially motivated activity. [APT41](https://attack.mitre.org/groups/G0096) has been active since as early as 2012. The group has been observed targeting healthcare, telecom, technology, and video game industries in 14 countries.(Citation: FireEye APT41 Aug 2019)",
       "created": "2019-09-23T13:43:36.945Z",
       "modified": "2019-10-14T21:52:59.301Z",
       "x_opencti_id": "82316ffd-a0ec-4519-a454-6566f8f5676c",
       "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
-      "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
+      "object_marking_refs": [
+        "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+      ],
       "external_references": [
         {
           "source_name": "FireEye APT41 Aug 2019",
@@ -717,17 +828,51 @@
       ]
     },
     {
+      "id": "security-coverage--c76bfcfe-2be5-500f-9b81-367457f1088f",
+      "type": "security-coverage",
+      "coverage": [
+        {
+          "name": "prevention",
+          "score": 10.0
+        },
+        {
+          "name": "detection",
+          "score": 20.0
+        }
+      ],
+      "spec_version": "2.1",
+      "created": "2026-03-06T09:11:25.592Z",
+      "auto_enrichment_disable": false,
+      "confidence": 100,
+      "revoked": false,
+      "duration": "P30D",
+      "external_uri": "http://192.168.1.150:8080/admin/scenarios/001d6ae0-4344-4467-99d5-eb4b6962fd4b",
+      "tenant_id": "5476049f-707c-4012-8e2b-5204dd525017",
+      "tenant_name": "Super OpenAEV",
+      "covered_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+      "covered": true,
+      "type_affinity": "ENDPOINT",
+      "name": "test duplicate",
+      "periodicity": "P1D",
+      "modified": "2026-03-06T09:23:09.121081800Z",
+      "lang": "en"
+    },
+    {
       "id": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
       "type": "attack-pattern",
       "spec_version": "2.1",
       "x_opencti_external_id": "T1368",
       "name": "Spear phishing messages with malicious links",
-      "labels": ["attack-pattern"],
+      "labels": [
+        "attack-pattern"
+      ],
       "description": "This technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.\n\nEmails with text only phishing messages do not contain any attachments or links to websites. They are designed to get a user to take a follow on action such as calling a phone number or wiring money. They can also be used to elicit an email response to confirm existence of an account or user. (Citation: Paypal Phone Scam)",
       "created": "2017-12-14T16:46:06.044Z",
       "modified": "2018-10-17T00:14:20.652Z",
       "created_by_ref": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
-      "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
+      "object_marking_refs": [
+        "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+      ],
       "kill_chain_phases": [
         {
           "kill_chain_name": "mitre-pre-attack",
@@ -748,7 +893,9 @@
       "type": "course-of-action",
       "spec_version": "2.1",
       "name": "Compile After Delivery Mitigation",
-      "labels": ["course-of-action"],
+      "labels": [
+        "course-of-action"
+      ],
       "description": "This type of technique cannot be easily mitigated with preventive controls or patched since it is based on the abuse of operating system design features. For example, blocking all file compilation may have unintended side effects, such as preventing legitimate OS frameworks and code development mechanisms from operating properly. Consider removing compilers if not needed, otherwise efforts should be focused on preventing adversary tools from running earlier in the chain of activity and on identifying subsequent malicious behavior.\n\nIdentify unnecessary system utilities or potentially malicious software that may be used to decrypt, deobfuscate, decode, and compile files or information, and audit and/or block them by using whitelisting (Citation: Beechey 2010) tools, like AppLocker, (Citation: Windows Commands JPCERT) (Citation: NSA MS AppLocker) or Software Restriction Policies (Citation: Corio 2008) where appropriate. (Citation: TechNet Applocker vs SRP)",
       "created": "2019-04-25T20:53:07.814Z",
       "modified": "2019-07-24T14:18:49.192Z",
@@ -922,7 +1069,9 @@
       "stop_time": "2020-02-29T23:00:00.000Z",
       "confidence": 30,
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "relationship--3e10618c-a301-43db-87f3-91b9e397c30d",
@@ -937,7 +1086,9 @@
       "stop_time": "2020-02-29T23:00:00.000Z",
       "confidence": 30,
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "relationship--d861deab-84b6-4dc9-bcce-594e3d1c904f",
@@ -952,7 +1103,9 @@
       "stop_time": "2020-02-29T23:00:00.000Z",
       "confidence": 30,
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "relationship--ab5b0730-f7ac-48ee-ac94-38a2f72d2e0f",
@@ -967,7 +1120,9 @@
       "stop_time": "2020-03-01T23:00:00.000Z",
       "confidence": 30,
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     },
     {
       "id": "relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7",
@@ -981,7 +1136,9 @@
       "start_time": "2020-02-29T23:00:00.000Z",
       "stop_time": "2020-02-29T23:00:00.000Z",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": [
+        "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+      ]
     }
   ]
 }

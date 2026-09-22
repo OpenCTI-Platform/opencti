@@ -18,7 +18,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';

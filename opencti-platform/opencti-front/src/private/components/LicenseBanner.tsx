@@ -14,7 +14,8 @@ import useApiMutation from '../../utils/hooks/useApiMutation';
 import { UserContext } from '../../utils/hooks/useAuth';
 import { daysBetweenDates, now } from '../../utils/Time';
 import { RootSettings$data } from '../__generated__/RootSettings.graphql';
-import TextField from '../../components/TextField';
+
+import TextareaField from '../../components/TextareaField';
 
 export const LICENSE_OPTION_TRIAL = 'trial';
 
@@ -168,12 +169,9 @@ const LicenseBanner = () => {
           {({ submitForm, isSubmitting, resetForm }) => (
             <Form>
               <Field
-                component={TextField}
+                component={TextareaField}
                 name="message"
-                variant="standard"
-                multiline={true}
                 label={t_i18n('Your message')}
-                fullWidth={true}
                 minRows={5}
               />
               <DialogActions>

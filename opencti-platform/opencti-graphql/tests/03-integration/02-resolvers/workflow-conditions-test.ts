@@ -67,7 +67,7 @@ describe('Workflow Conditions Resolver', () => {
     id: 'conditions-workflow',
     name: 'Conditions Workflow',
     initialState: 'open',
-    states: [{ statusId: 'open' }, { statusId: 'step1' }, { statusId: 'step2' }, { statusId: 'validated' }],
+    states: [{ statusId: 'open' }, { statusId: 'step1' }, { statusId: 'step2' }, { statusId: 'validated', order: 3 }],
     transitions: [
       {
         from: 'open',

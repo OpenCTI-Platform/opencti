@@ -11,6 +11,7 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
     statusId: String!
+    order: Int
     onEnter: [WorkflowActionConfig!]
     onExit: [WorkflowActionConfig!]
 }
@@ -133,6 +134,7 @@ extend type DraftWorkspace {
 
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
 }

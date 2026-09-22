@@ -13,9 +13,9 @@ import {
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
   DatabaseError,
+  DOC_INSUFFICIENT_CONFIDENCE_LEVEL,
   ForbiddenAccess,
   FunctionalError,
-  INSUFFICIENT_CONFIDENCE_LEVEL,
   LockTimeoutError,
   MissingReferenceError,
   TYPE_LOCK_ERROR,
@@ -25,6 +25,7 @@ import {
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
+import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -159,7 +160,6 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
@@ -169,7 +169,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -288,6 +288,7 @@ import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -805,7 +806,6 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -986,7 +986,7 @@ export const distributionRelations = async (
     relationship_type: string[];
     dateAttribute?: string | null;
     onlyInferred?: boolean; } & RelationFilters<BasicStoreCommon>,
-) => {
+): ReturnType<typeof convertAggregateDistributions> => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
@@ -1557,13 +1557,13 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   // endregion
   if (isDateAttribute(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
     }
   }
   if (dateForLimitsAttributes.includes(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (dateForStartAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [FROM_START_STR];
     }
@@ -2099,7 +2099,22 @@ export const mergeEntities = async (
       throw FunctionalError('Cannot access initial instance', { targetEntityId });
     }
     const target = { ...initialInstance } as BasicStoreEntity;
-    const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    const loadedSources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    // storeLoadByIdsWithRefs relies on an unsorted elastic query, so re-align the sources on the requested
+    // ids order: for single meta refs (created-by, ...) the first source wins, the order must be deterministic.
+    const sourcesByIds = new Map<string, StoreObject>();
+    // Sources are indexed in internal_id order with a first-write-wins rule to keep the mapping
+    // deterministic even if several sources share a secondary id (duplicated standard_id, stix ids or aliases).
+    const orderedLoadedSources = R.sortBy((s) => s.internal_id, loadedSources);
+    orderedLoadedSources.forEach((source) => {
+      const sourceIds = [source.internal_id, source.standard_id, ...(source.x_opencti_stix_ids ?? []), ...(source.i_aliases_ids ?? [])];
+      sourceIds.forEach((id) => {
+        if (!sourcesByIds.has(id)) {
+          sourcesByIds.set(id, source);
+        }
+      });
+    });
+    const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
@@ -2130,18 +2145,14 @@ export const transformPatchToInput = (
   patch: Record<string, any>,
   operations: Record<string, undefined | 'add' | 'remove' | 'replace'> = {},
 ): EditInput[] => {
-  return R.pipe(
-    R.toPairs,
-    R.map((t) => {
-      const val = R.last(t) as any;
-      const key = R.head(t) as string;
-      const operation = operations[key] || UPDATE_OPERATION_REPLACE;
-      if (!R.isNil(val)) {
-        return { key, value: Array.isArray(val) ? val : [val], operation };
-      }
-      return { key, value: null, operation } as any;
-    }),
-  )(patch);
+  return Object.entries(patch).map(([key, val]) => {
+    const operation = (operations[key] || UPDATE_OPERATION_REPLACE) as EditOperation;
+    if (val !== undefined && val !== null) {
+      return { key, value: Array.isArray(val) ? val : [val], operation };
+    }
+    // A nil value means "reset the attribute": kept as null so downstream removes the field from the document.
+    return { key, value: null as unknown as EditInput['value'], operation };
+  });
 };
 const checkAttributeConsistency = (entityType: string, key: string) => {
   if (key.startsWith(RULE_PREFIX)) {
@@ -2567,7 +2578,7 @@ const resolveRefsForInputs = async (
   return revolvedInputs;
 };
 
-type UpdateAttributeMetaResolvedOpts = {
+type UpdateAttributeMetaResolvedOpts = EventOpts & {
   locks?: string[];
   impactStandardId?: boolean;
   references?: string[];
@@ -3013,7 +3024,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
-      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+      const shouldUpdateSecurityCoverage = data.updatedInstance[RELATION_COVERED]
+        && data.updatedInstance.entity_type !== ENTITY_TYPE_SECURITY_COVERAGE;
+      if (isRefUpdate && shouldUpdateSecurityCoverage) {
         const { element: securityCoverage } = await updateAttribute(
           context,
           user,
@@ -3730,6 +3743,9 @@ const createRelationDirect = async (
   opts: CreateRelationRawOpts = {},
 ) => {
   const data = await createRelationRaw(context, user, input, opts);
+  if (data.isCreation && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
+  }
   return data.element;
 };
 export const createRelation = async (
@@ -4197,7 +4213,7 @@ const createEntityRaw = async (
   } catch (e: any) {
     // In case of insufficient confidence level, don't reject and continue to upsert
     // as upsert have a complex strategy about confidence that doesn't reject everything
-    if (rawInput.update !== false && e?.extensions?.data?.doc_code === INSUFFICIENT_CONFIDENCE_LEVEL) {
+    if (rawInput.update !== false && e?.extensions?.data?.doc_code === DOC_INSUFFICIENT_CONFIDENCE_LEVEL) {
       logApp.warn('Merging stopped because of user confidence level, applying upsert', { cause: e });
       // Try to execute the method forcing update to false, prevent auto merging.
       return await internalCreateEntityRaw(context, user, { ...rawInput, update: false }, type, opts);
@@ -4213,7 +4229,7 @@ const createEntityDirect = async (
   user: AuthUser,
   input: Record<string, any>,
   type: string,
-  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+  opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
@@ -4221,7 +4237,10 @@ const createEntityDirect = async (
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
-  } else if (data.event !== null) { // upsert
+    if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
+    }
+  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;
@@ -4445,6 +4464,19 @@ export const internalDeleteElementById = async <T extends StoreObject>(
     if (lock) await lock.unlock();
   }
   // - TRANSACTION END
+  const isTrashableElement = !isInferredIndex(element._index)
+    && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+  const isPermanentDelete = !!opts.forceDelete || !conf.get('app:trash:enabled') || !isTrashableElement;
+  if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && isPermanentDelete) {
+    // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is permanently deleted.
+    // Skipped for trash (soft) deletions: the `has-workflow` relation is kept for restoration and must still
+    // point to a live WorkflowInstance, otherwise restoring the entity from trash would fail.
+    try {
+      await cleanupEntityWorkflow(context, user, element as BasicStoreBase);
+    } catch (err) {
+      logApp.error('[OPENCTI] Error cleaning up WorkflowInstance after entity deletion', { cause: err, id: (element as BasicStoreBase).internal_id });
+    }
+  }
   return { element, event };
 };
 export const deleteElementById = async <T extends StoreObject>(

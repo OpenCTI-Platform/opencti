@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import IconButton from '@common/button/IconButton';
@@ -136,7 +136,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                   <IconButton
                     aria-label={expandedLines[element.id] ? t_i18n('Collapse') : t_i18n('Expand')}
                     onClick={() => handleToggleLine(element.id)}
-                    aria-haspopup="true"
+                    aria-expanded={expandedLines[element.id]}
                   >
                     {expandedLines[element.id]
                       === false ? (
@@ -180,7 +180,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                   <IconButton
                                     aria-label={expandedLines[attackPattern.id] ? t_i18n('Collapse') : t_i18n('Expand')}
                                     onClick={() => handleToggleLine(attackPattern.id)}
-                                    aria-haspopup="true"
+                                    aria-expanded={expandedLines[attackPattern.id]}
                                   >
                                     {expandedLines[attackPattern.id] === false ? (
                                       <ExpandMore />

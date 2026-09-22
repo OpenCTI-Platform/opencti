@@ -4,6 +4,7 @@ import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
+import useHelper from '../hooks/useHelper';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
@@ -158,6 +159,23 @@ export const stixFilters = [
   'incident_type',
   'description',
 ];
+
+// SSVC filter keys, only available in the schema when the SSVC_ATTRIBUTES feature flag is enabled
+// (see vulnerability.ts attribute definitions and schema-attributes.ts featureFlag filtering)
+// TODO(#17568): once the SSVC_ATTRIBUTES feature flag is dropped, move these keys back into
+// stixFilters above (in the same place they used to be) and delete ssvcFilters + useStixFilters;
+// replace every `useStixFilters()` call site with the plain `stixFilters` import again.
+const ssvcFilters = [
+  'x_opencti_ssvc_exploitation',
+  'x_opencti_ssvc_automatable',
+  'x_opencti_ssvc_technical_impact',
+];
+
+// stixFilters, extended with the SSVC filter keys when the SSVC_ATTRIBUTES feature flag is enabled
+export const useStixFilters = () => {
+  const { isFeatureEnable } = useHelper();
+  return isFeatureEnable('SSVC_ATTRIBUTES') ? [...stixFilters, ...ssvcFilters] : stixFilters;
+};
 
 // ----------------------------------------------------------------------------------------------------------------------
 // utilities
@@ -583,12 +601,32 @@ export const normalizeFilterGroupForFrontend = (
 ): FilterGroup => {
   return {
     ...filterGroup,
-    filters: filterGroup?.filters?.map((f) => ({
-      ...f,
-      id: uuid(),
-      key: Array.isArray(f.key) ? f.key[0] : f.key,
-      values: f.values.map((v) => v || 'todo: delete this'),
-    })),
+    filters: filterGroup?.filters?.map((f) => {
+      const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      // build values
+      let values: FilterValue[];
+      if (key === 'dynamicRegardingOf') { // add id in dynamic regarding of subfilter for React rendering purposes
+        values = f.values.map((dynamicRegardingOfValue) => {
+          if (dynamicRegardingOfValue.key === 'dynamic') { // values with 'dynamic' key contains filters
+            return {
+              ...dynamicRegardingOfValue,
+              values: dynamicRegardingOfValue.values.map((filterValue: GqlFilterGroup) => normalizeFilterGroupForFrontend(filterValue)),
+            };
+          } else {
+            return dynamicRegardingOfValue;
+          }
+        });
+      } else {
+        values = f.values.map((v) => v || 'todo: delete this');
+      }
+      // return the filter with normalized key and values, and add an id
+      return {
+        ...f,
+        id: uuid(),
+        key,
+        values,
+      };
+    }),
     filterGroups: filterGroup?.filterGroups?.map((fg) => normalizeFilterGroupForFrontend(fg)),
   } as FilterGroup;
 };
@@ -609,7 +647,7 @@ export const serializeFilterGroupForBackend = (
 
 /**
  * Parse a filterGroup as given by the backend (backend format, i.e. with array keys),
- * And turns it into the frontend format (single key).²
+ * And turns it into the frontend format (single key).
  * @param filterGroup
  */
 export const deserializeFilterGroupForFrontend = (

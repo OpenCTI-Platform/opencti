@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import React, { ReactElement } from 'react';
 import { useFormatter } from '../../../../components/i18n';
+import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../../utils/fdsLayer';
 
 interface ListFiltersWithoutLocalStorageProps {
   handleOpenFilters: (event: React.SyntheticEvent) => void;
@@ -59,16 +60,21 @@ const ListFiltersWithoutLocalStorage = ({
           <IconButton
             onClick={handleOpenFilters}
             style={{ float: 'left', marginTop: -2 }}
+            aria-label={t_i18n('Open filters')}
           >
             {icon}
           </IconButton>
         </Tooltip>
       )}
       <Popover
+        // Filter popovers: surface on `--bg-elevation-highlight` at layer 1,
+        // the fields inside at layer 2. See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(FILTER_POPOVER_LAYER) } }}
         sx={{
           '& .MuiPaper-root': {
             width: 600,
-            padding: 20,
+            padding: 2,
+            ...filterPopoverPaperSx,
           },
         }}
         open={open}

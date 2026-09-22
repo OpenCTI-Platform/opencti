@@ -1,9 +1,8 @@
-import MenuItem from '@mui/material/MenuItem';
 import { Field } from 'formik';
 import React from 'react';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import SelectField from '../../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface JsonMapperDefaultMarkingProps {
@@ -16,17 +15,17 @@ const JsonMapperDefaultMarking = ({ name }: JsonMapperDefaultMarkingProps) => {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginTop: '10px' }}>
       <Field
-        component={SelectField}
+        component={SelectFieldFds}
         name={name}
         containerstyle={{ width: '100%' }}
         displayEmpty
       >
-        <MenuItem value="user-choice">
+        <SelectItem value="user-choice">
           {t_i18n('Let the user choose marking definitions')}
-        </MenuItem>
-        <MenuItem value="user-default">
+        </SelectItem>
+        <SelectItem value="user-default">
           {t_i18n('Use default marking definitions of the user')}
-        </MenuItem>
+        </SelectItem>
       </Field>
       <Tooltip title={t_i18n("Option 'Let the user choose marking definitions'...")}>
         <InformationOutline

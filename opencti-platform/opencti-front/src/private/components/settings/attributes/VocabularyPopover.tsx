@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@common/button/IconButton';
 import { MoreVertOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { PopoverProps } from '@mui/material/Popover';
@@ -15,6 +14,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { IconButton } from '@filigran/design-system';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -93,9 +93,15 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   };
   return (
     <div className={classes.container}>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
-        <MoreVertOutlined />
-      </IconButton>
+      <IconButton
+        variant="default"
+        priority="tertiary"
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+        icon={<MoreVertOutlined />}
+      />
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete} disabled={!deletable}>

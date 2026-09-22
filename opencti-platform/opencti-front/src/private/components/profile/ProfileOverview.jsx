@@ -4,7 +4,6 @@ import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Dialog from '@common/dialog/Dialog';
-import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
@@ -13,11 +12,11 @@ import qrcode from 'qrcode';
 import { compose, pick } from 'ramda';
 import { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Label from '../../../components/common/label/Label';
-import SelectField from '../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import TextField from '../../../components/TextField';
@@ -35,8 +34,8 @@ import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
-import ProfileOverviewNewsFeed from './ProfileOverviewNewsFeed';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
+import TextareaField from '../../../components/TextareaField';
 
 const styles = () => ({
   container: {
@@ -158,7 +157,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
   }, [uri, theme]);
   return (
     <div style={{ textAlign: 'center' }}>
-      <img src={otpQrImage} style={{ width: 265 }} alt="" />
+      <img src={otpQrImage} style={{ width: 265 }} alt={t_i18n('QR code for two-factor authentication')} />
       {error ? (
         <Alert
           severity="error"
@@ -305,7 +304,7 @@ const ProfileOverviewComponent = (props) => {
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 disabled={external}
                 label={t('Name')}
@@ -314,12 +313,12 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="user_email"
                 disabled={external}
                 label={t('Email address')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <ObjectOrganizationField
@@ -331,32 +330,33 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <Field
-                component={TextField}
-                variant="standard"
+                component={TextareaField}
+                variant="outlined"
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
+                resize="vertical"
               />
             </Form>
           )}
@@ -371,8 +371,8 @@ const ProfileOverviewComponent = (props) => {
           {() => (
             <Form>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="theme"
                 label={t('Theme')}
                 fullWidth={true}
@@ -383,14 +383,14 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={{ width: '100%' }}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="default">{t('Default')}</MenuItem>
+                <SelectItem value="default">{t('Default')}</SelectItem>
                 {themeList.map(({ id, name }) => (
-                  <MenuItem key={id} value={id}>{name}</MenuItem>
+                  <SelectItem key={id} value={id}>{name}</SelectItem>
                 ))}
               </Field>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="language"
                 label={t('Language')}
                 fullWidth={true}
@@ -401,14 +401,14 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
+                <SelectItem value="auto"><em>{t('Automatic')}</em></SelectItem>
                 {
-                  availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
+                  availableLanguage.map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)
                 }
               </Field>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="unit_system"
                 label={t('Unit system')}
                 fullWidth={true}
@@ -416,9 +416,9 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
-                <MenuItem value="Imperial">{t('Imperial')}</MenuItem>
-                <MenuItem value="Metric">{t('Metric')}</MenuItem>
+                <SelectItem value="auto"><em>{t('Automatic')}</em></SelectItem>
+                <SelectItem value="Imperial">{t('Imperial')}</SelectItem>
+                <SelectItem value="Metric">{t('Metric')}</SelectItem>
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
@@ -426,7 +426,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="submenu_show_icons"
                   checked={initialValues.submenu_show_icons}
                   onChange={(_, value) => handleSubmitField('submenu_show_icons', value)}
@@ -438,7 +438,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="submenu_auto_collapse"
                   checked={initialValues.submenu_auto_collapse}
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
@@ -450,7 +450,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="monochrome_labels"
                   checked={initialValues.monochrome_labels}
                   onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
@@ -482,13 +482,6 @@ const ProfileOverviewComponent = (props) => {
           <HomeDashboardSettings />
         </Card>
       ) : null}
-      {settings.xtm_hub_registration_status === 'registered' && settings.xtm_hub_available_news_feed_types?.length > 0 && (
-        <ProfileOverviewNewsFeed
-          availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
-          unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
-          onSubmitField={handleSubmitField}
-        />
-      )}
       <Card title={t('Authentication')}>
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
@@ -531,7 +524,7 @@ const ProfileOverviewComponent = (props) => {
                 <Stack gap={2}>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="current_password"
                     label={t('Current password')}
                     type="password"
@@ -541,7 +534,7 @@ const ProfileOverviewComponent = (props) => {
                   <PasswordPolicies value={values.password} />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="password"
                     label={t('New password')}
                     type="password"
@@ -550,7 +543,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="confirmation"
                     label={t('Confirmation')}
                     type="password"
@@ -658,8 +651,6 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
       platform_notifier_auto_trigger_assignee
-      xtm_hub_registration_status
-      xtm_hub_available_news_feed_types
     }
   `,
 });

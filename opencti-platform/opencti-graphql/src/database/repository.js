@@ -24,8 +24,6 @@ import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 
-export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGroup);
-
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
   return factory.deriveEd25519KeyPair(['connector', 'http'], 1);

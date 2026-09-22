@@ -514,6 +514,27 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
   }
   return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
+
+export const UNKNOWN_CONNECTOR_TYPE = 'UNKNOWN';
+
+// Consumers are reported per connector type rather than aggregated, so callers own
+// the capacity model they derive from them (ingestion units, saturation ratios...).
+export const getQueueConsumersByType = async (context, user) => {
+  let stats = metricsCache.get('cached_metrics');
+  if (!stats) {
+    stats = await metrics(context, user);
+    metricsCache.set('cached_metrics', stats);
+  }
+  const queues = Array.isArray(stats?.queues) ? stats.queues : [];
+  return queues
+    .filter((queue) => (queue?.name ?? '').startsWith(`${RABBIT_QUEUE_PREFIX}push_`))
+    .reduce((consumersByType, queue) => {
+      const connectorType = queue?.arguments?.config?.type ?? UNKNOWN_CONNECTOR_TYPE;
+      consumersByType[connectorType] = (consumersByType[connectorType] ?? 0) + (queue?.consumers ?? 0);
+      return consumersByType;
+    }, {});
+};
+
 export const getBestBackgroundConnectorId = async (context, user) => {
   let stats = metricsCache.get('cached_metrics');
   if (!stats) {

@@ -104,6 +104,20 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
+export const ingestionRssResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  await patchRssIngestion(context, user, ingestionId, { current_state_date: undefined });
+  const ingestionUpdated = await findById(context, user, ingestionId);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `reset state of rss ingestion \`${ingestionUpdated.name}\``,
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_RSS, input: ingestionUpdated },
+  });
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
+};
+
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
   await unregisterConnectorForIngestion(context, deleted.id);

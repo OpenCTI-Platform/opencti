@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import FintelTemplatePreview from './FintelTemplatePreview';
 import { FintelTemplateProvider } from './FintelTemplateContext';
 import FintelTemplateContentEditor from './FintelTemplateContentEditor';
