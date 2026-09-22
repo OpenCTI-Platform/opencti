@@ -1120,14 +1120,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl@npm:6.1.0":
-  version: 6.1.0
-  resolution: "@formatjs/intl@npm:6.1.0"
+"@formatjs/intl@npm:6.1.1":
+  version: 6.1.1
+  resolution: "@formatjs/intl@npm:6.1.1"
   dependencies:
     "@formatjs/fast-memoize": "npm:3.1.7"
     "@formatjs/icu-messageformat-parser": "npm:3.5.19"
-    intl-messageformat: "npm:12.1.0"
-  checksum: 10c0/345b185b20e81f3cf9ec65186a1001f49b889c3ef5b9276fb3af401848ddf7b8ee709cc6992f1640404ea0162f97c9931062ec49b58c5fd41b9aedb7982b34e2
+    intl-messageformat: "npm:12.1.1"
+  checksum: 10c0/e4559010337508d0bcb8b23622ab7a43bbd70e071289eaa1024045bbcf4290ddd929d745c088c323a6198d042ed62fb0ed75b7270949b222607467a9d4ba8942
   languageName: node
   linkType: hard
 
@@ -9261,13 +9261,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"intl-messageformat@npm:12.1.0":
-  version: 12.1.0
-  resolution: "intl-messageformat@npm:12.1.0"
+"intl-messageformat@npm:12.1.1":
+  version: 12.1.1
+  resolution: "intl-messageformat@npm:12.1.1"
   dependencies:
     "@formatjs/fast-memoize": "npm:3.1.7"
     "@formatjs/icu-messageformat-parser": "npm:3.5.19"
-  checksum: 10c0/f8e0bf332395d0dcd313d1b4e22491cf2fee1104347e05f2c79299fa88053535e2b6b89d1eb659d8b2016754dd9efbadde8d4042cd17c9a9fd7f4a0a254c4bd4
+  checksum: 10c0/56842169e714f26ad8e0289d7667c4500c1f74455ec9c5e8ad43ae5cf54de8e697c12d1af20d29850c6187d94f077bae2dcc7a1e49f5b80887c16e271b4d769e
   languageName: node
   linkType: hard
 
@@ -12035,7 +12035,7 @@ __metadata:
     react-force-graph-2d: "npm:1.29.1"
     react-force-graph-3d: "npm:1.29.1"
     react-grid-layout: "npm:2.2.4"
-    react-intl: "npm:12.1.0"
+    react-intl: "npm:12.1.1"
     react-markdown: "npm:10.1.0"
     react-material-ui-carousel: "npm:3.4.2"
     react-mde: "npm:11.5.0"
@@ -13161,17 +13161,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-intl@npm:12.1.0":
-  version: 12.1.0
-  resolution: "react-intl@npm:12.1.0"
+"react-intl@npm:12.1.1":
+  version: 12.1.1
+  resolution: "react-intl@npm:12.1.1"
   dependencies:
     "@formatjs/icu-messageformat-parser": "npm:3.5.19"
-    "@formatjs/intl": "npm:6.1.0"
-    intl-messageformat: "npm:12.1.0"
+    "@formatjs/intl": "npm:6.1.1"
+    intl-messageformat: "npm:12.1.1"
   peerDependencies:
     "@types/react": ">=18.0.0"
     react: ">=18.0.0"
-  checksum: 10c0/69d0d232a8c5fc7d2f86aba120cfba3530d47e34495865840064710f453bdbf5ddd9c921534958c9fe1d577bba0a49169eb143ca070243872a8218b86c29e4af
+  checksum: 10c0/04cafedc0cfc7f8fc7de17c554db7f098d4dd9ac4bad1e8c96f8791c5101af1093003acf303405768a7ed6890b3462543d76909cd99dfb1d6f6fed93b555c75a
   languageName: node
   linkType: hard
 
