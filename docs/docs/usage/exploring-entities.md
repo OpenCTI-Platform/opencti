@@ -155,7 +155,7 @@ Furthermore, an Individual can be observed from an "Author" perspective. It is p
 
 ### General presentation
 
-Citizenship Documents are official records issued by a government that prove a person’s legal status as a citizen of that country. These documents are used to verify identity, nationality, and eligibility for rights and benefits associated with citizenship. This category includes targeted, use, and forgery of citizenship documents. Modeling citizenship documents enables you to analyze threats related to specific people and their identity, enhancing investigations into identity theift, impersonation, or other targeted attacks.
+Citizenship Documents are official records issued by a government that prove a person’s legal status as a citizen of that country. These documents are used to verify identity, nationality, and eligibility for rights and benefits associated with citizenship. This category includes targeted, use, and forgery of citizenship documents. Modeling citizenship documents enables you to analyze threats related to specific people and their identity, enhancing investigations into identity theft, impersonation, or other targeted attacks.
 
 Common examples include:
 - A birth certificate showing birth within the country

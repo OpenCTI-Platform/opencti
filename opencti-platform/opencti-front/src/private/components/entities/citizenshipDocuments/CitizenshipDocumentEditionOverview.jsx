@@ -5,9 +5,8 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/fields/SelectField';
 import TextField from '../../../../components/TextField';
-import MenuItem from '@mui/material/MenuItem';
+import { TextField as MuiTextField, MenuItem } from '@mui/material';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -214,37 +213,27 @@ const CitizenshipDocumentEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="name" />
             }
           />
-          <Field
-            component={SelectField}
-            variant="standard"
-            as="select"
-            name="x_opencti_citizenship_document_type"
-            label={t_i18n('Document type')}
-            multiple={false}
-            rows="4"
-            style={{ marginTop: 20 }}
-            onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
-            containerStyle={fieldSpacingContainerStyle}
-          >
-            <MenuItem
-              key="passport"
-              value="passport"
-            >
-              Passport
-            </MenuItem>
-            <MenuItem
-              key="national id"
-              value="national id"
-            >
-              National ID
-            </MenuItem>
-            <MenuItem
-              key="citizenship document"
-              value="citizenship document"
-            >
-              Citizenship Documents
-            </MenuItem>
+          <Field name="x_opencti_document_type">
+            {({ field, form }) => (
+              <MuiTextField
+                {...field}
+                select
+                fullWidth={true}
+                label={t_i18n('Document type')}
+                style={{ marginTop: 20, width: '100%' }}
+                onFocus={editor.changeFocus}
+                onChange={(event) => {
+                  form.setFieldValue('x_opencti_citizenship_document_type', event.target.value);
+                  if (handleSubmitField) {
+                    handleSubmitField('x_opencti_citizenship_document_type', event.target.value);
+                  }
+                }}
+              >
+                <MenuItem value="citizenship document">{t_i18n('Citizenship Document')}</MenuItem>
+                <MenuItem value="national id">{t_i18n('National ID')}</MenuItem>
+                <MenuItem value="passport">{t_i18n('Passport')}</MenuItem>
+              </MuiTextField>
+            )}
           </Field>
           <Field
             component={TextField}
@@ -253,7 +242,7 @@ const CitizenshipDocumentEditionOverviewComponent = (props) => {
             label={t_i18n('Document ID')}
             fullWidth={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            style={{ marginTop: 20, width: '100%' }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={

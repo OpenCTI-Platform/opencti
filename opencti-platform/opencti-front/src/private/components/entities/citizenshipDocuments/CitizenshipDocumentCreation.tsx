@@ -13,8 +13,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
+import { TextField as MuiTextField, MenuItem } from '@mui/material';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
@@ -242,35 +241,21 @@ export const CitizenshipDocumentCreationForm: FunctionComponent<CitizenshipDocum
               fullWidth={true}
               detectDuplicate={['User']}
             />
-            <Field
-              component={SelectField}
-              variant="standard"
-              as="select"
-              name="x_opencti_citizenship_document_type"
-              label={t_i18n('Document type')}
-              containerStyle={fieldSpacingContainerStyle}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-            >
-              <MenuItem
-                key="passport"
-                value="passport"
-              >
-                Passport
-              </MenuItem>
-              <MenuItem
-                key="national id"
-                value="national id"
-              >
-                National ID
-              </MenuItem>
-              <MenuItem
-                key="citizenship document"
-                value="citizenship document"
-              >
-                Citizenship Documents
-              </MenuItem>
+
+            <Field name="x_opencti_document_type">
+              {({ field }) => (
+                <MuiTextField
+                  {...field}
+                  select
+                  fullWidth={true}
+                  label={t_i18n('Document type')}
+                  style={{ marginTop: 20, width: '100%' }}
+                >
+                  <MenuItem value="citizenship document">{t_i18n('Citizenship Document')}</MenuItem>
+                  <MenuItem value="national id">{t_i18n('National ID')}</MenuItem>
+                  <MenuItem value="passport">{t_i18n('Passport')}</MenuItem>
+                </MuiTextField>
+              )}
             </Field>
             <Field
               component={BulkTextField}

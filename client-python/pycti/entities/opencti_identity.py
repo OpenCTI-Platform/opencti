@@ -648,7 +648,7 @@ class Identity:
                 # TODO
                 query = """
                     mutation CitizenshipDocumentAdd($input: SystemAddInput!) {
-                        c8itizenshipDocumentAdd(input: $input) {
+                        citizenshipDocumentAdd(input: $input) {
                             id
                             standard_id
                             entity_type
@@ -657,8 +657,7 @@ class Identity:
                     }
                 """
                 input_variables["objectOrganization"] = granted_refs
-                input_variables["x_opencti_firstname"] = x_opencti_firstname
-                input_variables["x_opencti_lastname"] = x_opencti_lastname
+                input_variables["name"] = name
                 input_variables["x_opencti_citizenship_document_type"] = (
                     x_opencti_citizenship_document_type
                 )

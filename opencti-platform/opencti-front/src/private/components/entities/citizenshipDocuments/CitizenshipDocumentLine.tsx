@@ -92,7 +92,7 @@ export const CitizenshipDocumentLine: FunctionComponent<CitizenshipDocumentLineP
       to={`/dashboard/entities/citizenship_documents/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="CitizenshipDocument" />
+        <ItemIcon type="Citizenship-Document" />
       </ListItemIcon>
       <ListItemText
         primary={(
