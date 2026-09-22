@@ -25,7 +25,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { applyKeepAliveTimeout, buildRateLimiterOptions } from './httpUtils';
+import { applyKeepAliveTimeout, buildRateLimiterOptions, clientErrorResponse, isClientRequestError, logMalformedRequest } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -157,7 +157,15 @@ const createHttpServer = async () => {
     if (req.path.startsWith(`${basePath}/chatbot/`)) {
       return next();
     }
-    return graphqlUploadExpress()(req, res, next);
+    return graphqlUploadExpress()(req, res, (uploadError) => {
+      // Body not following the graphql multipart request spec: answer the caller, do not 500.
+      if (uploadError && isClientRequestError(uploadError)) {
+        logMalformedRequest(req, uploadError, 'Malformed graphql request call');
+        const { status, body } = clientErrorResponse(uploadError);
+        return res.status(status).send(body);
+      }
+      return next(uploadError);
+    });
   });
   app.use(
     `${basePath}/graphql`,

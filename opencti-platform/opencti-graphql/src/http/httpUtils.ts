@@ -308,6 +308,45 @@ export const buildRateLimiterOptions = (): Options => {
   return rateLimitOptions as Options;
 };
 
+// A 4xx raised while reading the request, by a middleware is a caller mistake, not a platform failure.
+export const isClientRequestError = (error: any): boolean => {
+  const status = error?.status ?? error?.statusCode;
+  return typeof status === 'number' && status >= 400 && status < 500;
+};
+
+// Only an `expose` error carries a message safe to return: the others quote the faulty input back.
+export const clientErrorResponse = (error: any) => ({
+  status: error?.status ?? error?.statusCode ?? 400,
+  body: { status: 'error', error: error?.expose === true ? error.message : 'Bad Request' },
+});
+
+// The scheme only (Bearer...etc), never the token. 'session' and 'unauthenticated' are spelled out rather than
+// left absent, so a missing authScheme always means a bug here and not an anonymous caller.
+const requestAuthScheme = (req: Request): string => req.headers.authorization?.split(' ')[0]
+  ?? (req.session?.user ? 'session' : 'unauthenticated');
+
+// Add as much non sensitive data as possible for malformatted requests.
+export const logMalformedRequest = (req: Request, error: any, message = 'Malformed http request call'): void => {
+  logApp.info(message, {
+    reason: error?.message,
+    errorName: error?.name,
+    errorType: error?.type, // body-parser: entity.parse.failed, entity.too.large, ...
+    status: error?.status ?? error?.statusCode,
+    method: req.method,
+    path: req.originalUrl ?? req.path,
+    userId: req.session?.user?.id,
+    authScheme: requestAuthScheme(req),
+    userAgent: req.headers['user-agent'] ?? 'unknown',
+    ip: req.ip ?? 'unknown',
+    forwardedFor: req.headers['x-forwarded-for'], // req.ip is the proxy unless it is a trusted one
+    referer: req.headers?.referer,
+    contentType: req.headers['content-type'],
+    contentLength: req.headers['content-length'],
+    workId: req.headers['opencti-work-id'],
+    draftId: req.headers['opencti-draft-id'],
+  });
+};
+
 /**
  * Align the server keep-alive with the idle timeout of the front load balancer / reverse proxy.
  * The Node.js default of 5s is shorter than the idle timeout of a standard proxy (60s for an AWS

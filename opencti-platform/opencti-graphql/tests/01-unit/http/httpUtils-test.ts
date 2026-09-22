@@ -4,11 +4,16 @@ import {
   buildDefaultHelmetParameters,
   buildPublicHelmetParameters,
   buildRateLimiterOptions,
+  clientErrorResponse,
   decodeOidcState,
   encodeOidcState,
+  isClientRequestError,
+  logMalformedRequest,
 } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
+import { logApp } from '../../../src/config/conf';
+import { FunctionalError } from '../../../src/config/errors';
 import type { Request, Response } from 'express';
 import type { Server } from 'node:http';
 
@@ -318,5 +323,208 @@ describe('httpUtils: server keep-alive timeout', () => {
     const server = mockServer();
     applyKeepAliveTimeout(server);
     expect(server.headersTimeout).toBe(60000);
+  });
+});
+
+// The shapes below are the ones actually produced at runtime, reproduced here because the cases
+// they stand for cannot be provoked over http in the integration test: a 413 needs a body above the
+// configured limit, a 499 needs the client to vanish mid-upload, and a session caller needs a
+// cookie the test client does not hold.
+const uploadError = () => Object.assign(new Error('Missing multipart field \u2018operations\u2019.'), {
+  name: 'BadRequestError',
+  status: 400,
+  statusCode: 400,
+  expose: true,
+});
+
+// The express router sets a status and nothing else - no statusCode, no expose.
+const paramDecodeError = () => Object.assign(new URIError("Failed to decode param '.env%c0%ae'"), {
+  status: 400,
+});
+
+// body-parser hands its own errors to http-errors, which adds status, statusCode and expose, and
+// copies the raw request body onto the error.
+const bodyParseError = () => Object.assign(new SyntaxError('Unexpected end of JSON input'), {
+  name: 'SyntaxError',
+  status: 400,
+  statusCode: 400,
+  expose: true,
+  type: 'entity.parse.failed',
+  body: '{"query":"mutation { login(password: \\"hunter2\\") }"',
+});
+
+const mockRequest = (overrides: Record<string, any> = {}) => ({
+  method: 'POST',
+  originalUrl: '/graphql',
+  path: '/graphql',
+  ip: '10.0.0.1',
+  headers: {},
+  ...overrides,
+} as unknown as Request);
+
+describe('httpUtils: isClientRequestError', () => {
+  it('should accept an http-errors 4xx, as graphql-upload and body-parser build them', () => {
+    expect(isClientRequestError(uploadError())).toBe(true);
+    expect(isClientRequestError(bodyParseError())).toBe(true);
+  });
+
+  it('should accept a router param decoding error, which carries a status but no expose', () => {
+    expect(isClientRequestError(paramDecodeError())).toBe(true);
+  });
+
+  it('should accept the 4xx that cannot be provoked over http', () => {
+    // graphql-upload field size limit / body-parser entity.too.large
+    expect(isClientRequestError({ status: 413, expose: true })).toBe(true);
+    // graphql-upload, client gone during the upload stream parse
+    expect(isClientRequestError({ status: 499, expose: true })).toBe(true);
+  });
+
+  it('should fall back to statusCode when status is absent', () => {
+    expect(isClientRequestError({ statusCode: 415 })).toBe(true);
+  });
+
+  it('should reject a 5xx, so platform failures keep their error level and their 500', () => {
+    expect(isClientRequestError({ status: 500, expose: false })).toBe(false);
+    expect(isClientRequestError({ status: 503 })).toBe(false);
+  });
+
+  it('should reject an error with no usable status', () => {
+    expect(isClientRequestError(new Error('boom'))).toBe(false);
+    expect(isClientRequestError({ status: '400' })).toBe(false);
+    expect(isClientRequestError(undefined)).toBe(false);
+    expect(isClientRequestError(null)).toBe(false);
+  });
+
+  it('should reject an opencti domain error, which carries http_status in its extensions only', () => {
+    // This is what makes it safe to key on the status alone rather than on expose.
+    expect(isClientRequestError(FunctionalError('Business validation'))).toBe(false);
+  });
+});
+
+describe('httpUtils: clientErrorResponse', () => {
+  it('should return the message of an exposed error', () => {
+    const { status, body } = clientErrorResponse(uploadError());
+    expect(status).toBe(400);
+    expect(body).toEqual({ status: 'error', error: 'Missing multipart field \u2018operations\u2019.' });
+  });
+
+  it('should not quote back the message of a non exposed error', () => {
+    // The router error message embeds the probed path; returning it would reflect caller input.
+    const { status, body } = clientErrorResponse(paramDecodeError());
+    expect(status).toBe(400);
+    expect(body.error).toBe('Bad Request');
+    expect(JSON.stringify(body)).not.toContain('.env');
+  });
+
+  it('should treat an explicit expose false as not exposed', () => {
+    expect(clientErrorResponse({ status: 400, expose: false, message: 'leak' }).body.error).toBe('Bad Request');
+  });
+
+  it('should resolve the status from status, then statusCode, then default to 400', () => {
+    expect(clientErrorResponse({ status: 413 }).status).toBe(413);
+    expect(clientErrorResponse({ statusCode: 415 }).status).toBe(415);
+    expect(clientErrorResponse(new Error('no status')).status).toBe(400);
+  });
+});
+
+describe('httpUtils: logMalformedRequest', () => {
+  let infoSpy: any;
+
+  beforeEach(() => {
+    infoSpy = vi.spyOn(logApp, 'info').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const loggedMeta = () => infoSpy.mock.calls[0][1];
+
+  it('should log at info level, never as a platform error', () => {
+    const errorSpy = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+    logMalformedRequest(mockRequest(), uploadError());
+    expect(infoSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('should default to the http message and accept a caller supplied one', () => {
+    logMalformedRequest(mockRequest(), uploadError());
+    expect(infoSpy.mock.calls[0][0]).toBe('Malformed http request call');
+    logMalformedRequest(mockRequest(), uploadError(), 'Malformed graphql request call');
+    expect(infoSpy.mock.calls[1][0]).toBe('Malformed graphql request call');
+  });
+
+  it('should carry the error identity and the request shape', () => {
+    logMalformedRequest(mockRequest({
+      method: 'POST',
+      originalUrl: '/graphql',
+      headers: { 'content-type': 'multipart/form-data', 'content-length': '512', 'user-agent': 'python-requests/2.31.0' },
+    }), bodyParseError());
+
+    expect(loggedMeta()).toMatchObject({
+      reason: 'Unexpected end of JSON input',
+      errorName: 'SyntaxError',
+      errorType: 'entity.parse.failed',
+      status: 400,
+      method: 'POST',
+      path: '/graphql',
+      userAgent: 'python-requests/2.31.0',
+      ip: '10.0.0.1',
+      contentType: 'multipart/form-data',
+      contentLength: '512',
+    });
+  });
+
+  it('should report the scheme of a token caller, never the token', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'Bearer 2b4f1c9e-super-secret-token' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('Bearer');
+    expect(loggedMeta().userId).toBeUndefined();
+    expect(JSON.stringify(loggedMeta())).not.toContain('super-secret-token');
+  });
+
+  it('should report a basic auth caller by its scheme', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'Basic dXNlcjpwYXNz' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('Basic');
+    expect(JSON.stringify(loggedMeta())).not.toContain('dXNlcjpwYXNz');
+  });
+
+  it('should report a session caller as session, with its user id', () => {
+    logMalformedRequest(mockRequest({ session: { user: { id: 'user-id-1' } } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('session');
+    expect(loggedMeta().userId).toBe('user-id-1');
+  });
+
+  it('should report an anonymous caller explicitly rather than leaving the field out', () => {
+    logMalformedRequest(mockRequest(), uploadError());
+
+    // An absent authScheme would then mean a bug in the helper, not an anonymous caller.
+    expect(loggedMeta().authScheme).toBe('unauthenticated');
+    expect('authScheme' in loggedMeta()).toBe(true);
+  });
+
+  it('should carry the opencti job headers, which name a connector caller', () => {
+    logMalformedRequest(mockRequest({
+      headers: { 'opencti-work-id': 'work--123', 'opencti-draft-id': 'draft--456' },
+    }), uploadError());
+
+    expect(loggedMeta()).toMatchObject({ workId: 'work--123', draftId: 'draft--456' });
+  });
+
+  it('should carry the forwarded address, since req.ip is the proxy behind an untrusted one', () => {
+    logMalformedRequest(mockRequest({ ip: '10.0.0.254', headers: { 'x-forwarded-for': '203.0.113.7' } }), uploadError());
+
+    expect(loggedMeta()).toMatchObject({ ip: '10.0.0.254', forwardedFor: '203.0.113.7' });
+  });
+
+  it('should never log the raw body that body-parser attaches to a parse error', () => {
+    logMalformedRequest(mockRequest(), bodyParseError());
+
+    expect(JSON.stringify(loggedMeta())).not.toContain('hunter2');
+    expect(loggedMeta().body).toBeUndefined();
   });
 });
