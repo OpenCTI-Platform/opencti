@@ -2912,6 +2912,8 @@ enum StixDomainObjectsOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   incident_type
   severity
   priority
@@ -3975,6 +3977,8 @@ enum ObservedDatasOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   created
   modified
   created_at
@@ -4132,6 +4136,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   name: String!
   # Technical
   creators: [Creator!]
@@ -4168,6 +4174,8 @@ input ObservedDataAddInput {
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   revoked: Boolean
   lang: String
   confidence: Int

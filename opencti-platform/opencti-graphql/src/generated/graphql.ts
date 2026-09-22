@@ -21873,12 +21873,14 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_observed: Scalars['DateTime']['output'];
+  max_distinct_count?: Maybe<Scalars['Int']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   number_observed: Scalars['Int']['output'];
+  number_seen?: Maybe<Scalars['Int']['output']>;
   objectAssignee?: Maybe<Array<Assignee>>;
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
@@ -22111,9 +22113,11 @@ export type ObservedDataAddInput = {
   first_observed: Scalars['DateTime']['input'];
   lang?: InputMaybe<Scalars['String']['input']>;
   last_observed: Scalars['DateTime']['input'];
+  max_distinct_count?: InputMaybe<Scalars['Int']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   noTriggerImport?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   number_observed: Scalars['Int']['input'];
+  number_seen?: InputMaybe<Scalars['Int']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -22180,8 +22184,10 @@ export enum ObservedDatasOrdering {
   CreatedAt = 'created_at',
   FirstObserved = 'first_observed',
   LastObserved = 'last_observed',
+  MaxDistinctCount = 'max_distinct_count',
   Modified = 'modified',
   NumberObserved = 'number_observed',
+  NumberSeen = 'number_seen',
   ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -33016,10 +33022,12 @@ export enum StixDomainObjectsOrdering {
   LastObserved = 'last_observed',
   LastPirScoreDate = 'last_pir_score_date',
   LastSeen = 'last_seen',
+  MaxDistinctCount = 'max_distinct_count',
   Modified = 'modified',
   Name = 'name',
   NoteTypes = 'note_types',
   NumberObserved = 'number_observed',
+  NumberSeen = 'number_seen',
   ObjectMarking = 'objectMarking',
   OperatingSystem = 'operatingSystem',
   Opinion = 'opinion',
@@ -49605,12 +49613,14 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ObservedDataJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_observed?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  max_distinct_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ObservedDataNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   number_observed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  number_seen?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   objectAssignee?: Resolver<Maybe<Array<ResolversTypes['Assignee']>>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
