@@ -320,10 +320,25 @@ export const clientErrorResponse = (error: any) => ({
   body: { status: 'error', error: error?.expose === true ? error.message : 'Bad Request' },
 });
 
+// The platform accepts credentials in the query string (health_access_key, the OIDC code and
+// state), and both originalUrl and referer carry it, so only the pathname is ever logged.
+const withoutQueryString = (url: string | undefined): string | undefined => url?.split('?')[0];
+
+// The schemes the platform authenticates with. An allowlist, not the first word of the header: a
+// malformed client can send a raw credential with no separating space, and splitting would then log
+// the whole token as the scheme. Anything unrecognised is reported as 'unknown'.
+const KNOWN_AUTH_SCHEMES = ['Bearer', 'Basic'];
+
 // The scheme only (Bearer...etc), never the token. 'session' and 'unauthenticated' are spelled out rather than
 // left absent, so a missing authScheme always means a bug here and not an anonymous caller.
-const requestAuthScheme = (req: Request): string => req.headers.authorization?.split(' ')[0]
-  ?? (req.session?.user ? 'session' : 'unauthenticated');
+const requestAuthScheme = (req: Request): string => {
+  const authorization = req.headers.authorization;
+  if (isEmptyField(authorization)) {
+    return req.session?.user ? 'session' : 'unauthenticated';
+  }
+  const [scheme] = (authorization as string).split(' ');
+  return KNOWN_AUTH_SCHEMES.find((known) => known.toLowerCase() === scheme.toLowerCase()) ?? 'unknown';
+};
 
 // Add as much non sensitive data as possible for malformatted requests.
 export const logMalformedRequest = (req: Request, error: any, message = 'Malformed http request call'): void => {
@@ -333,13 +348,13 @@ export const logMalformedRequest = (req: Request, error: any, message = 'Malform
     errorType: error?.type, // body-parser: entity.parse.failed, entity.too.large, ...
     status: error?.status ?? error?.statusCode,
     method: req.method,
-    path: req.originalUrl ?? req.path,
+    path: withoutQueryString(req.originalUrl ?? req.url),
     userId: req.session?.user?.id,
     authScheme: requestAuthScheme(req),
     userAgent: req.headers['user-agent'] ?? 'unknown',
     ip: req.ip ?? 'unknown',
     forwardedFor: req.headers['x-forwarded-for'], // req.ip is the proxy unless it is a trusted one
-    referer: req.headers?.referer,
+    referer: withoutQueryString(req.headers?.referer),
     contentType: req.headers['content-type'],
     contentLength: req.headers['content-length'],
     workId: req.headers['opencti-work-id'],

@@ -356,7 +356,7 @@ const bodyParseError = () => Object.assign(new SyntaxError('Unexpected end of JS
 const mockRequest = (overrides: Record<string, any> = {}) => ({
   method: 'POST',
   originalUrl: '/graphql',
-  path: '/graphql',
+  url: '/graphql',
   ip: '10.0.0.1',
   headers: {},
   ...overrides,
@@ -485,6 +485,27 @@ describe('httpUtils: logMalformedRequest', () => {
     expect(JSON.stringify(loggedMeta())).not.toContain('super-secret-token');
   });
 
+  it('should report an unparsable authorization header as unknown, never as its own content', () => {
+    // A malformed client can send a raw credential with no separating space.
+    logMalformedRequest(mockRequest({ headers: { authorization: 'flgrn_octi_tkn_2b4f1c9e' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('unknown');
+    expect(JSON.stringify(loggedMeta())).not.toContain('flgrn_octi_tkn');
+  });
+
+  it('should report an unsupported scheme as unknown', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'Digest username="admin", response="deadbeef"' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('unknown');
+    expect(JSON.stringify(loggedMeta())).not.toContain('deadbeef');
+  });
+
+  it('should normalize the scheme case, since it is case insensitive on the wire', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'bearer 2b4f1c9e-super-secret-token' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('Bearer');
+  });
+
   it('should report a basic auth caller by its scheme', () => {
     logMalformedRequest(mockRequest({ headers: { authorization: 'Basic dXNlcjpwYXNz' } }), uploadError());
 
@@ -507,6 +528,12 @@ describe('httpUtils: logMalformedRequest', () => {
     expect('authScheme' in loggedMeta()).toBe(true);
   });
 
+  it('should treat an empty authorization header as no credential at all', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: '' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('unauthenticated');
+  });
+
   it('should carry the opencti job headers, which name a connector caller', () => {
     logMalformedRequest(mockRequest({
       headers: { 'opencti-work-id': 'work--123', 'opencti-draft-id': 'draft--456' },
@@ -519,6 +546,27 @@ describe('httpUtils: logMalformedRequest', () => {
     logMalformedRequest(mockRequest({ ip: '10.0.0.254', headers: { 'x-forwarded-for': '203.0.113.7' } }), uploadError());
 
     expect(loggedMeta()).toMatchObject({ ip: '10.0.0.254', forwardedFor: '203.0.113.7' });
+  });
+
+  it('should log the pathname only, never the query string', () => {
+    // The platform accepts credentials in the query string, so originalUrl must not be logged raw.
+    logMalformedRequest(mockRequest({
+      method: 'GET',
+      originalUrl: '/health?health_access_key=super-secret-key&details=true',
+      headers: { referer: 'https://opencti.example/auth/oidc/callback?code=auth-code-1&state=xyz' },
+    }), paramDecodeError());
+
+    expect(loggedMeta().path).toBe('/health');
+    expect(loggedMeta().referer).toBe('https://opencti.example/auth/oidc/callback');
+    const serialized = JSON.stringify(loggedMeta());
+    expect(serialized).not.toContain('super-secret-key');
+    expect(serialized).not.toContain('auth-code-1');
+  });
+
+  it('should fall back to req.url when originalUrl is absent, still without the query string', () => {
+    logMalformedRequest(mockRequest({ originalUrl: undefined, url: '/graphql?debug=1' }), uploadError());
+
+    expect(loggedMeta().path).toBe('/graphql');
   });
 
   it('should never log the raw body that body-parser attaches to a parse error', () => {
