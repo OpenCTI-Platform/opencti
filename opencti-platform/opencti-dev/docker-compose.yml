@@ -112,7 +112,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:4.3.5-management
+    image: rabbitmq:4.3.6-management
     restart: unless-stopped
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
