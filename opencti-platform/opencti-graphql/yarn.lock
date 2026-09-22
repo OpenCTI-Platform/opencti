@@ -5630,12 +5630,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canonicalize@npm:5.0.0":
-  version: 5.0.0
-  resolution: "canonicalize@npm:5.0.0"
+"canonicalize@npm:5.1.0":
+  version: 5.1.0
+  resolution: "canonicalize@npm:5.1.0"
   bin:
     canonicalize: bin/canonicalize.js
-  checksum: 10c0/7dcfef055c54075b92d2afe208a17a9cb485774e247d4433f0f4f2d22218ce389b4ce17c46a29a0b4f25bc7935321c3ebf8d7af3b27d8725ae5ba390904fc71f
+  checksum: 10c0/ff9212420e3563b35c129ac03c1b159678ab82520e29876b5fbbf8a26e44e2d874abed276930376294cbfcd8ed4efed5c2fbd55daeb1f109991bb8cc441b3770
   languageName: node
   linkType: hard
 
@@ -10345,7 +10345,7 @@ __metadata:
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.3.0"
     busboy: "npm:1.6.0"
-    canonicalize: "npm:5.0.0"
+    canonicalize: "npm:5.1.0"
     chokidar: "npm:5.0.0"
     compression: "npm:1.8.2"
     content-disposition: "npm:3.0.0"
