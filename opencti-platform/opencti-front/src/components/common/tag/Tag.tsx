@@ -1,6 +1,7 @@
 import { Chip } from '@filigran/design-system';
 import { Tooltip } from '@mui/material';
 import React from 'react';
+import { normalizeLabelColor } from '../../../utils/Colors';
 
 export interface TagProps {
   label?: string | number | null;
@@ -51,12 +52,15 @@ const Tag = ({
   const flatSx = Object.fromEntries(
     Object.entries(sx ?? {}).filter(([k, v]) => !k.includes('&') && typeof v !== 'object'),
   ) as React.CSSProperties;
+  // Label colours are free text ("red", "#f00"); normalise to hex so the chip
+  // renders the stored colour instead of silently falling back (#17238).
+  const chipColor = normalizeLabelColor(color) ?? undefined;
 
   const chip = (
     <Chip
       id={id}
       label={text}
-      color={color ?? undefined}
+      color={chipColor}
       startIcon={icon}
       onClick={onClick}
       // the library's handler takes no event; the wrapper's callers expect one
