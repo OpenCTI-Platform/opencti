@@ -38,7 +38,7 @@ import { SequencerQueue } from './sequencer-queue';
 import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
-import { setCurrentBatchLock } from './sequencer-batch-lock';
+import { computeBatchLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
 import type { CoalesceGroup } from './sequencer-batch-plan';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -49,6 +49,21 @@ let loopDead = false;
 let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
 let strippedSamples = 0; // s9.10.2: bounded dead-soft-strip sampling
 let missingInBatchSamples = 0; // written-index probe: bounded sampling of refs produced in the batch
+let lockMissSamples = 0; // fix 2026-09-22: bounded sampling of lock keys outside the batch lock
+
+// fix 2026-09-22 instrumentation: a key an apply-time lock site asked for and the batch lock did
+// not hold; counted by kind (the STIX-like prefix before "--", or "internal" for a bare id)
+const recordLockMiss = (keys: string[]) => {
+  keys.forEach((key) => {
+    const sep = key.indexOf('--');
+    const kind = sep > 0 && sep < 40 ? key.slice(0, sep) : 'internal';
+    sequencerMetrics.lockEscape(kind);
+  });
+  if (lockMissSamples < 20) {
+    lockMissSamples += 1;
+    logApp.info('[SEQUENCER] lock keys outside the batch lock', { keys: keys.slice(0, 5), count: keys.length });
+  }
+};
 // s9.9: batches a group may be skipped for a failed in-batch producer before it applies
 // through today's path anyway
 const FAILED_PRODUCER_DEFER_LIMIT = 2;
@@ -316,25 +331,16 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
 // D4: one lock set per batch, mirroring every direct-path acquisition: input ids, stored
 // instance ids of the resolved upsert targets, impacted relationship endpoints. New standard
 // ids on rename are the unpredictable rest: the nested lock site real-locks them.
-const batchLockKeys = (groups: CoalesceGroup[]): string[] => {
-  const keys = new Set<string>();
-  groups.forEach(({ leader }) => {
-    leader.candidateIds.forEach((id) => {
-      keys.add(id);
-      const element = sequencerIdentityMap.peekBare(id);
-      if (element) getInstanceIds(element).forEach((k: string) => keys.add(k));
-    });
-    if (leader.kind === 'relation') {
-      [leader.input.fromId, leader.input.toId].forEach((id) => {
-        if (typeof id === 'string' && id.length > 0) {
-          const internalId = sequencerIdentityMap.resolveInternalId(id);
-          keys.add(internalId ?? id);
-        }
-      });
-    }
-  });
-  return Array.from(keys);
-};
+// fix 2026-09-22: candidates AND referenced ids, with their pre-resolved instance ids (see
+// computeBatchLockKeys); the ids written during the batch are added live by applyGroup
+const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKeys(
+  groups,
+  (id) => {
+    const element = sequencerIdentityMap.peekBare(id);
+    return element ? getInstanceIds(element) : null;
+  },
+  (id) => sequencerIdentityMap.resolveInternalId(id),
+);
 
 interface ParkedIntent {
   intent: SequencerIntent;
@@ -378,7 +384,14 @@ const applyGroup = async (
       // stale stored element. A creation result is never a valid basis (buildEntityData
       // strips the ref input fields): bare ingest only.
       sequencerIdentityMap.ingestWritten(element, sequencerIdentityMap.hasWithRefs(element.internal_id));
-      getInstanceIds(element).forEach((id: string) => writtenIds.push(id));
+      // fix 2026-09-22: the written element's ids join the batch lock's held set, so a later
+      // apply of this batch (a relation to an endpoint created here) does not take a real lock
+      // on an internal id the batch lock could not predict
+      const batchLock = getCurrentBatchLock();
+      getInstanceIds(element).forEach((id: string) => {
+        writtenIds.push(id);
+        if (batchLock) batchLock.heldKeys.add(id);
+      });
       // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (pushed into the
       // sink by inputResolveRefs) become pending-ref inputs, persisted with the batch at
       // flush time so the debt commits with the accepted write.
@@ -677,7 +690,7 @@ const runBatchLoop = async () => {
       });
       continue;
     }
-    setCurrentBatchLock({ heldKeys: new Set(lockKeys), signal: lock.signal });
+    setCurrentBatchLock({ heldKeys: new Set(lockKeys), signal: lock.signal, onMiss: recordLockMiss });
     // 5. apply leaders one at a time (C6) with the Stage E write buffer armed, then commit:
     // flush the buffered writes (one docs bulk + one side/update bulk + ONE refresh), push the
     // buffered events in application order, and only then resolve the intents' promises.

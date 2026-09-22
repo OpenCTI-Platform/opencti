@@ -52,6 +52,8 @@ class SequencerMetrics {
 
   private missingRefOrigins: Counter | null = null;
 
+  private lockEscapes: Counter | null = null;
+
   private searchCallers: Counter | null = null;
 
   private batchDependsOnEdges: Histogram | null = null;
@@ -152,6 +154,10 @@ class SequencerMetrics {
     this.deferReasons = meter.createCounter('opencti_sequencer_defer_reasons_total', {
       valueType: ValueType.INT,
       description: 'Deferrals by reason (P2 residual reasons + s9.8 certainty reasons queued_producer/member_wait)',
+    });
+    this.lockEscapes = meter.createCounter('opencti_sequencer_lock_escapes_total', {
+      valueType: ValueType.INT,
+      description: 'Lock keys asked by an apply-time lock site and not held by the batch lock (a real lock was taken), by key kind; fix 2026-09-22 instrumentation',
     });
     this.missingRefOrigins = meter.createCounter('opencti_sequencer_missing_ref_origin_total', {
       valueType: ValueType.INT,
@@ -261,6 +267,10 @@ class SequencerMetrics {
 
   missingRefOrigin(origin: string, outcome: string) {
     this.missingRefOrigins?.add(1, { origin, outcome });
+  }
+
+  lockEscape(kind: string, count = 1) {
+    this.lockEscapes?.add(count, { kind });
   }
 
   memberDead(count = 1) {

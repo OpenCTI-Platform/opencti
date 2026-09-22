@@ -121,6 +121,8 @@ export const lockResources = async (ids, args = {}) => {
     if (missing.length === 0) {
       return { operation: 'sequencer-batch', signal: sequencer.signal, unlock: async () => {} };
     }
+    // fix 2026-09-22 instrumentation: the loop counts the keys that escape the batch lock by kind
+    if (sequencer.onMiss) sequencer.onMiss(missing);
     return lockResources(missing, cleanArgs);
   }
   if (USE_CHILD_LOCK) {
