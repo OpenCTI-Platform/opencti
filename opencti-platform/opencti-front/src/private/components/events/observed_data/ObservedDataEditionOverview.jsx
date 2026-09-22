@@ -94,9 +94,15 @@ const ObservedDataEditionOverviewComponent = (props) => {
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_observed: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    number_observed: Yup.number(),
-    number_seen: Yup.number().nullable(),
-    max_distinct_count: Yup.number().nullable(),
+    // Counters are non-negative integers, mirroring the backend schema validation
+    number_observed: Yup.number().integer(t_i18n('The value must be an integer'))
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
+    number_seen: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
+    max_distinct_count: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
     confidence: Yup.number(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
