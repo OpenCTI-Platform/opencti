@@ -422,6 +422,7 @@ export const buildFiltersAndOptionsForWidgets = (
     endDate?: string | null;
     dateAttribute?: string;
     isKnowledgeRelationshipWidget?: boolean;
+    operators?: { start?: 'gt' | 'gte'; end?: 'lt' | 'lte' };
   } = {},
 ) => {
   const {
@@ -430,6 +431,7 @@ export const buildFiltersAndOptionsForWidgets = (
     endDate = null,
     dateAttribute = 'created_at',
     isKnowledgeRelationshipWidget = false,
+    operators = {},
   } = opts;
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
@@ -442,7 +444,7 @@ export const buildFiltersAndOptionsForWidgets = (
     dateFiltersContent.push({
       key: dateAttribute,
       values: [startDate],
-      operator: 'gt',
+      operator: operators.start ?? 'gt',
       mode: 'or',
     });
   }
@@ -450,7 +452,7 @@ export const buildFiltersAndOptionsForWidgets = (
     dateFiltersContent.push({
       key: dateAttribute,
       values: [endDate],
-      operator: 'lt',
+      operator: operators.end ?? 'lt',
       mode: 'or',
     });
   }
