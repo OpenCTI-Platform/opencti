@@ -1,9 +1,9 @@
 import React, { useState, SyntheticEvent, ReactNode } from 'react';
 import Button from '@common/button/Button';
-import { FilterListOutlined } from '@mui/icons-material';
+import { FilterListOutlined, LibraryAddOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
-import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
+import { RayEndArrow, RayStartArrow, RelationManyToMany } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
@@ -42,6 +42,7 @@ type ListFiltersProps = {
   isDatatable?: boolean;
   disabled?: boolean;
   hideSavedFilters?: boolean;
+  disableAddFilterGroup?: boolean;
 };
 
 type ParametersType = {
@@ -59,6 +60,10 @@ type OptionType = {
   numberOfOccurences?: number;
 };
 
+// Synthetic option value, always displayed first in the "Add filter" autocomplete,
+// used as the entry point to create a nested filter group.
+const ADD_FILTER_GROUP_OPTION_VALUE = '__add_filter_group__';
+
 const ListFilters = ({
   handleOpenFilters,
   handleCloseFilters,
@@ -74,6 +79,7 @@ const ListFilters = ({
   isDatatable = false,
   disabled = false,
   hideSavedFilters = false,
+  disableAddFilterGroup = false,
 }: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
@@ -93,6 +99,12 @@ const ListFilters = ({
         icon: <RayEndArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic target filters'),
         placeholder: t_i18n('Dynamic target filters'),
+        color: 'primary',
+      };
+      case 'relationships': return {
+        icon: <RelationManyToMany fontSize="medium" />,
+        tooltip: t_i18n('Relationship filters'),
+        placeholder: t_i18n('Relationship filters'),
         color: 'primary',
       };
       default: return {
@@ -182,6 +194,38 @@ const ListFilters = ({
         })
         .sort((a, b) => a.label.localeCompare(b.label));
 
+  const addFilterGroupOption: OptionType = {
+    value: ADD_FILTER_GROUP_OPTION_VALUE,
+    label: t_i18n('Add Filter Group'),
+    groupLabel: t_i18n('Add Filter Group'),
+    groupOrder: Number.MAX_SAFE_INTEGER, // always displayed on top of the other groups
+  };
+
+  // prepended after the sorts so that it cannot be moved by them
+  const allOptions: OptionType[] = disableAddFilterGroup
+    ? (options as OptionType[])
+    : [addFilterGroupOption, ...(options as OptionType[])];
+
+  const defaultFilterOptions = (unfilteredOptions: OptionType[], inputValue: string) => {
+    const search = inputValue.trim().toLowerCase();
+    if (!search) return unfilteredOptions;
+    return unfilteredOptions.filter((o) => o.label.toLowerCase().includes(search));
+  };
+  // the synthetic option must never be filtered out by the search input
+  const filterOptions = (unfilteredOptions: OptionType[], inputValue: string) => (
+    disableAddFilterGroup
+      ? defaultFilterOptions(unfilteredOptions.filter((o) => o.value !== ADD_FILTER_GROUP_OPTION_VALUE), inputValue)
+      : [
+          addFilterGroupOption,
+          ...defaultFilterOptions(unfilteredOptions.filter((o) => o.value !== ADD_FILTER_GROUP_OPTION_VALUE), inputValue),
+        ]
+  );
+
+  const handleAddFilterGroup = () => {
+    helpers?.handleAddFilterGroup?.(); // always added at the root from ListFilters
+    setInputValue('');
+  };
+
   return (
     <>
       {variant === 'text' ? (
@@ -202,18 +246,33 @@ const ListFilters = ({
             // pushes the search field, the funnel and the chips onto lines of their own — the stacked filter bar
             // reported on the Triggers page and the threat- actor card page.
             className="w-50 shrink-0"
-            options={options as OptionType[]}
+            options={allOptions}
+            filterOptions={filterOptions}
             labelPosition="none"
             value={null}
             onValueChange={(next) => {
               const picked = Array.isArray(next) ? next[0] : next;
-              if (picked?.value) handleChange(picked.value);
+              if (picked?.value === ADD_FILTER_GROUP_OPTION_VALUE) {
+                handleAddFilterGroup();
+              } else if (picked?.value) {
+                handleChange(picked.value);
+              }
               setInputValue('');
             }}
             disabled={disabled}
             required={required}
             groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
             getOptionLabel={(option) => option.label}
+            // The row element, its role and its state stay the library's: this only fills the content,
+            // which is how the "Add Filter Group" entry gets its icon back (the MUI renderOption equivalent).
+            renderOption={(option) => (option.value === ADD_FILTER_GROUP_OPTION_VALUE
+              ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <LibraryAddOutlined fontSize="small" />
+                    {option.label}
+                  </span>
+                )
+              : option.label)}
             inputValue={inputValue}
             onInputChange={(newValue, meta) => {
               if (meta.cause !== 'type') {
