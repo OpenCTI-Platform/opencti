@@ -1,0 +1,44 @@
+name: agentic-e2e-poc
+
+# Prototype workflow for Topic 6 (agentic e2e testing). Deliberately isolated
+# from the main CI: it only runs already-generated Playwright specs under
+# tests_e2e/agentic/generated/. No AI/Copilot call happens in this workflow —
+# generation is a local, pre-push step (see script/generate-e2e-tests.ts and
+# `yarn e2e:generate`). This job only executes and reports.
+
+on:
+  pull_request:
+    paths:
+      - 'opencti-platform/opencti-front/tests_e2e/agentic/**'
+  workflow_dispatch: {}
+
+jobs:
+  run-generated-scenarios:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: opencti-platform/opencti-front
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: corepack enable
+      - run: yarn install --immutable
+
+      - name: Run generated agentic scenarios
+        id: run_tests
+        run: |
+          mkdir -p test-results
+          npx playwright test tests_e2e/agentic/generated/ --reporter=json > test-results/results.json
+        continue-on-error: true
+
+      - name: Notify (mocked)
+        if: always()
+        run:         node script/notify-mock.ts test-results/results.json --status=${{ steps.run_tests.outcome }}
+
+      - name: Fail job if scenarios failed
+        if: steps.run_tests.outcome == 'failure'
+        run: exit 1

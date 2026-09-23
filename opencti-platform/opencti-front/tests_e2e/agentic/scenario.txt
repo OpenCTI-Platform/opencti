@@ -1,0 +1,21 @@
+# Agentic e2e scenarios (POC — Topic 6)
+#
+# One [scenario] block per test. Each block is the full input contract for
+# the generator: context, action, success. Nothing else is inferred.
+#
+# The generator (yarn e2e:generate) turns each block into a Playwright spec
+# under tests_e2e/agentic/generated/. Generated files are reviewed and
+# committed like any other test, then run in CI with no AI involved.
+
+[scenario: report-sidebar-toggle]
+context: user is logged in and viewing an existing report at /dashboard/analyses/reports/<id>
+action: click the red action button on the report page
+success: Playwright asserts a sidebar element becomes visible after the click, and only that
+implemented: false
+
+[scenario: merge-denied-restricted-role]
+context: a restricted test user with no KNOWLEDGE_KNUPDATE_KNMERGE capability, two existing
+  Threat Actor Groups (MERGE_TEST_SOURCE, MERGE_TEST_TARGET) created by an admin
+action: select both entities individually in Lines view, attempt to open Merge
+success: Playwright asserts the Merge control is disabled and no merge mutation is sent
+implemented: false

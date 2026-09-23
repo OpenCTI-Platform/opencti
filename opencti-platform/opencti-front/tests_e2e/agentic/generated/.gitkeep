@@ -1,0 +1,2 @@
+Generated Playwright specs land here. Review and commit them like any other
+test; nothing in this directory should be produced or modified by CI.
