@@ -101,6 +101,14 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
+import { isSequencerEligible, sequencerScopedContext, stripMemberRefMarks } from './sequencer/sequencer-eligibility';
+import { registerSequencerLoaders, sequencerDedupPrefetchKey, submitIntent, takeSequencerDedupPrefetch } from './sequencer/sequencer-loop';
+import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
+import { sequencerMetrics } from './sequencer/sequencer-metrics';
+import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
+import { getCurrentStripSink, registerReconcileAssert } from './sequencer/sequencer-pending-refs';
+import { registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
+import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
@@ -158,7 +166,7 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
@@ -211,7 +219,7 @@ import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttrib
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
+import { meterManager, telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
@@ -601,10 +609,28 @@ const loadByFiltersWithDependencies = async (
 };
 // Get element with every elements connected element -> rel -> to
 export const storeLoadByIdsWithRefs = async <T extends StoreObject> (context: AuthContext, user: AuthUser, ids: string[], opts: LoadByIdsWithDependeciesOpts = {}) => {
+  // POC ingestion sequencer (plan 0009 C4): under an applying batch, upsert targets pre-loaded
+  // by the batch pre-resolution are served from the identity map's with-refs level.
+  const sequencerResolutions = context.sequencer?.resolutions;
+  if (sequencerResolutions) {
+    const served = await sequencerResolutions.serveWithRefs(context, user, ids, opts as Record<string, unknown>);
+    if (served) {
+      if (served.misses.length === 0) return served.hits as T[];
+      const missed = await loadByIdsWithDependencies(context, user, served.misses, { ...opts, onlyMarking: false }) as T[];
+      return [...served.hits, ...missed] as T[];
+    }
+  }
   // When loading with explicit references, data must be loaded without internal rels
   // As rels are here for search and sort there is some data that conflict after references explication resolutions
   return await loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false }) as T[];
 };
+// late-bound registration: the sequencer batch pre-resolution loads upsert targets through
+// this loader without importing middleware (no import cycle)
+registerSequencerLoaders({
+  storeLoadByIdsWithRefs: (context, user, ids) => storeLoadByIdsWithRefs(context, user, ids),
+  // s10.3 rung 1: the batch pre-resolve runs the SAME dedup query as getExistingRelations
+  searchExistingRelations: (context, input, inputIds) => searchExistingRelations(context, input, inputIds, 'relation_dedup_prefetch'),
+});
 export const storeLoadByIdWithRefs = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -1002,6 +1028,48 @@ const idVocabulary = (nameOrId: string, category: string) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
 };
 
+// POC ingestion sequencer (plan 0009 D4): under an applying batch the lock call sites pass
+// the batch lock, so keys it already holds are a no-op and only the unpredicted rest is
+// really locked (see master-lock.lockResources).
+const sequencerLockArgs = (context: AuthContext) => (
+  context.sequencer?.scope === 'applying' ? (getCurrentBatchLock() ?? undefined) : undefined
+);
+
+// POC ingestion sequencer (plan 0009 B2/C2): the ids an input references, extracted with the
+// same depsKeys walk as inputResolveRefs, so the batch pre-resolution can warm the identity
+// map before the intent applies. Labels are normalized like inputResolveRefs (value or id);
+// open-vocab fields are skipped in v1 (their id needs the category resolution, the apply-time
+// inputResolveRefs fills the map on first miss instead). Best-effort only: an id missed here
+// is resolved by the unchanged path at apply time.
+const sequencerReferencedIds = (type: string, input: Record<string, any>): string[] => {
+  const out = new Set<string>();
+  try {
+    const dependencyKeys = depsKeys(type);
+    for (let index = 0; index < dependencyKeys.length; index += 1) {
+      const { src, dst, types: depTypes } = dependencyKeys[index];
+      if (depTypes && depTypes.length > 0 && !depTypes.includes(type)) continue;
+      const value: any = input[src];
+      if (isEmptyField(value)) continue;
+      const alreadyResolved = Array.isArray(value) ? value[0]?._id : value?._id;
+      if (alreadyResolved) continue;
+      if (src === INPUT_LABELS) {
+        (value as string[]).forEach((label) => out.add(idLabel(label)));
+      } else if (isEntityFieldAnOpenVocabulary(dst || src, type)) {
+        // skipped in v1 (category-dependent id computation)
+      } else if (Array.isArray(value)) {
+        value.forEach((v: any) => {
+          if (typeof v === 'string' && v.length > 0) out.add(v);
+        });
+      } else if (typeof value === 'string') {
+        out.add(value);
+      }
+    }
+  } catch {
+    // extraction is an optimization: never let it fail an intent
+  }
+  return Array.from(out);
+};
+
 /**
  * Verify that the Entity in createdBy is one of Identity entity.
  * If not throw functional error to stop creation or update.
@@ -1029,6 +1097,7 @@ export const inputResolveRefs = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
+  searchCaller = 'resolve_other', // POC plan 0010 step 1: caller label for the search decomposition
 ): Promise<Record<string, any>> => {
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
@@ -1111,7 +1180,7 @@ export const inputResolveRefs = async (
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
     const idsToFetch = Array.from(fetchingIdsMap.keys());
-    const simpleResolutionsPromise = internalFindByIds(context, user, idsToFetch);
+    const simpleResolutionsPromise = internalFindByIds(context, user, idsToFetch, { searchCaller });
     let embeddedFromPromise;
     if (embeddedFromResolution) {
       fetchingIdsMap.set(embeddedFromResolution, [{ id: embeddedFromResolution, destKey: 'from', multiple: false }]);
@@ -1197,7 +1266,27 @@ export const inputResolveRefs = async (
     const attributesConfiguration = getAttributesConfiguration(entitySetting);
     const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
-    if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
+    // Strip-and-reconcile (plan 0009 s9.12.3, aggressive variant; design in the work-kb
+    // note opencti-strip-and-reconcile-design). Under the sequencer, an unresolved
+    // OPTIONAL ref never rejects the write: the historic reject-twice-then-silent-drop
+    // above lost the edge forever (verdict 30: 479 holes/run measured). Each droppable
+    // REF edge is pushed into the loop's per-apply strip sink (a context-carried slot
+    // dies with the scoped context copy the apply closure builds: the loop never sees
+    // it); the loop persists the records with the batch and re-asserts the edges when
+    // their targets land. Non-ref unresolved values (vocabs) keep the stock behavior
+    // below.
+    const stripSink = SEQUENCER_CONFIG.stripReconcile && (context as any).sequencer?.scope === 'applying'
+      ? getCurrentStripSink() : null;
+    if (stripSink && expectedUnresolvedIdsNotDefault.length > 0) {
+      expectedUnresolvedIdsNotDefault.forEach((refId) => {
+        const configs = fetchingIdsMap.get(refId) ?? [];
+        const destKey = (configs[0] as any)?.destKey;
+        const ref = destKey ? schemaRelationsRefDefinition.getRelationRef(type, destKey) : null;
+        if (ref?.databaseName) {
+          stripSink.push({ targetRef: refId, relType: ref.databaseName });
+        }
+      });
+    } else if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
       throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
     }
     const complete = { ...cleanedInput, entity_type: type };
@@ -1982,6 +2071,10 @@ export const mergeEntities = async (
       sourceEntityIds,
     });
   }
+  // POC ingestion sequencer (plan 0009 D6): identity-changing operation. Evict every involved
+  // id from the identity map before merging; the absorbed sources' remaining keys cascade
+  // through the map's secondary index. (Stage E: this barrier also commits the write buffer.)
+  sequencerIdentityBarrier([targetEntityId, ...sourceEntityIds]);
   logApp.info(`[OPENCTI] Merging ${sourceEntityIds} in ${targetEntityId}`);
   // targetEntity and sourceEntities must be accessible
   const mergedIds = [targetEntityId, ...sourceEntityIds];
@@ -1999,7 +2092,7 @@ export const mergeEntities = async (
   let lock;
   try {
     // Lock the participants that will be merged
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
     if (!initialInstance) {
@@ -2492,6 +2585,7 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   commitMessage?: string;
   bypassIndividualUpdate?: boolean;
   bypassValidation?: boolean;
+  upsert?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2625,7 +2719,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities: BasicStoreBase[] = [];
@@ -2825,6 +2919,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       impactedInputs.push(attributesAtInput);
     }
     // endregion
+    // Upsert outcome: an upsert that impacts nothing (no attribute reindex, no meta relation
+    // change) still paid the full lock acquisition; inputs-level emptiness cannot detect it
+    // because structural add inputs (creator_id, x_opencti_stix_ids) are pushed unconditionally.
+    if (opts.upsert) {
+      const hasEsImpact = impactedInputs.length > 0 || relationsToCreate.length > 0 || relationsToDelete.length > 0;
+      meterManager.upsert(hasEsImpact ? 'write' : 'noop', initial.entity_type);
+    }
     // Impacting information
     if ((getDraftContext(context, user) && isDraftSupportedEntity(initial))) {
       const lastElementVersion = await internalLoadById(context, user, initial.internal_id);
@@ -3332,7 +3433,54 @@ const upsertElement = async (
     return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
+  meterManager.upsert('noop', type);
   return { element: resolvedElement, event: null, isCreation: false };
+};
+
+// s10.3 rung 1: the direct dedup search, extracted so the sequencer batch pre-resolve can
+// run the SAME query concurrently per batch (registered as a loader, no import cycle).
+// inputIds is passed in so prefetch (plan-time candidate ids) and apply (post-resolution
+// ids) stay comparable through takeSequencerDedupPrefetch's subset check.
+export const searchExistingRelations = async (
+  context: AuthContext,
+  input: Record<string, any>,
+  inputIds: string[],
+  searchCallerLabel = 'relation_dedup',
+) => {
+  const { from, to, relationship_type: relationshipType } = input;
+  const deduplicationFilters = buildRelationDeduplicationFilters(input);
+  const searchFilters = {
+    mode: FilterMode.Or,
+    filters: [{ key: ['ids'], values: inputIds }],
+    filterGroups: [{
+      mode: FilterMode.And,
+      filters: [
+        {
+          key: ['connections'],
+          nested: [
+            { key: 'internal_id', values: [from.internal_id] },
+            { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+          ],
+          values: [],
+        },
+        {
+          key: ['connections'],
+          nested: [
+            { key: 'internal_id', values: [to.internal_id] },
+            { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+          ],
+          values: [],
+        },
+        ...deduplicationFilters,
+      ],
+      filterGroups: [],
+    }],
+  };
+  // this windowed list query goes through elPaginate, not elFindByIds, so the caller label
+  // is counted at the site (one list call = one ES search), plan 0010 step 1
+  sequencerMetrics.searchCaller(searchCallerLabel);
+  const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
+  return topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
 };
 
 export const getExistingRelations = async (
@@ -3357,37 +3505,21 @@ export const getExistingRelations = async (
   } else {
     // In case of direct relation, try to find the relation with time filters
     // Only in standard indices.
-    const deduplicationFilters = buildRelationDeduplicationFilters(input);
-    const searchFilters = {
-      mode: FilterMode.Or,
-      filters: [{ key: ['ids'], values: getInputIds(relationshipType, input, false) }],
-      filterGroups: [{
-        mode: FilterMode.And,
-        filters: [
-          {
-            key: ['connections'],
-            nested: [
-              { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
-            ],
-            values: [],
-          },
-          {
-            key: ['connections'],
-            nested: [
-              { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
-            ],
-            values: [],
-          },
-          ...deduplicationFilters,
-        ],
-        filterGroups: [],
-      }],
-    };
-    // inputIds
-    const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
-    const manualRelationships = await topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
+    const inputIds = getInputIds(relationshipType, input, false);
+    // s10.3 rung 1: under a sequencer apply, the batch pre-resolve may have prefetched this
+    // exact dedup query (or proven it empty: an endpoint absent at batch start cannot carry
+    // a pre-existing duplicate). Trusted only when the apply-time ids are covered by the
+    // prefetched ones (rename-at-resolution safety); otherwise the live query runs as today.
+    if (context.sequencer) {
+      const key = sequencerDedupPrefetchKey(from.internal_id, to.internal_id, input, input.createdBy?.internal_id ?? null);
+      const prefetched = takeSequencerDedupPrefetch(key, inputIds);
+      if (prefetched) {
+        sequencerMetrics.searchCaller('relation_dedup_served');
+        pushAll(existingRelationships, prefetched as StoreProxyRelation[]);
+        return existingRelationships;
+      }
+    }
+    const manualRelationships = await searchExistingRelations(context, input, inputIds);
     pushAll(existingRelationships, manualRelationships);
   }
   return existingRelationships;
@@ -3425,7 +3557,7 @@ export const createRelationRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, relationshipType) as BasicStoreEntityEntitySetting;
 
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting, 'resolve1_rel');
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -3473,7 +3605,7 @@ export const createRelationRaw = async (
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
@@ -3499,7 +3631,7 @@ export const createRelationRaw = async (
     if (!existingRelationship) {
       // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
-      resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting, 'resolve2_rel');
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
 
@@ -3604,7 +3736,7 @@ export const createRelationRaw = async (
     if (lock) await lock.unlock();
   }
 };
-export const createRelation = async (
+const createRelationDirect = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
@@ -3615,6 +3747,40 @@ export const createRelation = async (
     await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
   }
   return data.element;
+};
+export const createRelation = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  opts: CreateRelationRawOpts = {},
+) => {
+  // Option B (plan 0009 s9.8.3): the ||M|| marks were stripped at the HTTP edge
+  // (httpAuthenticatedContext, BEFORE scalar validation) and the collected ids ride
+  // context.memberRefIds. The local strip stays as a safety net for any non-HTTP path:
+  // the marker must never survive past this boundary.
+  const memberRefs = new Set<string>();
+  stripMemberRefMarks(input, memberRefs);
+  const memberRefIds = memberRefs.size > 0 ? memberRefs : context.memberRefIds;
+  // POC ingestion sequencer (plan 0009 B1): worker-origin STIX creates go through the sequencer,
+  // everything else takes the direct path unchanged.
+  const relationshipType = input.relationship_type;
+  if (isSequencerEligible(context, user, relationshipType, opts)) {
+    // Cheap candidate ids at intake: for core relationships/sightings the standard_id depends on
+    // resolved endpoints, so only explicit ids and endpoint references are known here (plan B2).
+    const candidateIds = [input.stix_id, ...(input.x_opencti_stix_ids ?? []), input.fromId, input.toId]
+      .filter((id) => typeof id === 'string' && id.length > 0);
+    return submitIntent(context, user, {
+      kind: 'relation',
+      type: relationshipType,
+      input,
+      opts,
+      candidateIds,
+      referencedIds: sequencerReferencedIds(relationshipType, input),
+      memberRefIds,
+      apply: () => createRelationDirect(sequencerScopedContext(context, 'applying'), user, input, opts),
+    });
+  }
+  return createRelationDirect(context, user, input, opts);
 };
 type RuleContent = {
   field: string;
@@ -3681,7 +3847,7 @@ export const getExistingEntities = async (
   type: string,
 ) => {
   const participantIds = getInputIds(type, input);
-  const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type }) as Promise<BasicStoreBase[]>;
+  const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type, searchCaller: 'finder_existing' }) as Promise<BasicStoreBase[]>;
   let existingByHashedPromise;
   if (isStixCyberObservableHashedObservable(type)) {
     existingByHashedPromise = listEntitiesByHashes(context, user, type, input.hashes);
@@ -3754,7 +3920,7 @@ const internalCreateEntityRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, type) as BasicStoreEntityEntitySetting;
   const { fromRule } = opts;
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting);
+  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting, isStixMetaObject(type) ? 'resolve1_meta' : 'resolve1_ent');
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const participantIds = getInputIds(type, resolvedInput, fromRule);
@@ -3762,13 +3928,13 @@ const internalCreateEntityRaw = async (
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
     // Generate the internal id if needed
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
     const existingEntities: BasicStoreObject[] = [];
     const finderIds = [...participantIds, ...(context.previousStandard ? [context.previousStandard] : [])];
-    const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, finderIds, { type }) as Promise<BasicStoreObject[]>;
+    const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, finderIds, { type, searchCaller: isStixMetaObject(type) ? 'finder_meta' : 'finder_ent' }) as Promise<BasicStoreObject[]>;
     // Hash are per definition keys.
     // When creating a hash, we can check all hashes to update or merge the result
     // Generating multiple standard ids could be a solution but to complex to implements
@@ -3794,7 +3960,7 @@ const internalCreateEntityRaw = async (
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
-      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting, isStixMetaObject(type) ? 'resolve2_meta' : 'resolve2_ent');
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
     // endregion
@@ -4058,7 +4224,7 @@ const createEntityRaw = async (
   }
 };
 
-export const createEntity = async (
+const createEntityDirect = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
@@ -4078,6 +4244,48 @@ export const createEntity = async (
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;
+};
+
+export const createEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  type: string,
+  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+) => {
+  // Option B (plan 0009 s9.8.3): the ||M|| marks were stripped at the HTTP edge
+  // (httpAuthenticatedContext, BEFORE scalar validation) and the collected ids ride
+  // context.memberRefIds. The local strip stays as a safety net for any non-HTTP path:
+  // the marker must never survive past this boundary.
+  const memberRefs = new Set<string>();
+  stripMemberRefMarks(input, memberRefs);
+  const memberRefIds = memberRefs.size > 0 ? memberRefs : context.memberRefIds;
+  // POC ingestion sequencer (plan 0009 B1): worker-origin STIX creates go through the sequencer,
+  // everything else takes the direct path unchanged.
+  if (isSequencerEligible(context, user, type, opts)) {
+    let candidateIds: string[] = [];
+    try {
+      // entity_type is passed separately to createEntity but getInputIds' alias/hash id
+      // generation reads it from the input (found live 2026-08-31: without it, every entity
+      // threw here and the silent catch left candidateIds EMPTY, collapsing every entity
+      // onto one canonical key and voiding coalescing, producer edges and the batch lock)
+      candidateIds = getInputIds(type, { ...input, entity_type: type }, false);
+    } catch (err) {
+      // invalid or incomplete input: the direct path will fail identically when applied
+      logApp.warn('[SEQUENCER] candidate id computation failed, empty set', { type, cause: err });
+    }
+    return submitIntent(context, user, {
+      kind: 'entity',
+      type,
+      input,
+      opts,
+      candidateIds,
+      referencedIds: sequencerReferencedIds(type, input),
+      memberRefIds,
+      apply: () => createEntityDirect(sequencerScopedContext(context, 'applying'), user, input, type, opts),
+    });
+  }
+  return createEntityDirect(context, user, input, type, opts);
 };
 
 export const createInferredEntity = async (
@@ -4111,7 +4319,7 @@ const draftInternalDeleteElement = async <T extends StoreObject>(
   const participantIds = [draftElement.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user), sequencer: sequencerLockArgs(context) });
 
     await elMarkElementsAsDraftDelete(context, user, [draftElement]);
   } catch (err: any) {
@@ -4403,4 +4611,45 @@ export const deleteRelationsByFromAndTo = async (
   });
   return { from: fromThing, to: toThing, deletions: relationsToDelete };
 };
+// endregion
+
+// region strip-and-reconcile assert (plan 0009 s9.12.3; design in the work-kb note
+// opencti-strip-and-reconcile-design). Registered here so the pending-refs module never
+// imports middleware (no cycle). The re-assertion is a NORMAL createRelation with a fresh
+// context: it goes back through the boundary, so under the sequencer it is enqueued,
+// batched and deduped like any intent; if the edge already exists it upserts to a no-op.
+// The target is resolved by any of its instance ids (targetInternalId when the loop
+// matched a committed element, or the recorded raw ref from the sweeper): a still-absent
+// target throws MISSING_REFERENCE and the record stays pending.
+registerReconcileAssert(async (record, targetId) => {
+  const reconcileContext = executionContext('sequencer_reconcile');
+  // original attribution when available (memory record, same process); SYSTEM_USER only
+  // for records rehydrated after a restart (sweeper path, documented divergence)
+  const reconcileUser = record.user ?? SYSTEM_USER;
+  await createRelation(reconcileContext, reconcileUser, {
+    fromId: record.owner_id,
+    toId: targetId,
+    relationship_type: record.rel_type,
+  });
+});
+// Retry-gap option 1 (2026-09-14): a RETAINED creation re-enters the boundary with its
+// recorded input under a fresh context that keeps asking for retention (a still-missing
+// reference re-defers it, same record). Worker origin is required for sequencer
+// eligibility: the memory record carries the original user; a rehydrated one (after a
+// restart) re-submits as SYSTEM_USER marked as worker origin (documented divergence).
+registerPendingIntentResubmit(async (record) => {
+  const resubmitContext = executionContext('sequencer_resubmit');
+  resubmitContext.deferMissingRefs = true;
+  resubmitContext.workId = record.work_id;
+  const resubmitUser: AuthUser = record.user ?? {
+    ...SYSTEM_USER,
+    origin: { ...(SYSTEM_USER.origin ?? {}), call_retry_number: 0 },
+  };
+  const input = JSON.parse(record.input_json);
+  const opts = record.opts_json ? JSON.parse(record.opts_json) : {};
+  if (record.kind === 'relation') {
+    return createRelation(resubmitContext, resubmitUser, input, opts);
+  }
+  return createEntity(resubmitContext, resubmitUser, input, record.type, opts);
+});
 // endregion

@@ -84,7 +84,28 @@ interface AuthContext {
   user_with_session?: boolean;
   synchronizedUpsert?: boolean;
   previousStandard?: string;
+  // POC ingestion sequencer (plan 0009 s9.8.3): in-bundle ref ids collected when the
+  // ||M|| marks were stripped from this request's variables (httpAuthenticatedContext)
+  memberRefIds?: Set<string>;
+  // POC chunk-queue intake (retry-gap option 1): a creation whose hard reference is still
+  // missing at apply time is RETAINED by the sequencer (pending intents) instead of rejected
+  deferMissingRefs?: boolean;
+  // POC chunk intake: called once by the sequencer boundary when this context's intent has
+  // been accepted into the intake queue (end of the operation's pre-loop phase); the chunk
+  // manager uses it to release its pre-loop admission permit.
+  onIntentQueued?: () => void;
   req?: Express.Request;
   requestAbortSignal?: AbortSignal;
   blocked_for_lts_validation?: boolean;
+  sequencer?: {
+    scope: 'applying' | 'bypass';
+    // Stage C identity map, served through the context so engine.ts needs no sequencer import
+    resolutions?: {
+      serveBare: (context: AuthContext, user: AuthUser, ids: string[], opts: Record<string, unknown>)
+      => Promise<{ hits: any[]; misses: string[] } | null>;
+      serveWithRefs: (context: AuthContext, user: AuthUser, ids: string[], opts: Record<string, unknown>)
+      => Promise<{ hits: any[]; misses: string[] } | null>;
+      ingestBare: (elements: any[]) => void;
+    };
+  };
 }

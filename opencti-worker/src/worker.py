@@ -19,7 +19,10 @@ from pycti.connector.opencti_connector_helper import (
     get_config_variable,
 )
 
+from gil_probe import start_gil_probe
 from listen_handler import ListenHandler
+from cache_lock_shim import install_cache_lock_shim
+from orjson_shim import install_orjson_shim
 from message_queue_consumer import MessageQueueConsumer
 from push_handler import PushHandler
 from thread_pool_selector import ThreadPoolSelector
@@ -98,6 +101,123 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             True,
             default=5,
+        )
+        # POC (plan 0009 worker v0): unacked deliveries allowed per push queue. 1 = historic
+        # one-message-per-queue behavior; >1 removes the per-queue serialization (execution
+        # stays bounded by the push execution pool).
+        self.push_prefetch_count = get_config_variable(
+            "WORKER_PUSH_PREFETCH_COUNT",
+            ["worker", "push_prefetch_count"],
+            config,
+            True,
+            default=1,
+        )
+        # POC (plan 0009 P3): thread width for in-place level-parallel import of an inline
+        # bundle (message flagged bundle_inline by the platform).
+        self.bundle_parallelism = get_config_variable(
+            "WORKER_BUNDLE_PARALLELISM",
+            ["worker", "bundle_parallelism"],
+            config,
+            True,
+            default=8,
+        )
+        # POC (plan 0009 s9.11): wave (chunk) size decoupled from the thread budget.
+        # 0 = follow bundle_parallelism (pre-s9.11 behavior).
+        self.bundle_wave_width = get_config_variable(
+            "WORKER_BUNDLE_WAVE_WIDTH",
+            ["worker", "bundle_wave_width"],
+            config,
+            True,
+            default=0,
+        )
+        # POC (plan 0009 s9.11): size of the process-wide SHARED request pool (replaces
+        # the per-handler private executors). 0 = derive 4x the wave width.
+        self.bundle_executor_budget = get_config_variable(
+            "WORKER_BUNDLE_EXECUTOR_BUDGET",
+            ["worker", "bundle_executor_budget"],
+            config,
+            True,
+            default=0,
+        )
+        # POC (plan 0009 §9.6.7): import ANY multi-object bundle inline (external
+        # connectors publish straight to RabbitMQ, so the platform marker never reaches
+        # them). Off = historic behavior.
+        self.bundle_inline = get_config_variable(
+            "WORKER_BUNDLE_INLINE",
+            ["worker", "bundle_inline"],
+            config,
+            False,
+            default=False,
+        )
+        # POC (plan 0009 §9.6.6/§9.6.9): wave grouping policy for inline bundles
+        # (chunks | levels | phases | all), see push_handler.bundle_wave_policy.
+        # "chunks" (default) submits fixed-size waves of bundle_parallelism objects in
+        # nb_deps order: the wave size is chosen, not dictated by the bundle's shape.
+        self.bundle_wave_policy = get_config_variable(
+            "WORKER_BUNDLE_WAVE_POLICY",
+            ["worker", "bundle_wave_policy"],
+            config,
+            default="chunks",
+        )
+        if self.bundle_wave_policy not in ("chunks", "levels", "phases", "all"):
+            self.worker_logger.warning(
+                "Invalid bundle_wave_policy, falling back to chunks",
+                {"value": self.bundle_wave_policy},
+            )
+            self.bundle_wave_policy = "chunks"
+        # Chunked ingest pools (s9.12.1 successor, kb note
+        # opencti-worker-chunked-ingest-pools). 0 pools = OFF (s9.11 wave path).
+        self.ingest_pools = get_config_variable(
+            "WORKER_INGEST_POOLS",
+            ["worker", "ingest_pools"],
+            config,
+            True,
+            default=0,
+        )
+        self.ingest_chunk_size = get_config_variable(
+            "WORKER_INGEST_CHUNK_SIZE",
+            ["worker", "ingest_chunk_size"],
+            config,
+            True,
+            default=16,
+        )
+        self.ingest_pick = get_config_variable(
+            "WORKER_INGEST_PICK",
+            ["worker", "ingest_pick"],
+            config,
+            default="least_full",
+        )
+        if self.ingest_pick not in ("least_full", "round_robin"):
+            self.ingest_pick = "least_full"
+        self.ingest_pool_queue_bound = get_config_variable(
+            "WORKER_INGEST_POOL_QUEUE_BOUND",
+            ["worker", "ingest_pool_queue_bound"],
+            config,
+            True,
+            default=64,
+        )
+        self.ingest_pipelined = get_config_variable(
+            "WORKER_INGEST_PIPELINED",
+            ["worker", "ingest_pipelined"],
+            config,
+            False,
+            default=False,
+        )
+        self.ingest_dep_admission = get_config_variable(
+            "WORKER_INGEST_DEP_ADMISSION",
+            ["worker", "ingest_dep_admission"],
+            config,
+            False,
+            default=True,
+        )
+        # Chunk-queue direct intake (kb note opencti-chunk-queue-direct-intake-design):
+        # publish captured mutations by chunk to the platform chunk queue, no HTTP import.
+        self.chunk_queue = get_config_variable(
+            "WORKER_CHUNK_QUEUE",
+            ["worker", "chunk_queue"],
+            config,
+            False,
+            default=False,
         )
         self.opencti_api_requests_timeout = get_config_variable(
             "OPENCTI_REQUESTS_TIMEOUT",
@@ -189,6 +309,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
+        # study 0011 step 2b: GIL convoy probe, env-gated (WORKER_GIL_PROBE), no-op otherwise
+        start_gil_probe(self.worker_logger)
+        # study 0011: orjson swap on the JSON hot path, env-gated (WORKER_ORJSON)
+        install_orjson_shim(self.worker_logger)
+        install_cache_lock_shim(self.worker_logger)
 
     def build_pika_parameters(
         self, connector_config: Dict[str, Any]
@@ -287,6 +412,18 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_global_counter,
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
+                            bundle_parallelism=self.bundle_parallelism,
+                            bundle_wave_policy=self.bundle_wave_policy,
+                            bundle_inline=self.bundle_inline,
+                            bundle_wave_width=self.bundle_wave_width,
+                            bundle_executor_budget=self.bundle_executor_budget,
+                            ingest_pools=self.ingest_pools,
+                            ingest_chunk_size=self.ingest_chunk_size,
+                            ingest_pick=self.ingest_pick,
+                            ingest_pool_queue_bound=self.ingest_pool_queue_bound,
+                            ingest_pipelined=self.ingest_pipelined,
+                            ingest_dep_admission=self.ingest_dep_admission,
+                            chunk_queue=self.chunk_queue,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]
@@ -301,6 +438,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 push_thread_pool_selector.submit, is_realtime
                             ),
                             push_handler.handle_message,
+                            prefetch_count=self.push_prefetch_count,
                         )
 
                     # Listen for webhook message

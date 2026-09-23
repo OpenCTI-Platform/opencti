@@ -327,6 +327,26 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     expect(result.expectations).toBe(1);
   });
 
+  it('inline mode ships a multi-object bundle whole, flagged bundle_inline, expectations left to the worker', () => {
+    const message = {
+      type: 'bundle',
+      work_id: 'work-x',
+      content: toBundle([{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }]),
+    };
+    const result = buildSplitMessages(message, { inlineBundles: true });
+    expect(result.messages.length).toBe(1);
+    expect(result.messages[0].bundle_inline).toBe(true);
+    expect(decode(result.messages[0].content).objects.length).toBe(2);
+    expect(result.expectations).toBeNull(); // the worker counts from its own splitter output
+  });
+
+  it('inline mode leaves single-object and no_split bundles exactly as before', () => {
+    const single = { type: 'bundle', content: toBundle([{ id: 'malware--only', type: 'malware' }]) };
+    expect(buildSplitMessages(single, { inlineBundles: true })).toEqual({ messages: [single], expectations: 1 });
+    const noSplit = { type: 'bundle', no_split: true, content: toBundle([{ id: 'a', type: 'malware' }, { id: 'b', type: 'malware' }]) };
+    expect(buildSplitMessages(noSplit, { inlineBundles: true })).toEqual({ messages: [noSplit], expectations: 2 });
+  });
+
   it('splits a multi-object bundle into one message per object, preserving other fields', () => {
     const objects = [
       { id: 'marking-definition--m1', type: 'marking-definition', definition_type: 'tlp', name: 'TLP:RED' },

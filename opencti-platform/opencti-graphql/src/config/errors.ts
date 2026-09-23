@@ -182,6 +182,29 @@ export const MissingReferenceError = (data?: any) => error(MISSING_REF_ERROR, 'E
   ...data,
 });
 
+// POC ingestion sequencer (plan 0009 s9.8.2): a missing reference DECLARED in the same
+// bundle whose producer never arrived: its own creation failed, retrying cannot help.
+// The code deliberately does NOT contain the substring MISSING_REFERENCE_ERROR, so the
+// worker's retry classifier (pycti import_item) treats it as unrecognized and reports the
+// object once instead of burning its retry budget.
+export const MISSING_REF_FINAL_ERROR = 'MISSING_REFERENCE_FINAL_ERROR';
+export const MissingReferenceFinalError = (data?: any) => error(MISSING_REF_FINAL_ERROR, 'Element(s) not found (in-bundle producer failed, final)', {
+  http_status: 404,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
+// POC chunk-queue intake, retry-gap option 1 (2026-09-14): the creation is RETAINED in the
+// sequencer's pending intents store and re-submitted when its missing reference lands. The
+// caller must read it as accepted-later, not failed. The code deliberately avoids the
+// MISSING_REFERENCE_ERROR substring so no client retry ladder fires on it.
+export const SEQUENCER_DEFERRED_ERROR = 'SEQUENCER_DEFERRED';
+export const DeferredMissingReferenceError = (data?: any) => error(SEQUENCER_DEFERRED_ERROR, 'Creation deferred until its reference lands', {
+  http_status: 202,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const VALIDATION_ERROR = 'VALIDATION_ERROR';
 export const ValidationError = (message: string, field?: string | number, data?: any) => error(VALIDATION_ERROR, message, {
   http_status: 500,
