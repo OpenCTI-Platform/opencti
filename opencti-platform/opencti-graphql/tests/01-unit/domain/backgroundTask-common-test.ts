@@ -250,6 +250,17 @@ describe('Background task validity check (checkActionValidity)', () => {
     it.skip('should throw an error if task LIST and user has no capa SETTINGS_SET_ACCESSES and not own data', () => {
       // TODO
     });
+
+    it('should throw an error if a query task does not have any filters', async () => {
+      const user = userUpdate;
+      const type = TASK_TYPE_QUERY;
+      const input = {
+        actions: [{ type: ACTION_TYPE_ADD }],
+      };
+      await expect(async () => {
+        await checkActionValidity(testContext, user, input, scope, type);
+      }).rejects.toThrowError('A background task of type query should have at least one filter.');
+    });
   });
 
   describe('Scope IMPORT', () => {
