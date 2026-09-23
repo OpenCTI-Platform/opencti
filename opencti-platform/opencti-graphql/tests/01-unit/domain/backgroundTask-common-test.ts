@@ -263,7 +263,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
-      }).rejects.toThrowError('A background task of type query should have at least one filter.');
+      }).rejects.toThrowError('A background task of type query should have at least one filter or a search term.');
     });
   });
 
