@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -7,8 +7,10 @@ import { useTheme } from '@mui/styles';
 import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
+import { CloudRefreshOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import StixCoreObjectEnrichment from '../../../private/components/common/stix_core_objects/StixCoreObjectEnrichment';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../i18n';
@@ -52,6 +54,7 @@ const EntitiesDetailsRightsBar = () => {
   const classes = useStyles(theme);
   const { t_i18n } = useFormatter();
   const { selectDetailsPreviewObject } = useGraphInteractions();
+  const [enrichmentOpen, setEnrichmentOpen] = useState(false);
 
   const {
     graphState: {
@@ -112,6 +115,8 @@ const EntitiesDetailsRightsBar = () => {
     ? `/dashboard/analyses/external_references/${detailsPreviewSelected.id}`
     : `/dashboard/id/${detailsPreviewSelected.id}`;
 
+  const canBeEnriched = detailsPreviewSelected.parent_types.includes('Stix-Core-Object');
+
   return (
     <Drawer
       open={true}
@@ -170,7 +175,28 @@ const EntitiesDetailsRightsBar = () => {
             </div>
           </Tooltip>
         )}
+        {canBeEnriched && (
+          <Tooltip title={t_i18n('Enrichment')}>
+            <div className={classes.external}>
+              <IconButton
+                aria-label={t_i18n('Enrichment')}
+                id="enrich-entity-icon-button"
+                size="default"
+                onClick={() => setEnrichmentOpen(true)}
+              >
+                <CloudRefreshOutline fontSize="medium" />
+              </IconButton>
+            </div>
+          </Tooltip>
+        )}
       </div>
+      {canBeEnriched && (
+        <StixCoreObjectEnrichment
+          stixCoreObjectId={detailsPreviewSelected.id}
+          isOpen={enrichmentOpen}
+          onClose={() => setEnrichmentOpen(false)}
+        />
+      )}
       <div
         style={{
           height: '100%',
