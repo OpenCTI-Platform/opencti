@@ -785,6 +785,7 @@
   "Connector catalog | Ingestion | Data": "Catálogo de conectores | Ingestión | Datos",
   "Connector catalogs": "Catálogos de conectores",
   "Connector configuration": "Configuración del conector",
+  "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "La implementación del conector requiere OpenCTI Enterprise Edition. En la Community Edition, esta configuración es de solo lectura.",
   "Connector name": "Nombre del conector",
   "Connector type": "Tipo de conector",
   "Connector types": "Tipos de conectores",

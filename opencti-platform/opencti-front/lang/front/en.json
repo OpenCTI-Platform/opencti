@@ -785,6 +785,7 @@
   "Connector catalog | Ingestion | Data": "Connector catalog | Ingestion | Data",
   "Connector catalogs": "Connector catalogs",
   "Connector configuration": "Connector configuration",
+  "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.",
   "Connector name": "Connector name",
   "Connector type": "Connector type",
   "Connector types": "Connector types",

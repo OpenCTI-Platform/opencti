@@ -28,6 +28,7 @@ const EnterpriseEditionButton = ({
   inLine = false,
   disabled = false,
   withEEChip = false,
+  withIcon = true,
   title = 'Manage your Enterprise Edition license',
   size = 'small',
 }: {
@@ -35,6 +36,7 @@ const EnterpriseEditionButton = ({
   inLine?: boolean;
   disabled?: boolean;
   withEEChip?: boolean;
+  withIcon?: boolean;
   title?: string;
   size?: ButtonSize;
 }) => {
@@ -60,7 +62,7 @@ const EnterpriseEditionButton = ({
             size={size}
             variant="secondary"
             onClick={() => setOpenEnterpriseEditionConsent(true)}
-            startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
+            startIcon={withIcon ? <RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} /> : undefined}
             disabled={disabled}
             classes={{
               root: classNames({
