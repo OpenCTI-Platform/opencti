@@ -84,6 +84,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   }
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
+  if (taskType === TASK_TYPE_QUERY && !isFilterGroupNotEmpty(baseFilterObject)) {
+    throw FunctionalError('A background task of type query should have at least one filter.');
+  }
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];
@@ -123,6 +126,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const isNotKnowledge = (!acceptedInternalTypes && !areParentTypesKnowledge(parentTypes)) || entityTypeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
+      }
+      if (entityTypeFiltersValues.length === 0) {
+        throw UnsupportedError('A background task of type query should have at least one entity type filter.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await internalFindByIds(context, user, ids, { includeDeletedInDraft: true });
