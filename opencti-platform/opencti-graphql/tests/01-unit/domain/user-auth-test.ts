@@ -29,7 +29,6 @@ describe('User Domain - Authentication', async () => {
   const legacyUser = {
     id: 'user-legacy-id',
     api_token: 'legacy-token-uuid',
-    api_tokens: [],
     name: 'Legacy User',
     user_email: 'legacy@test.com',
     account_status: 'Active',
