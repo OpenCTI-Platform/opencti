@@ -352,6 +352,11 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
             )}
             actions={(row) => {
               return (
+                // This wrapper only stops the click from bubbling up to the
+                // row's own click handler; the actual interactive control
+                // (ContainerStixCoreObjectPopover's icon button) is already
+                // focusable and keyboard-operable on its own.
+                // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
                 <div onClick={(e) => e.stopPropagation()}>
                   <ContainerStixCoreObjectPopover
                     containerId={container.id}

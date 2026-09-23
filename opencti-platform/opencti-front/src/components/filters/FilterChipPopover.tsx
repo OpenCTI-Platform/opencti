@@ -2,7 +2,8 @@ import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import FilterDate from '@components/common/lists/FilterDate';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
-import { Checkbox, Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { ClearOutlined, HighlightOffOutlined } from '@mui/icons-material';
+import { Checkbox, Chip, IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Popover from '@mui/material/Popover';
 import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
@@ -287,6 +288,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       return t_i18n(option?.group ? option?.group : label);
     };
 
+    const handleClearInputValue = () => {
+      setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: '' }));
+      const syntheticEvent = { target: { value: '' } } as unknown as SyntheticEvent;
+      searchEntities(fKey, cacheEntities, setCacheEntities, syntheticEvent, !!subKey);
+    };
+
     const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
       const newValues = newValue.map((v) => v.value);
 
@@ -345,6 +352,10 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         noOptionsText={t_i18n('No available options')}
         options={options}
         groupBy={(option) => groupByEntities(option, fLabel)}
+        // Distinct icon + label from the "Clear search" button rendered in
+        // the input's endAdornment, since this one clears the whole selection.
+        clearText={t_i18n('Clear all')}
+        clearIcon={<ClearOutlined fontSize="small" />}
         onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
           if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
             setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: newInputValue }));
@@ -369,22 +380,36 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         }}
         renderInput={(paramsInput) => (
           <TextField
-            role="search"
             {...paramsInput}
             slotProps={{
               input: {
                 ...paramsInput.InputProps,
-                type: 'search',
-                endAdornment: isStixObjectTypes.includes(fKey)
-                  ? renderSearchScopeSelection(fKey)
-                  : paramsInput.InputProps.endAdornment,
+                endAdornment: (
+                  <>
+                    {autocompleteInputValues[fKey] && (
+                      <Tooltip title={t_i18n('Clear search')}>
+                        <IconButton
+                          variant="default"
+                          priority="tertiary"
+                          size="sm"
+                          className="rounded-full text-default-secondary"
+                          onClick={handleClearInputValue}
+                          aria-label={t_i18n('Clear search')}
+                          icon={<HighlightOffOutlined fontSize="small" />}
+                        />
+                      </Tooltip>
+                    )}
+                    {isStixObjectTypes.includes(fKey)
+                      ? renderSearchScopeSelection(fKey)
+                      : paramsInput.InputProps.endAdornment}
+                  </>
+                ),
               },
             }}
             label={t_i18n(fLabel)}
             variant="outlined"
             size="small"
             fullWidth={true}
-            autoFocus={true}
             onFocus={(event) => {
               searchEntities(
                 fKey,
@@ -408,7 +433,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             <Tooltip title={option.label} key={key || option.value} followCursor>
               <li
                 {...otherProps}
-                aria-disabled={disabledOptions}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',

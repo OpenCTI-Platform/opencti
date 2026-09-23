@@ -1,5 +1,7 @@
 import TextField from '@mui/material/TextField';
-import { FunctionComponent } from 'react';
+import { ClearOutlined } from '@mui/icons-material';
+import { IconButton } from '@filigran/design-system';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface BasicFilterInputProps {
@@ -19,17 +21,35 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
   label,
   type,
 }) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [value, setValue] = useState(filterValues[0] ?? '');
+
+  // The operator select is rendered before this field, so removing autoFocus
+  // made it take an extra Tab to reach the value. This field is mounted once
+  // per popover open (the operator select does not remount it), so focusing
+  // on mount restores "open and type" without stealing focus on later
+  // operator changes.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleClear = () => {
+    setValue('');
+    helpers?.handleAddSingleValueFilter(filter?.id ?? '', '');
+    inputRef.current?.focus();
+  };
+
   return (
     <TextField
-      role="search"
       variant="outlined"
       size="small"
       fullWidth={true}
       id={filter?.id ?? `${filterKey}-id`}
       label={label}
       type={type}
-      defaultValue={filterValues[0]}
-      autoFocus={true}
+      inputRef={inputRef}
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
           helpers?.handleAddSingleValueFilter(
@@ -51,7 +71,20 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
           event.target.value,
         );
       }}
-      slotProps={{ input: { type: 'search' } }}
+      slotProps={{
+        input: {
+          endAdornment: value && (
+            <IconButton
+              variant="default"
+              priority="tertiary"
+              size="sm"
+              onClick={handleClear}
+              aria-label="clear"
+              icon={<ClearOutlined fontSize="small" />}
+            />
+          ),
+        },
+      }}
     />
   );
 };

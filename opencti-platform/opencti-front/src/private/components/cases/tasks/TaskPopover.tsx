@@ -99,6 +99,11 @@ const TaskPopover = ({
   };
 
   return (
+    // This wrapper only stops the click from bubbling up to the row/line's
+    // own click handler; the actual interactive control (IconButton /
+    // ToggleButton below) is already focusable and keyboard-operable on its
+    // own, so it has no keyboard listener of its own.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className={classes.container} onClick={(e) => e.stopPropagation()}>
       {variant === 'inLine' ? (
         <IconButton

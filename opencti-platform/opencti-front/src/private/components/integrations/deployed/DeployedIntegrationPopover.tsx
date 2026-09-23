@@ -200,6 +200,10 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   }
 
   return (
+    // This wrapper only stops the click from bubbling up to the card's own
+    // click handler; the actual interactive control (the icon button below,
+    // via handleOpen) is already focusable and keyboard-operable on its own.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div onClick={stopEvent}>
       <IconButton
         aria-label={t_i18n('Open menu')}

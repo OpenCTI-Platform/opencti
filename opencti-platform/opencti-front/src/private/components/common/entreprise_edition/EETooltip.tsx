@@ -3,7 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import { Tooltip, TooltipProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import { ReactElement, useState } from 'react';
+import { cloneElement, ReactElement, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import useAI from '../../../../utils/hooks/useAI';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -34,7 +34,7 @@ const EETooltip = ({
   title,
   forAi,
 }: {
-  children: ReactElement;
+  children: ReactElement<{ tabIndex?: number }>;
   title?: string;
   forAi?: boolean;
 }) => {
@@ -62,13 +62,31 @@ const EETooltip = ({
     return (
       <>
         <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-          <span onClick={(e) => {
-            setOpenConfigAI(true);
-            e.preventDefault();
-            e.stopPropagation();
-          }}
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              setOpenConfigAI(true);
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpenConfigAI(true);
+              }
+            }}
           >
-            {children}
+            {/*
+              The wrapping span is the single interactive control here (it
+              intercepts the click/keyboard activation to open the "enable
+              AI" dialog instead of whatever the child would normally do);
+              take the child out of the tab order so children that already
+              render a focusable control (e.g. a Button/IconButton) don't
+              create a second, redundant tab stop for the same action.
+            */}
+            {cloneElement(children, { tabIndex: -1 })}
           </span>
         </EETooltipComponent>
         <Dialog
@@ -90,13 +108,32 @@ const EETooltip = ({
   return (
     <>
       <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-        <span onClickCapture={(e) => {
-          setFeedbackCreation(true);
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            setFeedbackCreation(true);
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              setFeedbackCreation(true);
+            }
+          }}
         >
-          {children}
+          {/*
+            The wrapping span is the single interactive control here (it
+            intercepts the click/keyboard activation to open the EE
+            feedback/agreement flow instead of whatever the child would
+            normally do); take the child out of the tab order so children
+            that already render a focusable control (e.g. a Button/
+            IconButton/ToggleButton) don't create a second, redundant tab
+            stop for the same action.
+          */}
+          {cloneElement(children, { tabIndex: -1 })}
         </span>
       </EETooltipComponent>
       {isAdmin ? (

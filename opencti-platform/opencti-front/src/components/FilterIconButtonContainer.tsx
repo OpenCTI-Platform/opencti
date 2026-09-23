@@ -2,6 +2,8 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import { CloseOutlined } from '@mui/icons-material';
+import { IconButton } from '@filigran/design-system';
 import React, { CSSProperties, Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import {
@@ -291,6 +293,8 @@ const FilterIconButtonContainer: FunctionComponent<
                 sx={{
                   padding: '0',
                   display: 'flex',
+                  alignItems: 'center',
+                  gap: '2px',
                 }}
               >
                 <Chip
@@ -301,6 +305,14 @@ const FilterIconButtonContainer: FunctionComponent<
                       : null
                   }
                   variant={chipVariant}
+                  // Restores the Chip's previous ButtonBase/role="button" rendering
+                  // (previously a side effect of `onDelete` being set) now that
+                  // `onDelete`/`deleteIcon` were removed in favor of a separate
+                  // sibling remove button (see comment below). This chip itself
+                  // has no click handler of its own — the label's real <button>s
+                  // (FilterValues) and the sibling remove button below already
+                  // provide the interactive/keyboard behavior.
+                  clickable={(isReadWriteFilter && authorizeFilterRemoving) || undefined}
                   sx={{
                     ...filterStyle,
                     ...chipBackgroundColorStyle,
@@ -345,16 +357,29 @@ const FilterIconButtonContainer: FunctionComponent<
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
-                  onDelete={
-                    (isReadWriteFilter && authorizeFilterRemoving)
-                      ? () => manageRemoveFilter(
-                          currentFilter.id,
-                          filterKey,
-                          filterOperator,
-                        )
-                      : undefined
-                  }
                 />
+                {/*
+                  A separate, sibling remove button — not MUI Chip's
+                  onDelete/deleteIcon slot — because Chip itself becomes a
+                  focusable ButtonBase (role="button", tabIndex 0) as soon as
+                  onDelete is set. Nesting a focusable IconButton inside that
+                  focusable Chip would create invalid, ambiguous nested
+                  interactive controls for assistive tech.
+                */}
+                {(isReadWriteFilter && authorizeFilterRemoving) && (
+                  <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
+                    aria-label={t_i18n('Remove filter')}
+                    icon={<CloseOutlined fontSize="small" />}
+                    onClick={() => manageRemoveFilter(
+                      currentFilter.id,
+                      filterKey,
+                      filterOperator,
+                    )}
+                  />
+                )}
               </Box>
             </Tooltip>
             {isNotLastFilter && (

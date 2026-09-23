@@ -53,6 +53,8 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   const isPending = workflowInstance?.pendingStatus === 'pending';
   const pendingTransition = workflowInstance?.pendingTransition ?? null;
 
+  const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
+
   const prevIsPendingRef = useRef<boolean>(isPending);
   const prevSyncActionsRef = useRef<readonly { type: string }[] | null>(pendingTransition?.syncActions ?? null);
   useEffect(() => {
@@ -278,7 +280,13 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
       {/* Step 2: comment */}
       <Dialog
         open={currentStep === 'comment'}
-        slotProps={{ paper: { elevation: 1 } }}
+        slotProps={{
+          paper: { elevation: 1 },
+          // The Slide transition delays actual paint; focusing on mount (or
+          // even on MUI's own FocusTrap effect) can race the DOM insertion,
+          // so the comment field is only focused once fully entered.
+          transition: { onEntered: () => commentInputRef.current?.focus() },
+        }}
         keepMounted={false}
         slots={{ transition: Transition }}
         onClose={() => setWizard(null)}
@@ -291,7 +299,6 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             : t_i18n('You can optionally add a comment before changing the status.')}
         </DialogContentText>
         <TextField
-          autoFocus
           fullWidth
           multiline
           minRows={3}
@@ -301,6 +308,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
           variant="outlined"
           size="small"
           required={wizard?.commentMode === CommentMode.required}
+          inputRef={commentInputRef}
           slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
           helperText={`${commentValue.length} / ${COMMENT_MAX_LENGTH}`}
         />

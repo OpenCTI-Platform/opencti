@@ -70,7 +70,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
-  const onCLick = deactivatePopoverMenu ? () => { } : onClickLabel;
+  const onClick = deactivatePopoverMenu ? () => { } : onClickLabel;
 
   const buttonStyles = {
     minWidth: 'unset',
@@ -100,7 +100,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <Button
           type="button"
           sx={buttonStyles}
-          onClick={onCLick}
+          onClick={onClick}
         >
           <strong>
             {label}
@@ -120,7 +120,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <Button
           type="button"
           sx={buttonStyles}
-          onClick={onCLick}
+          onClick={onClick}
         >
           <strong>
             {label}
@@ -143,7 +143,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <Button
           type="button"
           sx={buttonStyles}
-          onClick={onCLick}
+          onClick={onClick}
         >
           <strong>
             {label}
@@ -240,8 +240,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         borderRadius: 0,
                         margin: '0 2px 0 0',
                         fontFamily: 'Consolas, monaco, monospace',
+                        cursor: operatorOnClick ? 'pointer' : 'default',
                       }}
                       onClick={operatorOnClick}
+                      disabled={!operatorOnClick}
                     >
                       ,
                     </Button>
@@ -249,7 +251,12 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 }
                 {last(filterValues) !== id && !isRegardingOfFilter
                   && (
-                    <Button type="button" sx={localModeStyle} onClick={operatorOnClick}>
+                    <Button
+                      type="button"
+                      sx={localModeStyle}
+                      onClick={operatorOnClick}
+                      disabled={!operatorOnClick}
+                    >
                       {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
                     </Button>
                   )
@@ -291,7 +298,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <Button
           type="button"
           sx={buttonStyles}
-          onClick={onCLick}
+          onClick={onClick}
         >
           <strong>
             {label}
@@ -370,7 +377,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         <Button
           type="button"
           sx={buttonStyles}
-          onClick={onCLick}
+          onClick={onClick}
         >
           <strong>
             {label}
@@ -388,7 +395,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <Button
         type="button"
         sx={buttonStyles}
-        onClick={onCLick}
+        onClick={onClick}
       >
         <strong>
           {label}

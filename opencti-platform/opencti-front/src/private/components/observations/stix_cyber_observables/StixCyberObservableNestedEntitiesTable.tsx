@@ -505,6 +505,11 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={getOppositeObject(data)?.entity_type} />}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
+              // This wrapper only stops the click from bubbling up to the
+              // row's own click handler; the actual interactive control
+              // (StixNestedRefRelationshipPopover's icon button) is already
+              // focusable and keyboard-operable on its own.
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
               <div style={{ marginLeft: -10 }} onClick={(e) => stopEvent(e)}>
                 <StixNestedRefRelationshipPopover
                   stixNestedRefRelationshipId={data.id}

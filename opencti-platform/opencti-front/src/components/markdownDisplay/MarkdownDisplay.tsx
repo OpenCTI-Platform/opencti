@@ -13,6 +13,7 @@ import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/core/markdownImagePre
 import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
 import { normalizeEmbeddedImageDestinations, resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
 import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
+import { useFormatter } from '../i18n';
 
 const markdownStyle: React.CSSProperties = {
   overflowWrap: 'break-word',
@@ -95,6 +96,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   enableImagePreviewModal = false,
 }) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
@@ -147,7 +149,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
       const imageIndex = previewImages.findIndex((image) => image.src === resolvedUrl);
       const canOpenPreview = enableImagePreviewModal && imageIndex >= 0;
 
-      return (
+      const imageNode = (
         <img
           src={resolvedUrl}
           alt={alt || ''}
@@ -156,15 +158,34 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
             maxHeight: '200px',
             cursor: canOpenPreview ? 'zoom-in' : undefined,
           }}
+          {...imgProps}
+        />
+      );
+
+      if (!canOpenPreview) {
+        return imageNode;
+      }
+
+      return (
+        <button
+          type="button"
           onClick={(event) => {
-            if (!canOpenPreview) {
-              return;
-            }
             event.stopPropagation();
             setPreviewImageIndex(imageIndex);
           }}
-          {...imgProps}
-        />
+          // A valid Markdown image can have an empty alt (`![](url)`); once
+          // wrapped in a button, that would leave a focusable control with
+          // no accessible name, so fall back to a generic translated label.
+          aria-label={alt || t_i18n('Image preview')}
+          style={{
+            border: 'none',
+            padding: 0,
+            background: 'none',
+            cursor: 'zoom-in',
+          }}
+        >
+          {imageNode}
+        </button>
       );
     },
   }), [enableImagePreviewModal, previewImages, resolveMarkdownImageUrl]);
@@ -267,7 +288,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   } else {
     markdownDisplayContent = (
       <>
-        <div onClick={(event) => browseLinkWarning(event)}>
+        <div onClickCapture={(event) => browseLinkWarning(event)}>
           {markdownRender}
         </div>
         <ExternalLinkPopover

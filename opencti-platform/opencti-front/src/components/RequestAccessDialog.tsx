@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
@@ -53,6 +53,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { me } = useAuth();
+  const reasonInputRef = useRef<HTMLInputElement | null>(null);
   const meResolvedId = me.id;
   let initialOrganization: FieldOption = { value: '', label: '' };
   if (me?.objectOrganization && me?.objectOrganization?.edges?.length > 0) {
@@ -106,6 +107,9 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
             className: fdsLayerClass(SURFACE_LAYER),
             sx: { ...layerInputVars },
           },
+          // MUI's transition mounts asynchronously; focusing on mount would
+          // race the DOM insertion, so wait for it to fully enter instead.
+          transition: { onEntered: () => reasonInputRef.current?.focus() },
         }}
         keepMounted={true}
         fullWidth={true}
@@ -127,6 +131,9 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                       {t_i18n('Your organization does not have permission...')}
                     </DialogContentText>
                     <Field
+                      innerRef={(node: HTMLInputElement | null) => {
+                        reasonInputRef.current = node;
+                      }}
                       component={TextField}
                       name="request_access_reason"
                       label={t_i18n('Enter justification for requesting access to this knowledge')}
@@ -136,7 +143,6 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                       askAi={false}
                       multiline={true}
                       minRows={5}
-                      autoFocus
                     />
                     <MyOrganizationField
                       name="organizations"
