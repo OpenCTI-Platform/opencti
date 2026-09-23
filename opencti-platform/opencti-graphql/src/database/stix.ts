@@ -341,6 +341,13 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_MEDIA_CONTENT}`]: [
     { name: RELATION_PUBLISHES, type: REL_NEW },
   ],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+    { name: RELATION_OWNS, type: REL_EXTENDED },
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_PUBLISHES, type: REL_EXTENDED },
+  ],
   // endregion
   // region SECTOR
   [`${ENTITY_TYPE_IDENTITY_SECTOR}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [
@@ -467,6 +474,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_INCIDENT}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_PUBLISHES, type: REL_EXTENDED },
   ],
   // endregion
   // region INDICATOR
@@ -658,6 +671,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_CAMPAIGN}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED },
   ],
+  [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_PUBLISHES, type: REL_EXTENDED },
+  ],
   // endregion
   // region POSITION
   [`${ENTITY_TYPE_LOCATION_POSITION}_${ENTITY_TYPE_LOCATION_CITY}`]: [
@@ -815,6 +834,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_VULNERABILITY}`]: [
     { name: RELATION_HAS, type: REL_EXTENDED },
   ],
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+    { name: RELATION_OWNS, type: REL_EXTENDED },
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_PUBLISHES, type: REL_EXTENDED },
+  ],
   // endregion
   // region SECURITY_PLATFORM
   [`${ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -890,6 +915,13 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+    { name: RELATION_OWNS, type: REL_EXTENDED },
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_PUBLISHES, type: REL_EXTENDED },
   ],
   // endregion
   // region THREAT_ACTOR_GROUP
@@ -970,6 +1002,13 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+    { name: RELATION_OWNS, type: REL_EXTENDED },
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_PUBLISHES, type: REL_EXTENDED },
   ],
   // endregion
 
@@ -1327,6 +1366,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [
     { name: RELATION_LOCATED_AT, type: REL_EXTENDED },
     { name: RELATION_ORIGINATES_FROM, type: REL_EXTENDED },
+    { name: RELATION_REVOKED_BY, type: REL_EXTENDED },
   ],
   [`${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}_${ENTITY_TYPE_LOCATION_CITY}`]: [
     { name: RELATION_LOCATED_AT, type: REL_EXTENDED },
@@ -1339,26 +1379,34 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
-    { name: RELATION_USES, type: REL_EXTENDED },
-    { name: RELATION_OWNS, type: REL_EXTENDED },
+    { name: RELATION_TRANSFERRED_TO, type: REL_EXTENDED },
   ],
   [`${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
-    { name: RELATION_USES, type: REL_EXTENDED },
     { name: RELATION_REVOKED_BY, type: REL_EXTENDED },
+    { name: RELATION_TRANSFERRED_TO, type: REL_EXTENDED },
   ],
   [`${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-    { name: RELATION_OWNS, type: REL_EXTENDED },
-    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
+    { name: RELATION_TRANSFERRED_TO, type: REL_EXTENDED },
   ],
   [`${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-    { name: RELATION_OWNS, type: REL_EXTENDED },
-    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_TRANSFERRED_TO, type: REL_EXTENDED },
+  ],
+  [`${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}_${ENTITY_TYPE_INTRUSION_SET}`]: [
+    { name: RELATION_TRANSFERRED_TO, type: REL_EXTENDED },
   ],
   // endregion
 
+  // region THREAT_ACTOR_INDIVIDUAL
+  [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+    { name: RELATION_OWNS, type: REL_EXTENDED },
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
+    { name: RELATION_HAS, type: REL_EXTENDED },
+    { name: RELATION_PUBLISHES, type: REL_EXTENDED },
+  ],
+  // endregion
 };
 
 export const checkStixCoreRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
