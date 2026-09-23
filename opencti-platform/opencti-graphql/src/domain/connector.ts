@@ -67,6 +67,7 @@ import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -257,6 +258,7 @@ export const managedConnectorAdd = async (
   user: AuthUser,
   input: AddManagedConnectorInput,
 ) => {
+  await checkEnterpriseEdition(context);
   // Get contract
   const contractsMap = await getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(input.manager_contract_image);

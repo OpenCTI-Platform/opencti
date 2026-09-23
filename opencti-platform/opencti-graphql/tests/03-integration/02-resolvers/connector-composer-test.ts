@@ -10,6 +10,7 @@ import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
 import { resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
 import * as UserActionListener from '../../../src/listener/UserActionListener';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -1194,6 +1195,36 @@ describe('Connector Composer and Managed Connectors', () => {
 
   describe('Managed Connector operations', () => {
     let managedConnectorId: string;
+
+    it('should reject adding a managed connector when enterprise edition is disabled', async () => {
+      const checkEnterpriseEditionSpy = vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition')
+        .mockRejectedValueOnce(new Error('Enterprise edition is not enabled'));
+
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const catalogId = catalogHelper.getCatalogId();
+
+      const input = {
+        name: 'CE Managed Connector',
+        user_id: TEST_USER_CONNECTOR_ID,
+        catalog_id: catalogId,
+        manager_contract_image: testConnector.container_image,
+        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
+          IPINFO_TOKEN: 'ce-test-token',
+          ...ipinfoProperties,
+        }),
+      };
+
+      await queryAsAdminWithError(
+        {
+          query: ADD_MANAGED_CONNECTOR_MUTATION,
+          variables: { input },
+        },
+        'Enterprise edition is not enabled',
+      );
+
+      expect(checkEnterpriseEditionSpy).toHaveBeenCalled();
+      checkEnterpriseEditionSpy.mockRestore();
+    });
 
     it('should fail to add managed connector with invalid image', async () => {
       const catalogId = catalogHelper.getCatalogId();

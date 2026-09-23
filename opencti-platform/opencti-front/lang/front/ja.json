@@ -785,6 +785,7 @@
   "Connector catalog | Ingestion | Data": "コネクターカタログ｜インジェスト｜データ",
   "Connector catalogs": "コネクタカタログ",
   "Connector configuration": "コネクタ構成",
+  "Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.": "コネクタの展開には、OpenCTI Enterprise Edition が必要です。Community Edition では、この設定は読み取り専用となります。",
   "Connector name": "コネクタ名",
   "Connector type": "コネクタタイプ",
   "Connector types": "コネクタの種類",
