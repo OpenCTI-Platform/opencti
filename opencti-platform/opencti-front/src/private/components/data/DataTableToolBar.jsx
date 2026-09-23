@@ -862,7 +862,7 @@ class DataTableToolBar extends Component {
       return `${t(
         'Copy disabled: too many selected elements (maximum number of elements for a copy: ',
       ) + maxNumberOfObservablesToCopy
-        })`;
+      })`;
     }
     return t('Copy to clipboard');
   }
@@ -928,17 +928,17 @@ class DataTableToolBar extends Component {
     const finalActions = taskScope === 'USER'
       ? this.getUserDatatableFinalActions(actions)
       : actions.map(
-        (n) => ({
-          type: n.type,
-          context: n.context
-            ? {
-              ...n.context,
-              values: n.context.values.map((o) => this.constructor.normalizeActionValue(o)),
-            }
-            : null,
-          containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-        }),
-      );
+          (n) => ({
+            type: n.type,
+            context: n.context
+              ? {
+                  ...n.context,
+                  values: n.context.values.map((o) => this.constructor.normalizeActionValue(o)),
+                }
+              : null,
+            containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
+          }),
+        );
 
     if (selectAll) {
       commitMutation({
@@ -2380,13 +2380,13 @@ class DataTableToolBar extends Component {
                 .filter((name) => name !== keptElement.name);
               const aliases = keptElement.aliases !== null
                 ? selectedElementsList
-                  .map((el) => el.aliases)
-                  .flat()
-                  .filter((alias) => alias !== null && alias !== undefined)
+                    .map((el) => el.aliases)
+                    .flat()
+                    .filter((alias) => alias !== null && alias !== undefined)
                 : selectedElementsList
-                  .map((el) => el.x_opencti_aliases)
-                  .flat()
-                  .filter((alias) => alias !== null && alias !== undefined);
+                    .map((el) => el.x_opencti_aliases)
+                    .flat()
+                    .filter((alias) => alias !== null && alias !== undefined);
 
               newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
             }
@@ -2860,15 +2860,15 @@ class DataTableToolBar extends Component {
                             <span>
                               {mergingElement
                                 ? truncate(
-                                  R.join(', ', [
-                                    getMainRepresentative(mergingElement),
-                                  ]),
-                                  80,
-                                )
+                                    R.join(', ', [
+                                      getMainRepresentative(mergingElement),
+                                    ]),
+                                    80,
+                                  )
                                 : truncate(
-                                  selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
-                                  80,
-                                )}
+                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
+                                    80,
+                                  )}
                             </span>
                           )}
                         </TableCell>

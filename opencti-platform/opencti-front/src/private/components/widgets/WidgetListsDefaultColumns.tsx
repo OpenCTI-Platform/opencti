@@ -1,6 +1,5 @@
 import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import CitizenshipDocument from '@components/entities/citizenshipDocuments/CitizenshipDocument';
 
 const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
