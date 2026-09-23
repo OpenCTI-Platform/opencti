@@ -56,9 +56,9 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
   if (connector.connector_type !== 'INTERNAL_ENRICHMENT') {
     return []; // only for enrichment
   }
+  // filter to keep only stixFilters
   const entityTypes = useGetConnectorFilterEntityTypes(connector);
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
-  // filter to keep only stixFilters
   const stixFilters = useStixFilters();
   availableFilterKeys = availableFilterKeys.filter((key) => stixFilters.includes(key));
   return availableFilterKeys;

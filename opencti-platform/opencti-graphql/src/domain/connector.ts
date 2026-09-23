@@ -503,7 +503,7 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
     const jsonFilters = JSON.parse(filtersItem.value[0]);
     if (isFilterGroupNotEmpty(jsonFilters)) {
       // our stix matching is currently limited, we need to validate the input filters
-      validateFilterGroupForStixMatch(jsonFilters);
+      await validateFilterGroupForStixMatch(context, user, jsonFilters);
     } else {
       filtersItem.value[0] = ''; // empty filter
     }

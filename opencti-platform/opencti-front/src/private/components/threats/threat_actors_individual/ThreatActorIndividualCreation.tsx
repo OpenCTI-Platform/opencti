@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -222,6 +225,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: ThreatActorIndividualCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(uploadedFile),
         name,
         description: values?.description,
@@ -307,6 +311,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
 
   return (
     <Formik<ThreatActorIndividualAddInput>
+      entityType={THREAT_ACTOR_INDIVIDUAL_TYPE}
       initialValues={initialValues}
       validationSchema={threatActorIndividualValidator}
       validateOnChange={true}
@@ -635,6 +640,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 />
               </TabsContent>
             </Tabs>
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

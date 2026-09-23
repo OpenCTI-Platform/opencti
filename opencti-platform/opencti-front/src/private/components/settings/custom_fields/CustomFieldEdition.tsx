@@ -7,6 +7,7 @@ import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxFie
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleError } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import ComboboxFieldComponent, { asMultiValue } from '../../../../components/ComboboxField';
 import { CustomFieldEdition_customFieldDefinition$key } from './__generated__/CustomFieldEdition_customFieldDefinition.graphql';
 import TextareaField from '../../../../components/TextareaField';
 
@@ -15,6 +16,7 @@ export const CustomFieldEditionFragment = graphql`
     id
     name
     label
+    aliases
     field_type
     description
     min_value
@@ -28,6 +30,7 @@ const customFieldMutationFieldPatch = graphql`
     customFieldDefinitionFieldPatch(id: $id, input: $input) {
       id
       label
+      aliases
       description
       min_value
       max_value
@@ -38,6 +41,7 @@ const customFieldMutationFieldPatch = graphql`
 
 const customFieldValidation = (t: (name: string) => string) => Yup.object().shape({
   label: Yup.string().required(t('This field is required')),
+  aliases: Yup.array().of(Yup.string()),
   description: Yup.string().nullable(),
   min_value: Yup.number().nullable(),
   max_value: Yup.number().nullable(),
@@ -54,7 +58,10 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
 }) => {
   const data = useFragment(CustomFieldEditionFragment, customFieldDefinition);
   const { t_i18n } = useFormatter();
-  const initialValues = pick(['name', 'label', 'field_type', 'description', 'min_value', 'max_value', 'select_options'], data);
+  const initialValues = {
+    ...pick(['name', 'label', 'field_type', 'description', 'min_value', 'max_value', 'select_options'], data),
+    aliases: [...(data.aliases ?? [])],
+  };
 
   const handleSubmitField = (name: string, value: string | string[] | number | null) => {
     customFieldValidation(t_i18n)
@@ -111,6 +118,18 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             fullWidth={true}
             className="mt-5"
             onSubmit={handleSubmitField}
+          />
+          <Field
+            component={ComboboxFieldComponent<string>}
+            name="aliases"
+            label={t_i18n('Aliases')}
+            multiple
+            options={[]}
+            allowCustomValue
+            createValueFromInput={(input: string) => input}
+            placeholder={t_i18n('Type and press Enter to add items')}
+            className="mt-5"
+            onInternalChange={asMultiValue<string>(handleSubmitField)}
           />
           {data.field_type === 'integer' && (
             <>

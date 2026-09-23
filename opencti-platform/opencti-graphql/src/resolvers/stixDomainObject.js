@@ -72,6 +72,7 @@ const stixDomainObjectResolvers = {
     pirInformation: (stixDomainObject, { pirId }, context) => stixDomainObjectPirInformation(context, context.user, stixDomainObject, pirId),
     filesFromTemplate: (stixDomainObject, { first, prefixMimeType }, context) => getFilesFromTemplate(context, context.user, stixDomainObject, { first, prefixMimeType }),
     fintelTemplates: (stixDomainObject, _, context) => getFintelTemplates(context, context.user, stixDomainObject),
+    customFieldValues: (stixDomainObject) => stixDomainObject.custom_field_values ?? [],
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

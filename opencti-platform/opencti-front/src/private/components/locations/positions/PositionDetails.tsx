@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { Chip } from '@filigran/design-system';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -241,6 +242,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               ))}
             </FieldOrEmpty>
           </Grid>
+          <CustomFieldValuesDisplay entityType={position.entity_type} values={position.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>
