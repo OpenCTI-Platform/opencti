@@ -64,9 +64,7 @@ describe('Telemetry manager test coverage', () => {
     let shareWithCreatorFilterId: string;
 
     beforeAll(async () => {
-      // The permission changes counter is a cumulative Redis gauge, and other tests of the
-      // suite feed it. Start from a clean state so it reflects this test only, the way the
-      // other telemetry tests of this file already do.
+      // The counters are cumulative and other tests of the suite feed them.
       await redisClearTelemetry();
 
       // create shared saved filters

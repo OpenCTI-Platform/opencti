@@ -157,6 +157,9 @@ export const stixFilters = [
   'note_types',
   'incident_type',
   'description',
+  'x_opencti_ssvc_exploitation',
+  'x_opencti_ssvc_automatable',
+  'x_opencti_ssvc_technical_impact',
 ];
 
 // ----------------------------------------------------------------------------------------------------------------------

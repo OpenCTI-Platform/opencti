@@ -4,11 +4,13 @@
   "private": true,
   "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
   "engines": {
-    "node": ">= 22.0.0"
+    "node": ">= 22.18.0"
   },
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
     "dev": "nx run-many --target dev",
+    "dev:watch": "nx run-many --target dev:watch",
+    "dev:watch-with-graphql": "nx run-many --tuiAutoExit --target dev:watch-with-graphql",
     "build": "nx run-many --tuiAutoExit --target build",
     "test": "nx run-many --tuiAutoExit --target test,e2e",
     "lint": "nx run-many --tuiAutoExit --target lint",
@@ -17,13 +19,15 @@
     "deps:venv": "yarn with-python-venv yarn deps",
     "build:venv": "yarn with-python-venv yarn build",
     "dev:venv": "yarn with-python-venv yarn dev",
+    "dev:watch:venv": "yarn with-python-venv yarn dev:watch",
+    "dev:watch-with-graphql:venv": "yarn with-python-venv yarn dev:watch-with-graphql",
     "test:venv": "yarn with-python-venv yarn test",
     "build:ubi9": "nx run-many --tuiAutoExit --target build-ubi9",
     "push:ubi9": "nx run-many --tuiAutoExit --target push-ubi9",
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
   "devDependencies": {
-    "nx": "23.2.0"
+    "nx": "23.2.1"
   },
   "resolutions": {
     "axios": "1.20.0"

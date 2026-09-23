@@ -156,6 +156,8 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'first_observed', label: 'First observed', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_observed', label: 'Last observed', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'number_observed', label: 'Number observed', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'number_seen', label: 'Number seen', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'max_distinct_count', label: 'Max distinct count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_mapping', label: 'Content mapping', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],

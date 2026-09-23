@@ -100,6 +100,7 @@ const IngestionCatalogConnectorComponent = ({
 
 const IngestionCatalogConnector = () => {
   const { connectorSlug } = useParams();
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const [searchParams] = useSearchParams();
   const shouldAutoOpen = searchParams.get(SEARCH_PARAMS.OPEN_CONFIG) === 'true';
@@ -130,6 +131,7 @@ const IngestionCatalogConnector = () => {
             connector={catalogState.selectedConnector}
             onClose={handleCloseDeployDialog}
             catalogId={catalogState.selectedCatalogId}
+            isEnterpriseEdition={isEnterpriseEdition}
             hasActiveManagers={catalogState.hasActiveManagers}
             onCreate={handleCreate}
             deploymentCount={catalogState.deploymentCount}

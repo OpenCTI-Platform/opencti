@@ -17,7 +17,6 @@ import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import type { OverridableStringUnion } from '@mui/types';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
 import moment from 'moment';
 import { isEmpty } from 'ramda';
@@ -141,7 +140,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const isImportActive = () => connectors && connectors.filter((x) => x.data.active).length > 0;
   const fileDeleteDraftDisabled = !!draftContext && !file?.draftVersion;
-  let deleteFileColor: OverridableStringUnion<'inherit' | 'disabled' | 'primary'> = 'primary';
+  let deleteFileColor: 'inherit' | 'disabled' | 'primary' = 'primary';
   if (nested) {
     deleteFileColor = 'inherit';
   } else if (fileDeleteDraftDisabled) {

@@ -31,8 +31,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
   const valueString = entityType
     ? t_i18n(`entity_${entityType}`)
     : t_i18n('Entity');
-  const defaultButtonValue = t_i18n('', {
-    id: 'Create ...',
+  const defaultButtonValue = t_i18n('Create {entity_type}', {
     values: { entity_type: valueString },
   });
 

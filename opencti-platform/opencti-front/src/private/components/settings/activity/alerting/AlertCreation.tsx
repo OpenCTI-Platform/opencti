@@ -46,16 +46,14 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
         sx={{ marginRight: theme.spacing(1) }}
         onClick={handleOpenCreateDigest}
       >
-        {t_i18n('', {
-          id: 'Create ...',
+        {t_i18n('Create {entity_type}', {
           values: { entity_type: t_i18n('Regular digest') },
         })}
       </Button>
       <Button
         onClick={handleOpenCreateLive}
       >
-        {t_i18n('', {
-          id: 'Create ...',
+        {t_i18n('Create {entity_type}', {
           values: { entity_type: t_i18n('Live trigger') },
         })}
       </Button>

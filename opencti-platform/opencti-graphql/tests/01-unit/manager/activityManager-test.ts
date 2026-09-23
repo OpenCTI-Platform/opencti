@@ -42,4 +42,3 @@ describe('Activity manager - isLiveActivity', () => {
     expect(isLiveActivity(trigger)).toBe(false);
   });
 });
-

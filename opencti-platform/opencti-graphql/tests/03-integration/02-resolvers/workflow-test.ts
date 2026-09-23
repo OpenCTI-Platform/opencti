@@ -7,6 +7,7 @@ import { FilterMode } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { findByType } from '../../../src/domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { wait } from '../../../src/database/utils';
 
 // Directly query the store for the WorkflowInstance attached to an entity,
 // mirroring the lookup used internally by workflow-domain.ts.
@@ -768,6 +769,15 @@ describe('Workflow Resolver', () => {
           }
         }
       `;
+      const STIX_DOMAIN_OBJECT_STATUS_QUERY = gql`
+        query StixDomainObjectStatus($id: String!) {
+          stixDomainObject(id: $id) {
+            status {
+              id
+            }
+          }
+        }
+      `;
 
       let reportId: string;
       let secondStatusId: string;
@@ -792,8 +802,16 @@ describe('Workflow Resolver', () => {
           variables: { entityType: 'Report' },
         });
 
+        // Patching to the current status writes nothing, and emits no stream event.
+        const currentStatusResult = await queryAsAdmin({
+          query: STIX_DOMAIN_OBJECT_STATUS_QUERY,
+          variables: { id: reportId },
+        });
+        const currentStatusId = currentStatusResult.data?.stixDomainObject?.status?.id;
         const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
-        secondStatusId = statuses[1].id;
+        const otherStatus = statuses.find((status) => status.id !== currentStatusId);
+        if (!otherStatus) throw new Error('No Report status different from the current one');
+        secondStatusId = otherStatus.id;
       });
 
       afterAll(async () => {
@@ -812,10 +830,22 @@ describe('Workflow Resolver', () => {
         const beforePatch = await findWorkflowInstance(reportId);
         expect(beforePatch).toBeUndefined();
 
-        await queryAsAdmin({
-          query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
-          variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
-        });
+        let statusAfterPatch: string | undefined;
+        for (let attempt = 0; attempt < 20 && statusAfterPatch !== secondStatusId; attempt += 1) {
+          if (attempt > 0) {
+            await wait(500);
+          }
+          await queryAsAdmin({
+            query: STIX_DOMAIN_OBJECT_FIELD_PATCH_MUTATION,
+            variables: { id: reportId, input: { key: 'x_opencti_workflow_id', value: [secondStatusId] } },
+          });
+          const statusResult = await queryAsAdmin({
+            query: STIX_DOMAIN_OBJECT_STATUS_QUERY,
+            variables: { id: reportId },
+          });
+          statusAfterPatch = statusResult.data?.stixDomainObject?.status?.id;
+        }
+        expect(statusAfterPatch).toBe(secondStatusId);
 
         // Patching the legacy status field should have lazily triggered initializeEntityWorkflow,
         // which in turn calls ensureWorkflowInstance since no instance existed for this entity yet.

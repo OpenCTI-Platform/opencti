@@ -28,4 +28,3 @@ export const EXPECTED_IMEI = {
   score: 50,
   external_references: [],
 };
-

@@ -16,8 +16,8 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'IPv4-Addr'
-        }
+          value: 'IPv4-Addr',
+        },
       },
       attributes: [
         {
@@ -31,8 +31,8 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'W',
           },
-        }
-      ]
+        },
+      ],
     }, {
       id: 'representationUrl',
       type: CsvMapperRepresentationType.Entity,
@@ -41,8 +41,8 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'Url'
-        }
+          value: 'Url',
+        },
       },
       attributes: [
         {
@@ -56,8 +56,8 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'W',
           },
-        }
-      ]
+        },
+      ],
     }, {
       id: 'representationIndividual',
       type: CsvMapperRepresentationType.Entity,
@@ -70,8 +70,8 @@ export const csvMapperDynamicIpAndUrl: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'A',
           },
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };

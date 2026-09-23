@@ -48,6 +48,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:admin:password           | APP__ADMIN__PASSWORD           | ChangeMe              | Default password of the admin user                                                                                                                                               |
 | app:admin:token              | APP__ADMIN__TOKEN              | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                                                           |
 | app:health_access_key        | APP__HEALTH_ACCESS_KEY         | ChangeMe              | Access key for the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe`                                     |
+| app:health_monitoring:dependency_check_interval | APP__HEALTH_MONITORING__DEPENDENCY_CHECK_INTERVAL | 30000 | Interval in milliseconds between two dependency checks (ElasticSearch/OpenSearch, S3/MinIO, RabbitMQ, Redis). The `/health` endpoint answers from the state collected by these checks. |
+| app:health_monitoring:usage_metrics_interval | APP__HEALTH_MONITORING__USAGE_METRICS_INTERVAL | 300000 | Interval in milliseconds between two collections of storage and ingestion usage metrics, collected by the `platform_usage_metrics_manager` and shared across the cluster through Redis. Also the polling interval every node uses to adopt that shared value. Set to `0` to disable the collection.                                                 |
 | app:liveness_port            | APP__LIVENESS_PORT             | null (disabled)       | Port for the [liveness probe](advanced/liveness-probe.md) HTTP server. Starts immediately on process launch, before platform initialization.                                     |
 | app:auth_payload_body_size   | APP__AUTH_PAYLOAD_BODY_SIZE    |                       | Maximum payload body size for SSO/SAML. Controls the Express body-parser `limit` setting (defaults to 100kb). See https://expressjs.com/en/resources/middleware/body-parser.html |
 
@@ -194,6 +196,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | redis:namespace            | REDIS__NAMESPACE            |               | Namespace (to use as prefix)                                                          |
 | redis:hostname             | REDIS__HOSTNAME             | localhost     | Hostname of the Redis Server                                                          |
 | redis:hostnames            | REDIS__HOSTNAMES            |               | Hostnames definition for Redis cluster or sentinel mode: a list of host:port objects. |
+| redis:tls_servername       | REDIS__TLS_SERVERNAME       |               | Optional shared server name used for TLS SNI and certificate validation. In cluster mode, leave empty to validate each node individually. |
 | redis:port                 | REDIS__PORT                 | 6379          | Port of the Redis Server                                                              |
 | redis:sentinel_master_name | REDIS__SENTINEL_MASTER_NAME |               | Name of your Redis Sentinel Master (mandatory in sentinel mode)                       |
 | redis:sentinel_username    | REDIS__SENTINEL_USERNAME    |               | Username to authenticate on Redis Sentinel                                            |
@@ -483,6 +486,9 @@ Environment variables:
 | indicator_decay_manager:interval                     | INDICATOR_DECAY_MANAGER__INTERVAL                     | 60000                            | Interval to check for indicators to update                                                                                                     |
 | indicator_decay_manager:batch_size                   | INDICATOR_DECAY_MANAGER__BATCH_SIZE                   | 10000                            | Number of indicators handled by the manager                                                                                                    |
 | -                                                    | -                                                     | -                                | -                                                                                                                                              |
+| platform_usage_metrics_manager:enabled               | PLATFORM_USAGE_METRICS_MANAGER__ENABLED               | `true`                           | Enable/disable the manager that collects storage and ingestion usage metrics. Interval and TTL are shared with `app:health_monitoring:usage_metrics_interval`. |
+| platform_usage_metrics_manager:lock_key              | PLATFORM_USAGE_METRICS_MANAGER__LOCK_KEY              | platform_usage_metrics_manager_lock | Lock key for the manager in Redis                                                                                                           |
+| -                                                    | -                                                     | -                                | -                                                                                                                                              |
 | garbage_collection_manager:enabled                   | GARBAGE_COLLECTION_MANAGER__ENABLED                   | `true`                           | Enable/disable the trash manager                                                                                                               |
 | garbage_collection_manager:lock_key                  | GARBAGE_COLLECTION_MANAGER__LOCK_KEY                  | garbage_collection_manager_lock  | Lock key for the manager in Redis                                                                                                              |
 | garbage_collection_manager:interval                  | GARBAGE_COLLECTION_MANAGER__INTERVAL                  | 60000                            | Interval to check for trash elements to delete                                                                                                 |
@@ -525,6 +531,16 @@ Can be configured manually using the configuration file `config.yml` or through 
 | Parameter               | Environment variable    | Default value | Description                                                                                                                                                              |
 |:------------------------|:------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | worker:objects_max_refs | WORKER_OBJECTS_MAX_REFS | 0             | The refs amount threshold: if set to a value higher than 0, all objects that have a number of refs higher than this will be sent to a dead letter queue and not ingested |
+
+#### Missing-reference retry schedule
+
+When the platform rejects an object because a referenced entity is not ingested yet (`MISSING_REFERENCE_ERROR`), the worker waits and retries up to 4 times. By default it waits a flat random 1 to 3 seconds before each retry. The exponential schedule waits less on the first retry and more on the last ones (0.5 s, 1 s, 2 s, 4 s on average, with jitter), which fits the common case where the referenced entity lands a fraction of a second later. These settings are environment variables only (read by the `pycti` library, so they also apply to connectors importing bundles directly).
+
+| Parameter | Environment variable                      | Default value | Description                                                                                                      |
+|:----------|:------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------------------|
+| -         | OPENCTI_MISSING_REF_RETRY_EXPONENTIAL     | false         | Enable the exponential retry schedule for missing references (`true` / `false`)                                  |
+| -         | OPENCTI_MISSING_REF_RETRY_INITIAL_DELAY   | 0.5           | Exponential schedule only: average wait in seconds before the first retry (minimum 0)                            |
+| -         | OPENCTI_MISSING_REF_RETRY_FACTOR          | 2             | Exponential schedule only: multiplier applied to the wait at each retry (minimum 1, 1 = constant wait)           |
 
 #### Telemetry
 

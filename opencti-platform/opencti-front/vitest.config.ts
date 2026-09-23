@@ -22,10 +22,10 @@ export default defineConfig({
         'tests-results/**',
         'packages/**',
         '**/__generated__',
-      ]
-    }
+      ],
+    },
   },
   resolve: {
     tsconfigPaths: true,
   },
-})
+});

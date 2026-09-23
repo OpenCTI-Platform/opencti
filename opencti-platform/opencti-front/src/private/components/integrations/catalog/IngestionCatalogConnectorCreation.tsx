@@ -43,6 +43,7 @@ import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/integrations/catalog/IngestionCatalogUnverifiedDeploymentPopover';
+import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
@@ -98,6 +99,7 @@ interface IngestionCatalogConnectorCreationProps {
   open: boolean;
   onClose: () => void;
   catalogId: string;
+  isEnterpriseEdition: boolean;
   hasActiveManagers: boolean;
   deploymentCount?: number;
   onCreate?: (connectorId: string) => void;
@@ -121,7 +123,14 @@ const validationSchema = Yup.object().shape({
 });
 
 const IngestionCatalogConnectorCreation = ({
-  connector, open, onClose, catalogId, hasActiveManagers, deploymentCount = 0, onCreate,
+  connector,
+  open,
+  onClose,
+  catalogId,
+  isEnterpriseEdition,
+  hasActiveManagers,
+  deploymentCount = 0,
+  onCreate,
 }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -330,10 +339,15 @@ const IngestionCatalogConnectorCreation = ({
           >
             {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
               const errors = compiledValidator?.validate(values)?.errors;
+              const canDeployConnector = hasActiveManagers && isEnterpriseEdition;
+              const disableForm = !canDeployConnector;
 
               const disableCreate = !isValid || isSubmitting || !!errors?.[0];
 
               const createConnectorDeployment = () => {
+                if (!canDeployConnector) {
+                  return;
+                }
                 submitConnectorManagementCreation(values, {
                   setSubmitting,
                   resetForm,
@@ -350,12 +364,18 @@ const IngestionCatalogConnectorCreation = ({
 
               return (
                 <Form>
+                  {!isEnterpriseEdition && (
+                    <Alert severity="warning" variant="outlined">
+                      {t_i18n('Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.')}
+                    </Alert>
+                  )}
+
                   <fieldset
-                    disabled={!hasActiveManagers}
+                    disabled={disableForm}
                     style={{
                       border: 'none',
                       padding: 0,
-                      ...(!hasActiveManagers && { opacity: 0.5, pointerEvents: 'none' }),
+                      ...(disableForm && { opacity: 0.5, pointerEvents: 'none' }),
                     }}
                   >
                     <Field
@@ -446,7 +466,7 @@ const IngestionCatalogConnectorCreation = ({
                     )}
                   </fieldset>
 
-                  <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: theme.spacing(1), marginTop: theme.spacing(2) }}>
                     <Button
                       variant="secondary"
                       onClick={() => {
@@ -457,14 +477,23 @@ const IngestionCatalogConnectorCreation = ({
                     </Button>
                     {
                       hasActiveManagers && (
-                        <Button
-                        // color="secondary"
-                          style={{ marginLeft: theme.spacing(2) }}
-                          onClick={handleCreate}
-                          disabled={disableCreate}
-                        >
-                          {t_i18n('Create')}
-                        </Button>
+                        isEnterpriseEdition ? (
+                          <Button
+                            onClick={handleCreate}
+                            disabled={disableCreate}
+                          >
+                            {t_i18n('Create')}
+                          </Button>
+                        ) : (
+                          <EnterpriseEditionButton
+                            title="Create"
+                            feature="Connector deployment"
+                            withEEChip
+                            inLine
+                            size="default"
+                            withIcon={false}
+                          />
+                        )
                       )
                     }
                   </div>

@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
+import { KnowledgeBarRefreshEvent } from '@components/common/bulk/useForceUpdate';
 import Drawer from '@components/common/drawer/Drawer';
 import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import {
@@ -41,6 +42,7 @@ import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
 } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCreationHeaderButtons';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -192,6 +194,14 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       name
       description
       security_platform_type
+    }
+    ... on SecurityCoverage {
+      name
+      description
+    }
+    ... on SecurityCoverageResult {
+      name
+      description
     }
     ... on Sector {
       name
@@ -474,7 +484,7 @@ export interface StixCoreRelationshipCreationFromEntityForm {
   killChainPhases: FieldOption[];
   objectMarking: FieldOption[];
   externalReferences: FieldOption[];
-  coverage_information?: Array<{ coverage_name: string; coverage_score: number }>;
+  coverage_information?: Array<CoverageInformation>;
 }
 
 export interface TargetEntity {
@@ -654,6 +664,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     if (typeof onCreate === 'function') {
       onCreate();
     }
+    // Update the knowledge bar counters
+    dispatchEvent(new CustomEvent(KnowledgeBarRefreshEvent));
     return true;
   };
 

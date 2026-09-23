@@ -136,6 +136,12 @@ const expandRelationshipsQuery = graphql`
               name
               description
             }
+            ... on SecurityCoverage {
+              name
+            }
+            ... on SecurityCoverageResult {
+              name
+            }
             ... on Individual {
               name
             }
@@ -375,6 +381,12 @@ const expandRelationshipsQuery = graphql`
             ... on Grouping {
               name
               description
+            }
+            ... on SecurityCoverage {
+              name
+            }
+            ... on SecurityCoverageResult {
+              name
             }
             ... on Individual {
               name

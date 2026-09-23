@@ -125,8 +125,7 @@ const EntitiesDetailsRightsBar = () => {
         variant="body1"
         sx={{ textAlign: 'right', paddingRight: '20px' }}
       >
-        {t_i18n('', {
-          id: 'objects selected',
+        {t_i18n('{count} objects selected', {
           values: {
             count: uniqSelectedEntities.length,
           },

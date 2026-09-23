@@ -23,4 +23,3 @@ export const EXPECTED_MUTEX = {
   x_opencti_external_references: [],
   name: 'Global\\MalwareMutex',
 };
-

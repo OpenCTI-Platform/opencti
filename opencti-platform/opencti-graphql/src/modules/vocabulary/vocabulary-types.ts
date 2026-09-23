@@ -34,7 +34,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
-interface VocabularyDefinition {
+export interface VocabularyDefinition {
   description?: string;
   entity_types: string[];
   fields: {
