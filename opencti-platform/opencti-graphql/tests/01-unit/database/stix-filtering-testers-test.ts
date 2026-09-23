@@ -1026,7 +1026,7 @@ describe('Stix filter testers', () => {
   describe('by SSVC attributes', () => {
     describe('Exploitation (key=x_opencti_ssvc_exploitation)', () => {
       const stixWithDirectField = { x_opencti_ssvc_exploitation: 'active' };
-      const stixWithExtensionField = { extensions: { [STIX_EXT_OCTI]: { ssvc_exploitation: 'poc' } } };
+      const stixWithExtensionField = { extensions: { [STIX_EXT_OCTI]: { ssvc_exploitation: 'proof_of_concept' } } };
       const stixWithoutField = { extensions: { [STIX_EXT_OCTI]: {} } };
 
       it('should test positive for a stix object with matching filter using the direct field', () => {
@@ -1045,7 +1045,7 @@ describe('Stix filter testers', () => {
           key: ['x_opencti_ssvc_exploitation'],
           mode: 'or',
           operator: 'eq',
-          values: ['poc'],
+          values: ['proof_of_concept'],
         } as Filter;
         expect(testers.testSsvcExploitation(stixWithExtensionField, filter)).toEqual(true);
       });
