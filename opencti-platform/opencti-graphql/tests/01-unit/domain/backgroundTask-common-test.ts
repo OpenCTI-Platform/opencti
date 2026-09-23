@@ -112,6 +112,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -127,6 +128,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -138,6 +140,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, userUpdate, input, scope, type);
@@ -149,6 +152,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_MERGE }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, userUpdate, input, scope, type);
@@ -193,7 +197,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
-        filters: filterEntityType(ENTITY_TYPE_WORKSPACE),
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -271,6 +275,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -282,6 +287,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -297,6 +303,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -308,6 +315,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -351,6 +359,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -362,6 +371,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -405,6 +415,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
@@ -416,6 +427,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }],
+        filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
