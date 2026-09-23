@@ -114,7 +114,12 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
     representations,
     skipLineChar,
   } = csvMapper;
-  const parsedRepresentations: CsvMapperRepresentation[] = JSON.parse(representations);
+  let parsedRepresentations: CsvMapperRepresentation[];
+  try {
+    parsedRepresentations = JSON.parse(representations);
+  } catch (error) {
+    throw FunctionalError('Could not parse CSV mapper: representations is not a valid JSON', { name, error });
+  }
   await convertRepresentationsIds(context, user, parsedRepresentations, 'internal');
   return JSON.stringify({
     openCTI_version: pjson.version,
