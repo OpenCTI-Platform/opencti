@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { CSS_NAMED_COLORS, hexToRGB, isWashVisibleOn, normalizeLabelColor } from './Colors';
+import { describe, it, expect, vi } from 'vitest';
+import { hexToRGB, isWashVisibleOn, normalizeLabelColor } from './Colors';
 
 describe('Function: hexToRGB', () => {
   it('should return matching rgb color', () => {
@@ -72,18 +72,148 @@ describe('Function: normalizeLabelColor', () => {
   });
 
   it('resolves CSS colour names, which is the case reported in #17238', () => {
-    expect(normalizeLabelColor('red')).toEqual('#ff0000');
-    expect(normalizeLabelColor('rebeccapurple')).toEqual('#663399');
-    expect(normalizeLabelColor('LightBlue')).toEqual('#add8e6');
+    const colors: Record<string, string> = {
+      red: '#ff0000',
+      rebeccapurple: '#663399',
+      LightBlue: '#add8e6',
+    };
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        fillStyle = colors[value] ?? value;
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      expect(normalizeLabelColor('red')).toEqual('#ff0000');
+      expect(normalizeLabelColor('rebeccapurple')).toEqual('#663399');
+      expect(normalizeLabelColor('LightBlue')).toEqual('#add8e6');
+    } finally {
+      getContext.mockRestore();
+    }
+  });
+
+  it('normalizes a CSS system color through the canvas parser', () => {
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        fillStyle = value === 'ButtonText' ? 'rgb(0, 0, 0)' : value;
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      expect(normalizeLabelColor('ButtonText')).toBe('#000000');
+    } finally {
+      getContext.mockRestore();
+    }
+  });
+
+  it('parses browser hex, rgb, and hsl return values', () => {
+    const values: Record<string, string> = {
+      'hex-color': '#abc',
+      'rgb-color': 'rgb(1, 2, 3)',
+      'hsl-color': 'hsl(0, 0%, 0%)',
+    };
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        fillStyle = values[value] ?? value;
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      expect(normalizeLabelColor('hex-color')).toBe('#aabbcc');
+      expect(normalizeLabelColor('rgb-color')).toBe('#010203');
+      expect(normalizeLabelColor('hsl-color')).toBe('#000000');
+    } finally {
+      getContext.mockRestore();
+    }
+  });
+
+  it('returns null when the canvas rejects an assignment', () => {
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        if (value !== 'not-a-color') {
+          fillStyle = value;
+        }
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      expect(normalizeLabelColor('not-a-color')).toBeNull();
+    } finally {
+      getContext.mockRestore();
+    }
+  });
+
+  it('returns null when the canvas is unavailable', () => {
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    try {
+      expect(normalizeLabelColor('ButtonText')).toBeNull();
+    } finally {
+      getContext.mockRestore();
+    }
+  });
+
+  it('rejects malformed numeric color channels', () => {
+    const invalid = new Set(['hsl(., 50%, 50%)', 'rgb(., 0, 0)', 'rgb(1.2.3, 0, 0)']);
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        if (!invalid.has(value)) {
+          fillStyle = value;
+        }
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      for (const color of invalid) {
+        expect(() => {
+          expect(normalizeLabelColor(color)).toBeNull();
+        }).not.toThrow();
+      }
+    } finally {
+      getContext.mockRestore();
+    }
   });
 
   it('converts functional notations rather than forwarding them', () => {
-    expect(normalizeLabelColor('rgb(112, 217, 7)')).toEqual('#70d907');
-    expect(normalizeLabelColor('rgb(112 217 7)')).toEqual('#70d907');
-    expect(normalizeLabelColor('rgba(112, 217, 7, 0.5)')).toEqual('#70d907');
-    expect(normalizeLabelColor('rgb(50%, 0%, 0%)')).toEqual('#800000');
-    expect(normalizeLabelColor('hsl(120, 50%, 50%)')).toEqual('#40bf40');
-    expect(normalizeLabelColor('hsla(120, 50%, 50%, 0.5)')).toEqual('#40bf40');
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        fillStyle = value;
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      expect(normalizeLabelColor('rgb(112, 217, 7)')).toEqual('#70d907');
+      expect(normalizeLabelColor('rgb(112 217 7)')).toEqual('#70d907');
+      expect(normalizeLabelColor('rgba(112, 217, 7, 0.5)')).toEqual('#70d907');
+      expect(normalizeLabelColor('rgb(50%, 0%, 0%)')).toEqual('#800000');
+      expect(normalizeLabelColor('hsl(120, 50%, 50%)')).toEqual('#40bf40');
+      expect(normalizeLabelColor('hsla(120, 50%, 50%, 0.5)')).toEqual('#40bf40');
+    } finally {
+      getContext.mockRestore();
+    }
   });
 
   it('keeps a bare hex, which the Chip already accepts without the hash', () => {
@@ -92,30 +222,57 @@ describe('Function: normalizeLabelColor', () => {
   });
 
   it('trims surrounding whitespace', () => {
-    expect(normalizeLabelColor('  #70D907  ')).toEqual('#70d907');
-    expect(normalizeLabelColor(' red ')).toEqual('#ff0000');
-  });
-
-  it('returns null for anything the Chip could not render either', () => {
-    expect(normalizeLabelColor('#12345')).toBeNull();
-    expect(normalizeLabelColor('#GGGGGG')).toBeNull();
-    expect(normalizeLabelColor('notacolor')).toBeNull();
-    expect(normalizeLabelColor('rgb(112, 217)')).toBeNull();
-    expect(normalizeLabelColor('')).toBeNull();
-    expect(normalizeLabelColor(null)).toBeNull();
-    expect(normalizeLabelColor(undefined)).toBeNull();
-  });
-
-  it('never returns a value the Chip would reject', () => {
-    const stored = ['#f00', '#f008', '#70D90780', 'red', 'LightBlue', 'rgb(112, 217, 7)', 'hsl(120, 50%, 50%)'];
-    for (const color of stored) {
-      expect(normalizeLabelColor(color)).toMatch(CHIP_HEX_RE);
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        fillStyle = value;
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      expect(normalizeLabelColor('  #70D907  ')).toEqual('#70d907');
+      expect(normalizeLabelColor(' rgb(112, 217, 7) ')).toEqual('#70d907');
+    } finally {
+      getContext.mockRestore();
     }
   });
 
-  it('resolves every CSS colour name to a hex the Chip reads', () => {
-    for (const name of Object.keys(CSS_NAMED_COLORS)) {
-      expect(normalizeLabelColor(name)).toMatch(CHIP_HEX_RE);
+  it('returns null for anything the Chip could not render either', () => {
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    try {
+      expect(normalizeLabelColor('#12345')).toBeNull();
+      expect(normalizeLabelColor('#GGGGGG')).toBeNull();
+      expect(normalizeLabelColor('notacolor')).toBeNull();
+      expect(normalizeLabelColor('rgb(112, 217)')).toBeNull();
+      expect(normalizeLabelColor('')).toBeNull();
+      expect(normalizeLabelColor(null)).toBeNull();
+      expect(normalizeLabelColor(undefined)).toBeNull();
+    } finally {
+      getContext.mockRestore();
+    }
+  });
+
+  it('never returns a value the Chip would reject', () => {
+    let fillStyle = '#010203';
+    const context = {
+      get fillStyle() {
+        return fillStyle;
+      },
+      set fillStyle(value: string) {
+        fillStyle = value;
+      },
+    } as unknown as CanvasRenderingContext2D;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context);
+    try {
+      const stored = ['#f00', '#f008', '#70D90780', 'rgb(112, 217, 7)', 'hsl(120, 50%, 50%)'];
+      for (const color of stored) {
+        expect(normalizeLabelColor(color)).toMatch(CHIP_HEX_RE);
+      }
+    } finally {
+      getContext.mockRestore();
     }
   });
 });

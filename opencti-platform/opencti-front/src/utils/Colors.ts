@@ -331,177 +331,52 @@ export const isWashVisibleOn = (
   return dE >= MARKING_MIN_DELTA_E;
 };
 
-// The 148 CSS named colours, resolved to the hex the design system's Chip can read.
-export const CSS_NAMED_COLORS: Record<string, string> = {
-  aliceblue: '#f0f8ff',
-  antiquewhite: '#faebd7',
-  aqua: '#00ffff',
-  aquamarine: '#7fffd4',
-  azure: '#f0ffff',
-  beige: '#f5f5dc',
-  bisque: '#ffe4c4',
-  black: '#000000',
-  blanchedalmond: '#ffebcd',
-  blue: '#0000ff',
-  blueviolet: '#8a2be2',
-  brown: '#a52a2a',
-  burlywood: '#deb887',
-  cadetblue: '#5f9ea0',
-  chartreuse: '#7fff00',
-  chocolate: '#d2691e',
-  coral: '#ff7f50',
-  cornflowerblue: '#6495ed',
-  cornsilk: '#fff8dc',
-  crimson: '#dc143c',
-  cyan: '#00ffff',
-  darkblue: '#00008b',
-  darkcyan: '#008b8b',
-  darkgoldenrod: '#b8860b',
-  darkgray: '#a9a9a9',
-  darkgreen: '#006400',
-  darkgrey: '#a9a9a9',
-  darkkhaki: '#bdb76b',
-  darkmagenta: '#8b008b',
-  darkolivegreen: '#556b2f',
-  darkorange: '#ff8c00',
-  darkorchid: '#9932cc',
-  darkred: '#8b0000',
-  darksalmon: '#e9967a',
-  darkseagreen: '#8fbc8f',
-  darkslateblue: '#483d8b',
-  darkslategray: '#2f4f4f',
-  darkslategrey: '#2f4f4f',
-  darkturquoise: '#00ced1',
-  darkviolet: '#9400d3',
-  deeppink: '#ff1493',
-  deepskyblue: '#00bfff',
-  dimgray: '#696969',
-  dimgrey: '#696969',
-  dodgerblue: '#1e90ff',
-  firebrick: '#b22222',
-  floralwhite: '#fffaf0',
-  forestgreen: '#228b22',
-  fuchsia: '#ff00ff',
-  gainsboro: '#dcdcdc',
-  ghostwhite: '#f8f8ff',
-  gold: '#ffd700',
-  goldenrod: '#daa520',
-  gray: '#808080',
-  green: '#008000',
-  greenyellow: '#adff2f',
-  grey: '#808080',
-  honeydew: '#f0fff0',
-  hotpink: '#ff69b4',
-  indianred: '#cd5c5c',
-  indigo: '#4b0082',
-  ivory: '#fffff0',
-  khaki: '#f0e68c',
-  lavender: '#e6e6fa',
-  lavenderblush: '#fff0f5',
-  lawngreen: '#7cfc00',
-  lemonchiffon: '#fffacd',
-  lightblue: '#add8e6',
-  lightcoral: '#f08080',
-  lightcyan: '#e0ffff',
-  lightgoldenrodyellow: '#fafad2',
-  lightgray: '#d3d3d3',
-  lightgreen: '#90ee90',
-  lightgrey: '#d3d3d3',
-  lightpink: '#ffb6c1',
-  lightsalmon: '#ffa07a',
-  lightseagreen: '#20b2aa',
-  lightskyblue: '#87cefa',
-  lightslategray: '#778899',
-  lightslategrey: '#778899',
-  lightsteelblue: '#b0c4de',
-  lightyellow: '#ffffe0',
-  lime: '#00ff00',
-  limegreen: '#32cd32',
-  linen: '#faf0e6',
-  magenta: '#ff00ff',
-  maroon: '#800000',
-  mediumaquamarine: '#66cdaa',
-  mediumblue: '#0000cd',
-  mediumorchid: '#ba55d3',
-  mediumpurple: '#9370db',
-  mediumseagreen: '#3cb371',
-  mediumslateblue: '#7b68ee',
-  mediumspringgreen: '#00fa9a',
-  mediumturquoise: '#48d1cc',
-  mediumvioletred: '#c71585',
-  midnightblue: '#191970',
-  mintcream: '#f5fffa',
-  mistyrose: '#ffe4e1',
-  moccasin: '#ffe4b5',
-  navajowhite: '#ffdead',
-  navy: '#000080',
-  oldlace: '#fdf5e6',
-  olive: '#808000',
-  olivedrab: '#6b8e23',
-  orange: '#ffa500',
-  orangered: '#ff4500',
-  orchid: '#da70d6',
-  palegoldenrod: '#eee8aa',
-  palegreen: '#98fb98',
-  paleturquoise: '#afeeee',
-  palevioletred: '#db7093',
-  papayawhip: '#ffefd5',
-  peachpuff: '#ffdab9',
-  peru: '#cd853f',
-  pink: '#ffc0cb',
-  plum: '#dda0dd',
-  powderblue: '#b0e0e6',
-  purple: '#800080',
-  rebeccapurple: '#663399',
-  red: '#ff0000',
-  rosybrown: '#bc8f8f',
-  royalblue: '#4169e1',
-  saddlebrown: '#8b4513',
-  salmon: '#fa8072',
-  sandybrown: '#f4a460',
-  seagreen: '#2e8b57',
-  seashell: '#fff5ee',
-  sienna: '#a0522d',
-  silver: '#c0c0c0',
-  skyblue: '#87ceeb',
-  slateblue: '#6a5acd',
-  slategray: '#708090',
-  slategrey: '#708090',
-  snow: '#fffafa',
-  springgreen: '#00ff7f',
-  steelblue: '#4682b4',
-  tan: '#d2b48c',
-  teal: '#008080',
-  thistle: '#d8bfd8',
-  tomato: '#ff6347',
-  turquoise: '#40e0d0',
-  violet: '#ee82ee',
-  wheat: '#f5deb3',
-  white: '#ffffff',
-  whitesmoke: '#f5f5f5',
-  yellow: '#ffff00',
-  yellowgreen: '#9acd32',
-};
-
 // The `#` is optional on the way in: the Chip's own parser accepts a bare `70d907`,
 // so a label already stored that way must keep rendering.
 const HEX_COLOR_REGEX = /^#?([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{3})$/;
-const RGB_COLOR_REGEX = /^rgba?\(\s*([\d.]+%?)\s*[ ,]\s*([\d.]+%?)\s*[ ,]\s*([\d.]+%?)\s*(?:[,/]\s*[\d.]+%?\s*)?\)$/i;
-const HSL_COLOR_REGEX = /^hsla?\(\s*([\d.]+)(?:deg)?\s*[ ,]\s*([\d.]+)%\s*[ ,]\s*([\d.]+)%\s*(?:[,/]\s*[\d.]+%?\s*)?\)$/i;
+const CSS_NUMBER_SOURCE = '[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)';
+const RGB_COLOR_REGEX = new RegExp(
+  `^rgba?\\(\\s*(${CSS_NUMBER_SOURCE}%?)\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE}%?)\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE}%?)(?:\\s*[,/]\\s*(${CSS_NUMBER_SOURCE}%?))?\\s*\\)$`,
+  'i',
+);
+const HSL_COLOR_REGEX = new RegExp(
+  `^hsla?\\(\\s*(${CSS_NUMBER_SOURCE})(?:deg)?\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE})%\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE})%(?:\\s*[,/]\\s*(${CSS_NUMBER_SOURCE}%?))?\\s*\\)$`,
+  'i',
+);
 
-const toHexPair = (value: number) => Math.round(Math.min(255, Math.max(0, value)))
-  .toString(16)
-  .padStart(2, '0');
+const toHexPair = (value: number): string | null => {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+  return Math.round(Math.min(255, Math.max(0, value)))
+    .toString(16)
+    .padStart(2, '0');
+};
 
-const rgbToHexColor = (r: number, g: number, b: number) => `#${toHexPair(r)}${toHexPair(g)}${toHexPair(b)}`;
+const rgbToHexColor = (r: number, g: number, b: number): string | null => {
+  const red = toHexPair(r);
+  const green = toHexPair(g);
+  const blue = toHexPair(b);
+  return red && green && blue ? `#${red}${green}${blue}` : null;
+};
 
-// `50%` and `128` are both legal for an rgb() channel.
-const rgbChannel = (raw: string) => {
-  const value = parseFloat(raw);
+const parseFiniteNumber = (raw: string): number | null => {
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
+};
+
+const rgbChannel = (raw: string): number | null => {
+  const value = parseFiniteNumber(raw);
+  if (value === null) {
+    return null;
+  }
   return raw.trim().endsWith('%') ? (value / 100) * 255 : value;
 };
 
-const hslToHexColor = (h: number, s: number, l: number) => {
+const hslToHexColor = (h: number, s: number, l: number): string | null => {
+  if (!Number.isFinite(h) || !Number.isFinite(s) || !Number.isFinite(l)) {
+    return null;
+  }
   const saturation = Math.min(1, Math.max(0, s / 100));
   const lightness = Math.min(1, Math.max(0, l / 100));
   const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
@@ -519,18 +394,98 @@ const hslToHexColor = (h: number, s: number, l: number) => {
   return rgbToHexColor((r + offset) * 255, (g + offset) * 255, (b + offset) * 255);
 };
 
-/**
- * A label colour is free text: the picker lets an admin type anything, and older labels
- * carry whatever was stored at the time. The design system's Chip only reads `#rgb` and
- * `#rrggbb` (`HEX_RE` in its `data-color` helper) and silently falls back to the neutral
- * tone for everything else, which is the mismatch reported in #17238: the picker previews
- * `red`, the rendered label does not.
- *
- * This resolves a stored colour to the one form the Chip can read, or null when nothing
- * sensible can be made of it, in which case the caller lets the Chip fall back on purpose.
- * An alpha channel is dropped rather than forwarded: the Chip rejects `#rgba`/`#rrggbbaa`
- * by design, because such a value would multiply into its own bounded wash.
- */
+const normalizeHexColor = (value: string): string | null => {
+  const match = HEX_COLOR_REGEX.exec(value.trim());
+  if (!match) {
+    return null;
+  }
+  const digits = match[1];
+  if (digits.length === 3 || digits.length === 4) {
+    const [r, g, b] = digits;
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return `#${digits.slice(0, 6)}`.toLowerCase();
+};
+
+const parseCanvasColor = (value: string): string | null => {
+  const normalizedHex = normalizeHexColor(value);
+  if (normalizedHex) {
+    return normalizedHex;
+  }
+  const rgbMatch = RGB_COLOR_REGEX.exec(value.trim());
+  if (rgbMatch) {
+    const red = rgbChannel(rgbMatch[1]);
+    const green = rgbChannel(rgbMatch[2]);
+    const blue = rgbChannel(rgbMatch[3]);
+    if (red === null || green === null || blue === null) {
+      return null;
+    }
+    if (rgbMatch[4] !== undefined && parseFiniteNumber(rgbMatch[4]) === null) {
+      return null;
+    }
+    return rgbToHexColor(red, green, blue);
+  }
+  const hslMatch = HSL_COLOR_REGEX.exec(value.trim());
+  if (hslMatch) {
+    const hue = parseFiniteNumber(hslMatch[1]);
+    const saturation = parseFiniteNumber(hslMatch[2]);
+    const lightness = parseFiniteNumber(hslMatch[3]);
+    if (hue === null || saturation === null || lightness === null) {
+      return null;
+    }
+    if (hslMatch[4] !== undefined && parseFiniteNumber(hslMatch[4]) === null) {
+      return null;
+    }
+    return hslToHexColor(hue, saturation, lightness);
+  }
+  return null;
+};
+
+let canvasContext: CanvasRenderingContext2D | null | undefined;
+let canvasGetContext: typeof HTMLCanvasElement.prototype.getContext | null = null;
+
+const getCanvasContext = (): CanvasRenderingContext2D | null => {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  try {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    if (canvasContext !== undefined && canvasGetContext === getContext) {
+      return canvasContext;
+    }
+    const context = document.createElement('canvas').getContext('2d');
+    canvasGetContext = getContext;
+    canvasContext = context;
+    return context;
+  } catch {
+    canvasGetContext = null;
+    canvasContext = null;
+    return null;
+  }
+};
+
+const CANVAS_SENTINELS = ['#010203', '#040506'];
+
+const normalizeCanvasColor = (color: string): string | null => {
+  const context = getCanvasContext();
+  if (!context) {
+    return null;
+  }
+  try {
+    for (const sentinel of CANVAS_SENTINELS) {
+      context.fillStyle = sentinel;
+      context.fillStyle = color;
+      const parsed = context.fillStyle;
+      if (parsed !== sentinel) {
+        return parseCanvasColor(parsed);
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 export const normalizeLabelColor = (color?: string | null): string | null => {
   if (!color) {
     return null;
@@ -539,24 +494,7 @@ export const normalizeLabelColor = (color?: string | null): string | null => {
   if (!trimmed) {
     return null;
   }
-  const hexMatch = HEX_COLOR_REGEX.exec(trimmed);
-  if (hexMatch) {
-    const digits = hexMatch[1];
-    if (digits.length === 3 || digits.length === 4) {
-      const [r, g, b] = digits;
-      return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
-    }
-    return `#${digits.slice(0, 6)}`.toLowerCase();
-  }
-  const rgbMatch = RGB_COLOR_REGEX.exec(trimmed);
-  if (rgbMatch) {
-    return rgbToHexColor(rgbChannel(rgbMatch[1]), rgbChannel(rgbMatch[2]), rgbChannel(rgbMatch[3]));
-  }
-  const hslMatch = HSL_COLOR_REGEX.exec(trimmed);
-  if (hslMatch) {
-    return hslToHexColor(parseFloat(hslMatch[1]), parseFloat(hslMatch[2]), parseFloat(hslMatch[3]));
-  }
-  return CSS_NAMED_COLORS[trimmed.toLowerCase()] ?? null;
+  return normalizeHexColor(trimmed) ?? normalizeCanvasColor(trimmed);
 };
 
 export const hexToRGB = (hex?: string, transp: number = 0.1) => {
