@@ -386,6 +386,25 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     }
     if (producerFirst.size > 0) producersCounter?.add(producerFirst.size, { resolution: 'executed_first' });
     const { context, user } = await createChunkContext(message, operations, resolved.values());
+    // Single wave ordering (probe 2026-09-24): a producer reaches the queue only after its
+    // pre-loop lookups (addLabel reads before it creates) while its consumer reaches it at
+    // once; when a batch boundary falls between the two, the consumer applies with the
+    // producer still queued and its soft ref is stripped, then reconciled one intent per
+    // cycle (86 course-of-action label refs per MITRE run). Consumers therefore start once
+    // every producer of the chunk is QUEUED (or settled without reaching the loop): FIFO then
+    // puts the producer in the same batch (edge) or an earlier one (committed), never behind.
+    // No commit is awaited: the wait is the producers' pre-loop, milliseconds.
+    const queuedGates = new Map<ChunkOperation, () => void>();
+    const queuedOrSettled = (operation: ChunkOperation) => new Promise<void>((resolve) => {
+      queuedGates.set(operation, resolve);
+    });
+    const markQueued = (operation: ChunkOperation) => {
+      const release = queuedGates.get(operation);
+      if (release) {
+        queuedGates.delete(operation);
+        release();
+      }
+    };
     // Transient engine error on a consumer: retry in place with backoff, then retain.
     const transientOutcome = async (operation: ChunkOperation, err: any, attempt: number): Promise<OperationOutcome | null> => {
       if (!isTransientOperationError(err)) return null;
@@ -422,7 +441,13 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         released = true;
         preLoopGate.release();
       };
-      const opContext: AuthContext = preLoopGate.enabled() ? { ...context, onIntentQueued: releaseOnce } : context;
+      const opContext: AuthContext = {
+        ...context,
+        onIntentQueued: () => {
+          releaseOnce();
+          markQueued(operation);
+        },
+      };
       try {
         if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
           faultTransientBudget -= 1;
@@ -497,8 +522,16 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         if (!operation.echo_id && operation.variables) substituteEchoIds(operation.variables, resolved);
       });
     }
-    const restErrors = await Promise.all(rest.map(runOperation));
-    const ordered = [...first, ...rest];
+    // producers resolved by standard id start first and only need to be QUEUED before the
+    // consumers start (see queuedGates above); everything then completes together
+    const producers = rest.filter((operation) => !!operation.echo_id);
+    const consumers = rest.filter((operation) => !operation.echo_id);
+    const producerGates = producers.map((operation) => queuedOrSettled(operation));
+    const producerRuns = producers.map((operation) => runOperation(operation).finally(() => markQueued(operation)));
+    await Promise.all(producerGates);
+    const consumerRuns = consumers.map((operation) => runOperation(operation));
+    const restErrors = await Promise.all([...producerRuns, ...consumerRuns]);
+    const ordered = [...first, ...producers, ...consumers];
     const results = [...firstErrors, ...restErrors];
     for (let index = 0; index < ordered.length; index += 1) {
       await reportChunkOutcome(context, user, message, ordered[index], results[index]);
