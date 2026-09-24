@@ -49,6 +49,7 @@ let loopDead = false;
 let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
 let strippedSamples = 0; // s9.10.2: bounded dead-soft-strip sampling
 let missingInBatchSamples = 0; // written-index probe: bounded sampling of refs produced in the batch
+let stripSamples = 0; // strip probe (2026-09-24): bounded sampling of soft refs stripped at apply
 let lockMissSamples = 0; // fix 2026-09-22: bounded sampling of lock keys outside the batch lock
 let failedFallthroughSamples = 0; // probe 2026-09-24: bounded sampling of missing refs failed without retention
 
@@ -372,6 +373,10 @@ interface PendingResolution {
   result: any;
 }
 
+// strip probe (2026-09-24): a soft reference stripped during an apply (inputResolveRefs could
+// not resolve it) or at plan time (member dead), handed to the loop for origin classification
+type StripProbeInput = { targetRef: string; relType: string; ownerType: string; phase: 'apply' | 'plan' };
+
 const applyGroup = async (
   group: CoalesceGroup,
   writtenIds: string[],
@@ -379,6 +384,7 @@ const applyGroup = async (
   strippedInputs: StrippedRefInput[],
   onFailure: (group: CoalesceGroup, err: unknown) => void,
   recordPhase = true,
+  onStripped?: (strip: StripProbeInput) => void,
 ): Promise<boolean> => {
   const { leader, absorbed } = group;
   const t0 = Date.now();
@@ -410,14 +416,17 @@ const applyGroup = async (
       // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (pushed into the
       // sink by inputResolveRefs) become pending-ref inputs, persisted with the batch at
       // flush time so the debt commits with the accepted write.
-      stripSink.forEach((s) => strippedInputs.push({
-        ownerId: element.internal_id,
-        ownerType: element.entity_type,
-        relType: s.relType,
-        targetRef: s.targetRef,
-        userId: leader.user.id,
-        user: leader.user,
-      }));
+      stripSink.forEach((s) => {
+        strippedInputs.push({
+          ownerId: element.internal_id,
+          ownerType: element.entity_type,
+          relType: s.relType,
+          targetRef: s.targetRef,
+          userId: leader.user.id,
+          user: leader.user,
+        });
+        onStripped?.({ targetRef: s.targetRef, relType: s.relType, ownerType: element.entity_type, phase: 'apply' });
+      });
       // Verdict 31 fix: plan-time member-dead strips (s9.10.2) feed the SAME pending
       // store. The member was declared dead on a bounded wait, but a late member DOES
       // land (proven: this was the dominant estate loss family), and the commit-time
@@ -435,6 +444,7 @@ const applyGroup = async (
               userId: intent.user.id,
               user: intent.user,
             });
+            onStripped?.({ targetRef: refId, relType: ref.databaseName, ownerType: element.entity_type, phase: 'plan' });
           } else {
             logApp.warn('[SEQUENCER] dead-stripped ref without relation mapping, not recorded', {
               type: element.entity_type, inputKey, refId,
@@ -587,7 +597,7 @@ const runBatchLoop = async () => {
     // in_batch: the producer is co-batched but not applied yet, or failed; outside: not in
     // this batch at all. Says whether a batch-local written index has anything to close.
     let batchOwnIds: Set<string> | null = null;
-    const classifyMissing = (missing: string[], outcome: 'parked' | 'deferred' | 'failed' | 'final') => {
+    const classifyMissing = (missing: string[], outcome: 'parked' | 'deferred' | 'failed' | 'final' | 'stripped') => {
       const own = batchOwnIds ?? new Set<string>(plan.order.flatMap((g) => [g.leader, ...g.absorbed].flatMap((i) => intentOwnIds(i))));
       batchOwnIds = own;
       const written = new Set(writtenIds);
@@ -600,6 +610,28 @@ const runBatchLoop = async () => {
           missingInBatchSamples += 1;
           logApp.info('[SEQUENCER] missing reference produced in this batch', { id, origin, outcome });
         }
+      });
+    };
+    // strip probe (2026-09-24): the single wave per chunk left ~90 soft refs stripped at apply on
+    // MITRE (course-of-action -> pre-created labels, producer in the same batch) that the written
+    // index does not close. Same origin classes as above, plus the discriminators of the moment:
+    // is the target written in this batch, still in the map, resolvable, co-batched, queued, in a lane.
+    const probeStripped = (strip: StripProbeInput) => {
+      classifyMissing([strip.targetRef], 'stripped');
+      if (stripSamples >= 40) return;
+      stripSamples += 1;
+      const own = batchOwnIds ?? new Set<string>();
+      logApp.info('[SEQUENCER] soft reference stripped', {
+        target: strip.targetRef,
+        relType: strip.relType,
+        ownerType: strip.ownerType,
+        phase: strip.phase,
+        written: writtenIds.includes(strip.targetRef),
+        inMap: sequencerIdentityMap.peekBare(strip.targetRef) !== null,
+        resolvable: sequencerIdentityMap.resolveInternalId(strip.targetRef) !== null,
+        inBatch: own.has(strip.targetRef),
+        queued: queue.hasCandidate(strip.targetRef),
+        inLane: lanes.hasResident(strip.targetRef),
       });
     };
     const t0 = Date.now();
@@ -814,7 +846,7 @@ const runBatchLoop = async () => {
           }
           onApplyFailure(g, err);
         };
-        const ok = await applyGroup(group, writtenIds, pendings, strippedInputs, onFailure, applyConcurrency <= 1);
+        const ok = await applyGroup(group, writtenIds, pendings, strippedInputs, onFailure, applyConcurrency <= 1, probeStripped);
         if (!ok) failedAt[i] = true;
       };
       if (applyConcurrency <= 1) {
