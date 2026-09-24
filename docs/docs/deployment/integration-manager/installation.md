@@ -215,6 +215,7 @@ networks:
 **Option A: Using the preconfigured OpenCTI Docker stack (Recommended)**
 
 The [OpenCTI Docker repository](https://github.com/OpenCTI-Platform/docker) provides a complete `docker-compose.yml` that already includes:
+
 - XTM Composer service pre-configured
 - Automatic RSA key generation service
 - Full OpenCTI stack integration
@@ -289,7 +290,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
 
 # Clone repository
-git clone https://github.com/OpenCTI-Platform/xtm-composer.git
+git clone https://github.com/FiligranHQ/xtm-composer.git
 cd xtm-composer
 
 # Build release binary
