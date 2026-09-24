@@ -210,6 +210,7 @@ const computeCatalogSyncOps = (params: {
   const catalogIds = buildCatalogIds(params.sourceCatalog.id);
   const catalogUpsert: CatalogUpsert = {
     ...catalogIds,
+    _index: params.currentCatalog?._index,
     revision: params.revision,
     source_uri: params.sourceConfig.uri,
     catalog_id: params.sourceCatalog.id,
@@ -342,7 +343,7 @@ const synchronizeCatalog = async (
       await updateCatalogContracts(context, user, catalogSyncDiff.contractsUpdates);
     }
     await deleteCatalogContracts(context, user, catalogSyncDiff.contractsDeletions);
-    await upsertCatalog(context, user, catalogSyncDiff.catalogUpsert, currentCatalog);
+    await upsertCatalog(context, user, catalogSyncDiff.catalogUpsert);
     const isNotNil = (str: string | null | undefined): str is string => Boolean(str);
     let usedLogos = catalogSyncDiff.contractsCreations.map(({ logo_uri }) => logo_uri).filter(isNotNil);
     usedLogos = usedLogos.concat(catalogSyncDiff.contractsUpdates.map(({ logo_uri }) => logo_uri).filter(isNotNil));
