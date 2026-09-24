@@ -3148,7 +3148,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
     const [, , instanceInput] = (createEntity as any).mock.calls[0];
     expect(instanceInput.pendingError).toBeUndefined();
     expect(projectWorkflowState).toHaveBeenCalledTimes(1);
-    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, entity, 'draft', StatusScope.Global);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, { ...mockUser, draft_context: undefined }, entity, 'draft', StatusScope.Global);
   });
 });
 
@@ -3265,7 +3265,7 @@ describe('triggerWorkflowEvent — status projection', () => {
     const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
 
     expect(result.success).toBe(true);
-    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, entity, 'closed', StatusScope.Global);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, { ...mockUser, draft_context: undefined }, entity, 'closed', StatusScope.Global);
     // Must happen after the instance's own currentState/history update, not before.
     const updateAttributeOrder = (updateAttribute as any).mock.invocationCallOrder[0];
     const projectionOrder = (projectWorkflowState as any).mock.invocationCallOrder[0];
@@ -3345,6 +3345,7 @@ describe('getWorkflowInstance — read-repair', () => {
 
     expect(projectWorkflowState).toHaveBeenCalledWith(
       expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      WORKFLOW_MANAGER_USER,
       entity,
       'reviewing',
       'GLOBAL',

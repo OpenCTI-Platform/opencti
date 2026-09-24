@@ -9,10 +9,13 @@ import { projectWorkflowState } from '../../../src/modules/workflow/domain/workf
 // entity type is migrated to a published workflow, every entity creation gains the store round
 // trips it makes (entity-setting lookup, definition lookup, instance lookup, instance write,
 // relation write). This is a real cost for bulk STIX-bundle ingestion (workers/connectors
-// creating thousands of entities per batch). All store-level dependencies are mocked — the
-// benchmark measures the real production `initializeEntityWorkflow` code path, not a synthetic
-// reimplementation, so it stays meaningful as a regression gate even though the mocked round
-// trips resolve near-instantly rather than at real store latency.
+// creating thousands of entities per batch). All store-level dependencies are mocked and resolve
+// near-instantly, so this benchmark only bounds the *fixed control-flow overhead* of
+// `initializeEntityWorkflow` itself (e.g. an accidental nested loop or repeated re-scan of the
+// batch) — it does NOT exercise a per-call cost that scales with total store size, so it cannot
+// catch a regression whose cost depends on real data volume (e.g. an unindexed/unbounded ES
+// scan). Real store round-trip latency must be measured separately (e.g. via a canary rollout,
+// see the per-entity overhead test below) when sizing an actual production migration.
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
@@ -109,8 +112,10 @@ describe('initializeEntityWorkflow throughput benchmark', () => {
     console.log('[BENCHMARK] initializeEntityWorkflow — with published workflow (ms) for sizes', sizes, '=>', withWorkflowMs);
 
     // Growth factor gate: quadrupling batch size (500 -> 2000 -> 8000, both 4x) should roughly
-    // quadruple runtime, not multiply it ~16x — catches an accidental O(n^2) regression in the
-    // hot path (e.g. a per-entity full-table scan) long before it hits a real ingestion pipeline.
+    // quadruple runtime, not multiply it ~16x — catches an accidental nested loop or repeated
+    // re-scan of the batch in the control flow itself. It does NOT catch a regression whose cost
+    // scales with total store size (e.g. an unbounded ES scan), since store calls are mocked to
+    // near-instant constant time regardless of batch size — see the top-of-file note.
     const withWorkflowGrowth1 = withWorkflowMs[1] / Math.max(withWorkflowMs[0], 1);
     const withWorkflowGrowth2 = withWorkflowMs[2] / Math.max(withWorkflowMs[1], 1);
 
