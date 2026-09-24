@@ -10,7 +10,7 @@
 // sequencer loop, replacing the worker-side pf / chunk-size / http-pool / queue_max_intents
 // quadruple that drove every feeding artifact measured on the HTTP topology.
 import { ValueType } from '@opentelemetry/api';
-import type { Counter, Histogram } from '@opentelemetry/api';
+import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
@@ -18,6 +18,7 @@ import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
 import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { splitEchoIds } from './chunkIntakeEchoes';
+import { PreLoopGate } from './chunkIntakePreLoop';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import {
   deferOperation,
@@ -68,23 +69,38 @@ const OP_TRANSIENT_BACKOFF_MS = Number(conf.get('chunk_intake_manager:op_transie
 // Default 32 (permit probe 2026-09-15, w1 prefetch 128): 64 left 405 search rejections and 61
 // retries at intake start, 32 and 16 left none; 32 at 300.4 obj/s (= 64), 16 at 293.5.
 const PRE_LOOP_CONCURRENCY = Number(conf.get('chunk_intake_manager:pre_loop_concurrency') ?? 32);
-let preLoopInUse = 0;
-const preLoopWaiters: (() => void)[] = [];
-const acquirePreLoop = async (): Promise<boolean> => {
-  if (PRE_LOOP_CONCURRENCY <= 0) return false;
-  if (preLoopInUse < PRE_LOOP_CONCURRENCY) {
-    preLoopInUse += 1;
-    return false;
-  }
-  await new Promise<void>((resolve) => preLoopWaiters.push(resolve));
-  preLoopInUse += 1;
-  return true; // had to wait
+// Adaptive limit (2026-09-24, chunkIntakePreLoop.ts): grows while operations are paced and
+// the engine is quiet, halves on transient engine errors. min / max bound the walk, the
+// value above is where it starts; adaptive=false pins the legacy fixed limit.
+const PRE_LOOP_ADAPTIVE = booleanConf('chunk_intake_manager:pre_loop_adaptive', true);
+const PRE_LOOP_MIN = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_min') ?? 8);
+const PRE_LOOP_MAX = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_max') ?? 512);
+const PRE_LOOP_TICK_MS = Number(conf.get('chunk_intake_manager:pre_loop_tick_ms') ?? 1000);
+const PRE_LOOP_QUIET_MS = Number(conf.get('chunk_intake_manager:pre_loop_quiet_ms') ?? 10000);
+const PRE_LOOP_INCREASE_RATIO = Number(conf.get('chunk_intake_manager:pre_loop_increase_ratio') ?? 0.25);
+let preLoopLimitGauge: Gauge | null = null;
+let preLoopAdjustments: Counter | null = null;
+const preLoopGate = new PreLoopGate({
+  initial: PRE_LOOP_CONCURRENCY,
+  min: PRE_LOOP_MIN,
+  max: PRE_LOOP_MAX,
+  adaptive: PRE_LOOP_ADAPTIVE,
+  increaseRatio: PRE_LOOP_INCREASE_RATIO,
+  quietMs: PRE_LOOP_QUIET_MS,
+  onLimitChange: (limit, direction) => {
+    preLoopLimitGauge?.record(limit);
+    preLoopAdjustments?.add(1, { direction });
+  },
+});
+let preLoopTicker: NodeJS.Timeout | null = null;
+const startPreLoopTicker = () => {
+  if (preLoopTicker || !preLoopGate.enabled() || !PRE_LOOP_ADAPTIVE) return;
+  preLoopTicker = setInterval(() => preLoopGate.tick(), PRE_LOOP_TICK_MS);
+  preLoopTicker.unref?.();
 };
-const releasePreLoop = () => {
-  if (PRE_LOOP_CONCURRENCY <= 0) return;
-  preLoopInUse -= 1;
-  const next = preLoopWaiters.shift();
-  if (next) next();
+const stopPreLoopTicker = () => {
+  if (preLoopTicker) clearInterval(preLoopTicker);
+  preLoopTicker = null;
 };
 
 // Gate-only fault injection: the first N consumer operations of the process fail once with a
@@ -165,6 +181,16 @@ const registerChunkMetrics = () => {
     valueType: ValueType.INT,
     description: 'Distinct STIX objects carried by executed chunks',
   });
+  // adaptive pre-loop gate (2026-09-24): the limit as it moves, and its adjustments
+  preLoopLimitGauge = meter.createGauge('opencti_chunk_intake_pre_loop_limit', {
+    valueType: ValueType.INT,
+    description: 'Current pre-loop admission limit (operations between start and intent queued)',
+  });
+  preLoopAdjustments = meter.createCounter('opencti_chunk_intake_pre_loop_adjustments_total', {
+    valueType: ValueType.INT,
+    description: 'Pre-loop limit adjustments by direction (up, down)',
+  });
+  preLoopLimitGauge.record(preLoopGate.currentLimit());
   chunkSeconds = meter.createHistogram('opencti_chunk_intake_chunk_seconds', {
     valueType: ValueType.DOUBLE,
     description: 'Wall time from chunk delivery to chunk ack',
@@ -335,7 +361,9 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     const resolved = new Map<string, string>();
     // Transient engine error on a consumer: retry in place with backoff, then retain.
     const transientOutcome = async (operation: ChunkOperation, err: any, attempt: number): Promise<OperationOutcome | null> => {
-      if (operation.echo_id || !isTransientOperationError(err)) return null;
+      if (!isTransientOperationError(err)) return null;
+      preLoopGate.onEngineError(); // the adaptive gate halves on engine trouble, whatever becomes of the operation
+      if (operation.echo_id) return null;
       if (attempt < OP_TRANSIENT_ATTEMPTS) {
         const backoffMs = Math.min(OP_TRANSIENT_BACKOFF_MS * 2 ** attempt, 4000);
         logApp.warn('[CHUNK-INTAKE] Operation retried (transient engine error)', {
@@ -359,15 +387,15 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     const runOperationOnce = async (operation: ChunkOperation, attempt: number): Promise<OperationOutcome> => {
       // one pre-loop permit per attempt, released by the boundary hook (intent queued) or,
       // for operations that never reach the loop, when the operation settles
-      const waited = await acquirePreLoop();
+      const waited = await preLoopGate.acquire();
       if (waited) operationsCounter?.add(1, { outcome: 'paced' });
       let released = false;
       const releaseOnce = () => {
         if (released) return;
         released = true;
-        releasePreLoop();
+        preLoopGate.release();
       };
-      const opContext: AuthContext = PRE_LOOP_CONCURRENCY > 0 ? { ...context, onIntentQueued: releaseOnce } : context;
+      const opContext: AuthContext = preLoopGate.enabled() ? { ...context, onIntentQueued: releaseOnce } : context;
       try {
         if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
           faultTransientBudget -= 1;
@@ -476,6 +504,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
 
 const chunkIntakeInitializer = async () => {
   registerChunkMetrics();
+  startPreLoopTicker();
   // Terminal outcome of a retained creation: meet the work expectation the chunk skipped
   // (applied), or meet it with an error (expired / failed), so works stay exact.
   registerPendingIntentSettled(async (record, error) => {
@@ -513,10 +542,17 @@ const chunkIntakeInitializer = async () => {
       logApp.error('[CHUNK-INTAKE] Unexpected chunk handling error', { cause: e });
     });
   });
-  logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', { queue: consumer.queue, prefetch: PREFETCH, pre_loop_concurrency: PRE_LOOP_CONCURRENCY });
+  logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', {
+    queue: consumer.queue,
+    prefetch: PREFETCH,
+    pre_loop_concurrency: PRE_LOOP_CONCURRENCY,
+    pre_loop_adaptive: PRE_LOOP_ADAPTIVE,
+    pre_loop_bounds: [PRE_LOOP_MIN, PRE_LOOP_MAX],
+  });
   return {
     consumer,
     shutdown: async () => {
+      stopPreLoopTicker();
       await consumer.close();
       logApp.info('[OPENCTI-MODULE] Chunk intake consumer closed');
     },
