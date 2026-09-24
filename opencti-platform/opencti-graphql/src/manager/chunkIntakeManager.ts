@@ -21,6 +21,7 @@ import { splitEchoIds } from './chunkIntakeEchoes';
 import { PreLoopGate } from './chunkIntakePreLoop';
 import { resolveProducerIds } from './chunkIntakeProducers';
 import { isSequencerEnabled } from '../database/sequencer/sequencer-config';
+import { startSequencerLoop } from '../database/sequencer/sequencer-loop';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import {
   deferOperation,
@@ -602,6 +603,13 @@ const chunkIntakeInitializer = async () => {
     }
     return 'applied';
   });
+  // The sequencer's stores (pending intents, pending refs) must exist before the first chunk:
+  // the loop starts lazily on its first intent and initialises them in the background, and a
+  // retention written in between auto-created a mis-mapped index that killed the loop
+  // (2026-09-24). Consume only once the loop is ready.
+  if (isSequencerEnabled()) {
+    await startSequencerLoop();
+  }
   await registerChunkIntakeQueue();
   const consumer: ChunkConsumer = await consumeChunkIntakeQueue(PREFETCH, (payload: string, controls: ChunkControls) => {
     processChunkMessage(payload, controls).catch((e) => {
