@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type MouseEvent } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
@@ -122,7 +122,7 @@ const TaskPopover = ({
       <Menu
         slotProps={{
           list: {
-            onClick: (e) => {
+            onClick: (e: MouseEvent) => {
               e.stopPropagation();
             },
           },
