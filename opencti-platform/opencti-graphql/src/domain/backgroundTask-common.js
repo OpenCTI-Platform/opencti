@@ -127,9 +127,6 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
-      if (entityTypeFiltersValues.length === 0) {
-        throw UnsupportedError('A background task of type query should have at least one entity type filter.');
-      }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await internalFindByIds(context, user, ids, { includeDeletedInDraft: true });
       const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
