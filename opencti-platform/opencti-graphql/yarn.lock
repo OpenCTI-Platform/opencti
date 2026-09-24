@@ -2411,14 +2411,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lezer/javascript@npm:1.5.4":
-  version: 1.5.4
-  resolution: "@lezer/javascript@npm:1.5.4"
+"@lezer/javascript@npm:1.5.5":
+  version: 1.5.5
+  resolution: "@lezer/javascript@npm:1.5.5"
   dependencies:
     "@lezer/common": "npm:^1.2.0"
     "@lezer/highlight": "npm:^1.1.3"
     "@lezer/lr": "npm:^1.3.0"
-  checksum: 10c0/77b97c546d3661223ce77af15192efad42585d01e46022222273cd0c1cb20df8063d266037ae67774f051a6cb72db49804b6a46b06b926ee541807ef01741f6a
+  checksum: 10c0/ebe804477ceaf08916eebdd91945aed98ee178b80b5cfaa9cbe5f3751c5deb30eba5622e876bed5e78ca4df5d82e78f6999a413c50db16bc3a3b869d3f1f1a89
   languageName: node
   linkType: hard
 
@@ -10287,7 +10287,7 @@ __metadata:
     "@langchain/core": "npm:1.2.11"
     "@langchain/mistralai": "npm:1.2.0"
     "@langchain/openai": "npm:1.5.13"
-    "@lezer/javascript": "npm:1.5.4"
+    "@lezer/javascript": "npm:1.5.5"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:2.7.0"
     "@noble/ed25519": "npm:3.2.0"
