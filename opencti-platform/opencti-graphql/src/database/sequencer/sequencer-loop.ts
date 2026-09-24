@@ -340,6 +340,20 @@ const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKey
     return element ? getInstanceIds(element) : null;
   },
   (id) => sequencerIdentityMap.resolveInternalId(id),
+  // increment 2026-09-24: the relation's own ids, computable when both endpoints are in the map
+  // (same construction as the dedup prefetch: entity_type is required by getInputIds)
+  (leader) => {
+    const { fromId, toId, relationship_type: relationshipType } = leader.input;
+    if (typeof fromId !== 'string' || typeof toId !== 'string' || typeof relationshipType !== 'string') return null;
+    const from = sequencerIdentityMap.peekBare(fromId);
+    const to = sequencerIdentityMap.peekBare(toId);
+    if (!from || !to) return null;
+    try {
+      return getInputIds(relationshipType, { ...leader.input, entity_type: relationshipType, from, to }, false);
+    } catch {
+      return null; // underspecified input: the apply-time lock site takes its real lock as today
+    }
+  },
 );
 
 interface ParkedIntent {

@@ -31,6 +31,15 @@ describe('sequencer batch lock keys', () => {
     expect(keys.has('relationship--r')).toBe(true);
   });
 
+  it('adds the relation own ids the injected function computes, and skips unresolved endpoints', () => {
+    const rel = { kind: 'relation', candidateIds: ['relationship--stix'], referencedIds: [], input: { fromId: 'malware--m', toId: 'identity--org', relationship_type: 'uses' } };
+    const withOwn = computeBatchLockKeys([{ leader: rel, absorbed: [] }], peek, resolve, (leader) => (leader.input.fromId === 'malware--m' ? ['relationship--std-uses', 'relationship--alias'] : null));
+    expect(withOwn).toContain('relationship--std-uses');
+    expect(withOwn).toContain('relationship--alias');
+    const without = computeBatchLockKeys([{ leader: rel, absorbed: [] }], peek, resolve, () => null);
+    expect(without).not.toContain('relationship--std-uses');
+  });
+
   it('ignores empty ids and deduplicates', () => {
     const groups = [{ leader: { kind: 'relation', candidateIds: ['a', 'a', ''], referencedIds: ['a'], input: { fromId: '', toId: 'a' } }, absorbed: [] }];
     expect(computeBatchLockKeys(groups, () => null, () => null)).toEqual(['a']);
