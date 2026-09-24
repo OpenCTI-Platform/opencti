@@ -3,7 +3,6 @@ import { elDeleteInstances, elIndex, elIndexElements } from '../../../../src/dat
 import { fullEntitiesList, internalFindByIdsMapped } from '../../../../src/database/middleware-loader';
 import { deleteCatalogContracts, findAllCatalogs, findAllCatalogsExcluding, updateCatalogContracts, upsertCatalog } from '../../../../src/modules/catalog/catalog-repository';
 import {
-  type BasicStoreEntityCatalog,
   type BasicStoreEntityCatalogContract,
   type CatalogContractUpdate,
   type CatalogUpsert,
@@ -110,21 +109,19 @@ describe('catalog repository', () => {
 
   it('should upsert an existing catalog in its existing physical index', async () => {
     const catalogPhysicalIndex = 'opencti_internal_objects-000042';
-    const currentCatalog = {
-      id: 'catalog--1',
-      internal_id: 'catalog--1',
-      _index: catalogPhysicalIndex,
-    } as BasicStoreEntityCatalog;
     const catalogUpsert = {
       internal_id: 'catalog--1',
       standard_id: 'catalog--standard',
       catalog_id: 'catalog-1',
+      _index: catalogPhysicalIndex,
     } as CatalogUpsert;
 
-    await upsertCatalog(context, user, catalogUpsert, currentCatalog);
+    await upsertCatalog(context, user, catalogUpsert);
 
     expect(elIndex).toHaveBeenCalledWith(catalogPhysicalIndex, {
-      ...catalogUpsert,
+      internal_id: catalogUpsert.internal_id,
+      standard_id: catalogUpsert.standard_id,
+      catalog_id: catalogUpsert.catalog_id,
       entity_type: ENTITY_TYPE_CATALOG,
     });
   });

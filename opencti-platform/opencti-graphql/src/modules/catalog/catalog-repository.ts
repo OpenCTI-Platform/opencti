@@ -57,13 +57,10 @@ export const upsertCatalog = async (
   _context: AuthContext,
   _user: AuthUser,
   update: CatalogUpsert,
-  currentCatalog?: BasicStoreEntityCatalog,
 ) => {
-  // Reuse the existing document's physical index when updating so the write lands
-  // on the same index as the current document instead of the write alias, which
-  // could resolve to a different physical index (e.g. after an ILM rollover).
-  await elIndex(currentCatalog?._index ?? INDEX_INTERNAL_OBJECTS, {
-    ...update,
+  const { _index, ...catalogUpsert } = update;
+  await elIndex(_index ?? INDEX_INTERNAL_OBJECTS, {
+    ...catalogUpsert,
     entity_type: ENTITY_TYPE_CATALOG,
   });
 };

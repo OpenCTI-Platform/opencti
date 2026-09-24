@@ -136,6 +136,27 @@ describe('catalog-sync-domain', () => {
     expect(mockFindAllCatalogsExcluding).toHaveBeenCalled();
   });
 
+  it('should include the current physical index in the catalog upsert', async () => {
+    const sourceCatalog = buildSourceCatalog('embedded-catalog');
+    mockFetchSourceCatalog.mockResolvedValue(sourceCatalog);
+    mockFindCatalogByCatalogId.mockResolvedValue({
+      catalog_id: sourceCatalog.id,
+      revision: 'previous-revision',
+      _index: 'opencti_internal_objects-000042',
+    });
+
+    await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
+
+    expect(mockUpsertCatalog).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        catalog_id: sourceCatalog.id,
+        _index: 'opencti_internal_objects-000042',
+      }),
+    );
+  });
+
   it('should include custom sources and deduplicate by uri', async () => {
     mockConfGet.mockImplementation((key: string) => {
       if (key === 'redis:ca') return [];

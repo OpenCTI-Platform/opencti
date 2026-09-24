@@ -152,5 +152,5 @@ export type CatalogContractUpdate = Required<{
 
 export type CatalogContractCreation = CatalogContractEntityFields & { internal_id: string; standard_id: string };
 
-export type CatalogUpsert = CatalogEntityFields & { internal_id: string; standard_id: string };
+export type CatalogUpsert = CatalogEntityFields & { internal_id: string; standard_id: string; _index?: string };
 // endregion
