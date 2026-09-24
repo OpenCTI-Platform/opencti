@@ -30,7 +30,7 @@ describe('MigrationMetricsRecorder', () => {
     set.migrations[0].timestamp = date.getTime() + deltaSeconds * 1000;
 
     metricsRecorder.record();
-expect(meterSpy.migrationDuration).toHaveBeenCalledWith(deltaSeconds, {
+    expect(meterSpy.migrationDuration).toHaveBeenCalledWith(deltaSeconds, {
       migrationTitle,
       status: 'success',
     });
