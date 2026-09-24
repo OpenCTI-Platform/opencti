@@ -140,6 +140,7 @@ const StixSightingRelationshipCreationFromEntity = ({
   const [targetEntity, setTargetEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const [tableRootRef, setTableRootRef] = useState(null);
   const [commit] = useApiMutation(
     stixSightingRelationshipCreationFromEntityMutation,
     undefined,
@@ -255,6 +256,7 @@ const StixSightingRelationshipCreationFromEntity = ({
         handleSelect={handleSelectEntity}
         entityId={entityId}
         stixCoreObjectTypes={stixCoreObjectTypes}
+        rootRef={tableRootRef ?? undefined}
       />
     );
   };
@@ -310,7 +312,7 @@ const StixSightingRelationshipCreationFromEntity = ({
   const renderSelectEntity = () => {
     const hasObservableResults = targetStixCyberObservableTypes?.length > 0;
     return (
-      <Stack gap={2}>
+      <Stack gap={2} sx={{ height: '100%' }}>
         {hasObservableResults && (
           <Alert
             severity="info"
@@ -322,7 +324,9 @@ const StixSightingRelationshipCreationFromEntity = ({
             )}
           </Alert>
         )}
-        {renderSearchResults()}
+        <div ref={setTableRootRef} style={{ flex: 1, minHeight: 0 }}>
+          {renderSearchResults()}
+        </div>
       </Stack>
     );
   };

@@ -102,6 +102,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
   search,
   stixCoreObjectTypes,
   entityId,
+  rootRef,
 }) => {
   const storageKey = `${LOCAL_STORAGE_KEY}-${entityId ?? 'unknown'}-${stixCoreObjectTypes.join('-')}`;
   const initialValues = {
@@ -161,6 +162,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
       }}
       lineFragment={stixSightingRelationshipCreationFromEntityStixDomainObjectsLineFragment}
       entityTypes={stixCoreObjectTypes}
+      rootRef={rootRef}
       disableNavigation
       disableLineSelection
       disableColumnMenu
