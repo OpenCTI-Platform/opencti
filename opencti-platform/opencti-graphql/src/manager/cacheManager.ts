@@ -1,6 +1,6 @@
 import * as R from 'ramda';
-import { getBaseUrl, logApp, TOPIC_PREFIX } from '../config/conf';
-import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, resetCacheForEntity, writeCacheForEntity } from '../database/cache';
+import { getBaseUrl, getBusTopicForEntityType, logApp } from '../config/conf';
+import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, resetCacheForEntity, STORE_ENTITIES_LINKS, writeCacheForEntity } from '../database/cache';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -25,6 +25,7 @@ import {
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
@@ -59,10 +60,6 @@ import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusion
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
-
-const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
-const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
-const DELETES_TOPIC = `${TOPIC_PREFIX}*DELETE_TOPIC`;
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -356,65 +353,81 @@ const platformCustomFieldDefinitions = (context: AuthContext) => {
   return { values: null, fn: reloadCustomFieldDefinitions };
 };
 
+const CACHED_ENTITIES_MAP = {
+  [ENTITY_TYPE_SETTINGS]: platformSettings,
+  [ENTITY_TYPE_ENTITY_SETTING]: platformEntitySettings,
+  [ENTITY_TYPE_MANAGER_CONFIGURATION]: platformManagerConfigurations,
+  [ENTITY_TYPE_MARKING_DEFINITION]: platformMarkings,
+  [ENTITY_TYPE_USER]: platformUsers,
+  [ENTITY_TYPE_STATUS]: workflowStatuses,
+  [ENTITY_TYPE_CONNECTOR]: platformConnectors,
+  [ENTITY_TYPE_TRIGGER]: platformTriggers,
+  [ENTITY_TYPE_PLAYBOOK]: platformRunningPlaybooks,
+  [ENTITY_TYPE_RULE]: platformRules,
+  [ENTITY_TYPE_DECAY_RULE]: platformDecayRules,
+  [ENTITY_TYPE_RESOLVED_FILTERS]: platformResolvedFilters,
+  [ENTITY_TYPE_STREAM_COLLECTION]: platformStreams,
+  [ENTITY_TYPE_NOTIFIER]: platformNotifiers,
+  [ENTITY_TYPE_PUBLIC_DASHBOARD]: platformPublicDashboards,
+  [ENTITY_TYPE_DRAFT_WORKSPACE]: platformDraftWorkspaces,
+  [ENTITY_TYPE_PIR]: platformPirs,
+  [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: platformDecayExclusionRules,
+  [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: platformCustomFieldDefinitions,
+};
+// ABSTRACT_INTERNAL_OBJECT is always included
+// it's the shared bus used by some internal object types that the cache manager needs to listen to
+const collectCacheManagerTopics = (key: 'ADDED_TOPIC' | 'EDIT_TOPIC' | 'DELETE_TOPIC'): string[] => {
+  const types = [ABSTRACT_INTERNAL_OBJECT, ...Object.keys(CACHED_ENTITIES_MAP), ...Object.keys(STORE_ENTITIES_LINKS)];
+  const topics = types.map((type) => getBusTopicForEntityType(type)?.[key]).filter((topic): topic is string => !!topic);
+  return [...new Set(topics)];
+};
+const ADDS_TOPICS = collectCacheManagerTopics('ADDED_TOPIC');
+const EDITS_TOPICS = collectCacheManagerTopics('EDIT_TOPIC');
+const DELETES_TOPICS = collectCacheManagerTopics('DELETE_TOPIC');
+
 type SubEvent = { instance: StoreEntity | StoreRelation };
+type PubSubSubscription = { topic: string; unsubscribe: () => void };
 
 const initCacheManager = () => {
-  let subscribeAdd: { topic: string; unsubscribe: () => void };
-  let subscribeEdit: { topic: string; unsubscribe: () => void };
-  let subscribeDelete: { topic: string; unsubscribe: () => void };
-  let subscribeReset: { topic: string; unsubscribe: () => void };
+  let subscribeAdds: PubSubSubscription[] = [];
+  let subscribeEdits: PubSubSubscription[] = [];
+  let subscribeDeletes: PubSubSubscription[] = [];
+  let subscribeReset: PubSubSubscription;
   const initCacheContent = () => {
     const context = executionContext('cache_manager');
-    writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
-    writeCacheForEntity(ENTITY_TYPE_ENTITY_SETTING, platformEntitySettings(context));
-    writeCacheForEntity(ENTITY_TYPE_MANAGER_CONFIGURATION, platformManagerConfigurations(context));
-    writeCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION, platformMarkings(context));
-    writeCacheForEntity(ENTITY_TYPE_USER, platformUsers(context));
-    writeCacheForEntity(ENTITY_TYPE_STATUS, workflowStatuses(context));
-    writeCacheForEntity(ENTITY_TYPE_CONNECTOR, platformConnectors(context));
-    writeCacheForEntity(ENTITY_TYPE_TRIGGER, platformTriggers(context));
-    writeCacheForEntity(ENTITY_TYPE_PLAYBOOK, platformRunningPlaybooks(context));
-    writeCacheForEntity(ENTITY_TYPE_RULE, platformRules(context));
-    writeCacheForEntity(ENTITY_TYPE_DECAY_RULE, platformDecayRules(context));
-    writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
-    writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
-    writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
-    writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
-    writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
-    writeCacheForEntity(ENTITY_TYPE_PIR, platformPirs(context));
-    writeCacheForEntity(ENTITY_TYPE_DECAY_EXCLUSION_RULE, platformDecayExclusionRules(context));
-    writeCacheForEntity(ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, platformCustomFieldDefinitions(context));
+    for (const [entityType, cacheFn] of Object.entries(CACHED_ENTITIES_MAP)) {
+      const cacheData = cacheFn(context);
+      writeCacheForEntity(entityType, cacheData);
+    }
   };
   return {
     init: () => initCacheContent(), // Use for testing
     start: async () => {
       initCacheContent();
-      subscribeAdd = await pubSubSubscription<SubEvent>(ADDS_TOPIC, async (event) => {
+      subscribeAdds = await Promise.all(ADDS_TOPICS.map((topic) => pubSubSubscription<SubEvent>(topic, async (event) => {
         await addCacheForEntity(event.instance);
-      });
-      subscribeEdit = await pubSubSubscription<SubEvent>(EDITS_TOPIC, async (event) => {
+      })));
+      subscribeEdits = await Promise.all(EDITS_TOPICS.map((topic) => pubSubSubscription<SubEvent>(topic, async (event) => {
         await refreshCacheForEntity(event.instance);
-      });
-      subscribeDelete = await pubSubSubscription<SubEvent>(DELETES_TOPIC, async (event) => {
+      })));
+      subscribeDeletes = await Promise.all(DELETES_TOPICS.map((topic) => pubSubSubscription<SubEvent>(topic, async (event) => {
         await removeCacheForEntity(event.instance);
-      });
+      })));
       subscribeReset = await pubSubSubscription<{ entityType: string }>(CACHE_RESET_TOPIC, (event) => {
         resetCacheForEntity(event.entityType);
       });
-      logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized');
+      const topicsCount = ADDS_TOPICS.length + EDITS_TOPICS.length + DELETES_TOPICS.length;
+      logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized', { topicsCount });
     },
     shutdown: async () => {
       const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
-      try {
-        subscribeAdd.unsubscribe();
-      } catch { /* dont care */ }
-      try {
-        subscribeEdit.unsubscribe();
-      } catch { /* dont care */ }
-      try {
-        subscribeDelete.unsubscribe();
-      } catch { /* dont care */ }
+      const allSubscriptions = [...subscribeAdds, ...subscribeEdits, ...subscribeDeletes];
+      for (let i = 0; i < allSubscriptions.length; i += 1) {
+        try {
+          allSubscriptions[i].unsubscribe();
+        } catch { /* dont care */ }
+      }
       try {
         subscribeReset.unsubscribe();
       } catch { /* dont care */ }
