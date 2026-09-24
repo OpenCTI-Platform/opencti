@@ -7078,19 +7078,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:4.1.1, eventsource-parser@npm:^4.1.0":
+"eventsource-parser@npm:4.1.1, eventsource-parser@npm:^4.1.1":
   version: 4.1.1
   resolution: "eventsource-parser@npm:4.1.1"
   checksum: 10c0/cae2e8960409cd20cb7623b5f1f37ea41ec984e776c1c3fac0a0fe77efe292aa019e0d40427c87b5a13dbaf0b50133866afcb6bf3100dc49c2649758ebd29cbe
   languageName: node
   linkType: hard
 
-"eventsource@npm:5.1.1":
-  version: 5.1.1
-  resolution: "eventsource@npm:5.1.1"
+"eventsource@npm:5.1.2":
+  version: 5.1.2
+  resolution: "eventsource@npm:5.1.2"
   dependencies:
-    eventsource-parser: "npm:^4.1.0"
-  checksum: 10c0/ce5afe28e983f5044897d422a6114731c65e53efc7f50fe325e4717908a67279f2e3481c570cc01c0cabf5c6866e5d16cd6467d0e23b37acdf2063c8ad468a1d
+    eventsource-parser: "npm:^4.1.1"
+  checksum: 10c0/fdcde8bc8c85da65dcd145e331eeedd6026718779ee233c3f339ff87f291cd3bbd2a16bf2156aaad76607065b986c71fb053278fe8f28fdf628d509b65fdd72c
   languageName: node
   linkType: hard
 
@@ -10362,7 +10362,7 @@ __metadata:
     eslint-import-resolver-typescript: "npm:4.4.5"
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:2.0.0"
-    eventsource: "npm:5.1.1"
+    eventsource: "npm:5.1.2"
     eventsource-parser: "npm:4.1.1"
     express: "npm:5.2.1"
     express-rate-limit: "npm:8.7.0"
