@@ -46,6 +46,14 @@ import type { AuthContext, AuthUser } from '../../types/user';
 const queue = new SequencerQueue();
 let loopStarted = false;
 let loopDead = false;
+// Resolved once the loop can take intents: its stores are initialised (batch mode) or it runs
+// (pass-through), or it died (fail open). The chunk intake manager awaits it before consuming
+// (startup race 2026-09-24: a retention written while initPendingIntents was still creating
+// its index auto-created a mis-mapped index, the init threw and the loop died).
+let loopReadyResolve: () => void = () => {};
+const loopReady = new Promise<void>((resolve) => {
+  loopReadyResolve = resolve;
+});
 let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
 let strippedSamples = 0; // s9.10.2: bounded dead-soft-strip sampling
 let missingInBatchSamples = 0; // written-index probe: bounded sampling of refs produced in the batch
@@ -496,6 +504,7 @@ const runBatchLoop = async () => {
   });
   await initPendingIntents();
   logApp.info('[SEQUENCER] batch loop started');
+  loopReadyResolve();
   // Deferral lanes, RESIDUAL since P2 merge-fold (plan 0009 s9.7): same-target different-input
   // ENTITY writes now chain within one batch (each step diffing against the predecessor's
   // in-memory result), so the lanes only carry the non-foldable rest: relations, writes on a
@@ -1000,6 +1009,7 @@ const runBatchLoop = async () => {
 
 const runPassthroughLoop = async () => {
   logApp.info('[SEQUENCER] pass-through loop started');
+  loopReadyResolve();
   for (;;) {
     const intent = await queue.take();
     sequencerMetrics.queueWait((Date.now() - intent.arrivedAt) / 1000);
@@ -1025,7 +1035,22 @@ const ensureLoop = () => {
     // every later submit takes the direct path, ingestion continues without the sequencer.
     loopDead = true;
     logApp.error('[SEQUENCER] loop died, failing open to the direct path', { cause: err });
+    // The intents already queued would wait forever for a loop that is gone (2026-09-24: 8
+    // chunks never acked): they take the direct path too.
+    for (let stranded = queue.tryPop(); stranded; stranded = queue.tryPop()) {
+      const intent = stranded;
+      sequencerMetrics.intent('bypassed', intent.kind);
+      intent.apply().then((result) => intent.resolve(result), (applyErr) => intent.reject(applyErr));
+    }
+    loopReadyResolve();
   });
+};
+
+// Starts the loop now instead of at the first submitted intent, and resolves once it can take
+// intents (see loopReady).
+export const startSequencerLoop = (): Promise<void> => {
+  ensureLoop();
+  return loopReady;
 };
 
 interface SubmitArgs {
