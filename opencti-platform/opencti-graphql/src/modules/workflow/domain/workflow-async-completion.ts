@@ -180,7 +180,7 @@ export const reportWorkflowAsyncActionResult = async (
   // Keep the legacy `x_opencti_workflow_id` in sync with the completed state.
   // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
   if (fullEntity) {
-    await projectWorkflowState(executionContext, fullEntity, pendingTransition.toState, resolveProjectionScope(instanceEntity.scope));
+    await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, resolveProjectionScope(instanceEntity.scope));
   } else {
     logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
   }

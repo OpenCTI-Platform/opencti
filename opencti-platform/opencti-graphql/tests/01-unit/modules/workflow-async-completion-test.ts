@@ -624,7 +624,7 @@ describe('reportWorkflowAsyncActionResult', () => {
 
       await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
 
-      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), fullEntity, 'reviewing', 'GLOBAL');
+      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), mockContext.user, fullEntity, 'reviewing', 'GLOBAL');
       // Must happen after the instance's own currentState/history update, not before.
       const updateAttributeOrder = (updateAttribute as any).mock.invocationCallOrder.at(-1);
       const projectionOrder = (projectWorkflowState as any).mock.invocationCallOrder[0];

@@ -377,7 +377,7 @@ const initializeWorkflowInstance = async (
   if (shouldProject) {
     // Only the Global scope is reconciled by the status mapping today; 'standard'
     // (this function's default when no explicit status was supplied) maps onto it.
-    await projectWorkflowState(executionContext, entity as BasicStoreEntity, currentState, StatusScope.Global);
+    await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, currentState, StatusScope.Global);
   }
 
   return instance;
@@ -1114,11 +1114,11 @@ export const getWorkflowInstance = async (
     if (!withinRateLimit) {
       try {
         const scope = resolveProjectionScope(instanceEntity.scope);
-        const expectedStatusId = await resolveMappedStatusId(context, entity.entity_type, scope, currentState);
+        const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+        const expectedStatusId = await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, currentState);
         if (expectedStatusId && (entity as BasicStoreEntity).x_opencti_workflow_id !== expectedStatusId) {
           readRepairLastAttemptByEntity.set(effectiveEntityId, Date.now());
-          const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
-          await projectWorkflowState(repairContext, entity as BasicStoreEntity, currentState, scope);
+          await projectWorkflowState(repairContext, WORKFLOW_MANAGER_USER, entity as BasicStoreEntity, currentState, scope);
           logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState });
         }
       } catch (error) {
@@ -1425,7 +1425,7 @@ export const triggerWorkflowEvent = async (
 
     // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
     // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
-    await projectWorkflowState(executionContext, entity as BasicStoreEntity, newState, resolveProjectionScope(instanceEntity.scope));
+    await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, resolveProjectionScope(instanceEntity.scope));
 
     const workflowInstance = await getWorkflowInstance(context, user, entityId);
     // Notify assignees and participants when a non-empty comment was provided

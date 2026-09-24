@@ -23,6 +23,7 @@ vi.mock('../../../src/utils/draftContext', () => ({
 }));
 
 const mockContext = { user: { id: 'ctx-user-id' } } as any;
+const mockUser = { id: 'explicit-user-id' } as any;
 
 describe('projectWorkflowState', () => {
   beforeEach(() => {
@@ -37,11 +38,11 @@ describe('projectWorkflowState', () => {
     ]);
 
     const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' } as BasicStoreEntity;
-    await projectWorkflowState(mockContext, entity, 'tpl-progress', StatusScope.Global);
+    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-progress', StatusScope.Global);
 
     expect(fullEntitiesList).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       ['Status'],
       expect.objectContaining({
         filters: expect.objectContaining({
@@ -55,7 +56,7 @@ describe('projectWorkflowState', () => {
     );
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'entity-1',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-progress-id'] }],
@@ -70,11 +71,11 @@ describe('projectWorkflowState', () => {
     ]);
     const entity = { id: 'external-id', internal_id: 'internal-id', entity_type: 'Incident' } as BasicStoreEntity;
 
-    await projectWorkflowState(mockContext, entity, 'tpl-a', StatusScope.Global);
+    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global);
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'internal-id',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-id'] }],
@@ -89,11 +90,11 @@ describe('projectWorkflowState', () => {
     ]);
     const entity = { id: 'external-id', entity_type: 'Incident' } as BasicStoreEntity;
 
-    await projectWorkflowState(mockContext, entity, 'tpl-a', StatusScope.Global);
+    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global);
 
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
-      mockContext.user,
+      mockUser,
       'external-id',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-id'] }],
@@ -104,7 +105,7 @@ describe('projectWorkflowState', () => {
     (fullEntitiesList as any).mockResolvedValue([]);
     const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' } as BasicStoreEntity;
 
-    await projectWorkflowState(mockContext, entity, 'tpl-unknown', StatusScope.Global);
+    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-unknown', StatusScope.Global);
 
     expect(updateAttribute).not.toHaveBeenCalled();
     expect(logApp.warn).toHaveBeenCalledOnce();
@@ -114,7 +115,7 @@ describe('projectWorkflowState', () => {
     (fullEntitiesList as any).mockRejectedValue(new Error('store unavailable'));
     const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' } as BasicStoreEntity;
 
-    await expect(projectWorkflowState(mockContext, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
+    await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
     expect(updateAttribute).not.toHaveBeenCalled();
     expect(logApp.warn).toHaveBeenCalledOnce();
   });
@@ -128,7 +129,7 @@ describe('projectWorkflowState', () => {
     (updateAttribute as any).mockRejectedValue(new Error('update failed'));
     const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' } as BasicStoreEntity;
 
-    await expect(projectWorkflowState(mockContext, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
+    await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
     expect(updateAttribute).toHaveBeenCalledOnce();
     expect(logApp.warn).toHaveBeenCalledOnce();
   });
