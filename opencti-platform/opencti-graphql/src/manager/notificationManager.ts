@@ -620,7 +620,9 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, message: streamMessage, origin } } = streamEvent;
-      const updateEventContext = streamEvent.event === EVENT_TYPE_UPDATE ? buildUpdateEventContext(streamEvent) : undefined;
+      const updateEventContext = liveNotifications.length > 0 && streamEvent.event === EVENT_TYPE_UPDATE
+        ? buildUpdateEventContext(streamEvent)
+        : undefined;
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
