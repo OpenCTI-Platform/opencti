@@ -386,6 +386,7 @@
     "namespace": "",
     "hostname": "localhost",
     "tls_servername": "",
+    "tls_cluster_node_mode": false,
     "use_ssl": false,
     "ca": [],
     "port": 6379,
