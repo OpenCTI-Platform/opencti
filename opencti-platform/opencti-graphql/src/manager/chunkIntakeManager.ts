@@ -73,13 +73,15 @@ const OP_TRANSIENT_BACKOFF_MS = Number(conf.get('chunk_intake_manager:op_transie
 const PRE_LOOP_CONCURRENCY = Number(conf.get('chunk_intake_manager:pre_loop_concurrency') ?? 32);
 // Adaptive limit (2026-09-24, chunkIntakePreLoop.ts): grows while operations are paced and
 // the engine is quiet, halves on transient engine errors. min / max bound the walk, the
-// value above is where it starts; adaptive=false pins the legacy fixed limit.
+// value above is where it starts; adaptive=false pins the legacy fixed limit. Growth is
+// +35% per tick; after an engine error it resumes once the engine has been quiet for 3 s
+// (three ticks: the search queue drains in well under a second once the burst is gone).
 const PRE_LOOP_ADAPTIVE = booleanConf('chunk_intake_manager:pre_loop_adaptive', true);
 const PRE_LOOP_MIN = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_min') ?? 8);
 const PRE_LOOP_MAX = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_max') ?? 512);
 const PRE_LOOP_TICK_MS = Number(conf.get('chunk_intake_manager:pre_loop_tick_ms') ?? 1000);
-const PRE_LOOP_QUIET_MS = Number(conf.get('chunk_intake_manager:pre_loop_quiet_ms') ?? 10000);
-const PRE_LOOP_INCREASE_RATIO = Number(conf.get('chunk_intake_manager:pre_loop_increase_ratio') ?? 0.25);
+const PRE_LOOP_QUIET_MS = Number(conf.get('chunk_intake_manager:pre_loop_quiet_ms') ?? 3000);
+const PRE_LOOP_INCREASE_RATIO = Number(conf.get('chunk_intake_manager:pre_loop_increase_ratio') ?? 0.35);
 // Single wave per chunk (2026-09-24, chunkIntakeProducers.ts): producers are resolved to
 // their standard ids up front and the whole chunk runs at once; false = the legacy
 // producers-first wave (A/B knob). Needs the sequencer: without it nothing orders a
