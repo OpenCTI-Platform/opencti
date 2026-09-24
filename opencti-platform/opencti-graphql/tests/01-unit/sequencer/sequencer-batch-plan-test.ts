@@ -381,3 +381,37 @@ describe('sequencer batch plan: relation endpoints with intake-shaped candidate 
     expect(plan.parked.map((p) => p.intent)).toEqual([r1, r2]);
   });
 });
+
+describe('auto-created references with a producer in flight (single wave, 2026-09-24)', () => {
+  const resolveNone = () => null;
+
+  it('waits for a queued label producer instead of assuming an auto-create at apply', () => {
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'] });
+    const plan = buildBatchPlan([coa], resolveNone, new Set(), { queueHas: (id) => id === 'label--nist' });
+    expect(plan.order).toEqual([]);
+    expect(plan.deferred).toEqual([{ intent: coa, reason: 'queued_producer', waitingOn: ['label--nist'] }]);
+  });
+
+  it('waits a bounded number of passes for a label declared as an in-chunk member', () => {
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'], memberRefIds: new Set(['label--nist']) });
+    const plan = buildBatchPlan([coa], resolveNone, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
+    expect(plan.order).toEqual([]);
+    expect(plan.deferred).toEqual([{ intent: coa, reason: 'member_wait' }]);
+  });
+
+  it('keeps the auto-create assumption for a label nobody has in flight', () => {
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'] });
+    const plan = buildBatchPlan([coa], resolveNone, new Set(), { queueHas: () => false });
+    expect(plan.order.length).toBe(1);
+    expect(plan.deferred).toEqual([]);
+    expect(plan.parked).toEqual([]);
+  });
+
+  it('orders a consumer after its co-batched label producer', () => {
+    const label = intentOf({ kind: 'entity', type: 'Label', input: { value: 'nist' }, candidateIds: ['label--nist'] });
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'] });
+    const plan = buildBatchPlan([coa, label], resolveNone, new Set(), { queueHas: () => false });
+    expect(plan.order.map((g) => g.leader)).toEqual([label, coa]);
+    expect(plan.deferred).toEqual([]);
+  });
+});
