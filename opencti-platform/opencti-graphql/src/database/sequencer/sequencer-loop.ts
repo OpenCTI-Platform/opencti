@@ -50,6 +50,7 @@ let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
 let strippedSamples = 0; // s9.10.2: bounded dead-soft-strip sampling
 let missingInBatchSamples = 0; // written-index probe: bounded sampling of refs produced in the batch
 let lockMissSamples = 0; // fix 2026-09-22: bounded sampling of lock keys outside the batch lock
+let failedFallthroughSamples = 0; // probe 2026-09-24: bounded sampling of missing refs failed without retention
 
 // fix 2026-09-22 instrumentation: a key an apply-time lock site asked for and the batch lock did
 // not hold; counted by kind (the STIX-like prefix before "--", or "internal" for a bare id)
@@ -741,7 +742,24 @@ const runBatchLoop = async () => {
         deferrals.push({ intent: leader, absorbed, missing, err });
         return;
       }
-      if (isMissingRef) classifyMissing(missingIds(), 'failed');
+      if (isMissingRef) {
+        classifyMissing(missingIds(), 'failed');
+        // probe 2026-09-24: a MISSING_REFERENCE that reaches this fall-through on a caller
+        // with retention should not exist (the branch above retains it); sample the flags
+        if (failedFallthroughSamples < 20) {
+          failedFallthroughSamples += 1;
+          logApp.info('[SEQUENCER] missing reference failed without retention', {
+            kind: leader.kind,
+            type: leader.type,
+            source: leader.source,
+            forceDirect: forceDirect.has(leader.id),
+            deferMissingRefs: leader.context?.deferMissingRefs ?? null,
+            accepting: pendingIntentsAccepting(),
+            retry: leader.user?.origin?.call_retry_number ?? null,
+            missing: missingIds().slice(0, 3),
+          });
+        }
+      }
       sequencerMetrics.intent('failed', leader.kind);
       leader.reject(err);
       // absorbed asserted the same input on the same target: they fail identically today

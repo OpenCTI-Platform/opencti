@@ -338,9 +338,16 @@ export const buildBatchPlan = (
         if (waiting) waiting.push(id); else waitingByGroup.set(index, [id]);
       } else if (cls === 'member_dead') {
         // s9.10.2: a dead SOFT ref is stripped (the container survives without the edge
-        // that could never exist); a dead HARD ref (relation endpoint) still condemns.
+        // that could never exist). A dead HARD ref (relation endpoint) condemns the intent
+        // as FINAL only when the caller has a retention store behind it (the chunk path:
+        // the loop retains the creation and re-submits it when the member lands). Fix
+        // 2026-09-24 (B16): without retention (the HTTP path), "dead" is usually just LATE
+        // over another pool and a final rejection is a drop the client never retries
+        // (3,330 relationships lost on one full-mix run); it parks with the deadline instead,
+        // then applies as today (reject, worker retry ladder).
         if (soft) deadSoftIds.push(id);
-        else finalIds.push(id);
+        else if (group.leader.context?.deferMissingRefs) finalIds.push(id);
+        else parkIds.push(id);
       } else if (!soft) {
         parkIds.push(id); // external hard: park with deadline, today's healing path
       } else if (options.parkSoftRefs) {

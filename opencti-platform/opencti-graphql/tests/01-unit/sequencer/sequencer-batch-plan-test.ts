@@ -241,8 +241,8 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(plan.finalMissing).toEqual([]);
   });
 
-  it('waits a bounded number of passes for a declared member not yet seen, then rejects final (member dead)', () => {
-    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+  it('waits a bounded number of passes for a declared member not yet seen, then rejects final (member dead) when the caller has retention', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']), context: { deferMissingRefs: true } });
     const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
     const opts = { queueHas: () => false, memberWaitLimit: 2 };
     const p1 = buildBatchPlan([rel], resolve, new Set(), opts);
@@ -301,13 +301,23 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(note.referencedIds).toEqual(['report--r']);
   });
 
-  it('a dead HARD member ref (relation endpoint) still rejects final, no strip (s9.10.2)', () => {
-    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+  it('a dead HARD member ref (relation endpoint) rejects final when the caller has retention, no strip (s9.10.2)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']), context: { deferMissingRefs: true } });
     rel.memberWaitAttempts = 2; // bounded wait already exhausted
     const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
     const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
     expect(plan.strippedDead).toEqual([]);
     expect(plan.finalMissing).toEqual([{ intent: rel, missing: ['software--s'] }]);
+  });
+
+  it('a dead HARD member ref PARKS instead of final when the caller has no retention (B16, 2026-09-24)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+    rel.memberWaitAttempts = 2;
+    const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
+    const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
+    expect(plan.finalMissing).toEqual([]);
+    expect(plan.order).toEqual([]);
+    expect(plan.parked).toEqual([{ intent: rel, missing: ['software--s'] }]);
   });
 
   it('exposes producer positions as dependsOn in the order (s9.9 failure-aware execution)', () => {
