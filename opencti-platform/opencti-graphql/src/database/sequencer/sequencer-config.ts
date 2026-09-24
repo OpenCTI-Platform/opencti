@@ -77,9 +77,11 @@ const readConfig = (): SequencerConfig => {
     // level on the plan's dependsOn edges; 1 = the sequential path measured through the study
     applyConcurrency: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:apply_concurrency') ?? 1))),
     // written index (2026-09-21): the running batch's own writes are served first and kept
-    // through mid-batch invalidations until commit (in-batch read-your-writes); off = the map
-    // as measured through the study
-    writtenIndex: booleanConf('app:ingestion_sequencer:identity_map_written_index', false),
+    // through mid-batch invalidations until commit (in-batch read-your-writes). Off through the
+    // study's measurements (neutral then); ON since 2026-09-24 with the single wave per chunk,
+    // where producers and consumers share a batch: it closed 60% of the soft refs stripped at
+    // apply on MITRE (207 to 87) and brought the run from 295 to 353 obj/s (legacy wave 391).
+    writtenIndex: booleanConf('app:ingestion_sequencer:identity_map_written_index', true),
     pendingRefExpiryS: Number(conf.get('app:ingestion_sequencer:pending_ref_expiry_s') ?? 604800),
     memberWaitLimit: Number(conf.get('app:ingestion_sequencer:member_wait_limit') ?? 2),
     // B10 (2026-09-16): a deferral waiting on a queued producer is re-admitted when the
