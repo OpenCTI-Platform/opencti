@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   encodeEmbeddedStoragePathForMarkdownUrl,
   collectDataUriImagesFromMarkdown,
+  collectEmbeddedStoragePathsFromMarkdownFields,
   extractMarkdownImageReferences,
   findRemovedEmbeddedStoragePathsFromMarkdownFields,
   parseDataUriImage,
@@ -186,5 +187,76 @@ describe('markdown-embedded-images utility', () => {
     });
 
     expect(removed).toEqual(['embedded/Report/r-1/remove.png']);
+  });
+
+  it('should collect markdown fields nested anywhere in the payload', () => {
+    const payload = {
+      entity_type: 'Report',
+      objectLabel: [
+        { value: 'label-1', description: '![nested](embedded/Report/r-1/nested.png)' },
+      ],
+      extensions: {
+        'extension-definition--x': {
+          deep: { content: '![deep](embedded/Report/r-1/deep.png)' },
+        },
+      },
+    };
+
+    const collected = collectEmbeddedStoragePathsFromMarkdownFields(payload, {
+      entityType: 'Report',
+      entityId: 'r-1',
+    });
+
+    expect([...collected].sort()).toEqual([
+      'embedded/Report/r-1/deep.png',
+      'embedded/Report/r-1/nested.png',
+    ]);
+  });
+
+  it('should collect every entry of a markdown field holding an array of strings', () => {
+    const payload = {
+      description: [
+        '![one](embedded/Report/r-1/one.png)',
+        42,
+        '![two](embedded/Report/r-1/two.png)',
+      ],
+    };
+
+    const collected = collectEmbeddedStoragePathsFromMarkdownFields(payload, {
+      entityType: 'Report',
+      entityId: 'r-1',
+    });
+
+    expect([...collected].sort()).toEqual([
+      'embedded/Report/r-1/one.png',
+      'embedded/Report/r-1/two.png',
+    ]);
+  });
+
+  it('should not recurse into the value of a markdown field', () => {
+    const payload = {
+      description: { description: '![ignored](embedded/Report/r-1/ignored.png)' },
+    };
+
+    const collected = collectEmbeddedStoragePathsFromMarkdownFields(payload, {
+      entityType: 'Report',
+      entityId: 'r-1',
+    });
+
+    expect([...collected]).toEqual([]);
+  });
+
+  it('should terminate on a payload containing a cycle', () => {
+    const payload: Record<string, unknown> = {
+      description: '![keep](embedded/Report/r-1/keep.png)',
+    };
+    payload.self = payload;
+
+    const collected = collectEmbeddedStoragePathsFromMarkdownFields(payload, {
+      entityType: 'Report',
+      entityId: 'r-1',
+    });
+
+    expect([...collected]).toEqual(['embedded/Report/r-1/keep.png']);
   });
 });
