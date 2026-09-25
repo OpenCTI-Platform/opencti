@@ -1,9 +1,10 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { Dispatch, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
+import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { isStixObjectTypes } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../i18n';
@@ -18,7 +19,6 @@ export interface FilterEntityAutocompleteProps {
   setInputValues: Dispatch<SetStateAction<FilterEditorInputValue[]>>;
   subKey?: string;
   disabled?: boolean;
-  /** Fallback group/input label, used when an option carries no group of its own. */
   label?: string;
 }
 
@@ -43,6 +43,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
   label,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const { helpers, availableRelationFilterTypes } = useFilterEditorContext();
   const {
     searchKey,
@@ -100,20 +101,51 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => {
         const { key, onDelete, className } = getTagProps({ index });
         const isLockedValue = disabled && tagValue.length === 1;
-        if (!isLockedValue) {
-          return <Chip key={key} className={className} label={option.label} onDelete={() => onDelete(index)} />;
-        }
+        const chip = isLockedValue
+          ? (
+              <Tooltip key={key}>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Chip className={className} label={option.label} disabled />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t_i18n('Cannot be removed: the relationship type is required when a filter is configured')}
+                </TooltipContent>
+              </Tooltip>
+            )
+          : <Chip key={key} className={className} label={option.label} onDelete={() => onDelete(index)} />;
+        // A subKey value list (e.g. regardingOf/dynamicRegardingOf's relationship_type) has no
+        // mode of its own in the data model (filterEntityValueActions builds `{ key, values }`
+        // with no mode) — toggling it here would silently flip the parent filter's mode instead.
+        const showModeToggle = !disabled && !subKey && filter && index < tagValue.length - 1;
         return (
-          <Tooltip key={key}>
-            <TooltipTrigger asChild>
-              <span>
-                <Chip className={className} label={option.label} disabled />
+          <Fragment key={key}>
+            {chip}
+            {showModeToggle && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={() => helpers?.handleSwitchLocalMode?.(filter)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') helpers?.handleSwitchLocalMode?.(filter);
+                }}
+                style={{
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  margin: '0 4px',
+                  padding: '2px 6px',
+                  borderRadius: 4,
+                  fontSize: 12,
+                  fontFamily: 'Consolas, monaco, monospace',
+                  backgroundColor: theme.palette.action?.disabled,
+                }}
+              >
+                {t_i18n((filter.mode ?? 'or').toUpperCase())}
               </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              {t_i18n('Cannot be removed: the relationship type is required when a filter is configured')}
-            </TooltipContent>
-          </Tooltip>
+            )}
+          </Fragment>
         );
       })}
       sx={{
@@ -157,7 +189,6 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       renderOption={(props, option) => {
         const currentValues = getEditedValues(filter, subKey);
         const checked = currentValues.includes(option.value);
-        // Extract key from props to avoid React warning
         const { key, ...otherProps } = props;
         return (
           <FilterEntityOption
