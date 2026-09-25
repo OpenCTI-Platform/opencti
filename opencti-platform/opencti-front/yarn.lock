@@ -10629,12 +10629,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:18.0.13":
-  version: 18.0.13
-  resolution: "marked@npm:18.0.13"
+"marked@npm:18.0.14":
+  version: 18.0.14
+  resolution: "marked@npm:18.0.14"
   bin:
     marked: bin/marked.js
-  checksum: 10c0/420039a67d7cebddee022cfc4766fa9b4f965b83848d0f252d6782dcbdca06c972a83f6dc0242dfbd392652aa1f7ef25eaecf18856c7ec80da61d3176342e20f
+  checksum: 10c0/1214c7553fdcb1db6c5adad29a7d019f9350f861bc9783ed41a2d177f021551fb22884de012ea26be446af8650d8abbf76d822b9ad5b0c5d592628f66663c42e
   languageName: node
   linkType: hard
 
@@ -12013,7 +12013,7 @@ __metadata:
     license-checker-rseidelsohn: "npm:5.0.1"
     maplibre-gl: "npm:6.10.0"
     markdown-to-jsx: "npm:9.10.3"
-    marked: "npm:18.0.13"
+    marked: "npm:18.0.14"
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.31.0"
     monocart-reporter: "npm:2.13.1"
