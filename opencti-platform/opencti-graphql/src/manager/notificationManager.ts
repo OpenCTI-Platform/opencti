@@ -493,13 +493,24 @@ export const buildUpdateEventContext = (streamEvent: SseEvent<DataEvent>): Updat
   return { previous, eventContext: buildFilterEventContext(streamEvent.data as UpdateEvent) };
 };
 
+// Builds on first use and keeps the result, so every trigger of the same event shares one.
+export const memoizeUpdateEventContext = (streamEvent: SseEvent<DataEvent>): (() => UpdateEventContext) => {
+  let updateEventContext: UpdateEventContext | undefined;
+  return () => {
+    if (!updateEventContext) {
+      updateEventContext = buildUpdateEventContext(streamEvent);
+    }
+    return updateEventContext;
+  };
+};
+
 export const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
   streamEvent: SseEvent<DataEvent>,
   trigger: BasicStoreEntityLiveTrigger,
   useSideEventMatching = false,
-  updateEventContext?: UpdateEventContext,
+  getUpdateEventContext: () => UpdateEventContext = () => buildUpdateEventContext(streamEvent),
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, notifiers, instance_trigger, filters, raw_filters } = trigger;
@@ -521,7 +532,7 @@ export const buildTargetEvents = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
-    const { previous, eventContext } = updateEventContext ?? buildUpdateEventContext(streamEvent);
+    const { previous, eventContext } = getUpdateEventContext();
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
@@ -620,21 +631,19 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, message: streamMessage, origin } } = streamEvent;
-      const updateEventContext = liveNotifications.length > 0 && streamEvent.event === EVENT_TYPE_UPDATE
-        ? buildUpdateEventContext(streamEvent)
-        : undefined;
+      const getUpdateEventContext = memoizeUpdateEventContext(streamEvent);
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
         const { internal_id: notification_id, trigger_type: type, instance_trigger } = trigger;
-        const targets = await buildTargetEvents(context, users, streamEvent, trigger, false, updateEventContext);
+        const targets = await buildTargetEvents(context, users, streamEvent, trigger, false, getUpdateEventContext);
         if (targets.length > 0) {
           const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data, streamMessage, origin };
           await storeNotificationEvent(context, notificationEvent);
         }
         // search side events for instance_trigger
         if (instance_trigger && trigger.event_types.includes(EVENT_TYPE_UPDATE)) {
-          const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true, updateEventContext);
+          const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true, getUpdateEventContext);
           if (sideTargets.length > 0) {
             const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets: sideTargets, data, streamMessage, origin };
             await storeNotificationEvent(context, notificationEvent);
