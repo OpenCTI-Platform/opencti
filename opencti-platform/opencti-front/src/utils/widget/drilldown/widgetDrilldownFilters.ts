@@ -1,6 +1,6 @@
 import moment from 'moment';
 import type { Filter } from '../../filters/filtersHelpers-types';
-import type { WidgetDateRange } from './widgetDrilldown-types';
+import type { DrilldownBucket, FilterGroup, FilterKeysSchema, WidgetDateRange } from './widgetDrilldown-types';
 
 const INTERVAL_UNITS: Record<string, moment.unitOfTime.DurationConstructor> = {
   day: 'day',
@@ -53,4 +53,75 @@ export const buildBucketDateFilter = (
     { key: dateAttribute, values: [lowerBound.toISOString()], operator: 'gte', mode: 'or' },
     { key: dateAttribute, values: [upperBound.toISOString()], operator: isUpperClamped ? 'lte' : 'lt', mode: 'or' },
   ];
+};
+
+type ValueSource = 'label' | 'entityId';
+
+const ATTRIBUTE_TO_FILTER: Record<string, { key: string; source: ValueSource }> = {
+  entity_type: { key: 'entity_type', source: 'label' },
+  relationship_type: { key: 'relationship_type', source: 'label' },
+  x_opencti_workflow_id: { key: 'x_opencti_workflow_id', source: 'label' },
+  creator_id: { key: 'creator_id', source: 'entityId' },
+  'created-by.internal_id': { key: 'createdBy', source: 'entityId' },
+  'object-label.internal_id': { key: 'objectLabel', source: 'entityId' },
+  'object-marking.internal_id': { key: 'objectMarking', source: 'entityId' },
+  'object-assignee.internal_id': { key: 'objectAssignee', source: 'entityId' },
+  'kill-chain-phase.internal_id': { key: 'killChainPhases', source: 'entityId' },
+};
+
+/** Filters the platform can express in a widget but a list page cannot reproduce. */
+const NON_TRANSPOSABLE_KEYS = ['dynamicFrom', 'dynamicTo'];
+
+/**
+ * Elasticsearch groups documents missing the aggregated field under a bucket
+ * literally keyed `unknown` (`terms.missing`, `engine.ts:3384`). Its count is
+ * real but no filter value reproduces it, so the bucket must stay inert rather
+ * than open a list of zero results. The rest of the frontend recognises the same
+ * sentinel (`buildWidgetLabelsOption`, `useDistributionGraphData.ts`).
+ *
+ * Buckets whose referenced entity is restricted need no such guard: they resolve
+ * to no `entityId` and are already rejected below.
+ */
+const MISSING_VALUE_BUCKET = 'unknown';
+
+const isFilterKeySupported = (filterKey: string, entityTypes: string[], schema: FilterKeysSchema) => {
+  if (schema.size === 0) return true; // schema not loaded yet: do not block on an empty map
+  const scopes = entityTypes.length > 0 ? entityTypes : [...schema.keys()];
+  return scopes.some((type) => schema.get(type)?.has(filterKey));
+};
+
+/**
+ * Builds the filter isolating one distribution bucket.
+ * Returns null whenever the bucket cannot be expressed as a list filter, which
+ * makes the surface inert rather than opening a list with a different count.
+ */
+export const buildBucketValueFilter = (
+  attribute: string,
+  bucket: DrilldownBucket,
+  entityTypes: string[],
+  filterKeysSchema: FilterKeysSchema,
+): Filter[] | null => {
+  if (bucket.kind !== 'distribution') return [];
+
+  const mapping = ATTRIBUTE_TO_FILTER[attribute];
+  if (!mapping) return null;
+
+  if (bucket.rawValue === MISSING_VALUE_BUCKET) return null;
+
+  const value = mapping.source === 'entityId' ? bucket.entityId : bucket.rawValue;
+  if (!value) return null;
+
+  if (!isFilterKeySupported(mapping.key, entityTypes, filterKeysSchema)) return null;
+
+  return [{ key: mapping.key, values: [value], operator: 'eq', mode: 'or' }];
+};
+
+/**
+ * Widget filters may reference sub-queries (`dynamicFrom` / `dynamicTo`) that no
+ * list page can evaluate. Such a widget is never clickable.
+ */
+export const assertRepresentable = (filters?: FilterGroup | null): boolean => {
+  if (!filters) return true;
+  if (filters.filters.some((f) => NON_TRANSPOSABLE_KEYS.includes(f.key))) return false;
+  return (filters.filterGroups ?? []).every((group) => assertRepresentable(group));
 };

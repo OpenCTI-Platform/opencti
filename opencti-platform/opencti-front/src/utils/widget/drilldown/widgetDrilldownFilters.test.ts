@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import moment from 'moment';
-import { buildBucketDateFilter } from './widgetDrilldownFilters';
+import { buildBucketDateFilter, buildBucketValueFilter, assertRepresentable } from './widgetDrilldownFilters';
 
 const NO_RANGE = { startDate: null, endDate: null };
 
@@ -98,5 +98,95 @@ describe('buildBucketDateFilter timezone recovery', () => {
     const filters = buildBucketDateFilter(bucketDate, 'month', NO_RANGE, 'created_at');
     expect(filters?.[0].values[0]).toEqual('2024-02-01T00:00:00.000Z');
     expect(filters?.[1].values[0]).toEqual('2024-03-01T00:00:00.000Z');
+  });
+});
+
+const schemaWith = (keys: string[]) => new Map([
+  ['Stix-Core-Object', new Map(keys.map((k) => [k, { filterKey: k } as never]))],
+]);
+
+const SCHEMA = schemaWith([
+  'entity_type', 'createdBy', 'objectLabel', 'objectMarking',
+  'objectAssignee', 'killChainPhases', 'creator_id', 'x_opencti_workflow_id',
+]);
+
+describe('buildBucketValueFilter', () => {
+  it('maps entity_type to the raw label', () => {
+    const bucket = { kind: 'distribution', rawValue: 'Malware', entityId: null } as const;
+    expect(buildBucketValueFilter('entity_type', bucket, ['Stix-Core-Object'], SCHEMA)).toEqual([
+      { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+    ]);
+  });
+
+  it('maps a nested internal_id attribute to its filter key and the entity id', () => {
+    const bucket = { kind: 'distribution', rawValue: 'id-1', entityId: 'id-1' } as const;
+    expect(buildBucketValueFilter('created-by.internal_id', bucket, ['Stix-Core-Object'], SCHEMA)).toEqual([
+      { key: 'createdBy', values: ['id-1'], operator: 'eq', mode: 'or' },
+    ]);
+  });
+
+  it('maps every supported id-based attribute', () => {
+    const bucket = { kind: 'distribution', rawValue: 'x', entityId: 'x' } as const;
+    const pairs: [string, string][] = [
+      ['object-label.internal_id', 'objectLabel'],
+      ['object-marking.internal_id', 'objectMarking'],
+      ['object-assignee.internal_id', 'objectAssignee'],
+      ['kill-chain-phase.internal_id', 'killChainPhases'],
+      ['creator_id', 'creator_id'],
+    ];
+    pairs.forEach(([attribute, key]) => {
+      expect(buildBucketValueFilter(attribute, bucket, ['Stix-Core-Object'], SCHEMA)?.[0].key).toEqual(key);
+    });
+  });
+
+  it('returns null when an id-based bucket has no resolved entity', () => {
+    const bucket = { kind: 'distribution', rawValue: 'id-1', entityId: null } as const;
+    expect(buildBucketValueFilter('created-by.internal_id', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+  });
+
+  it('returns null for an unmapped attribute', () => {
+    const bucket = { kind: 'distribution', rawValue: 'a', entityId: null } as const;
+    expect(buildBucketValueFilter('some_custom_field', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+  });
+
+  it('returns null when the filter key is not supported by the destination schema', () => {
+    const bucket = { kind: 'distribution', rawValue: 'id-1', entityId: 'id-1' } as const;
+    const poorSchema = schemaWith(['entity_type']);
+    expect(buildBucketValueFilter('created-by.internal_id', bucket, ['Stix-Core-Object'], poorSchema)).toBeNull();
+  });
+
+  it('returns null for an empty bucket value', () => {
+    const bucket = { kind: 'distribution', rawValue: null, entityId: null } as const;
+    expect(buildBucketValueFilter('entity_type', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+  });
+
+  // `terms.missing = 'unknown'` (engine.ts:3384) makes this a real bucket with a
+  // real count, but `entity_type = 'unknown'` would match nothing.
+  it('returns null for the missing-value sentinel bucket', () => {
+    const bucket = { kind: 'distribution', rawValue: 'unknown', entityId: null } as const;
+    expect(buildBucketValueFilter('entity_type', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+  });
+
+  it('returns an empty filter list for a total bucket', () => {
+    expect(buildBucketValueFilter('entity_type', { kind: 'total' }, ['Stix-Core-Object'], SCHEMA)).toEqual([]);
+  });
+});
+
+describe('assertRepresentable', () => {
+  it('accepts a plain filter group', () => {
+    expect(assertRepresentable({ mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], mode: 'or' }], filterGroups: [] })).toBe(true);
+  });
+
+  it('accepts an undefined filter group', () => {
+    expect(assertRepresentable(undefined)).toBe(true);
+  });
+
+  it('rejects a dynamicFrom filter', () => {
+    expect(assertRepresentable({ mode: 'and', filters: [{ key: 'dynamicFrom', values: ['x'], mode: 'or' }], filterGroups: [] })).toBe(false);
+  });
+
+  it('rejects a dynamicTo filter nested in a sub-group', () => {
+    const nested = { mode: 'and', filters: [{ key: 'dynamicTo', values: ['x'], mode: 'or' }], filterGroups: [] };
+    expect(assertRepresentable({ mode: 'and', filters: [], filterGroups: [nested] })).toBe(false);
   });
 });
