@@ -14,8 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { JSONSchemaType } from 'ajv';
-import type { StixObject, StixOpenctiExtensionSDO, StixBundle } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { StixBundle } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StreamDataEvent } from '../../types/event';
 
@@ -34,14 +33,6 @@ export interface BasicStoreEntityPlaybook extends BasicStoreEntity {
 export interface StoreEntityPlaybook extends StoreEntity {
   name: string;
   description: string;
-}
-
-export interface StixPlaybook extends StixObject {
-  name: string;
-  description: string;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 
 export interface NodeInstance<T extends object> {

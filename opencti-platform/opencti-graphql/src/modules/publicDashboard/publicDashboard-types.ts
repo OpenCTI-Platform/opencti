@@ -1,6 +1,5 @@
 import type { BasicStoreEntity, BasicStoreIdentifier, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import type { StixDomainObject, StixId, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { StixId } from '../../types/stix-2-1-common';
 import type { FilterGroup } from '../../generated/graphql';
 
 export const ENTITY_TYPE_PUBLIC_DASHBOARD = 'PublicDashboard';
@@ -95,23 +94,5 @@ export interface PublicDashboardCached extends BasicStoreIdentifier {
   user_id: string;
   allowed_markings_ids: string[];
   allowed_markings: Array<StoreMarkingDefinition>;
-}
-// endregion
-
-// region Stix type
-export interface StixPublicDashboard extends StixDomainObject {
-  name: string;
-  enabled: boolean;
-  description: string;
-  dashboard_id: string;
-  user_id: string;
-  public_manifest: string;
-  private_manifest: string;
-  uri_key: string;
-  allowed_markings_ids: Array<string>;
-  allowed_markings: Array<StoreMarkingDefinition>;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 // endregion

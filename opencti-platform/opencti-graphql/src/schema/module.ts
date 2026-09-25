@@ -37,12 +37,20 @@ export const modules = new Map();
 
 type IdentifierDefinition = { src: string; dependencies?: string[] };
 
-export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z0 extends S20.StixObject = S20.StixObject> {
+type StixModuleCategory = typeof ENTITY_TYPE_CONTAINER_CASE
+  | typeof ENTITY_TYPE_CONTAINER
+  | typeof ENTITY_TYPE_LOCATION
+  | typeof ENTITY_TYPE_IDENTITY
+  | typeof ABSTRACT_STIX_DOMAIN_OBJECT
+  | typeof ABSTRACT_STIX_META_OBJECT
+  | typeof ENTITY_TYPE_THREAT_ACTOR;
+
+interface BaseModuleDefinition<TCategory extends StixModuleCategory | typeof ABSTRACT_INTERNAL_OBJECT> {
   type: {
     id: string;
     name: string;
     aliased?: boolean;
-    category: 'Case' | 'Container' | 'Location' | 'Identity' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object' | 'Threat-Actor';
+    category: TCategory;
   };
   identifier: {
     definition: {
@@ -52,11 +60,6 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z
       [f: string]: (value: any, data?: object) => string;
     };
   };
-  representative: RepresentativeFn<Z>;
-  converter_2_1: ConvertFn<T, Z>;
-  converter_2_0?: ConvertFn_2_0<T, Z0>;
-  bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>;
-  overviewLayoutCustomization?: Array<OverviewWidgetCustomization>;
   attributes: Array<AttributeDefinition<any>>;
   relations: Array<{
     name: string;
@@ -69,6 +72,72 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject, Z
   };
   depsKeys?: { src: string; types?: string[] }[];
 }
+
+export interface ModuleDefinition<
+  T extends StoreEntity,
+  Z extends StixObject,
+  Z0 extends S20.StixObject = S20.StixObject,
+> extends BaseModuleDefinition<StixModuleCategory | typeof ABSTRACT_INTERNAL_OBJECT> {
+  representative: RepresentativeFn<Z>;
+  converter_2_1: ConvertFn<T, Z>;
+  converter_2_0?: ConvertFn_2_0<T, Z0>;
+  bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>;
+  overviewLayoutCustomization?: Array<OverviewWidgetCustomization>;
+}
+
+export interface InternalObjectModuleDefinition extends BaseModuleDefinition<typeof ABSTRACT_INTERNAL_OBJECT> {
+  overviewLayoutCustomization?: Array<OverviewWidgetCustomization>;
+}
+
+type CommonRegistrableDefinition = BaseModuleDefinition<StixModuleCategory | typeof ABSTRACT_INTERNAL_OBJECT> & {
+  overviewLayoutCustomization?: Array<OverviewWidgetCustomization>;
+};
+
+const registerCommonDefinition = (definition: CommonRegistrableDefinition) => {
+  // Register validator
+  if (definition.validators) {
+    registerEntityValidator(definition.type.name, definition.validators);
+  }
+
+  // Register key identification
+  registerModelIdentifier(definition.identifier);
+
+  // Register model attributes
+  const attributes: AttributeDefinition[] = [standardId];
+  pushAll(attributes, definition.attributes.map((attr) => attr));
+  if (definition.type.aliased) {
+    pushAll(attributes, [resolveAliasesField(definition.type.name), iAliasedIds]);
+  }
+  schemaAttributesDefinition.registerAttributes(definition.type.name, attributes);
+
+  // Register dependency keys for input resolved refs
+  if (definition.depsKeys) {
+    depsKeysRegister.add(definition.depsKeys);
+  }
+
+  // Register relations
+  definition.relations.forEach((source) => {
+    STIX_CORE_RELATIONSHIPS.push(source.name);
+    source.targets.forEach((target) => {
+      const key: `${string}_${string}` = `${definition.type.name}_${target.name}`;
+      coreRels[key] = [...(coreRels[key] ?? []), { name: source.name, type: target.type }];
+    });
+  });
+
+  // Register relations ref
+  schemaRelationsRefDefinition.registerRelationsRef(definition.type.name, definition.relationsRefs || []);
+  definition.relationsRefs?.forEach((source) => {
+    schemaTypesDefinition.add(ABSTRACT_STIX_REF_RELATIONSHIP, source.databaseName);
+  });
+
+  // Register overview_layout_customization
+  if (definition.overviewLayoutCustomization) {
+    registerEntityOverviewLayoutCustomization(definition.type.name, definition.overviewLayoutCustomization);
+  }
+
+  // Register global
+  modules.set(definition.type.name, definition);
+};
 
 export const registerDefinition = <T extends StoreEntity, Z extends StixObject, Z0 extends S20.StixObject = S20.StixObject>(definition: ModuleDefinition<T, Z, Z0>) => {
   // Register types
@@ -132,47 +201,13 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject, 
   // Register representative
   registerStixRepresentativeConverter(definition.type.name, definition.representative);
 
-  // Register validator
-  if (definition.validators) {
-    registerEntityValidator(definition.type.name, definition.validators);
+  registerCommonDefinition(definition);
+};
+
+export const registerInternalObjectDefinition = (definition: InternalObjectModuleDefinition) => {
+  if (definition.type.category !== ABSTRACT_INTERNAL_OBJECT) {
+    throw UnsupportedError('Unsupported category for internal object definition', { category: definition.type.category });
   }
-
-  // Register key identification
-  registerModelIdentifier(definition.identifier);
-
-  // Register model attributes
-  const attributes: AttributeDefinition[] = [standardId];
-  pushAll(attributes, definition.attributes.map((attr) => attr));
-  if (definition.type.aliased) {
-    pushAll(attributes, [resolveAliasesField(definition.type.name), iAliasedIds]);
-  }
-  schemaAttributesDefinition.registerAttributes(definition.type.name, attributes);
-
-  // Register dependency keys for input resolved refs
-  if (definition.depsKeys) {
-    depsKeysRegister.add(definition.depsKeys);
-  }
-
-  // Register relations
-  definition.relations.forEach((source) => {
-    STIX_CORE_RELATIONSHIPS.push(source.name);
-    source.targets.forEach((target) => {
-      const key: `${string}_${string}` = `${definition.type.name}_${target.name}`;
-      coreRels[key] = [...(coreRels[key] ?? []), { name: source.name, type: target.type }];
-    });
-  });
-
-  // Register relations ref
-  schemaRelationsRefDefinition.registerRelationsRef(definition.type.name, definition.relationsRefs || []);
-  definition.relationsRefs?.forEach((source) => {
-    schemaTypesDefinition.add(ABSTRACT_STIX_REF_RELATIONSHIP, source.databaseName);
-  });
-
-  // Register overview_layout_customization
-  if (definition.overviewLayoutCustomization) {
-    registerEntityOverviewLayoutCustomization(definition.type.name, definition.overviewLayoutCustomization);
-  }
-
-  // Register global
-  modules.set(definition.type.name, definition);
+  schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
+  registerCommonDefinition(definition);
 };

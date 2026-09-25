@@ -6,7 +6,6 @@ import * as ee from '../../../src/enterprise-edition/ee';
 import * as redis from '../../../src/database/redis';
 import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as workspaceUtils from '../../../src/modules/workspace/workspace-utils';
-import { convertFintelTemplateToStix } from '../../../src/modules/fintelTemplate/fintelTemplate-converter';
 import { FINTEL_TEMPLATE_DEFINITION } from '../../../src/modules/fintelTemplate/fintelTemplate';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
@@ -207,38 +206,6 @@ describe('fintel template page option defaults', () => {
     const parsed = JSON.parse(exported);
     expect(parsed.configuration.include_cover_page_by_default).toEqual(false);
     expect(parsed.configuration.include_back_page_by_default).toEqual(false);
-  });
-
-  it('should fallback converter values to true', () => {
-    const stix = convertFintelTemplateToStix({
-      name: 'Template 1',
-      description: 'Template description',
-      settings_types: ['Report'],
-      instance_filters: '',
-      template_content: '',
-      fintel_template_widgets: [],
-      start_date: '2025-01-01T00:00:00.000Z',
-    } as never);
-
-    expect(stix.include_cover_page_by_default).toEqual(true);
-    expect(stix.include_back_page_by_default).toEqual(true);
-  });
-
-  it('should keep explicit false converter values', () => {
-    const stix = convertFintelTemplateToStix({
-      name: 'Template 1',
-      description: 'Template description',
-      settings_types: ['Report'],
-      instance_filters: '',
-      template_content: '',
-      fintel_template_widgets: [],
-      start_date: '2025-01-01T00:00:00.000Z',
-      include_cover_page_by_default: false,
-      include_back_page_by_default: false,
-    } as never);
-
-    expect(stix.include_cover_page_by_default).toEqual(false);
-    expect(stix.include_back_page_by_default).toEqual(false);
   });
 
   it('should expose page default attributes in module definition', () => {
