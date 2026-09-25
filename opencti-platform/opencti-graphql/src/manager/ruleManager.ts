@@ -370,7 +370,7 @@ export const executeRuleApply = async (context: AuthContext, user: AuthUser, rul
   if (!instance) {
     throw FunctionalError('Cant find element to scan', { id });
   }
-  const event = buildCreateEvent(user, instance, '-');
+  const event = await buildCreateEvent(context, user, instance, '-');
   await rulesApplyHandler(context, user, [event], [rule]);
 };
 

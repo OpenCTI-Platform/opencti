@@ -110,7 +110,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         inputs.push({ key: objects.name, value: deletedTargetRefs, operation: EditOperation.Remove });
       }
       const changes = await buildChanges(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
-      const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, changes);
+      const updateEvent = await buildStixUpdateEvent(context, RULE_MANAGER_USER, report, updatedReport, changes);
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }
   };
