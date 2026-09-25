@@ -328,6 +328,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           <FilterIconButton
             filters={filters}
             helpers={helpers}
+            availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
             searchContext={searchContext}
             availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
             entityTypes={searchContext.entityTypes}
@@ -353,6 +354,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           <FilterIconButton
             filters={filtersDynamicFrom}
             helpers={helpersDynamicFrom}
+            availableFilterKeys={entitiesFilters}
             entityTypes={['Stix-Core-Object']}
             searchContext={searchContext}
             availableEntityTypes={[
@@ -381,6 +383,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           <FilterIconButton
             filters={filtersDynamicTo}
             helpers={helpersDynamicTo}
+            availableFilterKeys={entitiesFilters}
             entityTypes={['Stix-Core-Object']}
             searchContext={searchContext}
             availableEntityTypes={[

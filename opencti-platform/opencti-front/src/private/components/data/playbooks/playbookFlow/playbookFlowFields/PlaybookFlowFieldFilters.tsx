@@ -81,6 +81,7 @@ const PlaybookFlowFieldFilters = ({
       <FilterIconButton
         filters={filters}
         helpers={helpers}
+        availableFilterKeys={availableFilterKeys}
         entityTypes={entityTypes}
         searchContext={searchContext}
         redirection

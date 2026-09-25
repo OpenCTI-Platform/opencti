@@ -212,6 +212,7 @@ const StreamCollectionCreationForm = ({
             <FilterIconButton
               filters={filters}
               helpers={helpers}
+              availableFilterKeys={stixFilters}
               redirection
               searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             />
@@ -241,6 +242,7 @@ const StreamCollectionCreationForm = ({
                   <FilterIconButton
                     filters={originFilters}
                     helpers={originHelpers}
+                    availableFilterKeys={streamOriginFilters}
                     redirection
                     searchContext={{ entityTypes: ['History'] }}
                   />
