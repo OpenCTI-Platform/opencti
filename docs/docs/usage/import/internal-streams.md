@@ -1,59 +1,92 @@
-# Internal streams
+# OpenCTI Streams
 
-Live Streams enable users to consume data from another OpenCTI platform, fostering collaborative intelligence sharing.
+OpenCTI Streams synchronize knowledge from a live stream exposed by another OpenCTI platform. Use them for continuous platform-to-platform intelligence sharing while preserving source traceability.
 
-<a id="best-practices-section"></a>
-## Best practices
+## Prerequisites
 
-In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and CSV/JSON Feeds.
+The remote platform must expose a live stream that the importing platform can access. Private streams require a token from a remote user with the **Access data sharing** capability. Public streams can be accessed without a token.
 
-Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
+Creating and managing a stream requires **Manage ingestion**. For shared guidance about service accounts and source organizations, see [Automated import](getting-started.md).
 
-1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
-2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
+## Create an OpenCTI Stream
 
-By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
+1. Go to **Integrations > Available**.
+2. Select **Built-in ingestion**, then find **OpenCTI Stream**.
+3. Select **Create**.
+4. Enter a name and the remote OpenCTI URL, without a path.
+5. Enter a remote token when the stream is not public.
+6. Choose whether to verify the remote SSL certificate, then select **Validate**.
+7. Select an accessible remote stream. Its name, description, and filters are displayed for confirmation.
+8. Complete the synchronization settings.
+9. Select **Verify**, then **Create**.
+
+The complete configuration must be verified successfully before it can be created.
+
+![OpenCTI Stream configuration](../assets/live-stream-configuration.png)
 
 ## Configuration
 
-Live Streams enable users to consume data from another OpenCTI platform, fostering collaborative intelligence sharing. Here's a step-by-step guide to configure Live streams synchroniser:
+| Setting | Description |
+| --- | --- |
+| Name | Name displayed for the deployed integration. |
+| Remote OpenCTI URL | Base URL of the remote platform, such as `https://opencti.example`. |
+| Remote OpenCTI token | Optional for public streams; required for private streams. |
+| Remote OpenCTI stream ID | Stream selected after validating the remote connection. |
+| Service account responsible for data creation | Local account attributed as the creator of synchronized data. |
+| Starting synchronization | Oldest event to retrieve. New configurations default to the beginning of the current day; clear the value to synchronize from the beginning of the stream. |
+| Take deletions into account | Deletes local data when the remote stream emits a deletion, unless another source still references the data. Enabled by default. |
+| Verify SSL certificate | Validates the certificate of the remote platform. Disabled by default. |
+| Avoid dependencies resolution | Avoids resolving built-in relationships while still resolving required references such as the author. Disabled by default. |
+| Use perfect synchronization | Treats the remote stream as the only source of truth for synchronized data. Use only for controlled platform replication. Disabled by default. |
 
-1. Remote OpenCTI URL: Provide the URL of the remote OpenCTI platform (e.g., `https://[domain]`; don't include the path).
-2. Remote OpenCTI token: Provide the user token. An administrator from the remote platform must supply this token, and the associated user must have the "Access data sharing" privilege.
-3. After filling in the URL and user token, validate the configuration.
-4. Once validated, select a live stream to which you have access.
-
-![Live stream configuration](../assets/live-stream-configuration.png)
-
-Additional configuration options:
-
-- User responsible for data creation: Define the user responsible for creating data received from this stream. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](../getting-started.md) for more information.
-- Starting synchronization: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
-- Take deletions into account: Enable this option to delete data from your platform if it was deleted on the providing stream. (Note: Data won't be deleted if another source has imported it previously.)
-- Verify SSL certificate: Check the validity of the certificate of the domain hosting the remote platform.
-- Avoid dependencies resolution: Import only entities without their relationships. For instance, if the stream shares malware, all the malware's relationships will be retrieved by default. This option enables you to choose not to recover them.
-- Use perfect synchronization: This option is specifically for synchronizing two platforms. If an imported entity already exists on the platform, the one from the stream will overwrite it.
-
-![Live stream additional configuration](../assets/live-stream-additional-configuration.png)
+![OpenCTI Stream additional configuration](../assets/live-stream-additional-configuration.png)
 
 !!! note
-    By default, entities imported through this synchronizer keep no recognizable processing status, since the remote platform's status reference isn't valid locally. To keep processing statuses consistent across both platforms instead, enable [Entity status sync](../../administration/entities.md#workflow-section) on the entity types you want to synchronize.
 
-## Export an OpenCTI Stream
+    Remote processing-status identifiers are not valid on the local platform. To synchronize statuses by name, enable [Entity status sync](../../administration/entities.md#workflow-section) for the applicable entity types.
 
-You can export your existing OpenCTI Stream from the platform, making it easy to share your configuration with others.
+## Configure the service account
 
-To export your OpenCTI Stream, click on "Export", in the burger menu.
-![OpenCTI Stream export](../assets/opencti-stream-export.png)
+By default, OpenCTI creates a service account named `[S] <stream name>` with confidence level `50`. Disable **Automatically create a service account** to select an existing account instead.
 
-## Import an OpenCTI Stream
+Automatic account creation requires a default ingestion group under **Settings > Accesses > Policies**. The form displays a warning when no default group is configured.
 
-If you have a JSON OpenCTI Stream file you can import it by clicking on the icon next to "Import from hub"
-![OpenCTI Stream import button](../assets/opencti-stream-import-icon.png)
+## Manage and monitor a stream
 
-When you click, you can select the desired file. After that, a drawer will open with the form pre-filled with the relevant information.
-Add your desired platform's token. 
-By default, a user is already provided.
+Created streams appear under **Integrations > Deployed**. Open a stream to inspect its URL, stream identifier, creator, synchronization options, queue metrics, state, and activity.
 
-You can select an OpenCTI Stream from the XTM Hub by clicking the ```Import from Hub``` button
+The action menu provides:
 
+- **Start** and **Stop**
+- **Update**
+- **Export**
+- **Delete**
+
+Update and Delete are unavailable while the stream is running. OpenCTI Streams do not have a Logs tab; use the activity and consumer metrics to monitor processing.
+
+![OpenCTI Stream export action](../assets/opencti-stream-export.png)
+
+## Import and export
+
+Select **Export** from a deployed stream to download its JSON configuration.
+
+To import a configuration:
+
+1. Open **Integrations > Available**.
+2. Find **OpenCTI Stream**.
+3. Select the file-import action and choose the exported JSON file.
+4. Enter the remote token and choose a local service account.
+5. Validate and verify the connection, then create the stream.
+
+The imported file can prefill the name, URL, stream identifier, start date, and synchronization options. It does not contain the remote token or local service account.
+
+![OpenCTI Stream configuration import action](../assets/opencti-stream-import-icon.png)
+
+When XTM Hub is configured and accessible, the card also displays **Import from Hub**.
+
+## Best practices
+
+- Use a dedicated local service account and organization for each remote source.
+- Enable SSL verification for production endpoints with trusted certificates.
+- Use perfect synchronization only when the remote platform must fully control the synchronized objects.
+- Test deletion synchronization with non-production data before enabling it for an existing stream.

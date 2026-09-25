@@ -1,303 +1,342 @@
-# Create knowledge via Form Intake
+# Create knowledge with Form intake
 
-
-The Form Intake allows administrators to design structured forms that analysts fill out to quickly create STIX entities, relationships, and observables ready for knowledge ingestion — without navigating complex creation dialogs.
+Form intake lets administrators design structured forms that analysts can submit to create STIX entities, cyber observables, and relationships. It provides a guided alternative to individual creation dialogs and can send submissions either directly to the knowledge base or to a draft for review.
 
 ## Key features
 
-- Visual form designer with field configuration and reordering of 16 supported field types (text, date, select, toggle, lookup, vocabulary, etc.)
-- Field width control (full, half, third)
-- 4 entity creation modes: Single, Multiple, Parsed, and Lookup
-- Add additional entities and relationships in a single form
-- Generate STIX bundle from submissions
-- Export/import form definitions across instances (JSON)
-- Draft workspace integration
+- Build forms from entity attributes and reorder the displayed fields.
+- Create one or several instances of the main entity.
+- Select existing entities or allow users to create them from lookup fields.
+- Parse comma-separated or line-separated values for bulk creation.
+- Add optional or required additional entities and relationships.
+- Set default, required, or read-only field values.
+- Create Indicators from observables or observables from Indicators.
+- Create submissions in a draft and preconfigure draft metadata and access.
+- Duplicate forms and export or import their JSON configuration.
 
-## Prerequisites & Permissions
-More details on our [Role-Based access control here](../administration/users.md)
+## Permissions
 
-|Action |Details |Required Capability| Control of capabilities in Draft mode (EE) |
-|:------|:-------|:---------------------|---------------|
-|Manage form intakes|Create, edit, delete, activate/deactivate, export, import|Manage ingestion|Capability not existing|
-|Submit form intakes|Fill and submit forms|Create / Update knowledge| Create / Update knowledge (creation forced to draft)|
-|View form intakes list| |Manage ingestion or Create / Update knowledge|Create / Update knowledge (creation forced to draft)|
+For more information about capabilities, see [Roles and capabilities](../administration/users.md).
 
+| Action | Required capability |
+| --- | --- |
+| Create, update, duplicate, activate, deactivate, import, export, or delete a form | **Manage ingestion** |
+| Submit directly to the knowledge base | **Create / Update knowledge** |
+| Submit to a draft | A compatible knowledge capability in draft mode; users restricted to draft creation cannot disable draft mode |
+| View available forms | **Create / Update knowledge**, **Import knowledge**, or an applicable draft capability |
 
-When draft creation is enforced, form submissions create entities in a draft workspace for review before publication to knowledge.
-Administrators can optionally allow users to skip draft mode per submission.
-The form intake Authorize Members choice is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Override of capabilities in draft](https://docs.opencti.io/latest/administration/users/?h=capab#override-of-capabilities-in-draft) for details on controlling users capabilities in draft mode.
+When draft creation is enforced by the form or by the user's capabilities, the submission creates a draft for review before ingestion.
 
+The **Authorized Members** setting is available only to users who can manage authorized members in the applicable draft context. See [Control of capabilities in Draft mode](../administration/users.md#control-of-capabilities-in-draft-mode).
 
-# Defining a Form Intake
-To create a form intake, navigate to the Ingestion menu, Form intake menu and click Create.
+## Create a form
 
-You can set core detail fields: 
+1. Go to **Integrations > Available**.
+2. Select the **Built-in ingestion** category.
+3. Find **Form intake**, then select **Create**.
+4. Enter a name and description.
+5. Leave **Active** enabled to make the form available for submission.
+6. Configure the main entity, additional entities, relationships, and draft behavior.
+7. Select **Create**.
 
-- Name of your form intake
-- Description of the form intake 
-- Active (toggle on/off, default to on): when enabled, your form will be present in the form intake list.
+Created forms appear under **Integrations > Deployed**. Select a form there to open and submit it.
 
+## Configure the main entity
 
-## Draft and form intake
+The main entity determines:
 
-### Creation of a draft by default 
+- The primary entity created or selected by the form.
+- The entity list pages from which users can open the form.
+- Whether additional entities can be included in a container.
 
-When defining a new form intake, you can decide whether the Form Intake output will create a draft or not by toggling the option: **Create as draft by default**. If this option is enabled, you can then choose to **Allow users to uncheck draft mode**.
+The default main entity type is **Report**. You can select any supported STIX Domain Object, STIX Cyber Observable, or STIX Meta Object. OpenCTI automatically adds attributes that are mandatory for the selected entity type.
 
-This has been built to offer advanced users the option to directly submit their input to the main database instead of a draft.
+### Choose an entity entry mode
 
-### Creation of a draft by default if user only has the capability to create data in draft
+Configure the main entity with one of the following approaches:
 
-However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (enterprise edition)](../administration/users.md) then the user will not be able to untick the box.
-By default, the form intake will be accessible to the user and the form intake output will result in a draft creation.
+| Configuration | Result |
+| --- | --- |
+| Single instance | The user completes one set of entity fields. |
+| **Allow multiple instances of main entity** with **Multiple fields** | The user can add and complete several field groups. |
+| **Allow multiple instances of main entity** with **Parsed values** | The user enters comma-separated values or one value per line. |
+| **Entity lookup (select existing entities)** | The user selects one or more existing entities instead of completing entity fields. |
 
-### Advanced draft settings
+When lookup is enabled, users can create an entity from the lookup if they have the required creation capability. Enable **Disable on-the-fly entity creation** to restrict the field to existing entities only. An entity created from a lookup is submitted with the form, so it is created in the same draft when draft mode is used.
 
-This section in the form intake is dedicated to control the parameters linked to the draft creation. 
-You can control fields default values & allow (or not) users to edit them:
+### Configure parsed values
 
-- Draft name: you can define a default value and allow users to edit it.
-- Draft description: you can define a default value for draft description and allow users to edit it.
-- Draft Assignee: you can define default assignees for your draft and allow users to edit them.
-- Draft Participant: you can define default participants and allow participants to edit them.
-- Draft author: Draft author is a bit specific, since it offers you 3 choices. You can either **reuse the main entity author**, **specify a specific author** or **do not apply default value**. Please be aware that when applying specific author, the user may not have access to this author due to RBAC (which should show as "restricted" on the main draft page).
-- Apply Authorize Members: you can activate the restriction. Doing so, then you can apply some specific authorized members on the **draft itself**. Some authorized members are a bit specific, the ones indicated as "Dynamic form draft".
+Parsed mode is available when multiple instances are enabled. Configure:
 
-##### Authorized members dynamic from draft
+- **Parse Field Type**: use a single-line text field or text area.
+- **Parse Mode**: separate values with commas or, for a text area, enter one value per line.
+- **Map parsed values to attribute**: select the string attribute that receives each parsed value.
+- **Automatically convert to STIX patterns**: for Indicators, convert submitted observable values to STIX patterns.
 
-Some specific authorized members have been introduced, to allow you to have a dynamic approach: 
+Additional fields in parsed mode apply to every entity created from the parsed values. For example, if values map to a Report name and the form also contains a description, every generated Report receives the same description.
 
-- draft author (org) allows you to select the entity being the Author of the Draft. If this entity happens to be an organization, then you can also select an intersection with a group. **This allows you to perform the following use case: I want users part of the group analyst pertaining to the organisation that submitted the draft to be able to edit the draft, while users from the organisation that submitted the draft but are not analysts are in view only.** 
-- creator: allows you to directly apply some rights to the draft creator.
-- assignee: allows you to directly apply some rights to the draft assignees.
-- participant: allows you to directly apply some rights to the draft participants.
+### Include entities in a container
 
-### Configuration issues
+For a container main entity, enable **Include entities in container** to include additional entities in the container.
 
-#### Default and mandatory values between form intake & draft in entity/customization
+If the form creates several containers, each container contains the additional entities. Containers are processed sequentially, so later containers can also contain containers created earlier in the submission.
 
-Any default value or mandatory value set at the form intake level will override any default value or mandatory values set in entity/customization for drafts. 
+### Create Indicators and observables automatically
 
-The rationale behind this approach is that a form intake should provide an expected output which is decided by the admin. As a result, the conditions defined in the form intake will apply. 
+For Indicator and observable forms, you can enable:
 
-### Provide "Can manage" to a user not having the "Manage Authorized Members capability"
+- **Automatically create observables from indicators**
+- **Automatically create indicators from observables**
 
-A user which is granted the "can manage" capability via authorized members but who does not have the capability "manage authorized members" provided via its role will not be able to manage the authorized members on a draft.
+Enable only the direction required by the form to avoid unnecessary circular creation.
 
+## Configure entity fields
 
+For every main or additional entity field, configure:
 
-## Main entity definition
-Defining a main entity sets two variables: 
+- **Map to attribute**: the entity attribute populated by the field.
+- **Field Type**: a compatible input for the selected attribute.
+- **Field Label**: the label shown to users.
+- **Description**: guidance displayed with the field.
+- **Required**: whether the user must provide a value.
+- **Read only** and **Default value**: provide a value that users cannot change.
+- **Field width**: full, half, or one-third of the form width.
 
-- The entity view where the form intake will be available, this is in addition to the import menu. E.g. if your main entity is a Report, you will see your form intake in the Report List view.
-- Which entity you want to create first, this is especially useful for a container entity.
+Mandatory entity attributes cannot normally be removed. In parsed mode, the parsed attribute supplies the deduplication value, and the form can apply other configured fields to all generated entities.
 
-By default, the main entity selected is a **Report**.
+Supported field types include:
 
-### Common fields
+| Field type | Usage |
+| --- | --- |
+| Text | Single-line string input |
+| Text Area | Multi-line string, Markdown, or text input |
+| Number | Numeric, integer, or floating-point input |
+| Date & Time | Date and time input |
+| Checkbox / Toggle | Boolean input |
+| Select / Multi-Select | One or several predefined values |
+| Open Vocabulary | Values from the OpenCTI vocabulary mapped to the attribute |
+| Created By | Author identity |
+| Object Marking | Marking definitions such as TLP or PAP |
+| Object Label | Labels applied to created entities |
+| External References | Existing external references |
+| Files | File attachments, with optional multiple-file support |
 
-For each main entity, you can configure multiple fields: 
+!!! warning
 
-- **Entity Lookup** (disabled by default): if enabled, users will be forced to choose from existing entities. Another field will appear when you enable this field: **Disable on-the-fly entity creation**
-- **Disable on-the-fly entity creation** (disabled by default): Enable this If you want your users to only select an existing entity. 
-- **Allow multiple instancess of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled **multiple instancess mode** will appear. 
+    A required or mandatory attribute must have either a user-provided value or a configured default value. Otherwise, the form cannot create the entity.
 
-#### Multiple Mode for Main Entity
-When enabled multiple instancess of the same entity type can be created. 
-You can choose between 'Multiple fields' or 'Parsed values'.
+## Configure additional entities
 
-   - **Multiple fields** (default): users are presented with a button to create a new instance of the same type of entity.
-   - Parsed values: users can enter text to be parsed by selected delimiter.
+Use the **Additional Entities** tab to add other entities to the same submission. For each entity:
 
-In parsed value mode, additional options are offered to you: 
+1. Select its entity type.
+2. Set **Label for entities** to provide a user-friendly role, such as `Attacker`.
+3. Choose single, multiple, parsed, or lookup behavior.
+4. Configure its fields.
 
-- Parse field type: Text or Text Area. 
-- Parse mode: choose the delimiter between each value comma-separated (default) or one-per-line.
-- Map parsed values to attribute: choose the attribute the parsed text is mapped to.
+For a single entity, enable **Required** to require it. An optional additional entity is omitted when the user leaves all its fields empty. If any field is completed, its required attributes must also be provided.
 
-**Warning**: when creating multiple instances via parsed values, the other fields defined for that entity type will be applied consistently to all the instances you create. For example, when generating multiple reports from parsed values, the text is mapped to each report’s name attribute. If you also provide a description field, all generated reports will have the same description.
+For multiple entities, **Minimum amount** controls how many entries are required. Set it to `0` to make the entire entity group optional.
 
-### Supported Entity Types as main entity
-Any entity can be created as a main entity, whether it is a STIX Domain Object or a STIX Cyber Observable. 
+Lookup and parsed behavior works the same way as for the main entity, including on-the-fly creation and additional fields shared by parsed entities.
 
-By default, when selecting an entity type, the mandatory fields needed for [deduplication](deduplication.md) are automatically added. 
+## Configure relationships
 
-#### Main entity as a container
+The **Relationships** tab becomes available after you add an additional entity.
 
-If your main entity is a container, any additional entities created will be contained in your container.
-**warning** If several containers are created at once (via multiple mode enabled), any additional entities created will appear in each container. 
+For each relationship:
 
-#### Main entity as an IOC or an Observable
-If you want to allow your users to bulk create multiple IOCs or observables, you can setup a form intake that allows multiple entities to be created at once using the option **Automatically create indicators/observables from observables/indicators**.
+1. Select the source entity and target entity by their configured labels.
+2. Select a compatible relationship type.
+3. Enable **Required** to create the relationship automatically for matching source and target instances.
+4. Optionally add fields for the relationship.
 
+Relationship fields can populate description, confidence, status, start time, stop time, author, markings, and labels, depending on the selected field type.
 
-- **Automatically create indicators/observables from observables/indicators**: this directly creates the entities added by the user.
+Users do not manually add relationships while completing the form. Only relationships enabled as **Required** are created on submission.
 
+## Configure draft creation
 
-**Warning**: Containers are created sequentially, not all at once. This means the first container will include only the additional entities. Each subsequent container will also include the containers that were created before it.
+Enable **Create as draft by default** to send submissions to a draft. Enable **Allow users to uncheck draft mode** if users with sufficient capabilities may submit directly to the knowledge base.
 
+Users whose capabilities restrict them to draft creation cannot disable draft mode, even when the form allows an override.
 
-### Specify fields for each entity type 
+### Set draft defaults
 
-When you have added an entity type to be created in the form, you can then set the entity attributes to populate.
+Expand **Advanced Draft Settings** to configure:
 
-Options for each field: 
+| Draft field | Available configuration |
+| --- | --- |
+| Name | Default value, editable by user, required |
+| Description | Default value, editable by user, required |
+| Assignees | Default users, editable by user, required |
+| Participants | Default users, editable by user, required |
+| Author | No default, reuse the main entity author, or select a specific author; editable by user; required |
+| Authorized Members | Activate access restriction, set defaults, and allow editing |
 
-- Map to attribute: choose the attribute of the entity that you need your users to provide (for instance, description).
-- Field label: name your field with a custom label so that if your users are not acquainted with STIX 2.1 they will be able to understand what is expected for them.
-- Required: make the field required. Enable this if the users need to enter this field. 
-- Field width: size of the field on the screen (Full/half/third)
+Form-level defaults and requirements take precedence over draft entity customization. This ensures that a form produces the draft structure selected by its administrator.
 
-We support the following field types: 
+The draft author and authorized members remain subject to role-based access control (RBAC). A selected identity that the submitter cannot access can appear as restricted in the draft.
 
-|Field | Type |	Description|
-|:-----|:-----|:-----------|
-|Text |	Single-line |text input|
-|Text Area	|Multi-line text input|
-|Number	|Numeric input|
-|Date & Time|	Date and time picker|
-|Checkbox	|Boolean checkbox|
-|Toggle	|Boolean| on/off switch (respects defaultValue — e.g., Malware is_family)|
-|Select	|Single-value| dropdown with predefined options|
-|Multi-select|	Multi-value dropdown|
-|Open Vocabulary|	|Vocabulary-based field with predefined values from OpenCTI vocabularies (auto-detected based on entity type and attribute)|
-|Created By|	|Set the author/creator identity|
-|Object Marking	||Apply marking definitions (TLP, PAP)|
-|Object Label	||Apply labels to created entities|
-|External References|	|Add external references|
-|Files	| |Attach files|
+### Use dynamic authorized members
 
-**Warning:** If you have defined additional mandatory fields for an entity (e.g. description) and your description is not added, your entity will not be created. 
+Authorized members can include dynamic values resolved when the draft is created:
 
-## Additional entities definition
+- **Creators**: the user who submitted the form.
+- **Draft author (org)**: the draft author's organization, optionally intersected with a group.
+- **Assignees**: the draft assignees.
+- **Participants**: the draft participants.
 
-Once you have defined your main entity, you can define additional entities to allow your users to add additional entities within the same form submission. 
+Assign the required access right to each member. A user who receives **Can manage** on the draft but lacks the **Manage authorized members** capability still cannot change its authorized members.
 
-Additional entities can be created of the same type. 
+If a [draft workflow](draft-workflow.md) is published, the draft created by the form uses that workflow like any other draft.
 
-### Details of required / not required and display labels for additional entities: 
+## Submit a form
 
-In addition to the various modes allowed to add additional entities, you have two other options: 
+Users can open active forms from:
 
-- If you enable the option **"allow multiple instancess"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
-- If you disable the option **"allow multiple instancess"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
+- **Integrations > Deployed**, by selecting the form.
+- A supported entity list page that matches the form's main entity type.
+- The file import dialog, by selecting **Import using a Form**.
 
-The display **label for entity** allows you to set labels so that users who aren't experts in STIX 2.1 can  use the form. For example you can set a label to "attacker" to use in place of intrusion set.
+The form action is hidden when the user lacks the capability required to submit it.
 
-## Relationships 
+On submission, OpenCTI:
 
-You can define relationships to be created between entities created in the form. The **relationship type** will only present compatible entities.
+1. Validates required values and entity attributes.
+2. Validates observable syntax and restores defanged values such as `hxxp://` and `[.]`.
+3. Resolves existing entities and prepares entities created from lookup fields.
+4. Maps identity classes and creates the configured STIX objects.
+5. Creates configured relationships and container references.
+6. Creates any requested Indicators or observables.
+7. Sends the STIX bundle for ingestion, either directly or through the created draft.
 
-When you add a relation, you need to choose: 
+## Manage form definitions
 
-- the Source entity (identified in the form by its label)
-- the Target entity (identified in the form by its label)
-- the relationship type (select as soon as Source & Target are provided)
-- Required: toggling the required switch will allow you to automatically create each relation. 
+Open the action menu for a deployed Form intake to:
 
-**Warning**: adding some relations in the form definition will not allow users to create the relation manually in the form. You need to toggle the **required** field to create the relation automatically at form submission. This means that any entities matching as source & targets will have a relation created between them.
+- **Update** its definition or activation state.
+- **Duplicate** it as the starting point for another form.
+- **Export** its complete JSON configuration.
+- **Delete** the form definition.
 
+Exported configurations contain the form schema and settings, but not previously submitted data. Import a JSON configuration from the **Form intake** card under **Integrations > Available**. Verify version compatibility before importing a form exported from another OpenCTI instance.
 
+Deleting a form does not delete entities or relationships created by earlier submissions.
 
-## Places to submit a form intake: 
+## GraphQL API reference
 
-Forms can be submitted from three locations:
+### Get a form
 
-- Entity list pages — Click the form intake toggle button (available on: Reports, Groupings, Malware, Case Incidents, Case RFIs, Case RFTs, Incidents, Campaigns, Intrusion Sets, Threat Actors Group, Threat Actors Individual, Indicators).
-- Import dialog — Select "Import using a Form" in the import file dialog (displays full-width).
-- Ingestion/form intake: when you click directly on the form intake you created, the form is prompted to you.
-
-Note: The form intake button is hidden if the user does not have Create/update capabilities.
-
-## Submission process
-When a form is submitted, the following 7-step pipeline executes:
-
-- Validate required fields
-- 	Validate observable syntax	Backend checks format for observable entities (IPv4, IPv6, Domain, URL, Email, hashes). Invalid values throw INCORRECT_OBSERVABLE_FORMAT error.
-- 	De-sanitize/defang observables	Converts defanged IOCs: hxxp:// → http://, test[.]com → test.com
-- 	Map identity classes	Ensures correct STIX identity_class for Identity types: Individual → individual, Sector → class, System → system
-- 	Generate STIX bundle
-- 	Auto-create indicators/observables
-- 	Import bundle	Imports into OpenCTI directly, or into a draft workspace if draft mode is enabled
-
-## Export
-Export a form definition as a JSON file via the options (kebab) menu → Export.
-Includes the full schema, field configuration, entity types, and relationships.
-Use for backup or cross-instance sharing.
-Does not export previously submitted data.
-
-## Import
-Import a form definition from a JSON file via the Form Intake list page.
-The import dialog displays full-width for readability.
-Cross-instance compatible — share form templates between OpenCTI instances (version ≥ 6.8.1).
-Note: Verify version compatibility when importing across different OpenCTI versions.
-
-## Delete
-Delete via the options (kebab) menu → Delete. Deletion is permanent and cannot be undone.
-Previously submitted data (entities, relationships already created) is not affected — only the form definition is removed.
-
-
-## GraphQL API Reference
-
-### Get a single form by ID
-`query GetForm($id: String!) {
+```graphql
+query GetForm($id: ID!) {
   form(id: $id) {
     id
     name
     description
-    entity_type
-    schema
+    active
+    form_schema
     created_at
     updated_at
   }
-}`
+}
+```
 
-### List all forms with filtering and search
-`query ListForms($first: Int, $search: String, $orderBy: FormOrdering, $orderMode: OrderingMode) {
-  forms(first: $first, search: $search, orderBy: $orderBy, orderMode: $orderMode) {
+### List forms
+
+```graphql
+query ListForms(
+  $first: Int
+  $search: String
+  $orderBy: FormsOrdering
+  $orderMode: OrderingMode
+) {
+  forms(
+    first: $first
+    search: $search
+    orderBy: $orderBy
+    orderMode: $orderMode
+  ) {
     edges {
       node {
         id
         name
         description
-        entity_type
+        active
+        form_schema
       }
     }
   }
-}` 
+}
+```
 
-### Create a new form
-`mutation CreateForm($input: FormAddInput!) {
+### Create a form
+
+The `form_schema` value is a JSON-encoded string.
+
+```graphql
+mutation CreateForm($input: FormAddInput!) {
   formAdd(input: $input) {
     id
     name
+    active
   }
-}`
+}
+```
 
+### Update a form
 
-### Delete a form
-`mutation DeleteForm($id: ID!) {
-  formDelete(id: $id)
-}`
-
-### Submit a filled form
-`mutation SubmitForm($id: ID!, $input: FormSubmitInput!) {
-  formSubmit(id: $id, input: $input) {
+```graphql
+mutation UpdateForm($id: ID!, $input: [EditInput!]!) {
+  formFieldPatch(id: $id, input: $input) {
     id
+    name
+    active
+    form_schema
   }
-}`
+}
+```
 
-## Best Practices
+### Submit a form
 
-### Form Design
+The `values` property in `FormSubmissionInput` is a JSON-encoded string containing the completed form values.
 
-- Start simple: Begin with essential fields and iterate based on analyst feedback.
-- Use Parsed mode for bulk IOCs: Comma or line-separated input is the fastest approach for high-volume observable ingestion.
-- Set field widths strategically: Use third for short fields (dates, scores, markings), full for text areas.
-- Mark only truly essential fields as required - reduces friction for analysts while maintaining data quality.
+```graphql
+mutation SubmitForm(
+  $input: FormSubmissionInput!
+  $isDraft: Boolean!
+) {
+  formSubmit(input: $input, isDraft: $isDraft) {
+    success
+    bundleId
+    message
+    entityId
+  }
+}
+```
 
-### Data Ingestion
+### Import and export a form
 
-- Enable auto-create indicators from observables for actionable intelligence and detection pipeline integration.
-- Do not enable both auto-create directions simultaneously (indicator → observable AND observable → indicator) to avoid circular creation loops.
-- Use draft mode for high-volume ingestion to allow review before publication (Enterprise Edition).
+```graphql
+mutation ImportForm($file: Upload!) {
+  formImport(file: $file) {
+    id
+    name
+  }
+}
+
+query ExportForm($id: ID!) {
+  form(id: $id) {
+    toConfigurationExport
+  }
+}
+```
+
+## Best practices
+
+- Start with the minimum fields required for deduplication and analysis.
+- Use explicit labels and descriptions for users who do not work directly with STIX concepts.
+- Use parsed mode for bulk observable or Indicator creation.
+- Use lookup mode when the form should connect new information to existing knowledge.
+- Use read-only defaults for values that must remain consistent across submissions.
+- Use draft mode when submissions require review, access control, or workflow approval.
