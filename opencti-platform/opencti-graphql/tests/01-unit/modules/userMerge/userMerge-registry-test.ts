@@ -24,6 +24,7 @@ const handlerContext = {
   context: {} as never,
   sourceId: 'source',
   targetId: 'target',
+  mergeStartedAt: new Date(),
   sourceUser: { internal_id: 'source' } as never,
   targetUser: { internal_id: 'target' } as never,
   rights: { source: EMPTY_RIGHTS, target: EMPTY_RIGHTS, projected: EMPTY_RIGHTS, labels: {} },

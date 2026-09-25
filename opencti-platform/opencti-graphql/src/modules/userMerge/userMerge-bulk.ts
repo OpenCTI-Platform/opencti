@@ -12,6 +12,60 @@ export interface UserMergeBulkResult {
   version_conflicts: number;
 }
 
+/** The counters a partial write leaves behind, read back from a rejected update. */
+export interface UserMergeBulkAbortReport {
+  message: string;
+  data: Record<string, unknown>;
+}
+
+interface AbortBody {
+  updated?: number;
+  total?: number;
+  version_conflicts?: number;
+  failures?: { index?: string; id?: string }[];
+}
+
+/**
+ * Turns a rejected update into what an operator needs to know.
+ *
+ * `_update_by_query` is not transactional: aborting on a conflict stops the pass, it does not undo
+ * the documents already written. Elasticsearch answers `409` with the counters of what it did get
+ * through, and the search client carries that body on the rejection. Reporting only that the call
+ * failed drops the one number that says how much of the platform was rewritten.
+ *
+ * Returns null when the rejection carries no such body — a timeout or a refused connection wrote
+ * nothing, and claiming `0 of 0 documents written` would replace one silence with one falsehood.
+ */
+export const userMergeBulkAbortReport = (label: string, err: unknown): UserMergeBulkAbortReport | null => {
+  const body = (err as { meta?: { body?: AbortBody } })?.meta?.body;
+  if (!body || typeof body.updated !== 'number') {
+    return null;
+  }
+  const updated = body.updated;
+  const total = body.total ?? 0;
+  const versionConflicts = body.version_conflicts ?? 0;
+  const failure = body.failures?.[0];
+  const parts = [`${updated} of ${total} documents written`];
+  if (versionConflicts > 0) {
+    // A version conflict means another process wrote to a document this pass had selected, which
+    // the merge's own precondition rules out. Naming it saves the operator the deduction.
+    parts.push(`${versionConflicts} version conflict${versionConflicts > 1 ? 's' : ''} (the platform was not at rest)`);
+  }
+  if (failure?.id) {
+    parts.push(`first on document ${failure.id} in ${failure.index}`);
+  }
+  return {
+    message: `User merge bulk update aborted on ${label}: ${parts.join(', ')}`,
+    data: {
+      label,
+      updated,
+      total,
+      version_conflicts: versionConflicts,
+      first_failure: failure ? { index: failure.index, id: failure.id } : undefined,
+    },
+  };
+};
+
 /**
  * Bulk update primitive for the merge engine.
  *
@@ -41,6 +95,10 @@ export const userMergeBulkUpdate = async (
     wait_for_completion: true,
     body,
   }).catch((err) => {
+    const report = userMergeBulkAbortReport(label, err);
+    if (report) {
+      throw DatabaseError(report.message, { ...report.data, cause: err });
+    }
     throw DatabaseError('User merge bulk update failed', { label, cause: err });
   });
   const result: UserMergeBulkResult = {
