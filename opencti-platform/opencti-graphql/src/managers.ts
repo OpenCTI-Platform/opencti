@@ -1,6 +1,5 @@
 import conf, {
   ENABLED_API,
-  ENABLED_CONNECTOR_MANAGER,
   ENABLED_EXPIRED_MANAGER,
   ENABLED_FILE_INDEX_MANAGER,
   ENABLED_HISTORY_MANAGER,
@@ -15,7 +14,6 @@ import conf, {
 } from './config/conf';
 import httpServer from './http/httpServer';
 import expiredManager from './manager/expiredManager';
-import connectorManager from './manager/connectorManager';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './connector/importCsv/importCsv-configuration';
 import importCsvConnector from './connector/importCsv/importCsv-connector';
 import taskManager from './manager/taskManager';
@@ -53,14 +51,6 @@ export const startModules = async () => {
     startingPromises.push(expiredManager.start());
   } else {
     logApp.info('[OPENCTI-MODULE] Expiration manager not started (disabled by configuration)');
-  }
-  // endregion
-
-  // region connector manager
-  if (ENABLED_CONNECTOR_MANAGER) {
-    startingPromises.push(connectorManager.start());
-  } else {
-    logApp.info('[OPENCTI-MODULE] Connector manager not started (disabled by configuration)');
   }
   // endregion
 
@@ -168,11 +158,6 @@ export const shutdownModules = async () => {
   // region Expiration manager
   if (ENABLED_EXPIRED_MANAGER) {
     stoppingPromises.push(expiredManager.shutdown());
-  }
-  // endregion
-  // region Connector manager
-  if (ENABLED_CONNECTOR_MANAGER) {
-    stoppingPromises.push(connectorManager.shutdown());
   }
   // endregion
   // region import csv built in connector
