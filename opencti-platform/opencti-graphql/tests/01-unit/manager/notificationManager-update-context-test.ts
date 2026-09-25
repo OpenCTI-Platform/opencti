@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildUpdateEventContext, memoizeUpdateEventContext } from '../../../src/manager/notificationManager';
+import { buildUpdateEventContext } from '../../../src/manager/notificationManager';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 
 const buildUpdateStreamEvent = () => {
@@ -68,20 +68,5 @@ describe.concurrent('notification manager update event context', () => {
       expect(context.previous).toEqual(hoisted.previous);
       expect(context.eventContext).toEqual(hoisted.eventContext);
     });
-  });
-
-  it('should build the context once and share it across triggers', async () => {
-    const streamEvent = buildUpdateStreamEvent();
-    const getUpdateEventContext = memoizeUpdateEventContext(streamEvent);
-    const first = getUpdateEventContext();
-    expect(getUpdateEventContext()).toBe(first);
-    expect(getUpdateEventContext().previous).toBe(first.previous);
-  });
-
-  it('should not touch the event until the context is actually needed', async () => {
-    const neverAnUpdate = { id: '1', event: 'create', data: { type: 'create', data: {} } } as unknown as SseEvent<DataEvent>;
-    const getUpdateEventContext = memoizeUpdateEventContext(neverAnUpdate);
-    expect(getUpdateEventContext).toBeTypeOf('function');
-    expect(() => getUpdateEventContext()).toThrow();
   });
 });

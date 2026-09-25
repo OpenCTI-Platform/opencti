@@ -39,6 +39,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
 import { InterruptibleTimer } from './interruptible-timer';
+import { memoize } from '../utils/memoize';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -493,17 +494,6 @@ export const buildUpdateEventContext = (streamEvent: SseEvent<DataEvent>): Updat
   return { previous, eventContext: buildFilterEventContext(streamEvent.data as UpdateEvent) };
 };
 
-// Builds on first use and keeps the result, so every trigger of the same event shares one.
-export const memoizeUpdateEventContext = (streamEvent: SseEvent<DataEvent>): (() => UpdateEventContext) => {
-  let updateEventContext: UpdateEventContext | undefined;
-  return () => {
-    if (!updateEventContext) {
-      updateEventContext = buildUpdateEventContext(streamEvent);
-    }
-    return updateEventContext;
-  };
-};
-
 export const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
@@ -631,7 +621,7 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, message: streamMessage, origin } } = streamEvent;
-      const getUpdateEventContext = memoizeUpdateEventContext(streamEvent);
+      const getUpdateEventContext = memoize(() => buildUpdateEventContext(streamEvent));
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
