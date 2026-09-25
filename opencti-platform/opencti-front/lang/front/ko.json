@@ -2071,6 +2071,7 @@
   "Explore XTM Hub": "XTM Hub 살펴보기",
   "Export": "내보내기",
   "Export as fintel": "fintel 형식으로 내보내기",
+  "Remove empty sections": "빈 섹션 제거",
   "Export as image": "이미지로 내보내기",
   "Export as PDF": "PDF로 내보내기",
   "Export data in CSV": "CSV로 데이터 내보내기",
