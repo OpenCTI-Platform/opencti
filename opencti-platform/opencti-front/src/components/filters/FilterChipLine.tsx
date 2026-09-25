@@ -24,6 +24,7 @@ import FilterValues from './FilterValues';
 import FilterChip from './FilterChip';
 import { FilterRepresentative } from './FiltersModel';
 import FilterGroupChipButton from './group/FilterGroupChipButton';
+import ImbricatedFilterGroupDisplay from './ImbricatedFilterGroupDisplay';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
 
 /** Geometry of a filter chip and of its operator badge, per display variant. */
@@ -205,21 +206,30 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
 
   return (
     <Box sx={lineStyle} ref={lineRef}>
-      {displayedFilterGroups.map((group, index) => (
-        <Fragment key={group.id ?? `filter-group-${index}`}>
-          <FilterGroupChipButton
-            ref={(node) => {
-              registerChipRef(group.id ?? '', node);
-            }}
-            filterGroup={group}
-            isOpen={openedGroupId === group.id}
-            chipColor={chipColor}
-            style={filterStyle}
-            onClick={() => onToggleGroup(group.id)}
+      {isReadWriteFilter
+        ? displayedFilterGroups.map((group, index) => (
+            <Fragment key={group.id ?? `filter-group-${index}`}>
+              <FilterGroupChipButton
+                ref={(node) => {
+                  registerChipRef(group.id ?? '', node);
+                }}
+                filterGroup={group}
+                isOpen={openedGroupId === group.id}
+                chipColor={chipColor}
+                style={filterStyle}
+                onClick={() => onToggleGroup(group.id)}
+              />
+              {(index < displayedFilterGroups.length - 1 || displayedFilters.length > 0) && globalModeSeparator}
+            </Fragment>
+          ))
+        : displayedFilterGroups.length > 0 && (
+          <ImbricatedFilterGroupDisplay
+            filterObj={{ mode: globalMode, filters: [], filterGroups: displayedFilterGroups }}
+            filterMode={globalMode}
+            filtersRepresentativesMap={filtersRepresentativesMap}
+            filterStyle={filterStyle}
           />
-          {(index < displayedFilterGroups.length - 1 || displayedFilters.length > 0) && globalModeSeparator}
-        </Fragment>
-      ))}
+        )}
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap)?.label ?? filterKey);
