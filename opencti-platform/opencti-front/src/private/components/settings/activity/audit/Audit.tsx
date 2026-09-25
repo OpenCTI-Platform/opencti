@@ -91,6 +91,41 @@ export const AuditCSVQuery = graphql`
   }
 `;
 
+type AuditCsvNode = {
+  id: string;
+  entity_type?: string | null;
+  event_type: string;
+  event_scope?: string | null;
+  event_status: string;
+  timestamp: unknown;
+  context_uri?: string | null;
+  user?: { id: string; name: string } | null;
+  user_metadata?: unknown;
+  context_data?: {
+    entity_id?: string | null;
+    entity_type?: string | null;
+    entity_name?: string | null;
+    message: string;
+  } | null;
+};
+
+export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>) => nodes.map(({ node }) => ({
+  id: node.id,
+  entity_type: node.entity_type,
+  event_type: node.event_type,
+  event_scope: node.event_scope,
+  event_status: node.event_status,
+  user_metadata: node.user_metadata ?? 'undefined',
+  timestamp: node.timestamp,
+  context_uri: node.context_uri,
+  user_id: node.user?.id ?? 'undefined',
+  user_name: node.user?.name ?? 'undefined',
+  context_data_id: node.context_data?.entity_id ?? 'undefined',
+  context_data_entity_type: node.context_data?.entity_type ?? 'undefined',
+  context_data_entity_name: node.context_data?.entity_name ?? 'undefined',
+  context_data_message: node.context_data?.message ?? 'undefined',
+}));
+
 const Audit = () => {
   const classes = useStyles();
   const csvLink = useRef<
@@ -174,27 +209,7 @@ const Audit = () => {
         const { audits } = result;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const csvData = audits.edges.map((n) => {
-          const { node } = n;
-          return {
-            id: node.id,
-            entity_type: node.entity_type,
-            event_type: node.event_type,
-            event_scope: node.event_scope,
-            event_status: node.event_status,
-            user_metadata: node.user_metadata ?? 'undefined',
-            timestamp: node.timestamp,
-            context_uri: node.context_uri,
-            user_id: node.user?.id ?? 'undefined',
-            user_name: node.user?.name ?? 'undefined',
-            context_data_id: node.context_data?.entity_id ?? 'undefined',
-            context_data_entity_type:
-              node.context_data?.entity_type ?? 'undefined',
-            context_data_entity_name:
-              node.context_data?.entity_name ?? 'undefined',
-            context_data_message: node.context_data?.message ?? 'undefined',
-          };
-        });
+        const csvData = buildAuditCsvData(audits.edges);
         setData(csvData);
         setLoading(false);
       });
