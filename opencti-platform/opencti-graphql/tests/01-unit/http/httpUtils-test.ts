@@ -330,7 +330,7 @@ describe('httpUtils: server keep-alive timeout', () => {
 // they stand for cannot be provoked over http in the integration test: a 413 needs a body above the
 // configured limit, a 499 needs the client to vanish mid-upload, and a session caller needs a
 // cookie the test client does not hold.
-const uploadError = () => Object.assign(new Error('Missing multipart field \u2018operations\u2019.'), {
+const uploadError = () => Object.assign(new Error('Missing multipart field \u2018operations\u2019 (https://github.com/jaydenseric/graphql-multipart-request-spec).'), {
   name: 'BadRequestError',
   status: 400,
   statusCode: 400,
@@ -402,22 +402,66 @@ describe('httpUtils: isClientRequestError', () => {
 });
 
 describe('httpUtils: clientErrorResponse', () => {
-  it('should return the message of an exposed error', () => {
+  it('should relay a graphql-upload message that is a pure constant, spec link included', () => {
     const { status, body } = clientErrorResponse(uploadError());
     expect(status).toBe(400);
-    expect(body).toEqual({ status: 'error', error: 'Missing multipart field \u2018operations\u2019.' });
+    expect(body.error).toBe(uploadError().message);
+    expect(body.error).toContain('graphql-multipart-request-spec');
   });
 
-  it('should not quote back the message of a non exposed error', () => {
-    // The router error message embeds the probed path; returning it would reflect caller input.
+  it('should not relay the graphql-upload messages that interpolate caller input', () => {
+    // The four below embed a multipart field name, a map key or an object path.
+    const interpolated = [
+      'The \u2018<script>\u2019 multipart field value exceeds the 1000000 byte size limit.',
+      'Invalid type for the \u2018map\u2019 multipart field entry key \u2018<script>\u2019 array (https://github.com/jaydenseric/graphql-multipart-request-spec).',
+      'Invalid type for the \u2018map\u2019 multipart field entry key \u2018<script>\u2019 array index \u20180\u2019 value (https://github.com/jaydenseric/graphql-multipart-request-spec).',
+      'Invalid object path for the \u2018map\u2019 multipart field entry key \u2018<script>\u2019 array index \u20180\u2019 value \u2018variables.<script>\u2019 (https://github.com/jaydenseric/graphql-multipart-request-spec).',
+    ];
+
+    interpolated.forEach((message) => {
+      const { body } = clientErrorResponse(Object.assign(new Error(message), { status: 400, expose: true }));
+      expect(body.error).toBe('Bad request');
+      expect(body.error).not.toContain('<script>');
+    });
+  });
+
+  it('should fall back to the built message when graphql-upload rewords one', () => {
+    // A version bump degrades to the generic answer rather than relaying an unreviewed string.
+    const reworded = Object.assign(new Error('Missing multipart field "operations".'), { status: 400, expose: true });
+    expect(clientErrorResponse(reworded).body.error).toBe('Bad request');
+  });
+
+  it('should not quote back a router error message, which embeds the probed path', () => {
     const { status, body } = clientErrorResponse(paramDecodeError());
     expect(status).toBe(400);
-    expect(body.error).toBe('Bad Request');
+    expect(body.error).toBe('Bad request');
     expect(JSON.stringify(body)).not.toContain('.env');
   });
 
-  it('should treat an explicit expose false as not exposed', () => {
-    expect(clientErrorResponse({ status: 400, expose: false, message: 'leak' }).body.error).toBe('Bad Request');
+  it('should not quote back a json parse message, which embeds a snippet of the body', () => {
+    const { status, body } = clientErrorResponse(bodyParseError());
+    expect(status).toBe(400);
+    expect(body.error).toBe('Invalid json in request body');
+    expect(JSON.stringify(body)).not.toContain('hunter2');
+  });
+
+  it('should name the parser failure when the error type is known', () => {
+    expect(clientErrorResponse({ status: 413, type: 'entity.too.large' }).body.error).toBe('Request body too large');
+    expect(clientErrorResponse({ status: 415, type: 'charset.unsupported' }).body.error).toBe('Unsupported charset');
+    expect(clientErrorResponse({ status: 415, type: 'encoding.unsupported' }).body.error).toBe('Unsupported content encoding');
+  });
+
+  it('should fall back to the status, then to a bad request, for an untyped error', () => {
+    expect(clientErrorResponse({ status: 413 }).body.error).toBe('Payload too large');
+    expect(clientErrorResponse({ status: 499 }).body.error).toBe('Client closed request');
+    expect(clientErrorResponse({ status: 418 }).body.error).toBe('Bad request');
+  });
+
+  it('should ignore expose entirely', () => {
+    const exposed = clientErrorResponse({ status: 400, expose: true, message: 'leak' });
+    const notExposed = clientErrorResponse({ status: 400, expose: false, message: 'leak' });
+    expect(exposed.body).toEqual(notExposed.body);
+    expect(exposed.body.error).toBe('Bad request');
   });
 
   it('should resolve the status from status, then statusCode, then default to 400', () => {

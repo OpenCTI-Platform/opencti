@@ -49,6 +49,7 @@ describe('Malformed http request handling', () => {
       expect(response.status).toBe(400);
       expect(response.data?.status).toBe('error');
       expect(response.data?.error).toContain('Missing multipart field');
+      expect(response.data?.error).toContain('graphql-multipart-request-spec');
     });
 
     it('should answer 400 when a file is sent before the map field', async () => {
@@ -62,7 +63,19 @@ describe('Malformed http request handling', () => {
       const response = await postMultipart([{ name: 'operations', value: '{oops' }]);
 
       expect(response.status).toBe(400);
-      expect(response.data?.error).toContain('Invalid JSON');
+      expect(response.data?.error).toContain('Invalid JSON in the');
+    });
+
+    it('should answer 400 without relaying a caller supplied map key', async () => {
+      // This graphql-upload message interpolates the map entry key, so it must not be relayed.
+      const response = await postMultipart([
+        { name: 'operations', value: UPLOAD_OPERATIONS },
+        { name: 'map', value: '{"<script>":"variables.file"}' },
+      ]);
+
+      expect(response.status).toBe(400);
+      expect(response.data?.error).toBe('Bad request');
+      expect(JSON.stringify(response.data)).not.toContain('<script>');
     });
 
     it('should let a spec compliant multipart request through', async () => {
@@ -82,6 +95,7 @@ describe('Malformed http request handling', () => {
 
       expect(response.status).toBe(400);
       expect(response.data?.status).toBe('error');
+      expect(response.data?.error).toBe('Invalid json in request body');
     });
 
     it('should answer 415 when the charset is not supported', async () => {
@@ -90,7 +104,7 @@ describe('Malformed http request handling', () => {
       const response = await postRaw('{}', 'application/json; charset=iso-8859-1');
 
       expect(response.status).toBe(415);
-      expect(response.data?.error).toContain('unsupported charset');
+      expect(response.data?.error).toBe('Unsupported charset');
     });
   });
 
@@ -102,7 +116,7 @@ describe('Malformed http request handling', () => {
 
       expect(response.status).toBe(400);
       expect(response.data?.status).toBe('error');
-      expect(response.data?.error).toBe('Bad Request');
+      expect(response.data?.error).toBe('Bad request');
       expect(JSON.stringify(response.data)).not.toContain('.env');
     });
   });

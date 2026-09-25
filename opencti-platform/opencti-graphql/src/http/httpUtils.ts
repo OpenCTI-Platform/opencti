@@ -314,11 +314,45 @@ export const isClientRequestError = (error: any): boolean => {
   return typeof status === 'number' && status >= 400 && status < 500;
 };
 
-// Only an `expose` error carries a message safe to return: the others quote the faulty input back.
-export const clientErrorResponse = (error: any) => ({
-  status: error?.status ?? error?.statusCode ?? 400,
-  body: { status: 'error', error: error?.expose === true ? error.message : 'Bad Request' },
-});
+// The graphql-upload messages that are pure constants, so they can be safely relayed to the caller as they are.
+const MULTIPART_SPEC_URL = 'https://github.com/jaydenseric/graphql-multipart-request-spec';
+const SAFE_MULTIPART_MESSAGES = new Set([
+  `Missing multipart field ‘operations’ (${MULTIPART_SPEC_URL}).`,
+  `Missing multipart field ‘map’ (${MULTIPART_SPEC_URL}).`,
+  `Misordered multipart fields; ‘map’ should follow ‘operations’ (${MULTIPART_SPEC_URL}).`,
+  `Misordered multipart fields; files should follow ‘map’ (${MULTIPART_SPEC_URL}).`,
+  `Invalid JSON in the ‘operations’ multipart field (${MULTIPART_SPEC_URL}).`,
+  `Invalid JSON in the ‘map’ multipart field (${MULTIPART_SPEC_URL}).`,
+  `Invalid type for the ‘operations’ multipart field (${MULTIPART_SPEC_URL}).`,
+  `Invalid type for the ‘map’ multipart field (${MULTIPART_SPEC_URL}).`,
+  'Request disconnected during file upload stream parsing.',
+]);
+
+// Built for everything else, from the parser error type then the status.
+// The precise cause always stays in the log.
+const CLIENT_ERROR_MESSAGES: Record<string, string> = {
+  'entity.parse.failed': 'Invalid json in request body',
+  'entity.too.large': 'Request body too large',
+  'charset.unsupported': 'Unsupported charset',
+  'encoding.unsupported': 'Unsupported content encoding',
+  'request.aborted': 'Request aborted before completion',
+  'request.size.invalid': 'Request size did not match the content length',
+};
+
+const CLIENT_STATUS_MESSAGES: Record<number, string> = {
+  400: 'Bad request',
+  413: 'Payload too large',
+  415: 'Unsupported media type',
+  499: 'Client closed request',
+};
+
+export const clientErrorResponse = (error: any) => {
+  const status = error?.status ?? error?.statusCode ?? 400;
+  const message = SAFE_MULTIPART_MESSAGES.has(error?.message)
+    ? error.message
+    : CLIENT_ERROR_MESSAGES[error?.type] ?? CLIENT_STATUS_MESSAGES[status] ?? 'Bad request';
+  return { status, body: { status: 'error', error: message } };
+};
 
 // The platform accepts credentials in the query string (health_access_key, the OIDC code and
 // state), and both originalUrl and referer carry it, so only the pathname is ever logged.
