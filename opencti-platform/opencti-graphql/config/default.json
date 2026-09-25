@@ -381,6 +381,13 @@
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
   },
+  "catalog_manager": {
+    "enabled": true,
+    "lock_key": "catalog_manager_lock",
+    "interval": 60000,
+    "custom_catalog_refresh_endpoint_uri": null,
+    "catalog_sync_remote_timeout": 30000
+  },
   "redis": {
     "mode": "single",
     "namespace": "",
