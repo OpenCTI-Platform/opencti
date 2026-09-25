@@ -917,6 +917,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
+const ORG_ADMIN_FORBIDDEN_EDIT_ATTRIBUTES = ['user_email', 'password'];
 // User related
 export const validateAndNormalizeEmailInput = async (context, userId, input) => {
   if (input.key === 'user_email') {
@@ -946,6 +947,13 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     }
     if (userToUpdate.external && input.key === 'user_email') {
       throw FunctionalError('Email cannot be updated for external user', { userId });
+    }
+    if (userToUpdate.external && input.key === 'password_valid_until') {
+      throw FunctionalError('Cannot force password change for external user', { userId });
+    }
+    // org admin can only edit forbidden attributes on its own user and not other users
+    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && ORG_ADMIN_FORBIDDEN_EDIT_ATTRIBUTES.includes(input.key) && user.id !== userId) {
+      throw ForbiddenAccess();
     }
     // Check user email is valid and not already used in case of email change
     await validateAndNormalizeEmailInput(context, userId, input);
