@@ -18,7 +18,7 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 
-import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters, WidgetPerspective } from './widget';
 import { isNotEmptyField } from '../utils';
 import useEntityTranslation from 'src/utils/hooks/useEntityTranslation';
 
@@ -256,8 +256,33 @@ export const getCurrentIsRelationships = (type: string) => {
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
 };
 
-export const isWidgetListOrTimeline = (type: string) => {
-  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' || indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline';
+export const DEFAULT_WIDGET_DATE_ATTRIBUTE = 'created_at';
+
+/**
+ * Returns the list of date_attribute values supported by a given perspective.
+ * start_time and stop_time are relationship-only fields.
+ */
+export const getValidDateAttributes = (perspective?: WidgetPerspective | null): string[] => {
+  const commonDateAttributes = ['created_at', 'updated_at', 'created', 'modified'];
+  if (perspective === 'relationships') {
+    return [...commonDateAttributes, 'start_time', 'stop_time'];
+  }
+  return commonDateAttributes;
+};
+
+/**
+ * Normalizes a date_attribute for a given perspective, falling back to the
+ * default when the value is unsupported (e.g. a relationship-only field kept
+ * after switching to the entities perspective, or a legacy saved value).
+ */
+export const normalizeDateAttribute = (
+  perspective?: WidgetPerspective | null,
+  dateAttribute?: string | null,
+): string => {
+  if (dateAttribute && getValidDateAttributes(perspective).includes(dateAttribute)) {
+    return dateAttribute;
+  }
+  return DEFAULT_WIDGET_DATE_ATTRIBUTE;
 };
 
 /**
