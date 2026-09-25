@@ -859,10 +859,9 @@ class DataTableToolBar extends Component {
   titleCopy() {
     const { t } = this.props;
     if (this.props.numberOfSelectedElements > maxNumberOfObservablesToCopy) {
-      return `${
-        t(
-          'Copy disabled: too many selected elements (maximum number of elements for a copy: ',
-        ) + maxNumberOfObservablesToCopy
+      return `${t(
+        'Copy disabled: too many selected elements (maximum number of elements for a copy: ',
+      ) + maxNumberOfObservablesToCopy
       })`;
     }
     return t('Copy to clipboard');
@@ -1112,7 +1111,7 @@ class DataTableToolBar extends Component {
           {sortedOptions.length > 0 ? (
             sortedOptions.map(
               (n) => {
-              // disable some fields to prevent making several actions on the same key if one of them is a replace
+                // disable some fields to prevent making several actions on the same key if one of them is a replace
                 const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
                   || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
                 return (
@@ -2824,9 +2823,9 @@ class DataTableToolBar extends Component {
                               padding: '2px 5px 2px 5px',
                               marginRight: 5,
                               color:
-                                  theme.palette.mode === 'dark'
-                                    ? '#000000'
-                                    : '#ffffff',
+                                theme.palette.mode === 'dark'
+                                  ? '#000000'
+                                  : '#ffffff',
                               backgroundColor: theme.palette.primary.main,
                             }}
                           >
@@ -2885,9 +2884,9 @@ class DataTableToolBar extends Component {
                                   padding: '2px 5px 2px 5px',
                                   marginRight: 5,
                                   color:
-                                      theme.palette.mode === 'dark'
-                                        ? '#000000'
-                                        : '#ffffff',
+                                    theme.palette.mode === 'dark'
+                                      ? '#000000'
+                                      : '#ffffff',
                                   backgroundColor: theme.palette.primary.main,
                                 }}
                               >

@@ -26,6 +26,7 @@ import { CaseRfiCreationForm } from '../../cases/case_rfis/CaseRfiCreation';
 import { CaseRftCreationForm } from '../../cases/case_rfts/CaseRftCreation';
 import { TaskCreationForm } from '../../cases/tasks/TaskCreation';
 import { EventCreationForm } from '../../entities/events/EventCreation';
+import { CitizenshipDocumentCreationForm } from '../../entities/citizenshipDocuments/CitizenshipDocumentCreation';
 import { IndividualCreationForm } from '../../entities/individuals/IndividualCreation';
 import { OrganizationCreationForm } from '../../entities/organizations/OrganizationCreation';
 import { SectorCreationForm } from '../../entities/sectors/SectorCreation';
@@ -67,6 +68,7 @@ const IDENTITY_ENTITIES = [
   'Sector',
   'Organization',
   'Individual',
+  'Citizenship-Document',
   'System',
   'Event',
 ];
@@ -94,6 +96,7 @@ const THREAT_ACTOR_ENTITIES = [
 const BULK_ENTITIES = [
   'Administrative-Area',
   'Campaign',
+  'Citizenship-Document',
   'Channel',
   'City',
   'Country',
@@ -440,6 +443,21 @@ const StixDomainPanel = ({
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
           updater={creationUpdater}
+        />
+      );
+    }
+    if (type === 'Citizenship-Document') {
+      // CitizenshipDocument
+      return (
+        <CitizenshipDocumentCreationForm
+          inputValue={inputValue}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
+          onCompleted={onCompleted ?? onClose}
         />
       );
     }

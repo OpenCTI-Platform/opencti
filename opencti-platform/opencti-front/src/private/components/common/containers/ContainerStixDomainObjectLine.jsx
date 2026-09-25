@@ -9,7 +9,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
-import { Chip } from '@filigran/design-system';
+import { Chip, Checkbox } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,7 +23,6 @@ import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import { Checkbox } from '@filigran/design-system';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 import { useComputeLink } from '../../../../utils/hooks/useAppData';
 
@@ -318,6 +317,9 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
           }
         }
         ... on Task {
+          name
+        }
+        ... on CitizenshipDocument {
           name
         }
         objectLabel {

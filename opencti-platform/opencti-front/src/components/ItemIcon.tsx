@@ -26,6 +26,7 @@ import {
   FactCheckOutlined,
   FilterAltOutlined,
   FlagOutlined,
+  FolderShared,
   HelpOutlined,
   Insights,
   LayersClearOutlined,
@@ -622,6 +623,8 @@ const iconSelector = (
       return <FilterOutline style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'citizenship-document':
+      return <FolderShared style={style} fontSize={fontSize} role="img" aria-label={type} />;
     default:
       return <AutoAwesomeMotion style={style} fontSize={fontSize} role="img" aria-label="item" />;
   }

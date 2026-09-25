@@ -16,6 +16,8 @@ const Systems = lazy(() => import('./Systems'));
 const RootSystem = lazy(() => import('./systems/Root'));
 const Individuals = lazy(() => import('./Individuals'));
 const RootIndividual = lazy(() => import('./individuals/Root'));
+const CitizenshipDocuments = lazy(() => import('./CitizenshipDocuments'));
+const RootCitizenshipDocument = lazy(() => import('./citizenshipDocuments/Root'));
 
 const Root = () => {
   let redirect: string | null = null;
@@ -31,6 +33,8 @@ const Root = () => {
     redirect = 'systems';
   } else if (!useIsHiddenEntity('Individual')) {
     redirect = 'individuals';
+  } else if (!useIsHiddenEntity('Citizenship-Document')) {
+    redirect = 'citizenship_documents';
   }
   return (
     <Suspense fallback={<Loader />}>
@@ -86,6 +90,14 @@ const Root = () => {
         <Route
           path="/individuals/:individualId/*"
           element={boundaryWrapper(RootIndividual)}
+        />
+        <Route
+          path="/citizenship_documents"
+          element={boundaryWrapper(CitizenshipDocuments)}
+        />
+        <Route
+          path="/citizenship_documents/:citizenshipDocumentId/*"
+          element={boundaryWrapper(RootCitizenshipDocument)}
         />
       </Routes>
     </Suspense>

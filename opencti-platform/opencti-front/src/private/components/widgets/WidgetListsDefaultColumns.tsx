@@ -366,6 +366,10 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'coverage_last_result', label: 'Last result', attributeType: 'date' },
     { attribute: 'coverage_information', label: 'Detection' },
   ],
+  CitizenshipDocument: [
+    { attribute: 'contact_information', label: 'Contact information', attributeType: 'markdown' },
+    { attribute: 'x_opencti_reliability', label: 'Reliability', attributeType: 'open_vocab' },
+  ],
 };
 
 const customAttributesExtraColumns: WidgetColumn[] = [

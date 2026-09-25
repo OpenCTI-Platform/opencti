@@ -385,6 +385,12 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
+          ... on CitizenshipDocument {
+            name
+          }
+          ... on SecurityPlatform {
+            name
+          }
           createdBy {
             ... on Identity {
               id
@@ -564,6 +570,12 @@ const StixDomainObjectsLines = createPaginationContainer(
                 name
               }
               ... on Task {
+                name
+              }
+              ... on CitizenshipDocument {
+                name
+              }
+              ... on SecurityPlatform {
                 name
               }
               objectLabel {

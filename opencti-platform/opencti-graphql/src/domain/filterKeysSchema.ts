@@ -49,7 +49,13 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  isStixObjectAliased,
+} from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -410,7 +416,13 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       label: 'Author of related entity',
       multiple: false,
       subEntityTypes,
-      elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      elementsForFilterValuesSearch: [
+        ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT,
+        ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+        ENTITY_TYPE_IDENTITY_SECTOR,
+        ENTITY_TYPE_IDENTITY_SYSTEM,
+        ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      ],
     });
     filterDefinitionsMap.set(CONTEXT_ENTITY_TYPE_FILTER, {
       filterKey: CONTEXT_ENTITY_TYPE_FILTER,

@@ -214,6 +214,16 @@ class StixCoreObject:
                 x_opencti_firstname
                 x_opencti_lastname
             }
+            ... on CitizenshipDocument {
+                name
+                description
+                contact_information
+                x_opencti_aliases
+                x_opencti_firstname
+                x_opencti_lastname
+                x_opencti_citizenship_document_type
+                x_opencti_citizenship_document_id
+            }
             ... on Organization {
                 name
                 description
@@ -947,6 +957,16 @@ class StixCoreObject:
                 x_opencti_aliases
                 x_opencti_firstname
                 x_opencti_lastname
+            }
+            ... on CitizenshipDocument {
+                name
+                description
+                contact_information
+                x_opencti_aliases
+                x_opencti_firstname
+                x_opencti_lastname
+                x_opencti_citizenship_document_type
+                x_opencti_citizenship_document_id
             }
             ... on Organization {
                 name

@@ -5072,6 +5072,219 @@ input IdentityAddInput {
   upsertOperations: [EditInput!]
 }
 
+
+################ CitizenshipDocuments
+enum CitizenshipDocumentsOrdering {
+  name
+  firstname
+  lastname
+  x_opencti_citizenship_document_type
+  created
+  modified
+  x_opencti_workflow_id
+  objectMarking
+  _score
+}
+type CitizenshipDocumentConnection {
+  pageInfo: PageInfo!
+  edges: [CitizenshipDocumentEdge]
+}
+type CitizenshipDocumentEdge {
+  cursor: String!
+  node: CitizenshipDocument!
+}
+type CitizenshipDocument implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics:[Metric]
+  # StixObject
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  # Identity
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  # Citizenship Document
+  x_opencti_firstname: String
+  x_opencti_lastname: String
+  x_opencti_citizenship_document_type: String
+  x_opencti_citizenship_document_id: String
+  organizations: OrganizationConnection
+  # Technical
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+}
+input CitizenshipDocumentAddInput { 
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 1, format: "not-blank")
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_firstname: String
+  x_opencti_lastname: String
+  x_opencti_citizenship_document_type: String
+  x_opencti_citizenship_document_id: String
+  x_opencti_reliability: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectOrganization: [String]
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  x_opencti_modified_at: DateTime
+  x_opencti_workflow_id: String
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  upsertOperations: [EditInput!]
+}
+
 ################ Individuals
 enum IndividualsOrdering {
   name
@@ -13853,6 +14066,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | SavedFilter
   | Vocabulary
   | DraftWorkspace
+  | CitizenshipDocument
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -13948,6 +14162,7 @@ union StixObjectOrStixRelationship =
   | ICCID
   | IMSI
   | SavedFilter
+  | CitizenshipDocument
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -14034,6 +14249,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | IMEI
   | ICCID
   | IMSI
+  | CitizenshipDocument
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -15155,6 +15371,16 @@ type Query {
     filters: FilterGroup
     toStix: Boolean
   ): IdentityConnection @auth(for: [KNOWLEDGE, INGESTION_SETINGESTIONS])
+  citizenshipDocument(id: String!): CitizenshipDocument @auth(for: [KNOWLEDGE])
+  citizenshipDocuments(
+    first: Int
+    after: ID
+    orderBy: CitizenshipDocumentsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+    toStix: Boolean
+  ): CitizenshipDocumentConnection @auth(for: [KNOWLEDGE])
   individual(id: String!): Individual @auth(for: [KNOWLEDGE])
   individuals(
     first: Int
@@ -16008,6 +16234,14 @@ type IdentityEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
 }
+type CitizenshipDocumentEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): CitizenshipDocument @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): CitizenshipDocument @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: CitizenshipDocument @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: StixRef!, relationship_type: String!): CitizenshipDocument @auth(for: [KNOWLEDGE_KNUPDATE])
+}
 type IndividualEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -16336,6 +16570,8 @@ type Mutation {
   ############### Identities
   identityAdd(input: IdentityAddInput!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   identityEdit(id: ID!): IdentityEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  citizenshipDocumentAdd(input: CitizenshipDocumentAddInput!): CitizenshipDocument @auth(for: [KNOWLEDGE_KNUPDATE])
+  citizenshipDocumentEdit(id: ID!): CitizenshipDocumentEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   individualAdd(input: IndividualAddInput!): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
   individualEdit(id: ID!): IndividualEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   sectorAdd(input: SectorAddInput!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])

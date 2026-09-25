@@ -81,6 +81,8 @@ export const PATH_SECTORS = `${PATH_DASHBOARD}/entities/sectors`;
 export const PATH_SECTOR = (sectorId: string) => `${PATH_SECTORS}/${sectorId}`;
 export const PATH_INDIVIDUALS = `${PATH_DASHBOARD}/entities/individuals`;
 export const PATH_INDIVIDUAL = (individualId: string) => `${PATH_INDIVIDUALS}/${individualId}`;
+export const PATH_CITIZENSHIP_DOCUMENTS = `${PATH_DASHBOARD}/entities/citizenship_documents`;
+export const PATH_CITIZENSHIP_DOCUMENT = (citizenshipDocumentId: string) => `${PATH_CITIZENSHIP_DOCUMENTS}/${citizenshipDocumentId}`;
 export const PATH_EVENTS = `${PATH_DASHBOARD}/entities/events`;
 export const PATH_EVENT = (eventId: string) => `${PATH_EVENTS}/${eventId}`;
 export const PATH_SYSTEMS = `${PATH_DASHBOARD}/entities/systems`;

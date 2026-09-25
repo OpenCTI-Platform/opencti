@@ -39,6 +39,10 @@ class EntityTestCases:
     @staticmethod
     def case_identity_system(api_client):
         return IdentitySystemTest(api_client)
+    
+    @staticmethod
+    def case_identity_citizenship_documentTest(api_client):
+        return IdentityCitizenshipDocumentTest(api_client)
 
     @staticmethod
     def case_incident(api_client):
@@ -274,6 +278,17 @@ class IdentitySystemTest(IdentityTest):
             "type": IdentityTypes.SYSTEM.value,
             "name": "System A",
             "description": "The system A",
+        }
+
+
+class IdentityCitizenshipDocumentTest(IdentityTest):
+    def data(self) -> Dict:
+        return {
+            "type": IdentityTypes.CITIZENSHIP_DOCUMENT.value,
+            "name": "Jane Smith",
+            "description": "Mrs awesome",
+            "x_opencti_citizenship_document_type": "Passport",
+            "x_opencti_citizenship_document_id": "AB12345678",
         }
 
 

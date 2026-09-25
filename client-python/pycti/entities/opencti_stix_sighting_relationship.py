@@ -195,6 +195,9 @@ class StixSightingRelationship:
                     created_at
                     updated_at
                 }
+                ... on CitizenshipDocument {
+                    name
+                }
             }
             to {
                 ... on BasicObject {
@@ -278,6 +281,9 @@ class StixSightingRelationship:
                     spec_version
                     created_at
                     updated_at
+                }
+                ... on CitizenshipDocument {
+                    name
                 }
             }
         """

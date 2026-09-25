@@ -188,7 +188,7 @@ const useNavMenu = (): NavGroup[] => {
   const hideEvents = useIsHiddenEntities('stix-sighting-relationship', 'Incident', 'Observed-Data');
   const hideObservations = useIsHiddenEntities('Stix-Cyber-Observable', 'Artifact', 'Indicator', 'Infrastructure');
   const hideThreats = useIsHiddenEntities('Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign');
-  const hideEntities = useIsHiddenEntities('Sector', 'Event', 'Organization', 'Security-platforms', 'System', 'Individual');
+  const hideEntities = useIsHiddenEntities('Sector', 'Event', 'Organization', 'Security-platforms', 'System', 'Individual', 'Citizenship-Document');
   const hideCases = useIsHiddenEntities('Case-Incident', 'Feedback', 'Case-Rfi', 'Case-Rft', 'Task');
   const hideArsenal = useIsHiddenEntities('Malware', 'Channel', 'Tool', 'Vulnerability');
   const hideTechniques = useIsHiddenEntities('Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source');
@@ -336,6 +336,7 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: t_i18n('Security platforms'), icon: <SecurityOutlined fontSize="small" /> },
             { type: 'System', link: '/dashboard/entities/systems', label: t_i18n('Systems'), icon: <StorageOutlined fontSize="small" /> },
             { type: 'Individual', link: '/dashboard/entities/individuals', label: t_i18n('Individuals'), icon: <PersonOutlined fontSize="small" /> },
+            { type: 'CitizenshipDocument', link: '/dashboard/entities/citizenship_documents', label: t_i18n('Citizenship Document'), icon: <PersonOutlined fontSize="small" /> },
           ],
         },
         !hideLocations && {

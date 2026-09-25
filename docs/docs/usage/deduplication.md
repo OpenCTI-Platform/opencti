@@ -16,6 +16,7 @@ Technically, OpenCTI generates deterministic IDs based on the listed properties 
 | Attack Pattern          | (`name` OR `alias`) AND optional `x_mitre_id`               |
 | Campaign                | `name` OR `alias`                                           |
 | Channel                 | `name` OR `alias`                                           |
+| CItizenship Document    | (`name` OR `x_opencti_alias`) and `identity_class`          |
 | City                    | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type` |
 | Country                 | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type` |
 | Course Of Action        | (`name` OR `alias`) AND optional `x_mitre_id`               |

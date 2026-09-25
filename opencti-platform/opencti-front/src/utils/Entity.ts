@@ -39,6 +39,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/techniques/courses_of_action';
     case 'Individual':
       return '/dashboard/entities/individuals';
+    case 'Citizenship-Document':
+      return '/dashboard/entities/citizenship_documents';
     case 'Organization':
       return '/dashboard/entities/organizations';
     case 'SecurityPlatform':
@@ -163,6 +165,9 @@ export const resolveLink = (type = 'unknown'): string | null => {
 };
 
 export const resolveIdentityClass = (identityType: string): string => {
+  if (identityType === 'CitizenshipDocument') {
+    return 'citizenshipDocument';
+  }
   if (identityType === 'Individual') {
     return 'individual';
   }
@@ -179,6 +184,9 @@ export const resolveIdentityClass = (identityType: string): string => {
 };
 
 export const resolveIdentityType = (identityClass: string): string => {
+  if (identityClass === 'citizenshipDocument') {
+    return 'CitizenshipDocument';
+  }
   if (identityClass === 'individual') {
     return 'Individual';
   }

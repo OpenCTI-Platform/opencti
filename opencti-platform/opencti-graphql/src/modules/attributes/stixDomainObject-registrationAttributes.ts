@@ -29,6 +29,7 @@ import {
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
@@ -187,6 +188,15 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'x_opencti_threat_hunting', label: 'Threat hunting', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_log_sources', label: 'Log sources', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { ...revoked, isFilterable: true },
+  ],
+  [ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT]: [
+    xOpenctiAliases,
+    iAliasedIds,
+    xOpenctiReliability,
+    { name: 'x_opencti_firstname', label: 'Firstname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'x_opencti_lastname', label: 'Lastname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'x_opencti_citizenship_document_id', label: 'Citizenship Document ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'x_opencti_citizenship_document_type', label: 'Citizenship Document Type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [
     xOpenctiAliases,

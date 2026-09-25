@@ -1525,6 +1525,7 @@ const convertToStix_2_1 = (instance: StoreCommon): S.StixObject => {
       }
       return externalConverter(basic);
     }
+    // ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENTS,
     // ENTITY_TYPE_IDENTITY_INDIVIDUAL,
     // ENTITY_TYPE_IDENTITY_ORGANIZATION,
     // ENTITY_TYPE_IDENTITY_SECTOR,
