@@ -34,6 +34,8 @@ export interface SequencerConfig {
   applyConcurrency: number;
   preresolveIdsPerSearch: number;
   dedupPrefetchConcurrency: number;
+  dedupPrefetchMsearch: boolean;
+  dedupPrefetchMsearchSize: number;
   writtenIndex: boolean;
   pendingRefExpiryS: number;
   // s9.8.2 bounded member wait: plan passes spent waiting for a declared in-bundle member
@@ -84,6 +86,10 @@ const readConfig = (): SequencerConfig => {
     preresolveIdsPerSearch: Math.max(0, Math.floor(Number(conf.get('app:ingestion_sequencer:preresolve_ids_per_search') ?? 0))),
     // concurrent relation dedup prefetch searches per batch (was a constant 8)
     dedupPrefetchConcurrency: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:dedup_prefetch_concurrency') ?? 8))),
+    // msearch form of the dedup prefetch (2026-09-25): packets of N queries per engine round
+    // trip, dedup_prefetch_concurrency of them run at once engine-side; off = one search each
+    dedupPrefetchMsearch: booleanConf('app:ingestion_sequencer:dedup_prefetch_msearch', false),
+    dedupPrefetchMsearchSize: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:dedup_prefetch_msearch_size') ?? 200))),
     // written index (2026-09-21): the running batch's own writes are served first and kept
     // through mid-batch invalidations until commit (in-batch read-your-writes). Off through the
     // study's measurements (neutral then); ON since 2026-09-24 with the single wave per chunk,

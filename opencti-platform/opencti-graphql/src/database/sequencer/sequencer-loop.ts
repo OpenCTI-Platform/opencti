@@ -84,11 +84,18 @@ export const isSequencerLoopAlive = () => loopStarted && !loopDead;
 // registered by middleware at module init instead of imported (no cycle).
 type WithRefsLoader = (context: AuthContext, user: AuthUser, ids: string[]) => Promise<any[]>;
 type DedupLoader = (context: AuthContext, input: Record<string, any>, inputIds: string[]) => Promise<any[]>;
+type DedupManyLoader = (context: AuthContext, jobs: { input: Record<string, any>; inputIds: string[] }[], maxConcurrentSearches: number) => Promise<(any[] | null)[]>;
 let withRefsLoader: WithRefsLoader | null = null;
 let dedupLoader: DedupLoader | null = null;
-export const registerSequencerLoaders = (loaders: { storeLoadByIdsWithRefs: WithRefsLoader; searchExistingRelations?: DedupLoader }) => {
+let dedupManyLoader: DedupManyLoader | null = null;
+export const registerSequencerLoaders = (loaders: {
+  storeLoadByIdsWithRefs: WithRefsLoader;
+  searchExistingRelations?: DedupLoader;
+  searchExistingRelationsMany?: DedupManyLoader;
+}) => {
   withRefsLoader = loaders.storeLoadByIdsWithRefs;
   dedupLoader = loaders.searchExistingRelations ?? null;
+  dedupManyLoader = loaders.searchExistingRelationsMany ?? null;
 };
 
 // s10.3 rung 1: relation-dedup prefetch. At pre-resolve, every relation intent whose
@@ -99,6 +106,15 @@ export const registerSequencerLoaders = (loaders: { storeLoadByIdsWithRefs: With
 // takeSequencerDedupPrefetch and only trusts it if its own input ids are a subset of the
 // prefetched ones (rename-at-resolution safety). Cleared at every batch boundary.
 const dedupPrefetch = new Map<string, { inputIds: Set<string>; existing: any[] }>();
+// dedup key probe (2026-09-25): from|to|type of every prefetched entry, to split an apply-time
+// key miss into "an entry exists for these endpoints but the key differs" (dates / creator
+// normalisation) and "no entry at all" (the prefetch skipped this relation)
+const dedupPrefetchEndpoints = new Set<string>();
+const dedupEndpointsOf = (key: string) => key.split('|').slice(0, 3).join('|');
+const setDedupPrefetch = (key: string, entry: { inputIds: Set<string>; existing: any[] }) => {
+  dedupPrefetch.set(key, entry);
+  dedupPrefetchEndpoints.add(dedupEndpointsOf(key));
+};
 
 export const sequencerDedupPrefetchKey = (fromInternalId: string, toInternalId: string, input: Record<string, any>, createdByInternalId?: string | null): string => {
   const dates = ['start_time', 'stop_time', 'first_seen', 'last_seen'].map((k) => String(input[k] ?? '')).join('|');
@@ -118,7 +134,10 @@ export const takeSequencerDedupPrefetch = (key: string, applyInputIds: string[])
   const entry = dedupPrefetch.get(key);
   if (!entry) {
     // s10.3.2 diagnosis: distinguish a key miss from a subset rejection
-    if (dedupPrefetch.size > 0) sequencerMetrics.searchCaller('relation_dedup_miss_key');
+    if (dedupPrefetch.size > 0) {
+      sequencerMetrics.searchCaller('relation_dedup_miss_key');
+      sequencerMetrics.searchCaller(dedupPrefetchEndpoints.has(dedupEndpointsOf(key)) ? 'relation_dedup_miss_key_diff' : 'relation_dedup_miss_no_entry');
+    }
     return null;
   }
   if (!applyInputIds.every((id) => entry.inputIds.has(id))) {
@@ -251,6 +270,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
   sequencerIdentityMap.clearAbsent();
   dedupPrefetch.clear();
+  dedupPrefetchEndpoints.clear();
   const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
   const typedMisses: string[] = [];
   const typedTypes = new Set<string>();
@@ -293,7 +313,8 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   }
   // step 3 (s10.3 rung 1): dedup prefetch for the batch's relation intents (see header note)
   if (dedupLoader) {
-    const jobs: { key: string; inputIds: string[]; run: () => Promise<any[]> }[] = [];
+    const jobs: { key: string; inputIds: string[]; input: Record<string, any>; run: () => Promise<any[]> }[] = [];
+    let batchOwnIds: Set<string> | null = null;
     batch.forEach((intent) => {
       if (intent.kind !== 'relation') return;
       const { fromId, toId, createdBy } = intent.input;
@@ -314,10 +335,19 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
         || (!toElement && sequencerIdentityMap.isKnownAbsent(toId, null));
       if (endpointAbsent) {
         // an endpoint absent at batch start cannot carry a pre-existing duplicate
-        dedupPrefetch.set(key, { inputIds: new Set(intent.candidateIds), existing: [] });
+        setDedupPrefetch(key, { inputIds: new Set(intent.candidateIds), existing: [] });
         return;
       }
-      if (!fromElement || !toElement) return; // endpoint not resolved yet: live query at apply
+      if (!fromElement || !toElement) {
+        // endpoint not resolved yet: live query at apply. Probe (2026-09-25): is the missing
+        // endpoint produced by an intent of this very batch (a creation, so no pre-existing
+        // relation can reference it), or unknown here?
+        const own = batchOwnIds ?? new Set<string>(batch.flatMap((i) => intentOwnIds(i)));
+        batchOwnIds = own;
+        const missing = [fromElement ? null : fromId, toElement ? null : toId].filter((id): id is string => id !== null);
+        sequencerMetrics.searchCaller(missing.every((id) => own.has(id)) ? 'relation_dedup_skip_inbatch' : 'relation_dedup_skip_unresolved');
+        return;
+      }
       // entity_type is REQUIRED: without it getInputIds throws in generateAliasesId and the
       // catch below silently keeps candidateIds, defeating the whole union (s10.3.3 diagnosis:
       // 50/50 sampled subset rejections were missing ONLY the regenerated relationship
@@ -333,9 +363,22 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       } catch {
         // underspecified input: keep candidateIds; the subset check will fall back live
       }
-      jobs.push({ key, inputIds, run: () => (dedupLoader as DedupLoader)(context, dedupInput, inputIds) });
+      jobs.push({ key, inputIds, input: dedupInput, run: () => (dedupLoader as DedupLoader)(context, dedupInput, inputIds) });
     });
-    for (let i = 0; i < jobs.length; i += SEQUENCER_CONFIG.dedupPrefetchConcurrency) {
+    // msearch form (dedup_prefetch_msearch, 2026-09-25): the batch's dedup queries in packets of
+    // dedup_prefetch_msearch_size per engine round trip, dedup_prefetch_concurrency of them run
+    // at once by the engine; a query answered null keeps the live query at apply
+    const manyLoader = SEQUENCER_CONFIG.dedupPrefetchMsearch ? dedupManyLoader : null;
+    for (let i = 0; manyLoader && i < jobs.length; i += SEQUENCER_CONFIG.dedupPrefetchMsearchSize) {
+      const slice = jobs.slice(i, i + SEQUENCER_CONFIG.dedupPrefetchMsearchSize);
+      // prefetch is an optimization: on failure the live query at apply remains
+      const results: (any[] | null)[] = await manyLoader(context, slice.map((job) => ({ input: job.input, inputIds: job.inputIds })), SEQUENCER_CONFIG.dedupPrefetchConcurrency)
+        .catch(() => []);
+      results.forEach((existing, j) => {
+        if (existing) setDedupPrefetch(slice[j].key, { inputIds: new Set(slice[j].inputIds), existing });
+      });
+    }
+    for (let i = 0; !manyLoader && i < jobs.length; i += SEQUENCER_CONFIG.dedupPrefetchConcurrency) {
       const slice = jobs.slice(i, i + SEQUENCER_CONFIG.dedupPrefetchConcurrency);
       const results = await Promise.all(slice.map(async (job) => {
         try {
@@ -345,7 +388,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
         }
       }));
       results.forEach((existing, j) => {
-        if (existing) dedupPrefetch.set(slice[j].key, { inputIds: new Set(slice[j].inputIds), existing });
+        if (existing) setDedupPrefetch(slice[j].key, { inputIds: new Set(slice[j].inputIds), existing });
       });
     }
   }
