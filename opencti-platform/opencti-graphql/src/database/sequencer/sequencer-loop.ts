@@ -110,6 +110,17 @@ const dedupPrefetch = new Map<string, { inputIds: Set<string>; existing: any[] }
 // key miss into "an entry exists for these endpoints but the key differs" (dates / creator
 // normalisation) and "no entry at all" (the prefetch skipped this relation)
 const dedupPrefetchEndpoints = new Set<string>();
+// Fix 2026-09-25: an endpoint absent at batch start (probed with no type filter) cannot carry a
+// pre-existing relation. The prefetch used to record that as an entry keyed by the endpoint's
+// RAW id, but the apply computes its key with the endpoint's internal id (created in the
+// batch by then): the entry was never found and each such relation ran its live dedup query
+// (12,796 of 12,796 key misses on mix140k were this case). The absent ids are kept instead,
+// and the apply matches them against the endpoint element's own ids.
+const dedupAbsentEndpoints = new Set<string>();
+export const isDedupEndpointAbsentAtBatchStart = (element: any): boolean => {
+  if (!element || dedupAbsentEndpoints.size === 0) return false;
+  return getInstanceIds(element).some((id: string) => dedupAbsentEndpoints.has(id));
+};
 const dedupEndpointsOf = (key: string) => key.split('|').slice(0, 3).join('|');
 const setDedupPrefetch = (key: string, entry: { inputIds: Set<string>; existing: any[] }) => {
   dedupPrefetch.set(key, entry);
@@ -271,6 +282,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   sequencerIdentityMap.clearAbsent();
   dedupPrefetch.clear();
   dedupPrefetchEndpoints.clear();
+  dedupAbsentEndpoints.clear();
   const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
   const typedMisses: string[] = [];
   const typedTypes = new Set<string>();
@@ -331,11 +343,13 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
         createdByKey,
       );
       if (dedupPrefetch.has(key)) return;
-      const endpointAbsent = (!fromElement && sequencerIdentityMap.isKnownAbsent(fromId, null))
-        || (!toElement && sequencerIdentityMap.isKnownAbsent(toId, null));
-      if (endpointAbsent) {
-        // an endpoint absent at batch start cannot carry a pre-existing duplicate
-        setDedupPrefetch(key, { inputIds: new Set(intent.candidateIds), existing: [] });
+      const fromAbsent = !fromElement && sequencerIdentityMap.isKnownAbsent(fromId, null);
+      const toAbsent = !toElement && sequencerIdentityMap.isKnownAbsent(toId, null);
+      if (fromAbsent || toAbsent) {
+        // an endpoint absent at batch start cannot carry a pre-existing duplicate: recorded
+        // by id, matched at apply against the created endpoint's ids (see above)
+        if (fromAbsent) dedupAbsentEndpoints.add(fromId);
+        if (toAbsent) dedupAbsentEndpoints.add(toId);
         return;
       }
       if (!fromElement || !toElement) {

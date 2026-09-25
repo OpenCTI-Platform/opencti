@@ -103,7 +103,7 @@ import {
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { isSequencerEligible, sequencerScopedContext, stripMemberRefMarks } from './sequencer/sequencer-eligibility';
-import { registerSequencerLoaders, sequencerDedupPrefetchKey, submitIntent, takeSequencerDedupPrefetch } from './sequencer/sequencer-loop';
+import { isDedupEndpointAbsentAtBatchStart, registerSequencerLoaders, sequencerDedupPrefetchKey, submitIntent, takeSequencerDedupPrefetch } from './sequencer/sequencer-loop';
 import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
@@ -3523,6 +3523,13 @@ export const getExistingRelations = async (
     // a pre-existing duplicate). Trusted only when the apply-time ids are covered by the
     // prefetched ones (rename-at-resolution safety); otherwise the live query runs as today.
     if (context.sequencer) {
+      // an endpoint absent at batch start (so created in this batch) cannot carry a
+      // pre-existing relation: nothing to search (the live query could not see this batch's
+      // buffered writes either)
+      if (isDedupEndpointAbsentAtBatchStart(from) || isDedupEndpointAbsentAtBatchStart(to)) {
+        sequencerMetrics.searchCaller('relation_dedup_served_absent');
+        return existingRelationships;
+      }
       const key = sequencerDedupPrefetchKey(from.internal_id, to.internal_id, input, input.createdBy?.internal_id ?? null);
       const prefetched = takeSequencerDedupPrefetch(key, inputIds);
       if (prefetched) {
