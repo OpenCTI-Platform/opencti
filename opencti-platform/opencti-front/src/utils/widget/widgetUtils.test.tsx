@@ -5,6 +5,8 @@ import {
   getCurrentAvailableParameters,
   getCurrentDataSelectionLimit,
   getCurrentIsRelationships,
+  getValidDateAttributes,
+  normalizeDateAttribute,
   isDataSelectionNumberValid,
   isWidgetUsingRelationsAggregation,
   showEstimationWarningForUniqCount,
@@ -178,6 +180,42 @@ describe('widgetUtils', () => {
 
     it('should return false for invalid widget type', () => {
       expect(getCurrentIsRelationships('invalid-type')).toBe(false);
+    });
+  });
+
+  describe('getValidDateAttributes', () => {
+    it('should include start_time and stop_time only for relationships perspective', () => {
+      expect(getValidDateAttributes('relationships')).toEqual([
+        'created_at', 'updated_at', 'created', 'modified', 'start_time', 'stop_time',
+      ]);
+    });
+
+    it('should not include relationship-only fields for other perspectives', () => {
+      const common = ['created_at', 'updated_at', 'created', 'modified'];
+      expect(getValidDateAttributes('entities')).toEqual(common);
+      expect(getValidDateAttributes('audits')).toEqual(common);
+      expect(getValidDateAttributes(null)).toEqual(common);
+      expect(getValidDateAttributes(undefined)).toEqual(common);
+    });
+  });
+
+  describe('normalizeDateAttribute', () => {
+    it('should keep a valid value for the perspective', () => {
+      expect(normalizeDateAttribute('relationships', 'start_time')).toBe('start_time');
+      expect(normalizeDateAttribute('relationships', 'stop_time')).toBe('stop_time');
+      expect(normalizeDateAttribute('entities', 'modified')).toBe('modified');
+    });
+
+    it('should fall back to created_at when the value is unsupported for the perspective', () => {
+      expect(normalizeDateAttribute('entities', 'start_time')).toBe('created_at');
+      expect(normalizeDateAttribute('entities', 'stop_time')).toBe('created_at');
+      expect(normalizeDateAttribute('audits', 'start_time')).toBe('created_at');
+    });
+
+    it('should fall back to created_at for empty or unknown values', () => {
+      expect(normalizeDateAttribute('entities', null)).toBe('created_at');
+      expect(normalizeDateAttribute('entities', undefined)).toBe('created_at');
+      expect(normalizeDateAttribute('relationships', 'unknown_field')).toBe('created_at');
     });
   });
 

@@ -7,7 +7,7 @@ import { v4 as uuid } from 'uuid';
 import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { indexedVisualizationTypes, normalizeDateAttribute, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import type { WidgetHost, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
@@ -91,6 +91,7 @@ const WidgetCreationPerspective = () => {
       dynamicFrom_id: undefined,
       dynamicTo_id: undefined,
       columns: perspective === n.perspective ? n.columns : initialColumns,
+      date_attribute: normalizeDateAttribute(perspective, n.date_attribute),
     }
     ));
     setConfigWidget({
