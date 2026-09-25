@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE, ENTITY_TYPE_RESOLVED_FILTERS } from '../../../src/schema/stixDomainObject';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import type { StixCoreObject } from '../../../src/types/stix-2-1-common';
@@ -235,7 +235,7 @@ describe('Notification manager behaviors test', async () => {
   const context = testContext;
   const adminUser = ADMIN_USER; // admin user with all rights
   const greenUserEmail = 'greenUser@mail.com';
-  const greenUserAddResult = await queryAsAdmin({ // create a restricted users with only access to green markings
+  const greenUserAddResult = await queryAsAdminWithSuccess({ // create a restricted users with only access to green markings
     query: CREATE_USER_QUERY,
     variables: {
       input: {
@@ -245,8 +245,8 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const greenUserId = greenUserAddResult.data!.userAdd.id;
-  const greenGroupAddResult = await queryAsAdmin({ // create a group with only green marking allowed
+  const greenUserId = greenUserAddResult.data.userAdd.id;
+  const greenGroupAddResult = await queryAsAdminWithSuccess({ // create a group with only green marking allowed
     query: CREATE_GROUP_QUERY,
     variables: {
       input: {
@@ -256,7 +256,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const greenGroupId = greenGroupAddResult.data!.groupAdd.id;
+  const greenGroupId = greenGroupAddResult.data.groupAdd.id;
   await queryAsAdmin({ // create the relation between the green user and the green group
     query: GROUP_RELATION_ADD_QUERY,
     variables: {
@@ -267,7 +267,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const userOrganizationAddResult = await queryAsAdmin({ // create the user organization
+  const userOrganizationAddResult = await queryAsAdminWithSuccess({ // create the user organization
     query: CREATE_ORGANIZATION_QUERY,
     variables: {
       input: {
@@ -276,8 +276,8 @@ describe('Notification manager behaviors test', async () => {
     },
   });
   const [userOrganizationId, userOrganizationStandardId] = [
-    userOrganizationAddResult.data!.organizationAdd.id,
-    userOrganizationAddResult.data!.organizationAdd.standard_id,
+    userOrganizationAddResult.data.organizationAdd.id,
+    userOrganizationAddResult.data.organizationAdd.standard_id,
   ];
   await queryAsAdmin({ // create the relation between the green user and the userOrganization
     query: USER_ORGANIZATION_ADD_QUERY,
@@ -303,7 +303,7 @@ describe('Notification manager behaviors test', async () => {
     api_token: '',
   } as unknown as AuthUser;
   // -- create data --
-  const reportAddResult = await queryAsAdmin({
+  const reportAddResult = await queryAsAdminWithSuccess({
     query: CREATE_REPORT_QUERY,
     variables: {
       input: {
@@ -312,7 +312,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const redReportAddResult = await queryAsAdmin({
+  const redReportAddResult = await queryAsAdminWithSuccess({
     query: CREATE_REPORT_QUERY,
     variables: {
       input: {
@@ -322,7 +322,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const malwareAddResult = await queryAsAdmin({
+  const malwareAddResult = await queryAsAdminWithSuccess({
     query: CREATE_MALWARE_QUERY,
     variables: {
       input: {
@@ -330,7 +330,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const greenOrganizationAddResult = await queryAsAdmin({
+  const greenOrganizationAddResult = await queryAsAdminWithSuccess({
     query: CREATE_ORGANIZATION_QUERY,
     variables: {
       input: {
@@ -339,7 +339,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const redOrganizationAddResult = await queryAsAdmin({
+  const redOrganizationAddResult = await queryAsAdminWithSuccess({
     query: CREATE_ORGANIZATION_QUERY,
     variables: {
       input: {
@@ -348,7 +348,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const redAttackPatternAddResult = await queryAsAdmin({
+  const redAttackPatternAddResult = await queryAsAdminWithSuccess({
     query: CREATE_ATTACKPATTERN_QUERY,
     variables: {
       input: {
@@ -359,14 +359,14 @@ describe('Notification manager behaviors test', async () => {
   });
 
   // -- fetch data ids --
-  const [reportId, reportStandardId] = [reportAddResult.data!.reportAdd.id, reportAddResult.data!.reportAdd.standard_id];
-  const [redReportId, redReportStandardId] = [redReportAddResult.data!.reportAdd.id, redReportAddResult.data!.reportAdd.standard_id];
-  const [malwareId, malwareStandardId] = [malwareAddResult.data!.malwareAdd.id, malwareAddResult.data!.malwareAdd.standard_id];
-  const [greenOrganizationId, greenOrganizationStandardId] = [greenOrganizationAddResult.data!.organizationAdd.id, greenOrganizationAddResult.data!.organizationAdd.standard_id];
-  const [redOrganizationId, redOrganizationStandardId] = [redOrganizationAddResult.data!.organizationAdd.id, redOrganizationAddResult.data!.organizationAdd.standard_id];
-  const [redAttackPatternId, redAttackPatternStandardId] = [redAttackPatternAddResult.data!.attackPatternAdd.id, redAttackPatternAddResult.data!.attackPatternAdd.standard_id];
+  const [reportId, reportStandardId] = [reportAddResult.data.reportAdd.id, reportAddResult.data.reportAdd.standard_id];
+  const [redReportId, redReportStandardId] = [redReportAddResult.data.reportAdd.id, redReportAddResult.data.reportAdd.standard_id];
+  const [malwareId, malwareStandardId] = [malwareAddResult.data.malwareAdd.id, malwareAddResult.data.malwareAdd.standard_id];
+  const [greenOrganizationId, greenOrganizationStandardId] = [greenOrganizationAddResult.data.organizationAdd.id, greenOrganizationAddResult.data.organizationAdd.standard_id];
+  const [redOrganizationId, redOrganizationStandardId] = [redOrganizationAddResult.data.organizationAdd.id, redOrganizationAddResult.data.organizationAdd.standard_id];
+  const [redAttackPatternId, redAttackPatternStandardId] = [redAttackPatternAddResult.data.attackPatternAdd.id, redAttackPatternAddResult.data.attackPatternAdd.standard_id];
   // -- create relationships --
-  const relationshipAddResult = await queryAsAdmin({
+  const relationshipAddResult = await queryAsAdminWithSuccess({
     query: CREATE_RELATIONSHIP_QUERY,
     variables: {
       input: {
@@ -376,7 +376,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const sightingAddResult = await queryAsAdmin({
+  const sightingAddResult = await queryAsAdminWithSuccess({
     query: CREATE_SIGHTING_QUERY,
     variables: {
       input: {
@@ -386,8 +386,8 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const [relationshipId, relationshipStandardId] = [relationshipAddResult.data!.stixCoreRelationshipAdd.id, relationshipAddResult.data!.stixCoreRelationshipAdd.standard_id];
-  const [sightingId, sightingStandardId] = [sightingAddResult.data!.stixSightingRelationshipAdd.id, sightingAddResult.data!.stixSightingRelationshipAdd.standard_id];
+  const [relationshipId, relationshipStandardId] = [relationshipAddResult.data.stixCoreRelationshipAdd.id, relationshipAddResult.data.stixCoreRelationshipAdd.standard_id];
+  const [sightingId, sightingStandardId] = [sightingAddResult.data.stixSightingRelationshipAdd.id, sightingAddResult.data.stixSightingRelationshipAdd.standard_id];
   // -- build stix data --
   const stixReport = {
     name: 'report_name',
@@ -1226,14 +1226,14 @@ describe('Notification manager behaviors test', async () => {
       triggerOrganizationsAllEvents, triggerAttackPatternAllEvents, triggerMalwareAndRedAttackPatternAllEvents,
       triggerMalwareAndRedOrganizationAllEvents, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents,
     ];
-    const triggerAddQueryPromise = triggersToCreate.map((triggerInput) => queryAsAdmin({
+    const triggerAddQueryPromise = triggersToCreate.map((triggerInput) => queryAsAdminWithSuccess({
       query: CREATE_LIVE_TRIGGER_QUERY,
       variables: {
         input: triggerInput,
       },
     }));
     const triggerAddQueryResults = await Promise.all(triggerAddQueryPromise);
-    const createdTriggerIds = triggerAddQueryResults.map((result) => result.data!.triggerKnowledgeLiveAdd.id);
+    const createdTriggerIds = triggerAddQueryResults.map((result) => result.data.triggerKnowledgeLiveAdd.id);
     resetCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS);
 
     // -- TESTS -- //
