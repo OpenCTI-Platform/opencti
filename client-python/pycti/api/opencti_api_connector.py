@@ -189,7 +189,14 @@ class OpenCTIApiConnector:
                 }
             }
            """
-        result = self.api.query(query, connector.to_input())
+        variables = connector.to_input()
+        if not self.api.compatibility.connector_registration_metadata:
+            self.api.app_logger.info(
+                "Connector version and slug are not supported by this OpenCTI platform"
+            )
+            variables["input"].pop("version", None)
+            variables["input"].pop("slug", None)
+        result = self.api.query(query, variables)
         return result["data"]["registerConnector"]
 
     def unregister(self, _id: str) -> Dict:

@@ -16,6 +16,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 import requests
 
 from pycti import __version__
+from pycti.api.opencti_api_compatibility import OpenCTIApiCompatibility
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_draft import OpenCTIApiDraft
 from pycti.api.opencti_api_internal_file import OpenCTIApiInternalFile
@@ -268,6 +269,7 @@ class OpenCTIApiClient:
         )
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
+        self.compatibility = OpenCTIApiCompatibility(self)
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
         self.notification = OpenCTIApiNotification(self)
@@ -843,6 +845,12 @@ class OpenCTIApiClient:
                   }
                 """)
             if test is not None:
+                try:
+                    self.compatibility.refresh()
+                except Exception as err:  # pylint: disable=broad-except
+                    self.app_logger.warning(
+                        "Unable to refresh API compatibility", {"reason": str(err)}
+                    )
                 return True
         except Exception as err:  # pylint: disable=broad-except
             self.app_logger.error(str(err))
