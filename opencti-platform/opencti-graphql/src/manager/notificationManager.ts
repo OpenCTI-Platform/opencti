@@ -28,6 +28,7 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import type { FilterEventContext } from '../utils/filtering/boolean-logic-engine';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
 import { buildFilterEventContext } from './playbookManager/playbookManagerUtils';
@@ -38,6 +39,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
 import { InterruptibleTimer } from './interruptible-timer';
+import { memoize } from '../utils/memoize';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -478,12 +480,27 @@ const generateNotificationMessageForFilteredSideEvents = async (
   return undefined; // filtered event (ex: update of an instance containing a listened ref) : no notification
 };
 
+export interface UpdateEventContext {
+  readonly previous: Readonly<StixCoreObject | StixRelationshipObject>;
+  readonly eventContext: Readonly<FilterEventContext>;
+}
+
+// Derived from the stream event only: identical for every trigger of the same event.
+// eventContext drives has_changed/not_has_changed filter evaluation.
+export const buildUpdateEventContext = (streamEvent: SseEvent<DataEvent>): UpdateEventContext => {
+  const { data: { data } } = streamEvent;
+  const { context: updatePatch } = streamEvent.data as UpdateEvent;
+  const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
+  return { previous, eventContext: buildFilterEventContext(streamEvent.data as UpdateEvent) };
+};
+
 export const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
   streamEvent: SseEvent<DataEvent>,
   trigger: BasicStoreEntityLiveTrigger,
   useSideEventMatching = false,
+  getUpdateEventContext: () => UpdateEventContext,
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, notifiers, instance_trigger, filters, raw_filters } = trigger;
@@ -505,9 +522,7 @@ export const buildTargetEvents = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
-    const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
-    // Build event context for has_changed/not_has_changed filter evaluation
-    const eventContext = buildFilterEventContext(streamEvent.data as UpdateEvent);
+    const { previous, eventContext } = getUpdateEventContext();
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
@@ -606,18 +621,19 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, message: streamMessage, origin } } = streamEvent;
+      const getUpdateEventContext = memoize(() => buildUpdateEventContext(streamEvent));
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
         const { internal_id: notification_id, trigger_type: type, instance_trigger } = trigger;
-        const targets = await buildTargetEvents(context, users, streamEvent, trigger);
+        const targets = await buildTargetEvents(context, users, streamEvent, trigger, false, getUpdateEventContext);
         if (targets.length > 0) {
           const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data, streamMessage, origin };
           await storeNotificationEvent(context, notificationEvent);
         }
         // search side events for instance_trigger
         if (instance_trigger && trigger.event_types.includes(EVENT_TYPE_UPDATE)) {
-          const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true);
+          const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true, getUpdateEventContext);
           if (sideTargets.length > 0) {
             const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets: sideTargets, data, streamMessage, origin };
             await storeNotificationEvent(context, notificationEvent);
