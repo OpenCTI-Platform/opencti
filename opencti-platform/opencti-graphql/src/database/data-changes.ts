@@ -334,13 +334,15 @@ export const buildChanges = async (context: AuthContext, user: AuthUser,
     if (isMultiple) {
       let added: ChangeValue[] = [];
       let removed: ChangeValue[] = [];
+      const previousRawSet = new Set(previous.map((previousItem) => previousItem.raw));
       if (operation === UPDATE_OPERATION_ADD) {
-        added = valueArray.filter((valueItem) => !previous.find((previousItem) => previousItem.raw === valueItem.raw));
+        added = valueArray.filter((valueItem) => !previousRawSet.has(valueItem.raw));
       } else if (operation === UPDATE_OPERATION_REMOVE) {
-        removed = valueArray.filter((valueItem) => previous.find((previousItem) => previousItem.raw === valueItem.raw));
+        removed = valueArray.filter((valueItem) => previousRawSet.has(valueItem.raw));
       } else { // Replace
-        removed = previous.filter((previousItem) => !valueArray.find((valueItem) => previousItem.raw === valueItem.raw));
-        added = valueArray.filter((valueItem) => !previous.find((previousItem) => previousItem.raw === valueItem.raw));
+        const valueRawSet = new Set(valueArray.map((valueItem) => valueItem.raw));
+        removed = previous.filter((previousItem) => !valueRawSet.has(previousItem.raw));
+        added = valueArray.filter((valueItem) => !previousRawSet.has(valueItem.raw));
       }
       if (added.length > 0 || removed.length > 0) {
         changes.push({
