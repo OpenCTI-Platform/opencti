@@ -78,6 +78,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
       <FilterIconButton
         filters={filters}
         helpers={filterHelpers}
+        availableFilterKeys={availableFilterKeys}
         redirection
         searchContext={{ entityTypes: ['Stix-Core-Object'] }}
         host={host}

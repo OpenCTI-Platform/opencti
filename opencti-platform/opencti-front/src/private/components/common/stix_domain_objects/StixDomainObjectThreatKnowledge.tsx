@@ -67,6 +67,15 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
+const THREAT_KNOWLEDGE_FILTER_KEYS = [
+  'elementWithTargetTypes',
+  'objectMarking',
+  'createdBy',
+  'objectLabel',
+  'created',
+  'toId',
+];
+
 const stixDomainObjectThreatKnowledgeContainersNumberQuery = graphql`
   query StixDomainObjectThreatKnowledgeContainersNumberQuery(
     $objectId: String
@@ -440,14 +449,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
           <div className={classes.filters}>
             <Filters
               helpers={helpers}
-              availableFilterKeys={[
-                'elementWithTargetTypes',
-                'objectMarking',
-                'createdBy',
-                'objectLabel',
-                'created',
-                'toId',
-              ]}
+              availableFilterKeys={THREAT_KNOWLEDGE_FILTER_KEYS}
               handleAddFilter={helpers.handleAddFilter}
               searchContext={{ entityTypes: ['stix-core-relationship'] }}
             />
@@ -512,6 +514,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             <FilterIconButton
               helpers={helpers}
               filters={filters}
+              availableFilterKeys={THREAT_KNOWLEDGE_FILTER_KEYS}
               handleRemoveFilter={helpers.handleRemoveFilter}
               handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
               handleSwitchLocalMode={helpers.handleSwitchLocalMode}

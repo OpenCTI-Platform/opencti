@@ -42,6 +42,14 @@ interface ContentKnowledgeTimeLineBarProps {
 }
 
 // TODO Fix ContentKnowledge
+const TIMELINE_FILTER_KEYS = [
+  'entity_type',
+  'objectMarking',
+  'objectLabel',
+  'createdBy',
+  'relationship_type',
+];
+
 const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBarProps> = ({
   handleTimeLineSearch,
   timeLineSearchTerm,
@@ -162,13 +170,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
 
               <div style={{ paddingTop: 0 }}>
                 <Filters
-                  availableFilterKeys={[
-                    'entity_type',
-                    'objectMarking',
-                    'objectLabel',
-                    'createdBy',
-                    'relationship_type',
-                  ]}
+                  availableFilterKeys={TIMELINE_FILTER_KEYS}
                   availableEntityTypes={[
                     'Stix-Domain-Object',
                     'Stix-Cyber-Observable',
@@ -180,6 +182,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               <div style={{ flexGrow: 1 }}>
                 <FilterIconButton
                   filters={timeLineFilters}
+                  availableFilterKeys={TIMELINE_FILTER_KEYS}
                   handleRemoveFilter={handleRemoveTimeLineFilter}
                   handleSwitchLocalMode={handleSwitchFilterLocalMode}
                   handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
