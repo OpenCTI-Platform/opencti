@@ -5,7 +5,6 @@ import {
   getCurrentAvailableParameters,
   getCurrentDataSelectionLimit,
   getCurrentIsRelationships,
-  isWidgetListOrTimeline,
   isDataSelectionNumberValid,
   isWidgetUsingRelationsAggregation,
   showEstimationWarningForUniqCount,
@@ -179,31 +178,6 @@ describe('widgetUtils', () => {
 
     it('should return false for invalid widget type', () => {
       expect(getCurrentIsRelationships('invalid-type')).toBe(false);
-    });
-  });
-
-  describe('isWidgetListOrTimeline', () => {
-    it('should return true for list widget', () => {
-      expect(isWidgetListOrTimeline('list')).toBe(true);
-    });
-
-    it('should return true for timeline widget', () => {
-      expect(isWidgetListOrTimeline('timeline')).toBe(true);
-    });
-
-    it('should return false for other widget types', () => {
-      expect(isWidgetListOrTimeline('number')).toBe(false);
-      expect(isWidgetListOrTimeline('donut')).toBe(false);
-      expect(isWidgetListOrTimeline('text')).toBe(false);
-      expect(isWidgetListOrTimeline('vertical-bar')).toBe(false);
-    });
-
-    it('should return false for empty string', () => {
-      expect(isWidgetListOrTimeline('')).toBe(false);
-    });
-
-    it('should return false for invalid widget type', () => {
-      expect(isWidgetListOrTimeline('invalid-type')).toBe(false);
     });
   });
 

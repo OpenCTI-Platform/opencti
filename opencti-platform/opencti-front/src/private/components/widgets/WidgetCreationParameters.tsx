@@ -26,14 +26,7 @@ import { useFormatter } from 'src/components/i18n';
 import { findFiltersFromKeys, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
-import {
-  getCurrentAvailableParameters,
-  getCurrentCategory,
-  getCurrentIsRelationships,
-  isWidgetListOrTimeline,
-  getMaxResultCount,
-  getWidgetInterval,
-} from 'src/utils/widget/widgetUtils';
+import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, getWidgetInterval } from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
@@ -133,6 +126,7 @@ const WidgetCreationParameters = () => {
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
   const { isWidgetVarNameAlreadyUsed, isVariableNameValid } = useWidgetConfigValidateForm();
+  const widgetCategory = getCurrentCategory(type);
 
   const alreadyUsedInstances = (host.kind === 'fintelTemplate' ? host.fintelWidgets : []).flatMap(({ widget }) => {
     if (widget.type !== 'attribute') return [];
@@ -374,7 +368,7 @@ const WidgetCreationParameters = () => {
         </div>
       )}
 
-      {getCurrentCategory(type) === 'text' && (
+      {widgetCategory === 'text' && (
         <div style={{ marginTop: 20 }}>
           <InputLabel shrink={true}>{t_i18n('Content')}</InputLabel>
           <ReactMde
@@ -401,7 +395,7 @@ const WidgetCreationParameters = () => {
         </div>
       )}
 
-      {getCurrentCategory(type) === 'timeseries' && (
+      {widgetCategory === 'timeseries' && (
         <Select
           value={getWidgetInterval(parameters)}
           onValueChange={(value) => handleChangeParameter('interval', value)
@@ -434,9 +428,11 @@ const WidgetCreationParameters = () => {
         {Array(dataSelection.length)
           .fill(0)
           .map((_, i) => {
-            const currentInstanceId = dataSelection[i].instance_id;
-            const isNumberError = (dataSelection[i].number ?? 10) > maxResultCount;
+            const selection = dataSelection[i];
+            const currentInstanceId = selection.instance_id;
+            const isNumberError = (selection.number ?? 10) > maxResultCount;
             const limitHelper = `${t_i18n('The number of results should be lower than')} ${maxResultCount}`;
+            const perspective = selection.perspective;
 
             return (
               <div key={i} data-testid={`widget-params-selection-${i}`}>
@@ -490,8 +486,8 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {(getCurrentCategory(type) === 'distribution'
-                  || getCurrentCategory(type) === 'list') && (
+                {(widgetCategory === 'distribution'
+                  || widgetCategory === 'list') && (
                   <Input
                     label={t_i18n('Number of results')}
                     type="number"
@@ -499,7 +495,7 @@ const WidgetCreationParameters = () => {
                     // The library swaps helper for error, so one sentence serves both.
                     error={isNumberError ? limitHelper : undefined}
                     helperText={limitHelper}
-                    value={String(dataSelection[i].number ?? 10)}
+                    value={String(selection.number ?? 10)}
                     onChange={(event) => handleChangeDataValidationParameter(
                       i,
                       'number',
@@ -511,7 +507,7 @@ const WidgetCreationParameters = () => {
                   />
                 )}
 
-                {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === 'entities' && (
+                {widgetCategory === 'list' && perspective === 'entities' && (
                   <div
                     style={{
                       display: 'flex',
@@ -521,7 +517,7 @@ const WidgetCreationParameters = () => {
                   >
                     <FormControl fullWidth={true} style={{ flex: 1 }}>
                       <Select
-                        value={dataSelection[i].sort_by ?? 'created_at'}
+                        value={selection.sort_by ?? 'created_at'}
                         onValueChange={(value) => handleChangeDataValidationParameter(
                           i,
                           'sort_by',
@@ -534,7 +530,7 @@ const WidgetCreationParameters = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent aria-label={t_i18n('Sort by')}>
-                          {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
+                          {(isDraftWorkspaceFilterGroup(selection.filters)
                             ? draftWorkspaceSortByValues
                             : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
                           ).map(({ value, label }) => (
@@ -551,7 +547,7 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {getCurrentCategory(type) === 'list' && (
+                {widgetCategory === 'list' && (
                   <div
                     style={{
                       display: 'flex',
@@ -561,7 +557,7 @@ const WidgetCreationParameters = () => {
                   >
                     <FormControl fullWidth={true} style={{ flex: 1 }}>
                       <Select
-                        value={dataSelection[i].sort_mode ?? 'desc'}
+                        value={selection.sort_mode ?? 'desc'}
                         onValueChange={(value) => handleChangeDataValidationParameter(i, 'sort_mode', value)}
                       >
                         <SelectLabel>{t_i18n('Sort mode')}</SelectLabel>
@@ -581,7 +577,7 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {dataSelection[i].perspective !== 'audits'
+                {perspective !== 'audits'
                   && !['text', 'attribute', 'custom-attributes', 'bookmark'].includes(type)
                   && (
                     <div
@@ -593,18 +589,18 @@ const WidgetCreationParameters = () => {
                     >
                       <FormControl fullWidth={true} style={{ flex: 1 }}>
                         <Select
-                          value={dataSelection[i].date_attribute ?? 'created_at'}
+                          value={selection.date_attribute ?? 'created_at'}
                           onValueChange={(value) => handleChangeDataValidationParameter(i, 'date_attribute', value)}
                         >
-                          <SelectLabel>{isNotEmptyField(dataSelection[i].label)
-                            ? dataSelection[i].label
+                          <SelectLabel>{isNotEmptyField(selection.label)
+                            ? selection.label
                             : t_i18n('Date attribute')}
                           </SelectLabel>
                           <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent aria-label={isNotEmptyField(dataSelection[i].label)
-                            ? dataSelection[i].label
+                          <SelectContent aria-label={isNotEmptyField(selection.label)
+                            ? selection.label
                             : t_i18n('Date attribute')}
                           >
                             <SelectItem value="created_at">
@@ -619,24 +615,14 @@ const WidgetCreationParameters = () => {
                             <SelectItem value="modified">
                               modified ({t_i18n('Functional date')})
                             </SelectItem>
-                            {getCurrentIsRelationships(type) && (
+                            {perspective === 'relationships' && (
                               <SelectItem value="start_time">
                                 start_time ({t_i18n('Functional date')})
                               </SelectItem>
                             )}
-                            {getCurrentIsRelationships(type) && (
+                            {perspective === 'relationships' && (
                               <SelectItem value="stop_time">
                                 stop_time ({t_i18n('Functional date')})
-                              </SelectItem>
-                            )}
-                            {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                              <SelectItem value="first_seen">
-                                first_seen ({t_i18n('Functional date')})
-                              </SelectItem>
-                            )}
-                            {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                              <SelectItem value="last_seen">
-                                last_seen ({t_i18n('Functional date')})
                               </SelectItem>
                             )}
                           </SelectContent>
@@ -645,12 +631,12 @@ const WidgetCreationParameters = () => {
                     </div>
                   )}
 
-                {dataSelection[i].perspective === 'relationships'
+                {perspective === 'relationships'
                   && type === 'map' && (
                   <TextField
                     label={t_i18n('Zoom')}
                     fullWidth={true}
-                    value={dataSelection[i].zoom ?? 2}
+                    value={selection.zoom ?? 2}
                     placeholder={t_i18n('Zoom')}
                     onChange={(event) => handleChangeDataValidationParameter(
                       i,
@@ -662,12 +648,12 @@ const WidgetCreationParameters = () => {
                   />
                 )}
 
-                {dataSelection[i].perspective === 'relationships'
+                {perspective === 'relationships'
                   && type === 'map' && (
                   <TextField
                     label={t_i18n('Center latitude')}
                     fullWidth={true}
-                    value={dataSelection[i].centerLat ?? 48.8566969}
+                    value={selection.centerLat ?? 48.8566969}
                     placeholder={t_i18n('Center latitude')}
                     onChange={(event) => handleChangeDataValidationParameter(
                       i,
@@ -679,12 +665,12 @@ const WidgetCreationParameters = () => {
                   />
                 )}
 
-                {dataSelection[i].perspective === 'relationships'
+                {perspective === 'relationships'
                   && type === 'map' && (
                   <TextField
                     label={t_i18n('Center longitude')}
                     fullWidth={true}
-                    value={dataSelection[i].centerLng ?? 2.3514616}
+                    value={selection.centerLng ?? 2.3514616}
                     placeholder={t_i18n('Center longitude')}
                     onChange={(event) => handleChangeDataValidationParameter(
                       i,
@@ -698,9 +684,9 @@ const WidgetCreationParameters = () => {
 
                 {type === 'attribute' && (
                   <WidgetAttributesInputContainer
-                    value={dataSelection[i]?.columns ?? []}
+                    value={selection?.columns ?? []}
                     onChange={(value) => handleChangeDataValidationColumns(i, value)}
-                    instanceId={dataSelection[i].instance_id ?? undefined}
+                    instanceId={selection.instance_id ?? undefined}
                   />
                 )}
 
@@ -710,7 +696,7 @@ const WidgetCreationParameters = () => {
                   <div
                     style={{ display: 'flex', width: '100%', marginTop: 20 }}
                   >
-                    {dataSelection[i].perspective === 'relationships' && (
+                    {perspective === 'relationships' && (
                       <FormControl
                         fullWidth={true}
                         style={{
@@ -720,7 +706,7 @@ const WidgetCreationParameters = () => {
                         }}
                       >
                         <Select
-                          value={dataSelection[i].attribute ?? ''}
+                          value={selection.attribute ?? ''}
                           onValueChange={(value) => handleChangeDataValidationParameter(
                             i,
                             'attribute',
@@ -743,7 +729,7 @@ const WidgetCreationParameters = () => {
                       </FormControl>
                     )}
 
-                    {dataSelection[i].perspective === 'entities'
+                    {perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length > 0
                       && (
                         <FormControl
@@ -753,9 +739,9 @@ const WidgetCreationParameters = () => {
                             width: '100%',
                           }}
                         >
-                          {isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
+                          {isDraftWorkspaceFilterGroup(selection.filters) ? (
                             <Select
-                              value={dataSelection[i].attribute ?? ''}
+                              value={selection.attribute ?? ''}
                               onValueChange={(value) => handleChangeDataValidationParameter(i, 'attribute', value)}
                             >
                               <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
@@ -808,7 +794,7 @@ const WidgetCreationParameters = () => {
                                   }
                                   return (
                                     <Select
-                                      value={dataSelection[i].attribute ?? ''}
+                                      value={selection.attribute ?? ''}
                                       onValueChange={(value) => handleChangeDataValidationParameter(
                                         i,
                                         'attribute',
@@ -847,7 +833,7 @@ const WidgetCreationParameters = () => {
                         </FormControl>
                       )}
 
-                    {dataSelection[i].perspective === 'entities'
+                    {perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0
                       && (
                         <FormControl
@@ -858,7 +844,7 @@ const WidgetCreationParameters = () => {
                           }}
                         >
                           <Select
-                            value={dataSelection[i].attribute ?? 'entity_type'}
+                            value={selection.attribute ?? 'entity_type'}
                             onValueChange={(value) => handleChangeDataValidationParameter(
                               i,
                               'attribute',
@@ -887,20 +873,20 @@ const WidgetCreationParameters = () => {
                         </FormControl>
                       )}
 
-                    {((dataSelection[i].perspective === 'audits' && getCurrentAvailableParameters(type).includes('attribute'))
+                    {((perspective === 'audits' && getCurrentAvailableParameters(type).includes('attribute'))
                       || uniqueParameterEnabled(dataSelection[0].perspective, type)) && (
                       auditAttributeSelectionSection(uniqueParameterEnabled(dataSelection[0].perspective, type), i)
                     )
                     }
 
-                    {dataSelection[i].perspective === 'relationships' && !['number', 'area', 'line'].includes(type) && (
+                    {perspective === 'relationships' && !['number', 'area', 'line'].includes(type) && (
                       <>
                         <FormControlLabel
                           sx={{ marginTop: 3 }}
                           control={(
                             <Switch
                               onChange={() => handleToggleDataValidationIsTo(i)}
-                              checked={!dataSelection[i].isTo}
+                              checked={!selection.isTo}
                             />
                           )}
                           label={t_i18n('Display the source')}
@@ -1009,7 +995,7 @@ const WidgetCreationParameters = () => {
             />
           );
         })}
-        {getCurrentCategory(type) === 'custom-attributes' && (() => {
+        {widgetCategory === 'custom-attributes' && (() => {
           const entityType = host.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
           const allColumns = getCustomAttributesColumns(entityType);
           return (
