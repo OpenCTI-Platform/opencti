@@ -407,7 +407,7 @@ const StixSightingRelationshipCreationFromEntity = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Create a sighting')}
-        containerStyle={{ overflow: 'hidden' }}
+        containerStyle={{ overflowY: step === 0 ? 'hidden' : 'auto' }}
         header={step === 0 && (
           <StixDomainObjectCreation
             display={open}
