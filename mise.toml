@@ -207,7 +207,7 @@ depends = ["dev:back", "dev:front"]
 description = "Run the GraphQL API alone (port 4000), restarted on every change"
 # Restarting on a change belongs to whatever launched the process, not to the
 # application's build script -- so watchexec drives it from here, and
-# builder/builder.js stays the one-shot builder the production build also uses.
+# builder/builder.ts stays the one-shot builder the production build also uses.
 #
 # `yarn start` is not reused: it re-runs graphql-codegen and re-fetches the
 # connectors manifest over the network, and neither should happen because someone
@@ -223,7 +223,7 @@ set -e
 [ -f src/__generated__/opencti-manifest.json ] || yarn get-connectors-manifest
 [ -f src/generated/graphql.ts ] || yarn build:types
 exec watchexec --restart --watch src --watch script --exts ts,js,mjs,graphql \
-  'node builder/builder.js --development && exec node --enable-source-maps build/back.mjs'
+  'node builder/builder.ts --development && exec node --enable-source-maps build/back.mjs'
 '''
 
 [tasks."dev:front"]
