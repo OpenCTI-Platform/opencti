@@ -114,8 +114,13 @@ const WorkspaceDuplicationDialog: FunctionComponent<
       updater: (store) => updater?.(store, 'workspaceDuplicate'),
       onError: (error) => {
         handleError(error);
+        setDuplicating(false);
       },
-      onCompleted: (result) => {
+      onCompleted: (result, errors) => {
+        if (errors?.length || !result.workspaceDuplicate) {
+          setDuplicating(false);
+          return;
+        }
         handleCloseDuplicate();
         const isDashboardView = !paginationOptions;
         if (isDashboardView) {
@@ -147,7 +152,11 @@ const WorkspaceDuplicationDialog: FunctionComponent<
         handleError(error);
         setDuplicating(false);
       },
-      onCompleted: (result) => {
+      onCompleted: (result, errors) => {
+        if (errors?.length || !result.investigationDuplicate) {
+          setDuplicating(false);
+          return;
+        }
         handleCloseDuplicate();
         setDuplicating(false);
         if (!paginationOptions) {
