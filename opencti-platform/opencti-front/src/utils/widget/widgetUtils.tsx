@@ -256,10 +256,6 @@ export const getCurrentIsRelationships = (type: string) => {
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
 };
 
-export const isWidgetListOrTimeline = (type: string) => {
-  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' || indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline';
-};
-
 /**
  * Returns the time interval to use in a widget.
  */
