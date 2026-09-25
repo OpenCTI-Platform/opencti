@@ -1,8 +1,9 @@
 import * as jsonpatch from 'fast-json-patch';
-import type { AuthUser } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../data-changes';
 import { convertStoreToStix_2_1 } from '../stix-2-1-converter';
+import { resolveEmbeddedImagesInDescriptionFieldsForExport } from '../middlewareEmbeddedImages';
 import type { StixCoreObject, StixObject } from '../../types/stix-2-1-common';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
 import { UnsupportedError } from '../../config/errors';
@@ -92,11 +93,31 @@ export interface RawStreamClient {
 export const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
+
+// Resolve markdown embedded image references (embedded/... storage paths) to inline base64 data URIs
+// so that live stream consumers can reconstruct the images. This mirrors the STIX export behavior and
+// pairs with the import-side rewrite that turns base64 data URIs back into stored files.
+// The resolution is a no-op (only a cheap regex check) for descriptions without embedded image references.
+const resolveStreamEmbeddedImages = async <T extends StixCoreObject>(context: AuthContext, stix: T): Promise<T> => {
+  const octiExtension = stix.extensions?.[STIX_EXT_OCTI];
+  const entityType = octiExtension?.type;
+  const entityId = octiExtension?.id;
+  if (!entityType || !entityId) {
+    return stix;
+  }
+  return resolveEmbeddedImagesInDescriptionFieldsForExport(context, stix, { entityType, entityId });
+};
 // Merge
-export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
+export const buildMergeEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  previous: StoreObject,
+  instance: StoreObject,
+  sourceEntities: Array<StoreObject>,
+): Promise<MergeEvent> => {
   const message = generateMergeMessage(instance, sourceEntities);
-  const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  const currentStix = convertStoreToStix_2_1(instance) as StixCoreObject;
+  const previousStix = await resolveStreamEmbeddedImages(context, convertStoreToStix_2_1(previous) as StixCoreObject);
+  const currentStix = await resolveStreamEmbeddedImages(context, convertStoreToStix_2_1(instance) as StixCoreObject);
   return {
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_MERGE,
@@ -112,23 +133,27 @@ export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, ins
   };
 };
 // Update
-export const buildStixUpdateEvent = (
+export const buildStixUpdateEvent = async (
+  context: AuthContext,
   user: AuthUser,
   previousStix: StixCoreObject,
   stix: StixCoreObject,
   changes: Change[],
   opts: UpdateEventOpts = {},
-): UpdateEvent => {
+): Promise<UpdateEvent> => {
+  // Resolve embedded markdown images to inline base64 so stream consumers can reconstruct them.
+  const resolvedStix = await resolveStreamEmbeddedImages(context, stix);
+  const resolvedPreviousStix = await resolveStreamEmbeddedImages(context, previousStix);
   // Build and send the event
-  const patch = jsonpatch.compare(previousStix, stix);
-  const previousPatch = jsonpatch.compare(stix, previousStix);
+  const patch = jsonpatch.compare(resolvedPreviousStix, resolvedStix);
+  const previousPatch = jsonpatch.compare(resolvedStix, resolvedPreviousStix);
   if (patch.length === 0 || previousPatch.length === 0) {
     throw UnsupportedError('Update event must contains a valid previous patch');
   }
   if (patch.length === 1 && patch[0].path === '/modified' && !opts.allow_only_modified) {
     throw UnsupportedError('Update event must contains more operation than just modified/updated_at value');
   }
-  const entityType = stix.extensions[STIX_EXT_OCTI].type;
+  const entityType = resolvedStix.extensions[STIX_EXT_OCTI].type;
   const scope = INTERNAL_EXPORTABLE_TYPES.includes(entityType) ? 'internal' : 'external';
   return {
     version: EVENT_CURRENT_VERSION,
@@ -136,7 +161,7 @@ export const buildStixUpdateEvent = (
     scope,
     message: 'Update ' + changes.length + ' elements',
     origin: user.origin,
-    data: stix,
+    data: resolvedStix,
     commit: opts.commit,
     noHistory: opts.noHistory,
     context: {
@@ -148,14 +173,15 @@ export const buildStixUpdateEvent = (
     },
   };
 };
-export const buildUpdateEvent = (
+export const buildUpdateEvent = async (
+  context: AuthContext,
   user: AuthUser,
   previous: StoreObject,
   instance: StoreObject,
   changes: Change[],
   opts: UpdateEventOpts,
   workflowStatuses?: { previous?: { name: string; scope: string }; current?: { name: string; scope: string } },
-): UpdateEvent => {
+): Promise<UpdateEvent> => {
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
@@ -167,11 +193,17 @@ export const buildUpdateEvent = (
     previousStix.extensions[STIX_EXT_OCTI].workflow_status_name = workflowStatuses.previous.name;
     previousStix.extensions[STIX_EXT_OCTI].workflow_status_scope = workflowStatuses.previous.scope;
   }
-  return buildStixUpdateEvent(user, previousStix, stix, changes, opts);
+  return buildStixUpdateEvent(context, user, previousStix, stix, changes, opts);
 };
 // Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string, workflowStatus?: { name: string; scope: string }): StreamDataEvent => {
-  const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
+export const buildCreateEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StoreObject,
+  message: string,
+  workflowStatus?: { name: string; scope: string },
+): Promise<StreamDataEvent> => {
+  const stix = await resolveStreamEmbeddedImages(context, convertStoreToStix_2_1(instance) as StixCoreObject);
   if (workflowStatus) {
     stix.extensions[STIX_EXT_OCTI].workflow_status_name = workflowStatus.name;
     stix.extensions[STIX_EXT_OCTI].workflow_status_scope = workflowStatus.scope;
