@@ -311,7 +311,7 @@
         "opencti-platform/opencti-front/src/components/filters/FilterChipPopover.tsx",
         "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContainer.tsx",
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
-        "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
+        "opencti-platform/opencti-front/src/private/components/data/forms/view/fieldRenderers/primitiveFieldRenderers.tsx",
         "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
         "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
       ]
