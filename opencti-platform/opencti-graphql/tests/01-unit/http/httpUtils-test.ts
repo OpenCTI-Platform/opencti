@@ -9,6 +9,7 @@ import {
   encodeOidcState,
   isClientRequestError,
   logMalformedRequest,
+  normalizeUploadError,
 } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
@@ -398,6 +399,44 @@ describe('httpUtils: isClientRequestError', () => {
   it('should reject an opencti domain error, which carries http_status in its extensions only', () => {
     // This is what makes it safe to key on the status alone rather than on expose.
     expect(isClientRequestError(FunctionalError('Business validation'))).toBe(false);
+  });
+});
+
+describe('httpUtils: normalizeUploadError', () => {
+  // graphql-upload hands busboy errors over as they are, with no status.
+  const busboyError = (message: string) => new Error(message);
+
+  it('should give a 400 to the raw busboy errors, which carry no status', () => {
+    ['Multipart: Boundary not found', 'Malformed part header', 'Unexpected end of form', 'Unexpected end of file']
+      .forEach((message) => {
+        const normalized = normalizeUploadError(busboyError(message));
+        expect(normalized.status).toBe(400);
+        expect(isClientRequestError(normalized)).toBe(true);
+      });
+  });
+
+  it('should keep the status graphql-upload already set', () => {
+    expect(normalizeUploadError(uploadError()).status).toBe(400);
+    expect(normalizeUploadError({ status: 413, type: 'entity.too.large' }).status).toBe(413);
+    expect(normalizeUploadError({ statusCode: 499 }).statusCode).toBe(499);
+  });
+
+  it('should leave a programmer error alone, so a parser bug still surfaces as a platform failure', () => {
+    const bug = new TypeError('cannot read properties of undefined');
+    const normalized = normalizeUploadError(bug);
+    expect(normalized.status).toBeUndefined();
+    expect(isClientRequestError(normalized)).toBe(false);
+  });
+
+  it('should pass through an absent error', () => {
+    expect(normalizeUploadError(undefined)).toBeUndefined();
+    expect(normalizeUploadError(null)).toBeNull();
+  });
+
+  it('should keep the original message and stack for the log', () => {
+    const normalized = normalizeUploadError(busboyError('Multipart: Boundary not found'));
+    expect(normalized.message).toBe('Multipart: Boundary not found');
+    expect(normalized.stack).toBeDefined();
   });
 });
 

@@ -354,6 +354,21 @@ export const clientErrorResponse = (error: any) => {
   return { status, body: { status: 'error', error: message } };
 };
 
+// graphql-upload relays raw busboy parsing errors untouched, and those carry no status at all:
+// 'Multipart: Boundary not found' when the content-type has no boundary, 'Malformed part header',
+// 'Unexpected end of form' on a truncated stream. They are caller mistakes like the rest, so they
+// are normalized to 400 instead of reaching the generic handler as a platform failure. Programmer
+// error types are left alone, so a bug inside the parser still surfaces as a 500.
+const PLATFORM_ERROR_NAMES = ['TypeError', 'RangeError', 'ReferenceError', 'EvalError'];
+
+export const normalizeUploadError = (error: any) => {
+  const hasStatus = typeof (error?.status ?? error?.statusCode) === 'number';
+  if (isEmptyField(error) || hasStatus || PLATFORM_ERROR_NAMES.includes(error?.name)) {
+    return error;
+  }
+  return Object.assign(error, { status: 400, statusCode: 400 });
+};
+
 // The platform accepts credentials in the query string (health_access_key, the OIDC code and
 // state), and both originalUrl and referer carry it, so only the pathname is ever logged.
 const withoutQueryString = (url: string | undefined): string | undefined => url?.split('?')[0];

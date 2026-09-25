@@ -25,7 +25,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { applyKeepAliveTimeout, buildRateLimiterOptions, clientErrorResponse, isClientRequestError, logMalformedRequest } from './httpUtils';
+import { applyKeepAliveTimeout, buildRateLimiterOptions, clientErrorResponse, isClientRequestError, logMalformedRequest, normalizeUploadError } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -158,13 +158,15 @@ const createHttpServer = async () => {
       return next();
     }
     return graphqlUploadExpress()(req, res, (uploadError) => {
-      // Body not following the graphql multipart request spec: answer the caller, do not 500.
-      if (uploadError && isClientRequestError(uploadError)) {
-        logMalformedRequest(req, uploadError, 'Malformed graphql request call');
-        const { status, body } = clientErrorResponse(uploadError);
+      // Body not following the graphql multipart request spec, or not parsable as multipart at all:
+      // answer the caller, do not 500.
+      const error = normalizeUploadError(uploadError);
+      if (error && isClientRequestError(error)) {
+        logMalformedRequest(req, error, 'Malformed graphql request call');
+        const { status, body } = clientErrorResponse(error);
         return res.status(status).send(body);
       }
-      return next(uploadError);
+      return next(error);
     });
   });
   app.use(

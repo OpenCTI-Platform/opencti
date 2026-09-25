@@ -78,6 +78,16 @@ describe('Malformed http request handling', () => {
       expect(JSON.stringify(response.data)).not.toContain('<script>');
     });
 
+    it('should answer 400 when the body is not parsable as multipart at all', async () => {
+      // No boundary in the content-type: busboy throws 'Multipart: Boundary not found', a raw error
+      // with no status, which graphql-upload relays as it is.
+      const response = await postRaw('not a multipart body', 'multipart/form-data');
+
+      expect(response.status).toBe(400);
+      expect(response.data?.status).toBe('error');
+      expect(response.data?.error).toBe('Bad request');
+    });
+
     it('should let a spec compliant multipart request through', async () => {
       const response = await postMultipart(
         [{ name: 'operations', value: JSON.stringify({ query: '{ __typename }' }) }, { name: 'map', value: '{}' }],
