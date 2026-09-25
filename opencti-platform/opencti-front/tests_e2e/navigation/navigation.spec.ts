@@ -1647,13 +1647,9 @@ const navigateTopBar = async (page: Page) => {
   const topBarPage = new TopBarPage(page);
   const leftBarPage = new LeftBarPage(page);
 
-  await topBarPage.clickOnIconLink('Triggers');
-  await expect(page).toHaveURL(/\/dashboard\/profile\/triggers(\?|$)/);
-  await leftBarPage.expectBreadcrumb('Triggers');
-
   await topBarPage.clickOnIconLink('Alerts');
   await expect(page).toHaveURL(/\/dashboard\/profile\/notifications(\?|$)/);
-  await leftBarPage.expectBreadcrumb('Alerts');
+  await leftBarPage.expectBreadcrumb('Notifications', 'Alerts');
 
   await topBarPage.clickOnIconLink('News Feed');
   await expect(page).toHaveURL(/\/dashboard\/news-feed(\?|$)/);
@@ -1667,7 +1663,7 @@ const navigateTopBar = async (page: Page) => {
   // Paths from before the news feed page extraction (#18150) must keep working.
   await page.goto('/dashboard/profile/notifications/alerts');
   await expect(page).toHaveURL(/\/dashboard\/profile\/notifications(\?|$)/);
-  await leftBarPage.expectBreadcrumb('Alerts');
+  await leftBarPage.expectBreadcrumb('Notifications', 'Alerts');
 
   await page.goto('/dashboard/profile/notifications/news-feed');
   await expect(page).toHaveURL(/\/dashboard\/news-feed(\?|$)/);

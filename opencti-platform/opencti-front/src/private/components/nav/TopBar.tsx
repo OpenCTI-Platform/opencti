@@ -1,5 +1,5 @@
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
-import { AccountCircleOutlined, AlarmOnOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
@@ -286,17 +286,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       size="default"
                     />
                   </Security>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TopBarIconLink
-                        aria-label={t_i18n('Triggers')}
-                        to="/dashboard/profile/triggers"
-                        active={location.pathname === '/dashboard/profile/triggers'}
-                        icon={<AlarmOnOutlined fontSize="medium" />}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>{t_i18n('Triggers')}</TooltipContent>
-                  </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <TopBarIconLink
