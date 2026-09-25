@@ -12,7 +12,9 @@ import { execute, parse, validate } from 'graphql';
 import type { DocumentNode, ExecutionResult } from 'graphql';
 import { LRUCache } from 'lru-cache';
 import createSchema from './schema';
+import { booleanConf } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
+import { pruneResponseConnections } from './chunk-document-prune';
 import type { AuthContext } from '../types/user';
 
 export interface ChunkOperation {
@@ -51,6 +53,15 @@ export const substituteEchoIds = (value: any, resolved: Map<string, string>): an
 // parse + validate into a startup cost instead of a per-object one.
 const documentCache = new LRUCache<string, DocumentNode>({ max: 200 });
 
+// The chunk manager reads nothing of a response but its errors and the root id, yet pycti's
+// documents select paginated connections (indicatorAdd { observables { edges ... } },
+// stixCyberObservableAdd { indicators { edges ... } }): each resolves a regardingOf listing
+// (2+ engine searches per object), and every intent of a batch settles at the same commit, so
+// those listings fire together. Measured 2026-09-25 on the full mix at max_batch_size 400:
+// 62,310 search rejections at intake start, the long stacks ending in these resolvers. The
+// connections are pruned from the chunk documents (the HTTP path is untouched).
+const PRUNE_RESPONSE_CONNECTIONS = booleanConf('chunk_intake_manager:prune_response_connections', true);
+
 export const chunkOperationDocument = (query: string): DocumentNode => {
   const cached = documentCache.get(query);
   if (cached) {
@@ -61,8 +72,14 @@ export const chunkOperationDocument = (query: string): DocumentNode => {
   if (errors.length > 0) {
     throw UnsupportedError('Invalid chunk operation document', { errors: errors.map((e) => e.message) });
   }
-  documentCache.set(query, document);
-  return document;
+  let executable = document;
+  if (PRUNE_RESPONSE_CONNECTIONS) {
+    const pruned = pruneResponseConnections(document);
+    // a selection set left empty by the pruning is invalid: keep the original then
+    if (pruned !== document && validate(createSchema(), pruned).length === 0) executable = pruned;
+  }
+  documentCache.set(query, executable);
+  return executable;
 };
 
 // Resolves when the operation is DONE, which for a sequencer-eligible write means after the
