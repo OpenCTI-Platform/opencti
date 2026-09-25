@@ -41,6 +41,20 @@ const flushPromises = async () => {
   await Promise.resolve();
 };
 
+const createDeferred = <T>() => {
+  let resolve: ((value: T) => void) | undefined;
+  let reject: ((reason?: unknown) => void) | undefined;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {
+    promise,
+    resolve: resolve!,
+    reject: reject!,
+  };
+};
+
 describe('useCatalogPolling', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -177,5 +191,37 @@ describe('useCatalogPolling', () => {
     });
 
     expect(mocks.fetchQuery).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refresh catalogs when an in-flight revision check resolves after unmount', async () => {
+    const deferredRevisionCheck = createDeferred<RevisionsPayload>();
+    mocks.fetchQuery
+      .mockImplementationOnce(() => ({
+        toPromise: () => Promise.resolve({ catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] }),
+      }))
+      .mockImplementationOnce(() => ({
+        toPromise: () => deferredRevisionCheck.promise,
+      }));
+    const onChanged = vi.fn();
+
+    const { unmount } = renderHook(() => useCatalogPolling({ enabled: true, onCatalogRevisionsChanged: onChanged }));
+    await act(async () => {
+      await flushPromises();
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(CATALOG_POLLING_INTERVAL_MS);
+      await flushPromises();
+    });
+    expect(mocks.fetchQuery).toHaveBeenCalledTimes(2);
+
+    unmount();
+
+    await act(async () => {
+      deferredRevisionCheck.resolve({ catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] });
+      await flushPromises();
+    });
+
+    expect(onChanged).not.toHaveBeenCalled();
   });
 });
