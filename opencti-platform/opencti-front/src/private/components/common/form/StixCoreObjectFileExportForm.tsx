@@ -181,6 +181,8 @@ const StixCoreObjectFileExportForm = ({
     [selectedDefaultTemplate] = templates ?? [];
   }
   const defaultFileToExport = fileOptions?.find((f) => f.value === defaultValues?.fileToExport);
+  // A preset file means we're converting a specific existing file, not generating a fresh one.
+  const hasPresetFileToExport = !!defaultValues?.fileToExport;
   let defaultFormat = '';
   if (defaultValues?.format) {
     defaultFormat = defaultValues.format;
@@ -191,7 +193,7 @@ const StixCoreObjectFileExportForm = ({
     connector: connectors.find((c) => c.value === defaultValues?.connector) ?? null,
     format: defaultFormat,
     type: null,
-    exportAsFintel: (templates?.length ?? 0) > 0,
+    exportAsFintel: (templates?.length ?? 0) > 0 && !hasPresetFileToExport,
     template: selectedDefaultTemplate ?? null,
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
@@ -229,7 +231,7 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value) {
-            setFieldValue('exportAsFintel', (templates?.length ?? 0) > 0);
+            setFieldValue('exportAsFintel', (templates?.length ?? 0) > 0 && !hasPresetFileToExport);
           }
         }, [values.connector?.value]);
 
@@ -275,6 +277,14 @@ const StixCoreObjectFileExportForm = ({
             setFieldValue('exportFileName', null);
           }
           if (connector === BUILT_IN_HTML_TO_PDF.value && (values.fileToExport === null || values.fileToExport.value === 'generatedFile')) {
+            const fromTemplateConnector = connectors.find((c) => c.value === BUILT_IN_FROM_TEMPLATE.value);
+            if (!hasPresetFileToExport && (templates?.length ?? 0) > 0 && fromTemplateConnector) {
+              // Turning off the fintel toggle on a fresh-generation shortcut should still
+              // let the user generate an HTML-only FINTEL from a template.
+              setFieldValue('connector', fromTemplateConnector);
+              setFieldValue('format', 'text/html');
+              return;
+            }
             setFieldValue('fileToExport', defaultFileToExport ?? (fileOptions ?? [])[0] ?? null);
             setFieldValue('fileMarkings', initialValues.fileMarkings);
             setFieldValue('contentMaxMarkings', []);

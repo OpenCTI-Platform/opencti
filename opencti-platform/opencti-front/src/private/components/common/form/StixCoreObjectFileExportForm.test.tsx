@@ -29,7 +29,7 @@ const baseProps = {
 };
 
 describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
-  const renderPdfForm = (availableTemplates: TemplateOption[] = templates, fileToExport = 'mappableContent') => {
+  const renderPdfForm = (availableTemplates: TemplateOption[] = templates, fileToExport?: string) => {
     const onSubmit = vi.fn();
     return {
       onSubmit,
@@ -93,16 +93,48 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     });
   });
 
-  it('restores existing-file export when the toggle is disabled', async () => {
-    const { user } = renderPdfForm();
-    await user.click(screen.getByLabelText('Export as fintel'));
-    await waitFor(() => expect(screen.queryByLabelText('Template')).not.toBeInTheDocument());
+  it('defaults to existing-file export when a specific file is already targeted, but can still switch to template generation', async () => {
+    const { user } = renderPdfForm(templates, 'mappableContent');
+    expect(screen.queryByLabelText('Template')).not.toBeInTheDocument();
     expect(screen.getByLabelText('File to export')).not.toBeDisabled();
     expect(screen.getByLabelText('File to export')).toHaveValue('Mappable main content');
     expect(screen.getByLabelText('Export file name')).not.toHaveValue('');
+
     await user.click(screen.getByLabelText('Export as fintel'));
-    await waitFor(() => expect(screen.getByLabelText('Export file name')).toHaveValue(''));
-    expect(screen.getByLabelText('Template')).toHaveValue('');
+    await waitFor(() => expect(screen.getByLabelText('Template')).toBeInTheDocument());
+    expect(screen.getByLabelText('File to export')).toBeDisabled();
+
+    await user.click(screen.getByLabelText('Export as fintel'));
+    await waitFor(() => expect(screen.queryByLabelText('Template')).not.toBeInTheDocument());
+    expect(screen.getByLabelText('File to export')).toHaveValue('Mappable main content');
+  });
+
+  it('falls back to HTML-only template generation when the fintel toggle is switched off and no file is preset', async () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(
+      <StixCoreObjectFileExportForm
+        {...baseProps}
+        onSubmit={onSubmit}
+        connectors={[{ ...BUILT_IN_HTML_TO_PDF, label: 'HTML content files to PDF' }, templateConnector]}
+        templates={templates}
+        fileOptions={[{ value: 'mappableContent', label: 'Mappable main content', fileMarkings: [] }]}
+        defaultValues={{ connector: BUILT_IN_HTML_TO_PDF.value, format: 'application/pdf' }}
+      />,
+    );
+    await waitFor(() => expect(screen.getByLabelText('Export as fintel')).toBeChecked());
+
+    await user.click(screen.getByLabelText('Export as fintel'));
+    await waitFor(() => expect(screen.queryByLabelText('File to export')).not.toBeInTheDocument());
+    expect(screen.getByLabelText('Template')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText('Export file name')).not.toHaveValue(''));
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({
+      connector: { value: BUILT_IN_FROM_TEMPLATE.value },
+      format: 'text/html',
+      template: { value: 'tpl-1' },
+    });
   });
 
   it('keeps the legacy flow without available templates', async () => {
@@ -140,13 +172,17 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     const { user } = renderPdfForm([
       { ...templates[0], include_cover_page_by_default: false, include_back_page_by_default: false },
     ], 'fromTemplate/file.html');
-    await user.click(screen.getByLabelText('Export as fintel'));
+    // A specific FINTEL file is already targeted, so it starts in existing-file mode
+    // and immediately reflects the origin template's page defaults.
     await waitFor(() => expect(screen.getByLabelText('Include cover page')).not.toBeChecked());
+    expect(screen.getByLabelText('Include back page')).not.toBeChecked();
+
     await user.click(screen.getByLabelText('Export as fintel'));
     await waitFor(() => expect(screen.getByLabelText('Include cover page')).toBeChecked());
     await user.click(screen.getByLabelText('Export as fintel'));
     await waitFor(() => expect(screen.getByLabelText('Include cover page')).not.toBeChecked());
-    expect(screen.getByLabelText('Include back page')).not.toBeChecked();
+    await user.click(screen.getByLabelText('Export as fintel'));
+    await waitFor(() => expect(screen.getByLabelText('Include cover page')).toBeChecked());
   });
 });
 
