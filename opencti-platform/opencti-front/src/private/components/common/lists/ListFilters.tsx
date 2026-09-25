@@ -10,12 +10,11 @@ import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
 import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap } from '../../../../utils/filters/filtersUtils';
+import { buildGroupedFilterKeyOptions, isGroupedFilterKeySelection } from '../../../../utils/filters/filterKeyGrouping';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../../utils/fdsLayer';
-
-const WORKFLOW_FILTER_KEYS = ['workflow_user', 'workflow_group', 'workflow_organization'];
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -130,74 +129,14 @@ const ListFilters = ({
     helpers?.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterDefinition));
   };
 
-  const isNotUniqEntityTypes = (entityTypes.length === 1 && ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityTypes[0]))
-    || (entityTypes.length > 1);
+  const isNotUniqEntityTypes = isGroupedFilterKeySelection(entityTypes);
 
-  const isFilterKeyForAllTypes = (subEntityTypes: string[]): boolean => {
-    return (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
-      || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
-  };
-
-  const getGroupLabel = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): string => {
-    const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
-    if (isDraftSpecificKey) {
-      return t_i18n('Draft filters');
-    }
-    if (WORKFLOW_FILTER_KEYS.includes(key)) {
-      return t_i18n('Workflow filters');
-    }
-    if (isFilterKeyForAllTypes(subEntityTypes)) {
-      return t_i18n('Most used filters');
-    }
-    return t_i18n('All other filters');
-  };
-
-  const getGroupOrder = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): number => {
-    const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
-    if (WORKFLOW_FILTER_KEYS.includes(key)) {
-      return 1;
-    }
-    if (isDraftSpecificKey) {
-      return 2;
-    }
-    if (isFilterKeyForAllTypes(subEntityTypes)) {
-      return 3;
-    }
-    return 0;
-  };
-
-  const options = isNotUniqEntityTypes
-    ? availableFilterKeys
-        .map((key) => {
-          const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
-          const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-
-          return {
-            value: key,
-            label: t_i18n(filterDefinition?.label ?? key),
-            numberOfOccurences: subEntityTypes.length,
-            groupLabel: getGroupLabel(key, filterDefinition),
-            groupOrder: getGroupOrder(key, filterDefinition),
-          };
-        })
-        .sort((a, b) => a.label.localeCompare(b.label))
-        .sort((a, b) => b.groupOrder - a.groupOrder) // 'Most used filters' before 'All other filters'
-    : availableFilterKeys
-        .map((key) => {
-          const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
-          return {
-            value: key,
-            label: t_i18n(filterDefinition?.label ?? key),
-          };
-        })
-        .sort((a, b) => a.label.localeCompare(b.label));
+  const options = buildGroupedFilterKeyOptions(availableFilterKeys, entityTypes, filterKeysMap, t_i18n);
 
   const addFilterGroupOption: OptionType = {
     value: ADD_FILTER_GROUP_OPTION_VALUE,
     label: t_i18n('Add Filter Group'),
-    groupLabel: t_i18n('Add Filter Group'),
+    groupLabel: t_i18n('Grouping'),
     groupOrder: Number.MAX_SAFE_INTEGER, // always displayed on top of the other groups
   };
 
