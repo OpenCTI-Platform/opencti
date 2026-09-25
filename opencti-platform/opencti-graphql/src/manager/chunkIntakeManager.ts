@@ -21,7 +21,8 @@ import { splitEchoIds } from './chunkIntakeEchoes';
 import { PreLoopGate } from './chunkIntakePreLoop';
 import { resolveProducerIds } from './chunkIntakeProducers';
 import { isSequencerEnabled } from '../database/sequencer/sequencer-config';
-import { startSequencerLoop } from '../database/sequencer/sequencer-loop';
+import { describeIntentLocation, sequencerLoopGauges, startSequencerLoop } from '../database/sequencer/sequencer-loop';
+import { chunkOperationRootField } from './chunkIntakeProducers';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import {
   deferOperation,
@@ -88,6 +89,56 @@ const PRE_LOOP_INCREASE_RATIO = Number(conf.get('chunk_intake_manager:pre_loop_i
 // producers-first wave (A/B knob). Needs the sequencer: without it nothing orders a
 // producer before its consumers.
 const SINGLE_WAVE = booleanConf('chunk_intake_manager:single_wave', true);
+// Stall probe (2026-09-25): every chunk in flight tracks the phase of each operation (gate =
+// waiting for a pre-loop permit, preloop = executing before its intent is queued, queued =
+// intent handed to the loop, settled); a watchdog logs the chunks without progress for
+// stall_log_after_ms, with their unsettled operations and where the loop holds their intents.
+// 0 disables the watchdog. Built after apply_concurrency 16 left two chunks unacked for 25 min.
+const STALL_LOG_AFTER_MS = Number(conf.get('chunk_intake_manager:stall_log_after_ms') ?? 120000);
+const STALL_WATCH_INTERVAL_MS = Number(conf.get('chunk_intake_manager:stall_watch_interval_ms') ?? 60000);
+type OperationPhase = 'pending' | 'gate' | 'preloop' | 'queued' | 'settled';
+type InFlightChunk = { startedAt: number; lastProgressAt: number; operations: Map<ChunkOperation, { phase: OperationPhase; since: number }> };
+const inFlightChunks = new Map<string, InFlightChunk>();
+const trackPhase = (chunk: InFlightChunk | undefined, operation: ChunkOperation, phase: OperationPhase) => {
+  if (!chunk) return;
+  const now = Date.now();
+  chunk.operations.set(operation, { phase, since: now });
+  chunk.lastProgressAt = now;
+};
+let stallWatchdog: NodeJS.Timeout | null = null;
+const logStalledChunks = () => {
+  const now = Date.now();
+  inFlightChunks.forEach((chunk, chunkId) => {
+    if (now - chunk.lastProgressAt < STALL_LOG_AFTER_MS) return;
+    const byPhase: Record<string, number> = {};
+    const unsettled: Record<string, any>[] = [];
+    chunk.operations.forEach((state, operation) => {
+      byPhase[state.phase] = (byPhase[state.phase] ?? 0) + 1;
+      if (state.phase !== 'settled' && unsettled.length < 5) {
+        unsettled.push({
+          object_id: operation.object_id,
+          root: chunkOperationRootField(operation),
+          phase: state.phase,
+          since_s: Math.round((now - state.since) / 1000),
+          loop: state.phase === 'queued' && operation.object_id ? describeIntentLocation([operation.object_id]) : undefined,
+        });
+      }
+    });
+    logApp.warn('[CHUNK-INTAKE] chunk without progress', {
+      chunk_id: chunkId, age_s: Math.round((now - chunk.startedAt) / 1000), idle_s: Math.round((now - chunk.lastProgressAt) / 1000),
+      operations: byPhase, unsettled, loop: sequencerLoopGauges(), gate: { limit: preLoopGate.currentLimit(), in_flight: preLoopGate.inFlight(), waiting: preLoopGate.waiting() },
+    });
+  });
+};
+const startStallWatchdog = () => {
+  if (stallWatchdog || STALL_LOG_AFTER_MS <= 0) return;
+  stallWatchdog = setInterval(logStalledChunks, STALL_WATCH_INTERVAL_MS);
+  stallWatchdog.unref?.();
+};
+const stopStallWatchdog = () => {
+  if (stallWatchdog) clearInterval(stallWatchdog);
+  stallWatchdog = null;
+};
 let preLoopLimitGauge: Gauge | null = null;
 let preLoopAdjustments: Counter | null = null;
 let producersCounter: Counter | null = null;
@@ -369,6 +420,9 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
   }
   // A chunk without an id (hand-published) is keyed by its payload head: same policy.
   const attemptKey = message.chunk_id ?? payload.slice(0, 128);
+  const tracked: InFlightChunk = { startedAt: start, lastProgressAt: start, operations: new Map() };
+  operations.forEach((operation) => tracked.operations.set(operation, { phase: 'pending', since: start }));
+  inFlightChunks.set(attemptKey, tracked);
   try {
     // Producers (pycti's pre-created sub-objects, answered with echo ids on the capture
     // transport) are resolved to their STANDARD ids before anything runs, so the chunk is
@@ -436,8 +490,10 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     const runOperationOnce = async (operation: ChunkOperation, attempt: number): Promise<OperationOutcome> => {
       // one pre-loop permit per attempt, released by the boundary hook (intent queued) or,
       // for operations that never reach the loop, when the operation settles
+      trackPhase(tracked, operation, 'gate');
       const waited = await preLoopGate.acquire();
       if (waited) operationsCounter?.add(1, { outcome: 'paced' });
+      trackPhase(tracked, operation, 'preloop');
       let released = false;
       const releaseOnce = () => {
         if (released) return;
@@ -449,6 +505,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         onIntentQueued: () => {
           releaseOnce();
           markQueued(operation);
+          trackPhase(tracked, operation, 'queued');
         },
       };
       try {
@@ -505,6 +562,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         return { error: String(e.message ?? e) };
       } finally {
         releaseOnce();
+        trackPhase(tracked, operation, 'settled');
       }
     };
     // deferred === false is the retry sentinel of transientOutcome: loop until a real outcome
@@ -540,11 +598,13 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
       await reportChunkOutcome(context, user, message, ordered[index], results[index]);
     }
     controls.ack();
+    inFlightChunks.delete(attemptKey);
     transientAttempts.delete(attemptKey);
     chunksCounter?.add(1, { outcome: 'acked' });
     objectsCounter?.add(new Set(operations.map((operation) => operation.object_id).filter((id) => !!id)).size);
     chunkSeconds?.record((Date.now() - start) / 1000);
   } catch (e: any) {
+    inFlightChunks.delete(attemptKey);
     if (e instanceof ChunkPoisonError) {
       logApp.error('[CHUNK-INTAKE] Poison chunk, dead lettering', { cause: e, chunk_id: message.chunk_id, reason: e.reason });
       chunksCounter?.add(1, { outcome: 'dead_letter', reason: e.reason });
@@ -572,6 +632,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
 const chunkIntakeInitializer = async () => {
   registerChunkMetrics();
   startPreLoopTicker();
+  startStallWatchdog();
   // Terminal outcome of a retained creation: meet the work expectation the chunk skipped
   // (applied), or meet it with an error (expired / failed), so works stay exact.
   registerPendingIntentSettled(async (record, error) => {
@@ -628,6 +689,7 @@ const chunkIntakeInitializer = async () => {
     consumer,
     shutdown: async () => {
       stopPreLoopTicker();
+      stopStallWatchdog();
       await consumer.close();
       logApp.info('[OPENCTI-MODULE] Chunk intake consumer closed');
     },

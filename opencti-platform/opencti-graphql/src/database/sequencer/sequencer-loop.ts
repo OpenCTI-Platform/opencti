@@ -80,6 +80,35 @@ const FAILED_PRODUCER_DEFER_LIMIT = 2;
 
 export const isSequencerLoopAlive = () => loopStarted && !loopDead;
 
+// stall probe (2026-09-25): where an intent stands from the loop's point of view, for the chunk
+// manager's watchdog (apply_concurrency 16 left two chunk operations unsettled with no lock held)
+type LoopSnapshot = {
+  batchIds: Set<string>;
+  parkedIds: Set<string>;
+  carriedIds: Set<string>;
+  parked: number;
+  batch: number;
+  lanes: number;
+  hasLaneResident: (id: string) => boolean;
+};
+let loopSnapshot: (() => LoopSnapshot) | null = null;
+export type IntentLocation = 'queued' | 'lane' | 'parked' | 'in_batch' | 'carried' | 'unknown';
+export const describeIntentLocation = (ids: string[]): IntentLocation => {
+  if (ids.some((id) => queue.hasCandidate(id))) return 'queued';
+  const snapshot = loopSnapshot?.();
+  if (snapshot) {
+    if (ids.some((id) => snapshot.hasLaneResident(id))) return 'lane';
+    if (ids.some((id) => snapshot.parkedIds.has(id))) return 'parked';
+    if (ids.some((id) => snapshot.batchIds.has(id))) return 'in_batch';
+    if (ids.some((id) => snapshot.carriedIds.has(id))) return 'carried';
+  }
+  return 'unknown';
+};
+export const sequencerLoopGauges = () => {
+  const snapshot = loopSnapshot?.();
+  return { alive: isSequencerLoopAlive(), queue: queue.size(), lanes: snapshot?.lanes ?? 0, parked: snapshot?.parked ?? 0, batch: snapshot?.batch ?? 0 };
+};
+
 // storeLoadByIdsWithRefs lives in middleware.ts, which imports this module: the loader is
 // registered by middleware at module init instead of imported (no cycle).
 type WithRefsLoader = (context: AuthContext, user: AuthUser, ids: string[]) => Promise<any[]>;
@@ -586,12 +615,23 @@ const runBatchLoop = async () => {
   // resolve-ahead: intents grabbed from the queue during the previous batch's commit,
   // their identity-map entries already warmed; they enter this cycle's batch first-class
   let carried: SequencerIntent[] = [];
+  let currentBatch: SequencerIntent[] = [];
+  loopSnapshot = () => ({
+    batchIds: new Set(currentBatch.flatMap((i) => intentOwnIds(i))),
+    parkedIds: new Set(parked.flatMap((p) => intentOwnIds(p.intent))),
+    carriedIds: new Set(carried.flatMap((i) => intentOwnIds(i))),
+    parked: parked.length,
+    batch: currentBatch.length,
+    lanes: lanes.size(),
+    hasLaneResident: (id: string) => lanes.hasResident(id),
+  });
   for (;;) {
     // 1. assemble: one deferred intent per target lane first; when nothing at all is
     // pending, wait for an arrival or the nearest parking deadline (never re-plan a pure
     // parked set in a tight loop); then the parked intents (they re-plan each cycle) and a
     // drain of the queue.
     const batch: SequencerIntent[] = [];
+    currentBatch = batch;
     const admission = lanes.admit(laneAdmitCap);
     admission.intents.forEach((intent) => batch.push(intent));
     const exhaustedIds = new Set(admission.exhausted.map((i) => i.id));
