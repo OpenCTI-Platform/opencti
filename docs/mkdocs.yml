@@ -140,7 +140,7 @@ nav:
       - Liveness probe: deployment/advanced/liveness-probe.md
       - Clustering: deployment/advanced/clustering.md
       - Indices and rollover: deployment/advanced/rollover.md
-      - On-premise map server: deployment/advanced/map.md
+      - Map customization: deployment/advanced/map.md
       - On-premise AI extraction: deployment/advanced/ai-import-document.md
       - Rate limiting: deployment/advanced/rate-limiting.md
       - Troubleshooting: deployment/advanced/troubleshooting.md
