@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import { FunctionComponent, useState } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
+import { buildGroupedFilterKeyOptions, GroupedFilterKeyOption, isGroupedFilterKeySelection } from '../../../utils/filters/filterKeyGrouping';
 import { useFormatter } from '../../i18n';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterOperatorSelect from './FilterOperatorSelect';
@@ -89,9 +90,8 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
   const { helpers, availableFilterKeys, entityTypes } = useFilterEditorContext();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
 
-  const keyOptions = availableFilterKeys
-    .map((key) => ({ value: key, label: t_i18n(getFilterDefinitionFromFilterKeysMap(key, filterKeysMap)?.label ?? key) }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+  const keyOptions = buildGroupedFilterKeyOptions(availableFilterKeys, entityTypes ?? [], filterKeysMap, t_i18n);
+  const isGrouped = isGroupedFilterKeySelection(entityTypes ?? []);
 
   const selectedKeyOption = keyOptions.find((option) => option.value === filter.key) ?? null;
 
@@ -104,11 +104,12 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1, width: '100%' }}>
       <Box data-testid="filter-row-key-select" sx={{ flex: FILTER_ROW_COLUMN_FLEX.key }}>
-        <Combobox<KeyOption>
+        <Combobox<GroupedFilterKeyOption>
           value={selectedKeyOption}
           options={keyOptions}
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, val) => option.value === val.value}
+          groupBy={isGrouped ? (option) => option.groupLabel ?? '' : undefined}
           onValueChange={(next) => {
             const picked = Array.isArray(next) ? next[0] : next;
             if (picked?.value) handleChangeKey(picked.value);
