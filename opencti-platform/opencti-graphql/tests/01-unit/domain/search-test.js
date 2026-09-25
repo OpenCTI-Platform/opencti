@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { buildLocalMustFilter, elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
+import { buildLocalMustFilter, elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine-query-builder';
 import { isNotEmptyField } from '../../../src/database/utils';
 import { adaptFilterToIdsFilterKey } from '../../../src/utils/filtering/filtering-completeSpecialFilterKeys';
 
