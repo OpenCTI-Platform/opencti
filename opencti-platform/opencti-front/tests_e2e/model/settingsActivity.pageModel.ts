@@ -15,7 +15,7 @@ export default class SettingsActivityPage {
   }
 
   async navigateRightMenu(menu: string) {
-    await this.page.getByRole('menuitem', { name: menu, exact: true }).click();
+    await this.page.getByRole('link', { name: menu, exact: true }).click();
   }
 
   getActivityPages(name: string) {
