@@ -500,7 +500,7 @@ export const buildTargetEvents = async (
   streamEvent: SseEvent<DataEvent>,
   trigger: BasicStoreEntityLiveTrigger,
   useSideEventMatching = false,
-  getUpdateEventContext: () => UpdateEventContext = () => buildUpdateEventContext(streamEvent),
+  getUpdateEventContext: () => UpdateEventContext,
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, notifiers, instance_trigger, filters, raw_filters } = trigger;
