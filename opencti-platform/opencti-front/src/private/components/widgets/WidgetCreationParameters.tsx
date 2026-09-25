@@ -26,7 +26,7 @@ import { useFormatter } from 'src/components/i18n';
 import { findFiltersFromKeys, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, getWidgetInterval, normalizeDateAttribute } from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
@@ -589,7 +589,7 @@ const WidgetCreationParameters = () => {
                     >
                       <FormControl fullWidth={true} style={{ flex: 1 }}>
                         <Select
-                          value={selection.date_attribute ?? 'created_at'}
+                          value={normalizeDateAttribute(perspective, selection.date_attribute)}
                           onValueChange={(value) => handleChangeDataValidationParameter(i, 'date_attribute', value)}
                         >
                           <SelectLabel>{isNotEmptyField(selection.label)
