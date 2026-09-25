@@ -8,13 +8,20 @@ import {
   type CatalogContract,
   type CatalogContractEntityFields,
   type GraphqlCatalog,
+  type GraphqlCatalogRevision,
   type GraphqlCatalogContract,
 } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
-import { findAllCatalogs, findCatalogByCatalogId, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
+import {
+  findAllCatalogs,
+  findCatalogByCatalogId,
+  findCatalogsRevisions,
+  findLatestCompatibleCatalogContractBySlug,
+  findLatestCompatibleCatalogContractsByCatalogId,
+} from './catalog-repository';
 import { logApp } from '../../config/conf';
 
 const validatorCache = new Map<string, ValidateFunction>();
@@ -464,6 +471,24 @@ export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
     return mapCatalogToGraphqlCatalog(catalog, [...contracts[idx].values()]);
   });
   return ret;
+};
+
+export const findCatalogRevisions = async (context: AuthContext, user: AuthUser): Promise<GraphqlCatalogRevision[]> => {
+  try {
+    const catalogsRevisions = await findCatalogsRevisions(context, user);
+    const revisions = catalogsRevisions.map((catalog) => ({
+      catalog_id: catalog.catalog_id,
+      revision: catalog.revision ?? null,
+    }));
+    logApp.debug('[OPENCTI-MODULE] [catalog] Catalog revisions query resolved', {
+      module: 'catalog',
+      catalogsCount: revisions.length,
+    });
+    return revisions;
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] [catalog] Catalog revisions query failed', { module: 'catalog', error });
+    throw error;
+  }
 };
 
 export const queryContractBySlug = async (context: AuthContext, user: AuthUser, contractSlug: string) => {
