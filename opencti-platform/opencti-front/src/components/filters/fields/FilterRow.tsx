@@ -1,4 +1,4 @@
-import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger, IconButton } from '@filigran/design-system';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import Box from '@mui/material/Box';
 import { FunctionComponent, useState } from 'react';
@@ -15,6 +15,8 @@ export interface FilterRowProps {
   filter: Filter;
 }
 
+type KeyOption = { value: string; label: string };
+
 /**
  * The editing part of a filter row: the operator select and the value editor(s). Rendered keyed
  * by `filter.key` (not `filter.id`) by `FilterRow` below, so that changing the filter's key —
@@ -30,11 +32,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
 
   const [inputValues, setInputValues] = useState<FilterEditorInputValue[]>(filter ? [filter as FilterEditorInputValue] : []);
 
-  // Only this nested-group row lays 'From'/'To' side by side; the filter chip popover keeps them
-  // stacked. Computed here, not inside the value editor, so the two callers can't affect each other.
   const isDateRangeValue = getFilterDefinitionFromFilterKeysMap(filter.key, filterKeysMap)?.type === 'date' && filter.operator === 'within';
-  // 'regardingOf' / 'dynamicRegardingOf' are composite filters (relationship_type + id/dynamic
-  // subfilters): this row lays their subfilters out as extra columns instead of a single value.
   const isCompositeRegardingOf = filter.key === 'regardingOf' || filter.key === 'dynamicRegardingOf';
 
   const sharedValueProps = { filter, inputValues, setInputValues };
@@ -95,6 +93,8 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
     .map((key) => ({ value: key, label: t_i18n(getFilterDefinitionFromFilterKeysMap(key, filterKeysMap)?.label ?? key) }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
+  const selectedKeyOption = keyOptions.find((option) => option.value === filter.key) ?? null;
+
   const handleChangeKey = (newKey: string) => {
     if (newKey === filter.key) return;
     const newDefinition = getFilterDefinitionFromFilterKeysMap(newKey, filterKeysMap);
@@ -104,16 +104,28 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1, width: '100%' }}>
       <Box data-testid="filter-row-key-select" sx={{ flex: FILTER_ROW_COLUMN_FLEX.key }}>
-        <Select value={filter.key} onValueChange={handleChangeKey}>
-          <SelectTrigger id={`filter-row-key-${filter.id}`} aria-label={t_i18n('Filter name')} style={{ width: '100%' }}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Filter name')}>
-            {keyOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Combobox<KeyOption>
+          value={selectedKeyOption}
+          options={keyOptions}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(option, val) => option.value === val.value}
+          onValueChange={(next) => {
+            const picked = Array.isArray(next) ? next[0] : next;
+            if (picked?.value) handleChangeKey(picked.value);
+          }}
+        >
+          <ComboboxField style={{ width: '100%' }}>
+            <ComboboxInput
+              id={`filter-row-key-${filter.id}`}
+              aria-label={t_i18n('Filter name')}
+              placeholder={t_i18n('Filter name')}
+            />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent listAriaLabel={t_i18n('Filter name')} />
+        </Combobox>
       </Box>
       <FilterRowEditor key={filter.key} filter={filter} />
       <IconButton
