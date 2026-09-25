@@ -39,6 +39,13 @@ const buildReport = (mergeId: string, handlers: UserMergeHandler[], outcomes: Us
   coverage: buildApiUserMergeCoverage(handlers),
 });
 
+const describeDivergence = ({ dry_only: dryOnly, real_only: realOnly }: { dry_only: string[]; real_only: string[] }): string => {
+  const parts = [];
+  if (dryOnly.length > 0) parts.push(`dry only [${dryOnly.join(', ')}]`);
+  if (realOnly.length > 0) parts.push(`real only [${realOnly.join(', ')}]`);
+  return parts.length > 0 ? parts.join(', ') : 'same entries in different numbers';
+};
+
 /**
  * Real pass for one handler: recompute, prove the computation still matches what the dry
  * pass reported, then write.
@@ -54,9 +61,10 @@ const applyHandler = async (
 ): Promise<UserMergeHandlerOutcome> => {
   const plan = await handler.compute(handlerContext);
   if (planFingerprint(plan) !== planFingerprint(dryOutcome)) {
-    throw UnsupportedError('Platform state changed between the dry pass and the real pass, nothing was written for this handler', {
+    const divergence = planDivergence(dryOutcome, plan);
+    throw UnsupportedError(`Platform state changed between the dry pass and the real pass, nothing was written for this handler: ${describeDivergence(divergence)}`, {
       handler: handler.identifier,
-      ...planDivergence(dryOutcome, plan),
+      ...divergence,
     });
   }
   const updated = await handler.apply(handlerContext, plan);
