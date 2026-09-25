@@ -1,6 +1,5 @@
 import type { FilterGroup } from '../../filters/filtersHelpers-types';
 import type { WidgetDataSelection, WidgetPerspective } from '../widget';
-import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
 import type { FilterDefinition } from '../../hooks/useAuth';
 
 /** Filter keys schema as exposed by `useAuth().schema.filterKeysSchema`. */
@@ -29,7 +28,16 @@ export interface DrilldownInput {
   perspective: WidgetPerspective;
   /** The resolved data selection this bucket belongs to. */
   dataSelection: WidgetDataSelection;
-  config: DashboardConfig;
+  /**
+   * The date range the widget query actually used — not the dashboard config.
+   *
+   * Recomputing it from the config would break the invariant twice over: the
+   * time-series containers request their range with `fallbackToDefaultDates`
+   * (so an unconfigured dashboard really queries the last 12 months, and edge
+   * buckets must be clamped to that), and `monthsAgo(12)` / `now()` re-evaluated
+   * at click time would no longer be the instants the count was computed from.
+   */
+  range: WidgetDateRange;
   /** Chart interval, only meaningful for `timeSeries` buckets. */
   interval?: string | null;
   bucket: DrilldownBucket;
