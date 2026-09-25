@@ -6,6 +6,7 @@ import { useQueryLoader } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboardVizUtils';
+import useWidgetDrilldown from '../../utils/widget/drilldown/useWidgetDrilldown';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
@@ -149,6 +150,33 @@ const useDashboardViz = <TQuery extends OperationType>({
   }, [isPending, setQueryPending]);
 
   /**
+   * Scope of the drill-down links, read from the variables that were actually
+   * sent rather than recomputed from the config: containers may ask for default
+   * dates (`fallbackToDefaultDates`), and `now()` re-evaluated at click time
+   * would no longer be the instant the displayed count was computed from.
+   *
+   * Keyed on the variables signature so `getLink` stays referentially stable.
+   */
+  const drilldownScope = useMemo(() => {
+    const sentVariables = queryVariables as {
+      startDate?: string | null;
+      endDate?: string | null;
+      interval?: string | null;
+    } | null;
+    return {
+      range: { startDate: sentVariables?.startDate ?? null, endDate: sentVariables?.endDate ?? null },
+      interval: sentVariables?.interval ?? null,
+    };
+  }, [queryVariablesSignature]);
+
+  const drilldown = useWidgetDrilldown({
+    perspective,
+    resolvedDataSelection,
+    range: drilldownScope.range,
+    interval: drilldownScope.interval,
+  });
+
+  /**
    * Rebuild query variables from the latest resolved selection and force a reload.
    *
    * Used by dashboard token refresh to avoid relying on a possibly stale
@@ -189,6 +217,7 @@ const useDashboardViz = <TQuery extends OperationType>({
     queryRef,
     isPreviewMode,
     resolvedDataSelection,
+    drilldown,
     isMissingHostEntity,
     isMissingSavedFilters,
   };
