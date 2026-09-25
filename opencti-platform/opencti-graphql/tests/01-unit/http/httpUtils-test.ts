@@ -4,11 +4,17 @@ import {
   buildDefaultHelmetParameters,
   buildPublicHelmetParameters,
   buildRateLimiterOptions,
+  clientErrorResponse,
   decodeOidcState,
   encodeOidcState,
+  isClientRequestError,
+  logMalformedRequest,
+  normalizeUploadError,
 } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
+import { logApp } from '../../../src/config/conf';
+import { FunctionalError } from '../../../src/config/errors';
 import type { Request, Response } from 'express';
 import type { Server } from 'node:http';
 
@@ -318,5 +324,338 @@ describe('httpUtils: server keep-alive timeout', () => {
     const server = mockServer();
     applyKeepAliveTimeout(server);
     expect(server.headersTimeout).toBe(60000);
+  });
+});
+
+// The shapes below are the ones actually produced at runtime, reproduced here because the cases
+// they stand for cannot be provoked over http in the integration test: a 413 needs a body above the
+// configured limit, a 499 needs the client to vanish mid-upload, and a session caller needs a
+// cookie the test client does not hold.
+const uploadError = () => Object.assign(new Error('Missing multipart field \u2018operations\u2019 (https://github.com/jaydenseric/graphql-multipart-request-spec).'), {
+  name: 'BadRequestError',
+  status: 400,
+  statusCode: 400,
+  expose: true,
+});
+
+// The express router sets a status and nothing else - no statusCode, no expose.
+const paramDecodeError = () => Object.assign(new URIError("Failed to decode param '.env%c0%ae'"), {
+  status: 400,
+});
+
+// body-parser hands its own errors to http-errors, which adds status, statusCode and expose, and
+// copies the raw request body onto the error.
+const bodyParseError = () => Object.assign(new SyntaxError('Unexpected end of JSON input'), {
+  name: 'SyntaxError',
+  status: 400,
+  statusCode: 400,
+  expose: true,
+  type: 'entity.parse.failed',
+  body: '{"query":"mutation { login(password: \\"hunter2\\") }"',
+});
+
+const mockRequest = (overrides: Record<string, any> = {}) => ({
+  method: 'POST',
+  originalUrl: '/graphql',
+  url: '/graphql',
+  ip: '10.0.0.1',
+  headers: {},
+  ...overrides,
+} as unknown as Request);
+
+describe('httpUtils: isClientRequestError', () => {
+  it('should accept an http-errors 4xx, as graphql-upload and body-parser build them', () => {
+    expect(isClientRequestError(uploadError())).toBe(true);
+    expect(isClientRequestError(bodyParseError())).toBe(true);
+  });
+
+  it('should accept a router param decoding error, which carries a status but no expose', () => {
+    expect(isClientRequestError(paramDecodeError())).toBe(true);
+  });
+
+  it('should accept the 4xx that cannot be provoked over http', () => {
+    // graphql-upload field size limit / body-parser entity.too.large
+    expect(isClientRequestError({ status: 413, expose: true })).toBe(true);
+    // graphql-upload, client gone during the upload stream parse
+    expect(isClientRequestError({ status: 499, expose: true })).toBe(true);
+  });
+
+  it('should fall back to statusCode when status is absent', () => {
+    expect(isClientRequestError({ statusCode: 415 })).toBe(true);
+  });
+
+  it('should reject a 5xx, so platform failures keep their error level and their 500', () => {
+    expect(isClientRequestError({ status: 500, expose: false })).toBe(false);
+    expect(isClientRequestError({ status: 503 })).toBe(false);
+  });
+
+  it('should reject an error with no usable status', () => {
+    expect(isClientRequestError(new Error('boom'))).toBe(false);
+    expect(isClientRequestError({ status: '400' })).toBe(false);
+    expect(isClientRequestError(undefined)).toBe(false);
+    expect(isClientRequestError(null)).toBe(false);
+  });
+
+  it('should reject an opencti domain error, which carries http_status in its extensions only', () => {
+    // This is what makes it safe to key on the status alone rather than on expose.
+    expect(isClientRequestError(FunctionalError('Business validation'))).toBe(false);
+  });
+});
+
+describe('httpUtils: normalizeUploadError', () => {
+  // graphql-upload hands busboy errors over as they are, with no status.
+  const busboyError = (message: string) => new Error(message);
+
+  it('should give a 400 to the raw busboy errors, which carry no status', () => {
+    ['Multipart: Boundary not found', 'Malformed part header', 'Unexpected end of form', 'Unexpected end of file']
+      .forEach((message) => {
+        const normalized = normalizeUploadError(busboyError(message));
+        expect(normalized.status).toBe(400);
+        expect(isClientRequestError(normalized)).toBe(true);
+      });
+  });
+
+  it('should keep the status graphql-upload already set', () => {
+    expect(normalizeUploadError(uploadError()).status).toBe(400);
+    expect(normalizeUploadError({ status: 413, type: 'entity.too.large' }).status).toBe(413);
+    expect(normalizeUploadError({ statusCode: 499 }).statusCode).toBe(499);
+  });
+
+  it('should leave a programmer error alone, so a parser bug still surfaces as a platform failure', () => {
+    const bug = new TypeError('cannot read properties of undefined');
+    const normalized = normalizeUploadError(bug);
+    expect(normalized.status).toBeUndefined();
+    expect(isClientRequestError(normalized)).toBe(false);
+  });
+
+  it('should pass through an absent error', () => {
+    expect(normalizeUploadError(undefined)).toBeUndefined();
+    expect(normalizeUploadError(null)).toBeNull();
+  });
+
+  it('should keep the original message and stack for the log', () => {
+    const normalized = normalizeUploadError(busboyError('Multipart: Boundary not found'));
+    expect(normalized.message).toBe('Multipart: Boundary not found');
+    expect(normalized.stack).toBeDefined();
+  });
+});
+
+describe('httpUtils: clientErrorResponse', () => {
+  it('should relay a graphql-upload message that is a pure constant, spec link included', () => {
+    const { status, body } = clientErrorResponse(uploadError());
+    expect(status).toBe(400);
+    expect(body.error).toBe(uploadError().message);
+    expect(body.error).toContain('graphql-multipart-request-spec');
+  });
+
+  it('should not relay the graphql-upload messages that interpolate caller input', () => {
+    // The four below embed a multipart field name, a map key or an object path.
+    const interpolated = [
+      'The \u2018<script>\u2019 multipart field value exceeds the 1000000 byte size limit.',
+      'Invalid type for the \u2018map\u2019 multipart field entry key \u2018<script>\u2019 array (https://github.com/jaydenseric/graphql-multipart-request-spec).',
+      'Invalid type for the \u2018map\u2019 multipart field entry key \u2018<script>\u2019 array index \u20180\u2019 value (https://github.com/jaydenseric/graphql-multipart-request-spec).',
+      'Invalid object path for the \u2018map\u2019 multipart field entry key \u2018<script>\u2019 array index \u20180\u2019 value \u2018variables.<script>\u2019 (https://github.com/jaydenseric/graphql-multipart-request-spec).',
+    ];
+
+    interpolated.forEach((message) => {
+      const { body } = clientErrorResponse(Object.assign(new Error(message), { status: 400, expose: true }));
+      expect(body.error).toBe('Bad request');
+      expect(body.error).not.toContain('<script>');
+    });
+  });
+
+  it('should fall back to the built message when graphql-upload rewords one', () => {
+    // A version bump degrades to the generic answer rather than relaying an unreviewed string.
+    const reworded = Object.assign(new Error('Missing multipart field "operations".'), { status: 400, expose: true });
+    expect(clientErrorResponse(reworded).body.error).toBe('Bad request');
+  });
+
+  it('should not quote back a router error message, which embeds the probed path', () => {
+    const { status, body } = clientErrorResponse(paramDecodeError());
+    expect(status).toBe(400);
+    expect(body.error).toBe('Bad request');
+    expect(JSON.stringify(body)).not.toContain('.env');
+  });
+
+  it('should not quote back a json parse message, which embeds a snippet of the body', () => {
+    const { status, body } = clientErrorResponse(bodyParseError());
+    expect(status).toBe(400);
+    expect(body.error).toBe('Invalid json in request body');
+    expect(JSON.stringify(body)).not.toContain('hunter2');
+  });
+
+  it('should name the parser failure when the error type is known', () => {
+    expect(clientErrorResponse({ status: 413, type: 'entity.too.large' }).body.error).toBe('Request body too large');
+    expect(clientErrorResponse({ status: 415, type: 'charset.unsupported' }).body.error).toBe('Unsupported charset');
+    expect(clientErrorResponse({ status: 415, type: 'encoding.unsupported' }).body.error).toBe('Unsupported content encoding');
+  });
+
+  it('should fall back to the status, then to a bad request, for an untyped error', () => {
+    expect(clientErrorResponse({ status: 413 }).body.error).toBe('Payload too large');
+    expect(clientErrorResponse({ status: 499 }).body.error).toBe('Client closed request');
+    expect(clientErrorResponse({ status: 418 }).body.error).toBe('Bad request');
+  });
+
+  it('should ignore expose entirely', () => {
+    const exposed = clientErrorResponse({ status: 400, expose: true, message: 'leak' });
+    const notExposed = clientErrorResponse({ status: 400, expose: false, message: 'leak' });
+    expect(exposed.body).toEqual(notExposed.body);
+    expect(exposed.body.error).toBe('Bad request');
+  });
+
+  it('should resolve the status from status, then statusCode, then default to 400', () => {
+    expect(clientErrorResponse({ status: 413 }).status).toBe(413);
+    expect(clientErrorResponse({ statusCode: 415 }).status).toBe(415);
+    expect(clientErrorResponse(new Error('no status')).status).toBe(400);
+  });
+});
+
+describe('httpUtils: logMalformedRequest', () => {
+  let infoSpy: any;
+
+  beforeEach(() => {
+    infoSpy = vi.spyOn(logApp, 'info').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const loggedMeta = () => infoSpy.mock.calls[0][1];
+
+  it('should log at info level, never as a platform error', () => {
+    const errorSpy = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+    logMalformedRequest(mockRequest(), uploadError());
+    expect(infoSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('should default to the http message and accept a caller supplied one', () => {
+    logMalformedRequest(mockRequest(), uploadError());
+    expect(infoSpy.mock.calls[0][0]).toBe('Malformed http request call');
+    logMalformedRequest(mockRequest(), uploadError(), 'Malformed graphql request call');
+    expect(infoSpy.mock.calls[1][0]).toBe('Malformed graphql request call');
+  });
+
+  it('should carry the error identity and the request shape', () => {
+    logMalformedRequest(mockRequest({
+      method: 'POST',
+      originalUrl: '/graphql',
+      headers: { 'content-type': 'multipart/form-data', 'content-length': '512', 'user-agent': 'python-requests/2.31.0' },
+    }), bodyParseError());
+
+    expect(loggedMeta()).toMatchObject({
+      reason: 'Unexpected end of JSON input',
+      errorName: 'SyntaxError',
+      errorType: 'entity.parse.failed',
+      status: 400,
+      method: 'POST',
+      path: '/graphql',
+      userAgent: 'python-requests/2.31.0',
+      ip: '10.0.0.1',
+      contentType: 'multipart/form-data',
+      contentLength: '512',
+    });
+  });
+
+  it('should report the scheme of a token caller, never the token', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'Bearer 2b4f1c9e-super-secret-token' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('Bearer');
+    expect(loggedMeta().userId).toBeUndefined();
+    expect(JSON.stringify(loggedMeta())).not.toContain('super-secret-token');
+  });
+
+  it('should report an unparsable authorization header as unknown, never as its own content', () => {
+    // A malformed client can send a raw credential with no separating space.
+    logMalformedRequest(mockRequest({ headers: { authorization: 'flgrn_octi_tkn_2b4f1c9e' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('unknown');
+    expect(JSON.stringify(loggedMeta())).not.toContain('flgrn_octi_tkn');
+  });
+
+  it('should report an unsupported scheme as unknown', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'Digest username="admin", response="deadbeef"' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('unknown');
+    expect(JSON.stringify(loggedMeta())).not.toContain('deadbeef');
+  });
+
+  it('should normalize the scheme case, since it is case insensitive on the wire', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'bearer 2b4f1c9e-super-secret-token' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('Bearer');
+  });
+
+  it('should report a basic auth caller by its scheme', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: 'Basic dXNlcjpwYXNz' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('Basic');
+    expect(JSON.stringify(loggedMeta())).not.toContain('dXNlcjpwYXNz');
+  });
+
+  it('should report a session caller as session, with its user id', () => {
+    logMalformedRequest(mockRequest({ session: { user: { id: 'user-id-1' } } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('session');
+    expect(loggedMeta().userId).toBe('user-id-1');
+  });
+
+  it('should report an anonymous caller explicitly rather than leaving the field out', () => {
+    logMalformedRequest(mockRequest(), uploadError());
+
+    // An absent authScheme would then mean a bug in the helper, not an anonymous caller.
+    expect(loggedMeta().authScheme).toBe('unauthenticated');
+    expect('authScheme' in loggedMeta()).toBe(true);
+  });
+
+  it('should treat an empty authorization header as no credential at all', () => {
+    logMalformedRequest(mockRequest({ headers: { authorization: '' } }), uploadError());
+
+    expect(loggedMeta().authScheme).toBe('unauthenticated');
+  });
+
+  it('should carry the opencti job headers, which name a connector caller', () => {
+    logMalformedRequest(mockRequest({
+      headers: { 'opencti-work-id': 'work--123', 'opencti-draft-id': 'draft--456' },
+    }), uploadError());
+
+    expect(loggedMeta()).toMatchObject({ workId: 'work--123', draftId: 'draft--456' });
+  });
+
+  it('should carry the forwarded address, since req.ip is the proxy behind an untrusted one', () => {
+    logMalformedRequest(mockRequest({ ip: '10.0.0.254', headers: { 'x-forwarded-for': '203.0.113.7' } }), uploadError());
+
+    expect(loggedMeta()).toMatchObject({ ip: '10.0.0.254', forwardedFor: '203.0.113.7' });
+  });
+
+  it('should log the pathname only, never the query string', () => {
+    // The platform accepts credentials in the query string, so originalUrl must not be logged raw.
+    logMalformedRequest(mockRequest({
+      method: 'GET',
+      originalUrl: '/health?health_access_key=super-secret-key&details=true',
+      headers: { referer: 'https://opencti.example/auth/oidc/callback?code=auth-code-1&state=xyz' },
+    }), paramDecodeError());
+
+    expect(loggedMeta().path).toBe('/health');
+    expect(loggedMeta().referer).toBe('https://opencti.example/auth/oidc/callback');
+    const serialized = JSON.stringify(loggedMeta());
+    expect(serialized).not.toContain('super-secret-key');
+    expect(serialized).not.toContain('auth-code-1');
+  });
+
+  it('should fall back to req.url when originalUrl is absent, still without the query string', () => {
+    logMalformedRequest(mockRequest({ originalUrl: undefined, url: '/graphql?debug=1' }), uploadError());
+
+    expect(loggedMeta().path).toBe('/graphql');
+  });
+
+  it('should never log the raw body that body-parser attaches to a parse error', () => {
+    logMalformedRequest(mockRequest(), bodyParseError());
+
+    expect(JSON.stringify(loggedMeta())).not.toContain('hunter2');
+    expect(loggedMeta().body).toBeUndefined();
   });
 });
