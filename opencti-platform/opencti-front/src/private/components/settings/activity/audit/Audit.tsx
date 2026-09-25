@@ -78,6 +78,7 @@ export const AuditCSVQuery = graphql`
             id
             name
           }
+          user_metadata
           context_data {
             entity_id
             entity_type
@@ -181,6 +182,7 @@ const Audit = () => {
             event_type: node.event_type,
             event_scope: node.event_scope,
             event_status: node.event_status,
+            user_metadata: node.user_metadata ?? 'undefined',
             timestamp: node.timestamp,
             context_uri: node.context_uri,
             user_id: node.user?.id ?? 'undefined',
