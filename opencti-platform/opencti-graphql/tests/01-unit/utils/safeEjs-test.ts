@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { afterAll, describe, it, expect, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import ejs from 'ejs';
 import { safeRender as safeRenderClient } from '../../../src/utils/safeEjs.client';
 import { customEscapeFunction } from '../../../src/utils/safeEjs.worker';
+import { shutdownSafeEjsPool } from '../../../src/utils/safeEjs.pool';
 import { safeName, safeRender, safeReservedPrefix, VerifierIllegalAccessError, VerifierParsingError, VerifierProcessingQuotaExceededError } from '../../../src/utils/safeEjs';
 
 const testFilePath = fileURLToPath(import.meta.url);
@@ -344,15 +345,7 @@ describe('check safeRenderClient error handling and worker termination detection
     const data = {};
 
     await expect(
-      safeRenderClient(template, data, {
-        timeout: 5000,
-        resourceLimits: {
-          maxOldGenerationSizeMb: 10,
-          maxYoungGenerationSizeMb: 5,
-          codeRangeSizeMb: 5,
-          stackSizeMb: 2,
-        },
-      }),
+      safeRenderClient(template, data, { timeout: 5000 }),
     ).rejects.toThrow();
   });
 
@@ -603,4 +596,43 @@ describe('check safeRender on real files', () => {
       }
     },
   );
+});
+
+describe('check safeRenderClient worker pool', () => {
+  it('should render many templates in a row', async () => {
+    const rendered = [];
+    for (let i = 0; i < 12; i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      rendered.push(await safeRenderClient('<%= it.i %>', { it: { i } }));
+    }
+    expect(rendered).toEqual(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']);
+  });
+
+  it('should render concurrent templates without mixing up the replies', async () => {
+    const rendered = await Promise.all(
+      Array.from({ length: 12 }, (_, i) => safeRenderClient('<%= it.i %>', { it: { i } })),
+    );
+    expect(rendered).toEqual(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']);
+  });
+
+  it('should keep serving renders after a template failed', async () => {
+    await expect(safeRenderClient('<%= nonExistentVariable.property %>', {})).rejects.toThrow();
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'still alive' } })).toEqual('still alive');
+  });
+
+  it('should keep serving renders after a template timed out', async () => {
+    await expect(
+      safeRenderClient('<% while(true) {} %>', {}, { timeout: 100 }),
+    ).rejects.toThrow(/timeout after 100ms/i);
+    // The worker that hung is terminated, not handed to the next caller.
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'after timeout' } })).toEqual('after timeout');
+  });
+
+  it('should return an empty string without reaching a worker', async () => {
+    expect(await safeRenderClient('', {})).toEqual('');
+  });
+
+  afterAll(async () => {
+    await shutdownSafeEjsPool();
+  });
 });

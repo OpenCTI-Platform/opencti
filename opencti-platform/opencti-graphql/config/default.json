@@ -381,6 +381,16 @@
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
   },
+  "safe_ejs": {
+    "pool_size": 2,
+    "max_renders_per_worker": 1000,
+    "resource_limits": {
+      "max_old_generation_size_mb": 50,
+      "max_young_generation_size_mb": 10,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
+  },
   "redis": {
     "mode": "single",
     "namespace": "",
