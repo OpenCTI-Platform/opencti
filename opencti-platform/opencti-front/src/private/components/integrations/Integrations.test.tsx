@@ -126,7 +126,7 @@ describe('Integrations', () => {
 
   it('refreshes catalogs from the network on mount', async () => {
     render(
-      <MemoryRouter initialEntries={["/dashboard/integrations/available"]}>
+      <MemoryRouter initialEntries={['/dashboard/integrations/available']}>
         <Routes>
           <Route path="/dashboard/integrations/:tab" element={<Integrations />} />
         </Routes>

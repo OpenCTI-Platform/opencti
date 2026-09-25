@@ -72,7 +72,7 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
           { fetchPolicy: 'network-only' },
         ).toPromise().catch(() => null);
 
-        if (!result) {
+        if (!result || isUnmountedRef.current) {
           return;
         }
 
