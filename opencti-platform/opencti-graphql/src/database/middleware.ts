@@ -236,7 +236,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from './markdown-embedded-images';
 import {
   collectTempImageTokensFromDescriptionFields,
   resolveEmbeddedImagesInDescriptionFieldsForExport,
@@ -2569,12 +2569,6 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, updates);
-  const removedEmbeddedStoragePaths = draftId
-    ? []
-    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
-        entityType: initial.entity_type,
-        entityId: initial.internal_id,
-      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2859,7 +2853,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
       }
     }
-    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+    if (updatedInputs.some((i) => MARKDOWN_FIELD_KEY_SET.has(i.key))) {
+      const removedEmbeddedStoragePaths = draftId
+        ? []
+        : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+            entityType: initial.entity_type,
+            entityId: initial.internal_id,
+          });
       for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
         const storagePath = removedEmbeddedStoragePaths[i];
         try {

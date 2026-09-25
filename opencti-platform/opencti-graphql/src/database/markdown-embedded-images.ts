@@ -69,7 +69,7 @@ type EmbeddedStoragePathContext = {
 
 export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'] as const;
 
-const MARKDOWN_FIELD_KEY_SET: ReadonlySet<string> = new Set(MARKDOWN_FIELD_KEYS);
+export const MARKDOWN_FIELD_KEY_SET: ReadonlySet<string> = new Set(MARKDOWN_FIELD_KEYS);
 
 interface ParsedMarkdownDestination {
   url: string;
