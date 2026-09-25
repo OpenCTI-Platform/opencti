@@ -7,6 +7,7 @@ import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/noti
 import { TYPE_FILTER, USER_ID_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { BackgroundTaskScope } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 const filterEntityType = (entityType: string) => {
   return JSON.stringify({
@@ -260,6 +261,18 @@ describe('Background task validity check (checkActionValidity)', () => {
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
+      };
+      await expect(async () => {
+        await checkActionValidity(testContext, user, input, scope, type);
+      }).rejects.toThrowError('A background task of type query should have at least one filter or a search term.');
+    });
+
+    it('should throw an error if a query task has an empty filter', async () => {
+      const user = userUpdate;
+      const type = TASK_TYPE_QUERY;
+      const input = {
+        actions: [{ type: ACTION_TYPE_ADD }],
+        filters: JSON.stringify(emptyFilterGroup),
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
