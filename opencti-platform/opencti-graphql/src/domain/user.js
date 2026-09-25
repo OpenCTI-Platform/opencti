@@ -948,9 +948,6 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (userToUpdate.external && input.key === 'user_email') {
       throw FunctionalError('Email cannot be updated for external user', { userId });
     }
-    if (userToUpdate.external && input.key === 'password_valid_until') {
-      throw FunctionalError('Cannot force password change for external user', { userId });
-    }
     // org admin can only edit forbidden attributes on its own user and not other users
     if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && ORG_ADMIN_FORBIDDEN_EDIT_ATTRIBUTES.includes(input.key) && user.id !== userId) {
       throw ForbiddenAccess();
