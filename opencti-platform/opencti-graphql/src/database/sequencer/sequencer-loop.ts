@@ -99,7 +99,6 @@ export const registerSequencerLoaders = (loaders: { storeLoadByIdsWithRefs: With
 // takeSequencerDedupPrefetch and only trusts it if its own input ids are a subset of the
 // prefetched ones (rename-at-resolution safety). Cleared at every batch boundary.
 const dedupPrefetch = new Map<string, { inputIds: Set<string>; existing: any[] }>();
-const DEDUP_PREFETCH_CONCURRENCY = 8;
 
 export const sequencerDedupPrefetchKey = (fromInternalId: string, toInternalId: string, input: Record<string, any>, createdByInternalId?: string | null): string => {
   const dates = ['start_time', 'stop_time', 'first_seen', 'last_seen'].map((k) => String(input[k] ?? '')).join('|');
@@ -193,6 +192,19 @@ const collectBatchResolveIds = (batch: SequencerIntent[]) => {
 // end-of-batch clears), and any entry made stale by the running batch is removed right
 // after by its evict(writtenIds). Reads happen pre-refresh: an entity the running batch
 // is creating resolves as a miss here and simply re-resolves next cycle (defer path).
+// Bounded search packets (preresolve_ids_per_search): N ids per search, one search at a time,
+// so the engine load of a batch's resolution does not grow with the batch cap.
+const inPackets = async <T>(ids: string[], run: (packet: string[]) => Promise<T[]>): Promise<T[]> => {
+  const size = SEQUENCER_CONFIG.preresolveIdsPerSearch;
+  if (size <= 0 || ids.length <= size) return run(ids);
+  const results: T[] = [];
+  for (let i = 0; i < ids.length; i += size) {
+    const packet = await run(ids.slice(i, i + size));
+    packet.forEach((item) => results.push(item));
+  }
+  return results;
+};
+
 const warmResolveAhead = async (batch: SequencerIntent[]) => {
   const t0 = Date.now();
   const context = executionContext('sequencer', SYSTEM_USER);
@@ -208,13 +220,13 @@ const warmResolveAhead = async (batch: SequencerIntent[]) => {
     });
   });
   if (typedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes), searchCaller: 'sequencer_resolve_ahead' }) as any[];
+    const hits = await inPackets(typedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { type: Array.from(typedTypes), searchCaller: 'sequencer_resolve_ahead' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
   }
   const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
   if (untypedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses, { searchCaller: 'sequencer_resolve_ahead' }) as any[];
+    const hits = await inPackets(untypedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_resolve_ahead' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
   }
@@ -224,7 +236,8 @@ const warmResolveAhead = async (batch: SequencerIntent[]) => {
       if (sequencerIdentityMap.hasBare(id)) targetIds.add(id);
     });
     if (targetIds.size > 0) {
-      const loaded = await withRefsLoader(context, SYSTEM_USER, Array.from(targetIds));
+      const loader = withRefsLoader;
+      const loaded = await inPackets(Array.from(targetIds), (packet) => loader(context, SYSTEM_USER, packet));
       loaded.forEach((element) => sequencerIdentityMap.ingestWithRefs(element));
       sequencerMetrics.esOp('search', 3);
     }
@@ -251,7 +264,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   });
   const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
   if (typedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as any[];
+    const hits = await inPackets(typedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
     // s10.3: probed under the type union and not found = known absent for any query whose
@@ -259,7 +272,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
     sequencerIdentityMap.markAbsent(typedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), Array.from(typedTypes));
   }
   if (untypedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses, { searchCaller: 'sequencer_preresolve' }) as any[];
+    const hits = await inPackets(untypedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
     // probed with no type filter = unconditionally absent
@@ -272,7 +285,8 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       if (sequencerIdentityMap.hasBare(id)) targetIds.add(id);
     });
     if (targetIds.size > 0) {
-      const loaded = await withRefsLoader(context, SYSTEM_USER, Array.from(targetIds));
+      const loader = withRefsLoader;
+      const loaded = await inPackets(Array.from(targetIds), (packet) => loader(context, SYSTEM_USER, packet));
       loaded.forEach((element) => sequencerIdentityMap.ingestWithRefs(element));
       sequencerMetrics.esOp('search', 3); // element + meta rels + their targets
     }
@@ -321,8 +335,8 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       }
       jobs.push({ key, inputIds, run: () => (dedupLoader as DedupLoader)(context, dedupInput, inputIds) });
     });
-    for (let i = 0; i < jobs.length; i += DEDUP_PREFETCH_CONCURRENCY) {
-      const slice = jobs.slice(i, i + DEDUP_PREFETCH_CONCURRENCY);
+    for (let i = 0; i < jobs.length; i += SEQUENCER_CONFIG.dedupPrefetchConcurrency) {
+      const slice = jobs.slice(i, i + SEQUENCER_CONFIG.dedupPrefetchConcurrency);
       const results = await Promise.all(slice.map(async (job) => {
         try {
           return await job.run();

@@ -32,6 +32,8 @@ export interface SequencerConfig {
   // and the end-of-batch evict/clear still runs after the warm, wiping anything stale.
   resolveAhead: boolean;
   applyConcurrency: number;
+  preresolveIdsPerSearch: number;
+  dedupPrefetchConcurrency: number;
   writtenIndex: boolean;
   pendingRefExpiryS: number;
   // s9.8.2 bounded member wait: plan passes spent waiting for a declared in-bundle member
@@ -76,6 +78,12 @@ const readConfig = (): SequencerConfig => {
     // rung 5 (2026-09-21): concurrent apply of independent groups within a batch, level by
     // level on the plan's dependsOn edges; 1 = the sequential path measured through the study
     applyConcurrency: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:apply_concurrency') ?? 1))),
+    // bounded search packets (2026-09-25): the batch pre-resolution (and resolve-ahead) resolves
+    // its missing ids and loads its upsert targets N ids per search, one search at a time;
+    // 0 = one call for the whole batch (elFindByIds' own grouping), the behaviour measured so far
+    preresolveIdsPerSearch: Math.max(0, Math.floor(Number(conf.get('app:ingestion_sequencer:preresolve_ids_per_search') ?? 0))),
+    // concurrent relation dedup prefetch searches per batch (was a constant 8)
+    dedupPrefetchConcurrency: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:dedup_prefetch_concurrency') ?? 8))),
     // written index (2026-09-21): the running batch's own writes are served first and kept
     // through mid-batch invalidations until commit (in-batch read-your-writes). Off through the
     // study's measurements (neutral then); ON since 2026-09-24 with the single wave per chunk,
