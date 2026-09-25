@@ -639,6 +639,7 @@ const runBatchLoop = async () => {
     sequencerMetrics.queueDepth(queue.size());
     // 2. pre-resolve (optimization: on failure the batch still applies through ES)
     try {
+      sequencerIdentityMap.beginBatch(Date.now());
       await preResolveBatch(batch);
     } catch (err) {
       logApp.error('[SEQUENCER] batch pre-resolution failed, applying without it', { cause: err });

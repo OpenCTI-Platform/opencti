@@ -106,6 +106,9 @@ interface AuthContext {
       serveWithRefs: (context: AuthContext, user: AuthUser, ids: string[], opts: Record<string, unknown>)
       => Promise<{ hits: any[]; misses: string[] } | null>;
       ingestBare: (elements: any[]) => void;
+      // 2026-09-25: relation dedup shortcut for endpoints created by the running batch
+      wasCreatedInBatch?: (internalId: string) => boolean;
+      wasAbsentAtBatchStart?: (element: any) => boolean;
     };
   };
 }

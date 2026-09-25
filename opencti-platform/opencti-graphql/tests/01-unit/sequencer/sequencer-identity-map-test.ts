@@ -225,3 +225,41 @@ describe('sequencer identity map written index', () => {
     SEQUENCER_CONFIG.writtenIndex = true;
   });
 });
+
+describe('sequencer identity map: creations of the running batch (2026-09-25)', () => {
+  beforeAll(() => {
+    SEQUENCER_CONFIG.mode = 'batch';
+    SEQUENCER_CONFIG.identityMapSize = 100;
+    SEQUENCER_CONFIG.identityMapTtlS = 600;
+  });
+  afterAll(() => {
+    SEQUENCER_CONFIG.mode = savedMode;
+    SEQUENCER_CONFIG.identityMapSize = savedSize;
+    SEQUENCER_CONFIG.identityMapTtlS = savedTtl;
+  });
+
+  it('tells a creation of the batch from an upsert of a pre-existing element by created_at', () => {
+    const map = new SequencerIdentityMap();
+    const start = Date.parse('2026-09-25T10:00:00.000Z');
+    map.beginBatch(start);
+    map.ingestWritten(element('created', 'malware--new', 'Malware', { created_at: '2026-09-25T10:00:01.000Z' }), false);
+    map.ingestWritten(element('upserted', 'malware--old', 'Malware', { created_at: '2026-09-01T00:00:00.000Z' }), true);
+    map.ingestWritten(element('undated', 'malware--nodate'), false);
+    expect(map.wasCreatedInBatch('created')).toBe(true);
+    expect(map.wasCreatedInBatch('upserted')).toBe(false);
+    expect(map.wasCreatedInBatch('undated')).toBe(false);
+    map.clearWritten();
+    expect(map.wasCreatedInBatch('created')).toBe(false);
+  });
+
+  it('reports an element whose id was marked absent by the pre-resolution, and no other', () => {
+    const map = new SequencerIdentityMap();
+    map.beginBatch(Date.now());
+    map.markAbsent(['ipv4-addr--absent'], null);
+    expect(map.wasAbsentAtBatchStart(element('int1', 'ipv4-addr--absent', 'IPv4-Addr'))).toBe(true);
+    expect(map.wasAbsentAtBatchStart(element('int2', 'ipv4-addr--other', 'IPv4-Addr', { x_opencti_stix_ids: ['ipv4-addr--absent'] }))).toBe(true);
+    expect(map.wasAbsentAtBatchStart(element('int3', 'ipv4-addr--present', 'IPv4-Addr'))).toBe(false);
+    map.clearAbsent();
+    expect(map.wasAbsentAtBatchStart(element('int1', 'ipv4-addr--absent', 'IPv4-Addr'))).toBe(false);
+  });
+});
