@@ -153,7 +153,7 @@ RABBITMQ_DEFAULT_USER=opencti
 RABBITMQ_DEFAULT_PASS=$(openssl rand -base64 32)
 SMTP_HOSTNAME=localhost
 OPENSEARCH_ADMIN_PASSWORD=changeme
-ELASTIC_MEMORY_SIZE=4G
+ELASTIC_MEMORY_SIZE=4g
 
 ###########################
 # COMMON                  #
