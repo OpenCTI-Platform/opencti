@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
-import { Stack, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
+import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
 import { Theme } from '../Theme';
 import NumberDifference from '../NumberDifference';
@@ -14,6 +15,12 @@ export interface WidgetNumberProps {
   entityType?: string;
   icon?: ReactNode;
   action?: ReactNode;
+  /**
+   * Destination reproducing exactly this number as a filtered list. The
+   * component receives a resolved link rather than the drill-down descriptor so
+   * it stays presentational, and renders an inert value when it is absent.
+   */
+  drilldownLink?: string | null;
 }
 
 const WidgetNumber = ({
@@ -24,6 +31,7 @@ const WidgetNumber = ({
   entityType,
   icon,
   action,
+  drilldownLink,
 }: WidgetNumberProps) => {
   const { n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -60,12 +68,30 @@ const WidgetNumber = ({
         justifyContent="space-between"
         alignItems="center"
       >
-        <div
-          data-testid={`card-number-${label}`}
-          style={valueStyle}
-        >
-          {n(value)}
-        </div>
+        {drilldownLink ? (
+          <Box
+            component={Link}
+            to={drilldownLink}
+            data-testid={`card-number-${label}`}
+            // Without it react-grid-layout turns the click into a widget drag.
+            className="noDrag"
+            sx={{
+              ...valueStyle,
+              color: 'inherit',
+              textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' },
+            }}
+          >
+            {n(value)}
+          </Box>
+        ) : (
+          <div
+            data-testid={`card-number-${label}`}
+            style={valueStyle}
+          >
+            {n(value)}
+          </div>
+        )}
         {entityType && (
           <ItemIcon
             type={entityType}
