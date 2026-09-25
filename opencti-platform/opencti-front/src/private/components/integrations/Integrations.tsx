@@ -65,8 +65,9 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
 
   useEffect(() => {
     if (isConnectorReader) {
-      // fetch once the catalogs and use the cache during runtime
-      loadCatalogs({}, { fetchPolicy: 'store-or-network' });
+      // Refresh catalogs on mount so a stale Relay cache cannot become the
+      // polling baseline for the available integrations view.
+      loadCatalogs({}, { fetchPolicy: 'store-and-network' });
       loadDeployment({}, { fetchPolicy: 'store-and-network' });
     }
     if (isIngestionReader) {
