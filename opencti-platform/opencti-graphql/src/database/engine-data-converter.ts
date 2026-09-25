@@ -120,7 +120,7 @@ const elDataConverter = <T>(esHit: any): T => {
       const ruleDefinitions: any = Object.values(val);
       for (let rIndex = 0; rIndex < ruleDefinitions.length; rIndex += 1) {
         const { inferred, explanation } = ruleDefinitions[rIndex];
-        const attributes = Object.entries(inferred).map(([field, value]) => ({ field, value: String(value) }));
+        const attributes = Object.entries(inferred ?? {}).map(([field, value]) => ({ field, value: String(value) }));
         ruleInferences.push({ rule, explanation, attributes });
       }
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
