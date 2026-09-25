@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import Notifications from './Notifications';
 import Profile from './Profile';
-import Triggers from './Triggers';
 
 const Root = () => (
   <Routes>
@@ -16,7 +15,7 @@ const Root = () => (
       element={<Profile />}
     />
     <Route
-      path="/notifications"
+      path="/notifications/*"
       element={boundaryWrapper(Notifications)}
     />
     {/* Legacy nested paths from before the news feed page extraction: keep bookmarks working. */}
@@ -30,7 +29,7 @@ const Root = () => (
     />
     <Route
       path="/triggers"
-      element={boundaryWrapper(Triggers)}
+      element={<Navigate to="/dashboard/profile/notifications/triggers" replace={true} />}
     />
   </Routes>
 );
