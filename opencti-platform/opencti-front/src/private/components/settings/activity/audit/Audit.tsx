@@ -109,7 +109,24 @@ type AuditCsvNode = {
   } | null;
 };
 
-export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>) => nodes.map(({ node }) => ({
+type AuditCsvRow = {
+  id: string;
+  entity_type?: string | null;
+  event_type: string;
+  event_scope?: string | null;
+  event_status: string;
+  user_metadata: unknown;
+  timestamp: unknown;
+  context_uri?: string | null;
+  user_id: string;
+  user_name: string;
+  context_data_id: string;
+  context_data_entity_type: string;
+  context_data_entity_name: string;
+  context_data_message: string;
+};
+
+export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCsvRow[] => nodes.map(({ node }) => ({
   id: node.id,
   entity_type: node.entity_type,
   event_type: node.event_type,
@@ -133,7 +150,7 @@ const Audit = () => {
   >(null);
   const hasPageRendered = useRef(false);
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<AuditCsvRow[]>([]);
   const { settings } = useAuth();
   const hasBothCapabilities = useGranted(
     [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
