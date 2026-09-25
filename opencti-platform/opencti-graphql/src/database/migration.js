@@ -13,6 +13,8 @@ import { fullEntitiesThroughRelationsToList } from './middleware-loader';
 import { meterManager } from '../config/tracing';
 import { MigrationsMetricsRecorder } from './migration-metrics';
 
+export const MIGRATION_STATUS_ID = 'abd390e1-9e50-42d0-8673-f15db7cb4223';
+
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
     return rawName.substring(2);

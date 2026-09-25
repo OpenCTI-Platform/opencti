@@ -27,6 +27,8 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { addEmailTemplateCreatedCount } from '../../manager/telemetryManager';
 
+export const EMAIL_TEMPLATE_DEFAULT_ID = '86245628-70b6-4d70-8530-36f09742332f';
+
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
   return storeLoadById<BasicStoreEntityEmailTemplate>(context, user, id, ENTITY_TYPE_EMAIL_TEMPLATE);
@@ -42,8 +44,9 @@ export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: st
   return sendEmailToUser(context, user, { target_user_id: user.id, email_template_id: id });
 };
 
-export const addEmailTemplate = async (context: AuthContext, user: AuthUser, input: EmailTemplateAddInput, useTelemetry: boolean = true) => {
+export const addEmailTemplate = async (context: AuthContext, user: AuthUser, input: EmailTemplateAddInput & { internal_id?: string }, useTelemetry: boolean = true) => {
   const emailTemplateToCreate = {
+    ...(input.internal_id ? { internal_id: input.internal_id } : {}),
     name: input.name,
     description: input.description,
     email_object: input.email_object,

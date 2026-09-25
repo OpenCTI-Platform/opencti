@@ -13,6 +13,9 @@ export const NOTIFIER_CONNECTOR_UI = 'f39b8ab2c-8f5c-4167-a249-229f34d9442b';
 export const NOTIFIER_CONNECTOR_EMAIL = '6f5e30a8-56d5-4ff1-8b8d-f90243f771dc';
 export const NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL = '9f73d9f8-cc4c-432b-b5b0-be6b6d6c8d87';
 
+export const NOTIFIER_DEFAULT_TEAM_MESSAGE_ID = 'dd0043cc-9463-447a-90a2-b0e034c3ddf5';
+export const NOTIFIER_DEFAULT_TEAM_DIGEST_MESSAGE_ID = '9b45fc00-d4c1-4032-a16b-dc77bdaa2c7f';
+
 export interface NOTIFIER_CONNECTOR_EMAIL_INTERFACE {
   title: string;
   template: string;
@@ -663,6 +666,7 @@ export const SIMPLIFIED_EMAIL_TEMPLATE = `
 `;
 
 export const DEFAULT_TEAM_MESSAGE = {
+  internal_id: NOTIFIER_DEFAULT_TEAM_MESSAGE_ID,
   notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK,
   name: 'Sample of Microsoft Teams message for live trigger',
   description: 'This is a sample notifier to send a Microsoft Teams message. The template is already filled and fully customizable. You need to add the correct Microsoft Teams endpoint to get it working.',
@@ -676,6 +680,7 @@ export const DEFAULT_TEAM_MESSAGE = {
 };
 
 export const DEFAULT_TEAM_DIGEST_MESSAGE = {
+  internal_id: NOTIFIER_DEFAULT_TEAM_DIGEST_MESSAGE_ID,
   notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK,
   name: 'Sample of Microsoft Teams message for digest trigger',
   description: 'This is a sample notifier to send a Microsoft Teams message. The template is already filled and fully customizable. You need to add the correct Microsoft Teams endpoint to get it working.',
