@@ -12,7 +12,6 @@ import * as UserActionListener from '../../../src/listener/UserActionListener';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
 import conf from '../../../src/config/conf';
-import * as UserActionListener from '../../../src/listener/UserActionListener';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
