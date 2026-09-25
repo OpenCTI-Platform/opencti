@@ -120,8 +120,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     # ONE pool, and blocks until bundle-terminal (ack semantics unchanged, decision Q1-B).
     # 0 = OFF (s9.11 wave path, no pool threads created).
     ingest_pools: int = 0
-    # CS: objects per chunk AND request threads per pool (1 object per thread).
-    ingest_chunk_size: int = 16
+    # CS: objects per chunk AND request threads per pool (1 object per thread); 24 = the
+    # operating point of the chunk-queue path since 2026-09-15 (48 neutral, 2026-09-25).
+    ingest_chunk_size: int = 24
     # Bundle-to-pool pick at bundle start (decision Q3): least_full | round_robin.
     ingest_pick: str = "least_full"
     # Per-pool queue bound (chunks); 0 = unbounded. Backpressure insurance only:

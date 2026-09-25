@@ -48,7 +48,10 @@ const CHUNK_INTAKE_MANAGER_CONTEXT = 'chunk_intake_manager';
 const CHUNK_INTAKE_MANAGER_ENABLED = booleanConf('chunk_intake_manager:enabled', false);
 const CHUNK_INTAKE_MANAGER_KEY = conf.get('chunk_intake_manager:lock_key') || 'chunk_intake_manager_lock';
 const SCHEDULE_TIME = Number(conf.get('chunk_intake_manager:interval') ?? 10000);
-const PREFETCH = Number(conf.get('chunk_intake_manager:prefetch') ?? 8);
+// 192 (was 8): chunks in flight; prefetch x chunk size is the single flow-control valve of the
+// path. 128 was the operating point since 2026-09-15; 192 read equal on mix140k (ladder 3,
+// 2026-09-25) with the queue cap at 40,000 intents, 256 brought nothing more.
+const PREFETCH = Number(conf.get('chunk_intake_manager:prefetch') ?? 192);
 const MAX_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:max_transient_attempts') ?? 20);
 // Retry-gap option 1: a creation whose hard reference is still missing after its park
 // deadline is RETAINED by the sequencer (pending intents) and re-submitted when the
@@ -80,7 +83,10 @@ const PRE_LOOP_CONCURRENCY = Number(conf.get('chunk_intake_manager:pre_loop_conc
 // (three ticks: the search queue drains in well under a second once the burst is gone).
 const PRE_LOOP_ADAPTIVE = booleanConf('chunk_intake_manager:pre_loop_adaptive', true);
 const PRE_LOOP_MIN = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_min') ?? 8);
-const PRE_LOOP_MAX = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_max') ?? 512);
+// max 256 (was 512): at 512 the start-of-intake burst still left 779 to 1,292 search
+// rejections and up to 145 transient retries per mix140k run; 256 left 0 retries and 3x fewer
+// rejections at equal throughput (ladder of 2026-09-25).
+const PRE_LOOP_MAX = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_max') ?? 256);
 const PRE_LOOP_TICK_MS = Number(conf.get('chunk_intake_manager:pre_loop_tick_ms') ?? 1000);
 const PRE_LOOP_QUIET_MS = Number(conf.get('chunk_intake_manager:pre_loop_quiet_ms') ?? 3000);
 const PRE_LOOP_INCREASE_RATIO = Number(conf.get('chunk_intake_manager:pre_loop_increase_ratio') ?? 0.35);

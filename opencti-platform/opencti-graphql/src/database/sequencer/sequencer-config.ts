@@ -57,15 +57,19 @@ const readConfig = (): SequencerConfig => {
   return {
     enabled: booleanConf('app:ingestion_sequencer:enabled', false),
     mode,
-    maxBatchSize: Number(conf.get('app:ingestion_sequencer:max_batch_size') ?? 200),
+    // 600 (was 200, then 400 on the bench): the batch cap is the depth lever of the chunk path;
+    // b400 read +10% over b200 on the full mix (2026-09-24), b600 neutral vs b400 on mix140k
+    // (ladders of 2026-09-25: admission limits the batch at ~340 before the cap does).
+    maxBatchSize: Number(conf.get('app:ingestion_sequencer:max_batch_size') ?? 600),
     maxBatchBytes: Number(conf.get('app:ingestion_sequencer:max_batch_bytes') ?? 8388608),
     gatherWindowMs: Number(conf.get('app:ingestion_sequencer:gather_window_ms') ?? 0),
     parkDeadlineMs: Number(conf.get('app:ingestion_sequencer:park_deadline_ms') ?? 5000),
-    // 10000 (was 2000): a safety bound must sit well above any offered concurrency; 2000
-    // was hit twice (w16/P=6 HTTP, chunk prefetch 48) and each time it throttled the loop
-    // instead of protecting anything. Memory is guarded by queue_max_bytes.
-    queueMaxIntents: Number(conf.get('app:ingestion_sequencer:queue_max_intents') ?? 10000),
-    queueMaxBytes: Number(conf.get('app:ingestion_sequencer:queue_max_bytes') ?? 67108864),
+    // 40000 / 256 MiB (was 2000, then 10000 / 64 MiB): a safety bound must sit well above any
+    // offered concurrency; 2000 was hit twice (w16/P=6 HTTP, chunk prefetch 48) and 10000 on
+    // every b400 anchor of the 2026-09-25 ladders (queue max 9,999), each time throttling the
+    // loop instead of protecting anything. Memory is guarded by queue_max_bytes.
+    queueMaxIntents: Number(conf.get('app:ingestion_sequencer:queue_max_intents') ?? 40000),
+    queueMaxBytes: Number(conf.get('app:ingestion_sequencer:queue_max_bytes') ?? 268435456),
     identityMapSize: Number(conf.get('app:ingestion_sequencer:identity_map_size') ?? 200000),
     identityMapTtlS: Number(conf.get('app:ingestion_sequencer:identity_map_ttl_s') ?? 600),
     coalesceUpdateEvents: booleanConf('app:ingestion_sequencer:coalesce_update_events', true),
@@ -78,8 +82,10 @@ const readConfig = (): SequencerConfig => {
     stripReconcile: booleanConf('app:ingestion_sequencer:strip_reconcile', false),
     resolveAhead: booleanConf('app:ingestion_sequencer:resolve_ahead', false),
     // rung 5 (2026-09-21): concurrent apply of independent groups within a batch, level by
-    // level on the plan's dependsOn edges; 1 = the sequential path measured through the study
-    applyConcurrency: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:apply_concurrency') ?? 1))),
+    // level on the plan's dependsOn edges; 1 = the sequential path measured through the study.
+    // Default 8 since 2026-09-25 (the operating point of every run since 2026-09-21; 16 stalled
+    // once and buys nothing with the platform's single core saturated).
+    applyConcurrency: Math.max(1, Math.floor(Number(conf.get('app:ingestion_sequencer:apply_concurrency') ?? 8))),
     // bounded search packets (2026-09-25): the batch pre-resolution (and resolve-ahead) resolves
     // its missing ids and loads its upsert targets N ids per search, one search at a time;
     // 0 = one call for the whole batch (elFindByIds' own grouping), the behaviour measured so far
