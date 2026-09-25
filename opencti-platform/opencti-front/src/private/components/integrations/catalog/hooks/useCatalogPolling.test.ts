@@ -172,6 +172,29 @@ describe('useCatalogPolling', () => {
     expect(mocks.fetchQuery).toHaveBeenCalledTimes(2);
   });
 
+  it('runs the initial revision check when mounting hidden and becoming visible', async () => {
+    mockFetchSequence([
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+    ]);
+
+    setDocumentHidden(true);
+    renderHook(() => useCatalogPolling({ enabled: true, onCatalogRevisionsChanged: vi.fn() }));
+
+    await act(async () => {
+      await flushPromises();
+    });
+    expect(mocks.fetchQuery).not.toHaveBeenCalled();
+
+    await act(async () => {
+      setDocumentHidden(false);
+      document.dispatchEvent(new Event('visibilitychange'));
+      await flushPromises();
+    });
+
+    expect(mocks.fetchQuery).toHaveBeenCalledTimes(1);
+  });
+
   it('stops polling on unmount', async () => {
     mockFetchSequence([
       { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },

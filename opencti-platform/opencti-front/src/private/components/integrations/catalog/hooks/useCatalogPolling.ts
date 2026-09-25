@@ -101,7 +101,7 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
         clearScheduledCheck();
         return;
       }
-      if (wasPausedRef.current) {
+      if (wasPausedRef.current || !baselineRef.current) {
         wasPausedRef.current = false;
         void checkCatalogRevisions();
       }
