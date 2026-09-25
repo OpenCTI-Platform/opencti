@@ -6908,6 +6908,21 @@ export enum DataComponentsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type DataIndex = {
+  __typename?: 'DataIndex';
+  health?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  primaries?: Maybe<IndexStats>;
+  status?: Maybe<Scalars['String']['output']>;
+  total?: Maybe<IndexStats>;
+  uuid?: Maybe<Scalars['String']['output']>;
+};
+
+export type DataIndexMetrics = {
+  __typename?: 'DataIndexMetrics';
+  indexes?: Maybe<Array<Maybe<DataIndex>>>;
+};
+
 export type DataSanityDryRunOutput = {
   __typename?: 'DataSanityDryRunOutput';
   estimated_impact: Array<DataSanityImpactedElement>;
@@ -7750,6 +7765,7 @@ export type Distribution = {
 export type DocsMetrics = {
   __typename?: 'DocsMetrics';
   count?: Maybe<Scalars['String']['output']>;
+  total_size_in_bytes?: Maybe<Scalars['Float']['output']>;
 };
 
 export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -12857,6 +12873,11 @@ export enum InconsistencyCleaningType {
   All = 'ALL',
   RefDuplicateClean = 'REF_DUPLICATE_CLEAN'
 }
+
+export type IndexStats = {
+  __typename?: 'IndexStats';
+  docs?: Maybe<DocsMetrics>;
+};
 
 export type IndexedFile = {
   __typename?: 'IndexedFile';
@@ -24800,6 +24821,7 @@ export type Query = {
   customViewsSettings: CustomViewsSettings;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
+  dataIndexMetrics?: Maybe<DataIndexMetrics>;
   dataSanityExecutions: Array<DataSanityExecution>;
   dataSanityOperationDryRun: DataSanityDryRunOutput;
   dataSanityOperations: Array<DataSanityOperation>;
@@ -40736,6 +40758,8 @@ export type ResolversTypes = ResolversObject<{
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
   DataComponentEdge: ResolverTypeWrapper<Omit<DataComponentEdge, 'node'> & { node: ResolversTypes['DataComponent'] }>;
   DataComponentsOrdering: DataComponentsOrdering;
+  DataIndex: ResolverTypeWrapper<DataIndex>;
+  DataIndexMetrics: ResolverTypeWrapper<DataIndexMetrics>;
   DataSanityDryRunOutput: ResolverTypeWrapper<DataSanityDryRunOutput>;
   DataSanityExecution: ResolverTypeWrapper<DataSanityExecution>;
   DataSanityImpactedElement: ResolverTypeWrapper<DataSanityImpactedElement>;
@@ -40954,6 +40978,7 @@ export type ResolversTypes = ResolversObject<{
   IncidentEditMutations: ResolverTypeWrapper<Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Incident']>, contextPatch?: Maybe<ResolversTypes['Incident']>, fieldPatch?: Maybe<ResolversTypes['Incident']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Incident']> }>;
   IncidentsOrdering: IncidentsOrdering;
   InconsistencyCleaningType: InconsistencyCleaningType;
+  IndexStats: ResolverTypeWrapper<IndexStats>;
   IndexedFile: ResolverTypeWrapper<Omit<IndexedFile, 'entity'> & { entity?: Maybe<ResolversTypes['StixObject']> }>;
   IndexedFileConnection: ResolverTypeWrapper<Omit<IndexedFileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndexedFileEdge']>>> }>;
   IndexedFileEdge: ResolverTypeWrapper<Omit<IndexedFileEdge, 'node'> & { node: ResolversTypes['IndexedFile'] }>;
@@ -41891,6 +41916,8 @@ export type ResolversParentTypes = ResolversObject<{
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
   DataComponentEdge: Omit<DataComponentEdge, 'node'> & { node: ResolversParentTypes['DataComponent'] };
+  DataIndex: DataIndex;
+  DataIndexMetrics: DataIndexMetrics;
   DataSanityDryRunOutput: DataSanityDryRunOutput;
   DataSanityExecution: DataSanityExecution;
   DataSanityImpactedElement: DataSanityImpactedElement;
@@ -42076,6 +42103,7 @@ export type ResolversParentTypes = ResolversObject<{
   IncidentConnection: Omit<IncidentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IncidentEdge']>>> };
   IncidentEdge: Omit<IncidentEdge, 'node'> & { node: ResolversParentTypes['Incident'] };
   IncidentEditMutations: Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Incident']>, contextPatch?: Maybe<ResolversParentTypes['Incident']>, fieldPatch?: Maybe<ResolversParentTypes['Incident']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Incident']> };
+  IndexStats: IndexStats;
   IndexedFile: Omit<IndexedFile, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixObject']> };
   IndexedFileConnection: Omit<IndexedFileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IndexedFileEdge']>>> };
   IndexedFileEdge: Omit<IndexedFileEdge, 'node'> & { node: ResolversParentTypes['IndexedFile'] };
@@ -44978,6 +45006,19 @@ export type DataComponentEdgeResolvers<ContextType = any, ParentType extends Res
   node?: Resolver<ResolversTypes['DataComponent'], ParentType, ContextType>;
 }>;
 
+export type DataIndexResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataIndex'] = ResolversParentTypes['DataIndex']> = ResolversObject<{
+  health?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  primaries?: Resolver<Maybe<ResolversTypes['IndexStats']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  total?: Resolver<Maybe<ResolversTypes['IndexStats']>, ParentType, ContextType>;
+  uuid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type DataIndexMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataIndexMetrics'] = ResolversParentTypes['DataIndexMetrics']> = ResolversObject<{
+  indexes?: Resolver<Maybe<Array<Maybe<ResolversTypes['DataIndex']>>>, ParentType, ContextType>;
+}>;
+
 export type DataSanityDryRunOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSanityDryRunOutput'] = ResolversParentTypes['DataSanityDryRunOutput']> = ResolversObject<{
   estimated_impact?: Resolver<Array<ResolversTypes['DataSanityImpactedElement']>, ParentType, ContextType>;
 }>;
@@ -45348,6 +45389,7 @@ export type DistributionResolvers<ContextType = any, ParentType extends Resolver
 
 export type DocsMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['DocsMetrics'] = ResolversParentTypes['DocsMetrics']> = ResolversObject<{
   count?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  total_size_in_bytes?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
 }>;
 
 export type DomainNameResolvers<ContextType = any, ParentType extends ResolversParentTypes['DomainName'] = ResolversParentTypes['DomainName']> = ResolversObject<{
@@ -46934,6 +46976,10 @@ export type IncidentEditMutationsResolvers<ContextType = any, ParentType extends
   fieldPatch?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<IncidentEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IncidentEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<IncidentEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+}>;
+
+export type IndexStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndexStats'] = ResolversParentTypes['IndexStats']> = ResolversObject<{
+  docs?: Resolver<Maybe<ResolversTypes['DocsMetrics']>, ParentType, ContextType>;
 }>;
 
 export type IndexedFileResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndexedFile'] = ResolversParentTypes['IndexedFile']> = ResolversObject<{
@@ -50648,6 +50694,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
+  dataIndexMetrics?: Resolver<Maybe<ResolversTypes['DataIndexMetrics']>, ParentType, ContextType>;
   dataSanityExecutions?: Resolver<Array<ResolversTypes['DataSanityExecution']>, ParentType, ContextType>;
   dataSanityOperationDryRun?: Resolver<ResolversTypes['DataSanityDryRunOutput'], ParentType, ContextType, RequireFields<QueryDataSanityOperationDryRunArgs, 'operation_name'>>;
   dataSanityOperations?: Resolver<Array<ResolversTypes['DataSanityOperation']>, ParentType, ContextType>;
@@ -54951,6 +54998,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;
+  DataIndex?: DataIndexResolvers<ContextType>;
+  DataIndexMetrics?: DataIndexMetricsResolvers<ContextType>;
   DataSanityDryRunOutput?: DataSanityDryRunOutputResolvers<ContextType>;
   DataSanityExecution?: DataSanityExecutionResolvers<ContextType>;
   DataSanityImpactedElement?: DataSanityImpactedElementResolvers<ContextType>;
@@ -55083,6 +55132,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IncidentConnection?: IncidentConnectionResolvers<ContextType>;
   IncidentEdge?: IncidentEdgeResolvers<ContextType>;
   IncidentEditMutations?: IncidentEditMutationsResolvers<ContextType>;
+  IndexStats?: IndexStatsResolvers<ContextType>;
   IndexedFile?: IndexedFileResolvers<ContextType>;
   IndexedFileConnection?: IndexedFileConnectionResolvers<ContextType>;
   IndexedFileEdge?: IndexedFileEdgeResolvers<ContextType>;
