@@ -7,8 +7,8 @@
     "install": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "client-python",
-        "command": "pip install -r requirements.txt && pip install -e ."
+        "cwd": ".",
+        "command": "uv sync --locked --package pycti"
       },
       "metadata": {
         "description": "Install the OpenCTI Python client dependencies"
