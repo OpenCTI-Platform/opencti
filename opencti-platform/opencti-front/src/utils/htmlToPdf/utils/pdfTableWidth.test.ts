@@ -3,6 +3,9 @@ import { readFileSync } from 'node:fs';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import fonts from 'pdfmake/build/vfs_fonts';
+// Deliberately not declared: this must stay the copy react-pdf resolves, since pdf.js throws
+// when the API and the worker differ in version. The legacy build is the one that runs on Node.
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { getDocument, OPS, Util } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import setTableFullWidth, { defaultTableLayout, getMaxTableColumnCount, hasWideTable } from './pdfTableWidth';
 import { htmlToPdf, htmlToPdfReport } from '../htmlToPdf';
@@ -245,7 +248,7 @@ describe('PDF table layout', () => {
         expect(item.transform[4] + item.width).toBeLessThanOrEqual(width - margin + 0.01);
       });
     } finally {
-      await document.destroy();
+      await document.loadingTask.destroy();
     }
   });
 
@@ -271,7 +274,7 @@ describe('PDF table layout', () => {
         expect(text.map((item) => item.str).join('').replace(/\s/g, '')).toContain(description.replace(/\s/g, ''));
         bottomPositions.push(text.find((item) => item.str === 'EndMarker')!.transform[5]);
       } finally {
-        await document.destroy();
+        await document.loadingTask.destroy();
       }
     }
     expect(bottomPositions[1]).toBeGreaterThan(bottomPositions[0] + 30);
@@ -364,7 +367,7 @@ describe('PDF table layout', () => {
       });
       expect(imageCount).toBe(1);
     } finally {
-      await document.destroy();
+      await document.loadingTask.destroy();
     }
   });
 });
