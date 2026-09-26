@@ -30,7 +30,15 @@ import initHttpMaps from './httpMaps';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { extractRefererPathFromReq, setCookieError, decodeOidcState, clientErrorResponse, isClientRequestError, logMalformedRequest } from './httpUtils';
+import {
+  extractRefererPathFromReq,
+  setCookieError,
+  decodeOidcState,
+  clientErrorResponse,
+  isClientRequestError,
+  logMalformedRequest,
+  isResponseWorthCompressing,
+} from './httpUtils';
 import {
   getChatbotConfig,
   getChatbotAgents,
@@ -160,7 +168,7 @@ const createApp = async (app, schema) => {
   });
 
   app.use(compression({
-    filter: (req, res) => res.getHeader('Content-Type') !== 'text/event-stream' && compressionFilter(req, res),
+    filter: (req, res) => isResponseWorthCompressing(res) && compressionFilter(req, res),
   }));
 
   if (ENABLED_UI) {
