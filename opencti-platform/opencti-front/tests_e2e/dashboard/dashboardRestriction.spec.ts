@@ -39,6 +39,8 @@ test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page,
   const openDashboardListAsJeanMichel = async () => {
     await secondUserPage.goto('/dashboard/workspaces/dashboards');
     await expect(userDashboards.getPageTitle()).toBeVisible();
+    // The submenus of a collapsed rail only exist in a hover flyout that does not open here.
+    await userLeftBar.open();
   };
 
   const openDashboardAsJeanMichel = async () => {
