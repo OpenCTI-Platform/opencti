@@ -19,14 +19,18 @@ import {
   computeCiLicenseExpirationDate,
   getExtensionValue,
   GLOBAL_LICENSE_OPTION,
+  LICENSE_LEGACY_CREATOR,
   LICENSE_LEGACY_PRODUCT,
   LICENSE_LEGACY_TYPE,
+  LICENSE_OID_CREATOR,
   LICENSE_OID_PRODUCT,
   LICENSE_OID_TYPE,
   LICENSE_TYPE_CI,
+  LICENSE_TYPE_LTS,
   LICENSE_TYPE_TRIAL,
   LICENSE_TYPES,
 } from '../../settings/license-certificate';
+import type { BasicStoreSettings } from '../../../types/settings';
 
 // JSON list of the OpenCTI platform ids an XTM license sub-licenses, 'global' covering every platform.
 export const LICENSE_OID_XTM_OPENCTI_IDS = '1.3.6.1.4.1.62944.50';
@@ -50,7 +54,20 @@ export interface XtmLicenseContext {
   platformId: string;
   // Caps a ci license, exactly as for OpenCTI's own ci licenses.
   platformCreatedAt: Date | string | undefined;
+  // An LTS platform needs an lts or ci license, the rule OpenCTI applies to its own licenses.
+  ltsPlatform?: boolean;
   now?: Date;
+}
+
+// What the certificate says, once it grants the entitlement: displayed on the Enterprise Edition settings.
+export interface XtmLicenseCertificate {
+  customer: string;
+  creator: string;
+  platform: string;
+  global: boolean;
+  startDate: Date;
+  // The license end date (ci cap applied), before any grace period.
+  expirationDate: Date;
 }
 
 export interface XtmLicenseVerification {
@@ -59,12 +76,16 @@ export interface XtmLicenseVerification {
   licenseType?: string;
   // End of the entitlement, grace period included.
   validUntil?: Date;
+  certificate?: XtmLicenseCertificate;
 }
 
 interface XtmLicense {
   product: string | undefined;
   type: string | undefined;
   openctiIds: string[];
+  customer: string;
+  creator: string;
+  platform: string;
   startDate: Date;
   endDate: Date;
 }
@@ -130,6 +151,10 @@ const decodeXtmLicense = (pem: string): DecodedXtmLicense => {
       product: readExtensionText(certificate, LICENSE_OID_PRODUCT, LICENSE_LEGACY_PRODUCT),
       type: readExtensionText(certificate, LICENSE_OID_TYPE, LICENSE_LEGACY_TYPE),
       openctiIds: readPlatformIds(readExtensionText(certificate, LICENSE_OID_XTM_OPENCTI_IDS)),
+      // Displayed only: like XTM One, nothing is decided on the subject.
+      customer: certificate.subject.getField('O')?.value ?? 'Unknown',
+      platform: certificate.subject.getField('OU')?.value ?? GLOBAL_LICENSE_OPTION,
+      creator: readExtensionText(certificate, LICENSE_OID_CREATOR, LICENSE_LEGACY_CREATOR) || 'Unknown',
       startDate: certificate.validity.notBefore,
       endDate: certificate.validity.notAfter,
     },
@@ -147,7 +172,20 @@ const decodeXtmLicenseOnce = (pem: string) => {
 
 const verifyValidityDates = (license: XtmLicense, licenseType: string, context: XtmLicenseContext): XtmLicenseVerification => {
   const now = context.now ?? new Date();
-  const granted = { granted: true, reason: 'the XTM license sub-licenses this OpenCTI platform', licenseType };
+  const grant = (expirationDate: Date, validUntil: Date): XtmLicenseVerification => ({
+    granted: true,
+    reason: 'the XTM license sub-licenses this OpenCTI platform',
+    licenseType,
+    validUntil,
+    certificate: {
+      customer: license.customer,
+      creator: license.creator,
+      platform: license.platform,
+      global: license.openctiIds.includes(GLOBAL_LICENSE_OPTION),
+      startDate: license.startDate,
+      expirationDate,
+    },
+  });
   if (licenseType === LICENSE_TYPE_TRIAL || licenseType === LICENSE_TYPE_CI) {
     let { endDate } = license;
     if (licenseType === LICENSE_TYPE_CI) {
@@ -163,14 +201,14 @@ const verifyValidityDates = (license: XtmLicense, licenseType: string, context: 
     if (now > endDate) {
       return { granted: false, reason: `the ${licenseType} XTM license has expired`, licenseType };
     }
-    return { ...granted, validUntil: endDate };
+    return grant(endDate, endDate);
   }
   // The grace period also covers a license whose start date is still ahead: XTM One does not enforce it for these types.
   const validUntil = new Date(license.endDate.getTime() + XTM_LICENSE_GRACE_PERIOD);
   if (now >= validUntil) {
     return { granted: false, reason: 'the XTM license has expired and its 90-day grace period is over', licenseType };
   }
-  return { ...granted, validUntil };
+  return grant(license.endDate, validUntil);
 };
 
 /**
@@ -197,8 +235,25 @@ export const verifyXtmLicenseProof = (pem: unknown, context: XtmLicenseContext):
   if (!LICENSE_TYPES.includes(licenseType)) {
     return { granted: false, reason: 'the XTM license type is unknown' };
   }
+  if (context.ltsPlatform && licenseType !== LICENSE_TYPE_LTS && licenseType !== LICENSE_TYPE_CI) {
+    return { granted: false, reason: `an LTS platform needs an lts or ci license, the XTM license is ${licenseType}`, licenseType };
+  }
   if (!license.openctiIds.includes(GLOBAL_LICENSE_OPTION) && !license.openctiIds.includes(context.platformId)) {
     return { granted: false, reason: 'the XTM license does not sub-license this OpenCTI platform', licenseType };
   }
   return verifyValidityDates(license, licenseType, context);
 };
+
+export const buildXtmLicenseContext = (settings: Pick<BasicStoreSettings, 'internal_id' | 'id' | 'created_at'>, ltsPlatform: boolean): XtmLicenseContext => ({
+  platformId: settings.internal_id || settings.id,
+  platformCreatedAt: settings.created_at,
+  ltsPlatform,
+});
+
+// The XTM license of the last registration answer this node read: the one proof of the XTM license path. Kept up to
+// date by xtm-one.ts, read synchronously by the Enterprise Edition resolution, which verifies it again on every read.
+let currentXtmLicenseProof: string | null = null;
+export const setCurrentXtmLicenseProof = (pem: unknown) => {
+  currentXtmLicenseProof = typeof pem === 'string' && pem !== '' ? pem : null;
+};
+export const getCurrentXtmLicenseProof = () => currentXtmLicenseProof;

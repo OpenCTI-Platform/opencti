@@ -19,7 +19,8 @@ import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
 import conf, { PLATFORM_VERSION } from '../../config/conf';
 import type { BasicStoreSettings } from '../../types/settings';
-import type { PlatformEe } from '../../generated/graphql';
+import { type PlatformEe, PlatformEeSource } from '../../generated/graphql';
+import { buildXtmLicenseContext, getCurrentXtmLicenseProof, verifyXtmLicenseProof } from '../xtm/one/xtm-one-license';
 import {
   computeCiLicenseExpirationDate,
   getExtensionValue,
@@ -132,11 +133,52 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
   };
 };
 
+// XTM One counts its expiration warning in days.
+const XTM_LICENSE_EXPIRATION_PREVENTION = 90 * 24 * 60 * 60 * 1000;
+const DAY = 24 * 60 * 60 * 1000;
+
+// Enterprise Edition granted by the XTM license installed on XTM One, verified again on every read and described
+// like an OpenCTI license from the certificate itself.
+const getXtmLicenseEnterpriseEdition = (settings: BasicStoreSettings): PlatformEe | undefined => {
+  const verification = verifyXtmLicenseProof(getCurrentXtmLicenseProof(), buildXtmLicenseContext(settings, IS_LTS_PLATFORM));
+  const { certificate, licenseType, validUntil } = verification;
+  if (!verification.granted || !certificate || !licenseType || !validUntil) {
+    return undefined;
+  }
+  const currentDate = new Date();
+  const license_expired = currentDate > certificate.expirationDate || currentDate < certificate.startDate;
+  const hasGracePeriod = licenseType !== LICENSE_TYPE_TRIAL && licenseType !== LICENSE_TYPE_CI;
+  const license_extra_expiration = license_expired && hasGracePeriod;
+  return {
+    license_enterprise: true,
+    license_by_configuration: false,
+    license_validated: true,
+    license_valid_cert: true,
+    license_customer: certificate.customer,
+    license_expired,
+    license_extra_expiration,
+    license_extra_expiration_days: license_extra_expiration ? Math.floor((validUntil.getTime() - currentDate.getTime()) / DAY) : 0,
+    license_expiration_date: certificate.expirationDate,
+    license_start_date: certificate.startDate,
+    license_expiration_prevention: hasGracePeriod && certificate.expirationDate.getTime() - currentDate.getTime() < XTM_LICENSE_EXPIRATION_PREVENTION,
+    license_platform: certificate.platform,
+    license_type: licenseType,
+    license_platform_match: true,
+    license_creator: certificate.creator,
+    license_global: certificate.global,
+    license_source: PlatformEeSource.XtmOneLicense,
+  };
+};
+
 let cachedLicence: PlatformEe | undefined = undefined;
 let cachedPem: string | undefined = undefined;
 let cacheExpiration: number | undefined = undefined;
 
-export const getEnterpriseEditionInfo = (settings: BasicStoreSettings) => {
+/**
+ * The Enterprise Edition of this platform, read by every Enterprise Edition check: OpenCTI's own valid license,
+ * otherwise the verified XTM license that sub-licenses this platform, otherwise the (invalid) own license state.
+ */
+export const getEnterpriseEditionInfo = (settings: BasicStoreSettings): PlatformEe => {
   const { pem } = getEnterpriseEditionActivePem(settings);
   const now = Date.now();
   if (cachedLicence === undefined || cachedPem !== pem || (cacheExpiration !== undefined && now > cacheExpiration)) {
@@ -144,5 +186,9 @@ export const getEnterpriseEditionInfo = (settings: BasicStoreSettings) => {
     cachedPem = pem;
     cacheExpiration = now + 300000; // Cache for 5 minutes
   }
-  return cachedLicence;
+  const ownLicense = { ...cachedLicence, license_source: PlatformEeSource.OpenctiLicense };
+  if (ownLicense.license_validated) {
+    return ownLicense;
+  }
+  return getXtmLicenseEnterpriseEdition(settings) ?? ownLicense;
 };

@@ -1238,6 +1238,12 @@ type PlatformEE {
   license_global: Boolean!
   license_extra_expiration: Boolean!
   license_extra_expiration_days: Int
+  license_source: PlatformEESource
+}
+
+enum PlatformEESource {
+  OPENCTI_LICENSE
+  XTM_ONE_LICENSE
 }
 
 enum PlatformCriticalAlertType {

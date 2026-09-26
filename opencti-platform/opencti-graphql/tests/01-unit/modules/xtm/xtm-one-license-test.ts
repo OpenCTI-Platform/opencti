@@ -146,6 +146,14 @@ describe('verifyXtmLicenseProof: the XTM license XTM One returns at registration
       expect(verify({ type: '\u000c\u0000' }).reason).toBe('the XTM license type is unknown');
     });
 
+    it('on an LTS platform, for any license other than lts or ci, like OpenCTI licenses', () => {
+      expect(verify({ type: 'standard' }, { ltsPlatform: true }).reason).toBe('an LTS platform needs an lts or ci license, the XTM license is standard');
+      expect(verify({ type: 'nfr' }, { ltsPlatform: true }).granted).toBe(false);
+      expect(verify({ type: null }, { ltsPlatform: true }).granted).toBe(false);
+      expect(verify({ type: 'lts' }, { ltsPlatform: true }).granted).toBe(true);
+      expect(verify({ type: 'ci' }, { ltsPlatform: true, platformCreatedAt: new Date() }).granted).toBe(true);
+    });
+
     it('for a license repeating an extension', () => {
       const duplicate = { id: LICENSE_OID_XTM_OPENCTI_IDS, value: `["${PLATFORM_ID}"]` };
       expect(verify({ openctiIds: ['platform-0002'], extraExtensions: [duplicate] }).reason).toBe('the XTM license repeats a certificate extension');

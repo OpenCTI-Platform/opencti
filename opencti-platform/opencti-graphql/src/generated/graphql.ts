@@ -23867,11 +23867,17 @@ export type PlatformEe = {
   license_global: Scalars['Boolean']['output'];
   license_platform: Scalars['String']['output'];
   license_platform_match: Scalars['Boolean']['output'];
+  license_source?: Maybe<PlatformEeSource>;
   license_start_date: Scalars['DateTime']['output'];
   license_type: Scalars['String']['output'];
   license_valid_cert: Scalars['Boolean']['output'];
   license_validated: Scalars['Boolean']['output'];
 };
+
+export enum PlatformEeSource {
+  OpenctiLicense = 'OPENCTI_LICENSE',
+  XtmOneLicense = 'XTM_ONE_LICENSE'
+}
 
 export type PlatformProtectedSensitiveConfig = {
   __typename?: 'PlatformProtectedSensitiveConfig';
@@ -41253,6 +41259,7 @@ export type ResolversTypes = ResolversObject<{
   PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
   PlatformCriticalAlertType: PlatformCriticalAlertType;
   PlatformEE: ResolverTypeWrapper<PlatformEe>;
+  PlatformEESource: PlatformEeSource;
   PlatformProtectedSensitiveConfig: ResolverTypeWrapper<PlatformProtectedSensitiveConfig>;
   PlatformProtectedSubConfig: ResolverTypeWrapper<PlatformProtectedSubConfig>;
   PlatformType: PlatformType;
@@ -50213,6 +50220,7 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_global?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_source?: Resolver<Maybe<ResolversTypes['PlatformEESource']>, ParentType, ContextType>;
   license_start_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   license_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_valid_cert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

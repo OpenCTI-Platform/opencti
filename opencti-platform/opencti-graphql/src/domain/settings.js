@@ -34,7 +34,7 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
-import { getXtmOneRegistrationVersion } from '../modules/xtm/one/xtm-one';
+import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -125,6 +125,7 @@ export const getSettingsFromDatabase = async (context) => {
 export const getSettings = async (context) => {
   const platformSettings = await getSettingsFromDatabase(context);
   const clusterInfo = await getClusterInformation();
+  await refreshXtmLicenseProof();
   const eeInfo = getEnterpriseEditionInfo(platformSettings);
   const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
 

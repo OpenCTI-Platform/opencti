@@ -53,6 +53,9 @@ export interface TestXtmLicenseOptions {
   derStrings?: boolean;
   extraExtensions?: { id: string; value: string }[];
   digest?: forge.md.MessageDigest;
+  // Subject O and OU
+  customer?: string;
+  platform?: string;
 }
 
 export const createTestXtmLicense = (signer: TestCertificateAuthority, options: TestXtmLicenseOptions = {}) => {
@@ -78,8 +81,8 @@ export const createTestXtmLicense = (signer: TestCertificateAuthority, options: 
   certificate.validity.notBefore = options.notBefore ?? new Date(Date.now() - DAY);
   certificate.validity.notAfter = options.notAfter ?? new Date(Date.now() + 365 * DAY);
   certificate.setSubject([
-    { name: 'organizationName', value: 'Test customer' },
-    { shortName: 'OU', value: 'another-xtm-one-instance' },
+    { name: 'organizationName', value: options.customer ?? 'Test customer' },
+    { shortName: 'OU', value: options.platform ?? 'another-xtm-one-instance' },
   ]);
   certificate.setIssuer(signer.certificate.subject.attributes);
   certificate.setExtensions(extensions);
