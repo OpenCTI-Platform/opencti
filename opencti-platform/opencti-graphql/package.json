@@ -47,7 +47,6 @@
       "public/**/*"
     ]
   },
-  "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
   "engines": {
     "node": ">= 22.18.0"
   },
@@ -230,35 +229,5 @@
     "typescript-eslint": "8.70.0",
     "vite": "8.3.0",
     "vitest": "5.0.1"
-  },
-  "resolutions": {
-    "axios": "1.20.0",
-    "chokidar": "5.0.0",
-    "ioredis": "5.8.2",
-    "json5": "2.2.3",
-    "openid-clientv5/jose": "5.10.0",
-    "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
-    "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
-    "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch"
-  },
-  "dependenciesMeta": {
-    "@apollo/protobufjs": {
-      "built": false
-    },
-    "@datadog/pprof": {
-      "built": false
-    },
-    "esbuild": {
-      "built": false
-    },
-    "node-calls-python": {
-      "built": true
-    },
-    "re2": {
-      "built": true
-    },
-    "unrs-resolver": {
-      "built": false
-    }
   }
 }

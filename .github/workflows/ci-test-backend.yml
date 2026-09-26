@@ -113,18 +113,24 @@ jobs:
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
             # Reuse deps/generated files already built in the filigran/builder image (builder-back stage)
             # instead of re-running "yarn install" + "yarn build" (each independently, 3x per CI run).
-            cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/node_modules ./node_modules
+            # Yarn resolves binaries from its install state, which lives at the workspace root,
+            # not in the project directory: without it every yarn command fails with
+            # "command not found".
+            mkdir -p ../../node_modules ../../.yarn
+            cp -a /opt/opencti/node_modules/. ../../node_modules/
+            cp -a /opt/opencti/.yarn/install-state.gz ../../.yarn/
             mkdir -p ./src/__generated__
-            cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/src/__generated__/. ./src/__generated__/
             # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
             # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
             # against the schema in this checkout, not a possibly-stale committed file.
-            cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
             # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
             # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
             # is production bundle output nothing here touches - do not copy it wholesale.
             mkdir -p ./build
-            cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
             apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
@@ -263,18 +269,24 @@ jobs:
               wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
               # Reuse deps/generated files already built in the filigran/builder image (builder-back stage)
               # instead of re-running "yarn install" + "yarn get-connectors-manifest" (each independently, 3x per CI run).
-              cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
+              cp -a /opt/opencti/opencti-platform/opencti-graphql/node_modules ./node_modules
+              # Yarn resolves binaries from its install state, which lives at the workspace root,
+              # not in the project directory: without it every yarn command fails with
+              # "command not found".
+              mkdir -p ../../node_modules ../../.yarn
+              cp -a /opt/opencti/node_modules/. ../../node_modules/
+              cp -a /opt/opencti/.yarn/install-state.gz ../../.yarn/
               mkdir -p ./src/__generated__
-              cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+              cp -a /opt/opencti/opencti-platform/opencti-graphql/src/__generated__/. ./src/__generated__/
               # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
               # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
               # against the schema in this checkout, not a possibly-stale committed file.
-              cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
+              cp -a /opt/opencti/opencti-platform/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
               # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
               # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
               # is production bundle output nothing here touches - do not copy it wholesale.
               mkdir -p ./build
-              cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
+              cp -a /opt/opencti/opencti-platform/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
               apk add --no-cache git # required by pip to install pycti from a git reference
               yarn install:python
               NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
@@ -353,18 +365,24 @@ jobs:
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-graphql
-            cp -a /opt/opencti/opencti-graphql/node_modules ./node_modules
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/node_modules ./node_modules
+            # Yarn resolves binaries from its install state, which lives at the workspace root,
+            # not in the project directory: without it every yarn command fails with
+            # "command not found".
+            mkdir -p ../../node_modules ../../.yarn
+            cp -a /opt/opencti/node_modules/. ../../node_modules/
+            cp -a /opt/opencti/.yarn/install-state.gz ../../.yarn/
             mkdir -p ./src/__generated__
-            cp -a /opt/opencti/opencti-graphql/src/__generated__/. ./src/__generated__/
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/src/__generated__/. ./src/__generated__/
             # yarn build:prod (builder-back) also runs build:types, which regenerates the tracked
             # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
             # against the schema in this checkout, not a possibly-stale committed file.
-            cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
             # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
             # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
             # is production bundle output nothing here touches - do not copy it wholesale.
             mkdir -p ./build
-            cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
+            cp -a /opt/opencti/opencti-platform/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
         '
 
     - name: Backend type checking, linting and dependency check

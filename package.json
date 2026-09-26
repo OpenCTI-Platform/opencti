@@ -2,6 +2,11 @@
   "name": "opencti",
   "type": "module",
   "private": true,
+  "workspaces": [
+    "opencti-platform/eslint-plugin-custom-rules",
+    "opencti-platform/opencti-front",
+    "opencti-platform/opencti-graphql"
+  ],
   "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
   "engines": {
     "node": ">= 22.18.0"
@@ -30,10 +35,48 @@
     "nx": "23.2.1"
   },
   "resolutions": {
-    "axios": "1.20.0"
+    "@filigran/chatbot/lodash": "4.18.1",
+    "@filigran/chatbot/uuid": "14.0.2",
+    "@types/pdfmake": "0.3.3",
+    "axios": "1.20.0",
+    "babel-plugin-relay/graphql": "15.3.0",
+    "chokidar": "5.0.0",
+    "d3-color": "3.1.0",
+    "graphql": "patch:graphql@17.0.2#./opencti-platform/opencti-graphql/patch/graphql-17.patch",
+    "ioredis": "5.8.2",
+    "json5": "2.2.3",
+    "ldap-filter": "patch:ldap-filter@0.3.3#./opencti-platform/opencti-graphql/patch/ldap-filter-0.3.3.patch",
+    "openid-clientv5": "patch:openid-client@5.7.1#./opencti-platform/opencti-graphql/patch/openid-client.patch",
+    "openid-clientv5/jose": "5.10.0",
+    "react-relay": "patch:react-relay@21.0.1#./opencti-platform/opencti-front/patch/react-relay.patch",
+    "unrs-resolver": "1.11.1"
   },
   "dependenciesMeta": {
+    "@apollo/protobufjs": {
+      "built": false
+    },
+    "@datadog/pprof": {
+      "built": false
+    },
+    "core-js": {
+      "built": false
+    },
+    "esbuild": {
+      "built": false
+    },
+    "node-calls-python": {
+      "built": true
+    },
     "nx": {
+      "built": false
+    },
+    "protobufjs": {
+      "built": false
+    },
+    "re2": {
+      "built": true
+    },
+    "unrs-resolver": {
       "built": false
     }
   }

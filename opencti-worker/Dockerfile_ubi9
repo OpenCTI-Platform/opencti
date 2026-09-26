@@ -1,12 +1,13 @@
 # syntax=docker/dockerfile:1.27
+# Built from the repository root: docker build -f opencti-worker/Dockerfile_ubi9 .
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 ARG PYTHON_VERSION=3.12
 
-COPY src /opt/opencti-worker
+COPY opencti-worker/src /opt/opencti-worker
 WORKDIR /opt/opencti-worker
 
-RUN --mount=type=bind,source=requirements.txt,target=requirements.txt <<EOT
+RUN --mount=type=bind,source=opencti-worker/requirements.txt,target=requirements.txt <<EOT
     set -euxo pipefail
 
     microdnf -y --setopt=install_weak_deps=0 -y install python${PYTHON_VERSION} python${PYTHON_VERSION}-pip git-core
