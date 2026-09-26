@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildContainerReportPrompt, CONTAINER_REPORT_INTENT, MAX_REPORT_PARAGRAPHS } from './containerReport';
+import { buildContainerReportPrompt, CONTAINER_REPORT_FORMAT, CONTAINER_REPORT_INTENT, MAX_REPORT_PARAGRAPHS } from './containerReport';
 
 const base = {
   containerId: 'report--0001',
@@ -7,7 +7,6 @@ const base = {
   containerType: 'Report',
   paragraphs: 10,
   tone: 'tactical',
-  format: 'html' as const,
   language: 'English',
 };
 
@@ -19,13 +18,7 @@ describe('buildContainerReportPrompt', () => {
     expect(prompt).toContain('Report: "APT42 spear-phishing wave"');
     expect(prompt).toContain('10 paragraphs long');
     expect(prompt).toContain('focused on tactical aspects');
-    expect(prompt).toContain('in HTML format');
     expect(prompt).toContain('Answer using English language.');
-  });
-
-  it('spells each format for the agent', () => {
-    expect(buildContainerReportPrompt({ ...base, format: 'markdown' })).toContain('in Markdown format');
-    expect(buildContainerReportPrompt({ ...base, format: 'text' })).toContain('in plain text format');
   });
 
   it('keeps the paragraph count within the legacy bounds', () => {
@@ -34,7 +27,8 @@ describe('buildContainerReportPrompt', () => {
     expect(buildContainerReportPrompt({ ...base, paragraphs: Number.NaN })).toContain('1 paragraph long');
   });
 
-  it('targets the intent XTM One binds to its report-writing agent', () => {
+  it('targets the intent XTM One binds to its report-writing agent, which answers in HTML', () => {
     expect(CONTAINER_REPORT_INTENT).toBe('cti.container_report');
+    expect(CONTAINER_REPORT_FORMAT).toBe('html');
   });
 });

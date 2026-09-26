@@ -176,15 +176,22 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     }
   }, [tone]);
 
+  // Set by Regenerate: the stream endpoint caches by agent and prompt, so the
+  // next run must bypass the cache or it would show the same answer again.
+  const forceRefreshRef = useRef(false);
+
   const executeAgentCall = () => {
     if (!selectedAgent || !agentMode) return;
     setAgentExecuted(true);
     const prompt = buildPrompt(agentMode.action, agentMode.inputContent, agentMode.format, tone);
-    executeStream(selectedAgent.slug, prompt);
+    const forceRefresh = forceRefreshRef.current;
+    forceRefreshRef.current = false;
+    executeStream(selectedAgent.slug, prompt, forceRefresh);
   };
 
   const handleRefresh = () => {
     if (!selectedAgent || !agentMode) return;
+    forceRefreshRef.current = true;
     setContent('');
     setAgentExecuted(false);
   };
@@ -444,7 +451,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           </Button>
           {isAcceptable && (
             <Button
-              disabled={effectiveDisabled || !!agentError}
+              disabled={effectiveDisabled || !!agentError || !!noAgents}
               onClick={() => handleAccept(content)}
             >
               {t_i18n('Accept')}

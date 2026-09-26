@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import StixCoreObjectAskAI from './StixCoreObjectAskAI';
@@ -17,7 +17,12 @@ vi.mock('../../../../utils/ai/ResponseDialog', () => ({
 }));
 vi.mock('../form/FilesNativeField', () => ({ default: () => null }));
 
-type DialogProps = { agentMode: { intent: string; action: string; inputContent: string; format: string } | null };
+type DialogProps = {
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+  agentMode: { intent: string; action: string; inputContent: string; format: string } | null;
+};
 
 const lastDialogProps = (): DialogProps => {
   const { calls } = responseDialogProps.mock;
@@ -56,6 +61,16 @@ describe('StixCoreObjectAskAI container report', () => {
     expect(agentMode?.format).toBe('html');
     // The legacy mutation, which fails without the legacy AI configuration, is never sent.
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+
+  it('unmounts the agent dialog on close so a new generation never re-runs the previous agent selection', async () => {
+    await generate(true);
+    const callsBeforeClose = responseDialogProps.mock.calls.length;
+
+    act(() => lastDialogProps().handleClose());
+
+    // Closing re-renders the component; a still-mounted dialog would render again.
+    expect(responseDialogProps.mock.calls.length).toBe(callsBeforeClose);
   });
 
   it('keeps the legacy mutation when XTM One is not configured', async () => {

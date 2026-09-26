@@ -28,7 +28,7 @@ import { stixCoreObjectMappableContentFieldPatchMutation } from './StixCoreObjec
 import FilesNativeField from '../form/FilesNativeField';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog, { type ResponseAgentAction } from '../../../../utils/ai/ResponseDialog';
-import { buildContainerReportPrompt, CONTAINER_REPORT_INTENT } from '../../../../utils/ai/containerReport';
+import { buildContainerReportPrompt, CONTAINER_REPORT_FORMAT, CONTAINER_REPORT_INTENT } from '../../../../utils/ai/containerReport';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveLink } from '../../../../utils/Entity';
@@ -114,10 +114,15 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const useXtmOne = xtmOneConfigured === true;
 
   const action = 'container-report' as 'container-report' | 'summarize-files' | 'convert-files';
+  // The XTM One agent answers in HTML, so no other format is offered there.
+  const availableFormats = useXtmOne ? [CONTAINER_REPORT_FORMAT] : actionsFormat[action];
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => {
     setContent('');
     setDisplayAskAI(false);
+    // An agent-mode dialog is unmounted on close: the next generation starts
+    // from a fresh agent selection instead of re-running the previous one.
+    if (agentMode) setBusId(null);
   };
 
   const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
@@ -132,6 +137,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       // ResponseDialog picks the agent bound to the intent and streams its answer.
       setDisableResponse(false);
       setContent('');
+      setFormat(CONTAINER_REPORT_FORMAT);
       setAgentMode({
         intent: CONTAINER_REPORT_INTENT,
         action: 'report',
@@ -141,10 +147,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           containerType: instanceType,
           paragraphs,
           tone,
-          format,
           language,
         }),
-        format,
+        format: CONTAINER_REPORT_FORMAT,
       });
       handleOpenAskAI();
       return;
@@ -189,7 +194,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
 
   const handleCancelDestination = () => {
     setAcceptedResult(null);
-    setDisplayAskAI(true);
+    // An agent-mode dialog was unmounted on accept; only the legacy one reopens.
+    if (busId) setDisplayAskAI(true);
   };
 
   const submitAcceptedResult = () => {
@@ -266,10 +272,10 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Format')}>
-            {action && actionsFormat[action].includes('html') && <SelectItem value="html">{t_i18n('HTML')}</SelectItem>}
-            {action && actionsFormat[action].includes('markdown') && <SelectItem value="markdown">{t_i18n('Markdown')}</SelectItem>}
-            {action && actionsFormat[action].includes('text') && <SelectItem value="text">{t_i18n('Plain text')}</SelectItem>}
-            {action && actionsFormat[action].includes('json') && <SelectItem value="json">{t_i18n('JSON')}</SelectItem>}
+            {availableFormats.includes('html') && <SelectItem value="html">{t_i18n('HTML')}</SelectItem>}
+            {availableFormats.includes('markdown') && <SelectItem value="markdown">{t_i18n('Markdown')}</SelectItem>}
+            {availableFormats.includes('text') && <SelectItem value="text">{t_i18n('Plain text')}</SelectItem>}
+            {availableFormats.includes('json') && <SelectItem value="json">{t_i18n('JSON')}</SelectItem>}
           </SelectContent>
         </Select>
         {action && actionsOptions[action].includes('tone') && (
@@ -416,6 +422,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       </Dialog>
       {busId && (
         <ResponseDialog
+          key={busId}
           id={busId}
           isDisabled={disableResponse}
           isOpen={displayAskAI}
