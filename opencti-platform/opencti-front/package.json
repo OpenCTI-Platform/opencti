@@ -39,7 +39,7 @@
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
     "@cfworker/json-schema": "4.1.1",
-    "@filigran/chatbot": "3.9.1",
+    "@filigran/chatbot": "3.10.0",
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2",
     "@filigran/design-system": "1.1.0",
     "@filigran/rich-text-editor": "1.2.1",
