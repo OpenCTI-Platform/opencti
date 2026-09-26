@@ -1,4 +1,7 @@
 import { getHeapStatistics } from 'node:v8';
+import { promisify } from 'node:util';
+import { gunzip as gunzipCallback, gzip as gzipCallback } from 'node:zlib';
+import { buffer as streamToBuffer } from 'node:stream/consumers';
 import nconf from 'nconf';
 import ipaddr from 'ipaddr.js';
 import { rawUploadWithMetadata, deleteFileFromStorage, getFileMetadata } from '../database/raw-file-storage';
@@ -24,7 +27,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ForbiddenAccess, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
@@ -439,6 +442,70 @@ export const deleteMapCustomFile = async (context, user) => {
 
 export const getMapCustomFileInfo = async () => {
   return getFileMetadata(MAP_CUSTOM_FILE_KEY);
+};
+
+const COUNTRIES_CUSTOM_FILE_KEY = 'maps/countries.json.gz';
+const gunzip = promisify(gunzipCallback);
+const gzip = promisify(gzipCallback);
+
+const isGzipped = (content) => content.length >= 2 && content[0] === 0x1f && content[1] === 0x8b;
+
+export const decodeCountriesFile = async (content) => {
+  let json = content;
+  if (isGzipped(content)) {
+    try {
+      json = await gunzip(content);
+    } catch {
+      throw FunctionalError('Countries file is not a readable gzip archive');
+    }
+  }
+  let collection;
+  try {
+    collection = JSON.parse(json.toString('utf8'));
+  } catch {
+    throw FunctionalError('Countries file is not valid JSON');
+  }
+  if (collection?.type !== 'FeatureCollection' || !Array.isArray(collection.features) || collection.features.length === 0) {
+    throw FunctionalError('Countries file must be a GeoJSON FeatureCollection holding at least one feature');
+  }
+  if (collection.features.some((feature) => isEmptyField(feature?.properties?.ISO3))) {
+    throw FunctionalError('Every feature of the countries file must carry an ISO3 property');
+  }
+  return json;
+};
+
+export const uploadCountriesCustomFile = async (context, user, file) => {
+  const { createReadStream, filename } = await file;
+  const content = await streamToBuffer(createReadStream());
+  const json = await decodeCountriesFile(content);
+  const contentDisposition = `attachment; filename="${filename}"`;
+  await rawUploadWithMetadata(COUNTRIES_CUSTOM_FILE_KEY, await gzip(json), contentDisposition, 'gzip');
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'uploads countries custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'countries_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const deleteCountriesCustomFile = async (context, user) => {
+  await deleteFileFromStorage(COUNTRIES_CUSTOM_FILE_KEY);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'deletes countries custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'countries_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const getCountriesCustomFileInfo = async () => {
+  return getFileMetadata(COUNTRIES_CUSTOM_FILE_KEY);
 };
 
 export const getCriticalAlerts = async (context, user) => {
