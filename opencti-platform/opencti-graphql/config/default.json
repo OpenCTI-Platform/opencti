@@ -125,6 +125,7 @@
     },
     "performance_logger": false,
     "map_bundled_file_path": "./static/maps/world.pmtiles",
+    "map_countries_bundled_file_path": "./static/maps/countries.json",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
