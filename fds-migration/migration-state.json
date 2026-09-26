@@ -361,6 +361,50 @@
       "files": [
         "opencti-platform/opencti-front/src/private/components/settings/settings_platform/SettingsPlatformSummary.tsx"
       ]
+    },
+    {
+      "component": "Menu",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows: one row menu (MenuTrigger asChild around IconButton, MenuContent align=\"end\", MenuItem startIcon, MenuSeparator) replaces the Download / Upload / Delete buttons. Download is a MenuItem asChild around a real <a download>. Delete carries its error colour through FDS-WORKAROUND #64.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows: the row menu trigger, variant=\"default\" priority=\"tertiary\" as in the Themes rows, with `active` while its menu is open.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows and footer: each row title (content-base) and its secondary line (content-compact, `--text-default-secondary`), the propagation note (content-compact) and the documentation link (content-compact-link, as={Link}), replacing MUI ListItemText and Typography. The Themes rows render 13px, hardcoded in DataTableLine.tsx; the library scale has 12px and 14px only, so the row title takes content-base.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows: the neutral `Default` chip shown while the bundled file is used. The `Custom` chip stays the Tools block's ItemBoolean, so both blocks show the same green chip.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
     }
   ]
 }
