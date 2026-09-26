@@ -31167,6 +31167,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_ip_whitelist_exclusions?: Maybe<Array<Member>>;
   platform_language?: Maybe<Scalars['String']['output']>;
   platform_login_message?: Maybe<Scalars['String']['output']>;
+  platform_map_countries_custom_file?: Maybe<MapCustomFile>;
   platform_map_custom_file?: Maybe<MapCustomFile>;
   /** @deprecated Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null. */
   platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
@@ -31215,6 +31216,7 @@ export type SettingsEditMutations = {
   __typename?: 'SettingsEditMutations';
   contextClean?: Maybe<Settings>;
   contextPatch?: Maybe<Settings>;
+  deleteCountriesCustomFile?: Maybe<Settings>;
   deleteMapCustomFile?: Maybe<Settings>;
   deleteMessage?: Maybe<Settings>;
   editMessage?: Maybe<Settings>;
@@ -31222,6 +31224,7 @@ export type SettingsEditMutations = {
   updateCertAuth?: Maybe<Settings>;
   updateHeaderAuth?: Maybe<Settings>;
   updateLocalAuth?: Maybe<Settings>;
+  uploadCountriesCustomFile?: Maybe<Settings>;
   uploadMapCustomFile?: Maybe<Settings>;
 };
 
@@ -31258,6 +31261,11 @@ export type SettingsEditMutationsUpdateHeaderAuthArgs = {
 
 export type SettingsEditMutationsUpdateLocalAuthArgs = {
   input: LocalAuthConfigInput;
+};
+
+
+export type SettingsEditMutationsUploadCountriesCustomFileArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -41384,7 +41392,7 @@ export type ResolversTypes = ResolversObject<{
   SendUserMailInput: SendUserMailInput;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
   Settings: ResolverTypeWrapper<Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversTypes['Member']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversTypes['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<ResolversTypes['Member']>>, platform_messages?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversTypes['Organization']>, platform_theme?: Maybe<ResolversTypes['Theme']> }>;
-  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']>, updateCertAuth?: Maybe<ResolversTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversTypes['Settings']>, updateLocalAuth?: Maybe<ResolversTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversTypes['Settings']> }>;
+  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteCountriesCustomFile' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadCountriesCustomFile' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteCountriesCustomFile?: Maybe<ResolversTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']>, updateCertAuth?: Maybe<ResolversTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversTypes['Settings']>, updateLocalAuth?: Maybe<ResolversTypes['Settings']>, uploadCountriesCustomFile?: Maybe<ResolversTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
   SmtpAuthType: SmtpAuthType;
@@ -42450,7 +42458,7 @@ export type ResolversParentTypes = ResolversObject<{
   SendUserMailInput: SendUserMailInput;
   SessionDetail: SessionDetail;
   Settings: Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversParentTypes['Member']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversParentTypes['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<ResolversParentTypes['Member']>>, platform_messages?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversParentTypes['Organization']>, platform_theme?: Maybe<ResolversParentTypes['Theme']> };
-  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']>, updateCertAuth?: Maybe<ResolversParentTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversParentTypes['Settings']>, updateLocalAuth?: Maybe<ResolversParentTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversParentTypes['Settings']> };
+  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteCountriesCustomFile' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadCountriesCustomFile' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteCountriesCustomFile?: Maybe<ResolversParentTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']>, updateCertAuth?: Maybe<ResolversParentTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversParentTypes['Settings']>, updateLocalAuth?: Maybe<ResolversParentTypes['Settings']>, uploadCountriesCustomFile?: Maybe<ResolversParentTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversParentTypes['Settings']> };
   SettingsMessage: Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversParentTypes['Member']>> };
   SettingsMessageInput: SettingsMessageInput;
   SmtpConfiguration: SmtpConfiguration;
@@ -51948,6 +51956,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_ip_whitelist_exclusions?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_map_countries_custom_file?: Resolver<Maybe<ResolversTypes['MapCustomFile']>, ParentType, ContextType>;
   platform_map_custom_file?: Resolver<Maybe<ResolversTypes['MapCustomFile']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51994,6 +52003,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
 export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettingsEditMutations'] = ResolversParentTypes['SettingsEditMutations']> = ResolversObject<{
   contextClean?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, Partial<SettingsEditMutationsContextPatchArgs>>;
+  deleteCountriesCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
   deleteMapCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
   deleteMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsDeleteMessageArgs, 'input'>>;
   editMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsEditMessageArgs, 'input'>>;
@@ -52001,6 +52011,7 @@ export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends
   updateCertAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateCertAuthArgs, 'input'>>;
   updateHeaderAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateHeaderAuthArgs, 'input'>>;
   updateLocalAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateLocalAuthArgs, 'input'>>;
+  uploadCountriesCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUploadCountriesCustomFileArgs, 'file'>>;
   uploadMapCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUploadMapCustomFileArgs, 'file'>>;
 }>;
 

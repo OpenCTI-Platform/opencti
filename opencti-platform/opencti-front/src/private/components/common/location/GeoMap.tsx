@@ -8,7 +8,7 @@ import Card from '@common/card/Card';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { isValidCoordinates } from '../../../../utils/position.utils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import allCountries from '../../../../static/geo/countries';
+import { loadCountries, type CountriesCollection } from './countries';
 
 // Configure MapLibre worker URL (must be set before creating any Map)
 maplibre.setWorkerUrl(maplibreglWorker);
@@ -134,6 +134,7 @@ const buildMapStyle = (pmtilesUrl: string, dark: boolean, lang: string): StyleSp
 
 const addCountryHighlights = (
   map: maplibre.Map,
+  allCountries: CountriesCollection,
   countries: MapCountry[],
   dark: boolean,
 ) => {
@@ -221,16 +222,23 @@ const GeoMap = ({
       canvasContextAttributes: { preserveDrawingBuffer: true },
     });
     map.scrollZoom.setWheelZoomRate(WHEEL_ZOOM_RATE);
-    map.on('load', () => {
-      if (countries && countries.length > 0) {
-        addCountryHighlights(map, countries, dark);
-      }
+
+    let released = false;
+    const highlighted = countries && countries.length > 0 ? countries : null;
+    const countriesData = highlighted ? loadCountries() : null;
+    map.on('load', async () => {
       if (markers && markers.length > 0) {
         addMarkers(map, markers);
+      }
+      if (highlighted && countriesData) {
+        const allCountries = await countriesData;
+        if (released) return;
+        addCountryHighlights(map, allCountries, highlighted, dark);
       }
     });
 
     return () => {
+      released = true;
       map.remove();
     };
   }, [dark, locale, center, countries, markers, zoom]);

@@ -1,10 +1,11 @@
 import { expect, it, describe } from 'vitest';
+import { gunzipSync } from 'node:zlib';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
 import { createUploadFromTestDataFile, queryAsAdmin, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
-import { downloadFileRange } from '../../../src/database/raw-file-storage';
+import { downloadFile, downloadFileRange } from '../../../src/database/raw-file-storage';
 import { USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 
 const ABOUT_QUERY = gql`
@@ -394,5 +395,129 @@ describe('Settings map source management', () => {
   it('should have no custom file after deletion', async () => {
     const queryResult = await queryAsAdmin({ query: MAP_SOURCE_SETTINGS_QUERY });
     expect(queryResult.data.settings.platform_map_custom_file).toBeNull();
+  });
+});
+
+describe('Settings countries source management', () => {
+  const COUNTRIES_SETTINGS_QUERY = gql`
+    query settings {
+      settings {
+        id
+        platform_map_countries_custom_file {
+          name
+          size
+        }
+      }
+    }
+  `;
+
+  const COUNTRIES_CUSTOM_FILE_UPLOAD = gql`
+    mutation SettingsCountriesCustomFileUpload($id: ID!, $file: Upload!) {
+      settingsEdit(id: $id) {
+        uploadCountriesCustomFile(file: $file) {
+          id
+          platform_map_countries_custom_file {
+            name
+            size
+          }
+        }
+      }
+    }
+  `;
+
+  const COUNTRIES_CUSTOM_FILE_DELETE = gql`
+    mutation SettingsCountriesCustomFileDelete($id: ID!) {
+      settingsEdit(id: $id) {
+        deleteCountriesCustomFile {
+          id
+          platform_map_countries_custom_file {
+            name
+            size
+          }
+        }
+      }
+    }
+  `;
+
+  const settingsId = async () => {
+    const queryResult = await queryAsAdmin({ query: COUNTRIES_SETTINGS_QUERY });
+    return queryResult.data.settings.id;
+  };
+
+  const uploadCountries = async (relativePath, fileName, mimetype) => {
+    const id = await settingsId();
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    const upload = await createUploadFromTestDataFile(relativePath, fileName, mimetype);
+    return queryAsAdmin({
+      query: COUNTRIES_CUSTOM_FILE_UPLOAD,
+      variables: { id, file: upload },
+    });
+  };
+
+  const storedContent = async () => {
+    const stream = await downloadFile('maps/countries.json.gz');
+    const chunks = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  };
+
+  it('should have no custom countries file initially', async () => {
+    const queryResult = await queryAsAdmin({ query: COUNTRIES_SETTINGS_QUERY });
+    expect(queryResult.data.settings.platform_map_countries_custom_file).toBeNull();
+  });
+
+  it('should upload a plain GeoJSON file and store it gzipped', async () => {
+    const queryResult = await uploadCountries('test-countries.json', 'test-countries.json', 'application/json');
+    expect(queryResult.errors).toBeUndefined();
+    const customFile = queryResult.data.settingsEdit.uploadCountriesCustomFile.platform_map_countries_custom_file;
+    expect(customFile).not.toBeNull();
+    expect(customFile.name).toEqual('test-countries.json');
+    expect(customFile.size).toBeGreaterThan(0);
+
+    const content = await storedContent();
+    expect(content[0]).toEqual(0x1f);
+    expect(content[1]).toEqual(0x8b);
+    const collection = JSON.parse(gunzipSync(content).toString('utf8'));
+    expect(collection.features.map((f) => f.properties.ISO3)).toEqual(['FRA', 'DEU']);
+  });
+
+  it('should accept an already gzipped file and store it gzipped once', async () => {
+    const queryResult = await uploadCountries('test-countries.json.gz', 'test-countries.json.gz', 'application/gzip');
+    expect(queryResult.errors).toBeUndefined();
+
+    const content = await storedContent();
+    const collection = JSON.parse(gunzipSync(content).toString('utf8'));
+    expect(collection.type).toEqual('FeatureCollection');
+    expect(collection.features.length).toEqual(2);
+  });
+
+  it('should reject a file whose features have no ISO3 property', async () => {
+    const queryResult = await uploadCountries('test-countries-invalid.json', 'test-countries-invalid.json', 'application/json');
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toContain('ISO3');
+  });
+
+  it('should reject a file that is not valid JSON', async () => {
+    const queryResult = await uploadCountries('test-map-file.pmtiles', 'test-map-file.pmtiles', 'application/octet-stream');
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toContain('not valid JSON');
+  });
+
+  it('should delete the S3 countries file', async () => {
+    const id = await settingsId();
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    const queryResult = await queryAsAdmin({
+      query: COUNTRIES_CUSTOM_FILE_DELETE,
+      variables: { id },
+    });
+    expect(queryResult.errors).toBeUndefined();
+    expect(queryResult.data.settingsEdit.deleteCountriesCustomFile.platform_map_countries_custom_file).toBeNull();
+  });
+
+  it('should have no custom countries file after deletion', async () => {
+    const queryResult = await queryAsAdmin({ query: COUNTRIES_SETTINGS_QUERY });
+    expect(queryResult.data.settings.platform_map_countries_custom_file).toBeNull();
   });
 });

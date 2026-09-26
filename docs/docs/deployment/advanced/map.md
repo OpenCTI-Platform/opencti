@@ -6,14 +6,18 @@ OpenCTI renders maps locally in the browser using vector tiles from a [PMTiles](
 
 ## How it works
 
-The platform serves map tiles from a backend endpoint (`/maps/world.pmtiles`) that supports HTTP Range requests. The browser fetches only the tile data it needs for the current viewport and zoom level.
+A map is drawn from two independent files.
 
-Two sources are available:
+The **tiles** carry the base map, served from a backend endpoint (`/maps/world.pmtiles`) that supports HTTP Range requests. The browser fetches only the tile data it needs for the current viewport and zoom level.
 
-- **Bundled** (default) — A PMTiles file shipped inside the Docker image.
-- **Custom** — A custom PMTiles file uploaded by an administrator and stored in the S3 bucket (Silo or any S3-compatible storage).
+The **country boundaries** are the polygons used to colour countries in map widgets, served as GeoJSON from `/maps/countries.json`.
 
-When a custom file has been uploaded, it is used; otherwise, the bundled file is used.
+Each file has two possible sources:
+
+- **Bundled** (default) — the file shipped inside the Docker image.
+- **Custom** — a file uploaded by an administrator and stored in the S3 bucket (Silo or any S3-compatible storage).
+
+When a custom file has been uploaded, it is used; otherwise, the bundled file is used. The two files are independent: replacing one does not replace the other.
 
 ## Default behavior
 
@@ -29,23 +33,42 @@ Administrators can upload a custom `.pmtiles` file to replace the bundled map da
 
 1. Obtain a `.pmtiles` file (see [PMTiles file sources](#pmtiles-file-sources) below).
 2. Go to **Settings > Parameters > Map configuration**.
-3. Click **Upload** to upload the file.
+3. Click **Upload** next to **Custom map**.
 
 The custom file is used immediately — no additional step required. It is stored in the S3 bucket; only one custom file can exist at a time, uploading a new file replaces the previous one.
 
 ### Reverting to the bundled map
 
-Click **Delete** in **Settings > Parameters > Map configuration**. The platform immediately falls back to the bundled file.
+Click **Delete** next to **Custom map** in **Settings > Parameters > Map configuration**. The platform immediately falls back to the bundled file.
+
+## Custom country boundaries
+
+The polygons used to colour countries in map widgets come from a GeoJSON file, separate from the tiles. Administrators can replace it the same way.
+
+### Uploading a custom boundaries file
+
+1. Prepare a GeoJSON `FeatureCollection`. Every feature must carry an `ISO3` property, which is how the platform matches a polygon to a country; `ISO2`, `NAME`, `LON` and `LAT` are also read. The file may be uploaded as plain GeoJSON or gzipped — the platform detects which and always stores it compressed.
+2. Go to **Settings > Parameters > Map configuration**.
+3. Click **Upload** next to **Custom country boundaries**.
+
+The file is validated on upload: a file that is not valid JSON, is not a `FeatureCollection`, or has a feature without an `ISO3` property is rejected and the previous file is kept.
+
+The bundled file is generated from the [Natural Earth](https://www.naturalearthdata.com/) `ne_10m_admin_0_countries` layer by `scripts/generate-countries-geojson.sh`, which can serve as a starting point for a custom one.
+
+### Reverting to the bundled boundaries
+
+Click **Delete** next to **Custom country boundaries**. The platform immediately falls back to the bundled file.
 
 ## Configuration
 
 | Parameter                 | Environment variable       | Default value                | Description                              |
 |:-------------------------|:--------------------------|:----------------------------|:----------------------------------------|
 | app:map_bundled_file_path | APP__MAP_BUNDLED_FILE_PATH | `./static/maps/world.pmtiles` | Path to the bundled PMTiles file on disk |
+| app:map_countries_bundled_file_path | APP__MAP_COUNTRIES_BUNDLED_FILE_PATH | `./static/maps/countries.json` | Path to the bundled country boundaries GeoJSON file on disk |
 
 Maps work out of the box with no configuration needed.
 
-The `map_bundled_file_path` parameter allows overriding the location of the bundled PMTiles file. This is mainly useful for development or custom Docker images.
+The `map_bundled_file_path` and `map_countries_bundled_file_path` parameters allow overriding the location of the bundled files. This is mainly useful for development or custom Docker images.
 
 ## PMTiles file sources
 
