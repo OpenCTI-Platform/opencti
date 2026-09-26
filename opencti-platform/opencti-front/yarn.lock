@@ -10563,9 +10563,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.11.0":
-  version: 6.11.0
-  resolution: "maplibre-gl@npm:6.11.0"
+"maplibre-gl@npm:6.11.1":
+  version: 6.11.1
+  resolution: "maplibre-gl@npm:6.11.1"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
@@ -10585,7 +10585,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10c0/9081c8326d27bb765e2a606485620286fd487413eebacbb3c5f8da9945e0e6c461fa2efbee323992b5198542b39ded0a3d67305fe6f1450eb957dcc28da27e2a
+  checksum: 10c0/14b83539722a7b069442c1f18db9e4f0902530386bd3867b53c4bb9938c972cd965f75ac70068dcdbd6cf5b63a099d70dc8e87f874b879ec93f55678f7661f4b
   languageName: node
   linkType: hard
 
@@ -12014,7 +12014,7 @@ __metadata:
     json5: "npm:2.2.3"
     knip: "npm:6.37.0"
     license-checker-rseidelsohn: "npm:5.0.1"
-    maplibre-gl: "npm:6.11.0"
+    maplibre-gl: "npm:6.11.1"
     markdown-to-jsx: "npm:9.10.3"
     marked: "npm:18.0.14"
     mdi-material-ui: "npm:7.9.4"
