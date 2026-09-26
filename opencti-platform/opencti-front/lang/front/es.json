@@ -568,6 +568,8 @@
   "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "Tenga cuidado, por favor defina algún filtro para su regla de exclusión, de lo contrario, ya que no se establecen filtros, cualquier indicador coincidirá con la regla y tendrá una regla de exclusión",
   "Be careful, you are about to delete the selected entities": "Tenga cuidado, está a punto de eliminar las entidades seleccionadas",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Tenga cuidado, está a punto de eliminar las entidades seleccionadas (no las relaciones)",
+  "Be careful, you are about to delete the selected relationships": "Tenga cuidado, está a punto de eliminar las relaciones seleccionadas",
+  "Be careful, you are about to remove the selected relationships from the container": "Tenga cuidado, está a punto de quitar las relaciones seleccionadas del contenedor",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Cuidado, está a punto de borrar los observables seleccionados (no las relaciones)",
   "Bearer token": "Token portador",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "Porque, por defecto, el borrador no incluirá las actualizaciones realizadas en la entidad tras la creación del entorno de trabajo.",

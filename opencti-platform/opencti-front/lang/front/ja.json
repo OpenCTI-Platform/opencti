@@ -568,6 +568,8 @@
   "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "さもないと、フィルターが設定されていないため、どのインジケーターもルールにマッチし、除外ルールを持つことになります。",
   "Be careful, you are about to delete the selected entities": "選択したエンティティを削除しようとしているので注意してください。",
   "Be careful, you are about to delete the selected entities (not the relationships)": "選択したエンティティを削除しようとしているので注意してください（リレーションシップではありません）。",
+  "Be careful, you are about to delete the selected relationships": "選択したリレーションシップを削除しようとしているので注意してください。",
+  "Be careful, you are about to remove the selected relationships from the container": "選択したリレーションシップをコンテナから削除しようとしているので注意してください。",
   "Be careful, you are about to delete the selected observables (not the relationships)": "注意してください、選択されたオブザーバブルを削除しようとしています(リレーションシップではありません)",
   "Bearer token": "ベアラートークン",
   "Because by default the draft won't include the updates made on the entity after the creation of the workbench.": "デフォルトでは、ワークベンチ作成後にエンティティに対して行われた更新内容は下書きに含まれないためです。",
