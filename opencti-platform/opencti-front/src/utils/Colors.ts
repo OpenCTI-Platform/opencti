@@ -331,6 +331,172 @@ export const isWashVisibleOn = (
   return dE >= MARKING_MIN_DELTA_E;
 };
 
+// The `#` is optional on the way in: the Chip's own parser accepts a bare `70d907`,
+// so a label already stored that way must keep rendering.
+const HEX_COLOR_REGEX = /^#?([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{3})$/;
+const CSS_NUMBER_SOURCE = '[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)';
+const RGB_COLOR_REGEX = new RegExp(
+  `^rgba?\\(\\s*(${CSS_NUMBER_SOURCE}%?)\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE}%?)\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE}%?)(?:\\s*[,/]\\s*(${CSS_NUMBER_SOURCE}%?))?\\s*\\)$`,
+  'i',
+);
+const HSL_COLOR_REGEX = new RegExp(
+  `^hsla?\\(\\s*(${CSS_NUMBER_SOURCE})(?:deg)?\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE})%\\s*[ ,]\\s*(${CSS_NUMBER_SOURCE})%(?:\\s*[,/]\\s*(${CSS_NUMBER_SOURCE}%?))?\\s*\\)$`,
+  'i',
+);
+
+const toHexPair = (value: number): string | null => {
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+  return Math.round(Math.min(255, Math.max(0, value)))
+    .toString(16)
+    .padStart(2, '0');
+};
+
+const rgbToHexColor = (r: number, g: number, b: number): string | null => {
+  const red = toHexPair(r);
+  const green = toHexPair(g);
+  const blue = toHexPair(b);
+  return red && green && blue ? `#${red}${green}${blue}` : null;
+};
+
+const parseFiniteNumber = (raw: string): number | null => {
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
+};
+
+const rgbChannel = (raw: string): number | null => {
+  const value = parseFiniteNumber(raw);
+  if (value === null) {
+    return null;
+  }
+  return raw.trim().endsWith('%') ? (value / 100) * 255 : value;
+};
+
+const hslToHexColor = (h: number, s: number, l: number): string | null => {
+  if (!Number.isFinite(h) || !Number.isFinite(s) || !Number.isFinite(l)) {
+    return null;
+  }
+  const saturation = Math.min(1, Math.max(0, s / 100));
+  const lightness = Math.min(1, Math.max(0, l / 100));
+  const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+  const sector = (((h % 360) + 360) % 360) / 60;
+  const second = chroma * (1 - Math.abs((sector % 2) - 1));
+  const [r, g, b] = [
+    [chroma, second, 0],
+    [second, chroma, 0],
+    [0, chroma, second],
+    [0, second, chroma],
+    [second, 0, chroma],
+    [chroma, 0, second],
+  ][Math.floor(sector) % 6];
+  const offset = lightness - chroma / 2;
+  return rgbToHexColor((r + offset) * 255, (g + offset) * 255, (b + offset) * 255);
+};
+
+const normalizeHexColor = (value: string): string | null => {
+  const match = HEX_COLOR_REGEX.exec(value.trim());
+  if (!match) {
+    return null;
+  }
+  const digits = match[1];
+  if (digits.length === 3 || digits.length === 4) {
+    const [r, g, b] = digits;
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return `#${digits.slice(0, 6)}`.toLowerCase();
+};
+
+const parseCanvasColor = (value: string): string | null => {
+  const normalizedHex = normalizeHexColor(value);
+  if (normalizedHex) {
+    return normalizedHex;
+  }
+  const rgbMatch = RGB_COLOR_REGEX.exec(value.trim());
+  if (rgbMatch) {
+    const red = rgbChannel(rgbMatch[1]);
+    const green = rgbChannel(rgbMatch[2]);
+    const blue = rgbChannel(rgbMatch[3]);
+    if (red === null || green === null || blue === null) {
+      return null;
+    }
+    if (rgbMatch[4] !== undefined && parseFiniteNumber(rgbMatch[4]) === null) {
+      return null;
+    }
+    return rgbToHexColor(red, green, blue);
+  }
+  const hslMatch = HSL_COLOR_REGEX.exec(value.trim());
+  if (hslMatch) {
+    const hue = parseFiniteNumber(hslMatch[1]);
+    const saturation = parseFiniteNumber(hslMatch[2]);
+    const lightness = parseFiniteNumber(hslMatch[3]);
+    if (hue === null || saturation === null || lightness === null) {
+      return null;
+    }
+    if (hslMatch[4] !== undefined && parseFiniteNumber(hslMatch[4]) === null) {
+      return null;
+    }
+    return hslToHexColor(hue, saturation, lightness);
+  }
+  return null;
+};
+
+let canvasContext: CanvasRenderingContext2D | null | undefined;
+let canvasGetContext: typeof HTMLCanvasElement.prototype.getContext | null = null;
+
+const getCanvasContext = (): CanvasRenderingContext2D | null => {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  try {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    if (canvasContext !== undefined && canvasGetContext === getContext) {
+      return canvasContext;
+    }
+    const context = document.createElement('canvas').getContext('2d');
+    canvasGetContext = getContext;
+    canvasContext = context;
+    return context;
+  } catch {
+    canvasGetContext = null;
+    canvasContext = null;
+    return null;
+  }
+};
+
+const CANVAS_SENTINELS = ['#010203', '#040506'];
+
+const normalizeCanvasColor = (color: string): string | null => {
+  const context = getCanvasContext();
+  if (!context) {
+    return null;
+  }
+  try {
+    for (const sentinel of CANVAS_SENTINELS) {
+      context.fillStyle = sentinel;
+      context.fillStyle = color;
+      const parsed = context.fillStyle;
+      if (parsed !== sentinel) {
+        return parseCanvasColor(parsed);
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+export const normalizeLabelColor = (color?: string | null): string | null => {
+  if (!color) {
+    return null;
+  }
+  const trimmed = color.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return normalizeHexColor(trimmed) ?? normalizeCanvasColor(trimmed);
+};
+
 export const hexToRGB = (hex?: string, transp: number = 0.1) => {
   if (!hex) return `rgb(${50}, ${50}, ${50}, ${transp})`;
   const r = parseInt(hex.slice(1, 3), 16);
