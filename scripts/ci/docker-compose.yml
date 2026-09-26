@@ -61,7 +61,7 @@ services:
   smtp:
     profiles: ["backend"]
     container_name: smtp
-    image: maildev/maildev:2.2.1
+    image: maildev/maildev:3.0.0
     restart: unless-stopped
     ports:
       - 1025:1025
