@@ -205,6 +205,12 @@ const setupAuthenticatedContext = (overrides: Record<string, unknown> = {}) => {
   vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: true } as any);
 };
 
+/** OpenCTI has no Enterprise Edition license of its own. */
+const withoutOwnLicense = () => {
+  vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: undefined } as any);
+  vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: false, license_source: 'OPENCTI_LICENSE' } as any);
+};
+
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe('httpChatbotProxy: postAgentMessageStream', () => {
@@ -242,6 +248,31 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: 'Chatbot is not enabled' });
+  });
+
+  it('should return 400 when the platform is not in Enterprise Edition', async () => {
+    withoutOwnLicense();
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    await postAgentMessageStream(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Chatbot is not enabled' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should accept the Enterprise Edition granted by a verified XTM license, without an OpenCTI license', async () => {
+    withoutOwnLicense();
+    vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: true, license_source: 'XTM_ONE_LICENSE' } as any);
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockPost.mockResolvedValue({ data: fakeStream });
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+    (req as any).on = vi.fn();
+    await postAgentMessageStream(req, res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    expect(fakeStream.pipe).toHaveBeenCalledWith(res);
   });
 
   it('should return 400 when agent_slug is missing', async () => {

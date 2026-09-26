@@ -165,6 +165,16 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | xtm:openaev_reject_unauthorized     | XTM__OPENAEV_REJECT_UNAUTHORIZED | false                   | Enable TLS certificate check                                                                                 |
 | xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
 | xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
+| xtm:xtm_one_url                     | XTM__XTM_ONE_URL                 | https://common.xtm1.filigran.io | XTM One URL                                                                                            |
+| xtm:xtm_one_token                   | XTM__XTM_ONE_TOKEN               |                         | XTM One registration token. With the URL, the platform registers with XTM One every 5 minutes                |
+
+!!! note "Enterprise Edition granted through XTM One"
+
+    When the XTM license installed on XTM One sub-licenses this platform (its identifier, or `global`), XTM One returns that Filigran-signed license with every registration. OpenCTI then runs in full Enterprise Edition, exactly as with an OpenCTI license, but only when the XTM license verifies against the XTM certificate authority embedded in OpenCTI and its dates are valid (90 days of grace after expiration, none for trial and ci licenses). It is checked again at every registration, every 5 minutes, and the platform returns to the Community Edition as soon as the license no longer grants it. The `ee_enabled` flag of the registration answer is never trusted on its own.
+
+    The **Settings > Filigran Experience** page shows where the Enterprise Edition comes from: the license source (OpenCTI license or XTM One license), the customer, the type and the dates of that license. An OpenCTI license takes precedence when both are valid, and is not affected by the XTM license. As for OpenCTI licenses, an LTS platform only accepts an `lts` or `ci` XTM license.
+
+    This requires an XTM One release returning the license at registration ([XTM One #3831](https://github.com/XTM-One-Platform/xtm-one/pull/3831)). **Upgrade XTM One first, then OpenCTI.** Against an older XTM One, the XTM license grants nothing and OpenCTI logs a warning asking for the XTM One upgrade.
  
 
 #### ElasticSearch

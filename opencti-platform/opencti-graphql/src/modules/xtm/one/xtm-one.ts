@@ -4,16 +4,24 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache } from '../../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
-import { decodeLicensePem, getEnterpriseEditionActivePem } from '../../settings/licensing';
-import { redisGetXtmRegistrationResult, redisSetXtmRegistrationResult } from '../../../database/redis';
+import { decodeLicensePem, getEnterpriseEditionActivePem, IS_LTS_PLATFORM } from '../../settings/licensing';
+import { publishCacheResetEvent, redisGetXtmRegistrationResult, redisSetXtmRegistrationResult } from '../../../database/redis';
 import xtmOneClient from './xtm-one-client';
 import type { XtmOneRegistrationResponse } from './xtm-one-client';
+import { buildXtmLicenseContext, getCurrentXtmLicenseProof, setCurrentXtmLicenseProof, verifyXtmLicenseProof } from './xtm-one-license';
+import type { XtmLicenseVerification } from './xtm-one-license';
 
 export const XTM_ONE_SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
 const XTM_REGISTRATION_RESULT_TTL = Math.ceil((XTM_ONE_SCHEDULE_TIME * 2) / 1000); // 2× schedule, in seconds
+const EE_SOURCE_XTM_SUBLICENSE = 'xtm_sublicense';
 
-export const getXtmRegistrationResult = async (): Promise<XtmOneRegistrationResponse | null> => {
-  return await redisGetXtmRegistrationResult() as Promise<XtmOneRegistrationResponse | null>;
+interface StoredXtmOneRegistration extends XtmOneRegistrationResponse {
+  // The warning this answer raised, so that the next heartbeat only logs a change of it.
+  xtm_one_entitlement_warning?: string | null;
+}
+
+export const getXtmRegistrationResult = async (): Promise<StoredXtmOneRegistration | null> => {
+  return await redisGetXtmRegistrationResult() as Promise<StoredXtmOneRegistration | null>;
 };
 
 export const getXtmOneRegistrationVersion = async (): Promise<string> => {
@@ -21,12 +29,67 @@ export const getXtmOneRegistrationVersion = async (): Promise<string> => {
   return result?.version ?? 'Not connected';
 };
 
+const getXtmOnePlatformId = (settings: BasicStoreSettings) => settings.internal_id || settings.id;
+
+const verifyXtmOneAnswer = (answer: XtmOneRegistrationResponse | null, settings: BasicStoreSettings) => {
+  return verifyXtmLicenseProof(answer?.xtm_license_pem, buildXtmLicenseContext(settings, IS_LTS_PLATFORM));
+};
+
+/**
+ * Load on this node the XTM license of the last registration answer: the proof the Enterprise Edition resolution
+ * (getEnterpriseEditionInfo) verifies again on every read. The ee_enabled and ee_sources of the answer are advisory
+ * and never grant anything.
+ */
+export const refreshXtmLicenseProof = async () => {
+  try {
+    const answer = await getXtmRegistrationResult();
+    setCurrentXtmLicenseProof(answer?.xtm_license_pem);
+  } catch (error) {
+    // Loading the settings must not fail with it: the proof read last is kept, and still verified on every read.
+    logApp.warn('[XTM One] Cannot read the XTM license of the last registration', { cause: error });
+  }
+};
+
+// The Enterprise Edition every node derives from the proof: when it changes, their settings caches are reset so that
+// every Enterprise Edition check follows, expiry included.
+let publishedXtmLicenseVerdict: string | undefined;
+const publishXtmLicenseVerdict = async (settings: BasicStoreSettings) => {
+  const verification = verifyXtmLicenseProof(getCurrentXtmLicenseProof(), buildXtmLicenseContext(settings, IS_LTS_PLATFORM));
+  const verdict = JSON.stringify([verification.granted, verification.licenseType, verification.validUntil, verification.certificate]);
+  if (verdict !== publishedXtmLicenseVerdict) {
+    publishedXtmLicenseVerdict = verdict;
+    await publishCacheResetEvent(ENTITY_TYPE_SETTINGS);
+  }
+};
+
+// Only an answer that claims the XTM sub-license path without proving it deserves a warning.
+const getXtmOneEntitlementWarning = (answer: XtmOneRegistrationResponse, verification: XtmLicenseVerification, isOwnLicenseValidated: boolean) => {
+  if (verification.granted) {
+    return undefined;
+  }
+  if (answer.xtm_license_pem) {
+    return `[XTM One] Enterprise Edition not granted by the XTM license: ${verification.reason}. Check the XTM license installed on XTM One`;
+  }
+  const eeSources = Array.isArray(answer.ee_sources) ? answer.ee_sources : undefined;
+  if (eeSources?.includes(EE_SOURCE_XTM_SUBLICENSE)) {
+    return '[XTM One] Enterprise Edition not granted by the XTM license: XTM One reports an XTM sub-license without the XTM license certificate proving it';
+  }
+  if (!eeSources && answer.ee_enabled === true && !isOwnLicenseValidated) {
+    return '[XTM One] Enterprise Edition not granted by the XTM license: XTM One reports Enterprise Edition without the Filigran-signed XTM license proving it. '
+      + 'Upgrade XTM One to a release returning the XTM license at registration (XTM-One-Platform/xtm-one#3831)';
+  }
+  return undefined;
+};
+
 /**
  * Register this OpenCTI instance with XTM One.
  *
  * Called on every tick by the XTM One registration manager.  The /register
  * endpoint is an upsert so repeated calls are safe and serve as both
- * initial registration and periodic heartbeat.
+ * initial registration and periodic heartbeat. Every answer replaces the
+ * XTM license the Enterprise Edition can be granted from: an answer without
+ * a proof ends it, an expired proof no longer grants it, and every node
+ * recomputes its Enterprise Edition when the outcome changes.
  *
  * Sends the business vertical and requested intents so that XTM One
  * returns the intent catalog with available agents.
@@ -54,16 +117,18 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     // license info not available — CE or invalid PEM
   }
 
+  const isOwnLicenseValidated = pem !== undefined && licenseType !== undefined;
+  const previousAnswer = await getXtmRegistrationResult();
+  const previousVerification = verifyXtmOneAnswer(previousAnswer, settings);
   const isChatbotUsable = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled
-    && pem !== undefined
-    && licenseType !== undefined;
+    && (isOwnLicenseValidated || previousVerification.granted);
 
   const result = await xtmOneClient.register({
     platform_identifier: 'opencti',
     platform_url: settings.platform_url || '',
     platform_title: settings.platform_title || 'OpenCTI Platform',
     platform_version: PLATFORM_VERSION,
-    platform_id: settings.internal_id || settings.id,
+    platform_id: getXtmOnePlatformId(settings),
     enterprise_license_pem: pem,
     license_type: licenseType,
     business_vertical: 'cti',
@@ -99,9 +164,26 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   });
 
   if (result) {
-    await redisSetXtmRegistrationResult(result, XTM_REGISTRATION_RESULT_TTL);
-    logApp.info('[XTM One] Registration successful', { status: result.status, ee_enabled: result.ee_enabled, version: result.version });
+    const verification = verifyXtmOneAnswer(result, settings);
+    const warning = getXtmOneEntitlementWarning(result, verification, isOwnLicenseValidated) ?? null;
+    const storedResult: StoredXtmOneRegistration = { ...result, xtm_one_entitlement_warning: warning };
+    await redisSetXtmRegistrationResult(storedResult, XTM_REGISTRATION_RESULT_TTL);
+    setCurrentXtmLicenseProof(result.xtm_license_pem);
+    logApp.info('[XTM One] Registration successful', {
+      status: result.status,
+      ee_enabled: result.ee_enabled,
+      ee_sources: result.ee_sources,
+      xtm_license_enterprise_edition: verification.granted,
+      version: result.version,
+    });
+    // Every heartbeat repeats the answer: its warning is logged when it changes, not every tick.
+    if (warning && warning !== previousAnswer?.xtm_one_entitlement_warning) {
+      logApp.warn(warning);
+    }
   } else {
     logApp.warn('[XTM One] Registration failed, will retry on next tick');
+    // The last answer is kept for its TTL: without a new one, the proof lapses with it.
+    await refreshXtmLicenseProof();
   }
+  await publishXtmLicenseVerdict(settings);
 };

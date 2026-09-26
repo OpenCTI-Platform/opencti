@@ -126,8 +126,9 @@ const generateBasicHeaders = async (req: Express.Request, context: AuthContext):
  * Authenticate the request and verify chatbot prerequisites (CGU + license).
  * Returns the authenticated context or null (response already sent in that case).
  *
- * When XTM One is configured, the license check is relaxed because XTM One
- * handles its own licensing validation during registration.
+ * The license is the Enterprise Edition of the platform (getEnterpriseEditionInfo):
+ * OpenCTI's own license or a verified XTM license, never the ee_enabled of the
+ * XTM One registration answer.
  */
 const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -138,9 +139,7 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 
   const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
   const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
-  const { pem } = getEnterpriseEditionActivePem(settings);
-  const licenseInfo = getEnterpriseEditionInfo(settings);
-  const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
+  const isLicenseValidated = getEnterpriseEditionInfo(settings).license_validated;
 
   if (!isChatbotCGUAccepted || !isLicenseValidated) {
     logApp.info('Chatbot not enabled', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated });

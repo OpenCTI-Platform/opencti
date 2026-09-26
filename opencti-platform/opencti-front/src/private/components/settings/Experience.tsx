@@ -26,6 +26,7 @@ import type { Theme } from '../../../components/Theme';
 import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
+import { isEnterpriseEditionFromXtmOne } from '../../../utils/hooks/useEnterpriseEdition';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -61,6 +62,7 @@ const ExperienceFragment = graphql`
       license_type
       license_creator
       license_global
+      license_source
     }
     platform_ai_enabled
     filigran_chatbot_ai_cgu_status
@@ -106,6 +108,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const enterpriseEdition = settings.platform_enterprise_edition;
   const isEnterpriseEditionActivated = enterpriseEdition.license_enterprise;
   const isEnterpriseEditionByConfig = enterpriseEdition.license_by_configuration;
+  const isEnterpriseEditionByXtmOne = isEnterpriseEditionFromXtmOne(enterpriseEdition);
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
@@ -167,16 +170,19 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     return <Tag label={t_i18n('Activated')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
   })();
 
+  // With the XTM One license there is no OpenCTI license to disable: an OpenCTI license can still be added, and wins.
   const eeActivatedFooter = !isEnterpriseEditionByConfig && isGrantedToParameters
     ? (
         <>
-          <DangerZoneButton
-            sensitiveType="ce_ee_toggle"
-            size="default"
-            onClick={() => setOpenEEChanges(true)}
-          >
-            {t_i18n('Disable Enterprise Edition')}
-          </DangerZoneButton>
+          {!isEnterpriseEditionByXtmOne && (
+            <DangerZoneButton
+              sensitiveType="ce_ee_toggle"
+              size="default"
+              onClick={() => setOpenEEChanges(true)}
+            >
+              {t_i18n('Disable Enterprise Edition')}
+            </DangerZoneButton>
+          )}
           <EnterpriseEditionButton inLine size="default" title="Update license" />
         </>
       )
@@ -198,6 +204,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
 
   const eeActivatedBody = (
     <div>
+      <ExperienceDetailRow label={t_i18n('License source')}>
+        <ItemBoolean
+          neutralLabel={isEnterpriseEditionByXtmOne ? t_i18n('XTM One license') : t_i18n('OpenCTI license')}
+          status={null}
+        />
+      </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Organization')}>
         <ItemBoolean
           neutralLabel={enterpriseEdition.license_customer}

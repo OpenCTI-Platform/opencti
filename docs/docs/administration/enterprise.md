@@ -20,6 +20,10 @@ Then you will need to put a valid OpenCTI EE license. If you don't have it, you 
 
 ![OpenCTI EE EULA](assets/enterprise-eula.png)
 
+### Enterprise Edition through XTM One
+
+When the platform is registered with XTM One and the XTM license installed on XTM One sub-licenses it, the Enterprise Edition is activated without an OpenCTI license: OpenCTI verifies that Filigran-signed XTM license itself at every registration. The settings page then shows **XTM One license** as the license source, with the customer, type and dates of the XTM license. An OpenCTI license, if you add one, takes precedence. See [XTM Suite configuration](../deployment/configuration.md#xtm-suite) for the requirements.
+
 As a reminder:
 
 - Filigran is the only company producing and providing OpenCTI Enterprise Edition license keys.
