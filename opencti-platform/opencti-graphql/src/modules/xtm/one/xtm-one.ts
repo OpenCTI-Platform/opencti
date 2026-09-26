@@ -15,8 +15,13 @@ export const XTM_ONE_SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
 const XTM_REGISTRATION_RESULT_TTL = Math.ceil((XTM_ONE_SCHEDULE_TIME * 2) / 1000); // 2× schedule, in seconds
 const EE_SOURCE_XTM_SUBLICENSE = 'xtm_sublicense';
 
-export const getXtmRegistrationResult = async (): Promise<XtmOneRegistrationResponse | null> => {
-  return await redisGetXtmRegistrationResult() as Promise<XtmOneRegistrationResponse | null>;
+interface StoredXtmOneRegistration extends XtmOneRegistrationResponse {
+  // The warning this answer raised, so that the next heartbeat only logs a change of it.
+  xtm_one_entitlement_warning?: string | null;
+}
+
+export const getXtmRegistrationResult = async (): Promise<StoredXtmOneRegistration | null> => {
+  return await redisGetXtmRegistrationResult() as Promise<StoredXtmOneRegistration | null>;
 };
 
 export const getXtmOneRegistrationVersion = async (): Promise<string> => {
@@ -147,8 +152,10 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   });
 
   if (result) {
-    await redisSetXtmRegistrationResult(result, XTM_REGISTRATION_RESULT_TTL);
     const verification = verifyXtmOneAnswer(result, settings);
+    const warning = getXtmOneEntitlementWarning(result, verification, isOwnLicenseValidated) ?? null;
+    const storedResult: StoredXtmOneRegistration = { ...result, xtm_one_entitlement_warning: warning };
+    await redisSetXtmRegistrationResult(storedResult, XTM_REGISTRATION_RESULT_TTL);
     logApp.info('[XTM One] Registration successful', {
       status: result.status,
       ee_enabled: result.ee_enabled,
@@ -156,10 +163,8 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       xtm_one_entitlement: verification.granted,
       version: result.version,
     });
-    const warning = getXtmOneEntitlementWarning(result, verification, isOwnLicenseValidated);
-    const previousWarning = previousAnswer ? getXtmOneEntitlementWarning(previousAnswer, previousVerification, isOwnLicenseValidated) : undefined;
     // Every heartbeat repeats the answer: its warning is logged when it changes, not every tick.
-    if (warning && warning !== previousWarning) {
+    if (warning && warning !== previousAnswer?.xtm_one_entitlement_warning) {
       logApp.warn(warning);
     }
   } else {

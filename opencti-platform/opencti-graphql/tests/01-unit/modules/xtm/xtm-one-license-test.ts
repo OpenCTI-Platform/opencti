@@ -54,6 +54,10 @@ describe('verifyXtmLicenseProof: the XTM license XTM One returns at registration
       expect(verify({ derStrings: true, openctiIds: [PLATFORM_ID] }).granted).toBe(true);
     });
 
+    it('from a sub-license list longer than a short DER length', () => {
+      expect(verify({ openctiIds: [...Array.from({ length: 9 }, (_, index) => `another-platform-${index}`), PLATFORM_ID] }).granted).toBe(true);
+    });
+
     it('from extension values surrounded by whitespace', () => {
       expect(verify({ product: ' filigran xtm\n', type: 'lts ', openctiIds: ` ["${PLATFORM_ID}"] ` }).granted).toBe(true);
     });
@@ -130,6 +134,16 @@ describe('verifyXtmLicenseProof: the XTM license XTM One returns at registration
 
     it.each(['["global"', '{"global": true}', '"global"', 'global'])('for a sub-license that is not a JSON list (%s)', (openctiIds) => {
       expect(verify({ openctiIds }).granted).toBe(false);
+    });
+
+    it('for extension values XTM One does not unwrap either: a long-form DER length or an empty DER string', () => {
+      // XTM One only skips a DER header whose one length byte covers the rest of the value: it would read no list
+      // here and never sub-license the platform, so granting it here would be granting what XTM One refuses.
+      const ids = JSON.stringify([...Array.from({ length: 9 }, (_, index) => `another-platform-${index}`), PLATFORM_ID]);
+      expect(ids.length).toBeGreaterThan(127);
+      const longFormList = { id: LICENSE_OID_XTM_OPENCTI_IDS, value: String.fromCharCode(0x0c, 0x81, ids.length) + ids };
+      expect(verify({ openctiIds: null, extraExtensions: [longFormList] }).granted).toBe(false);
+      expect(verify({ type: '\u000c\u0000' }).reason).toBe('the XTM license type is unknown');
     });
 
     it('for a license repeating an extension', () => {

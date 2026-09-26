@@ -307,6 +307,21 @@ describe('registerWithXtmOne: the XTM One entitlement', () => {
     expect(warnings()).toHaveLength(1);
   });
 
+  it('warns once the own license no longer explains the Enterprise Edition an older XTM One reports', async () => {
+    vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: 'own-pem', licenseByConfiguration: false });
+    vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: true, license_type: 'standard' } as any);
+    await heartbeat({ ee_enabled: true });
+    expect(logApp.warn).not.toHaveBeenCalled();
+
+    vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: undefined, licenseByConfiguration: false });
+    vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: false } as any);
+    await heartbeat({ ee_enabled: true });
+    await heartbeat({ ee_enabled: true });
+
+    expect(warnings()).toHaveLength(1);
+    expect(warnings()[0]).toContain('Upgrade XTM One to a release returning the XTM license');
+  });
+
   it('does not warn when the answer claims nothing through the XTM license', async () => {
     await heartbeat({ ee_enabled: false, ee_sources: [], xtm_license_pem: null });
     await heartbeat({ ee_enabled: true, ee_sources: ['platform_license'], xtm_license_pem: null });

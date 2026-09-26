@@ -35,7 +35,8 @@ const XTM_LICENSE_PRODUCT = 'filigran xtm';
 const XTM_LICENSE_GRACE_PERIOD = 90 * 24 * 60 * 60 * 1000;
 // One PEM certificate block and nothing else, as XTM One serialises it: no chain, no key, no header.
 const SINGLE_PEM_CERTIFICATE = /^-----BEGIN CERTIFICATE-----\r?\n[A-Za-z0-9+/=\r\n]+-----END CERTIFICATE-----$/;
-// UTF8String, PrintableString, IA5String and OCTET STRING: the DER wrappers XTM One unwraps from an extension value.
+// UTF8String, PrintableString, IA5String and OCTET STRING: the DER wrappers XTM One unwraps from an extension value,
+// only when their single length byte covers the rest of it. Reading a long-form length would grant what XTM One refuses.
 const DER_STRING_TAGS = [0x0c, 0x13, 0x16, 0x04];
 // RSASSA-PKCS1-v1_5 only, as XTM One verifies it, and never over a SHA-1 or MD5 digest.
 const SIGNATURE_DIGESTS = new Map<string, () => forge.md.MessageDigest>([
