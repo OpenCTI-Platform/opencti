@@ -41,6 +41,10 @@ import { type AgentOption, fetchAgentsForIntent } from './agentApi';
 import useAgentStream from './useAgentStream';
 
 // region types
+// `report`: the caller built the whole prompt itself (the Ask AI container
+// report), so it is sent as is.
+export type ResponseAgentAction = AgentAction | 'report';
+
 interface ResponseDialogProps {
   id: string;
   isOpen: boolean;
@@ -58,7 +62,7 @@ interface ResponseDialogProps {
   }[];
   agentMode?: {
     intent: string;
-    action: AgentAction;
+    action: ResponseAgentAction;
     inputContent: string;
     format: string;
   } | null;
@@ -73,7 +77,7 @@ const subscription = graphql`
 `;
 
 const buildPrompt = (
-  action: AgentAction,
+  action: ResponseAgentAction,
   inputContent: string,
   format: string,
   tone?: string,

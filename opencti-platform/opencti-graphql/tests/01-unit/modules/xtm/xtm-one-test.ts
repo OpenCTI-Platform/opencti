@@ -151,6 +151,9 @@ describe('registerWithXtmOne', () => {
     expect(callArgs.supports_approval_prompts).toBe(true);
     expect(callArgs.intents.length).toBeGreaterThan(0);
     expect(callArgs.intents.map((i: { name: string }) => i.name)).toContain('global.assistant');
+    // The Ask AI container report generation routes through this intent when
+    // XTM One is configured; without the declaration it would find no agent.
+    expect(callArgs.intents.map((i: { name: string }) => i.name)).toContain('cti.container_report');
   });
 
   it('should not advertise approval prompts when the chatbot is not usable', async () => {

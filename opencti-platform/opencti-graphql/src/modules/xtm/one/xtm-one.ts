@@ -152,6 +152,7 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'global.summarize', description: 'Summarize content' },
       { name: 'global.explain', description: 'Explain content in simple terms' },
       { name: 'cti.container_summary', description: 'Summarize an OpenCTI container (report, grouping, case)' },
+      { name: 'cti.container_report', description: 'Write a report from an OpenCTI container (report, grouping, case)' },
       { name: 'cti.containers_digest', description: 'Summarize containers related to an OpenCTI entity' },
       { name: 'cti.entity_activity', description: 'Analyse activity trends of an OpenCTI entity' },
       { name: 'cti.entity_forecast', description: 'Forecast future activity of an OpenCTI entity' },

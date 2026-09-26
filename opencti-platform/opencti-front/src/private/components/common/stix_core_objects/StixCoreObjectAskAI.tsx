@@ -27,7 +27,9 @@ import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCo
 import { stixCoreObjectMappableContentFieldPatchMutation } from './StixCoreObjectMappableContent';
 import FilesNativeField from '../form/FilesNativeField';
 import { useFormatter } from '../../../../components/i18n';
-import ResponseDialog from '../../../../utils/ai/ResponseDialog';
+import ResponseDialog, { type ResponseAgentAction } from '../../../../utils/ai/ResponseDialog';
+import { buildContainerReportPrompt, CONTAINER_REPORT_INTENT } from '../../../../utils/ai/containerReport';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveLink } from '../../../../utils/Entity';
 import useGranted, { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
@@ -100,6 +102,16 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [disableResponse, setDisableResponse] = useState(false);
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
+  const [agentMode, setAgentMode] = useState<{
+    intent: string;
+    action: ResponseAgentAction;
+    inputContent: string;
+    format: string;
+  } | null>(null);
+  // Same routing as AI Insights and the text tools: an XTM One agent when XTM
+  // One is configured, the legacy in-platform AI otherwise.
+  const { xtmOneConfigured } = useChatbot();
+  const useXtmOne = xtmOneConfigured === true;
 
   const action = 'container-report' as 'container-report' | 'summarize-files' | 'convert-files';
   const handleOpenAskAI = () => setDisplayAskAI(true);
@@ -114,9 +126,31 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
 
   const handleAskAiContent = () => {
     handleCloseOptions();
-    setDisableResponse(true);
     const id = uuid();
     setBusId(id);
+    if (useXtmOne) {
+      // ResponseDialog picks the agent bound to the intent and streams its answer.
+      setDisableResponse(false);
+      setContent('');
+      setAgentMode({
+        intent: CONTAINER_REPORT_INTENT,
+        action: 'report',
+        inputContent: buildContainerReportPrompt({
+          containerId: instanceId,
+          containerName: instanceName,
+          containerType: instanceType,
+          paragraphs,
+          tone,
+          format,
+          language,
+        }),
+        format,
+      });
+      handleOpenAskAI();
+      return;
+    }
+    setAgentMode(null);
+    setDisableResponse(true);
     handleOpenAskAI();
     commitMutationContainerReport({
       variables: {
@@ -395,6 +429,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           handleFollowUp={handleCloseAskAI}
           followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
           format={format}
+          agentMode={agentMode}
         />
       )}
     </>

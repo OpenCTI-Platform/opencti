@@ -18,6 +18,9 @@ vi.mock('../form/ObjectMarkingField', () => ({ default: () => null }));
 vi.mock('../form/FintelDesignField', () => ({ default: () => null }));
 vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => true }));
 vi.mock('../../../../utils/hooks/useAI', () => ({ default: () => ({ enabled: false, configured: false }) }));
+// A container's export menu mounts the Ask AI report dialog, which reads the
+// chatbot context the private app root provides.
+vi.mock('@components/chatbox/ChatbotContext', () => ({ useChatbot: () => ({ xtmOneConfigured: false }) }));
 
 const openExport = async (entityType = 'Report', fromContentShortcut = false) => {
   const onExportCompleted = vi.fn();
