@@ -20,39 +20,23 @@ import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
 import conf, { PLATFORM_VERSION } from '../../config/conf';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { PlatformEe } from '../../generated/graphql';
-
-const GLOBAL_LICENSE_OPTION = 'global';
-const LICENSE_TYPE_STANDARD = 'standard';
-const LICENSE_TYPE_NFR = 'nfr';
-const LICENSE_TYPE_TRIAL = 'trial';
-const LICENSE_TYPE_LTS = 'lts';
-const LICENSE_TYPE_CI = 'ci';
-const LICENSE_TYPES = [
-  LICENSE_TYPE_STANDARD,
-  LICENSE_TYPE_NFR,
-  LICENSE_TYPE_TRIAL,
-  LICENSE_TYPE_LTS,
+import {
+  computeCiLicenseExpirationDate,
+  getExtensionValue,
+  GLOBAL_LICENSE_OPTION,
+  LICENSE_LEGACY_CREATOR,
+  LICENSE_LEGACY_PRODUCT,
+  LICENSE_LEGACY_TYPE,
+  LICENSE_OID_CREATOR,
+  LICENSE_OID_PRODUCT,
+  LICENSE_OID_TYPE,
   LICENSE_TYPE_CI,
-];
+  LICENSE_TYPE_LTS,
+  LICENSE_TYPE_TRIAL,
+  LICENSE_TYPES,
+} from './license-certificate';
+
 export const IS_LTS_PLATFORM = PLATFORM_VERSION.includes('lts');
-
-// https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
-// 62944 - Filigran
-export const LICENSE_OID_TYPE = '1.3.6.1.4.1.62944.10';
-export const LICENSE_OID_PRODUCT = '1.3.6.1.4.1.62944.20';
-export const LICENSE_OID_CREATOR = '1.3.6.1.4.1.62944.30';
-// Legacy OIDs
-export const LICENSE_LEGACY_TYPE = '6.2.9.4.4.10';
-export const LICENSE_LEGACY_PRODUCT = '6.2.9.4.4.20';
-export const LICENSE_LEGACY_CREATOR = '6.2.9.4.4.30';
-
-const getExtensionValue = (clientCrt: forge.pki.Certificate, standardOid: string, legacyOid: string) => {
-  const extStandard = clientCrt.extensions.find((ext) => ext.id === standardOid);
-  if (extStandard) {
-    return extStandard.value;
-  }
-  return clientCrt.extensions.find((ext) => ext.id === legacyOid)?.value;
-};
 
 export const getEnterpriseEditionActivePem = (settings: BasicStoreSettings) => {
   const pemFromConfig: string | undefined = conf.get('app:enterprise_edition_license');
@@ -86,10 +70,7 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
       const license_expiration_date = clientCrt.validity.notAfter;
       if (license_type === LICENSE_TYPE_CI) {
         // settings.created_at is sometime a string...
-        const createdAt = new Date(settings.created_at);
-        const ciPlatformEndDate = new Date(createdAt.getTime() + 2700000);
-        const certEndDate = new Date(license_start_date.getTime() + 31536000000);
-        const expirationDate = ciPlatformEndDate < certEndDate ? ciPlatformEndDate : certEndDate;
+        const expirationDate = computeCiLicenseExpirationDate(new Date(settings.created_at), license_start_date);
         license_expiration_date.setTime(expirationDate.getTime());
       }
       const license_expired = currentDate > license_expiration_date || currentDate < license_start_date;

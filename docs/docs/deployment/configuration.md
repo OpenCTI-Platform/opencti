@@ -165,6 +165,14 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | xtm:openaev_reject_unauthorized     | XTM__OPENAEV_REJECT_UNAUTHORIZED | false                   | Enable TLS certificate check                                                                                 |
 | xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
 | xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
+| xtm:xtm_one_url                     | XTM__XTM_ONE_URL                 | https://common.xtm1.filigran.io | XTM One URL                                                                                            |
+| xtm:xtm_one_token                   | XTM__XTM_ONE_TOKEN               |                         | XTM One registration token. With the URL, the platform registers with XTM One every 5 minutes                |
+
+!!! note "Enterprise Edition granted through XTM One"
+
+    When the XTM license installed on XTM One sub-licenses this platform (its identifier, or `global`), XTM One returns that Filigran-signed license with every registration. OpenCTI grants the resulting XTM One entitlement only when the license verifies against the XTM certificate authority embedded in OpenCTI and its dates are valid, and checks it again at every registration. The `ee_enabled` flag of the registration answer is never trusted on its own. The API of the embedded AI assistant (Ask Ariane) accepts this entitlement as well as the OpenCTI Enterprise Edition license, which is not affected.
+
+    This requires an XTM One release returning the license at registration ([XTM One #3831](https://github.com/XTM-One-Platform/xtm-one/pull/3831)). **Upgrade XTM One first, then OpenCTI.** Against an older XTM One, OpenCTI does not grant the XTM One entitlement and logs a warning asking for the XTM One upgrade.
  
 
 #### ElasticSearch

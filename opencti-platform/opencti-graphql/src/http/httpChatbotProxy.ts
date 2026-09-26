@@ -12,6 +12,7 @@ import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
+import { isXtmOneEntitlementGranted } from '../modules/xtm/one/xtm-one';
 import { issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
@@ -126,8 +127,9 @@ const generateBasicHeaders = async (req: Express.Request, context: AuthContext):
  * Authenticate the request and verify chatbot prerequisites (CGU + license).
  * Returns the authenticated context or null (response already sent in that case).
  *
- * When XTM One is configured, the license check is relaxed because XTM One
- * handles its own licensing validation during registration.
+ * The license is OpenCTI's own Enterprise Edition license or the XTM One
+ * entitlement, which only a Filigran-signed XTM license verified against the
+ * pinned XTM CA grants, never the ee_enabled of the registration answer.
  */
 const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -140,7 +142,7 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
   const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
   const { pem } = getEnterpriseEditionActivePem(settings);
   const licenseInfo = getEnterpriseEditionInfo(settings);
-  const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
+  const isLicenseValidated = (pem !== undefined && licenseInfo.license_validated) || await isXtmOneEntitlementGranted(settings);
 
   if (!isChatbotCGUAccepted || !isLicenseValidated) {
     logApp.info('Chatbot not enabled', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated });
