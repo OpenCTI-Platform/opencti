@@ -695,6 +695,31 @@ const runBatchLoop = async () => {
     // retry-gap option 1: creations to RETAIN (pending intents) instead of rejecting, settled
     // after the apply phase, once persisted (a chunk ack must never outrun the recorded debt)
     const deferrals: { intent: SequencerIntent; absorbed: SequencerIntent[]; missing: string[]; err: unknown }[] = [];
+    // Every exit of the cycle settles the deferrals (liveness fix 2026-09-25): a cycle whose
+    // plan holds dead-member relations and nothing to apply used to `continue` before this
+    // block, so their promises never settled and their chunks were never acked (two chunks
+    // hung for 30 min on the full mix at apply_concurrency 8, once at 16 on mix140k).
+    const settleDeferrals = async () => {
+      if (deferrals.length === 0) return;
+      let retained = false;
+      try {
+        retained = await deferIntents(deferrals.map(({ intent, missing }) => ({ intent, missing })));
+      } catch (deferErr) {
+        logApp.error('[SEQUENCER] pending intents persistence failed, rejecting as today', { cause: deferErr });
+      }
+      deferrals.forEach(({ intent, absorbed, missing, err }) => {
+        const outcome = retained ? DeferredMissingReferenceError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }) : err;
+        sequencerMetrics.intent(retained ? 'retained' : 'failed', intent.kind);
+        intent.reject(outcome);
+        absorbed.forEach((a) => {
+          sequencerMetrics.intent(retained ? 'retained' : 'failed', a.kind);
+          a.reject(outcome);
+        });
+        // B10: a retained or failed producer will not land in this run: its waiters re-plan
+        lanes.wake(settledIds([intent, ...absorbed]), 'failed');
+      });
+      deferrals.length = 0;
+    };
     const hardRefIds = (intent: SequencerIntent): string[] => [intent.input.fromId, intent.input.toId]
       .filter((id): id is string => typeof id === 'string' && id.length > 0);
     const writtenIds: string[] = [];
@@ -825,6 +850,7 @@ const runBatchLoop = async () => {
       }
     });
     if (plan.order.length === 0) {
+      await settleDeferrals(); // dead-member retentions of a cycle with nothing to apply
       sequencerMetrics.batchCommitted(0);
       continue;
     }
@@ -842,6 +868,7 @@ const runBatchLoop = async () => {
           a.reject(err);
         });
       });
+      await settleDeferrals();
       continue;
     }
     setCurrentBatchLock({ heldKeys: new Set(lockKeys), signal: lock.signal, onMiss: recordLockMiss });
@@ -1017,25 +1044,7 @@ const runBatchLoop = async () => {
         // retry-gap option 1: persist the retained creations BEFORE their promises settle
         // (the chunk ack must never outrun the recorded debt); a store failure falls back to
         // today's rejection, visibly
-        if (deferrals.length > 0) {
-          let retained = false;
-          try {
-            retained = await deferIntents(deferrals.map(({ intent, missing }) => ({ intent, missing })));
-          } catch (deferErr) {
-            logApp.error('[SEQUENCER] pending intents persistence failed, rejecting as today', { cause: deferErr });
-          }
-          deferrals.forEach(({ intent, absorbed, missing, err }) => {
-            const outcome = retained ? DeferredMissingReferenceError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }) : err;
-            sequencerMetrics.intent(retained ? 'retained' : 'failed', intent.kind);
-            intent.reject(outcome);
-            absorbed.forEach((a) => {
-              sequencerMetrics.intent(retained ? 'retained' : 'failed', a.kind);
-              a.reject(outcome);
-            });
-            // B10: a retained or failed producer will not land in this run: its waiters re-plan
-            lanes.wake(settledIds([intent, ...absorbed]), 'failed');
-          });
-        }
+        await settleDeferrals();
         if (buffer.indexCalls.length > 0 || buffer.updateOps.length > 0) {
           const flushContext = executionContext('sequencer', SYSTEM_USER);
           await elFlushSequencerWrites(flushContext, SYSTEM_USER, buffer);
