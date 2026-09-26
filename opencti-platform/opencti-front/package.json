@@ -174,7 +174,7 @@
     "knip": "6.37.0",
     "license-checker-rseidelsohn": "5.0.1",
     "monocart-reporter": "2.13.1",
-    "pdfjs-dist": "5.4.296",
+    "pdfjs-dist": "6.3.289",
     "relay-compiler": "21.0.1",
     "relay-test-utils": "21.0.1",
     "typescript": "6.0.3",
