@@ -12,7 +12,7 @@ import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
-import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
+import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
 import { deleteNode, insertNode } from '../../../utils/store';
 import useWorkspaceHandleExportJson from './useWorkspaceHandleExportJson';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
@@ -75,9 +75,9 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
 
   const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
 
-  const updater = (store: RecordSourceSelectorProxy) => {
+  const updater = (store: RecordSourceSelectorProxy, mutationField: 'workspaceDuplicate' | 'investigationDuplicate') => {
     if (paginationOptions) {
-      insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
+      insertNode(store, 'Pagination_workspaces', paginationOptions, mutationField);
     }
   };
 
@@ -111,7 +111,7 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
     handleClose(event);
   };
 
-  const handleDashboardDuplication = (event: UIEvent) => {
+  const handleDuplication = (event: UIEvent) => {
     setDisplayDuplicate(true);
     handleClose(event);
   };
@@ -119,6 +119,8 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
   const handleCloseEdit = () => setDisplayEdit(false);
 
   const { canManage, canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
+  // TODO: In the canView duplication sub-issue, keep this popover available to investigation viewers.
+  // Retain each action's access and capability checks when relaxing this guard.
   if (!canEdit && type !== 'dashboard') {
     return <></>;
   }
@@ -174,7 +176,7 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
         {type === 'dashboard' && (
           <Box>
             <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
-              <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>
+              <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate')}</MenuItem>
             </Security>
             <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
               <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
@@ -193,9 +195,15 @@ const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) =>
           </Box>
         )}
         {type === 'investigation' && (
-          <Security needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          </Security>
+          <>
+            {/* TODO: In a separate sub-issue, use canView for duplication while retaining INVESTIGATION_INUPDATE. */}
+            <Security needs={[INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
+              <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate')}</MenuItem>
+            </Security>
+            <Security needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>
+              <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            </Security>
+          </>
         )}
       </Menu>
       <Drawer

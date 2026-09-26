@@ -14699,6 +14699,11 @@ export enum IntrusionSetsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type InvestigationDuplicateInput = {
+  id: Scalars['ID']['input'];
+  name: Scalars['String']['input'];
+};
+
 export type JsonAttributeBasedOn = {
   __typename?: 'JsonAttributeBasedOn';
   identifier?: Maybe<Array<Maybe<JsonIdentifier>>>;
@@ -17452,6 +17457,7 @@ export type Mutation = {
   ingestionTaxiiResetState?: Maybe<IngestionTaxii>;
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
+  investigationDuplicate?: Maybe<Workspace>;
   jsonMapperAdd?: Maybe<JsonMapper>;
   jsonMapperDelete?: Maybe<Scalars['ID']['output']>;
   jsonMapperFieldPatch?: Maybe<JsonMapper>;
@@ -18944,6 +18950,11 @@ export type MutationIntrusionSetAddArgs = {
 
 export type MutationIntrusionSetEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationInvestigationDuplicateArgs = {
+  input: InvestigationDuplicateInput;
 };
 
 
@@ -41029,6 +41040,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetEdge: ResolverTypeWrapper<Omit<IntrusionSetEdge, 'node'> & { node: ResolversTypes['IntrusionSet'] }>;
   IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
+  InvestigationDuplicateInput: InvestigationDuplicateInput;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
   JsonAttributeColumnConfiguration: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['JsonAttributeColumnConfiguration']>;
@@ -42138,6 +42150,7 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetConnection: Omit<IntrusionSetConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IntrusionSetEdge']>>> };
   IntrusionSetEdge: Omit<IntrusionSetEdge, 'node'> & { node: ResolversParentTypes['IntrusionSet'] };
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
+  InvestigationDuplicateInput: InvestigationDuplicateInput;
   JSON: Scalars['JSON']['output'];
   JsonAttributeBasedOn: JsonAttributeBasedOn;
   JsonAttributeColumnConfiguration: ResolversInterfaceTypes<ResolversParentTypes>['JsonAttributeColumnConfiguration'];
@@ -48875,6 +48888,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionTaxiiResetState?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiResetStateArgs, 'id'>>;
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
+  investigationDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationInvestigationDuplicateArgs, 'input'>>;
   jsonMapperAdd?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperAddArgs, 'input'>>;
   jsonMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationJsonMapperDeleteArgs, 'id'>>;
   jsonMapperFieldPatch?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperFieldPatchArgs, 'id' | 'input'>>;
