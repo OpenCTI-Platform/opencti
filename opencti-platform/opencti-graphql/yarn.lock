@@ -7900,7 +7900,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:6.2.2, graphql-ws@npm:^6.0.6":
+"graphql-ws@npm:6.3.0":
+  version: 6.3.0
+  resolution: "graphql-ws@npm:6.3.0"
+  peerDependencies:
+    "@fastify/websocket": ^10 || ^11
+    crossws: ~0.3 || ~0.4
+    graphql: ^15.10.1 || ^16 || ^17
+    ws: ^8
+  peerDependenciesMeta:
+    "@fastify/websocket":
+      optional: true
+    crossws:
+      optional: true
+    ws:
+      optional: true
+  checksum: 10c0/a4fee977feb9df0ab0cf293cdbbf3d623bc74ffdd959f77a3c69ab037e70988572962ec2bcafc41bb31cc3e0a134fb86750ca984a717ae3f0d293fc74b7cf2e9
+  languageName: node
+  linkType: hard
+
+"graphql-ws@npm:^6.0.6":
   version: 6.2.2
   resolution: "graphql-ws@npm:6.2.2"
   peerDependencies:
@@ -10407,7 +10426,7 @@ __metadata:
     graphql-subscriptions: "npm:3.0.0"
     graphql-tag: "npm:2.12.7"
     graphql-upload: "npm:18.0.0"
-    graphql-ws: "npm:6.2.2"
+    graphql-ws: "npm:6.3.0"
     helmet: "npm:8.3.0"
     http-proxy-agent: "npm:9.1.0"
     https-proxy-agent: "npm:9.1.0"
