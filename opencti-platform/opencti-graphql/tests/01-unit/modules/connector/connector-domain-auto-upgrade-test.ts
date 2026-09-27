@@ -197,6 +197,108 @@ describe('connector-domain auto-upgrade', () => {
     expect(mockPublishUserAction).toHaveBeenCalled();
   });
 
+  it('should upgrade a semantic version connector to rolling', async () => {
+    mockFindManagedConnectorsByCatalogId.mockResolvedValue([buildManagedConnector()]);
+    mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue({
+      ...latestCompatibleContract,
+      contract_version: 'rolling',
+      content_hash: 'rolling-hash',
+    });
+
+    const result = await autoUpgradeManagedConnectors(
+      { source: 'test' } as any,
+      { id: 'user-1' } as any,
+      ['catalog-1'],
+    );
+
+    expect(result).toEqual({ hasErrors: false });
+    expect(mockPatchAttribute).toHaveBeenCalled();
+    expect(mockPublishUserAction).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'upgrades connector to latest compatible version',
+    }));
+  });
+
+  it('should refresh a rolling connector when its contract content changes', async () => {
+    mockFindManagedConnectorsByCatalogId.mockResolvedValue([
+      buildManagedConnector({
+        manager_contract: {
+          slug: 'ipinfo',
+          contract_version: 'rolling',
+          content_hash: 'old-rolling-hash',
+        } as any,
+      }),
+    ]);
+    mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue({
+      ...latestCompatibleContract,
+      contract_version: 'rolling',
+      content_hash: 'new-rolling-hash',
+    });
+
+    const result = await autoUpgradeManagedConnectors(
+      { source: 'test' } as any,
+      { id: 'user-1' } as any,
+      ['catalog-1'],
+    );
+
+    expect(result).toEqual({ hasErrors: false });
+    expect(mockPatchAttribute).toHaveBeenCalled();
+    expect(mockPublishUserAction).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'upgrades connector to latest compatible identical version',
+    }));
+  });
+
+  it('should downgrade a rolling connector to a semantic version', async () => {
+    mockFindManagedConnectorsByCatalogId.mockResolvedValue([
+      buildManagedConnector({
+        manager_contract: {
+          slug: 'ipinfo',
+          contract_version: 'rolling',
+          content_hash: 'rolling-hash',
+        } as any,
+      }),
+    ]);
+    mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(latestCompatibleContract);
+
+    const result = await autoUpgradeManagedConnectors(
+      { source: 'test' } as any,
+      { id: 'user-1' } as any,
+      ['catalog-1'],
+    );
+
+    expect(result).toEqual({ hasErrors: false });
+    expect(mockPatchAttribute).toHaveBeenCalled();
+    expect(mockPublishUserAction).toHaveBeenCalledWith(expect.objectContaining({
+      message: 'downgrades connector to latest compatible version',
+    }));
+  });
+
+  it('should not refresh an unchanged rolling connector', async () => {
+    mockFindManagedConnectorsByCatalogId.mockResolvedValue([
+      buildManagedConnector({
+        manager_contract: {
+          slug: 'ipinfo',
+          contract_version: 'rolling',
+          content_hash: 'rolling-hash',
+        } as any,
+      }),
+    ]);
+    mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue({
+      ...latestCompatibleContract,
+      contract_version: 'rolling',
+      content_hash: 'rolling-hash',
+    });
+
+    const result = await autoUpgradeManagedConnectors(
+      { source: 'test' } as any,
+      { id: 'user-1' } as any,
+      ['catalog-1'],
+    );
+
+    expect(result).toEqual({ hasErrors: false });
+    expect(mockPatchAttribute).not.toHaveBeenCalled();
+    expect(mockPublishUserAction).not.toHaveBeenCalled();
+  });
+
   it('should skip patch when no compatible contract can be found', async () => {
     mockFindManagedConnectorsByCatalogId.mockResolvedValue([buildManagedConnector()]);
     mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(undefined);

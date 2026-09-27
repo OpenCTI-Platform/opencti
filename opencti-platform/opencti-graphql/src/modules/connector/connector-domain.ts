@@ -1,9 +1,9 @@
-import semver from 'semver';
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findLatestCompatibleCatalogContractBySlug } from '../catalog/catalog-repository';
 import { mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../catalog/catalog-domain';
+import { compareContractVersions } from '../catalog/catalog-version-utils';
 import { findManagedConnectorsByCatalogId } from './connector-repository';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { patchAttribute } from '../../database/middleware';
@@ -39,7 +39,8 @@ const autoUpgradeManagedConnector = async (
       });
       return true;
     }
-    if (semver.eq(contract_version, latestCompatibleContract.contract_version)
+    const versionComparison = compareContractVersions(contract_version, latestCompatibleContract.contract_version);
+    if (versionComparison === 0
       && content_hash === latestCompatibleContract.content_hash) {
       logApp.debug('[OPENCTI-MODULE] Managed connector already uses latest compatible version', {
         module: 'connector',
@@ -54,7 +55,7 @@ const autoUpgradeManagedConnector = async (
       manager_contract_image: latestCompatibleContract.image,
     };
     await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
-    if (semver.lt(contract_version, latestCompatibleContract.contract_version)) {
+    if (versionComparison < 0) {
       logApp.info('[OPENCTI-MODULE] Upgraded connector to latest compatible version', {
         module: 'connector',
         connectorId: managedConnector.id,
@@ -80,7 +81,7 @@ const autoUpgradeManagedConnector = async (
           },
         },
       });
-    } else if (semver.gt(contract_version, latestCompatibleContract.contract_version)) {
+    } else if (versionComparison > 0) {
       logApp.info('[OPENCTI-MODULE] Downgraded connector to latest compatible version', {
         module: 'connector',
         connectorId: managedConnector.id,
@@ -105,7 +106,7 @@ const autoUpgradeManagedConnector = async (
           },
         },
       });
-    } else if (semver.eq(contract_version, latestCompatibleContract.contract_version)) {
+    } else {
       // Shouldn't happen: either a Release issue or a logic/code error.
       logApp.warn('[OPENCTI-MODULE] Inconsistent connector data, same connector version with different contract content hash', {
         module: 'connector',
@@ -129,8 +130,6 @@ const autoUpgradeManagedConnector = async (
           },
         },
       });
-    } else {
-      throw new Error('Unexpected case when comparing connector contract versions');
     }
     return true;
   } catch (exception) {

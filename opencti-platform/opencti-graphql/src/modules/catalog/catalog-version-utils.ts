@@ -10,6 +10,8 @@ type CompatibilityOptions = {
   onUnparsableSupportVersion?: (args: { contractId: string; supportVersion: string; platformVersion: string }) => void;
 };
 
+const ROLLING_VERSION = 'rolling';
+
 export const parseCatalogSemver = (version: string | null | undefined) => {
   if (!version) {
     return null;
@@ -47,22 +49,35 @@ export const isSupportVersionCompatible = (
   return semver.lte(contractVersion, parsedPlatformVersion);
 };
 
+export const compareContractVersions = (left: string, right: string) => {
+  if (left === right) {
+    return 0;
+  }
+  if (left === ROLLING_VERSION) {
+    return 1;
+  }
+  if (right === ROLLING_VERSION) {
+    return -1;
+  }
+  const leftVersion = parseCatalogSemver(left);
+  const rightVersion = parseCatalogSemver(right);
+  if (leftVersion && rightVersion) {
+    return semver.compare(leftVersion, rightVersion);
+  }
+  if (leftVersion) {
+    return 1;
+  }
+  if (rightVersion) {
+    return -1;
+  }
+  return left.localeCompare(right, undefined, { numeric: true, sensitivity: 'base' });
+};
+
 export const compareContractVersionDesc = (
   left: ContractVersionContract,
   right: ContractVersionContract,
 ) => {
-  const leftVersion = parseCatalogSemver(left.contract_version);
-  const rightVersion = parseCatalogSemver(right.contract_version);
-  if (leftVersion && rightVersion) {
-    return semver.rcompare(leftVersion, rightVersion);
-  }
-  if (leftVersion) {
-    return -1;
-  }
-  if (rightVersion) {
-    return 1;
-  }
-  return right.contract_version.localeCompare(left.contract_version, undefined, { numeric: true, sensitivity: 'base' });
+  return -compareContractVersions(left.contract_version, right.contract_version);
 };
 
 export const filterAndSortLatestCompatibleContracts = (
