@@ -185,7 +185,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@graphql-codegen/cli": "7.4.2",
+    "@graphql-codegen/cli": "7.4.3",
     "@graphql-codegen/introspection": "6.1.0",
     "@graphql-codegen/typescript": "6.1.0",
     "@graphql-codegen/typescript-resolvers": "6.1.0",
@@ -228,7 +228,7 @@
     "node-gyp-build": "4.8.4",
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.1",
-    "vite": "8.3.0",
+    "vite": "8.3.1",
     "vitest": "5.0.1"
   },
   "resolutions": {
