@@ -447,7 +447,6 @@ export const synchronizeCatalogs = async (
     filigranCatalogRemoteUri,
   });
   const syncedCatalogs: string[] = [];
-  const syncedCatalogsWithChanges: string[] = [];
   // Sync catalogs from sources
   for (const source of sources) {
     let result = await synchronizeCatalog(context, user, source, options);
@@ -464,14 +463,11 @@ export const synchronizeCatalogs = async (
     }
     if (!result.error) {
       syncedCatalogs.push(result.catalogId);
-      if (result.synced) {
-        syncedCatalogsWithChanges.push(result.catalogId);
-      }
     }
   };
   // Cleanup obsolete catalogs only if no sync failed
   if (syncedCatalogs.length === sources.length) {
     await cleanupObsoleteCatalogs(context, syncedCatalogs);
   }
-  return syncedCatalogsWithChanges;
+  return syncedCatalogs;
 };
