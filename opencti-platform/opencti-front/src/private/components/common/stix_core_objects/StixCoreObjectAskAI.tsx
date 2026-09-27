@@ -30,9 +30,11 @@ import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog, { type ResponseAgentAction } from '../../../../utils/ai/ResponseDialog';
 import { buildContainerReportPrompt, CONTAINER_REPORT_FORMAT, CONTAINER_REPORT_INTENT } from '../../../../utils/ai/containerReport';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
+import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveLink } from '../../../../utils/Entity';
-import useGranted, { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPLOAD, SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import useAI from '../../../../utils/hooks/useAI';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { aiLanguage } from '../../../../components/AppIntlProvider';
@@ -87,6 +89,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+  const { fullyActive } = useAI();
   const defaultLanguageName = getDefaultAiLanguage();
 
   const [language, setLanguage] = useState(defaultLanguageName);
@@ -102,6 +106,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [disableResponse, setDisableResponse] = useState(false);
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
+  const [displayCGUDialog, setDisplayCGUDialog] = useState(false);
   const [agentMode, setAgentMode] = useState<{
     intent: string;
     action: ResponseAgentAction;
@@ -112,6 +117,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   // One is configured, the legacy in-platform AI otherwise.
   const { xtmOneConfigured } = useChatbot();
   const useXtmOne = xtmOneConfigured === true;
+  // The chatbot routes refuse every call until the Filigran AI terms are
+  // accepted, so no agent could be listed.
+  const isCGUStatusPending = useXtmOne && !fullyActive;
 
   const action = 'container-report' as 'container-report' | 'summarize-files' | 'convert-files';
   // The XTM One agent answers in HTML, so no other format is offered there.
@@ -178,6 +186,14 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   };
 
   const handleAskAi = () => {
+    if (isCGUStatusPending) {
+      if (isAdmin) {
+        setDisplayCGUDialog(true);
+      } else {
+        MESSAGING$.notifyError(t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.'));
+      }
+      return;
+    }
     // check paragraphs value is correct
     if (action === 'container-report' || action === 'summarize-files') {
       if (Number.isNaN(paragraphs)) {
@@ -438,6 +454,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           format={format}
           agentMode={agentMode}
         />
+      )}
+      {displayCGUDialog && (
+        <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
       )}
     </>
   );

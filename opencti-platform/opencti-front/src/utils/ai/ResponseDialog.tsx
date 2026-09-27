@@ -30,7 +30,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
-import { isNotEmptyField } from '../utils';
+import { cleanHtmlTags, isNotEmptyField } from '../utils';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import type { AgentAction } from '../../private/components/common/form/TextFieldAskAI';
 // Circular dependency is intentional: TextFieldAskAI opens ResponseDialog,
@@ -125,8 +125,12 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | null>(null);
   const [loadingAgents, setLoadingAgents] = useState(false);
-  // Agent streaming hook
-  const { content: streamContent, loading: agentLoading, error: agentError, execute: executeStream, abort: abortStream } = useAgentStream();
+  // Agent streaming hook. A report lands in the container content as is, so the
+  // code fences or document wrappers a model may add are dropped, as the legacy
+  // report mutation and AI Insights do.
+  const { content: streamContent, loading: agentLoading, error: agentError, execute: executeStream, abort: abortStream } = useAgentStream(
+    agentMode?.action === 'report' ? { transformContent: cleanHtmlTags } : undefined,
+  );
 
   // Sync streamed content to parent's setContent
   useEffect(() => {
@@ -238,6 +242,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 
   const effectiveDisabled = isDisabled || agentLoading;
   const noAgents = agentMode && !loadingAgents && agentOptions.length === 0;
+  // Accepting before the agent answered would hand an empty result to the
+  // caller, which replaces its content with it.
+  const noAgentResult = !!agentMode && !content.trim();
 
   // ── Title ─────────────────────────────────────────────────────────────
 
@@ -451,7 +458,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           </Button>
           {isAcceptable && (
             <Button
-              disabled={effectiveDisabled || !!agentError || !!noAgents}
+              disabled={effectiveDisabled || !!agentError || !!noAgents || noAgentResult}
               onClick={() => handleAccept(content)}
             >
               {t_i18n('Accept')}
