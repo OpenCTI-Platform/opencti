@@ -46,10 +46,20 @@ import type { AuthContext, AuthUser } from '../../types/user';
 const queue = new SequencerQueue();
 let loopStarted = false;
 let loopDead = false;
+// Resolved once the loop can take intents: its stores are initialised (batch mode) or it runs
+// (pass-through), or it died (fail open). The chunk intake manager awaits it before consuming
+// (startup race 2026-09-24: a retention written while initPendingIntents was still creating
+// its index auto-created a mis-mapped index, the init threw and the loop died).
+let loopReadyResolve: () => void = () => {};
+const loopReady = new Promise<void>((resolve) => {
+  loopReadyResolve = resolve;
+});
 let deferSamples = 0; // P2 diagnosis: bounded defer-refusal sampling
 let strippedSamples = 0; // s9.10.2: bounded dead-soft-strip sampling
 let missingInBatchSamples = 0; // written-index probe: bounded sampling of refs produced in the batch
+let stripSamples = 0; // strip probe (2026-09-24): bounded sampling of soft refs stripped at apply
 let lockMissSamples = 0; // fix 2026-09-22: bounded sampling of lock keys outside the batch lock
+let failedFallthroughSamples = 0; // probe 2026-09-24: bounded sampling of missing refs failed without retention
 
 // fix 2026-09-22 instrumentation: a key an apply-time lock site asked for and the batch lock did
 // not hold; counted by kind (the STIX-like prefix before "--", or "internal" for a bare id)
@@ -70,15 +80,51 @@ const FAILED_PRODUCER_DEFER_LIMIT = 2;
 
 export const isSequencerLoopAlive = () => loopStarted && !loopDead;
 
+// stall probe (2026-09-25): where an intent stands from the loop's point of view, for the chunk
+// manager's watchdog (apply_concurrency 16 left two chunk operations unsettled with no lock held)
+type LoopSnapshot = {
+  batchIds: Set<string>;
+  parkedIds: Set<string>;
+  carriedIds: Set<string>;
+  parked: number;
+  batch: number;
+  lanes: number;
+  hasLaneResident: (id: string) => boolean;
+};
+let loopSnapshot: (() => LoopSnapshot) | null = null;
+export type IntentLocation = 'queued' | 'lane' | 'parked' | 'in_batch' | 'carried' | 'unknown';
+export const describeIntentLocation = (ids: string[]): IntentLocation => {
+  if (ids.some((id) => queue.hasCandidate(id))) return 'queued';
+  const snapshot = loopSnapshot?.();
+  if (snapshot) {
+    if (ids.some((id) => snapshot.hasLaneResident(id))) return 'lane';
+    if (ids.some((id) => snapshot.parkedIds.has(id))) return 'parked';
+    if (ids.some((id) => snapshot.batchIds.has(id))) return 'in_batch';
+    if (ids.some((id) => snapshot.carriedIds.has(id))) return 'carried';
+  }
+  return 'unknown';
+};
+export const sequencerLoopGauges = () => {
+  const snapshot = loopSnapshot?.();
+  return { alive: isSequencerLoopAlive(), queue: queue.size(), lanes: snapshot?.lanes ?? 0, parked: snapshot?.parked ?? 0, batch: snapshot?.batch ?? 0 };
+};
+
 // storeLoadByIdsWithRefs lives in middleware.ts, which imports this module: the loader is
 // registered by middleware at module init instead of imported (no cycle).
 type WithRefsLoader = (context: AuthContext, user: AuthUser, ids: string[]) => Promise<any[]>;
 type DedupLoader = (context: AuthContext, input: Record<string, any>, inputIds: string[]) => Promise<any[]>;
+type DedupManyLoader = (context: AuthContext, jobs: { input: Record<string, any>; inputIds: string[] }[], maxConcurrentSearches: number) => Promise<(any[] | null)[]>;
 let withRefsLoader: WithRefsLoader | null = null;
 let dedupLoader: DedupLoader | null = null;
-export const registerSequencerLoaders = (loaders: { storeLoadByIdsWithRefs: WithRefsLoader; searchExistingRelations?: DedupLoader }) => {
+let dedupManyLoader: DedupManyLoader | null = null;
+export const registerSequencerLoaders = (loaders: {
+  storeLoadByIdsWithRefs: WithRefsLoader;
+  searchExistingRelations?: DedupLoader;
+  searchExistingRelationsMany?: DedupManyLoader;
+}) => {
   withRefsLoader = loaders.storeLoadByIdsWithRefs;
   dedupLoader = loaders.searchExistingRelations ?? null;
+  dedupManyLoader = loaders.searchExistingRelationsMany ?? null;
 };
 
 // s10.3 rung 1: relation-dedup prefetch. At pre-resolve, every relation intent whose
@@ -89,7 +135,15 @@ export const registerSequencerLoaders = (loaders: { storeLoadByIdsWithRefs: With
 // takeSequencerDedupPrefetch and only trusts it if its own input ids are a subset of the
 // prefetched ones (rename-at-resolution safety). Cleared at every batch boundary.
 const dedupPrefetch = new Map<string, { inputIds: Set<string>; existing: any[] }>();
-const DEDUP_PREFETCH_CONCURRENCY = 8;
+// dedup key probe (2026-09-25): from|to|type of every prefetched entry, to split an apply-time
+// key miss into "an entry exists for these endpoints but the key differs" (dates / creator
+// normalisation) and "no entry at all" (the prefetch skipped this relation)
+const dedupPrefetchEndpoints = new Set<string>();
+const dedupEndpointsOf = (key: string) => key.split('|').slice(0, 3).join('|');
+const setDedupPrefetch = (key: string, entry: { inputIds: Set<string>; existing: any[] }) => {
+  dedupPrefetch.set(key, entry);
+  dedupPrefetchEndpoints.add(dedupEndpointsOf(key));
+};
 
 export const sequencerDedupPrefetchKey = (fromInternalId: string, toInternalId: string, input: Record<string, any>, createdByInternalId?: string | null): string => {
   const dates = ['start_time', 'stop_time', 'first_seen', 'last_seen'].map((k) => String(input[k] ?? '')).join('|');
@@ -109,7 +163,10 @@ export const takeSequencerDedupPrefetch = (key: string, applyInputIds: string[])
   const entry = dedupPrefetch.get(key);
   if (!entry) {
     // s10.3.2 diagnosis: distinguish a key miss from a subset rejection
-    if (dedupPrefetch.size > 0) sequencerMetrics.searchCaller('relation_dedup_miss_key');
+    if (dedupPrefetch.size > 0) {
+      sequencerMetrics.searchCaller('relation_dedup_miss_key');
+      sequencerMetrics.searchCaller(dedupPrefetchEndpoints.has(dedupEndpointsOf(key)) ? 'relation_dedup_miss_key_diff' : 'relation_dedup_miss_no_entry');
+    }
     return null;
   }
   if (!applyInputIds.every((id) => entry.inputIds.has(id))) {
@@ -183,6 +240,19 @@ const collectBatchResolveIds = (batch: SequencerIntent[]) => {
 // end-of-batch clears), and any entry made stale by the running batch is removed right
 // after by its evict(writtenIds). Reads happen pre-refresh: an entity the running batch
 // is creating resolves as a miss here and simply re-resolves next cycle (defer path).
+// Bounded search packets (preresolve_ids_per_search): N ids per search, one search at a time,
+// so the engine load of a batch's resolution does not grow with the batch cap.
+const inPackets = async <T>(ids: string[], run: (packet: string[]) => Promise<T[]>): Promise<T[]> => {
+  const size = SEQUENCER_CONFIG.preresolveIdsPerSearch;
+  if (size <= 0 || ids.length <= size) return run(ids);
+  const results: T[] = [];
+  for (let i = 0; i < ids.length; i += size) {
+    const packet = await run(ids.slice(i, i + size));
+    packet.forEach((item) => results.push(item));
+  }
+  return results;
+};
+
 const warmResolveAhead = async (batch: SequencerIntent[]) => {
   const t0 = Date.now();
   const context = executionContext('sequencer', SYSTEM_USER);
@@ -198,13 +268,13 @@ const warmResolveAhead = async (batch: SequencerIntent[]) => {
     });
   });
   if (typedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes), searchCaller: 'sequencer_resolve_ahead' }) as any[];
+    const hits = await inPackets(typedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { type: Array.from(typedTypes), searchCaller: 'sequencer_resolve_ahead' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
   }
   const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
   if (untypedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses, { searchCaller: 'sequencer_resolve_ahead' }) as any[];
+    const hits = await inPackets(untypedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_resolve_ahead' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
   }
@@ -214,7 +284,8 @@ const warmResolveAhead = async (batch: SequencerIntent[]) => {
       if (sequencerIdentityMap.hasBare(id)) targetIds.add(id);
     });
     if (targetIds.size > 0) {
-      const loaded = await withRefsLoader(context, SYSTEM_USER, Array.from(targetIds));
+      const loader = withRefsLoader;
+      const loaded = await inPackets(Array.from(targetIds), (packet) => loader(context, SYSTEM_USER, packet));
       loaded.forEach((element) => sequencerIdentityMap.ingestWithRefs(element));
       sequencerMetrics.esOp('search', 3);
     }
@@ -228,6 +299,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
   sequencerIdentityMap.clearAbsent();
   dedupPrefetch.clear();
+  dedupPrefetchEndpoints.clear();
   const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
   const typedMisses: string[] = [];
   const typedTypes = new Set<string>();
@@ -241,7 +313,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   });
   const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
   if (typedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, typedMisses, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as any[];
+    const hits = await inPackets(typedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
     // s10.3: probed under the type union and not found = known absent for any query whose
@@ -249,7 +321,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
     sequencerIdentityMap.markAbsent(typedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), Array.from(typedTypes));
   }
   if (untypedMisses.length > 0) {
-    const hits = await elFindByIds(context, SYSTEM_USER, untypedMisses, { searchCaller: 'sequencer_preresolve' }) as any[];
+    const hits = await inPackets(untypedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
     // probed with no type filter = unconditionally absent
@@ -262,14 +334,16 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       if (sequencerIdentityMap.hasBare(id)) targetIds.add(id);
     });
     if (targetIds.size > 0) {
-      const loaded = await withRefsLoader(context, SYSTEM_USER, Array.from(targetIds));
+      const loader = withRefsLoader;
+      const loaded = await inPackets(Array.from(targetIds), (packet) => loader(context, SYSTEM_USER, packet));
       loaded.forEach((element) => sequencerIdentityMap.ingestWithRefs(element));
       sequencerMetrics.esOp('search', 3); // element + meta rels + their targets
     }
   }
   // step 3 (s10.3 rung 1): dedup prefetch for the batch's relation intents (see header note)
   if (dedupLoader) {
-    const jobs: { key: string; inputIds: string[]; run: () => Promise<any[]> }[] = [];
+    const jobs: { key: string; inputIds: string[]; input: Record<string, any>; run: () => Promise<any[]> }[] = [];
+    let batchOwnIds: Set<string> | null = null;
     batch.forEach((intent) => {
       if (intent.kind !== 'relation') return;
       const { fromId, toId, createdBy } = intent.input;
@@ -290,10 +364,19 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
         || (!toElement && sequencerIdentityMap.isKnownAbsent(toId, null));
       if (endpointAbsent) {
         // an endpoint absent at batch start cannot carry a pre-existing duplicate
-        dedupPrefetch.set(key, { inputIds: new Set(intent.candidateIds), existing: [] });
+        setDedupPrefetch(key, { inputIds: new Set(intent.candidateIds), existing: [] });
         return;
       }
-      if (!fromElement || !toElement) return; // endpoint not resolved yet: live query at apply
+      if (!fromElement || !toElement) {
+        // endpoint not resolved yet: live query at apply. Probe (2026-09-25): is the missing
+        // endpoint produced by an intent of this very batch (a creation, so no pre-existing
+        // relation can reference it), or unknown here?
+        const own = batchOwnIds ?? new Set<string>(batch.flatMap((i) => intentOwnIds(i)));
+        batchOwnIds = own;
+        const missing = [fromElement ? null : fromId, toElement ? null : toId].filter((id): id is string => id !== null);
+        sequencerMetrics.searchCaller(missing.every((id) => own.has(id)) ? 'relation_dedup_skip_inbatch' : 'relation_dedup_skip_unresolved');
+        return;
+      }
       // entity_type is REQUIRED: without it getInputIds throws in generateAliasesId and the
       // catch below silently keeps candidateIds, defeating the whole union (s10.3.3 diagnosis:
       // 50/50 sampled subset rejections were missing ONLY the regenerated relationship
@@ -309,10 +392,23 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       } catch {
         // underspecified input: keep candidateIds; the subset check will fall back live
       }
-      jobs.push({ key, inputIds, run: () => (dedupLoader as DedupLoader)(context, dedupInput, inputIds) });
+      jobs.push({ key, inputIds, input: dedupInput, run: () => (dedupLoader as DedupLoader)(context, dedupInput, inputIds) });
     });
-    for (let i = 0; i < jobs.length; i += DEDUP_PREFETCH_CONCURRENCY) {
-      const slice = jobs.slice(i, i + DEDUP_PREFETCH_CONCURRENCY);
+    // msearch form (dedup_prefetch_msearch, 2026-09-25): the batch's dedup queries in packets of
+    // dedup_prefetch_msearch_size per engine round trip, dedup_prefetch_concurrency of them run
+    // at once by the engine; a query answered null keeps the live query at apply
+    const manyLoader = SEQUENCER_CONFIG.dedupPrefetchMsearch ? dedupManyLoader : null;
+    for (let i = 0; manyLoader && i < jobs.length; i += SEQUENCER_CONFIG.dedupPrefetchMsearchSize) {
+      const slice = jobs.slice(i, i + SEQUENCER_CONFIG.dedupPrefetchMsearchSize);
+      // prefetch is an optimization: on failure the live query at apply remains
+      const results: (any[] | null)[] = await manyLoader(context, slice.map((job) => ({ input: job.input, inputIds: job.inputIds })), SEQUENCER_CONFIG.dedupPrefetchConcurrency)
+        .catch(() => []);
+      results.forEach((existing, j) => {
+        if (existing) setDedupPrefetch(slice[j].key, { inputIds: new Set(slice[j].inputIds), existing });
+      });
+    }
+    for (let i = 0; !manyLoader && i < jobs.length; i += SEQUENCER_CONFIG.dedupPrefetchConcurrency) {
+      const slice = jobs.slice(i, i + SEQUENCER_CONFIG.dedupPrefetchConcurrency);
       const results = await Promise.all(slice.map(async (job) => {
         try {
           return await job.run();
@@ -321,7 +417,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
         }
       }));
       results.forEach((existing, j) => {
-        if (existing) dedupPrefetch.set(slice[j].key, { inputIds: new Set(slice[j].inputIds), existing });
+        if (existing) setDedupPrefetch(slice[j].key, { inputIds: new Set(slice[j].inputIds), existing });
       });
     }
   }
@@ -340,6 +436,20 @@ const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKey
     return element ? getInstanceIds(element) : null;
   },
   (id) => sequencerIdentityMap.resolveInternalId(id),
+  // increment 2026-09-24: the relation's own ids, computable when both endpoints are in the map
+  // (same construction as the dedup prefetch: entity_type is required by getInputIds)
+  (leader) => {
+    const { fromId, toId, relationship_type: relationshipType } = leader.input;
+    if (typeof fromId !== 'string' || typeof toId !== 'string' || typeof relationshipType !== 'string') return null;
+    const from = sequencerIdentityMap.peekBare(fromId);
+    const to = sequencerIdentityMap.peekBare(toId);
+    if (!from || !to) return null;
+    try {
+      return getInputIds(relationshipType, { ...leader.input, entity_type: relationshipType, from, to }, false);
+    } catch {
+      return null; // underspecified input: the apply-time lock site takes its real lock as today
+    }
+  },
 );
 
 interface ParkedIntent {
@@ -357,6 +467,10 @@ interface PendingResolution {
   result: any;
 }
 
+// strip probe (2026-09-24): a soft reference stripped during an apply (inputResolveRefs could
+// not resolve it) or at plan time (member dead), handed to the loop for origin classification
+type StripProbeInput = { targetRef: string; relType: string; ownerType: string; phase: 'apply' | 'plan' };
+
 const applyGroup = async (
   group: CoalesceGroup,
   writtenIds: string[],
@@ -364,6 +478,7 @@ const applyGroup = async (
   strippedInputs: StrippedRefInput[],
   onFailure: (group: CoalesceGroup, err: unknown) => void,
   recordPhase = true,
+  onStripped?: (strip: StripProbeInput) => void,
 ): Promise<boolean> => {
   const { leader, absorbed } = group;
   const t0 = Date.now();
@@ -395,14 +510,17 @@ const applyGroup = async (
       // s9.12.3 strip-and-reconcile: refs stripped during THIS apply (pushed into the
       // sink by inputResolveRefs) become pending-ref inputs, persisted with the batch at
       // flush time so the debt commits with the accepted write.
-      stripSink.forEach((s) => strippedInputs.push({
-        ownerId: element.internal_id,
-        ownerType: element.entity_type,
-        relType: s.relType,
-        targetRef: s.targetRef,
-        userId: leader.user.id,
-        user: leader.user,
-      }));
+      stripSink.forEach((s) => {
+        strippedInputs.push({
+          ownerId: element.internal_id,
+          ownerType: element.entity_type,
+          relType: s.relType,
+          targetRef: s.targetRef,
+          userId: leader.user.id,
+          user: leader.user,
+        });
+        onStripped?.({ targetRef: s.targetRef, relType: s.relType, ownerType: element.entity_type, phase: 'apply' });
+      });
       // Verdict 31 fix: plan-time member-dead strips (s9.10.2) feed the SAME pending
       // store. The member was declared dead on a bounded wait, but a late member DOES
       // land (proven: this was the dominant estate loss family), and the commit-time
@@ -420,6 +538,7 @@ const applyGroup = async (
               userId: intent.user.id,
               user: intent.user,
             });
+            onStripped?.({ targetRef: refId, relType: ref.databaseName, ownerType: element.entity_type, phase: 'plan' });
           } else {
             logApp.warn('[SEQUENCER] dead-stripped ref without relation mapping, not recorded', {
               type: element.entity_type, inputKey, refId,
@@ -471,6 +590,7 @@ const runBatchLoop = async () => {
   });
   await initPendingIntents();
   logApp.info('[SEQUENCER] batch loop started');
+  loopReadyResolve();
   // Deferral lanes, RESIDUAL since P2 merge-fold (plan 0009 s9.7): same-target different-input
   // ENTITY writes now chain within one batch (each step diffing against the predecessor's
   // in-memory result), so the lanes only carry the non-foldable rest: relations, writes on a
@@ -495,12 +615,23 @@ const runBatchLoop = async () => {
   // resolve-ahead: intents grabbed from the queue during the previous batch's commit,
   // their identity-map entries already warmed; they enter this cycle's batch first-class
   let carried: SequencerIntent[] = [];
+  let currentBatch: SequencerIntent[] = [];
+  loopSnapshot = () => ({
+    batchIds: new Set(currentBatch.flatMap((i) => intentOwnIds(i))),
+    parkedIds: new Set(parked.flatMap((p) => intentOwnIds(p.intent))),
+    carriedIds: new Set(carried.flatMap((i) => intentOwnIds(i))),
+    parked: parked.length,
+    batch: currentBatch.length,
+    lanes: lanes.size(),
+    hasLaneResident: (id: string) => lanes.hasResident(id),
+  });
   for (;;) {
     // 1. assemble: one deferred intent per target lane first; when nothing at all is
     // pending, wait for an arrival or the nearest parking deadline (never re-plan a pure
     // parked set in a tight loop); then the parked intents (they re-plan each cycle) and a
     // drain of the queue.
     const batch: SequencerIntent[] = [];
+    currentBatch = batch;
     const admission = lanes.admit(laneAdmitCap);
     admission.intents.forEach((intent) => batch.push(intent));
     const exhaustedIds = new Set(admission.exhausted.map((i) => i.id));
@@ -548,6 +679,7 @@ const runBatchLoop = async () => {
     sequencerMetrics.queueDepth(queue.size());
     // 2. pre-resolve (optimization: on failure the batch still applies through ES)
     try {
+      sequencerIdentityMap.beginBatch(Date.now());
       await preResolveBatch(batch);
     } catch (err) {
       logApp.error('[SEQUENCER] batch pre-resolution failed, applying without it', { cause: err });
@@ -563,6 +695,31 @@ const runBatchLoop = async () => {
     // retry-gap option 1: creations to RETAIN (pending intents) instead of rejecting, settled
     // after the apply phase, once persisted (a chunk ack must never outrun the recorded debt)
     const deferrals: { intent: SequencerIntent; absorbed: SequencerIntent[]; missing: string[]; err: unknown }[] = [];
+    // Every exit of the cycle settles the deferrals (liveness fix 2026-09-25): a cycle whose
+    // plan holds dead-member relations and nothing to apply used to `continue` before this
+    // block, so their promises never settled and their chunks were never acked (two chunks
+    // hung for 30 min on the full mix at apply_concurrency 8, once at 16 on mix140k).
+    const settleDeferrals = async () => {
+      if (deferrals.length === 0) return;
+      let retained = false;
+      try {
+        retained = await deferIntents(deferrals.map(({ intent, missing }) => ({ intent, missing })));
+      } catch (deferErr) {
+        logApp.error('[SEQUENCER] pending intents persistence failed, rejecting as today', { cause: deferErr });
+      }
+      deferrals.forEach(({ intent, absorbed, missing, err }) => {
+        const outcome = retained ? DeferredMissingReferenceError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }) : err;
+        sequencerMetrics.intent(retained ? 'retained' : 'failed', intent.kind);
+        intent.reject(outcome);
+        absorbed.forEach((a) => {
+          sequencerMetrics.intent(retained ? 'retained' : 'failed', a.kind);
+          a.reject(outcome);
+        });
+        // B10: a retained or failed producer will not land in this run: its waiters re-plan
+        lanes.wake(settledIds([intent, ...absorbed]), 'failed');
+      });
+      deferrals.length = 0;
+    };
     const hardRefIds = (intent: SequencerIntent): string[] => [intent.input.fromId, intent.input.toId]
       .filter((id): id is string => typeof id === 'string' && id.length > 0);
     const writtenIds: string[] = [];
@@ -572,7 +729,7 @@ const runBatchLoop = async () => {
     // in_batch: the producer is co-batched but not applied yet, or failed; outside: not in
     // this batch at all. Says whether a batch-local written index has anything to close.
     let batchOwnIds: Set<string> | null = null;
-    const classifyMissing = (missing: string[], outcome: 'parked' | 'deferred' | 'failed' | 'final') => {
+    const classifyMissing = (missing: string[], outcome: 'parked' | 'deferred' | 'failed' | 'final' | 'stripped') => {
       const own = batchOwnIds ?? new Set<string>(plan.order.flatMap((g) => [g.leader, ...g.absorbed].flatMap((i) => intentOwnIds(i))));
       batchOwnIds = own;
       const written = new Set(writtenIds);
@@ -585,6 +742,28 @@ const runBatchLoop = async () => {
           missingInBatchSamples += 1;
           logApp.info('[SEQUENCER] missing reference produced in this batch', { id, origin, outcome });
         }
+      });
+    };
+    // strip probe (2026-09-24): the single wave per chunk left ~90 soft refs stripped at apply on
+    // MITRE (course-of-action -> pre-created labels, producer in the same batch) that the written
+    // index does not close. Same origin classes as above, plus the discriminators of the moment:
+    // is the target written in this batch, still in the map, resolvable, co-batched, queued, in a lane.
+    const probeStripped = (strip: StripProbeInput) => {
+      classifyMissing([strip.targetRef], 'stripped');
+      if (stripSamples >= 40) return;
+      stripSamples += 1;
+      const own = batchOwnIds ?? new Set<string>();
+      logApp.info('[SEQUENCER] soft reference stripped', {
+        target: strip.targetRef,
+        relType: strip.relType,
+        ownerType: strip.ownerType,
+        phase: strip.phase,
+        written: writtenIds.includes(strip.targetRef),
+        inMap: sequencerIdentityMap.peekBare(strip.targetRef) !== null,
+        resolvable: sequencerIdentityMap.resolveInternalId(strip.targetRef) !== null,
+        inBatch: own.has(strip.targetRef),
+        queued: queue.hasCandidate(strip.targetRef),
+        inLane: lanes.hasResident(strip.targetRef),
       });
     };
     const t0 = Date.now();
@@ -671,6 +850,7 @@ const runBatchLoop = async () => {
       }
     });
     if (plan.order.length === 0) {
+      await settleDeferrals(); // dead-member retentions of a cycle with nothing to apply
       sequencerMetrics.batchCommitted(0);
       continue;
     }
@@ -688,6 +868,7 @@ const runBatchLoop = async () => {
           a.reject(err);
         });
       });
+      await settleDeferrals();
       continue;
     }
     setCurrentBatchLock({ heldKeys: new Set(lockKeys), signal: lock.signal, onMiss: recordLockMiss });
@@ -727,7 +908,24 @@ const runBatchLoop = async () => {
         deferrals.push({ intent: leader, absorbed, missing, err });
         return;
       }
-      if (isMissingRef) classifyMissing(missingIds(), 'failed');
+      if (isMissingRef) {
+        classifyMissing(missingIds(), 'failed');
+        // probe 2026-09-24: a MISSING_REFERENCE that reaches this fall-through on a caller
+        // with retention should not exist (the branch above retains it); sample the flags
+        if (failedFallthroughSamples < 20) {
+          failedFallthroughSamples += 1;
+          logApp.info('[SEQUENCER] missing reference failed without retention', {
+            kind: leader.kind,
+            type: leader.type,
+            source: leader.source,
+            forceDirect: forceDirect.has(leader.id),
+            deferMissingRefs: leader.context?.deferMissingRefs ?? null,
+            accepting: pendingIntentsAccepting(),
+            retry: leader.user?.origin?.call_retry_number ?? null,
+            missing: missingIds().slice(0, 3),
+          });
+        }
+      }
       sequencerMetrics.intent('failed', leader.kind);
       leader.reject(err);
       // absorbed asserted the same input on the same target: they fail identically today
@@ -782,7 +980,7 @@ const runBatchLoop = async () => {
           }
           onApplyFailure(g, err);
         };
-        const ok = await applyGroup(group, writtenIds, pendings, strippedInputs, onFailure, applyConcurrency <= 1);
+        const ok = await applyGroup(group, writtenIds, pendings, strippedInputs, onFailure, applyConcurrency <= 1, probeStripped);
         if (!ok) failedAt[i] = true;
       };
       if (applyConcurrency <= 1) {
@@ -846,25 +1044,7 @@ const runBatchLoop = async () => {
         // retry-gap option 1: persist the retained creations BEFORE their promises settle
         // (the chunk ack must never outrun the recorded debt); a store failure falls back to
         // today's rejection, visibly
-        if (deferrals.length > 0) {
-          let retained = false;
-          try {
-            retained = await deferIntents(deferrals.map(({ intent, missing }) => ({ intent, missing })));
-          } catch (deferErr) {
-            logApp.error('[SEQUENCER] pending intents persistence failed, rejecting as today', { cause: deferErr });
-          }
-          deferrals.forEach(({ intent, absorbed, missing, err }) => {
-            const outcome = retained ? DeferredMissingReferenceError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' }) : err;
-            sequencerMetrics.intent(retained ? 'retained' : 'failed', intent.kind);
-            intent.reject(outcome);
-            absorbed.forEach((a) => {
-              sequencerMetrics.intent(retained ? 'retained' : 'failed', a.kind);
-              a.reject(outcome);
-            });
-            // B10: a retained or failed producer will not land in this run: its waiters re-plan
-            lanes.wake(settledIds([intent, ...absorbed]), 'failed');
-          });
-        }
+        await settleDeferrals();
         if (buffer.indexCalls.length > 0 || buffer.updateOps.length > 0) {
           const flushContext = executionContext('sequencer', SYSTEM_USER);
           await elFlushSequencerWrites(flushContext, SYSTEM_USER, buffer);
@@ -936,6 +1116,7 @@ const runBatchLoop = async () => {
 
 const runPassthroughLoop = async () => {
   logApp.info('[SEQUENCER] pass-through loop started');
+  loopReadyResolve();
   for (;;) {
     const intent = await queue.take();
     sequencerMetrics.queueWait((Date.now() - intent.arrivedAt) / 1000);
@@ -961,7 +1142,22 @@ const ensureLoop = () => {
     // every later submit takes the direct path, ingestion continues without the sequencer.
     loopDead = true;
     logApp.error('[SEQUENCER] loop died, failing open to the direct path', { cause: err });
+    // The intents already queued would wait forever for a loop that is gone (2026-09-24: 8
+    // chunks never acked): they take the direct path too.
+    for (let stranded = queue.tryPop(); stranded; stranded = queue.tryPop()) {
+      const intent = stranded;
+      sequencerMetrics.intent('bypassed', intent.kind);
+      intent.apply().then((result) => intent.resolve(result), (applyErr) => intent.reject(applyErr));
+    }
+    loopReadyResolve();
   });
+};
+
+// Starts the loop now instead of at the first submitted intent, and resolves once it can take
+// intents (see loopReady).
+export const startSequencerLoop = (): Promise<void> => {
+  ensureLoop();
+  return loopReady;
 };
 
 interface SubmitArgs {

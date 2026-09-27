@@ -241,8 +241,8 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(plan.finalMissing).toEqual([]);
   });
 
-  it('waits a bounded number of passes for a declared member not yet seen, then rejects final (member dead)', () => {
-    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+  it('waits a bounded number of passes for a declared member not yet seen, then rejects final (member dead) when the caller has retention', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']), context: { deferMissingRefs: true } });
     const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
     const opts = { queueHas: () => false, memberWaitLimit: 2 };
     const p1 = buildBatchPlan([rel], resolve, new Set(), opts);
@@ -301,13 +301,23 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(note.referencedIds).toEqual(['report--r']);
   });
 
-  it('a dead HARD member ref (relation endpoint) still rejects final, no strip (s9.10.2)', () => {
-    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+  it('a dead HARD member ref (relation endpoint) rejects final when the caller has retention, no strip (s9.10.2)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']), context: { deferMissingRefs: true } });
     rel.memberWaitAttempts = 2; // bounded wait already exhausted
     const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
     const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
     expect(plan.strippedDead).toEqual([]);
     expect(plan.finalMissing).toEqual([{ intent: rel, missing: ['software--s'] }]);
+  });
+
+  it('a dead HARD member ref PARKS instead of final when the caller has no retention (B16, 2026-09-24)', () => {
+    const rel = intentOf({ kind: 'relation', input: { fromId: 'malware--m', toId: 'software--s' }, candidateIds: [], memberRefIds: new Set(['software--s']) });
+    rel.memberWaitAttempts = 2;
+    const resolve = (id: string) => (id === 'malware--m' ? 'intM' : null);
+    const plan = buildBatchPlan([rel], resolve, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
+    expect(plan.finalMissing).toEqual([]);
+    expect(plan.order).toEqual([]);
+    expect(plan.parked).toEqual([{ intent: rel, missing: ['software--s'] }]);
   });
 
   it('exposes producer positions as dependsOn in the order (s9.9 failure-aware execution)', () => {
@@ -369,5 +379,39 @@ describe('sequencer batch plan: relation endpoints with intake-shaped candidate 
     const plan = buildBatchPlan([r1, r2], (id) => (id.startsWith('identity--') ? `int-${id}` : null), new Set(), { queueHas: () => false });
     expect(plan.order).toEqual([]);
     expect(plan.parked.map((p) => p.intent)).toEqual([r1, r2]);
+  });
+});
+
+describe('auto-created references with a producer in flight (single wave, 2026-09-24)', () => {
+  const resolveNone = () => null;
+
+  it('waits for a queued label producer instead of assuming an auto-create at apply', () => {
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'] });
+    const plan = buildBatchPlan([coa], resolveNone, new Set(), { queueHas: (id) => id === 'label--nist' });
+    expect(plan.order).toEqual([]);
+    expect(plan.deferred).toEqual([{ intent: coa, reason: 'queued_producer', waitingOn: ['label--nist'] }]);
+  });
+
+  it('waits a bounded number of passes for a label declared as an in-chunk member', () => {
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'], memberRefIds: new Set(['label--nist']) });
+    const plan = buildBatchPlan([coa], resolveNone, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
+    expect(plan.order).toEqual([]);
+    expect(plan.deferred).toEqual([{ intent: coa, reason: 'member_wait' }]);
+  });
+
+  it('keeps the auto-create assumption for a label nobody has in flight', () => {
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'] });
+    const plan = buildBatchPlan([coa], resolveNone, new Set(), { queueHas: () => false });
+    expect(plan.order.length).toBe(1);
+    expect(plan.deferred).toEqual([]);
+    expect(plan.parked).toEqual([]);
+  });
+
+  it('orders a consumer after its co-batched label producer', () => {
+    const label = intentOf({ kind: 'entity', type: 'Label', input: { value: 'nist' }, candidateIds: ['label--nist'] });
+    const coa = intentOf({ kind: 'entity', type: 'Course-Of-Action', input: { name: 'M1', objectLabel: ['label--nist'] }, candidateIds: ['course-of-action--m1'], referencedIds: ['label--nist'] });
+    const plan = buildBatchPlan([coa, label], resolveNone, new Set(), { queueHas: () => false });
+    expect(plan.order.map((g) => g.leader)).toEqual([label, coa]);
+    expect(plan.deferred).toEqual([]);
   });
 });

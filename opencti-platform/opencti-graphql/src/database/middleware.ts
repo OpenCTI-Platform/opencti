@@ -62,7 +62,9 @@ import {
   elIndexElements,
   elList,
   elMarkElementsAsDraftDelete,
+  computeQueryIndices,
   elPaginate,
+  elPaginateMany,
   elUpdateElement,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
@@ -198,6 +200,7 @@ import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
+  buildRelationsFilter,
   buildThingsFilters,
   type EntityFilters,
   type EntityOptions,
@@ -630,6 +633,7 @@ registerSequencerLoaders({
   storeLoadByIdsWithRefs: (context, user, ids) => storeLoadByIdsWithRefs(context, user, ids),
   // s10.3 rung 1: the batch pre-resolve runs the SAME dedup query as getExistingRelations
   searchExistingRelations: (context, input, inputIds) => searchExistingRelations(context, input, inputIds, 'relation_dedup_prefetch'),
+  searchExistingRelationsMany: (context, jobs, maxConcurrentSearches) => searchExistingRelationsMany(context, jobs, maxConcurrentSearches),
 });
 export const storeLoadByIdWithRefs = async <T extends StoreObject>(
   context: AuthContext,
@@ -3441,12 +3445,7 @@ const upsertElement = async (
 // run the SAME query concurrently per batch (registered as a loader, no import cycle).
 // inputIds is passed in so prefetch (plan-time candidate ids) and apply (post-resolution
 // ids) stay comparable through takeSequencerDedupPrefetch's subset check.
-export const searchExistingRelations = async (
-  context: AuthContext,
-  input: Record<string, any>,
-  inputIds: string[],
-  searchCallerLabel = 'relation_dedup',
-) => {
+const buildExistingRelationsSearch = (input: Record<string, any>, inputIds: string[]) => {
   const { from, to, relationship_type: relationshipType } = input;
   const deduplicationFilters = buildRelationDeduplicationFilters(input);
   const searchFilters = {
@@ -3476,11 +3475,37 @@ export const searchExistingRelations = async (
       filterGroups: [],
     }],
   };
+  const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
+  return { relationshipType, manualArgs };
+};
+export const searchExistingRelations = async (
+  context: AuthContext,
+  input: Record<string, any>,
+  inputIds: string[],
+  searchCallerLabel = 'relation_dedup',
+) => {
+  const { relationshipType, manualArgs } = buildExistingRelationsSearch(input, inputIds);
   // this windowed list query goes through elPaginate, not elFindByIds, so the caller label
   // is counted at the site (one list call = one ES search), plan 0010 step 1
   sequencerMetrics.searchCaller(searchCallerLabel);
-  const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters };
   return topRelationsList(context, SYSTEM_USER, relationshipType, manualArgs);
+};
+// POC sequencer (2026-09-25): the same dedup queries for many relations in one msearch
+// (batch pre-resolution prefetch); null for a query that could not be answered
+export const searchExistingRelationsMany = async (
+  context: AuthContext,
+  jobs: { input: Record<string, any>; inputIds: string[] }[],
+  maxConcurrentSearches: number,
+) => {
+  const requests = jobs.map(({ input, inputIds }) => {
+    const { relationshipType, manualArgs } = buildExistingRelationsSearch(input, inputIds);
+    sequencerMetrics.searchCaller('relation_dedup_prefetch');
+    return {
+      indexName: computeQueryIndices(manualArgs.indices, relationshipType),
+      options: { ...buildRelationsFilter(relationshipType, manualArgs), connectionFormat: false },
+    };
+  });
+  return elPaginateMany(context, SYSTEM_USER, requests, maxConcurrentSearches);
 };
 
 export const getExistingRelations = async (
@@ -3511,6 +3536,20 @@ export const getExistingRelations = async (
     // a pre-existing duplicate). Trusted only when the apply-time ids are covered by the
     // prefetched ones (rename-at-resolution safety); otherwise the live query runs as today.
     if (context.sequencer) {
+      // 2026-09-25: an endpoint CREATED by this batch (created_at at or after the batch start,
+      // see the identity map) existed nowhere before it, so no stored relation can reference it
+      // and the dedup query is provably empty. The probe counters split the endpoints whose id
+      // was absent at batch start into created here vs pre-existing under another id (the
+      // case that made 724f89af84's "absent = no duplicate" shortcut wrong).
+      const resolutions = context.sequencer.resolutions;
+      const createdHere = (resolutions?.wasCreatedInBatch?.(from.internal_id) ?? false) || (resolutions?.wasCreatedInBatch?.(to.internal_id) ?? false);
+      if (resolutions?.wasAbsentAtBatchStart && (resolutions.wasAbsentAtBatchStart(from) || resolutions.wasAbsentAtBatchStart(to))) {
+        sequencerMetrics.searchCaller(createdHere ? 'relation_dedup_absent_created' : 'relation_dedup_absent_preexisting');
+      }
+      if (createdHere) {
+        sequencerMetrics.searchCaller('relation_dedup_served_created');
+        return existingRelationships;
+      }
       const key = sequencerDedupPrefetchKey(from.internal_id, to.internal_id, input, input.createdBy?.internal_id ?? null);
       const prefetched = takeSequencerDedupPrefetch(key, inputIds);
       if (prefetched) {

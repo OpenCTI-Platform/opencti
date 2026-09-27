@@ -66,6 +66,15 @@ export class SequencerIdentityMap {
 
   private absentTyped = new Map<string, string[]>();
 
+  // creations of the running batch (2026-09-25): an element whose created_at is at or after
+  // the batch start was CREATED by this batch, not upserted; no relation stored before the
+  // batch can reference it, so its relation dedup query is provably empty. Distinct from
+  // "id absent at batch start": an entity can exist under other ids (a new stix id added by
+  // an upsert in the batch), which is how 724f89af84 produced duplicates.
+  private batchStartedAt = 0;
+
+  private createdInBatch = new Set<string>();
+
   // written index: entries applied by the running batch, by internal id, plus id -> internal id
   private written = new Map<string, MapEntry>();
 
@@ -168,8 +177,12 @@ export class SequencerIdentityMap {
   // written index on, the entry is also pinned batch-locally until clearWritten().
   ingestWritten(element: any, withRefsBasis: boolean) {
     this.store(element, withRefsBasis ? element : null);
-    if (!SEQUENCER_CONFIG.writtenIndex) return;
     const internalId = element.internal_id;
+    if (internalId && this.batchStartedAt > 0 && typeof element.created_at === 'string'
+      && Date.parse(element.created_at) >= this.batchStartedAt) {
+      this.createdInBatch.add(internalId);
+    }
+    if (!SEQUENCER_CONFIG.writtenIndex) return;
     const entry = internalId ? this.byInternalId.get(internalId) : undefined;
     if (!entry) return;
     const previous = this.written.get(internalId);
@@ -181,6 +194,21 @@ export class SequencerIdentityMap {
   clearWritten() {
     this.written.clear();
     this.writtenIndex.clear();
+    this.createdInBatch.clear();
+  }
+
+  beginBatch(startedAt: number) {
+    this.batchStartedAt = startedAt;
+    this.createdInBatch.clear();
+  }
+
+  wasCreatedInBatch(internalId: string): boolean {
+    return this.createdInBatch.has(internalId);
+  }
+
+  // probe: was one of this element's ids marked absent by the batch's pre-resolution?
+  wasAbsentAtBatchStart(element: any): boolean {
+    return getInstanceIds(element).some((id: string) => this.isKnownAbsent(id, null));
   }
 
   writtenSize() {

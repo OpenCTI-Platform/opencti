@@ -179,7 +179,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             ["worker", "ingest_chunk_size"],
             config,
             True,
-            default=16,
+            default=24,
         )
         self.ingest_pick = get_config_variable(
             "WORKER_INGEST_PICK",

@@ -24,10 +24,17 @@ export interface BatchLockGroup {
   absorbed: { referencedIds: string[] }[];
 }
 
+// Increment 2026-09-24: a relation's OWN ids (standard id and aliases) only exist once its
+// endpoints are resolved, so the apply-time lock site asked for them outside the batch lock
+// (62,521 real locks on one full-mix run, unique keys, no contention but one round trip each).
+// When both endpoints are already in the identity map, the injected relationOwnIds computes
+// them at plan time with the same function the apply uses (getInputIds on the input carrying
+// from and to), exactly as the dedup prefetch does; unresolved endpoints keep today's real lock.
 export const computeBatchLockKeys = (
   groups: BatchLockGroup[],
   peekInstanceIds: (id: string) => string[] | null,
   resolveInternalId: (id: string) => string | null,
+  relationOwnIds?: (leader: BatchLockGroup['leader']) => string[] | null,
 ): string[] => {
   const keys = new Set<string>();
   const addWithInstance = (id: string) => {
@@ -44,6 +51,12 @@ export const computeBatchLockKeys = (
       [leader.input.fromId, leader.input.toId].forEach((id) => {
         if (typeof id === 'string' && id.length > 0) keys.add(resolveInternalId(id) ?? id);
       });
+      const own = relationOwnIds?.(leader);
+      if (own) {
+        own.forEach((id) => {
+          if (typeof id === 'string' && id.length > 0) keys.add(id);
+        });
+      }
     }
   });
   return Array.from(keys);

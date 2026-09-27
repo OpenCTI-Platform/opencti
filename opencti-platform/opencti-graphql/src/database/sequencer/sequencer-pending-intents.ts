@@ -34,7 +34,7 @@ const PENDING_INTENTS_MAX = Number(conf.get('app:ingestion_sequencer:pending_int
 export type PendingRecordKind = IntentKind | 'operation';
 
 export interface PendingIntentRecord {
-  id: string; // sha(kind|type|user|stable input): a re-deferral upserts, never duplicates
+  id: string; // sha(kind|type|user|JSON-canonical input): a re-deferral upserts, never duplicates
   kind: PendingRecordKind;
   type: string;
   input_json: string; // intent: the domain input; operation: the GraphQL operation
@@ -104,8 +104,13 @@ const stableStringify = (value: any): string => {
   return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
 };
 
-const recordKey = (kind: string, type: string, userId: string, input: Record<string, any>) => createHash('sha256')
-  .update(`${kind}|${type}|${userId}|${stableStringify(input)}`).digest('hex');
+// The key hashes the JSON round trip of the input, the form the record persists and a
+// re-submission reads back. The in-memory input can carry undefined values or non-plain
+// objects (dates) that stableStringify renders differently from their JSON form: hashed
+// as given, every re-submission of a retained creation got a SECOND record (attempts 0,
+// never backing off, re-submitted at every sweep) instead of upserting the first one.
+export const pendingIntentRecordKey = (kind: string, type: string, userId: string, input: Record<string, any>) => createHash('sha256')
+  .update(`${kind}|${type}|${userId}|${stableStringify(JSON.parse(JSON.stringify(input)))}`).digest('hex');
 
 const memoryAdd = (record: PendingIntentRecord) => {
   byId.set(record.id, record);
@@ -158,7 +163,7 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
   const now = Date.now();
   const records: PendingIntentRecord[] = [];
   deferrals.forEach(({ intent, missing }) => {
-    const id = recordKey(intent.kind, intent.type, intent.user.id, intent.input);
+    const id = pendingIntentRecordKey(intent.kind, intent.type, intent.user.id, intent.input);
     const existing = byId.get(id);
     if (existing) {
       memoryRemove(existing);
@@ -222,7 +227,7 @@ export const deferOperation = async ({ operation, envelope, user, missing }: Pen
   if (!esOps || byId.size >= PENDING_INTENTS_MAX) return false;
   const now = Date.now();
   const type = operation.object_id ? String(operation.object_id).split('--')[0] : 'operation';
-  const id = recordKey('operation', type, user.id, operation);
+  const id = pendingIntentRecordKey('operation', type, user.id, operation);
   const existing = byId.get(id);
   let record: PendingIntentRecord;
   if (existing) {

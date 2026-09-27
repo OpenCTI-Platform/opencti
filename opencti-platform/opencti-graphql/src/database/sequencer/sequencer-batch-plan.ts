@@ -335,12 +335,23 @@ export const buildBatchPlan = (
       } else if (cls === 'queued_producer') {
         defer = defer ?? 'queued_producer';
         const waiting = waitingByGroup.get(index);
-        if (waiting) waiting.push(id); else waitingByGroup.set(index, [id]);
+        if (waiting) {
+          waiting.push(id);
+        } else {
+          waitingByGroup.set(index, [id]);
+        }
       } else if (cls === 'member_dead') {
         // s9.10.2: a dead SOFT ref is stripped (the container survives without the edge
-        // that could never exist); a dead HARD ref (relation endpoint) still condemns.
+        // that could never exist). A dead HARD ref (relation endpoint) condemns the intent
+        // as FINAL only when the caller has a retention store behind it (the chunk path:
+        // the loop retains the creation and re-submits it when the member lands). Fix
+        // 2026-09-24 (B16): without retention (the HTTP path), "dead" is usually just LATE
+        // over another pool and a final rejection is a drop the client never retries
+        // (3,330 relationships lost on one full-mix run); it parks with the deadline instead,
+        // then applies as today (reject, worker retry ladder).
         if (soft) deadSoftIds.push(id);
-        else finalIds.push(id);
+        else if (group.leader.context?.deferMissingRefs) finalIds.push(id);
+        else parkIds.push(id);
       } else if (!soft) {
         parkIds.push(id); // external hard: park with deadline, today's healing path
       } else if (options.parkSoftRefs) {
@@ -361,8 +372,16 @@ export const buildBatchPlan = (
       const producer = producers.get(id);
       if (producer !== undefined && producer !== index) {
         edges[index].add(producer); // order after the in-batch producer
-      } else if (producer === undefined && !isAutoCreatedRef(id)) {
-        onMissing(id, true);
+      } else if (producer === undefined) {
+        // Auto-created families skip the missing path only when nothing is in flight for
+        // them (the D2 v1 lesson above). Since the single wave per chunk (2026-09-24) pycti's
+        // pre-created labels, external references and kill chain phases DO arrive as producer
+        // intents resolved by standard id: a ref to one that is queued, or declared an
+        // in-chunk member, waits for its producer like any other (probe 2026-09-24: 86
+        // course-of-action label refs per MITRE run applied with the producer still queued
+        // and were stripped, then reconciled one intent per cycle).
+        const inFlight = options.queueHas?.(id) || group.leader.memberRefIds?.has(id);
+        if (!isAutoCreatedRef(id) || inFlight) onMissing(id, true);
       }
     });
     // s9.10.2 strip point: a group not condemned by a hard dead ref sheds its dead soft

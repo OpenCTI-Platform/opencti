@@ -10,7 +10,7 @@
 // sequencer loop, replacing the worker-side pf / chunk-size / http-pool / queue_max_intents
 // quadruple that drove every feeding artifact measured on the HTTP topology.
 import { ValueType } from '@opentelemetry/api';
-import type { Counter, Histogram } from '@opentelemetry/api';
+import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
@@ -18,6 +18,11 @@ import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
 import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { splitEchoIds } from './chunkIntakeEchoes';
+import { PreLoopGate } from './chunkIntakePreLoop';
+import { resolveProducerIds } from './chunkIntakeProducers';
+import { isSequencerEnabled } from '../database/sequencer/sequencer-config';
+import { describeIntentLocation, sequencerLoopGauges, startSequencerLoop } from '../database/sequencer/sequencer-loop';
+import { chunkOperationRootField } from './chunkIntakeProducers';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import {
   deferOperation,
@@ -43,7 +48,10 @@ const CHUNK_INTAKE_MANAGER_CONTEXT = 'chunk_intake_manager';
 const CHUNK_INTAKE_MANAGER_ENABLED = booleanConf('chunk_intake_manager:enabled', false);
 const CHUNK_INTAKE_MANAGER_KEY = conf.get('chunk_intake_manager:lock_key') || 'chunk_intake_manager_lock';
 const SCHEDULE_TIME = Number(conf.get('chunk_intake_manager:interval') ?? 10000);
-const PREFETCH = Number(conf.get('chunk_intake_manager:prefetch') ?? 8);
+// 192 (was 8): chunks in flight; prefetch x chunk size is the single flow-control valve of the
+// path. 128 was the operating point since 2026-09-15; 192 read equal on mix140k (ladder 3,
+// 2026-09-25) with the queue cap at 40,000 intents, 256 brought nothing more.
+const PREFETCH = Number(conf.get('chunk_intake_manager:prefetch') ?? 192);
 const MAX_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:max_transient_attempts') ?? 20);
 // Retry-gap option 1: a creation whose hard reference is still missing after its park
 // deadline is RETAINED by the sequencer (pending intents) and re-submitted when the
@@ -68,23 +76,99 @@ const OP_TRANSIENT_BACKOFF_MS = Number(conf.get('chunk_intake_manager:op_transie
 // Default 32 (permit probe 2026-09-15, w1 prefetch 128): 64 left 405 search rejections and 61
 // retries at intake start, 32 and 16 left none; 32 at 300.4 obj/s (= 64), 16 at 293.5.
 const PRE_LOOP_CONCURRENCY = Number(conf.get('chunk_intake_manager:pre_loop_concurrency') ?? 32);
-let preLoopInUse = 0;
-const preLoopWaiters: (() => void)[] = [];
-const acquirePreLoop = async (): Promise<boolean> => {
-  if (PRE_LOOP_CONCURRENCY <= 0) return false;
-  if (preLoopInUse < PRE_LOOP_CONCURRENCY) {
-    preLoopInUse += 1;
-    return false;
-  }
-  await new Promise<void>((resolve) => preLoopWaiters.push(resolve));
-  preLoopInUse += 1;
-  return true; // had to wait
+// Adaptive limit (2026-09-24, chunkIntakePreLoop.ts): grows while operations are paced and
+// the engine is quiet, halves on transient engine errors. min / max bound the walk, the
+// value above is where it starts; adaptive=false pins the legacy fixed limit. Growth is
+// +35% per tick; after an engine error it resumes once the engine has been quiet for 3 s
+// (three ticks: the search queue drains in well under a second once the burst is gone).
+const PRE_LOOP_ADAPTIVE = booleanConf('chunk_intake_manager:pre_loop_adaptive', true);
+const PRE_LOOP_MIN = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_min') ?? 8);
+// max 256 (was 512): at 512 the start-of-intake burst still left 779 to 1,292 search
+// rejections and up to 145 transient retries per mix140k run; 256 left 0 retries and 3x fewer
+// rejections at equal throughput (ladder of 2026-09-25).
+const PRE_LOOP_MAX = Number(conf.get('chunk_intake_manager:pre_loop_concurrency_max') ?? 256);
+const PRE_LOOP_TICK_MS = Number(conf.get('chunk_intake_manager:pre_loop_tick_ms') ?? 1000);
+const PRE_LOOP_QUIET_MS = Number(conf.get('chunk_intake_manager:pre_loop_quiet_ms') ?? 3000);
+const PRE_LOOP_INCREASE_RATIO = Number(conf.get('chunk_intake_manager:pre_loop_increase_ratio') ?? 0.35);
+// Single wave per chunk (2026-09-24, chunkIntakeProducers.ts): producers are resolved to
+// their standard ids up front and the whole chunk runs at once; false = the legacy
+// producers-first wave (A/B knob). Needs the sequencer: without it nothing orders a
+// producer before its consumers.
+const SINGLE_WAVE = booleanConf('chunk_intake_manager:single_wave', true);
+// Stall probe (2026-09-25): every chunk in flight tracks the phase of each operation (gate =
+// waiting for a pre-loop permit, preloop = executing before its intent is queued, queued =
+// intent handed to the loop, settled); a watchdog logs the chunks without progress for
+// stall_log_after_ms, with their unsettled operations and where the loop holds their intents.
+// 0 disables the watchdog. Built after apply_concurrency 16 left two chunks unacked for 25 min.
+const STALL_LOG_AFTER_MS = Number(conf.get('chunk_intake_manager:stall_log_after_ms') ?? 120000);
+const STALL_WATCH_INTERVAL_MS = Number(conf.get('chunk_intake_manager:stall_watch_interval_ms') ?? 60000);
+type OperationPhase = 'pending' | 'gate' | 'preloop' | 'queued' | 'settled';
+type InFlightChunk = { startedAt: number; lastProgressAt: number; operations: Map<ChunkOperation, { phase: OperationPhase; since: number }> };
+const inFlightChunks = new Map<string, InFlightChunk>();
+const trackPhase = (chunk: InFlightChunk | undefined, operation: ChunkOperation, phase: OperationPhase) => {
+  if (!chunk) return;
+  const now = Date.now();
+  chunk.operations.set(operation, { phase, since: now });
+  chunk.lastProgressAt = now;
 };
-const releasePreLoop = () => {
-  if (PRE_LOOP_CONCURRENCY <= 0) return;
-  preLoopInUse -= 1;
-  const next = preLoopWaiters.shift();
-  if (next) next();
+let stallWatchdog: NodeJS.Timeout | null = null;
+const logStalledChunks = () => {
+  const now = Date.now();
+  inFlightChunks.forEach((chunk, chunkId) => {
+    if (now - chunk.lastProgressAt < STALL_LOG_AFTER_MS) return;
+    const byPhase: Record<string, number> = {};
+    const unsettled: Record<string, any>[] = [];
+    chunk.operations.forEach((state, operation) => {
+      byPhase[state.phase] = (byPhase[state.phase] ?? 0) + 1;
+      if (state.phase !== 'settled' && unsettled.length < 5) {
+        unsettled.push({
+          object_id: operation.object_id,
+          root: chunkOperationRootField(operation),
+          phase: state.phase,
+          since_s: Math.round((now - state.since) / 1000),
+          loop: state.phase === 'queued' && operation.object_id ? describeIntentLocation([operation.object_id]) : undefined,
+        });
+      }
+    });
+    logApp.warn('[CHUNK-INTAKE] chunk without progress', {
+      chunk_id: chunkId, age_s: Math.round((now - chunk.startedAt) / 1000), idle_s: Math.round((now - chunk.lastProgressAt) / 1000),
+      operations: byPhase, unsettled, loop: sequencerLoopGauges(), gate: { limit: preLoopGate.currentLimit(), in_flight: preLoopGate.inFlight(), waiting: preLoopGate.waiting() },
+    });
+  });
+};
+const startStallWatchdog = () => {
+  if (stallWatchdog || STALL_LOG_AFTER_MS <= 0) return;
+  stallWatchdog = setInterval(logStalledChunks, STALL_WATCH_INTERVAL_MS);
+  stallWatchdog.unref?.();
+};
+const stopStallWatchdog = () => {
+  if (stallWatchdog) clearInterval(stallWatchdog);
+  stallWatchdog = null;
+};
+let preLoopLimitGauge: Gauge | null = null;
+let preLoopAdjustments: Counter | null = null;
+let producersCounter: Counter | null = null;
+const preLoopGate = new PreLoopGate({
+  initial: PRE_LOOP_CONCURRENCY,
+  min: PRE_LOOP_MIN,
+  max: PRE_LOOP_MAX,
+  adaptive: PRE_LOOP_ADAPTIVE,
+  increaseRatio: PRE_LOOP_INCREASE_RATIO,
+  quietMs: PRE_LOOP_QUIET_MS,
+  onLimitChange: (limit, direction) => {
+    preLoopLimitGauge?.record(limit);
+    preLoopAdjustments?.add(1, { direction });
+  },
+});
+let preLoopTicker: NodeJS.Timeout | null = null;
+const startPreLoopTicker = () => {
+  if (preLoopTicker || !preLoopGate.enabled() || !PRE_LOOP_ADAPTIVE) return;
+  preLoopTicker = setInterval(() => preLoopGate.tick(), PRE_LOOP_TICK_MS);
+  preLoopTicker.unref?.();
+};
+const stopPreLoopTicker = () => {
+  if (preLoopTicker) clearInterval(preLoopTicker);
+  preLoopTicker = null;
 };
 
 // Gate-only fault injection: the first N consumer operations of the process fail once with a
@@ -165,6 +249,20 @@ const registerChunkMetrics = () => {
     valueType: ValueType.INT,
     description: 'Distinct STIX objects carried by executed chunks',
   });
+  // adaptive pre-loop gate (2026-09-24): the limit as it moves, and its adjustments
+  preLoopLimitGauge = meter.createGauge('opencti_chunk_intake_pre_loop_limit', {
+    valueType: ValueType.INT,
+    description: 'Current pre-loop admission limit (operations between start and intent queued)',
+  });
+  preLoopAdjustments = meter.createCounter('opencti_chunk_intake_pre_loop_adjustments_total', {
+    valueType: ValueType.INT,
+    description: 'Pre-loop limit adjustments by direction (up, down)',
+  });
+  producersCounter = meter.createCounter('opencti_chunk_intake_producers_total', {
+    valueType: ValueType.INT,
+    description: 'Chunk producers by resolution (standard_id up front, executed_first legacy)',
+  });
+  preLoopLimitGauge.record(preLoopGate.currentLimit());
   chunkSeconds = meter.createHistogram('opencti_chunk_intake_chunk_seconds', {
     valueType: ValueType.DOUBLE,
     description: 'Wall time from chunk delivery to chunk ack',
@@ -175,7 +273,7 @@ const registerChunkMetrics = () => {
 // Builds the execution context a chunk runs under. Deliberately mirrors the HTTP one
 // (httpAuthenticatedContext) field for field, minus everything request-shaped: same user
 // resolution, same member-mark strip over the whole chunk, same batch loaders.
-export const createChunkContext = async (message: ChunkMessage, operations: ChunkOperation[]) => {
+export const createChunkContext = async (message: ChunkMessage, operations: ChunkOperation[], memberIds?: Iterable<string>) => {
   const context = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT) as any;
   // Worker origin (sequencer eligibility) is carried by the retry-number header: presence is
   // what counts, "0" is the legitimate first attempt.
@@ -199,6 +297,10 @@ export const createChunkContext = async (message: ChunkMessage, operations: Chun
   operations.forEach((operation) => {
     if (operation?.variables) stripMemberRefMarks(operation.variables, memberRefs);
   });
+  // producers resolved by standard id (single wave): in-chunk members too, so a consumer
+  // planned before its producer's intent is seen waits for it (member_wait) instead of
+  // parking as an external reference
+  if (memberIds) Array.from(memberIds).forEach((id) => memberRefs.add(id));
   if (memberRefs.size > 0) {
     context.memberRefIds = memberRefs;
   }
@@ -324,18 +426,53 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
   }
   // A chunk without an id (hand-published) is keyed by its payload head: same policy.
   const attemptKey = message.chunk_id ?? payload.slice(0, 128);
+  const tracked: InFlightChunk = { startedAt: start, lastProgressAt: start, operations: new Map() };
+  operations.forEach((operation) => tracked.operations.set(operation, { phase: 'pending', since: start }));
+  inFlightChunks.set(attemptKey, tracked);
   try {
-    const { context, user } = await createChunkContext(message, operations);
-    // Two phases. pycti pre-creates an object's labels, external references and kill
-    // chain phases through separate mutations and puts the ids the platform RETURNED into
-    // the object's input; on the capture transport those creates answered with echo ids,
-    // so their operations (the producers) run first and the real ids replace the echo ids
-    // in the remaining operations. Within a phase everything is in flight at once, like an
-    // HTTP-batched body: ordering inside the chunk is the sequencer's business.
-    const resolved = new Map<string, string>();
+    // Producers (pycti's pre-created sub-objects, answered with echo ids on the capture
+    // transport) are resolved to their STANDARD ids before anything runs, so the chunk is
+    // one wave and the sequencer orders producers before consumers (chunkIntakeProducers.ts).
+    // Producers the platform cannot resolve up front, or every producer when the single
+    // wave is off, keep the legacy path: executed first, real ids substituted.
+    const singleWave = SINGLE_WAVE && isSequencerEnabled();
+    const upFront = singleWave
+      ? resolveProducerIds(operations)
+      : { resolved: new Map<string, string>(), unresolved: operations.filter((operation) => !!operation.echo_id) };
+    const { resolved } = upFront;
+    const producerFirst = new Set<ChunkOperation>(upFront.unresolved);
+    if (resolved.size > 0) {
+      operations.forEach((operation) => {
+        if (!operation.echo_id && operation.variables) substituteEchoIds(operation.variables, resolved);
+      });
+      producersCounter?.add(resolved.size, { resolution: 'standard_id' });
+    }
+    if (producerFirst.size > 0) producersCounter?.add(producerFirst.size, { resolution: 'executed_first' });
+    const { context, user } = await createChunkContext(message, operations, resolved.values());
+    // Single wave ordering (probe 2026-09-24): a producer reaches the queue only after its
+    // pre-loop lookups (addLabel reads before it creates) while its consumer reaches it at
+    // once; when a batch boundary falls between the two, the consumer applies with the
+    // producer still queued and its soft ref is stripped, then reconciled one intent per
+    // cycle (86 course-of-action label refs per MITRE run). Consumers therefore start once
+    // every producer of the chunk is QUEUED (or settled without reaching the loop): FIFO then
+    // puts the producer in the same batch (edge) or an earlier one (committed), never behind.
+    // No commit is awaited: the wait is the producers' pre-loop, milliseconds.
+    const queuedGates = new Map<ChunkOperation, () => void>();
+    const queuedOrSettled = (operation: ChunkOperation) => new Promise<void>((resolve) => {
+      queuedGates.set(operation, resolve);
+    });
+    const markQueued = (operation: ChunkOperation) => {
+      const release = queuedGates.get(operation);
+      if (release) {
+        queuedGates.delete(operation);
+        release();
+      }
+    };
     // Transient engine error on a consumer: retry in place with backoff, then retain.
     const transientOutcome = async (operation: ChunkOperation, err: any, attempt: number): Promise<OperationOutcome | null> => {
-      if (operation.echo_id || !isTransientOperationError(err)) return null;
+      if (!isTransientOperationError(err)) return null;
+      preLoopGate.onEngineError(); // the adaptive gate halves on engine trouble, whatever becomes of the operation
+      if (producerFirst.has(operation)) return null;
       if (attempt < OP_TRANSIENT_ATTEMPTS) {
         const backoffMs = Math.min(OP_TRANSIENT_BACKOFF_MS * 2 ** attempt, 4000);
         logApp.warn('[CHUNK-INTAKE] Operation retried (transient engine error)', {
@@ -359,15 +496,24 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     const runOperationOnce = async (operation: ChunkOperation, attempt: number): Promise<OperationOutcome> => {
       // one pre-loop permit per attempt, released by the boundary hook (intent queued) or,
       // for operations that never reach the loop, when the operation settles
-      const waited = await acquirePreLoop();
+      trackPhase(tracked, operation, 'gate');
+      const waited = await preLoopGate.acquire();
       if (waited) operationsCounter?.add(1, { outcome: 'paced' });
+      trackPhase(tracked, operation, 'preloop');
       let released = false;
       const releaseOnce = () => {
         if (released) return;
         released = true;
-        releasePreLoop();
+        preLoopGate.release();
       };
-      const opContext: AuthContext = PRE_LOOP_CONCURRENCY > 0 ? { ...context, onIntentQueued: releaseOnce } : context;
+      const opContext: AuthContext = {
+        ...context,
+        onIntentQueued: () => {
+          releaseOnce();
+          markQueued(operation);
+          trackPhase(tracked, operation, 'queued');
+        },
+      };
       try {
         if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
           faultTransientBudget -= 1;
@@ -387,8 +533,9 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
           const transient = await transientOutcome(operation, first, attempt);
           if (transient) return transient;
           // A consumer refused for a missing reference before it reached the loop: retain
-          // the operation (producers keep the error path: their consumers already ran).
-          if (code === MISSING_REF_ERROR && !operation.echo_id && DEFER_MISSING_REFS && pendingIntentsAccepting()) {
+          // the operation (a producer executed first keeps the error path: its consumers
+          // already ran).
+          if (code === MISSING_REF_ERROR && !producerFirst.has(operation) && DEFER_MISSING_REFS && pendingIntentsAccepting()) {
             const { resolvable: missing, echoes } = splitEchoIds(unresolvedIdsOf(first));
             if (echoes.length > 0) {
               // B12: an unresolved echo id has no producer that can still land (it leaked
@@ -410,7 +557,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
           }
           return { error: String(first.message) };
         }
-        if (operation.echo_id) {
+        if (operation.echo_id && producerFirst.has(operation)) {
           const root: any = result.data ? Object.values(result.data)[0] : undefined;
           if (root?.id) resolved.set(operation.echo_id, String(root.id));
         }
@@ -421,6 +568,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         return { error: String(e.message ?? e) };
       } finally {
         releaseOnce();
+        trackPhase(tracked, operation, 'settled');
       }
     };
     // deferred === false is the retry sentinel of transientOutcome: loop until a real outcome
@@ -430,26 +578,39 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
         if (outcome.deferred !== false) return outcome;
       }
     };
-    const producers = operations.filter((operation) => operation.echo_id);
-    const consumers = operations.filter((operation) => !operation.echo_id);
-    const producerErrors = await Promise.all(producers.map(runOperation));
-    if (resolved.size > 0) {
-      consumers.forEach((operation) => {
-        if (operation.variables) substituteEchoIds(operation.variables, resolved);
+    // Wave 1 = the producers that must execute first (legacy path, or unresolvable up
+    // front); wave 2 = everything else at once. With every producer resolved by standard
+    // id, wave 1 is empty and the chunk is a single wave.
+    const first = operations.filter((operation) => producerFirst.has(operation));
+    const rest = operations.filter((operation) => !producerFirst.has(operation));
+    const firstErrors = await Promise.all(first.map(runOperation));
+    if (first.length > 0 && resolved.size > 0) {
+      rest.forEach((operation) => {
+        if (!operation.echo_id && operation.variables) substituteEchoIds(operation.variables, resolved);
       });
     }
-    const consumerErrors = await Promise.all(consumers.map(runOperation));
-    const ordered = [...producers, ...consumers];
-    const results = [...producerErrors, ...consumerErrors];
+    // producers resolved by standard id start first and only need to be QUEUED before the
+    // consumers start (see queuedGates above); everything then completes together
+    const producers = rest.filter((operation) => !!operation.echo_id);
+    const consumers = rest.filter((operation) => !operation.echo_id);
+    const producerGates = producers.map((operation) => queuedOrSettled(operation));
+    const producerRuns = producers.map((operation) => runOperation(operation).finally(() => markQueued(operation)));
+    await Promise.all(producerGates);
+    const consumerRuns = consumers.map((operation) => runOperation(operation));
+    const restErrors = await Promise.all([...producerRuns, ...consumerRuns]);
+    const ordered = [...first, ...producers, ...consumers];
+    const results = [...firstErrors, ...restErrors];
     for (let index = 0; index < ordered.length; index += 1) {
       await reportChunkOutcome(context, user, message, ordered[index], results[index]);
     }
     controls.ack();
+    inFlightChunks.delete(attemptKey);
     transientAttempts.delete(attemptKey);
     chunksCounter?.add(1, { outcome: 'acked' });
     objectsCounter?.add(new Set(operations.map((operation) => operation.object_id).filter((id) => !!id)).size);
     chunkSeconds?.record((Date.now() - start) / 1000);
   } catch (e: any) {
+    inFlightChunks.delete(attemptKey);
     if (e instanceof ChunkPoisonError) {
       logApp.error('[CHUNK-INTAKE] Poison chunk, dead lettering', { cause: e, chunk_id: message.chunk_id, reason: e.reason });
       chunksCounter?.add(1, { outcome: 'dead_letter', reason: e.reason });
@@ -476,6 +637,8 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
 
 const chunkIntakeInitializer = async () => {
   registerChunkMetrics();
+  startPreLoopTicker();
+  startStallWatchdog();
   // Terminal outcome of a retained creation: meet the work expectation the chunk skipped
   // (applied), or meet it with an error (expired / failed), so works stay exact.
   registerPendingIntentSettled(async (record, error) => {
@@ -507,16 +670,32 @@ const chunkIntakeInitializer = async () => {
     }
     return 'applied';
   });
+  // The sequencer's stores (pending intents, pending refs) must exist before the first chunk:
+  // the loop starts lazily on its first intent and initialises them in the background, and a
+  // retention written in between auto-created a mis-mapped index that killed the loop
+  // (2026-09-24). Consume only once the loop is ready.
+  if (isSequencerEnabled()) {
+    await startSequencerLoop();
+  }
   await registerChunkIntakeQueue();
   const consumer: ChunkConsumer = await consumeChunkIntakeQueue(PREFETCH, (payload: string, controls: ChunkControls) => {
     processChunkMessage(payload, controls).catch((e) => {
       logApp.error('[CHUNK-INTAKE] Unexpected chunk handling error', { cause: e });
     });
   });
-  logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', { queue: consumer.queue, prefetch: PREFETCH, pre_loop_concurrency: PRE_LOOP_CONCURRENCY });
+  logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', {
+    queue: consumer.queue,
+    prefetch: PREFETCH,
+    pre_loop_concurrency: PRE_LOOP_CONCURRENCY,
+    pre_loop_adaptive: PRE_LOOP_ADAPTIVE,
+    pre_loop_bounds: [PRE_LOOP_MIN, PRE_LOOP_MAX],
+    single_wave: SINGLE_WAVE,
+  });
   return {
     consumer,
     shutdown: async () => {
+      stopPreLoopTicker();
+      stopStallWatchdog();
       await consumer.close();
       logApp.info('[OPENCTI-MODULE] Chunk intake consumer closed');
     },

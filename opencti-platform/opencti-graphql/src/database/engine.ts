@@ -3163,6 +3163,67 @@ export const elPaginate = async <T extends BasicStoreBase>(
     throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query: JSON.stringify(query), queryArguments: options });
   }
 };
+// POC sequencer (2026-09-25): several list paginations in ONE engine round trip (msearch),
+// for the batch pre-resolution's relation dedup prefetch. Each request is built exactly like
+// elPaginate's (body, size cap, _source, docvalue_fields, indices); a request that needs
+// regardingOf post-filtering is not batched (null: the caller keeps its single path). The
+// engine still runs one task per sub-search, max_concurrent_searches bounds how many run at
+// once; what goes away is the per-search HTTP round trip and client work on the platform. A
+// failed sub-search (rejection, shard failure) yields null, never a partial answer.
+export const elPaginateMany = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  requests: { indexName: string | string[] | undefined | null; options: PaginateOpts }[],
+  maxConcurrentSearches: number,
+): Promise<(T[] | null)[]> => {
+  const prepared: ({ header: Record<string, any>; body: Record<string, any> } | null)[] = [];
+  for (let i = 0; i < requests.length; i += 1) {
+    const { indexName, options } = requests[i];
+    const { baseData = false, baseFields = [], bypassSizeLimit = false, withoutRels = true, noRegardingOfFilterIdsCheck = false } = options;
+    if (tagFiltersForPostFiltering(options.filters, noRegardingOfFilterIdsCheck)) {
+      prepared.push(null);
+    } else {
+      const body: any = await elQueryBodyBuilder(context, user, options);
+      if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) body.size = ES_MAX_PAGINATION;
+      const _source: { excludes: string[]; includes?: string[] } = { excludes: [] };
+      if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
+      if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
+      prepared.push({
+        header: { index: getIndicesToQuery(context, user, indexName) },
+        body: { ...body, _source, track_total_hits: true, ...(withoutRels ? { docvalue_fields: REL_DEFAULT_FETCH } : {}) },
+      });
+    }
+  }
+  const live = prepared.filter((p): p is { header: Record<string, any>; body: Record<string, any> } => p !== null);
+  if (live.length === 0) return prepared.map(() => null);
+  live.forEach(() => sequencerMetrics.searchCaller('_all'));
+  sequencerMetrics.searchCaller('msearch_calls');
+  const searches = live.flatMap((p) => [p.header, p.body]);
+  const requestAbortSignal = context?.requestAbortSignal ?? new AbortController().signal;
+  const result = await retryElOperations(async () => elExecuteWithAbortSignal(
+    requestAbortSignal,
+    (opts) => (engine as ElkClient).msearch({ searches, max_concurrent_searches: maxConcurrentSearches } as any, opts),
+    () => (engine as OpenClient).msearch({ body: searches, max_concurrent_searches: maxConcurrentSearches } as any),
+  ));
+  const responses: any[] = result?.responses ?? [];
+  const out: (T[] | null)[] = [];
+  let cursor = 0;
+  for (let i = 0; i < prepared.length; i += 1) {
+    if (prepared[i] === null) {
+      out.push(null);
+    } else {
+      const response = responses[cursor];
+      cursor += 1;
+      if (!response || response.error || (response._shards?.failed ?? 0) > 0) {
+        out.push(null);
+      } else {
+        out.push(await elConvertHits<T>(response.hits.hits));
+      }
+    }
+  }
+  return out;
+};
+
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
   maxSize?: number;
   logForMigration?: boolean;
