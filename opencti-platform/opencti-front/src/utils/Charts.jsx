@@ -123,16 +123,30 @@ export const buildDrilldownEvents = (resolveBucket, drilldown) => {
  *
  * `drilldown.buckets` comes from `buildDistributionBuckets` and is aligned with
  * the chart series index by index, gaps included.
+ *
+ * Exposed on its own so a chart that also carries a legacy redirection can ask
+ * whether the drill-down resolves a link before deciding which one wins.
+ *
+ * @param {object} drilldown The widget drill-down descriptor.
+ * @returns {(config: object) => (string|null)} Resolver returning the link for a clicked surface.
+ */
+const distributionBucketLink = (drilldown) => (config) => {
+  const index = pointIndex(config?.dataPointIndex);
+  if (index === null) return null;
+  const bucket = drilldown.buckets?.[index];
+  return bucket ? drilldown.getLink(0, bucket) : null;
+};
+
+/**
+ * Builds the ApexCharts handlers navigating a distribution bucket to its
+ * filtered list.
+ *
+ * @param {object} [drilldown] The widget drill-down descriptor, if any.
+ * @returns {object} ApexCharts chart events, empty when there is no drill-down.
  */
 export const distributionBucketEvents = (drilldown) => {
   if (!drilldown) return {};
-  const linkAt = (config) => {
-    const index = pointIndex(config?.dataPointIndex);
-    if (index === null) return null;
-    const bucket = drilldown.buckets?.[index];
-    return bucket ? drilldown.getLink(0, bucket) : null;
-  };
-  return drilldownHandlers(linkAt, drilldown.navigate);
+  return drilldownHandlers(distributionBucketLink(drilldown), drilldown.navigate);
 };
 
 /**
@@ -519,6 +533,11 @@ export const horizontalBarsChartOptions = (
   drilldown = undefined,
 ) => {
   const drilldownEvents = distributionBucketEvents(drilldown);
+  // A widget aggregating on an attribute no list filter reproduces (`internal_id`,
+  // used by every Home dashboard bar chart) resolves no link. The drill-down only
+  // takes over the surfaces it can actually serve, so the others keep navigating
+  // to the entity page instead of going inert.
+  const hasDrilldownLink = (config) => !!drilldown && !!distributionBucketLink(drilldown)(config);
   return {
     events: ['xAxisLabelClick'],
     chart: {
@@ -548,12 +567,12 @@ export const horizontalBarsChartOptions = (
         mouseMove: (event, chartContext, config) => {
         // With a drill-down, a bar opens the filtered list; without one it keeps
         // navigating to the entity page (public dashboards, multi-series bars).
-          if (drilldown) {
+          if (hasDrilldownLink(config)) {
             drilldownEvents.mouseMove(event, chartContext, config);
             return;
           }
           const { dataPointIndex, seriesIndex } = config;
-          if (redirectionUtils
+          const isLegacyTarget = !!redirectionUtils
             && (
               (dataPointIndex >= 0 // case click on a bar
                 && (
@@ -569,17 +588,22 @@ export const horizontalBarsChartOptions = (
                 )
               )
               || event.target.parentNode.className.baseVal === 'apexcharts-text apexcharts-yaxis-label ' // case click on a label
-            )
-          ) {
-          // for clickable parts of the graphs
-
+            );
+          if (!event.target.style) return;
+          if (isLegacyTarget) {
+            // for clickable parts of the graphs
             event.target.style.cursor = 'pointer';
-
             event.target.classList.add('noDrag');
+          } else {
+            // ApexCharts reuses its SVG nodes between hovers, so a pointer set on
+            // a previous target has to be taken back here or it lingers over
+            // surfaces that navigate nowhere.
+            event.target.style.cursor = 'default';
+            event.target.classList?.remove('noDrag');
           }
         },
         click: (event, chartContext, config) => {
-          if (drilldown) {
+          if (hasDrilldownLink(config)) {
             drilldownEvents.click(event, chartContext, config);
             return;
           }

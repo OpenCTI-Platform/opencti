@@ -276,6 +276,50 @@ describe('horizontalBarsChartOptions with gapped redirections', () => {
   });
 });
 
+describe('horizontalBarsChartOptions falls back to the entity page', () => {
+  // Widgets aggregating on an attribute the drill-down cannot express as a list
+  // filter (`internal_id`, used by every Home dashboard bar chart) resolve no
+  // link. The bar must keep its historical navigation rather than go inert.
+  const redirections = [{ id: 'c', entity_type: 'Tool' }];
+  const barConfig = { seriesIndex: 0, dataPointIndex: '0' };
+
+  const build = (getLink: () => string | null, navigate: () => void, drilldownNavigate: () => void) => horizontalBarsChartOptions(
+    chartTheme, false, undefined, undefined, false, navigate, redirections, false, false, undefined, false, 'normal',
+    { getLink, navigate: drilldownNavigate, buckets: BUCKETS },
+  );
+
+  it('navigates to the entity when the drill-down resolves no link', () => {
+    const navigate = vi.fn();
+    const drilldownNavigate = vi.fn();
+    const options = build(() => null, navigate, drilldownNavigate);
+
+    chartEvents(options).click!(mouseEvent(), {}, barConfig);
+
+    expect(drilldownNavigate).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(expect.stringContaining('/c'));
+  });
+
+  it('keeps the pointer cursor on a bar that falls back to the entity page', () => {
+    const event = mouseEvent();
+    const options = build(() => null, vi.fn(), vi.fn());
+
+    chartEvents(options).mouseMove!(event, {}, barConfig);
+
+    expect(event.target.style.cursor).toBe('pointer');
+  });
+
+  it('prefers the filtered list when the drill-down resolves a link', () => {
+    const navigate = vi.fn();
+    const drilldownNavigate = vi.fn();
+    const options = build(() => '/dashboard/list?filters=x', navigate, drilldownNavigate);
+
+    chartEvents(options).click!(mouseEvent(), {}, barConfig);
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(drilldownNavigate).toHaveBeenCalledWith('/dashboard/list?filters=x');
+  });
+});
+
 type DistributionBucket = { kind: 'distribution'; rawValue: string | null; entityId?: string | null };
 
 const BUCKETS: (DistributionBucket | null)[] = [
