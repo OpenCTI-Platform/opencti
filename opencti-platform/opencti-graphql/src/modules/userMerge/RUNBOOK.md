@@ -209,7 +209,7 @@ query userMergeSourceDeletionReadiness(
 | :--- | :--- | :--- |
 | `allowed` | `Boolean!` | `true` if and only if all three deletion preconditions are satisfied. |
 | `coverage_complete` | `Boolean!` | `true` if all gating register rows are claimed by handlers. |
-| `pending_change_count` | `Int!` | Number of references to the source user that a live dry-run plans to move. Must be `0`. |
+| `pending_change_count` | `Int!` | Number of changes a live dry-run on the pair still plans. Not a count of references: a moved right counts once removed from the source and once granted to the target. Must be `0`. |
 | `blockers` | `[String!]!` | Array of human-readable explanations explaining why deletion is refused. Empty when `allowed` is `true`. |
 
 ---
@@ -530,10 +530,10 @@ query UserMergeCheckReadiness($sourceId: ID!, $targetId: ID!) {
 
 The deletion gate enforces three mandatory conditions:
 1. `coverage_complete === true`: Every gating register row (transfer and conditional, 62 of the 99) is claimed by a handler — this is `gating_uncovered_count === 0`. `covered_count` is expected to stay below 99 and is not what the gate reads: invalidate, retain, and out-of-scope rows are outside the gate.
-2. `pending_change_count === 0`: A live dry-run confirms that zero references still point to the source user.
+2. `pending_change_count === 0`: A live dry-run on the pair plans no change, so nothing still points to the source user.
 3. `merged_into === <targetId>`: The source carries the mark a real merge into **this** target wrote on it.
 
-If `allowed` is `false`, review `blockers`. Re-run the merge if references are still pending.
+If `allowed` is `false`, review `blockers`. Re-run the merge if changes are still planned.
 
 > [!CAUTION]
 > **Never delete a merged source account through Settings → Users.**
