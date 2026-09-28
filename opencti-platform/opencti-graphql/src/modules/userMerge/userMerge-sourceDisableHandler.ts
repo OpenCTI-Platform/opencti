@@ -5,7 +5,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreCommon } from '../../types/store';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
-import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, USER_MERGE_SOURCE_DISABLE_HANDLER } from './userMerge-handler';
+import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, USER_MERGE_SOURCE_DISABLE_HANDLER, USER_MERGE_USER_WRITE } from './userMerge-handler';
 import { USER_MERGED_INTO_FIELD } from './userMerge-types';
 
 const ACCOUNT_STATUS_FIELD = 'account_status';
@@ -84,7 +84,7 @@ export const userMergeSourceDisableHandler: UserMergeHandler = {
     await userEditField(context, SYSTEM_USER, sourceId, [
       { key: ACCOUNT_STATUS_FIELD, value: [ACCOUNT_STATUS_EXPIRED] },
       { key: USER_MERGED_INTO_FIELD, value: [targetId] },
-    ]);
+    ], USER_MERGE_USER_WRITE);
     return 1;
   },
 };

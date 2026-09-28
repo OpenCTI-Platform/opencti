@@ -1091,7 +1091,7 @@ export const validateAndNormalizeEmailInput = async (context, userId, input) => 
   }
 };
 
-export const userEditField = async (context, user, userId, rawInputs) => {
+export const userEditField = async (context, user, userId, rawInputs, opts = {}) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
@@ -1203,7 +1203,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
-  const { element } = await updateAttribute(editContext, editUser, userId, ENTITY_TYPE_USER, inputs);
+  const { element } = await updateAttribute(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;

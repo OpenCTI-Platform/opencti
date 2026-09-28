@@ -2492,6 +2492,8 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   commitMessage?: string;
   bypassIndividualUpdate?: boolean;
   bypassValidation?: boolean;
+  // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
+  skipUserIndividualSync?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2875,7 +2877,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user) && !opts.skipUserIndividualSync) {
       const args = {
         filters: {
           mode: FilterMode.And,
