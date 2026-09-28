@@ -22,7 +22,11 @@ import { UserMergeRightsStrategy, UserMergeStatus } from './userMerge-types';
 export interface UserMergeSourceDeletionReadiness {
   allowed: boolean;
   coverage_complete: boolean;
-  /** References to the source a dry-run still plans to move. Only meaningful when it ran. */
+  /**
+   * Changes a dry-run on the pair still plans. Not a count of references: a moved right is one change
+   * removing it from the source and one granting it to the target. Only its being non-zero decides.
+   * Only meaningful when the dry-run ran.
+   */
   pending_change_count: number;
   /** Human-readable reasons the deletion is refused. Empty when it is allowed. */
   blockers: string[];
@@ -63,7 +67,7 @@ export const computeUserMergeSourceDeletionReadiness = async (
     0,
   );
   if (pending > 0) {
-    blockers.push(`${pending} references to the source are still pending; run the merge again before deleting`);
+    blockers.push(`${pending} changes are still planned on the pair; run the merge again before deleting`);
   }
   return { allowed: blockers.length === 0, coverage_complete: coverage.is_complete, pending_change_count: pending, blockers };
 };

@@ -57,7 +57,7 @@ describe('source deletion gate', () => {
     const result = await readiness();
     expect(result.allowed).toBe(false);
     expect(result.pending_change_count).toEqual(7);
-    expect(result.blockers[0]).toContain('7 references to the source');
+    expect(result.blockers[0]).toContain('7 changes are still planned');
   });
 
   it('should refuse when the dry-run itself did not complete', async () => {
