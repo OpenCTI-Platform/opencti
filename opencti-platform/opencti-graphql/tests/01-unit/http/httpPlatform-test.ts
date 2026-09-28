@@ -5,13 +5,13 @@ import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMet
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
-  const actual:object = await importOriginal();
+  const actual: object = await importOriginal();
   return {
     ...actual,
     logApp: {
       info: vi.fn(),
       error: vi.fn(),
-    }, };
+    } };
 });
 
 const baseUrl = getBaseUrl();

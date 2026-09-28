@@ -99,6 +99,6 @@ describe('Observed sighting rule', () => {
       // Disable the rule
       await disableRule(RuleObserveSighting.id);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

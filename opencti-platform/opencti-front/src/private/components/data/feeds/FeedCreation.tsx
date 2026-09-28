@@ -589,7 +589,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         multiple
                         style={{ width: '100%', marginTop: 20 }}
                         options={entitiesTypes.map((type) => type.value)}
-                        getOptionLabel={(value) => entitiesTypes.find((t) => t.value === value)?.label ?? value}
+                        getOptionLabel={(value: string) => entitiesTypes.find((t) => t.value === value)?.label ?? value}
                       />
                       <Field
                         component={SwitchField}

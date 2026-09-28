@@ -1,7 +1,7 @@
 # To create a module
 
 1. Based on a sample directory as 'Channel', create the new module directory
-2. Modify `graphql-codegen.yml` to add the mapper for the type
+2. Modify `graphql-codegen.ts` to add the mapper for the type
 3. Register the module in `./index.ts`
 4. Add new types in union (2) the main `opencti.graphql` file for types:
    - `StixCoreObjectOrStixCoreRelationship`

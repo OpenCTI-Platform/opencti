@@ -62,4 +62,4 @@ const test = testBase.extend({
     auto: true,
   }],
 });
-export { test, expect };
+export { test, expect, prefixUrl };

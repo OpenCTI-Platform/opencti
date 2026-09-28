@@ -25,4 +25,3 @@ export const EXPECTED_CRYPTOGRAPHIC_KEY = {
   labels: [],
   external_references: [],
 };
-

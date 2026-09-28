@@ -439,7 +439,7 @@ double-quoted string literals; this codebase's style requires single
 quotes), plus a handful of `comma-dangle`/`indent`/naming-convention/import
 findings. Worked around on the consuming side for now — added
 `fds-tokens.generated.ts` + `fds-tokens.generated.meta.json` to
-`opencti-front/eslint.config.js`'s `ignores` (same treatment as
+`opencti-front/eslint.config.ts`'s `ignores` (same treatment as
 `__generated__/**`, the Relay-generated files), since hand-fixing or
 `--fix`-ing a generated file is pointless: the next regeneration would
 reintroduce every violation.

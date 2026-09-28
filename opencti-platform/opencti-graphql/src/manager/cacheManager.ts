@@ -59,6 +59,7 @@ import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusion
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
+import { refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -269,6 +270,8 @@ const platformSettings = (context: AuthContext) => {
     const memberOfOrgs = memberOfRelations.filter((m) => m.entity_type === RELATION_PARTICIPATE_TO)
       .map((mr) => ({ organization: mr.toId, user: mr.fromId }));
     const membersOrganizationMap = new Map(Object.entries(R.groupBy((r) => r.organization, memberOfOrgs)).map(([k, v]) => [k, (v || []).map((t) => t.user)]));
+    // valid_enterprise_edition also follows the XTM license of the last XTM One registration answer.
+    await refreshXtmLicenseProof();
     return fullEntitiesList<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]).then((settings) => {
       return settings.map((s) => {
         const auditListenerIds = s.activity_listeners_ids ?? [];

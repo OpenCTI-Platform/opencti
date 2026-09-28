@@ -131,6 +131,7 @@ import {
   isDateNumericOrBooleanAttribute,
   isNumericAttribute,
   isObjectFlatAttribute,
+  isObjectRawAttribute,
   schemaAttributesDefinition,
   validateDataBeforeIndexing,
 } from '../schema/schema-attributes';
@@ -3204,7 +3205,7 @@ export const elLoadBy = async <T extends BasicStoreBase>(
   user: AuthUser,
   field: string,
   value: any,
-  type = null,
+  type: string | null = null,
   indices: string[] = READ_DATA_INDICES,
 ) => {
   const filters = {
@@ -4493,7 +4494,7 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
     } else if (isNumericAttribute(key)) {
       thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
-    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
+    } else if (R.is(Object, value) && Object.keys(value).length > 0 && !isObjectRawAttribute(key)) { // For complex object, prepare inner elements
       thing[key] = await prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default
       thing[key] = value.trim();

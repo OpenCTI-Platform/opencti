@@ -264,8 +264,12 @@ describe('reportWorkflowAsyncActionResult', () => {
     (storeLoadById as any).mockResolvedValue(
       makeInstance({ pendingTransition: JSON.stringify(pt) }),
     );
-    (ActionRegistry as any).actionA = vi.fn().mockImplementation(() => { calls.push('A'); });
-    (ActionRegistry as any).actionB = vi.fn().mockImplementation(() => { calls.push('B'); });
+    (ActionRegistry as any).actionA = vi.fn().mockImplementation(() => {
+      calls.push('A');
+    });
+    (ActionRegistry as any).actionB = vi.fn().mockImplementation(() => {
+      calls.push('B');
+    });
     (updateAttribute as any).mockResolvedValue({});
 
     await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
@@ -345,8 +349,12 @@ describe('reportWorkflowAsyncActionResult', () => {
     (storeLoadById as any).mockResolvedValue(
       makeInstance({ pendingTransition: JSON.stringify(pt) }),
     );
-    (ActionRegistry as any).syncFirst = vi.fn().mockImplementation(() => { executionOrder.push('sync'); });
-    (ActionRegistry as any).onEnterSecond = vi.fn().mockImplementation(() => { executionOrder.push('onEnter'); });
+    (ActionRegistry as any).syncFirst = vi.fn().mockImplementation(() => {
+      executionOrder.push('sync');
+    });
+    (ActionRegistry as any).onEnterSecond = vi.fn().mockImplementation(() => {
+      executionOrder.push('onEnter');
+    });
     (updateAttribute as any).mockResolvedValue({});
 
     await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
@@ -409,7 +417,7 @@ describe('reportWorkflowAsyncActionResult', () => {
         id: 'entity-id',
         internal_id: 'entity-id',
         entity_type: 'DraftWorkspace',
-        'createdBy': 'org-author-id',
+        createdBy: 'org-author-id',
         creator_id: 'creator-id',
       };
       const pt = makePendingTransition({
@@ -445,7 +453,7 @@ describe('reportWorkflowAsyncActionResult', () => {
         id: 'entity-id',
         internal_id: 'entity-id',
         entity_type: 'DraftWorkspace',
-        'createdBy': 'org-author-id',
+        createdBy: 'org-author-id',
       };
       const pt = makePendingTransition({
         asyncActions: [

@@ -78,27 +78,27 @@ describe('indicator utils', () => {
     };
     testIndicatorPattern(
       '[ipv4-addr:value   =   \'198.51.100.1/32\']',
-      '[ipv4-addr:value = \'198.51.100.1/32\']'
+      '[ipv4-addr:value = \'198.51.100.1/32\']',
     );
     testIndicatorPattern(
       ' [   file:extensions.\'windows-pebinary-ext\'.sections[*].entropy   > 7.0    ]  ',
-      '[file:extensions.\'windows-pebinary-ext\'.sections[*].entropy > 7.0]'
+      '[file:extensions.\'windows-pebinary-ext\'.sections[*].entropy > 7.0]',
     );
     testIndicatorPattern(
       '[    network-traffic:dst_ref.value = \'phones-luxury   at.ply.gg\' AND     network-traffic:dst_port    =     12864     ]',
-      '[network-traffic:dst_ref.value = \'phones-luxury   at.ply.gg\' AND network-traffic:dst_port = 12864]'
+      '[network-traffic:dst_ref.value = \'phones-luxury   at.ply.gg\' AND network-traffic:dst_port = 12864]',
     );
     testIndicatorPattern(
       '[ network-traffic:src_ref.value = \'203.0.113.10\' AND network-traffic:dst_ref.value = \'198.51.100.58\' ]',
-      '[network-traffic:src_ref.value = \'203.0.113.10\' AND network-traffic:dst_ref.value = \'198.51.100.58\']'
+      '[network-traffic:src_ref.value = \'203.0.113.10\' AND network-traffic:dst_ref.value = \'198.51.100.58\']',
     );
     testIndicatorPattern(
       '([ipv4-addr:value = \'198.51.100.1/32\' OR ipv4-addr:value = \'203.0.113.33/32\' OR ipv6-addr:value = \'2001:0db8:dead:beef:dead:beef:dead:0001/128\'] FOLLOWEDBY [domain-name:value = \'example.com\']) WITHIN   600    SECONDS   ',
-      '([ipv4-addr:value = \'198.51.100.1/32\' OR ipv4-addr:value = \'203.0.113.33/32\' OR ipv6-addr:value = \'2001:0db8:dead:beef:dead:beef:dead:0001/128\'] FOLLOWEDBY [domain-name:value = \'example.com\']) WITHIN 600 SECONDS'
+      '([ipv4-addr:value = \'198.51.100.1/32\' OR ipv4-addr:value = \'203.0.113.33/32\' OR ipv6-addr:value = \'2001:0db8:dead:beef:dead:beef:dead:0001/128\'] FOLLOWEDBY [domain-name:value = \'example.com\']) WITHIN 600 SECONDS',
     );
     testIndicatorPattern(
       '[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']',
-      '[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']'
+      '[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']',
     );
   });
   it('should valid_from default', async () => {
@@ -108,7 +108,7 @@ describe('indicator utils', () => {
   it('should valid_from created', async () => {
     const { validFrom, validUntil } = await computeValidPeriod({
       ...DEFAULT_PARAM,
-      created: '2023-01-21T17:57:09.266Z'
+      created: '2023-01-21T17:57:09.266Z',
     }, FALLBACK_DECAY_RULE.decay_lifetime);
     expect(validFrom.toISOString()).toBe('2023-01-21T17:57:09.266Z');
     expect(validUntil.toISOString()).toBe('2024-05-05T17:57:09.266Z');
@@ -117,7 +117,7 @@ describe('indicator utils', () => {
     const { validFrom, validUntil, revoked } = await computeValidPeriod({
       ...DEFAULT_PARAM,
       revoked: true,
-      created: '2023-01-21T17:57:09.266Z'
+      created: '2023-01-21T17:57:09.266Z',
     }, FALLBACK_DECAY_RULE.decay_lifetime);
     expect(revoked).toBe(true);
     expect(validFrom.toISOString()).toBe('2023-01-21T17:57:09.266Z');
@@ -127,7 +127,7 @@ describe('indicator utils', () => {
     const { validFrom, validUntil } = await computeValidPeriod({
       ...DEFAULT_PARAM,
       valid_from: '2023-02-21T17:57:09.266Z',
-      created: '2023-01-21T17:57:09.266Z'
+      created: '2023-01-21T17:57:09.266Z',
     }, FALLBACK_DECAY_RULE.decay_lifetime);
     expect(validFrom.toISOString()).toBe('2023-02-21T17:57:09.266Z');
     expect(validUntil.toISOString()).toBe('2024-06-05T17:57:09.266Z');
@@ -139,7 +139,7 @@ describe('indicator utils', () => {
     expect(ttl).toBe(DEFAULT_INDICATOR_TTL);
     ttl = await computeValidTTL(testContext, ADMIN_USER, {
       ...DEFAULT_PARAM,
-      x_opencti_main_observable_type: 'wrong'
+      x_opencti_main_observable_type: 'wrong',
     });
     expect(ttl).toBe(DEFAULT_INDICATOR_TTL);
     ttl = await computeValidTTL(testContext, ADMIN_USER, { ...DEFAULT_PARAM, objectMarking: ['invalid'] });

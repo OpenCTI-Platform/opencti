@@ -121,6 +121,8 @@ describe('userMerge engine', () => {
     const result = await execute(false);
     expect(result.status).toEqual(UserMergeStatus.Failed);
     expect(result.message).toContain('Platform state changed');
+    expect(result.message).toContain('dry only [user.password|User|1|true]');
+    expect(result.message).toContain('real only [user.password|User|2|true]');
     expect(apply).not.toHaveBeenCalled();
   });
 

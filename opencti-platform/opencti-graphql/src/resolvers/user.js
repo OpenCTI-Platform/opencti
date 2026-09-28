@@ -27,6 +27,7 @@ import {
   otpUserDeactivation,
   otpUserGeneration,
   otpUserLogin,
+  resolveUserById,
   roleAddRelation,
   roleCapabilities,
   roleCleanContext,
@@ -212,8 +213,11 @@ const userResolvers = {
   },
   Subscription: {
     me: {
-      resolve: /* v8 ignore next */ (payload, _, context) => {
-        return buildCompleteUser(context, payload.instance);
+      resolve: /* v8 ignore next */ async (payload, _, context) => {
+        // The payload snapshot can be older than the current user, and the client applies
+        // payloads as they arrive: sending it would roll the client back.
+        const currentUser = await resolveUserById(context, payload.instance.id);
+        return currentUser ?? buildCompleteUser(context, payload.instance);
       },
       subscribe: /* v8 ignore next */ (_, __, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_USER];

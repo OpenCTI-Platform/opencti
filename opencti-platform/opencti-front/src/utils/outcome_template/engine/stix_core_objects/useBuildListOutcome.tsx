@@ -106,10 +106,10 @@ const useBuildListOutcome = () => {
           {nodes.map((n) => (
             <tr key={n.id}>
               {columns.map((col) => {
-                let property;
+                let property: DisplayInputValue;
                 const attributePath = resolveWorkflowPath(col.attribute);
                 try {
-                  property = getObjectPropertyWithoutEmptyValues(n, attributePath);
+                  property = getObjectPropertyWithoutEmptyValues(n, attributePath) as DisplayInputValue;
                 } catch (_e) {
                   property = '';
                 }

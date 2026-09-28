@@ -73,11 +73,11 @@ interface WorkflowDefinitionEntity extends BasicStoreEntity {
   all_versions: WorkflowVersion[];
 }
 
-interface WorkflowDefinitionResponse extends WorkflowSchema {
+export interface WorkflowDefinitionResponse extends WorkflowSchema {
   published: boolean;
 }
 
-interface EntitySettingWithWorkflowResponse {
+export interface EntitySettingWithWorkflowResponse {
   errors: WorkflowValidationError[];
   published: boolean;
   id: string;

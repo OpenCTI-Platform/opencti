@@ -14,7 +14,9 @@ indicatorList.push(getMockIndicator());
 vi.mock('../../../src/modules/indicator/indicator-domain', () => {
   return {
     findIndicatorsForDecay: vi.fn()
-      .mockImplementation(() => { return indicatorList; }),
+      .mockImplementation(() => {
+        return indicatorList;
+      }),
     updateIndicatorDecayScore: vi.fn()
       .mockImplementationOnce(() => { /* Do nothing */ })
       .mockImplementationOnce(() => {

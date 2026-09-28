@@ -141,7 +141,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
     navigate,
     location,
     LOCAL_STORAGE_KEY,
-  ), (params) => ({
+  ), (params: Partial<ReportKnowledgeComponentState>) => ({
     currentModeOnlyActive: params['currentModeOnlyActive'] ?? false,
     currentKillChain: params['currentKillChain'] ?? 'mitre-attack',
     timeLineDisplayRelationships: params['timeLineDisplayRelationships'] ?? false,

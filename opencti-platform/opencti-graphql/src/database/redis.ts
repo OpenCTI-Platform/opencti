@@ -72,7 +72,9 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 };
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
-  const redisOpts = await redisOptions(provider, false, conf.get('redis:tls_servername'));
+  const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
+  const omitTLSServerName = booleanConf('tls_cluster_node_mode');
+  const redisOpts = await redisOptions(provider, false, omitTLSServerName ? undefined : tlsServername);
   return {
     keyPrefix: REDIS_PREFIX,
     lazyConnect: true,
@@ -410,7 +412,15 @@ const getStackTrace = () => {
   Error.captureStackTrace(obj, getStackTrace);
   return obj.stack;
 };
-export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
+export interface LockHandle {
+  signal: AbortSignal;
+  extend: () => Promise<void>;
+  acquireWaitMs: number;
+  acquireAttempts: number;
+  unlock: () => Promise<void>;
+}
+
+export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;

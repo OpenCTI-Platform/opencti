@@ -1,5 +1,5 @@
 import { FILTER_KEY_TESTERS_MAP } from './stix-testers';
-import { type FilterEventContext, testFilterGroup } from '../boolean-logic-engine';
+import { type FilterEventContext, type ReadonlyStix, testFilterGroup } from '../boolean-logic-engine';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../../access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { getEntitiesMapFromCache } from '../../../database/cache';
@@ -52,7 +52,7 @@ export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
 export const isStixMatchFilterGroup_MockableForUnitTests = async (
   context: AuthContext,
   user: AuthUser,
-  stix: any,
+  stix: ReadonlyStix,
   filterGroup: FilterGroup | undefined,
   resolutionMap: FilterResolutionMap,
   eventContext?: FilterEventContext,
@@ -63,7 +63,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   if (filterGroup) validateFilterGroupForStixMatch(filterGroup);
 
   // first check: user access right to the element (according to markings, organization, etc.)
-  const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix);
+  const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix as StixObject);
   if (!isUserHasAccessToElement) {
     return false;
   }

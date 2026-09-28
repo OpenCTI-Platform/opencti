@@ -15,7 +15,7 @@ describe('Stix representative tests', () => {
           {
             type: ENTITY_TYPE_CONTAINER_REPORT,
           },
-      }
+      },
     } as unknown as StixObject;
     expect(extractStixRepresentative(report)).toEqual('My Report');
     const city = {
@@ -26,7 +26,7 @@ describe('Stix representative tests', () => {
           {
             type: ENTITY_TYPE_LOCATION_CITY,
           },
-      }
+      },
     } as unknown as StixObject;
     expect(extractStixRepresentative(city)).toEqual('My City');
     const externalReference = {
@@ -38,7 +38,7 @@ describe('Stix representative tests', () => {
           {
             type: ENTITY_TYPE_EXTERNAL_REFERENCE,
           },
-      }
+      },
     } as unknown as StixObject;
     expect(extractStixRepresentative(externalReference)).toEqual('source (23)');
     const relationship = {
@@ -51,7 +51,7 @@ describe('Stix representative tests', () => {
             source_value: 'T234',
             target_value: 'My City',
           },
-      }
+      },
     } as unknown as StixObject;
     expect(extractStixRepresentative(relationship)).toEqual('T234 located-at My City');
   });
@@ -66,7 +66,7 @@ describe('Stix representative tests', () => {
             source_value: 'T234',
             target_value: 'My City',
           },
-      }
+      },
     } as unknown as StixObject;
     expect(extractStixRepresentative(relationship, { fromRestricted: true, toRestricted: false })).toEqual('Restricted located-at My City');
     expect(extractStixRepresentative(relationship, { fromRestricted: false, toRestricted: true })).toEqual('T234 located-at Restricted');
@@ -83,7 +83,7 @@ describe('Stix representative tests', () => {
             source_value: 'T234',
             target_value: 'My City',
           },
-      }
+      },
     } as unknown as StixObject;
     expect(extractStixRepresentative(relationship, { fromRestricted: true, toRestricted: false }, true)).toEqual('Restricted ➡️ My City');
     expect(extractStixRepresentative(relationship, { fromRestricted: false, toRestricted: true }, true)).toEqual('T234 ➡️ Restricted');

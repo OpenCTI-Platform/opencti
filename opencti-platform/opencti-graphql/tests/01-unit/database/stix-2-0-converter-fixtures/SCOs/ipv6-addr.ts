@@ -27,4 +27,3 @@ export const EXPECTED_IPV6 = {
   resolves_to_refs: [],
   belongs_to_refs: [],
 };
-

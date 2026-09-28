@@ -2485,7 +2485,7 @@ const resolveRefsForInputs = async (
   return revolvedInputs;
 };
 
-type UpdateAttributeMetaResolvedOpts = {
+type UpdateAttributeMetaResolvedOpts = EventOpts & {
   locks?: string[];
   impactStandardId?: boolean;
   references?: string[];

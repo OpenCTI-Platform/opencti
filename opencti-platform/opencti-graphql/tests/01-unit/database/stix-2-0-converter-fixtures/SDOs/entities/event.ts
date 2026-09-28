@@ -42,4 +42,3 @@ export const EXPECTED_EVENT = {
   stop_time: '2026-04-07T22:00:00.000Z',
   aliases: ['event-alias'],
 };
-

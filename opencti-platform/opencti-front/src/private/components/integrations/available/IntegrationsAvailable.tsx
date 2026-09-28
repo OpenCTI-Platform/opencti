@@ -314,6 +314,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
           connector={catalogState.selectedConnector}
           onClose={handleCloseDeployDialog}
           catalogId={catalogState.selectedCatalogId}
+          isEnterpriseEdition={isEnterpriseEdition}
           hasActiveManagers={catalogState.hasActiveManagers}
           onCreate={handleCreate}
           deploymentCount={catalogState.deploymentCount}

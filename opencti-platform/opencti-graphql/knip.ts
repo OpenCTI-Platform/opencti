@@ -1,19 +1,19 @@
 import { defineConfig } from 'knip/config';
-import { BUILD_ENTRY_POINTS } from './builder/entry-points.js';
+import { BUILD_ENTRY_POINTS } from './builder/entry-points.ts';
 
 export default defineConfig({
   entry: [
     ...BUILD_ENTRY_POINTS,
     'tests/**/*-test.{ts,js}',
     'vitest.config*.ts',
-    // Spawned as its own process by builder/dev/watch.js, which knip cannot follow.
-    'builder/dev/graphqlSchemaWatch.js',
+    // Spawned as its own process by builder/dev/watch.ts, which knip cannot follow.
+    'builder/dev/graphqlSchemaWatch.ts',
   ],
   project: [
     'src/**/*.{ts,js}',
     'tests/**/*.{ts,js}',
     'script/**/*.{ts,js}',
-    'builder/**/*.{js,cjs,mjs}',
+    'builder/**/*.{ts,cts}',
   ],
   ignore: [
     'src/generated/**',

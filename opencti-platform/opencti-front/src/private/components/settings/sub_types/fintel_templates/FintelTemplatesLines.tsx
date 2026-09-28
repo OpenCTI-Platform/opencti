@@ -58,7 +58,7 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
       label: 'Default',
       percentWidth: 15,
       isSortable: true,
-      render: ({ default: isDefault }) => isDefault ? (
+      render: ({ default: isDefault }: { default: boolean }) => isDefault ? (
         <Tag
           color={theme.palette.success.main}
           label={t_i18n('Default')}

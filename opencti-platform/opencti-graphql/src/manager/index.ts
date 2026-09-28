@@ -11,3 +11,5 @@ import './syncInflightCleanupManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';
 import './xtmOneRegistrationManager';
+import './dataSanityManager';
+import '../modules/catalog/catalog-manager';
