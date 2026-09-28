@@ -144,6 +144,26 @@ export default class DashboardWidgetsPageModel {
     await this.createWidget();
   }
 
+  /**
+   * A distribution of entities by type, whose per-bucket count is rendered as
+   * plain text -- which is what makes the drill-down invariant observable.
+   */
+  async createDistributionListOfEntities() {
+    await this.openWidgetModal();
+    await this.selectWidget('List (distribution)');
+    await this.selectPerspective('Entities');
+    await this.filters.addFilter('Entity type', 'Entity');
+    await this.filters.addFilter('Label', 'e2e');
+    await this.validateFilters();
+    await this.titleField.fill('Distribution of entities');
+    await this.attributeFieldMain.selectOption('Entity type');
+    await this.createWidget();
+  }
+
+  getWidgetDistributionCounts() {
+    return this.page.getByTestId('widget-distribution-count');
+  }
+
   async createHorizontalBreakdownOfMalwares() {
     await this.openWidgetModal();
     await this.selectWidget('Horizontal Bar');

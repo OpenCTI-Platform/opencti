@@ -140,6 +140,7 @@ const WidgetDistributionList = ({
                   component={Link}
                   to={drilldownLink}
                   className="noDrag"
+                  data-testid="widget-distribution-count"
                   sx={{
                     ...countStyle,
                     textDecoration: 'none',
@@ -149,7 +150,7 @@ const WidgetDistributionList = ({
                   {n(entry.value)}
                 </Box>
               ) : (
-                <div style={countStyle}>
+                <div style={countStyle} data-testid="widget-distribution-count">
                   {n(entry.value)}
                 </div>
               )}
