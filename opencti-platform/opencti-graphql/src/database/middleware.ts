@@ -170,6 +170,7 @@ import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
+  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
@@ -1884,6 +1885,10 @@ const mergeEntitiesRaw = async (
       // standard_id of merged entities must be kept in x_opencti_stix_ids
       if (targetFieldKey === IDS_STIX) {
         pushAll(sourceValues, sourceEntities.map((s) => s.standard_id));
+      }
+      // The merging user is folded into this same creator_id update (instead of a separate one) to avoid a second EditInput silently overwriting it.
+      if (targetFieldKey === 'creator_id' && !INTERNAL_USERS[user.id] && !user.no_creators) {
+        pushAll(sourceValues, [user.id]);
       }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
