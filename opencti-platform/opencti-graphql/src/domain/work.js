@@ -45,7 +45,7 @@ export const workToExportFile = (work) => {
 };
 
 export const loadWorkById = async (context, user, workId) => {
-  const action = await elLoadById(context, user, workId, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
+  const action = await elLoadById(context, user, workId, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY, searchCaller: 'works' });
   return action ? R.assoc('id', workId, action) : action;
 };
 

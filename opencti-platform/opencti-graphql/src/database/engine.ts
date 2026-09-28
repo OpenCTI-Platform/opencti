@@ -199,6 +199,9 @@ import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
 import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
 import { isEsScriptFilterEnabled } from './engine-config';
+import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
+import { getCurrentWriteBuffer, type SequencerWriteBuffer } from './sequencer/sequencer-write-buffer';
+import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { AbortError } from 'node-fetch';
 import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
@@ -210,6 +213,18 @@ export const ES_IS_OLD_MAPPING: boolean = ES_INIT_MAPPING_MIGRATION === 'old';
 export const ES_IS_INIT_MIGRATION: boolean = ES_INIT_MAPPING_MIGRATION === 'standard' || ES_IS_OLD_MAPPING;
 export const ES_MINIMUM_FIXED_PAGINATION: number = 20; // When really low pagination is better by default
 export const ES_DEFAULT_PAGINATION: number = conf.get('elasticsearch:default_pagination_result') || 500;
+// POC (ingestion bench, work-log task 0020 lineage): ES write refresh policy. refresh:true on
+// every write is the platform's read-your-writes guarantee (the dedup existence check is a
+// SEARCH: an unrefreshed create is invisible and would be re-created). These knobs allow
+// benching wait_for/false per write class; defaults keep the product behavior.
+// 'true' | 'wait_for' | 'false' via APP__PERFORMANCE__ES_WRITE_REFRESH_{CREATE,UPDATE}
+const parseRefreshConf = (key: string): boolean | 'wait_for' => {
+  const v = String(conf.get(key) ?? 'true');
+  return v === 'wait_for' ? 'wait_for' : v !== 'false';
+};
+const ES_REFRESH_CREATE = parseRefreshConf('app:performance:es_write_refresh_create');
+const ES_REFRESH_UPDATE = parseRefreshConf('app:performance:es_write_refresh_update');
+
 export const ES_MAX_PAGINATION: number = conf.get('elasticsearch:max_pagination_result') || 5000;
 export const MAX_BULK_OPERATIONS: number = conf.get('elasticsearch:max_bulk_operations') || 5000;
 export const MAX_RUNTIME_RESOLUTION_SIZE: number = conf.get('elasticsearch:max_runtime_resolutions') || 5000;
@@ -618,6 +633,8 @@ export const retryElOperations = async (operation: () => Promise<any>): Promise<
 };
 
 export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
+  // POC sequencer (plan 0010 step 1): denominator for the caller-labeled search decomposition
+  sequencerMetrics.searchCaller('_all');
   // Add default signal to prevent unwanted warning
   // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
   const requestAbortSignal = context?.requestAbortSignal ?? new AbortController().signal;
@@ -708,6 +725,9 @@ export const elRawBulk = async (context: AuthContext, args: any) => {
   return retryElOperations(bulkOperation);
 };
 export const elRawUpdateByQuery = async (query: any) => {
+  // POC ingestion sequencer (plan 0009 D6): mass rewrite with an unknown id scope, the
+  // identity map clears entirely (rare operation: rules, renames, background maintenance)
+  sequencerIdentityBarrier();
   const rawUpdateOperation = async () => {
     if (engine instanceof ElkClient) {
       const r = await engine.updateByQuery(query);
@@ -1364,7 +1384,8 @@ export const elCreateIndex = async (index: string) => {
   const mappingProperties = engineMappingGenerator(engine);
   return elCreateIndexWithMapping(index, mappingProperties);
 };
-const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
+// exported for the sequencer's own stores (pending intents / pending refs), which carry their own mapping
+export const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;
@@ -1620,6 +1641,9 @@ export type ElFindByIdsOpts = {
   relCount?: boolean | null;
   includeDeletedInDraft?: boolean | null;
   historyFiltering?: boolean;
+  // POC sequencer (plan 0010 step 1): caller label for the search decomposition; only searches
+  // actually issued to ES are counted (identity-map-served calls never reach the counter)
+  searchCaller?: string;
 };
 
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
@@ -1642,13 +1666,29 @@ export const elFindByIds = async <T extends BasicStoreBase>(
   } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type] as string[];
-  const processIds = idsArray.filter((id) => isNotEmptyField(id));
+  let processIds = idsArray.filter((id) => isNotEmptyField(id));
   if (processIds.length === 0) {
     return toMap ? {} as Record<string, T> : [] as T[];
   }
+  const hits: T[] = [];
+  // POC ingestion sequencer (plan 0009 C4): under an applying batch, the identity map serves
+  // known ids from memory (user-filtered) and only the misses reach ES; fresh ES hits feed the
+  // map below. The map itself refuses ineligible opts (withoutRels:false, relCount, drafts...).
+  const sequencerResolutions = context.sequencer?.resolutions;
+  let sequencerServed = false;
+  if (sequencerResolutions) {
+    const served = await sequencerResolutions.serveBare(context, user, processIds, opts as Record<string, unknown>);
+    if (served) {
+      sequencerServed = true;
+      pushAll(hits, served.hits as T[]);
+      processIds = served.misses;
+      if (processIds.length === 0) {
+        return toMap ? elConvertHitsToMap<T>(hits, { mapWithAllIds }) : hits;
+      }
+    }
+  }
   const queryIndices = computeQueryIndices(indices, types);
   const computedIndices = getIndicesToQuery(context, user, queryIndices);
-  const hits: T[] = [];
   // Leave room in split size compared to max pagination to minimize data loss risk in case of duplicated ids in database
   const splitSize = Math.max(ES_MAX_PAGINATION / 2, ES_DEFAULT_PAGINATION);
   const groupIds = R.splitEvery(splitSize, processIds);
@@ -1727,6 +1767,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
       query.docvalue_fields = REL_DEFAULT_FETCH;
     }
     logApp.debug('[SEARCH] elInternalLoadById', { query });
+    sequencerMetrics.searchCaller(opts.searchCaller ?? 'unlabeled');
     const searchType = `${ids} (${types ? (types as string[]).join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
       throw wrapEngineError('Find direct ids fail', err, { query: JSON.stringify(query), searchType });
@@ -1741,6 +1782,10 @@ export const elFindByIds = async <T extends BasicStoreBase>(
     }
     if (elements.length > 0) {
       const convertedHits = await elConvertHits<T>(elements);
+      if (sequencerServed) {
+        // fresh ES results (bare, with security docvalues merged) feed the identity map
+        sequencerResolutions?.ingestBare(convertedHits as any[]);
+      }
       pushAll(hits, convertedHits);
     }
   }
@@ -3120,6 +3165,67 @@ export const elPaginate = async <T extends BasicStoreBase>(
     throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query: JSON.stringify(query), queryArguments: options });
   }
 };
+// POC sequencer (2026-09-25): several list paginations in ONE engine round trip (msearch),
+// for the batch pre-resolution's relation dedup prefetch. Each request is built exactly like
+// elPaginate's (body, size cap, _source, docvalue_fields, indices); a request that needs
+// regardingOf post-filtering is not batched (null: the caller keeps its single path). The
+// engine still runs one task per sub-search, max_concurrent_searches bounds how many run at
+// once; what goes away is the per-search HTTP round trip and client work on the platform. A
+// failed sub-search (rejection, shard failure) yields null, never a partial answer.
+export const elPaginateMany = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  requests: { indexName: string | string[] | undefined | null; options: PaginateOpts }[],
+  maxConcurrentSearches: number,
+): Promise<(T[] | null)[]> => {
+  const prepared: ({ header: Record<string, any>; body: Record<string, any> } | null)[] = [];
+  for (let i = 0; i < requests.length; i += 1) {
+    const { indexName, options } = requests[i];
+    const { baseData = false, baseFields = [], bypassSizeLimit = false, withoutRels = true, noRegardingOfFilterIdsCheck = false } = options;
+    if (tagFiltersForPostFiltering(options.filters, noRegardingOfFilterIdsCheck)) {
+      prepared.push(null);
+    } else {
+      const body: any = await elQueryBodyBuilder(context, user, options);
+      if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) body.size = ES_MAX_PAGINATION;
+      const _source: { excludes: string[]; includes?: string[] } = { excludes: [] };
+      if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
+      if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
+      prepared.push({
+        header: { index: getIndicesToQuery(context, user, indexName) },
+        body: { ...body, _source, track_total_hits: true, ...(withoutRels ? { docvalue_fields: REL_DEFAULT_FETCH } : {}) },
+      });
+    }
+  }
+  const live = prepared.filter((p): p is { header: Record<string, any>; body: Record<string, any> } => p !== null);
+  if (live.length === 0) return prepared.map(() => null);
+  live.forEach(() => sequencerMetrics.searchCaller('_all'));
+  sequencerMetrics.searchCaller('msearch_calls');
+  const searches = live.flatMap((p) => [p.header, p.body]);
+  const requestAbortSignal = context?.requestAbortSignal ?? new AbortController().signal;
+  const result = await retryElOperations(async () => elExecuteWithAbortSignal(
+    requestAbortSignal,
+    (opts) => (engine as ElkClient).msearch({ searches, max_concurrent_searches: maxConcurrentSearches } as any, opts),
+    () => (engine as OpenClient).msearch({ body: searches, max_concurrent_searches: maxConcurrentSearches } as any),
+  ));
+  const responses: any[] = result?.responses ?? [];
+  const out: (T[] | null)[] = [];
+  let cursor = 0;
+  for (let i = 0; i < prepared.length; i += 1) {
+    if (prepared[i] === null) {
+      out.push(null);
+    } else {
+      const response = responses[cursor];
+      cursor += 1;
+      if (!response || response.error || (response._shards?.failed ?? 0) > 0) {
+        out.push(null);
+      } else {
+        out.push(await elConvertHits<T>(response.hits.hits));
+      }
+    }
+  }
+  return out;
+};
+
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
   maxSize?: number;
   logForMigration?: boolean;
@@ -3863,6 +3969,15 @@ export const elBulk = async (context: AuthContext, args: any) => {
       } else {
         permanentErrors.push(error);
       }
+      // document_missing items used to be swallowed in COMPLETE silence: each one is a
+      // side-write (denorm impact, update op) that never landed, i.e. a lost edge unless
+      // something replays it (verdict 31 hunt, write-path reference note).
+      const swallowed = data.items
+        .filter((i: any) => (i.index?.error ?? i.update?.error)?.type === DOCUMENT_MISSING_EXCEPTION)
+        .map((i: any) => ({ id: (i.index ?? i.update)?._id, index: (i.index ?? i.update)?._index }));
+      if (swallowed.length > 0) {
+        logApp.warn('[SEARCH] bulk swallowed document_missing items', { count: swallowed.length, sample: swallowed.slice(0, 5) });
+      }
     }
     if (permanentErrors.length > 0) {
       // So here we have permanent errors, we cannot continue, we need to throw an error with the details of the permanent errors.
@@ -3935,6 +4050,13 @@ export const elUpdate = async (
   documentBody: any,
   retry = ES_RETRY_ON_CONFLICT,
 ) => {
+  // POC ingestion sequencer (plan 0009 E1): the upsert's scripted update (elReplace path) is
+  // buffered while a batch intent is applying; flushed in one refresh:false bulk at commit.
+  const sequencerBuffer = (context as any)?.sequencer?.scope === 'applying' ? getCurrentWriteBuffer() : null;
+  if (sequencerBuffer) {
+    sequencerBuffer.addUpdateOp({ index: indexName, id: documentId, body: documentBody, retry });
+    return { result: 'buffered' };
+  }
   const updateOperation = async () => {
     const entityType = documentBody.entity_type ? documentBody.entity_type : '';
     const updateRequest = {
@@ -3942,7 +4064,7 @@ export const elUpdate = async (
       index: indexName,
       retry_on_conflict: retry,
       timeout: BULK_TIMEOUT,
-      refresh: true,
+      refresh: ES_REFRESH_UPDATE,
       body: documentBody,
     };
     try {
@@ -4687,13 +4809,24 @@ export const buildDenormalizedRefsScriptParams = (targetsElements: DenormalizedR
     new_pir_information: newPirInformation,
   };
 };
+// POC ingestion sequencer (plan 0009 E1): while a batch intent is applying, the whole call is
+// buffered and re-emitted at flush through ONE elIndexElements call for the batch, whose
+// per-impacted-id grouping below then merges denormalization side-writes across intents.
+// opts.refresh lets the flush write with refresh:false (one explicit refresh per batch).
 export const elIndexElements = async (
   context: AuthContext,
   user: AuthUser,
   indexingType: string | undefined,
   elements: Record<string, any>[],
+  opts: { refresh?: boolean | string } = {},
 ) => {
   validateElementsToIndex(context, user, elements);
+  const sequencerBuffer = (context as any).sequencer?.scope === 'applying' ? getCurrentWriteBuffer() : null;
+  if (sequencerBuffer) {
+    sequencerBuffer.addIndexCall(indexingType, elements);
+    return elements.length;
+  }
+  const refreshPolicy = opts.refresh ?? ES_REFRESH_CREATE;
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(context, user, elements);
@@ -4711,7 +4844,7 @@ export const elIndexElements = async (
       });
       if (body.length > 0) {
         meterManager.directBulk(body.length, { type: indexingType });
-        await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body });
+        await elBulk(context, { refresh: refreshPolicy, timeout: BULK_TIMEOUT, body });
       }
     }
     // 02. If relation, generate impacts for from and to sides
@@ -4771,7 +4904,7 @@ export const elIndexElements = async (
         ]);
         if (bodyUpdate.length > 0) {
           meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-          const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          const bulkPromise = elBulk(context, { refresh: refreshPolicy, timeout: BULK_TIMEOUT, body: bodyUpdate });
           await Promise.all([bulkPromise]);
         }
       }
@@ -4788,6 +4921,74 @@ export const elIndexElements = async (
   }, elIndexElementsFn);
 };
 
+// POC ingestion sequencer (plan 0009 E1). Mirror of the impact rule of elIndexElements above,
+// counting only: which entity documents would receive a denormalization side-write for these
+// elements. Used at flush to measure the cross-intent grouping (per-call sum vs whole batch).
+const countImpactedTargets = (elements: Record<string, any>[]): Set<string> => {
+  const impacted = new Set<string>();
+  elements.forEach((e: any) => {
+    if (e.base_type !== BASE_TYPE_RELATION) return;
+    const { fromType, fromRole, toType, toRole, entity_type: relationshipType } = e;
+    if (isImpactedRole(relationshipType, fromType, toType, fromRole)) impacted.add(e.fromId);
+    if (isImpactedRole(relationshipType, fromType, toType, toRole)) impacted.add(e.toId);
+  });
+  return impacted;
+};
+
+export const elRefreshIndices = async (indices: string[]) => {
+  const refreshOperation = async () => {
+    if (engine instanceof ElkClient) {
+      await engine.indices.refresh({ index: indices.join(',') });
+    } else {
+      await (engine as OpenClient).indices.refresh({ index: indices.join(',') });
+    }
+  };
+  return retryElOperations(refreshOperation);
+};
+
+// POC ingestion sequencer (plan 0009 E1/E5/E6). Flush one batch's buffered writes: ONE
+// elIndexElements call for every buffered create (documents bulk + side-writes grouped across
+// intents by the existing per-impacted-id logic), one bulk for the buffered scripted updates,
+// all refresh:false, then ONE refresh of the touched indices. On bulk failure the caller
+// rejects the batch's intents (workers retry through the full existence-checking path, so the
+// non-idempotent addAll scripts are never replayed as-is); the refresh still runs so whatever
+// DID land is searchable before those retries, or re-creates would duplicate.
+export const elFlushSequencerWrites = async (context: AuthContext, user: AuthUser, buffer: SequencerWriteBuffer) => {
+  const touched = new Set<string>();
+  try {
+    const allElements = buffer.indexCalls.flatMap((call) => call.elements);
+    if (allElements.length > 0) {
+      allElements.forEach((e: any) => touched.add(e._index));
+      const perCallSum = buffer.indexCalls.reduce((acc, call) => acc + countImpactedTargets(call.elements).size, 0);
+      const wholeCount = countImpactedTargets(allElements).size;
+      if (perCallSum > wholeCount) {
+        sequencerMetrics.sidewriteGrouped(perCallSum - wholeCount);
+      }
+      await elIndexElements(context, user, 'sequencer-flush', allElements, { refresh: false });
+      sequencerMetrics.esOp('bulk_docs');
+    }
+    if (buffer.updateOps.length > 0) {
+      buffer.updateOps.forEach((op) => touched.add(op.index));
+      const chunks = R.splitEvery(MAX_BULK_OPERATIONS, buffer.updateOps);
+      for (let i = 0; i < chunks.length; i += 1) {
+        const body = chunks[i].flatMap((op) => [
+          { update: { _index: op.index, _id: op.id, retry_on_conflict: op.retry } },
+          op.body,
+        ]);
+        await elBulk(context, { refresh: false, timeout: BULK_TIMEOUT, body });
+        sequencerMetrics.esOp('bulk_side');
+      }
+    }
+  } finally {
+    if (touched.size > 0) {
+      await elRefreshIndices(Array.from(touched)).catch((err: any) => {
+        logApp.error('[SEQUENCER] flush refresh failed', { cause: err });
+      });
+      sequencerMetrics.esOp('refresh');
+    }
+  }
+};
+
 export const elUpdateRelationConnections = async (context: AuthContext, elements: any[]) => {
   if (elements.length > 0) {
     const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
@@ -4796,7 +4997,7 @@ export const elUpdateRelationConnections = async (context: AuthContext, elements
       { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
     ]);
-    const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const bulkPromise = elBulk(context, { refresh: ES_REFRESH_UPDATE, timeout: BULK_TIMEOUT, body: bodyUpdate });
     await Promise.all([bulkPromise]);
   }
 };
@@ -4834,7 +5035,7 @@ export const elUpdateEntityConnections = async (context: AuthContext, elements: 
         },
       ];
     });
-    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    await elBulk(context, { refresh: ES_REFRESH_UPDATE, timeout: BULK_TIMEOUT, body: bodyUpdate });
   }
 };
 
@@ -4843,7 +5044,7 @@ const elUpdateConnectionsOfElement = async (documentId: string, documentBody: an
     + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
   return elRawUpdateByQuery({
     index: READ_RELATIONSHIPS_INDICES,
-    refresh: true,
+    refresh: ES_REFRESH_UPDATE !== false, // update_by_query only accepts booleans (no wait_for)
     conflicts: 'proceed',
     slices: 'auto', // improve performance by slicing the request
     wait_for_completion: false, // async (query can update a lot of elements)
@@ -4897,6 +5098,9 @@ export const elDeleteElements = async (
   opts: DeleteElementsOpts = {},
 ) => {
   if (elements.length === 0) return;
+  // POC ingestion sequencer (plan 0009 D6): deletions evict every involved id (any id form
+  // cascades through the map's secondary index)
+  sequencerIdentityBarrier(elements.map((e) => e.internal_id).filter((id) => !!id));
   if (getDraftContext(context, user)) {
     await elMarkElementsAsDraftDelete(context, user, elements);
     return;

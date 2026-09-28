@@ -5,7 +5,7 @@ import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import { GraphQLError } from 'graphql';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
-import conf, { DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
+import conf, { booleanConf, DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { AuthRequired, muteError, ResourceNotFoundError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
@@ -110,6 +110,10 @@ const createApolloServer = () => {
   const apolloServer = new ApolloServer({
     schema,
     introspection: true, // Will be disabled by plugin if needed
+    // Accept a JSON array of operations in one POST (one shared context, operations
+    // run concurrently). Off by default: batching bypasses none of the per-operation
+    // validation but changes the response shape for array bodies.
+    allowBatchedHttpRequests: booleanConf('app:graphql:http_batching', false),
     persistedQueries: false,
     validationRules: apolloValidationRules,
     csrfPrevention: false, // CSRF is handled by helmet

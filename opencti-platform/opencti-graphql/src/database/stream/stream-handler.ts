@@ -23,6 +23,14 @@ import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
 import { logApp } from '../../config/conf';
+import { getCurrentWriteBuffer, groupEventRecords, type EventRecord } from '../sequencer/sequencer-write-buffer';
+import { SEQUENCER_CONFIG } from '../sequencer/sequencer-config';
+import { sequencerMetrics } from '../sequencer/sequencer-metrics';
+
+// POC ingestion sequencer (plan 0009 E4): while a batch intent is applying, publishable events
+// are buffered and pushed after the batch's ES flush + refresh, in application order, so
+// stream consumers can re-read what the events describe.
+const sequencerEventBuffer = (context: AuthContext) => ((context as any).sequencer?.scope === 'applying' ? getCurrentWriteBuffer() : null);
 import { getEntitiesMapFromCache } from '../cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 
@@ -50,6 +58,11 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
+    const buffer = sequencerEventBuffer(context);
+    if (buffer) {
+      buffer.addBuiltEvent(eventToPush);
+      return;
+    }
     if (STREAM_FULL_DEBUG_ACTIVATED) {
       logApp.info('Pushing event to stream', { event: eventToPush });
     }
@@ -94,6 +107,16 @@ export const storeUpdateEvent = async (
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
+      // POC ingestion sequencer (plan 0009 E8, coalesce_update_events): keep the RAW states so
+      // the flush can merge the batch's updates of one (entity, user) into a single event
+      // (previous = first touch, current = last). Commit-carrying events are never merged.
+      // Divergence (flag on): the mutation payload's `event` is undefined for buffered updates.
+      const buffer = sequencerEventBuffer(context);
+      if (buffer && SEQUENCER_CONFIG.coalesceUpdateEvents && !opts.commit
+        && !getDraftContext(context, user) && isStreamPublishable(opts)) {
+        buffer.addUpdateRecord({ context, user, previous, instance, changes, opts });
+        return undefined;
+      }
       const [previousStatus, currentStatus] = await Promise.all([
         resolveWorkflowStatusName(context, user, previous),
         resolveWorkflowStatusName(context, user, instance),
@@ -106,6 +129,31 @@ export const storeUpdateEvent = async (
     return undefined;
   } catch (e) {
     throw DatabaseError('Error in store update event', { cause: e });
+  }
+};
+
+// POC ingestion sequencer (plan 0009 E4/E8): called by the batch loop AFTER the ES flush and
+// refresh. Built events push as captured; raw update records are grouped per (entity, user)
+// (E8) and built here, each merged event sitting at its LAST constituent's position.
+export const flushSequencerEvents = async (records: EventRecord[]) => {
+  if (records.length === 0) return;
+  const plan = groupEventRecords(records);
+  for (let i = 0; i < plan.length; i += 1) {
+    const item = plan[i];
+    if (item.kind === 'built') {
+      await streamClient.rawPushToStream(item.event);
+    } else {
+      // workflow status names as master resolves them for a direct update event
+      const [previousStatus, currentStatus] = await Promise.all([
+        resolveWorkflowStatusName(item.context, item.user, item.previous),
+        resolveWorkflowStatusName(item.context, item.user, item.instance),
+      ]);
+      const event = buildUpdateEvent(item.user, item.previous, item.instance, item.changes, item.opts, { previous: previousStatus, current: currentStatus });
+      await streamClient.rawPushToStream({ ...event, event_id: item.context?.eventId });
+      if (item.merged > 0) {
+        sequencerMetrics.eventCoalesced(item.merged);
+      }
+    }
   }
 };
 

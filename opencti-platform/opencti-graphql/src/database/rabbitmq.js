@@ -13,6 +13,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } 
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { s3ConnectionConfig } from './raw-file-storage';
 import { Stix2Splitter } from '../utils/stix2-splitter';
+import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { updateExpectationsNumber } from '../domain/work';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
@@ -738,7 +739,7 @@ export const rabbitMQIsAlive = async () => {
  *   message isn't a STIX bundle at all (e.g. sync 'event' messages), since those don't carry
  *   expectation semantics here.
  */
-export const buildSplitMessages = (message) => {
+export const buildSplitMessages = (message, { inlineBundles = false } = {}) => {
   const unsplit = (expectations) => ({ messages: [message], expectations });
   if (message.type !== 'bundle') {
     return unsplit(null);
@@ -757,6 +758,14 @@ export const buildSplitMessages = (message) => {
   // behavior exactly, since single-object bundles were never split by the worker either).
   if (message.no_split || objectCount <= 1) {
     return unsplit(objectCount);
+  }
+  // P3 (plan 0009 part 9): ship the bundle whole; the worker splits it in place and imports
+  // it level by level (bundle_inline marker). Expectations are NOT counted here: the worker
+  // counts them from its own splitter output (its existing multi-object bookkeeping), which
+  // avoids any platform/worker splitter divergence in the count. A worker without the marker
+  // support falls back to its historic split-and-requeue path (which also counts).
+  if (inlineBundles) {
+    return { messages: [{ ...message, bundle_inline: true }], expectations: null };
   }
   // Once the splitter has run, its output (deduped/filtered) is authoritative for both the
   // messages to publish and the expectation count - including the 0- and 1-bundle cases, which
@@ -779,7 +788,8 @@ export const buildSplitMessages = (message) => {
  */
 export const pushBundleToWorker = async (context, user, connectorId, message) => {
   const routingKey = pushRouting(connectorId);
-  const { messages, expectations } = buildSplitMessages(message);
+  const inlineBundles = SEQUENCER_CONFIG.enabled && SEQUENCER_CONFIG.bundleIntake;
+  const { messages, expectations } = buildSplitMessages(message, { inlineBundles });
   if (message.type === 'bundle') {
     logApp.debug('[WORKER] Bundle split into queue messages', { connectorId, work_id: message.work_id, messageCount: messages.length, expectations });
   }
@@ -801,6 +811,102 @@ export const getRabbitMQVersion = (context) => {
     .then((data) => data.overview.rabbitmq_version)
     .catch(/* v8 ignore next */ () => 'Disconnected');
 };
+
+// region chunk intake (POC chunk-queue direct intake)
+// One queue carrying ONE message per worker chunk (an array of GraphQL ingestion operations),
+// consumed in process by the chunk intake manager: no worker thread pool, no HTTP leg. Manual
+// ack: a chunk is acked only once every one of its operations reached a terminal state, which
+// for sequencer writes means after the batch commit. Poison chunks go to the existing
+// dead-letter queue instead of being requeued forever.
+export const CHUNK_INTAKE_QUEUE_ID = conf.get('chunk_intake_manager:queue_name') || 'chunk_intake';
+export const chunkIntakeQueue = () => `${RABBIT_QUEUE_PREFIX}${CHUNK_INTAKE_QUEUE_ID}`;
+export const chunkIntakeRouting = () => `${RABBIT_QUEUE_PREFIX}${CHUNK_INTAKE_QUEUE_ID}_routing`;
+
+export const registerChunkIntakeQueue = async () => {
+  return amqpExecute(async (channel) => {
+    const assertExchange = util.promisify(channel.assertExchange).bind(channel);
+    await assertExchange(WORKER_EXCHANGE, 'direct', { durable: true });
+    const assertQueue = util.promisify(channel.assertQueue).bind(channel);
+    await assertQueue(chunkIntakeQueue(), {
+      exclusive: false,
+      durable: true,
+      autoDelete: false,
+      arguments: {
+        name: 'Chunk intake',
+        'x-queue-type': QUEUE_TYPE,
+        'x-dead-letter-exchange': CONNECTOR_EXCHANGE,
+        'x-dead-letter-routing-key': listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID),
+      },
+    });
+    const bindQueue = util.promisify(channel.bindQueue).bind(channel);
+    await bindQueue(chunkIntakeQueue(), WORKER_EXCHANGE, chunkIntakeRouting(), {});
+    return true;
+  });
+};
+
+/**
+ * Consume the chunk intake queue with manual acks.
+ * prefetch is the ONE flow-control valve of this architecture: prefetch x chunk size = the
+ * intents offered to the sequencer loop at any time (replaces the worker's pf/CS/pool knobs).
+ * The handler receives (payload, controls) where controls carries ack / retry / deadLetter and
+ * the broker's redelivered flag, so the caller owns the poison policy.
+ */
+export const consumeChunkIntakeQueue = async (prefetch, handler) => {
+  const connOptions = getConnectionOptions();
+  const queue = chunkIntakeQueue();
+  let alive = true;
+  const conn = await new Promise((resolve, reject) => {
+    amqp.connect(amqpUri(), connOptions, (err, connection) => (err ? reject(err) : resolve(connection)));
+  });
+  conn.on('error', (err) => {
+    alive = false;
+    logApp.error('[CHUNK-INTAKE] Connection error', { cause: err });
+  });
+  conn.on('close', () => {
+    alive = false;
+    logApp.warn('[CHUNK-INTAKE] Connection closed');
+  });
+  const channel = await new Promise((resolve, reject) => {
+    conn.createChannel((err, ch) => (err ? reject(err) : resolve(ch)));
+  });
+  channel.on('error', (err) => {
+    alive = false;
+    logApp.error('[CHUNK-INTAKE] Channel error', { cause: err });
+  });
+  channel.on('close', () => {
+    alive = false;
+  });
+  channel.prefetch(prefetch);
+  await new Promise((resolve, reject) => {
+    channel.consume(queue, (message) => {
+      if (message === null) {
+        return;
+      }
+      const controls = {
+        redelivered: message.fields?.redelivered === true,
+        ack: () => channel.ack(message),
+        retry: () => channel.nack(message, false, true),
+        deadLetter: () => channel.nack(message, false, false),
+      };
+      // Never await here: prefetch is what bounds the in-flight chunks.
+      handler(message.content.toString(), controls);
+    }, { noAck: false }, (err) => (err ? reject(err) : resolve(true)));
+  });
+  return {
+    queue,
+    alive: () => alive,
+    close: async () => {
+      alive = false;
+      try {
+        channel.close();
+      } catch (_e) { /* already closing */ }
+      try {
+        conn.close();
+      } catch (_e) { /* already closing */ }
+    },
+  };
+};
+// endregion
 
 export const consumeQueue = async (context, connectorId, connectionSetterCallback, callback) => {
   const cfg = connectorConfig(connectorId);
