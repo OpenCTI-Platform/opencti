@@ -132,19 +132,9 @@ const getMinimumVersionForCatalogVersion = (version: CatalogContractVersion) => 
   return version.min_platform_version ?? version.min_version ?? version.support_version ?? null;
 };
 
+// Same ordering as the contracts selection, so latest_compatible_version names the exposed contract
 const compareCatalogVersionDesc = (left: CatalogContractVersion, right: CatalogContractVersion) => {
-  const leftVersion = parseCatalogSemver(left.version);
-  const rightVersion = parseCatalogSemver(right.version);
-  if (leftVersion && rightVersion) {
-    return semver.rcompare(leftVersion, rightVersion);
-  }
-  if (leftVersion) {
-    return -1;
-  }
-  if (rightVersion) {
-    return 1;
-  }
-  return right.version.localeCompare(left.version, undefined, { numeric: true, sensitivity: 'base' });
+  return -compareContractVersions(left.version, right.version);
 };
 
 export const getLatestCompatibleVersion = (
@@ -219,18 +209,29 @@ const mapContractToVersion = (
   min_platform_version: contract.support_version ?? null,
 });
 
+// Selects the contract to expose for each slug: the latest compatible one, which is the
+// contract used at deployment (see findLatestCompatibleCatalogContractByImageName), so the
+// displayed configuration matches the deployed one. When no version is compatible, the latest
+// one is kept so the connector stays visible with its compatibility information.
 export const selectLatestContractsBySlug = (
   contracts: Array<BasicStoreEntityCatalogContract & SlugContract & ContractVersionContract>,
+  options: CompatibilityOptions = {},
 ) => {
-  return [...contracts]
-    .sort(compareContractVersionDesc)
-    .reduce<BasicStoreEntityCatalogContract[]>((acc, contract) => {
-      if (acc.some((entry) => entry.slug === contract.slug)) {
-        return acc;
-      }
-      acc.push(contract);
-      return acc;
-    }, []);
+  const sortedContracts = [...contracts].sort(compareContractVersionDesc);
+  const selectedBySlug = new Map<string, BasicStoreEntityCatalogContract>();
+  for (const contract of sortedContracts) {
+    if (!selectedBySlug.has(contract.slug) && isSupportVersionCompatible(contract, options)) {
+      selectedBySlug.set(contract.slug, contract);
+    }
+  }
+  for (const contract of sortedContracts) {
+    if (!selectedBySlug.has(contract.slug)) {
+      selectedBySlug.set(contract.slug, contract);
+    }
+  }
+  // Keep the order of slugs as they first appear in the sorted contracts
+  const slugs = [...new Set(sortedContracts.map((contract) => contract.slug))];
+  return slugs.map((slug) => selectedBySlug.get(slug) as BasicStoreEntityCatalogContract);
 };
 
 export const groupContractVersionsBySlug = (
