@@ -10,6 +10,14 @@ const mocks = vi.hoisted(() => ({
   loadDeployment: vi.fn(),
   loadFeeds: vi.fn(),
   loadForms: vi.fn(),
+  fetchQuery: vi.fn(),
+  availableData: vi.fn(),
+  // Data components render their children so the provider reaches the tabs when refs are loaded
+  renderChildrenWithEmptyData: ({ children }: { children: (args: { data: unknown }) => React.ReactNode }) => children({ data: {} }),
+}));
+
+vi.mock('../../../relay/environment', () => ({
+  fetchQuery: mocks.fetchQuery,
 }));
 
 vi.mock('react-relay', async (importOriginal) => {
@@ -32,20 +40,20 @@ vi.mock('@components/data/connectors/ConnectorDeploymentBanner', () => ({
 
 vi.mock('@components/integrations/catalog/IngestionConnectorsCatalog', () => ({
   __esModule: true,
-  default: () => null,
+  default: mocks.renderChildrenWithEmptyData,
   ingestionConnectorsCatalogsQuery: {},
 }));
 
 vi.mock('@components/integrations/catalog/IngestionConnectors', () => ({
   __esModule: true,
-  default: () => null,
+  default: mocks.renderChildrenWithEmptyData,
   ingestionConnectorsQuery: {},
 }));
 
 vi.mock('@components/integrations/deployed/IngestionFeeds', () => ({
   __esModule: true,
-  IngestionFeeds: () => null,
-  IngestionFeedsForms: () => null,
+  IngestionFeeds: mocks.renderChildrenWithEmptyData,
+  IngestionFeedsForms: mocks.renderChildrenWithEmptyData,
   ingestionFeedsFormsQuery: {},
   ingestionFeedsQuery: {},
 }));
@@ -55,7 +63,10 @@ vi.mock('@components/integrations/components/MarketplaceUi', () => ({
 }));
 
 vi.mock('@components/integrations/available/IntegrationsAvailable', () => ({
-  default: () => null,
+  default: ({ data }: { data: unknown }) => {
+    mocks.availableData(data);
+    return null;
+  },
 }));
 
 vi.mock('@components/integrations/deployed/IntegrationsDeployed', () => ({
@@ -136,5 +147,68 @@ describe('Integrations', () => {
     await waitFor(() => {
       expect(mocks.loadCatalogs).toHaveBeenCalledWith({}, { fetchPolicy: 'store-and-network' });
     });
+  });
+});
+
+describe('Integrations catalogs refetch', () => {
+  const renderAvailableTab = () => render(
+    <MemoryRouter initialEntries={['/dashboard/integrations/available']}>
+      <Routes>
+        <Route path="/dashboard/integrations/:tab" element={<Integrations />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+
+  const getRefetchCatalogs = async (): Promise<() => Promise<void>> => {
+    await waitFor(() => {
+      expect(mocks.availableData).toHaveBeenCalled();
+    });
+    const { calls } = mocks.availableData.mock;
+    return calls[calls.length - 1][0].refetchCatalogs;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Every query ref is loaded so the provider renders the available tab with its data.
+    const loaders = [mocks.loadCatalogs, mocks.loadDeployment, mocks.loadFeeds, mocks.loadForms];
+    let callIndex = 0;
+    mocks.useQueryLoader.mockImplementation(() => {
+      const loader = loaders[callIndex % loaders.length];
+      callIndex += 1;
+      return [{}, loader];
+    });
+  });
+
+  it('loads the catalogs from the store only once the network refetch has completed', async () => {
+    let resolveFetch: (() => void) | undefined;
+    mocks.fetchQuery.mockReturnValue({
+      toPromise: () => new Promise<void>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    });
+    renderAvailableTab();
+    const refetchCatalogs = await getRefetchCatalogs();
+    mocks.loadCatalogs.mockClear();
+
+    const refetch = refetchCatalogs();
+    expect(mocks.fetchQuery).toHaveBeenCalledWith(expect.anything(), {}, { fetchPolicy: 'network-only' });
+    expect(mocks.loadCatalogs).not.toHaveBeenCalled();
+
+    resolveFetch?.();
+    await refetch;
+
+    expect(mocks.loadCatalogs).toHaveBeenCalledWith({}, { fetchPolicy: 'store-only' });
+  });
+
+  it('rejects without reloading the catalogs when the network refetch fails', async () => {
+    mocks.fetchQuery.mockReturnValue({
+      toPromise: () => Promise.reject(new Error('network down')),
+    });
+    renderAvailableTab();
+    const refetchCatalogs = await getRefetchCatalogs();
+    mocks.loadCatalogs.mockClear();
+
+    await expect(refetchCatalogs()).rejects.toThrow('network down');
+    expect(mocks.loadCatalogs).not.toHaveBeenCalled();
   });
 });

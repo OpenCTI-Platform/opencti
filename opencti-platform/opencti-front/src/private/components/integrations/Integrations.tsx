@@ -29,6 +29,7 @@ import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { fetchQuery } from '../../../relay/environment';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
 import { paperBg, paperBorder } from './paperSurface';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
@@ -42,7 +43,7 @@ export interface IntegrationsData {
   deploymentData: IngestionConnectorsQuery['response'] | null;
   feedsData: IngestionFeedsData | null;
   formsData: IngestionFeedsFormsData | null;
-  refetchCatalogs: () => void;
+  refetchCatalogs: () => Promise<void>;
   refetchFeeds: () => void;
   refetchForms: () => void;
 }
@@ -90,10 +91,14 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
       loadForms({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
   }, [isFormReader, loadForms]);
-  const refetchCatalogs = useCallback(() => {
-    if (isConnectorReader) {
-      loadCatalogs({}, { fetchPolicy: 'store-and-network' });
+  // Resolves once the fresh catalogs are in the store (rejects if the request fails),
+  // so the catalog polling only moves its baseline after a successful reload.
+  const refetchCatalogs = useCallback(async () => {
+    if (!isConnectorReader) {
+      return;
     }
+    await fetchQuery<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery, {}, { fetchPolicy: 'network-only' }).toPromise();
+    loadCatalogs({}, { fetchPolicy: 'store-only' });
   }, [isConnectorReader, loadCatalogs]);
 
   const renderWithForms = (

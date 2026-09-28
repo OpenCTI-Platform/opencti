@@ -87,7 +87,12 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
           return;
         }
 
-        await onCatalogRevisionsChanged();
+        try {
+          await onCatalogRevisionsChanged();
+        } catch {
+          // Keep the previous baseline so the next check detects the change again and retries.
+          return;
+        }
         baselineRef.current = nextBaseline;
       } finally {
         isCheckInFlightRef.current = false;

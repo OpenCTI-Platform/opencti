@@ -247,4 +247,42 @@ describe('useCatalogPolling', () => {
 
     expect(onChanged).not.toHaveBeenCalled();
   });
+
+  it('keeps the previous baseline and retries when the catalogs refresh fails', async () => {
+    mockFetchSequence([
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] },
+    ]);
+    const onChanged = vi.fn()
+      .mockRejectedValueOnce(new Error('catalogs refresh failed'))
+      .mockResolvedValue(undefined);
+
+    renderHook(() => useCatalogPolling({ enabled: true, onCatalogRevisionsChanged: onChanged }));
+    await act(async () => {
+      await flushPromises();
+    });
+
+    // rev-2 detected, the refresh fails: the baseline must stay on rev-1
+    await act(async () => {
+      vi.advanceTimersByTime(CATALOG_POLLING_INTERVAL_MS);
+      await flushPromises();
+    });
+    expect(onChanged).toHaveBeenCalledTimes(1);
+
+    // rev-2 is still seen as a change, so the refresh is retried and succeeds
+    await act(async () => {
+      vi.advanceTimersByTime(CATALOG_POLLING_INTERVAL_MS);
+      await flushPromises();
+    });
+    expect(onChanged).toHaveBeenCalledTimes(2);
+
+    // the baseline is now rev-2: no further refresh
+    await act(async () => {
+      vi.advanceTimersByTime(CATALOG_POLLING_INTERVAL_MS);
+      await flushPromises();
+    });
+    expect(onChanged).toHaveBeenCalledTimes(2);
+  });
 });
