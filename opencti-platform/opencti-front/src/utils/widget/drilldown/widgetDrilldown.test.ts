@@ -4,16 +4,27 @@ import { resolveDrilldownLink } from './widgetDrilldown';
 import type { DrilldownInput, FilterGroup } from './widgetDrilldown-types';
 import type { Filter } from '../../filters/filtersHelpers-types';
 
-// Mirrors the real schema: `entity_type` is deleted from every concrete type
-// and only survives on the abstract ones (`filterKeysSchema.ts:545`).
+// Mirrors the real schema: `entity_type` is deleted from every concrete
+// non-relationship type and only survives on the abstract ones and on
+// relationships (`filterKeysSchema.ts:543-545`).
 const SCHEMA = new Map([
   ['Stix-Domain-Object', new Map([
     ['entity_type', {} as never], ['createdBy', {} as never], ['created_at', {} as never],
+    ['objectLabel', {} as never],
   ])],
   ['Stix-Cyber-Observable', new Map([
     ['entity_type', {} as never], ['createdBy', {} as never], ['created_at', {} as never],
   ])],
   ['Malware', new Map([['createdBy', {} as never], ['created_at', {} as never]])],
+  ['stix-core-relationship', new Map([
+    ['entity_type', {} as never], ['relationship_type', {} as never], ['createdBy', {} as never],
+    ['created_at', {} as never], ['fromId', {} as never], ['toId', {} as never],
+    ['fromTypes', {} as never], ['toTypes', {} as never],
+  ])],
+  ['History', new Map([
+    ['entity_type', {} as never], ['createdBy', {} as never], ['objectLabel', {} as never],
+    ['created_at', {} as never], ['timestamp', {} as never],
+  ])],
 ]);
 
 const SDO_TYPES = ['Malware', 'Tool', 'Report', 'Intrusion-Set', 'Campaign'];
@@ -52,6 +63,7 @@ const baseInput = (overrides: Partial<DrilldownInput> = {}): DrilldownInput => (
     filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] },
   } as never,
   range: NO_RANGE,
+  configRange: NO_RANGE,
   interval: 'month',
   bucket: { kind: 'timeSeries', date: apiBucketDate('2024-03-01') },
   filterKeysSchema: SCHEMA,
@@ -123,7 +135,7 @@ describe('resolveDrilldownLink', () => {
     );
   });
 
-  it('applies the widget range to a distribution bucket', () => {
+  it('applies the dashboard range to a distribution bucket', () => {
     const input = baseInput({
       dataSelection: {
         perspective: 'entities',
@@ -132,7 +144,7 @@ describe('resolveDrilldownLink', () => {
         filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware', 'Report'], operator: 'eq', mode: 'or' }], filterGroups: [] },
       } as never,
       bucket: { kind: 'distribution', rawValue: 'author-1', entityId: 'author-1' },
-      range: { startDate: '2024-01-01T00:00:00.000Z', endDate: '2024-06-01T00:00:00.000Z' },
+      configRange: { startDate: '2024-01-01T00:00:00.000Z', endDate: '2024-06-01T00:00:00.000Z' },
     });
     const dates = allFilters(parseFilters(resolveDrilldownLink(input) as string)).filter((f) => f.key === 'created_at');
     expect(dates).toHaveLength(2);
@@ -170,11 +182,11 @@ describe('resolveDrilldownLink', () => {
     expect(allFilters(parseFilters(link)).some((f) => f.key === 'created_at')).toBe(false);
   });
 
-  it('uses the widget range with an exclusive lower bound for a total bucket', () => {
+  it('uses the dashboard range with an exclusive lower bound for a total bucket', () => {
     const input = baseInput({
       bucket: { kind: 'total' },
       interval: null,
-      range: { startDate: '2024-01-01T00:00:00.000Z', endDate: null },
+      configRange: { startDate: '2024-01-01T00:00:00.000Z', endDate: null },
     });
     const link = resolveDrilldownLink(input) as string;
     const dates = allFilters(parseFilters(link)).filter((f) => f.key === 'created_at');
@@ -183,16 +195,32 @@ describe('resolveDrilldownLink', () => {
   });
 
   // `stixCoreObjectsNumber` computes `total` with `R.dissoc('endDate', args)`
-  // (stixCoreObject.js:465), so an upper bound here would open a shorter list.
-  it('ignores the end date for a total bucket, as the number query does', () => {
+  // (stixCoreObject.js:465), but the argument it drops is the 24h variation
+  // window, never the dashboard bound -- which sits in the filters and did bound
+  // the displayed number.
+  it('keeps the dashboard end date on a total bucket', () => {
     const input = baseInput({
       bucket: { kind: 'total' },
       interval: null,
-      range: { startDate: '2024-01-01T00:00:00.000Z', endDate: '2024-06-01T00:00:00.000Z' },
+      configRange: { startDate: '2024-01-01T00:00:00.000Z', endDate: '2024-06-01T00:00:00.000Z' },
     });
     const dates = allFilters(parseFilters(resolveDrilldownLink(input) as string)).filter((f) => f.key === 'created_at');
-    expect(dates).toHaveLength(1);
-    expect(dates[0]).toMatchObject({ operator: 'gt', values: ['2024-01-01T00:00:00.000Z'] });
+    expect(dates.map((f) => f.operator)).toEqual(['gt', 'lt']);
+    expect(dates[1].values).toEqual(['2024-06-01T00:00:00.000Z']);
+  });
+
+  // The container sends `dayAgo()` as `endDate` to feed the 24h variation; the
+  // number itself is bounded by the filters. Reading the link bounds back from
+  // the variables would cut the list at yesterday.
+  it('ignores the sent variables range on a total bucket', () => {
+    const input = baseInput({
+      bucket: { kind: 'total' },
+      interval: null,
+      range: { startDate: null, endDate: '2024-09-30T00:00:00.000Z' },
+      configRange: NO_RANGE,
+    });
+    const dates = allFilters(parseFilters(resolveDrilldownLink(input) as string)).filter((f) => f.key === 'created_at');
+    expect(dates).toHaveLength(0);
   });
 
   it('returns null when the widget uses dynamicFrom', () => {
@@ -315,7 +343,10 @@ describe('resolveDrilldownLink on a relationship connection bucket', () => {
  */
 describe('resolveDrilldownLink on a relationship population the list cannot hold', () => {
   const RELATIONSHIP_SCHEMA = new Map([
-    ['stix-core-relationship', new Map([['toId', {} as never], ['entity_type', {} as never], ['created_at', {} as never]])],
+    ['stix-core-relationship', new Map([
+      ['toId', {} as never], ['toTypes', {} as never], ['entity_type', {} as never],
+      ['relationship_type', {} as never], ['created_at', {} as never],
+    ])],
   ]);
 
   const labelsWidget = (filters: { key: string; values: string[]; operator: string; mode: string }[]) => baseInput({
@@ -471,6 +502,114 @@ describe('resolveDrilldownLink on an entity population the list cannot hold', ()
     expect(resolveDrilldownLink(byAuthor({
       mode: 'and',
       filters: [{ key: 'entity_type', values: ['Stix-Domain-Object'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    }))).not.toBeNull();
+  });
+});
+
+/**
+ * Four ways a link could promise a number the destination will not reproduce.
+ * Each one is a silent widening: nothing errors, the list simply shows more.
+ */
+describe('resolveDrilldownLink fail-closed guards', () => {
+  const orWidget = (filters: FilterGroup) => baseInput({
+    bucket: { kind: 'total' },
+    interval: null,
+    dataSelection: { perspective: 'entities', date_attribute: 'created_at', filters } as never,
+  });
+
+  // `entity_type: Malware OR createdBy: a-1` counts malwares *and* everything
+  // that author wrote, which the malwares list cannot show.
+  it('refuses a dedicated list when the type filter sits under an or mode', () => {
+    expect(resolveDrilldownLink(orWidget({
+      mode: 'or',
+      filters: [
+        { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+        { key: 'createdBy', values: ['a-1'], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    }))).toBeNull();
+  });
+
+  // Same widening, carried by a sub-group instead of a sibling filter.
+  it('refuses a dedicated list when an or mode carries a sub-group', () => {
+    expect(resolveDrilldownLink(orWidget({
+      mode: 'or',
+      filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }],
+      filterGroups: [{
+        mode: 'and',
+        filters: [{ key: 'createdBy', values: ['a-1'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      }],
+    }))).toBeNull();
+  });
+
+  // `dynamicFrom` / `dynamicTo` are sibling sub-queries of the data selection,
+  // not filters, so they never reach `assertRepresentable` -- and no list URL can
+  // carry them.
+  it.each([
+    ['dynamicFrom', { dynamicFrom: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] } }],
+    ['dynamicTo', { dynamicTo: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] } }],
+    ['dynamicFrom_id', { dynamicFrom_id: 'saved-filter-1' }],
+    ['dynamicTo_id', { dynamicTo_id: 'saved-filter-1' }],
+  ])('refuses a selection restricted by %s', (_name, extra) => {
+    expect(resolveDrilldownLink(baseInput({
+      bucket: { kind: 'total' },
+      interval: null,
+      dataSelection: {
+        perspective: 'entities',
+        date_attribute: 'created_at',
+        filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+        ...extra,
+      } as never,
+    }))).toBeNull();
+  });
+
+  it('ignores empty dynamic sub-queries', () => {
+    expect(resolveDrilldownLink(baseInput({
+      bucket: { kind: 'total' },
+      interval: null,
+      dataSelection: {
+        perspective: 'entities',
+        date_attribute: 'created_at',
+        filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+        dynamicFrom: { mode: 'and', filters: [], filterGroups: [] },
+        dynamicTo: { mode: 'and', filters: [], filterGroups: [] },
+      } as never,
+    }))).not.toBeNull();
+  });
+
+  // The malwares list would drop a key its schema does not hold, and show every
+  // malware instead of the counted subset.
+  it.each([
+    ['at the top level', {
+      mode: 'and',
+      filters: [
+        { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+        { key: 'x_opencti_workflow_id', values: ['w-1'], operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    }],
+    ['inside a sub-group', {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }],
+      filterGroups: [{
+        mode: 'and',
+        filters: [{ key: 'x_opencti_workflow_id', values: ['w-1'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      }],
+    }],
+  ])('refuses a widget filter the destination would drop, %s', (_name, filters) => {
+    expect(resolveDrilldownLink(orWidget(filters as FilterGroup))).toBeNull();
+  });
+
+  it('accepts widget filters the destination supports', () => {
+    expect(resolveDrilldownLink(orWidget({
+      mode: 'and',
+      filters: [
+        { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
+        { key: 'createdBy', values: ['a-1'], operator: 'eq', mode: 'or' },
+      ],
       filterGroups: [],
     }))).not.toBeNull();
   });

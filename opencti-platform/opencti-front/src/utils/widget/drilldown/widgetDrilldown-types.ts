@@ -29,15 +29,23 @@ export interface DrilldownInput {
   /** The resolved data selection this bucket belongs to. */
   dataSelection: WidgetDataSelection;
   /**
-   * The date range the widget query actually used — not the dashboard config.
+   * The range sent as query variables, used to clamp the edge buckets of a time
+   * series: the time-series containers ask for `fallbackToDefaultDates`, so an
+   * unconfigured dashboard really queries the last 12 months and its first and
+   * last buckets are cut at those bounds.
    *
-   * Recomputing it from the config would break the invariant twice over: the
-   * time-series containers request their range with `fallbackToDefaultDates`
-   * (so an unconfigured dashboard really queries the last 12 months, and edge
-   * buckets must be clamped to that), and `monthsAgo(12)` / `now()` re-evaluated
-   * at click time would no longer be the instants the count was computed from.
+   * It is never the range of a distribution or number bucket -- several
+   * containers send no dates at all (`StixRelationshipsDonut`), or send an
+   * unrelated one (`StixCoreObjectsNumber` sends `dayAgo()`, which only feeds
+   * the 24h variation). For those, `configRange` is the authoritative one.
    */
   range: WidgetDateRange;
+  /**
+   * The dashboard range that was baked into the widget filters by
+   * `computeWidgetFiltersForSelection`, and therefore the one that actually
+   * bounded every distribution and number count.
+   */
+  configRange: WidgetDateRange;
   /** Chart interval, only meaningful for `timeSeries` buckets. */
   interval?: string | null;
   bucket: DrilldownBucket;

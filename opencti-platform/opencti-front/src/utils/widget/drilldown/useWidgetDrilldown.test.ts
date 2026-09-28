@@ -23,6 +23,7 @@ describe('useWidgetDrilldown', () => {
       perspective: 'entities',
       resolvedDataSelection: [selection] as never,
       range: NO_RANGE,
+      configRange: NO_RANGE,
       interval: 'month',
     }));
     const link = result.current.getLink(0, { kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' });
@@ -34,6 +35,7 @@ describe('useWidgetDrilldown', () => {
       perspective: 'entities',
       resolvedDataSelection: [selection] as never,
       range: NO_RANGE,
+      configRange: NO_RANGE,
       interval: 'month',
     }));
     expect(result.current.getLink(3, { kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' })).toBeNull();
@@ -44,6 +46,7 @@ describe('useWidgetDrilldown', () => {
       perspective: 'entities',
       resolvedDataSelection: [selection] as never,
       range: { startDate: '2024-03-10T00:00:00.000Z', endDate: null },
+      configRange: NO_RANGE,
       interval: 'month',
     }));
     const link = result.current.getLink(0, { kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' }) as string;
@@ -55,6 +58,7 @@ describe('useWidgetDrilldown', () => {
       perspective: 'entities' as const,
       resolvedDataSelection: [selection] as never,
       range: NO_RANGE,
+      configRange: NO_RANGE,
       interval: 'month',
     };
     const { result, rerender } = renderHook(() => useWidgetDrilldown(props));

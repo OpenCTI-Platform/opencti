@@ -5,7 +5,7 @@ import { DashboardConfig } from './dashboard-types';
 import { useQueryLoader } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import useAuth from '../../utils/hooks/useAuth';
-import { resolveDataSelection } from './dashboardVizUtils';
+import { computeStartEndDates, resolveDataSelection } from './dashboardVizUtils';
 import useWidgetDrilldown from '../../utils/widget/drilldown/useWidgetDrilldown';
 
 const useDashboardViz = <TQuery extends OperationType>({
@@ -150,10 +150,18 @@ const useDashboardViz = <TQuery extends OperationType>({
   }, [isPending, setQueryPending]);
 
   /**
-   * Scope of the drill-down links, read from the variables that were actually
-   * sent rather than recomputed from the config: containers may ask for default
-   * dates (`fallbackToDefaultDates`), and `now()` re-evaluated at click time
-   * would no longer be the instant the displayed count was computed from.
+   * Bounds the drill-down links inherit.
+   *
+   * Two ranges, because the widgets use two. Time series are fenced by the
+   * `startDate` / `endDate` *variables* -- the containers ask for them with
+   * `fallbackToDefaultDates`, so an unconfigured dashboard really queries the
+   * last 12 months and its edge buckets are cut there.
+   *
+   * Distributions and numbers are fenced by the dashboard range that
+   * `computeWidgetFiltersForSelection` baked into their filters. Reading it back
+   * from the variables would be wrong: `StixRelationshipsDonut` sends no date at
+   * all, and `StixCoreObjectsNumber` sends `dayAgo()`, a window that only feeds
+   * the 24h variation.
    *
    * Keyed on the variables signature so `getLink` stays referentially stable.
    */
@@ -163,16 +171,19 @@ const useDashboardViz = <TQuery extends OperationType>({
       endDate?: string | null;
       interval?: string | null;
     } | null;
+    const { startDate, endDate } = computeStartEndDates(config);
     return {
       range: { startDate: sentVariables?.startDate ?? null, endDate: sentVariables?.endDate ?? null },
+      configRange: { startDate: startDate ?? null, endDate: endDate ?? null },
       interval: sentVariables?.interval ?? null,
     };
-  }, [queryVariablesSignature]);
+  }, [queryVariablesSignature, config]);
 
   const drilldown = useWidgetDrilldown({
     perspective,
     resolvedDataSelection,
     range: drilldownScope.range,
+    configRange: drilldownScope.configRange,
     interval: drilldownScope.interval,
   });
 

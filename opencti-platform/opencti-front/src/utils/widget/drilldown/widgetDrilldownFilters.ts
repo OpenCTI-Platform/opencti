@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { getAvailableFilterKeysForEntityTypes } from '../../filters/filtersUtils';
+import { getAvailableFilterKeysForEntityTypes, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../filters/filtersUtils';
 import type { Filter } from '../../filters/filtersHelpers-types';
 import type { DrilldownBucket, FilterGroup, FilterKeysSchema, ListRouteResolution, WidgetDateRange } from './widgetDrilldown-types';
 
@@ -193,4 +193,31 @@ export const assertRepresentable = (filters?: FilterGroup | null): boolean => {
   if (!filters) return true;
   if (filters.filters.some((f) => NON_TRANSPOSABLE_KEYS.includes(f.key))) return false;
   return (filters.filterGroups ?? []).every((group) => assertRepresentable(group));
+};
+
+const countFilters = (group?: FilterGroup | null): number => (
+  group ? group.filters.length + (group.filterGroups ?? []).reduce((acc, g) => acc + countFilters(g), 0) : 0
+);
+
+/**
+ * Proves the destination list will honour every widget filter.
+ *
+ * A list page runs the incoming URL filters through
+ * `removeIdAndIncorrectKeysFromFilterGroupObject` scoped to the types it pins,
+ * and **silently drops** whatever it does not support. A dropped filter widens
+ * the result set, so the list would show more than the widget counted. Rather
+ * than guess which keys travel, the same cleaning is replayed here and the link
+ * is refused as soon as it removes anything.
+ */
+export const areWidgetFiltersSupported = (
+  filters: FilterGroup | null,
+  scopeTypes: string[],
+  schema: FilterKeysSchema,
+): boolean => {
+  if (!filters) return true;
+  if (schema.size === 0) return true; // schema not loaded yet: do not block on an empty map
+  const scopes = scopeTypes.length > 0 ? scopeTypes : [...schema.keys()];
+  const available = getAvailableFilterKeysForEntityTypes(schema, scopes, true);
+  const cleaned = removeIdAndIncorrectKeysFromFilterGroupObject(filters as Parameters<typeof removeIdAndIncorrectKeysFromFilterGroupObject>[0], available);
+  return countFilters(filters) === countFilters(cleaned as FilterGroup | undefined);
 };

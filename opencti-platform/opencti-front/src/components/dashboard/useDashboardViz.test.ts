@@ -39,7 +39,10 @@ vi.mock('../../utils/hooks/useAuth', () => ({
 // Return a synchronous thenable so that the .then() callback runs
 // inside renderHook's act() without requiring async microtask flushing,
 // which deadlocks with vitest fake timers.
-vi.mock('./dashboardVizUtils', () => ({
+// Partial mock: `computeStartEndDates` stays real, the hook reads the drill-down
+// bounds through it.
+vi.mock('./dashboardVizUtils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./dashboardVizUtils')>()),
   resolveDataSelection: vi.fn(({
     dataSelection,
     host,

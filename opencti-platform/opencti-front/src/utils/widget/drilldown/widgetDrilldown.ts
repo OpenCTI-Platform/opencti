@@ -1,9 +1,21 @@
 import { v4 as uuid } from 'uuid';
 import { buildFiltersAndOptionsForWidgets, isFilterGroupNotEmpty } from '../../filters/filtersUtils';
-import { assertRepresentable, buildBucketDateFilter, buildBucketValueFilter } from './widgetDrilldownFilters';
+import { areWidgetFiltersSupported, assertRepresentable, buildBucketDateFilter, buildBucketValueFilter } from './widgetDrilldownFilters';
 import { resolveListRoute } from './widgetDrilldownRoutes';
 import type { DrilldownInput, FilterGroup } from './widgetDrilldown-types';
 import type { Filter } from '../../filters/filtersHelpers-types';
+
+/**
+ * A data selection can carry sub-queries restricting the source or the target of
+ * the counted relationships. They are separate GraphQL variables, not filters,
+ * and a list URL has nowhere to put them.
+ */
+const hasDynamicSubQuery = (dataSelection: DrilldownInput['dataSelection']): boolean => (
+  isFilterGroupNotEmpty(dataSelection.dynamicFrom as FilterGroup | null | undefined)
+  || isFilterGroupNotEmpty(dataSelection.dynamicTo as FilterGroup | null | undefined)
+  || !!dataSelection.dynamicFrom_id
+  || !!dataSelection.dynamicTo_id
+);
 
 const withUrlIds = (group: FilterGroup): FilterGroup => ({
   ...group,
@@ -61,8 +73,10 @@ const isWithinDestinationScope = (
   const scoping = filters.filters.filter((f) => f.key === 'entity_type' || f.key === 'relationship_type');
   if (scoping.length === 0) return false;
   // Under `or`, a scoping filter no longer narrows the population: anything
-  // matching a sibling filter is counted too, whatever its type.
-  if (filters.mode !== 'and' && filters.filters.length > 1) return false;
+  // matching a sibling filter -- or a sibling sub-group -- is counted too,
+  // whatever its type.
+  if (filters.mode !== 'and'
+    && (filters.filters.length > 1 || (filters.filterGroups ?? []).length > 0)) return false;
   return scoping.some((f) => (f.operator ?? 'eq') === 'eq' && isCovered(f.values));
 };
 
@@ -84,10 +98,16 @@ const withEntityType = (filters: FilterGroup | null, entityType: string): Filter
  * displayed number, or null when exactness cannot be guaranteed.
  */
 export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
-  const { perspective, dataSelection, range, interval, bucket, filterKeysSchema, subtypesByAbstractType } = input;
+  const { perspective, dataSelection, range, configRange, interval, bucket, filterKeysSchema, subtypesByAbstractType } = input;
 
   const widgetFilters = (dataSelection.filters ?? null) as FilterGroup | null;
   if (!assertRepresentable(widgetFilters)) return null;
+
+  // `dynamicFrom` / `dynamicTo` are not filters but sibling sub-queries of the
+  // data selection, resolved server-side into the relationship source and target
+  // (`addDynamicFromAndToToFilters`). They travel as their own GraphQL variables,
+  // so `assertRepresentable` never sees them, and no list URL can carry them.
+  if (hasDynamicSubQuery(dataSelection)) return null;
 
   // A "distinct" audit selection counts values of a field, not documents:
   // `auditsNumber` switches to `elCardinalityCount` (log.ts:68) and the same
@@ -117,6 +137,10 @@ export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
     return null;
   }
 
+  // Every widget filter has to survive the destination, not just the bucket one:
+  // a key the list drops would silently widen the result set.
+  if (!areWidgetFiltersSupported(widgetFilters, destination.scopeTypes, filterKeysSchema)) return null;
+
   const dateAttribute = dataSelection.date_attribute || 'created_at';
 
   let bucketFilters: Filter[] | null;
@@ -140,14 +164,19 @@ export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
     ? { ...widgetFilters, filters: widgetFilters.filters.filter((f) => f.key !== 'entity_type') }
     : widgetFilters;
 
-  // A time-series bucket already carries its own bounds, clamped to the widget
-  // range, so applying that range again would duplicate it. A `total` bucket has
-  // no upper bound at all: `stixCoreObjectsNumber` drops `endDate` before
-  // counting (stixCoreObject.js:465).
-  const appliedRange = {
-    startDate: bucket.kind === 'timeSeries' ? null : range.startDate,
-    endDate: bucket.kind === 'timeSeries' || bucket.kind === 'total' ? null : range.endDate,
-  };
+  // A time-series bucket already carries its own bounds, clamped to the sent
+  // range, so applying a range again would duplicate it.
+  //
+  // Every other bucket was counted through the widget filters, into which
+  // `computeWidgetFiltersForSelection` had baked the dashboard range -- hence
+  // `configRange`, and not what the container happened to send as variables.
+  // `total` is no exception: `stixCoreObjectsNumber` (stixCoreObject.js:465) and
+  // `stixRelationshipsNumber` (stixRelationship.js:65) drop the `endDate`
+  // *argument*, which carries the 24h variation window, never the dashboard
+  // bound sitting in the filters.
+  const appliedRange = bucket.kind === 'timeSeries'
+    ? { startDate: null, endDate: null }
+    : { startDate: configRange.startDate, endDate: configRange.endDate };
 
   const { filters: base } = buildFiltersAndOptionsForWidgets(scopedFilters, {
     removeTypeAll: true,

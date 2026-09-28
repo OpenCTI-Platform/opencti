@@ -62,6 +62,12 @@ const SHARED_LIST_SCOPES: Record<string, string> = {
  */
 const findUniqueEntityTypeValue = (filters?: FilterGroup | null): string | null => {
   if (!filters) return null;
+  // Under `or`, the type restriction does not narrow anything: a sibling filter
+  // or sub-group brings back entities of every other type, which the dedicated
+  // list would not show.
+  const isNarrowing = filters.mode === 'and'
+    || (filters.filters.length <= 1 && (filters.filterGroups ?? []).length === 0);
+  if (!isNarrowing) return null;
   const candidates = filters.filters.filter((f) => f.key === 'entity_type');
   if (candidates.length !== 1) return null;
   const [filter] = candidates;
