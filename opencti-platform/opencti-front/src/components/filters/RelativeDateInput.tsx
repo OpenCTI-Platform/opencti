@@ -1,16 +1,12 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
 import { IconButton } from '@filigran/design-system';
-import Popover from '@mui/material/Popover';
-import ScheduleOutlined from '@mui/icons-material/ScheduleOutlined';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { CalendarIcon } from '@mui/x-date-pickers/icons';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 
 interface RelativeDateInputProps {
   filter?: Filter;
@@ -22,9 +18,6 @@ interface RelativeDateInputProps {
   setDateInput: (value: string[]) => void;
   /** Only ONE field in the popover may claim focus. */
   autoFocus?: boolean;
-  /** Shows a relative-date shortcuts icon (reusing QuickRelativeDateFiltersButtons) next to the
-   * field, in both native and free-text modes. Only meaningful/passed for the From field. */
-  showShortcuts?: boolean;
 }
 
 const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
@@ -36,11 +29,9 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   dateInput,
   setDateInput,
   autoFocus = false,
-  showShortcuts = false,
 }) => {
   const { t_i18n, smhd } = useFormatter();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [shortcutsAnchorEl, setShortcutsAnchorEl] = useState<HTMLElement | null>(null);
   // Local typed-text buffer, decoupled from the `dateInput` prop so that fast typing isn't
   // clobbered by the parent's own re-render cycle (`dateInput`/`setDateInput` is a shared array
   // covering both From/To fields). Re-synced from the prop whenever it changes externally
@@ -121,33 +112,8 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   // calendar affordance). Only free text (needed to type a date-math expression like 'now-7d')
   // falls back to a plain TextField + a calendar icon (MUI's own `CalendarIcon`, same as the
   // native mode's built-in one, for visual consistency) that opens an anchored picker overlay to
-  // go back to picking a real date. The only difference for the nested-group row's From field:
-  // an extra shortcuts icon (`showShortcuts`), present in both modes.
+  // go back to picking a real date.
   const isAbsoluteMode = isValidDate(committedValue);
-
-  const shortcutsButton = showShortcuts && (
-    <IconButton
-      size="sm"
-      priority="tertiary"
-      onClick={(event) => setShortcutsAnchorEl(event.currentTarget)}
-      aria-label="relative date shortcuts"
-      icon={<ScheduleOutlined fontSize="small" />}
-    />
-  );
-  const shortcutsPopover = showShortcuts && (
-    <Popover
-      open={!!shortcutsAnchorEl}
-      anchorEl={shortcutsAnchorEl}
-      onClose={() => setShortcutsAnchorEl(null)}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-    >
-      <QuickRelativeDateFiltersButtons
-        filter={filter}
-        helpers={helpers}
-        handleClose={() => setShortcutsAnchorEl(null)}
-      />
-    </Popover>
-  );
 
   if (isAbsoluteMode) {
     return (
@@ -172,8 +138,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
             },
           }}
         />
-        {shortcutsButton}
-        {shortcutsPopover}
       </div>
     );
   }
@@ -209,20 +173,17 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         slotProps={{
           input: {
             endAdornment: (
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton
-                  size="md"
-                  priority="tertiary"
-                  onClick={() => setIsDatePickerOpen(true)}
-                  aria-label="open date picker"
-                  icon={<CalendarIcon fontSize="medium" />}
-                />
-              </Box>
+              <IconButton
+                size="md"
+                priority="tertiary"
+                onClick={() => setIsDatePickerOpen(true)}
+                aria-label="open date picker"
+                icon={<CalendarIcon fontSize="medium" />}
+              />
             ),
           },
         }}
       />
-      {shortcutsButton}
       {isDatePickerOpen && (
         <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} aria-hidden>
           <DateTimePicker
@@ -237,7 +198,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
           />
         </div>
       )}
-      {shortcutsPopover}
     </div>
   );
 };

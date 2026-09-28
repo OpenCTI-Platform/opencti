@@ -1,16 +1,15 @@
 import Popover from '@mui/material/Popover';
-import { useTheme } from '@mui/material/styles';
 import { FunctionComponent, useState } from 'react';
 import { Filter, FilterEditorInputValue, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { FilterSearchContext, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import type { WidgetHost } from '../../utils/widget/widget';
 import { FilterRepresentative } from './FiltersModel';
-import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import CompositeRegardingOfFilterEditor from './fields/CompositeRegardingOfFilterEditor';
 import { FilterEditorProvider, useFilterEditorContext } from './fields/FilterEditorContext';
 import FilterOperatorSelect from './fields/FilterOperatorSelect';
 import FilterValueInput from './fields/FilterValueInput';
 import { FILTER_VALUE_POPOVER_MIN_WIDTH } from './fields/filterFieldLayout';
+import QuickRelativeDateFiltersColumn from './QuickRelativeDateFiltersColumn';
 
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../utils/fdsLayer';
 
@@ -59,7 +58,6 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
   filterOperator,
   handleClose,
 }) => {
-  const theme = useTheme();
   const { helpers, entityTypes } = useFilterEditorContext();
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
 
@@ -112,21 +110,9 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
       >
         {displayOperatorAndFilter(filterKey)}
       </div>
-      {filterOperator === 'within'
-        && (
-          <div style={{ display: 'inline-flex', flexShrink: 0, width: 'max-content' }}>
-            <div style={{
-              color: theme.palette.text.disabled,
-              borderLeft: '0.5px solid',
-              marginLeft: '10px',
-              marginTop: '10px',
-              marginBottom: '10px',
-            }}
-            />
-            <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
-          </div>
-        )
-      }
+      {filterOperator === 'within' && (
+        <QuickRelativeDateFiltersColumn filter={filter} helpers={helpers} handleClose={handleClose} />
+      )}
     </div>
   );
 };

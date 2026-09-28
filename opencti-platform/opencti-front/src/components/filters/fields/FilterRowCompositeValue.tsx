@@ -7,7 +7,7 @@ import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHe
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../utils/fdsLayer';
 import FilterValuesForDynamicSubKey from '../FilterValuesForDynamicSubKey';
 import FilterValueInput from './FilterValueInput';
-import { FILTER_VALUE_POPOVER_MIN_WIDTH } from './filterFieldLayout';
+import { FILTER_VALUE_POPOVER_MIN_WIDTH, filterFieldBoxStyle } from './filterFieldLayout';
 
 export interface FilterRowCompositeValueProps {
   filter: Filter;
@@ -50,15 +50,11 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
         size="sm"
         className="!rounded-sm !bg-transparent !font-normal !normal-case"
         style={{
-          display: 'flex',
-          alignItems: 'center',
+          ...filterFieldBoxStyle(theme, isHovered && hasRelationshipType),
           justifyContent: 'flex-start',
-          width: '100%',
           height: '100%',
-          boxSizing: 'border-box',
           overflow: 'hidden',
           padding: `0 ${theme.spacing(1)}`,
-          border: `1px solid ${isHovered && hasRelationshipType ? theme.palette.text.primary : theme.palette.divider}`,
           whiteSpace: 'nowrap',
         }}
       >

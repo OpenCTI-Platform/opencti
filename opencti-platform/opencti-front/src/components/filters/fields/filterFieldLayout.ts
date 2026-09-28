@@ -1,3 +1,6 @@
+import { CSSProperties } from 'react';
+import { Theme } from '@mui/material/styles';
+
 /**
  * Column geometry shared by every filter row.
  *
@@ -18,3 +21,24 @@ export const FILTER_ROW_COLUMN_FLEX = {
 
 /** Floating value editor of a composite filter: narrower than this, the entity picker wraps. */
 export const FILTER_VALUE_POPOVER_MIN_WIDTH = 250;
+
+/**
+ * Outlined-field look-alike box shared by the two clickable value boxes of a nested-filter-group
+ * row that open a popover instead of showing their editor inline (DateRangeFilter's summary box,
+ * FilterRowCompositeValue's dynamic-filter button): border, radius, cursor and box-sizing match
+ * MUI's outlined TextField. Border darkens to text.primary while hovered/active.
+ *
+ * Plain CSSProperties (radius given as an explicit px string, not a bare number) so this drops
+ * into both a Box `sx` and a design-system `Button`'s inline `style` without MUI's sx unit
+ * multiplier doubling it up. Callers still own height, padding and any layout props specific to
+ * their own container (flex-grow, overflow, whiteSpace, ...).
+ */
+export const filterFieldBoxStyle = (theme: Theme, active: boolean): CSSProperties => ({
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  width: '100%',
+  boxSizing: 'border-box',
+  border: `1px solid ${active ? theme.palette.text.primary : theme.palette.divider}`,
+  borderRadius: `${theme.shape.borderRadius}px`,
+});

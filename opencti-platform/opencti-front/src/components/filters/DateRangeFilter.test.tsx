@@ -9,7 +9,7 @@ const makeHelpers = (): handleFilterHelpers => ({
 } as unknown as handleFilterHelpers);
 
 describe('Component: DateRangeFilter', () => {
-  it('shows the relative-date shortcuts icon only on the From field, not the To field', () => {
+  it('shows a compact textual summary instead of the fields when showRelativeDateShortcuts is set (nested-group row)', () => {
     const helpers = makeHelpers();
 
     testRender(
@@ -21,10 +21,31 @@ describe('Component: DateRangeFilter', () => {
       />,
     );
 
-    expect(screen.getAllByRole('button', { name: /relative date shortcuts/i })).toHaveLength(1);
+    expect(screen.queryByLabelText('From')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('To')).not.toBeInTheDocument();
+    expect(screen.getByText(/last 7 days/i)).toBeInTheDocument();
   });
 
-  it('does not show the relative-date shortcuts icon on either field when showRelativeDateShortcuts is not set', () => {
+  it('opens a popover with both fields and the quick shortcuts when the summary is clicked', async () => {
+    const helpers = makeHelpers();
+
+    const { user } = testRender(
+      <DateRangeFilter
+        filterKey="created_at"
+        helpers={helpers}
+        filterValues={['now-7d', 'now']}
+        showRelativeDateShortcuts
+      />,
+    );
+
+    await user.click(screen.getByText(/last 7 days/i));
+
+    expect(screen.getByLabelText('From')).toBeInTheDocument();
+    expect(screen.getByLabelText('To')).toBeInTheDocument();
+    expect(screen.getByText('Last 1 day')).toBeInTheDocument();
+  });
+
+  it('renders the fields directly inline, with no summary and no shortcuts of its own, when showRelativeDateShortcuts is not set (root chip popover adds its own shortcuts column)', () => {
     const helpers = makeHelpers();
 
     testRender(
@@ -35,6 +56,8 @@ describe('Component: DateRangeFilter', () => {
       />,
     );
 
-    expect(screen.queryByRole('button', { name: /relative date shortcuts/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('From')).toBeInTheDocument();
+    expect(screen.getByLabelText('To')).toBeInTheDocument();
+    expect(screen.queryByText('Last 1 day')).not.toBeInTheDocument();
   });
 });
