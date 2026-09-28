@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import moment from 'moment';
 import { resolveDrilldownLink } from './widgetDrilldown';
 import type { DrilldownInput, FilterGroup } from './widgetDrilldown-types';
 import type { Filter } from '../../filters/filtersHelpers-types';
@@ -26,6 +27,15 @@ const allFilters = (group: FilterGroup): Filter[] => [
 
 const NO_RANGE = { startDate: null, endDate: null };
 
+/**
+ * The bucket instant the API would return for that calendar period start, in
+ * the timezone of the process. `fillTimeSeries` builds period starts in the
+ * browser offset then converts to UTC, so a hardcoded UTC midnight describes a
+ * bucket no browser west of UTC can emit -- and the assertion below would then
+ * read a neighbouring day. See `widgetDrilldownFilters.test.ts`.
+ */
+const apiBucketDate = (periodStart: string) => moment(periodStart, 'YYYY-MM-DD').utc().toISOString();
+
 const baseInput = (overrides: Partial<DrilldownInput> = {}): DrilldownInput => ({
   perspective: 'entities',
   dataSelection: {
@@ -35,7 +45,7 @@ const baseInput = (overrides: Partial<DrilldownInput> = {}): DrilldownInput => (
   } as never,
   range: NO_RANGE,
   interval: 'month',
-  bucket: { kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' },
+  bucket: { kind: 'timeSeries', date: apiBucketDate('2024-03-01') },
   filterKeysSchema: SCHEMA,
   ...overrides,
 });
@@ -205,7 +215,7 @@ describe('resolveDrilldownLink — distinct (unique) selections', () => {
   });
 
   it('refuses a distinct time-series bucket', () => {
-    expect(distinct({ kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' })).toBeNull();
+    expect(distinct({ kind: 'timeSeries', date: apiBucketDate('2024-03-01') })).toBeNull();
   });
 
   it('still resolves the same audit selection when distinct is off', () => {

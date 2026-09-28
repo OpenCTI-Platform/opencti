@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { simpleLabelTooltip } from './Charts';
+import { describe, expect, it, vi } from 'vitest';
+import { areaChartOptions, lineChartOptions, simpleLabelTooltip, verticalBarsChartOptions } from './Charts';
 
 interface ThemeOverrides {
   background?: { nav?: unknown };
@@ -85,5 +85,119 @@ describe('Charts utils', () => {
       const theme = buildTheme({ background: { nav: undefined }, text: { primary: undefined } });
       expect(() => simpleLabelTooltip(theme)({ seriesIndex: 0, w: { config: { labels: ['label'] } } })).not.toThrow();
     });
+  });
+});
+
+/**
+ * ApexCharts hands `click`/`mouseMove` `Object.assign({}, w, { seriesIndex,
+ * dataPointIndex })` (Events.js:73-76), so the series live under
+ * `config.config`, not `config.w.config`. Both indices come from
+ * `e.target.getAttribute(...)`, hence the strings below.
+ */
+const chartTheme = {
+  palette: {
+    mode: 'dark',
+    background: { paper: '#111111' },
+    text: { secondary: '#cccccc' },
+    primary: { main: '#00ff00' },
+  },
+};
+
+const apexConfig = (points: unknown[], seriesIndex: unknown = '0', dataPointIndex: unknown = '1') => ({
+  seriesIndex,
+  dataPointIndex,
+  config: { series: [{ data: points }] },
+});
+
+const mouseEvent = (overrides: Record<string, unknown> = {}) => ({
+  ctrlKey: false,
+  metaKey: false,
+  button: 0,
+  preventDefault: vi.fn(),
+  stopPropagation: vi.fn(),
+  target: { style: {} as Record<string, string>, classList: { add: vi.fn(), remove: vi.fn() } },
+  ...overrides,
+});
+
+const POINTS = [
+  { x: new Date('2024-02-01T00:00:00.000Z'), y: 3 },
+  { x: new Date('2024-03-01T00:00:00.000Z'), y: 7 },
+];
+
+describe.each([
+  ['lineChartOptions', (drilldown: unknown) => lineChartOptions(chartTheme, true, null, null, undefined, false, true, drilldown)],
+  ['areaChartOptions', (drilldown: unknown) => areaChartOptions(chartTheme, true, null, null, undefined, false, true, drilldown)],
+  ['verticalBarsChartOptions', (drilldown: unknown) => verticalBarsChartOptions(chartTheme, null, null, false, false, false, false, undefined, drilldown)],
+])('%s drill-down wiring', (_name, build) => {
+  it('navigates to the link resolved for the clicked bucket', () => {
+    const navigate = vi.fn();
+    const getLink = vi.fn(() => '/dashboard/arsenal/malwares?filters=%7B%7D');
+    const options = build({ getLink, navigate });
+
+    options.chart.events.click(mouseEvent(), {}, apexConfig(POINTS));
+
+    expect(getLink).toHaveBeenCalledWith(0, { kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' });
+    expect(navigate).toHaveBeenCalledWith('/dashboard/arsenal/malwares?filters=%7B%7D');
+  });
+
+  it('stays inert when the resolver refuses the bucket', () => {
+    const navigate = vi.fn();
+    const options = build({ getLink: () => null, navigate });
+
+    options.chart.events.click(mouseEvent(), {}, apexConfig(POINTS));
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('stays inert when the click landed outside any data point', () => {
+    const navigate = vi.fn();
+    const getLink = vi.fn(() => '/x');
+    const options = build({ getLink, navigate });
+
+    options.chart.events.click(mouseEvent(), {}, apexConfig(POINTS, '-1', '-1'));
+
+    expect(getLink).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('shows a pointer exactly where clicking would navigate', () => {
+    const getLink = (_i: number, bucket: { date: string }) => (bucket.date === '2024-03-01T00:00:00.000Z' ? '/x' : null);
+    const options = build({ getLink, navigate: vi.fn() });
+
+    const onLink = mouseEvent();
+    options.chart.events.mouseMove(onLink, {}, apexConfig(POINTS));
+    expect(onLink.target.style.cursor).toBe('pointer');
+
+    const offLink = mouseEvent();
+    options.chart.events.mouseMove(offLink, {}, apexConfig(POINTS, '0', '0'));
+    expect(offLink.target.style.cursor).toBe('default');
+    // Charts reuse their SVG nodes between hovers, so leaving an inert surface
+    // marked noDrag would silently make part of the widget undraggable.
+    expect(offLink.target.classList.remove).toHaveBeenCalledWith('noDrag');
+  });
+
+  it('marks the clickable surface noDrag so the widget is not dragged instead', () => {
+    const options = build({ getLink: () => '/x', navigate: vi.fn() });
+    const event = mouseEvent();
+
+    options.chart.events.mouseMove(event, {}, apexConfig(POINTS));
+
+    expect(event.target.classList.add).toHaveBeenCalledWith('noDrag');
+  });
+
+  it('opens a new tab on ctrl-click instead of navigating', () => {
+    const navigate = vi.fn();
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const options = build({ getLink: () => '/x', navigate });
+
+    options.chart.events.click(mouseEvent({ ctrlKey: true }), {}, apexConfig(POINTS));
+
+    expect(open).toHaveBeenCalledWith('/x', '_blank');
+    expect(navigate).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
+  it('installs no handler at all when the widget has no drill-down', () => {
+    expect(build(undefined).chart.events?.click).toBeUndefined();
   });
 });

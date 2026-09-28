@@ -54,6 +54,72 @@ const handleNavigate = (event, navigate, link) => {
   }
 };
 
+/**
+ * ApexCharts calls `click` and `mouseMove` with `Object.assign({}, w, {
+ * seriesIndex, dataPointIndex })` (Events.js:73-76): the series sit under
+ * `config.config`, and both indices come from `getAttribute`, so they are
+ * strings — or `null` when the pointer is not over a data point.
+ */
+const pointIndexes = (config) => {
+  const seriesIndex = Number(config?.seriesIndex);
+  const dataPointIndex = Number(config?.dataPointIndex);
+  if (!Number.isInteger(seriesIndex) || seriesIndex < 0) return null;
+  if (!Number.isInteger(dataPointIndex) || dataPointIndex < 0) return null;
+  return { seriesIndex, dataPointIndex };
+};
+
+/**
+ * Builds both ApexCharts handlers from a single link resolver, so the pointer
+ * cursor can never promise a navigation that the click does not perform.
+ *
+ * `resolveBucket` receives the resolved indexes and returns the clicked bucket,
+ * or null when the surface carries no reproducible count.
+ *
+ * Returns an empty object when the widget has no drill-down, leaving charts
+ * without any handler rather than an inert one.
+ */
+export const buildDrilldownEvents = (resolveBucket, drilldown) => {
+  if (!drilldown) return {};
+  const linkAt = (config) => {
+    const indexes = pointIndexes(config);
+    if (!indexes) return null;
+    const bucket = resolveBucket(config, indexes);
+    return bucket ? drilldown.getLink(indexes.seriesIndex, bucket) : null;
+  };
+  return {
+    click: (event, chartContext, config) => {
+      handleNavigate(event, drilldown.navigate, linkAt(config));
+    },
+    mouseMove: (event, chartContext, config) => {
+      if (!event?.target?.style) return;
+      if (linkAt(config)) {
+        event.target.style.cursor = 'pointer';
+        // The surfaces are SVG nodes ApexCharts creates itself, so the class
+        // that tells react-grid-layout not to drag has to be set here.
+        event.target.classList?.add('noDrag');
+      } else {
+        event.target.style.cursor = 'default';
+        event.target.classList?.remove('noDrag');
+      }
+    },
+  };
+};
+
+/**
+ * A time-series point carries its bucket start on `x`, as the very value the
+ * API returned (the containers build it with `new Date(entry.date)`).
+ */
+const timeSeriesBucketEvents = (drilldown) => buildDrilldownEvents(
+  (config, { seriesIndex, dataPointIndex }) => {
+    const point = config?.config?.series?.[seriesIndex]?.data?.[dataPointIndex];
+    const date = Array.isArray(point) ? point[0] : point?.x;
+    if (date === undefined || date === null) return null;
+    const parsed = new Date(date);
+    return Number.isNaN(parsed.getTime()) ? null : { kind: 'timeSeries', date: parsed.toISOString() };
+  },
+  drilldown,
+);
+
 // theme colors are always stored as 6-digit hex (see themeValidation.ts), so any other
 // value is untrusted input and must be rejected rather than interpolated into CSS
 const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
@@ -96,6 +162,7 @@ export const lineChartOptions = (
   tickAmount = undefined,
   dataLabels = false,
   legend = true,
+  drilldown = undefined,
 ) => ({
   chart: {
     type: 'line',
@@ -104,6 +171,7 @@ export const lineChartOptions = (
     foreColor: theme.palette.text.secondary,
     width: '100%',
     height: '100%',
+    events: timeSeriesBucketEvents(drilldown),
   },
   theme: {
     mode: theme.palette.mode,
@@ -190,6 +258,7 @@ export const areaChartOptions = (
   tickAmount = undefined,
   isStacked = false,
   legend = true,
+  drilldown = undefined,
 ) => ({
   chart: {
     type: 'area',
@@ -199,6 +268,7 @@ export const areaChartOptions = (
     stacked: isStacked,
     width: '100%',
     height: '100%',
+    events: timeSeriesBucketEvents(drilldown),
   },
   theme: {
     mode: theme.palette.mode,
@@ -300,6 +370,7 @@ export const verticalBarsChartOptions = (
   isStacked = false,
   legend = false,
   tickAmount = undefined,
+  drilldown = undefined,
 ) => ({
   chart: {
     type: 'bar',
@@ -309,6 +380,7 @@ export const verticalBarsChartOptions = (
     stacked: isStacked,
     width: '100%',
     height: '100%',
+    events: timeSeriesBucketEvents(drilldown),
   },
   theme: {
     mode: theme.palette.mode,

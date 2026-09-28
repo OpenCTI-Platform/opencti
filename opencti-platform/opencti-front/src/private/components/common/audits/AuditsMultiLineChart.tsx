@@ -23,6 +23,7 @@ import { normalizeFilterGroupForBackend, removeEntityTypeAllFromFilterGroup } fr
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import { UNIQUE_COUNT_ESTIMATION_WARNING, getWidgetInterval, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -59,6 +60,7 @@ interface AuditsMultiLineChartComponentProps {
   hasLegend?: boolean;
   onMounted: (chart: ApexCharts) => void;
   onShowWarning: (show: boolean) => void;
+  drilldown: WidgetDrilldown;
 }
 
 type TimeSeriesEntry = NonNullable<
@@ -74,6 +76,7 @@ const AuditsMultiLineChartComponent: FunctionComponent<AuditsMultiLineChartCompo
   hasLegend,
   onMounted,
   onShowWarning,
+  drilldown,
 }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<AuditsMultiLineChartTimeSeriesQuery>(
@@ -91,6 +94,7 @@ const AuditsMultiLineChartComponent: FunctionComponent<AuditsMultiLineChartCompo
   if (data.auditsMultiTimeSeries) {
     return (
       <WidgetMultiLines
+        drilldown={drilldown}
         series={dataSelection.map((selection, i) => ({
           name: selection.label || t_i18n('Number of history entries'),
           data: (data.auditsMultiTimeSeries?.[i]?.data ?? [])
@@ -166,7 +170,7 @@ const AuditsMultiLineChart: FunctionComponent<AuditsMultiLineChartProps> = ({
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiLineChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsMultiLineChartTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -195,6 +199,7 @@ const AuditsMultiLineChart: FunctionComponent<AuditsMultiLineChartProps> = ({
         host={host}
       >
         <AuditsMultiLineChartComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           interval={parameters.interval ?? undefined}
