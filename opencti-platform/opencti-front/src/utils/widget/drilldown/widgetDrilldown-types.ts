@@ -42,6 +42,16 @@ export interface DrilldownInput {
   interval?: string | null;
   bucket: DrilldownBucket;
   filterKeysSchema: FilterKeysSchema;
+  /**
+   * The concrete stix-core-relationship types, from `useAuth().schema.scrs`.
+   *
+   * The relationships list pins `stix-core-relationship`
+   * (`Relationships.tsx:281`) while a relationship widget aggregates over
+   * `stix-relationship` by default (`stixRelationship.js:36-38`), sightings and
+   * refs included. Without knowing which types are covered, a widget counting
+   * label refs would link to a list that holds none of them.
+   */
+  stixCoreRelationshipTypes: string[];
 }
 
 export interface ListRouteResolution {

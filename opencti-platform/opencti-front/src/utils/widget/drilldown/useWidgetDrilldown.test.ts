@@ -5,7 +5,7 @@ import useWidgetDrilldown from './useWidgetDrilldown';
 // The real `useAuth` serves a stable context value; a factory-scoped constant
 // reproduces that, otherwise a fresh schema each render would defeat memoization.
 vi.mock('../../hooks/useAuth', () => {
-  const schema = { filterKeysSchema: new Map() };
+  const schema = { filterKeysSchema: new Map(), scrs: [{ id: 'targets', label: 'targets' }] };
   return { default: () => ({ schema }) };
 });
 

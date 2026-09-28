@@ -29,13 +29,14 @@ const useWidgetDrilldown = ({
   range: WidgetDateRange;
   interval?: string | null;
 }): WidgetDrilldown => {
-  const { filterKeysSchema } = useAuth().schema;
+  const { filterKeysSchema, scrs } = useAuth().schema;
+  const stixCoreRelationshipTypes = useMemo(() => (scrs ?? []).map(({ label }) => label), [scrs]);
 
   const getLink = useCallback((selectionIndex: number, bucket: DrilldownBucket) => {
     const dataSelection = resolvedDataSelection[selectionIndex];
     if (!dataSelection) return null;
-    return resolveDrilldownLink({ perspective, dataSelection, range, interval, bucket, filterKeysSchema });
-  }, [perspective, resolvedDataSelection, range, interval, filterKeysSchema]);
+    return resolveDrilldownLink({ perspective, dataSelection, range, interval, bucket, filterKeysSchema, stixCoreRelationshipTypes });
+  }, [perspective, resolvedDataSelection, range, interval, filterKeysSchema, stixCoreRelationshipTypes]);
 
   return useMemo(() => ({ getLink }), [getLink]);
 };

@@ -47,6 +47,7 @@ const baseInput = (overrides: Partial<DrilldownInput> = {}): DrilldownInput => (
   interval: 'month',
   bucket: { kind: 'timeSeries', date: apiBucketDate('2024-03-01') },
   filterKeysSchema: SCHEMA,
+  stixCoreRelationshipTypes: ['targets', 'uses', 'attributed-to'],
   ...overrides,
 });
 
@@ -278,5 +279,83 @@ describe('resolveDrilldownLink on a relationship connection bucket', () => {
 
   it('stays inert when the aggregation counted both sides', () => {
     expect(resolveDrilldownLink(relationshipInput(null))).toBeNull();
+  });
+});
+
+/**
+ * The relationships list pins `stix-core-relationship` (Relationships.tsx:281),
+ * while a widget aggregates over `stix-relationship` unless its own filters
+ * narrow that down (stixRelationship.js:36-38). A widget counting refs or
+ * sightings therefore has no list able to show the same population.
+ */
+describe('resolveDrilldownLink on a relationship population the list cannot hold', () => {
+  const RELATIONSHIP_SCHEMA = new Map([
+    ['stix-core-relationship', new Map([['toId', {} as never], ['entity_type', {} as never], ['created_at', {} as never]])],
+  ]);
+
+  const labelsWidget = (filters: { key: string; values: string[]; operator: string; mode: string }[]) => baseInput({
+    perspective: 'relationships',
+    filterKeysSchema: RELATIONSHIP_SCHEMA,
+    bucket: { kind: 'distribution', rawValue: 'label-1', entityId: 'label-1' },
+    dataSelection: {
+      perspective: 'relationships',
+      attribute: 'internal_id',
+      date_attribute: 'created_at',
+      isTo: true,
+      filters: { mode: 'and', filters, filterGroups: [] },
+    } as never,
+  });
+
+  // The exact shape of the "Most active labels" widget: it counts `object-label`
+  // ref relationships, none of which appear on the relationships list.
+  it('refuses a widget scoped only by the type of its endpoints', () => {
+    expect(resolveDrilldownLink(labelsWidget([
+      { key: 'toTypes', values: ['Label'], operator: 'eq', mode: 'or' },
+    ]))).toBeNull();
+  });
+
+  it('refuses a widget spanning every stix relationship', () => {
+    expect(resolveDrilldownLink(labelsWidget([
+      { key: 'entity_type', values: ['stix-relationship'], operator: 'eq', mode: 'or' },
+    ]))).toBeNull();
+  });
+
+  it('refuses sightings, which the list does not hold either', () => {
+    expect(resolveDrilldownLink(labelsWidget([
+      { key: 'entity_type', values: ['stix-sighting-relationship'], operator: 'eq', mode: 'or' },
+    ]))).toBeNull();
+  });
+
+  it('accepts the abstract stix-core-relationship type', () => {
+    expect(resolveDrilldownLink(labelsWidget([
+      { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
+    ]))).not.toBeNull();
+  });
+
+  it('accepts concrete core relationship types', () => {
+    expect(resolveDrilldownLink(labelsWidget([
+      { key: 'relationship_type', values: ['targets', 'uses'], operator: 'eq', mode: 'or' },
+    ]))).not.toBeNull();
+  });
+
+  it('refuses a set mixing a core type with an uncovered one', () => {
+    expect(resolveDrilldownLink(labelsWidget([
+      { key: 'entity_type', values: ['targets', 'stix-sighting-relationship'], operator: 'eq', mode: 'or' },
+    ]))).toBeNull();
+  });
+
+  it('refuses an `or` mode, where a sibling filter re-widens the population', () => {
+    const input = labelsWidget([
+      { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
+      { key: 'toTypes', values: ['Label'], operator: 'eq', mode: 'or' },
+    ]);
+    (input.dataSelection as { filters: { mode: string } }).filters.mode = 'or';
+    expect(resolveDrilldownLink(input)).toBeNull();
+  });
+
+  it('refuses a negated scope, which widens instead of narrowing', () => {
+    expect(resolveDrilldownLink(labelsWidget([
+      { key: 'entity_type', values: ['stix-core-relationship'], operator: 'not_eq', mode: 'or' },
+    ]))).toBeNull();
   });
 });
