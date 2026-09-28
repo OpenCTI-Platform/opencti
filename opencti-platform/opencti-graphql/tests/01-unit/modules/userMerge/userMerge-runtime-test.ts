@@ -10,16 +10,16 @@ interface RedisState {
 }
 
 const state: RedisState = { contextIds: [], forgotPasswordId: undefined, sessions: [], streamConnections: [], usedTokenIds: [] };
-const updates: Array<{ id: string; inputs: unknown[] }> = [];
+const updates: Array<{ id: string; inputs: unknown[]; opts?: Record<string, unknown> }> = [];
 const deletedTokenIds: string[][] = [];
 const deletedForgotPassword: string[] = [];
 const notified: string[] = [];
 const order: string[] = [];
 
 vi.mock('../../../../src/database/middleware', () => ({
-  updateAttribute: async (_context: unknown, _user: unknown, id: string, _type: string, inputs: unknown[]) => {
+  updateAttribute: async (_context: unknown, _user: unknown, id: string, _type: string, inputs: unknown[], opts?: Record<string, unknown>) => {
     order.push('revocation');
-    updates.push({ id, inputs });
+    updates.push({ id, inputs, opts });
     return { element: {} };
   },
 }));
@@ -158,6 +158,8 @@ describe('userMerge runtime handler', () => {
     // One input per token would make the removals overwrite each other and leave a live token.
     expect(updates[0].inputs).toHaveLength(1);
     expect(updates[0].inputs[0]).toMatchObject({ key: 'api_tokens', value: [{ id: 'token-a' }, { id: 'token-b' }] });
+    // A write on the user would otherwise re-align the individual joined on its email.
+    expect(updates[0].opts).toEqual({ skipUserIndividualSync: true });
     expect(deletedTokenIds).toEqual([['token-a', 'token-b']]);
   });
 

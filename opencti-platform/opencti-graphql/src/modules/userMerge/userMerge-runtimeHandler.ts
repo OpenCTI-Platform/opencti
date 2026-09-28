@@ -9,7 +9,7 @@ import { closeUserStreamConnections, userStreamConnections } from '../../graphql
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
-import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, type UserMergePlannedChange } from './userMerge-handler';
+import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHandlerPlan, type UserMergePlannedChange, USER_MERGE_USER_WRITE } from './userMerge-handler';
 
 export const USER_MERGE_RUNTIME_HANDLER = 'source-runtime-invalidation';
 
@@ -70,7 +70,7 @@ const INVALIDATIONS: RuntimeInvalidation[] = [
       // input from the same initial user, so several removals on one attribute overwrite each
       // other and the last one wins — leaving a usable token on the account.
       const update = { key: FIELD_API_TOKENS, value: tokens, operation: UPDATE_OPERATION_REMOVE as EditOperation };
-      const { element } = await updateAttribute(context, SYSTEM_USER, sourceUser.id, ENTITY_TYPE_USER, [update]);
+      const { element } = await updateAttribute(context, SYSTEM_USER, sourceUser.id, ENTITY_TYPE_USER, [update], USER_MERGE_USER_WRITE);
       // `updateAttribute` writes the entity but publishes nothing, and the user cache is what the
       // API resolves a token against: without this the revoked tokens keep authenticating until
       // the cache happens to be rebuilt. The regular revocation path notifies for the same reason.
