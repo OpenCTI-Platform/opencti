@@ -20,6 +20,11 @@ from typing import Any, Dict, Iterator, List, Optional
 import pika
 from pika.exceptions import AMQPError, NackError, UnroutableError
 
+try:  # pycti >= 7.260921: marks a value its caller never supplied (dropped before any send)
+    from pycti.utils.opencti_stix2_utils import NOT_PROVIDED
+except ImportError:  # older pycti: no such marker, nothing to drop
+    NOT_PROVIDED = object()
+
 CHUNK_ROUTING_SUFFIX = "chunk_intake_routing"
 ECHO_PREFIX = "echo--"
 # Scalar input fields pycti may read back from a create response (vocabularies: name,
@@ -51,6 +56,20 @@ BUNDLE_PUBLISH_LOCK = threading.Lock()
 
 class ChunkQueueUnavailable(Exception):
     """No queue is bound on the chunk routing key: the platform manager is not enabled."""
+
+
+def drop_not_provided(value: Any) -> Any:
+    """Drop the dict entries pycti marks NOT_PROVIDED, recursively.
+
+    Same rule as pycti's own HTTP path (OpenCTIApiClient._extract_files skips them before
+    serializing): the capture transport replaces `query` and receives the raw variables,
+    so without this the chunk message carries a bare object() and json.dumps fails.
+    """
+    if isinstance(value, dict):
+        return {k: drop_not_provided(v) for k, v in value.items() if v is not NOT_PROVIDED}
+    if isinstance(value, list):
+        return [drop_not_provided(v) for v in value]
+    return value
 
 
 def collect_echo_refs(value: Any, acc: set) -> None:
@@ -209,7 +228,7 @@ class ChunkCapture:
         buffer = getattr(self._local, "buffer", None)
         if buffer is None or not query.lstrip().startswith("mutation"):
             return self._real_query(query, variables, disable_impersonate)
-        variables = variables or {}
+        variables = drop_not_provided(variables or {})
         # most pycti creates nest their fields under `input`; observables pass them at the
         # top level (stixCyberObservableAdd): look in both places for the STIX id
         payload = (
