@@ -139,7 +139,7 @@ describe('Data initialization test', () => {
 
   it('should create all default disabled retention rules', async () => {
     const allRules = await listRules(testContext, ADMIN_USER, {}) as BasicStoreEntityRetentionRule[];
-    const expectedScopes = ['file', 'workbench', 'history', 'activity'];
+    const expectedScopes = ['file', 'workbench', 'history', 'activity', 'draft'];
 
     for (const scope of expectedScopes) {
       const rule = allRules.find((r) => r.scope === scope);
@@ -161,7 +161,7 @@ describe('Data initialization test', () => {
     // Verify new rules were created for all expected scopes
     const rulesAfter = await listRules(testContext, ADMIN_USER, {}) as BasicStoreEntityRetentionRule[];
     const newRules = rulesAfter.filter((r) => !idsBefore.has(r.id));
-    const expectedScopes = ['file', 'workbench', 'history', 'activity'];
+    const expectedScopes = ['file', 'workbench', 'history', 'activity', 'draft'];
     for (const scope of expectedScopes) {
       const newRule = newRules.find((r) => r.scope === scope);
       expect(newRule, `createDefaultRetentionRules should create a "${scope}" rule`).toBeDefined();

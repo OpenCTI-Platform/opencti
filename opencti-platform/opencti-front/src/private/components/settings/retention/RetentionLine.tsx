@@ -61,6 +61,9 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   } else if (data.scope === 'activity') {
     scopeSeverity = 'high';
     appliedOnContent = t_i18n('Activity logs');
+  } else if (data.scope === 'draft') {
+    scopeSeverity = 'high';
+    appliedOnContent = t_i18n('All drafts');
   }
   return (
     <ListItem
@@ -124,7 +127,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             ) : (
               <BodyItem style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
-                {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
+                {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity' && data.scope !== 'draft'
                   && (
                     <Tooltip
                       title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
