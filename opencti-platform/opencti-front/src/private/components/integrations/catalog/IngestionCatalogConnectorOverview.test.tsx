@@ -1,7 +1,9 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
-import testRender from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
+import AppIntlProvider from '../../../../components/AppIntlProvider';
+import { UserContext, type UserContextType } from '../../../../utils/hooks/useAuth';
 import type { IngestionConnector } from './types';
 import IngestionCatalogConnectorOverview from './IngestionCatalogConnectorOverview';
 
@@ -76,5 +78,27 @@ describe('IngestionCatalogConnectorOverview', () => {
     expect(screen.getByText('Latest Compatible Version')).toBeInTheDocument();
     expect(screen.getByText('None')).toBeInTheDocument();
     expect(screen.getByText('This connector is not compatible with your current platform version. Please upgrade your platform to 7.260828.0 or above.')).toBeInTheDocument();
+  });
+
+  it('translates the compatibility alert and fills in the minimum platform version', () => {
+    const connector = buildConnector({
+      compatibility: {
+        is_compatible: false,
+        latest_compatible_version: null,
+        minimum_platform_version: '7.260828.0',
+      },
+    });
+    // testRender provides the intl context outside of the user context, so the locale is set by a nested provider
+    const frenchUserContext = { ...createMockUserContext(), locale: 'fr-fr' } as UserContextType;
+
+    testRender(
+      <UserContext.Provider value={frenchUserContext}>
+        <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
+          <IngestionCatalogConnectorOverview connector={connector} />
+        </AppIntlProvider>
+      </UserContext.Provider>,
+    );
+
+    expect(screen.getByText('Ce connecteur n\'est pas compatible avec la version actuelle de votre plateforme. Veuillez mettre à jour votre plateforme vers la version 7.260828.0 ou supérieure.')).toBeInTheDocument();
   });
 });

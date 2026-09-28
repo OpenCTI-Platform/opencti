@@ -4914,6 +4914,7 @@
   "This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.": "이 커넥터는 Filigran에서 개발하거나 검증하지 않았습니다. 따라서 Filigran은 이 커넥터를 사용하는 과정에서 발생할 수 있는 어떠한 문제에 대해서도 책임을 지지 않습니다.",
   "This connector is active": "이 커넥터는 활성화되었습니다",
   "This connector is disconnected": "이 커넥터는 연결이 끊어졌습니다",
+  "This connector is not compatible with your current platform version. Please upgrade your platform to {version} or above.": "이 커넥터는 현재 플랫폼 버전과 호환되지 않습니다. 플랫폼을 {version} 이상으로 업그레이드하세요.",
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This decision could not be sent. Reload the chat and try again.": "이 결정은 전송되지 않았습니다. 채팅을 새로고침하고 다시 시도해 주세요.",
   "This entity has several key fields, which is incompatible with bulk creation": "이 엔티티에는 대량 생성과 호환되지 않는 몇 가지 주요 필드가 있습니다",

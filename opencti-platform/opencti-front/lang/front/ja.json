@@ -4914,6 +4914,7 @@
   "This connector has not been developed and verified by Filigran. As such, Filigran cannot be held liable for any issues that may occur during its use.": "このコネクタは、Filigranによって開発および検証されたものではありません。したがって、Filigranは、その使用中に発生する可能性のあるいかなる問題についても責任を負いかねます。",
   "This connector is active": "このコネクタはアクティブです",
   "This connector is disconnected": "このコネクタとの接続が切れています",
+  "This connector is not compatible with your current platform version. Please upgrade your platform to {version} or above.": "このコネクタは現在のプラットフォームのバージョンと互換性がありません。プラットフォームを {version} 以降にアップグレードしてください。",
   "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder.",
   "This decision could not be sent. Reload the chat and try again.": "この決定を送信できませんでした。チャットを再読み込みして、もう一度お試しください。",
   "This entity has several key fields, which is incompatible with bulk creation": "このエンティティは複数のキーフィールドを持つため、一括作成とは互換性がありません。",

@@ -233,7 +233,7 @@ describe('Catalog resolver integration', () => {
     }
   });
 
-  it('should expose the latest contract version even when it is incompatible with the current platform', async () => {
+  it('should expose the latest compatible contract version and list all versions', async () => {
     const runSuffix = uuidv4().slice(0, 8);
     const fixture = JSON.parse(await readFile(v1TemplatePath, 'utf8'));
     const catalogId = `integration-catalog-v1-incompatible-${runSuffix}`;
@@ -273,12 +273,17 @@ describe('Catalog resolver integration', () => {
     const catalogContracts = catalog.contracts.map((raw: string) => JSON.parse(raw));
     const listedContract = catalogContracts.find((entry: any) => entry.slug === contractSlug);
     expect(listedContract).toBeDefined();
-    expect(listedContract.container_version).toBe('2.0.0');
-    expect(listedContract.support_version).toBe('9999.0.0');
+    expect(listedContract.container_version).toBe('1.0.0');
+    expect(listedContract.support_version).toBe('7.0.0');
     expect(listedContract.versions).toEqual([
       { version: '2.0.0', min_platform_version: '9999.0.0', min_version: '9999.0.0', support_version: '9999.0.0' },
       { version: '1.0.0', min_platform_version: '7.0.0', min_version: '7.0.0', support_version: '7.0.0' },
     ]);
+    expect(listedContract.compatibility).toEqual({
+      is_compatible: true,
+      latest_compatible_version: '1.0.0',
+      minimum_platform_version: '7.0.0',
+    });
 
     const bySlugResult = await queryAsAdminWithSuccess({
       query: GET_CONTRACT_BY_SLUG_QUERY,
@@ -291,11 +296,16 @@ describe('Catalog resolver integration', () => {
     });
     const bySlugContract = JSON.parse(bySlugPayload.contract);
     expect(bySlugContract.slug).toEqual(contractSlug);
-    expect(bySlugContract.container_version).toBe('2.0.0');
-    expect(bySlugContract.support_version).toBe('9999.0.0');
+    expect(bySlugContract.container_version).toBe('1.0.0');
+    expect(bySlugContract.support_version).toBe('7.0.0');
     expect(bySlugContract.versions).toEqual([
       { version: '2.0.0', min_platform_version: '9999.0.0', min_version: '9999.0.0', support_version: '9999.0.0' },
       { version: '1.0.0', min_platform_version: '7.0.0', min_version: '7.0.0', support_version: '7.0.0' },
     ]);
+    expect(bySlugContract.compatibility).toEqual({
+      is_compatible: true,
+      latest_compatible_version: '1.0.0',
+      minimum_platform_version: '7.0.0',
+    });
   });
 });

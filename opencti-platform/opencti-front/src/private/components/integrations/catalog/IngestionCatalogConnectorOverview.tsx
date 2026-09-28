@@ -22,7 +22,9 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
         <Card title={t_i18n('Overview')}>
           {shouldShowCompatibilityAlert && (
             <Alert severity="info" sx={{ marginBottom: 2 }}>
-              {t_i18n(`This connector is not compatible with your current platform version. Please upgrade your platform to ${minimumPlatformVersion} or above.`)}
+              {t_i18n('This connector is not compatible with your current platform version. Please upgrade your platform to {version} or above.', {
+                values: { version: minimumPlatformVersion },
+              })}
             </Alert>
           )}
           <MarkdownDisplay content={connector.description} />
