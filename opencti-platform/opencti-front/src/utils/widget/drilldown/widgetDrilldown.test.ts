@@ -234,3 +234,49 @@ describe('resolveDrilldownLink — distinct (unique) selections', () => {
     expect((link as string).startsWith('/dashboard/audits?filters=')).toBe(true);
   });
 });
+
+/**
+ * End-to-end shape of the link a Home dashboard bar chart produces: perspective
+ * `relationships`, aggregation on the source side of each relationship.
+ */
+describe('resolveDrilldownLink on a relationship connection bucket', () => {
+  const RELATIONSHIP_SCHEMA = new Map([
+    ['stix-core-relationship', new Map([
+      ['fromId', {} as never], ['toId', {} as never], ['fromTypes', {} as never],
+      ['entity_type', {} as never], ['created_at', {} as never],
+    ])],
+  ]);
+
+  const relationshipInput = (isTo: boolean | null) => baseInput({
+    perspective: 'relationships',
+    filterKeysSchema: RELATIONSHIP_SCHEMA,
+    bucket: { kind: 'distribution', rawValue: 'threat-1', entityId: 'threat-1' },
+    dataSelection: {
+      perspective: 'relationships',
+      attribute: 'internal_id',
+      date_attribute: 'created_at',
+      isTo,
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+    } as never,
+  });
+
+  it('opens the relationships list restricted to the counted side', () => {
+    const link = resolveDrilldownLink(relationshipInput(false)) as string;
+    expect(link.startsWith('/dashboard/data/relationships?filters=')).toBe(true);
+    const fromId = allFilters(parseFilters(link)).find((f) => f.key === 'fromId');
+    expect(fromId?.values).toEqual(['threat-1']);
+  });
+
+  it('keeps the widget entity_type filter, since the destination is generic', () => {
+    const link = resolveDrilldownLink(relationshipInput(false)) as string;
+    expect(allFilters(parseFilters(link)).some((f) => f.key === 'entity_type')).toBe(true);
+  });
+
+  it('stays inert when the aggregation counted both sides', () => {
+    expect(resolveDrilldownLink(relationshipInput(null))).toBeNull();
+  });
+});

@@ -56,7 +56,7 @@ export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
     bucketFilters = buildBucketDateFilter(bucket.date, interval, range, dateAttribute);
   } else {
     bucketFilters = buildBucketValueFilter(
-      dataSelection.attribute ?? '',
+      { attribute: dataSelection.attribute ?? '', perspective, isTo: dataSelection.isTo },
       bucket,
       (widgetFilters?.filters.find((f) => f.key === 'entity_type')?.values as string[]) ?? [],
       filterKeysSchema,

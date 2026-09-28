@@ -69,6 +69,54 @@ const ATTRIBUTE_TO_FILTER: Record<string, { key: string; source: ValueSource }> 
   'kill-chain-phase.internal_id': { key: 'killChainPhases', source: 'entityId' },
 };
 
+/**
+ * Attributes a relationship distribution aggregates on the *connections* of each
+ * relationship rather than on its own fields: `elAggregationRelationsCount`
+ * switches to a nested aggregation for `internal_id` and `entity_type`
+ * (engine.ts:3479-3493), so a bucket describes the entity sitting on one side,
+ * not the relationship itself.
+ *
+ * Mapping them to `entity_type` would be plainly wrong -- a bucket labelled
+ * `Malware` means "relationships whose endpoint is a malware", never
+ * "relationships of type Malware".
+ */
+const CONNECTION_ATTRIBUTE_TO_FILTER: Record<string, { from: string; to: string; source: ValueSource }> = {
+  internal_id: { from: 'fromId', to: 'toId', source: 'entityId' },
+  entity_type: { from: 'fromTypes', to: 'toTypes', source: 'label' },
+};
+
+/**
+ * Resolves which side of the relationship the displayed count came from.
+ *
+ * `buildAggregationFilter` (middleware-loader.ts:154-180) only adds a role
+ * clause for a strictly boolean `isTo`: `false` pins `*_from`, `true` pins
+ * `*_to`. Anything else leaves the aggregation counting both endpoints, which no
+ * single-sided list filter reproduces.
+ */
+const connectionFilterKey = (attribute: string, isTo?: boolean | null) => {
+  const sides = CONNECTION_ATTRIBUTE_TO_FILTER[attribute];
+  if (!sides) return null;
+  if (isTo !== true && isTo !== false) return null;
+  return { key: isTo ? sides.to : sides.from, source: sides.source };
+};
+
+/** The part of the data selection the attribute mapping depends on. */
+export interface BucketSelection {
+  attribute: string;
+  perspective: string;
+  isTo?: boolean | null;
+}
+
+const resolveAttributeFilter = ({ attribute, perspective, isTo }: BucketSelection) => {
+  if (perspective === 'relationships') {
+    const connection = connectionFilterKey(attribute, isTo);
+    if (connection) return connection;
+    // `internal_id` has no meaning outside a connection aggregation.
+    if (CONNECTION_ATTRIBUTE_TO_FILTER[attribute]) return null;
+  }
+  return ATTRIBUTE_TO_FILTER[attribute] ?? null;
+};
+
 /** Filters the platform can express in a widget but a list page cannot reproduce. */
 const NON_TRANSPOSABLE_KEYS = ['dynamicFrom', 'dynamicTo'];
 
@@ -96,14 +144,14 @@ const isFilterKeySupported = (filterKey: string, entityTypes: string[], schema: 
  * makes the surface inert rather than opening a list with a different count.
  */
 export const buildBucketValueFilter = (
-  attribute: string,
+  selection: BucketSelection,
   bucket: DrilldownBucket,
   entityTypes: string[],
   filterKeysSchema: FilterKeysSchema,
 ): Filter[] | null => {
   if (bucket.kind !== 'distribution') return [];
 
-  const mapping = ATTRIBUTE_TO_FILTER[attribute];
+  const mapping = resolveAttributeFilter(selection);
   if (!mapping) return null;
 
   if (bucket.rawValue === MISSING_VALUE_BUCKET) return null;

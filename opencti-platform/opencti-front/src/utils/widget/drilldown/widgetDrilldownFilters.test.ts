@@ -110,17 +110,27 @@ const SCHEMA = schemaWith([
   'objectAssignee', 'killChainPhases', 'creator_id', 'x_opencti_workflow_id',
 ]);
 
+const RELATIONSHIP_SCHEMA = new Map([
+  ['stix-core-relationship', new Map(
+    ['entity_type', 'fromId', 'toId', 'fromTypes', 'toTypes', 'createdBy'].map((k) => [k, { filterKey: k } as never]),
+  )],
+]);
+
+/** The three fields of the selection the attribute mapping depends on. */
+const onEntities = (attribute: string) => ({ attribute, perspective: 'entities' as const, isTo: null });
+const onRelationships = (attribute: string, isTo: boolean | null) => ({ attribute, perspective: 'relationships' as const, isTo });
+
 describe('buildBucketValueFilter', () => {
   it('maps entity_type to the raw label', () => {
     const bucket = { kind: 'distribution', rawValue: 'Malware', entityId: null } as const;
-    expect(buildBucketValueFilter('entity_type', bucket, ['Stix-Core-Object'], SCHEMA)).toEqual([
+    expect(buildBucketValueFilter(onEntities('entity_type'), bucket, ['Stix-Core-Object'], SCHEMA)).toEqual([
       { key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' },
     ]);
   });
 
   it('maps a nested internal_id attribute to its filter key and the entity id', () => {
     const bucket = { kind: 'distribution', rawValue: 'id-1', entityId: 'id-1' } as const;
-    expect(buildBucketValueFilter('created-by.internal_id', bucket, ['Stix-Core-Object'], SCHEMA)).toEqual([
+    expect(buildBucketValueFilter(onEntities('created-by.internal_id'), bucket, ['Stix-Core-Object'], SCHEMA)).toEqual([
       { key: 'createdBy', values: ['id-1'], operator: 'eq', mode: 'or' },
     ]);
   });
@@ -135,40 +145,102 @@ describe('buildBucketValueFilter', () => {
       ['creator_id', 'creator_id'],
     ];
     pairs.forEach(([attribute, key]) => {
-      expect(buildBucketValueFilter(attribute, bucket, ['Stix-Core-Object'], SCHEMA)?.[0].key).toEqual(key);
+      expect(buildBucketValueFilter(onEntities(attribute), bucket, ['Stix-Core-Object'], SCHEMA)?.[0].key).toEqual(key);
     });
   });
 
   it('returns null when an id-based bucket has no resolved entity', () => {
     const bucket = { kind: 'distribution', rawValue: 'id-1', entityId: null } as const;
-    expect(buildBucketValueFilter('created-by.internal_id', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+    expect(buildBucketValueFilter(onEntities('created-by.internal_id'), bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
   });
 
   it('returns null for an unmapped attribute', () => {
     const bucket = { kind: 'distribution', rawValue: 'a', entityId: null } as const;
-    expect(buildBucketValueFilter('some_custom_field', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+    expect(buildBucketValueFilter(onEntities('some_custom_field'), bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
   });
 
   it('returns null when the filter key is not supported by the destination schema', () => {
     const bucket = { kind: 'distribution', rawValue: 'id-1', entityId: 'id-1' } as const;
     const poorSchema = schemaWith(['entity_type']);
-    expect(buildBucketValueFilter('created-by.internal_id', bucket, ['Stix-Core-Object'], poorSchema)).toBeNull();
+    expect(buildBucketValueFilter(onEntities('created-by.internal_id'), bucket, ['Stix-Core-Object'], poorSchema)).toBeNull();
   });
 
   it('returns null for an empty bucket value', () => {
     const bucket = { kind: 'distribution', rawValue: null, entityId: null } as const;
-    expect(buildBucketValueFilter('entity_type', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+    expect(buildBucketValueFilter(onEntities('entity_type'), bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
   });
 
   // `terms.missing = 'unknown'` (engine.ts:3384) makes this a real bucket with a
   // real count, but `entity_type = 'unknown'` would match nothing.
   it('returns null for the missing-value sentinel bucket', () => {
     const bucket = { kind: 'distribution', rawValue: 'unknown', entityId: null } as const;
-    expect(buildBucketValueFilter('entity_type', bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+    expect(buildBucketValueFilter(onEntities('entity_type'), bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
   });
 
   it('returns an empty filter list for a total bucket', () => {
-    expect(buildBucketValueFilter('entity_type', { kind: 'total' }, ['Stix-Core-Object'], SCHEMA)).toEqual([]);
+    expect(buildBucketValueFilter(onEntities('entity_type'), { kind: 'total' }, ['Stix-Core-Object'], SCHEMA)).toEqual([]);
+  });
+
+  it('never maps a bare internal_id outside the relationships perspective', () => {
+    const bucket = { kind: 'distribution', rawValue: 'id-1', entityId: 'id-1' } as const;
+    expect(buildBucketValueFilter(onEntities('internal_id'), bucket, ['Stix-Core-Object'], SCHEMA)).toBeNull();
+  });
+});
+
+/**
+ * Relationship distributions on `internal_id` and `entity_type` are aggregated
+ * on the *connections* of each relationship, not on its own attributes
+ * (`elAggregationRelationsCount`, engine.ts:3479-3493), and `isTo` decides which
+ * side is counted (`buildAggregationFilter`, middleware-loader.ts:154-180).
+ *
+ * The list filters reproducing that are the side-scoped ones, which the backend
+ * expands to the very same nested `connections` clause
+ * (`filtering-completeSpecialFilterKeys.ts:394-402 and 496-501`).
+ */
+describe('buildBucketValueFilter on relationship connections', () => {
+  const idBucket = { kind: 'distribution', rawValue: 'entity-1', entityId: 'entity-1' } as const;
+  const typeBucket = { kind: 'distribution', rawValue: 'Malware', entityId: null } as const;
+  const build = (
+    attribute: string,
+    isTo: boolean | null,
+    bucket: typeof idBucket | typeof typeBucket,
+  ) => buildBucketValueFilter(onRelationships(attribute, isTo), bucket, ['stix-core-relationship'], RELATIONSHIP_SCHEMA);
+
+  it('maps internal_id to fromId when the source side is counted', () => {
+    expect(build('internal_id', false, idBucket)).toEqual([
+      { key: 'fromId', values: ['entity-1'], operator: 'eq', mode: 'or' },
+    ]);
+  });
+
+  it('maps internal_id to toId when the target side is counted', () => {
+    expect(build('internal_id', true, idBucket)).toEqual([
+      { key: 'toId', values: ['entity-1'], operator: 'eq', mode: 'or' },
+    ]);
+  });
+
+  it('maps entity_type to the type of the connected entity, not of the relationship', () => {
+    expect(build('entity_type', false, typeBucket)).toEqual([
+      { key: 'fromTypes', values: ['Malware'], operator: 'eq', mode: 'or' },
+    ]);
+    expect(build('entity_type', true, typeBucket)?.[0].key).toEqual('toTypes');
+  });
+
+  // Without `isTo`, `buildAggregationFilter` adds no role clause at all and a
+  // bucket counts both endpoints. No single-sided filter reproduces that.
+  it.each([[null], [undefined]])('stays inert when the counted side is unknown (isTo=%s)', (isTo) => {
+    expect(build('internal_id', isTo as null, idBucket)).toBeNull();
+    expect(build('entity_type', isTo as null, typeBucket)).toBeNull();
+  });
+
+  it('stays inert when the destination schema does not expose the side filter', () => {
+    const poorSchema = new Map([['stix-core-relationship', new Map([['entity_type', { filterKey: 'entity_type' } as never]])]]);
+    expect(buildBucketValueFilter(onRelationships('internal_id', false), idBucket, ['stix-core-relationship'], poorSchema)).toBeNull();
+  });
+
+  it('still maps the relationship own attributes to their plain filter key', () => {
+    const bucket = { kind: 'distribution', rawValue: 'author-1', entityId: 'author-1' } as const;
+    expect(buildBucketValueFilter(onRelationships('created-by.internal_id', true), bucket, ['stix-core-relationship'], RELATIONSHIP_SCHEMA))
+      .toEqual([{ key: 'createdBy', values: ['author-1'], operator: 'eq', mode: 'or' }]);
   });
 });
 
