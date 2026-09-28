@@ -232,4 +232,120 @@ describe('useFieldRenderer', () => {
     expect(screen.queryByRole('textbox', { name: 'Default value' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0);
   });
+
+  it('generates a name from the field label when it is edited', () => {
+    const renameField = vi.fn();
+    const field = createField();
+    renderField(field, createFormData({ fields: [field] }), { renameField });
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Field Label' }), { target: { value: 'New Label' } });
+
+    expect(renameField).toHaveBeenCalledWith('field-1', 'New Label');
+  });
+
+  it('adds, edits, and removes custom options for a select field without vocabulary', () => {
+    const handleFieldChange = vi.fn();
+    const field = createField({
+      type: 'select',
+      attributeMapping: { entity: 'main_entity', attributeName: 'name' },
+      options: [{ label: 'First', value: 'first' }],
+    });
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Label' }), { target: { value: 'Renamed' } });
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.options', [{ label: 'Renamed', value: 'first' }]);
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Value' }), { target: { value: 'renamed-value' } });
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.options', [{ label: 'First', value: 'renamed-value' }]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add option' }));
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.options', [
+      { label: 'First', value: 'first' },
+      { label: '', value: '' },
+    ]);
+
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
+    fireEvent.click(deleteButtons[deleteButtons.length - 1]);
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.options', []);
+  });
+
+  it('sets a number default value and coerces empty input to null', () => {
+    const handleFieldChange = vi.fn();
+    const numberField = createField({ type: 'number' });
+    renderField(numberField, createFormData({ fields: [numberField] }), { handleFieldChange });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Default value' }), { target: { value: '42' } });
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.defaultValue', 42);
+  });
+
+  it('sets a text default value and shows the date helper text for date fields', () => {
+    const handleFieldChange = vi.fn();
+    const textField = createField({ type: 'text' });
+    renderField(textField, createFormData({ fields: [textField] }), { handleFieldChange });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Default value' }), { target: { value: 'hello' } });
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.defaultValue', 'hello');
+
+    cleanup();
+    const dateField = createField({ type: 'date' });
+    renderField(dateField);
+    expect(screen.getByText('Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)')).toBeInTheDocument();
+  });
+
+  it('sets the checkbox/toggle default value through the select options', () => {
+    const handleFieldChange = vi.fn();
+    const field = createField({ type: 'checkbox' });
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    const selects = screen.getAllByRole('combobox');
+    const defaultValueSelect = selects.find((select) => select.textContent === 'No default');
+    fireEvent.click(defaultValueSelect as HTMLElement);
+    fireEvent.click(screen.getByRole('option', { name: 'Default checked (true)' }));
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.defaultValue', true);
+  });
+
+  it('updates the field width', () => {
+    const handleFieldChange = vi.fn();
+    const field = createField();
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    const selects = screen.getAllByRole('combobox');
+    const widthSelect = selects.find((select) => select.textContent === 'Full width');
+    fireEvent.click(widthSelect as HTMLElement);
+    fireEvent.click(screen.getByRole('option', { name: 'Half width' }));
+
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.width', 'half');
+  });
+
+  it('toggles allow-multiple-files for files fields', () => {
+    const handleFieldChange = vi.fn();
+    const field = createField({ type: 'files' });
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Allow multiple files' }));
+
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.multiple', true);
+  });
+
+  it('does not show the allow-multiple-files toggle for non-files fields', () => {
+    const field = createField({ type: 'text' });
+    renderField(field);
+
+    expect(screen.queryByRole('checkbox', { name: 'Allow multiple files' })).not.toBeInTheDocument();
+  });
+
+  it('toggles read-only and required switches, disabling required for mandatory fields', () => {
+    const handleFieldChange = vi.fn();
+    const field = createField();
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Not editable by user' }));
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.isReadOnly', true);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Required' }));
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.required', true);
+
+    cleanup();
+    const mandatoryField = createField({ isMandatory: true });
+    renderField(mandatoryField);
+    expect(screen.getByRole('checkbox', { name: 'Required' })).toBeDisabled();
+  });
 });

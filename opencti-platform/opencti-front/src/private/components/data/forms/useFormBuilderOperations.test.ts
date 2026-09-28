@@ -173,4 +173,31 @@ describe('useFormBuilderOperations', () => {
 
     expect(getCurrent().relationships[0].required).toBe(true);
   });
+
+  it('leaves non-matching additional entities and relationships untouched', () => {
+    const { result, getCurrent } = renderOperations();
+    getCurrent().additionalEntities.push({
+      id: 'entity-2',
+      entityType: 'Malware',
+      label: 'Malware',
+      multiple: false,
+      fieldMode: 'multiple',
+    });
+    getCurrent().relationships.push(
+      { id: 'relationship-1', fromEntity: 'main_entity', toEntity: 'entity-1', relationshipType: 'related-to', required: false },
+      { id: 'relationship-2', fromEntity: 'main_entity', toEntity: 'entity-2', relationshipType: '', required: false },
+    );
+
+    act(() => result.current.toggleParsedMode('entity-1', 'parsed'));
+    expect(getCurrent().additionalEntities[1].fieldMode).toBe('multiple');
+
+    act(() => result.current.updateRelationshipEntity('relationship-1', 'toEntity', 'entity-2'));
+    expect(getCurrent().relationships[1]).toMatchObject({ id: 'relationship-2', relationshipType: '' });
+
+    act(() => result.current.updateRelationshipType('relationship-1', 'uses'));
+    expect(getCurrent().relationships[1].relationshipType).toBe('');
+
+    act(() => result.current.toggleRelationshipRequired('relationship-1', true));
+    expect(getCurrent().relationships[1].required).toBe(false);
+  });
 });

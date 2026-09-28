@@ -1,5 +1,5 @@
 import React from 'react';
-import { cleanup, screen } from '@testing-library/react';
+import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../../../utils/tests/test-render';
 import type { FieldRendererContext } from './types';
@@ -156,5 +156,47 @@ describe('file field renderer', () => {
     expect(screen.getByText('translated:Upload file')).toBeTruthy();
     expect(t_i18n).toHaveBeenCalledWith('Upload');
     expect(t_i18n).toHaveBeenCalledWith('Upload file');
+  });
+
+  it('renders the field description as helper text', () => {
+    renderFilesField({ description: 'Attach supporting documents' });
+
+    expect(screen.getByText('Attach supporting documents')).toBeTruthy();
+  });
+
+  it('replaces the existing file when uploading in single-file mode', async () => {
+    const setFieldValue = vi.fn();
+    const { container } = renderFilesField({}, { setFieldValue });
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['hello'], 'hello.txt', { type: 'text/plain' });
+
+    Object.defineProperty(input, 'files', { value: [file] });
+    fireEvent.change(input);
+
+    await vi.waitFor(() => expect(setFieldValue).toHaveBeenCalled());
+    const [name, value] = setFieldValue.mock.calls[0];
+    expect(name).toBe('attachments');
+    expect(value).toHaveLength(1);
+    expect(value[0]).toMatchObject({ name: 'hello.txt', mime_type: 'text/plain', size: 5 });
+  });
+
+  it('appends new files to existing ones when uploading in multi-file mode', async () => {
+    const setFieldValue = vi.fn();
+    const { container } = renderFilesField({ multiple: true }, {
+      setFieldValue,
+      values: { attachments: [{ name: 'existing.pdf', data: 'encoded' }] },
+    });
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['world'], 'world.txt', { type: 'text/plain' });
+
+    Object.defineProperty(input, 'files', { value: [file] });
+    fireEvent.change(input);
+
+    await vi.waitFor(() => expect(setFieldValue).toHaveBeenCalled());
+    const [name, value] = setFieldValue.mock.calls[0];
+    expect(name).toBe('attachments');
+    expect(value).toHaveLength(2);
+    expect(value[0]).toMatchObject({ name: 'existing.pdf' });
+    expect(value[1]).toMatchObject({ name: 'world.txt' });
   });
 });
