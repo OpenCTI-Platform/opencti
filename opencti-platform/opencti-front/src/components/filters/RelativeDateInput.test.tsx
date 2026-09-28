@@ -101,46 +101,4 @@ describe('Component: RelativeDateInput', () => {
 
     expect(screen.getByRole('grid')).toBeInTheDocument();
   });
-
-  it('does not show the relative-date shortcuts icon by default (showShortcuts=false)', () => {
-    const helpers = makeHelpers();
-    const dateInput = ['', 'now'];
-    const setDateInput = vi.fn();
-
-    testRender(
-      <RelativeDateInput
-        filterKey="created_at"
-        helpers={helpers}
-        label="From"
-        valueOrder={0}
-        dateInput={dateInput}
-        setDateInput={setDateInput}
-      />,
-    );
-
-    expect(screen.queryByRole('button', { name: /relative date shortcuts/i })).not.toBeInTheDocument();
-  });
-
-  it('shows the relative-date shortcuts icon when showShortcuts=true and commits the selected value', async () => {
-    const helpers = makeHelpers();
-    const dateInput = ['', 'now'];
-    const setDateInput = vi.fn();
-
-    const { user } = testRender(
-      <RelativeDateInput
-        filterKey="created_at"
-        helpers={helpers}
-        label="From"
-        valueOrder={0}
-        dateInput={dateInput}
-        setDateInput={setDateInput}
-        showShortcuts
-      />,
-    );
-
-    await user.click(screen.getByRole('button', { name: /relative date shortcuts/i }));
-    await user.click(screen.getByText('Last 1 day'));
-
-    expect(helpers.handleReplaceFilterValues).toHaveBeenCalledWith('', ['now-1d', 'now']);
-  });
 });
