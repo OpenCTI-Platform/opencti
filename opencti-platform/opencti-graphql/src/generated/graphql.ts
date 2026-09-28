@@ -28140,6 +28140,7 @@ export type QueryRetentionRuleArgs = {
 
 export type QueryRetentionRulesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<RetentionRuleOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -30414,6 +30415,7 @@ export enum RetentionRuleOrdering {
 
 export enum RetentionRuleScope {
   Activity = 'activity',
+  Draft = 'draft',
   File = 'file',
   History = 'history',
   Knowledge = 'knowledge',

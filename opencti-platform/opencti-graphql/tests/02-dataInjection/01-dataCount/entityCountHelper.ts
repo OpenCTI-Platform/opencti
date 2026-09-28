@@ -44,9 +44,8 @@ export const entitiesCounter = {
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
   Vocabulary: 481, // 360 + 121 System asset vocabularies
-  // The onboarding template, and the template for the locked users (behind the LOCAL_AUTH_LOCKOUT feature flag, enabled in the tests)
   EmailTemplate: 2,
-  RetentionRule: 4,
+  RetentionRule: 5,
   SecurityCoverage: 1,
   SecurityCoverageResult: 1,
 };
