@@ -289,7 +289,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <TopBarIconLink
-                        aria-label={t_i18n('Alerts')}
+                        aria-label={t_i18n('Notification Center')}
                         to="/dashboard/profile/notifications"
                         active={location.pathname.startsWith('/dashboard/profile/notifications')}
                         icon={<NotificationsOutlined fontSize="medium" />}
@@ -303,7 +303,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         }}
                       />
                     </TooltipTrigger>
-                    <TooltipContent>{t_i18n('Alerts')}</TooltipContent>
+                    <TooltipContent>{t_i18n('Notification Center')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>

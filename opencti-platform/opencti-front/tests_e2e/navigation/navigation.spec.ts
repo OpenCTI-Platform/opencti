@@ -1647,9 +1647,13 @@ const navigateTopBar = async (page: Page) => {
   const topBarPage = new TopBarPage(page);
   const leftBarPage = new LeftBarPage(page);
 
-  await topBarPage.clickOnIconLink('Alerts');
+  await topBarPage.clickOnIconLink('Notification Center');
   await expect(page).toHaveURL(/\/dashboard\/profile\/notifications(\?|$)/);
   await leftBarPage.expectBreadcrumb('Notifications', 'Alerts');
+
+  await page.getByTestId('notifications-tab-triggers').click();
+  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications\/triggers(\?|$)/);
+  await leftBarPage.expectBreadcrumb('Notifications', 'Triggers');
 
   await topBarPage.clickOnIconLink('News Feed');
   await expect(page).toHaveURL(/\/dashboard\/news-feed(\?|$)/);
@@ -1664,6 +1668,10 @@ const navigateTopBar = async (page: Page) => {
   await page.goto('/dashboard/profile/notifications/alerts');
   await expect(page).toHaveURL(/\/dashboard\/profile\/notifications(\?|$)/);
   await leftBarPage.expectBreadcrumb('Notifications', 'Alerts');
+
+  await page.goto('/dashboard/profile/triggers');
+  await expect(page).toHaveURL(/\/dashboard\/profile\/notifications\/triggers(\?|$)/);
+  await leftBarPage.expectBreadcrumb('Notifications', 'Triggers');
 
   await page.goto('/dashboard/profile/notifications/news-feed');
   await expect(page).toHaveURL(/\/dashboard\/news-feed(\?|$)/);

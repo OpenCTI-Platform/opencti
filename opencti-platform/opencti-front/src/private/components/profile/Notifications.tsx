@@ -21,11 +21,11 @@ const Notifications: FunctionComponent = () => {
   const pageTitle = t_i18n('Notification Center');
 
   if (location.pathname === `${alertsTabPath}/alerts`) {
-    return <Navigate to={alertsTabPath} replace={true} />;
+    return <Navigate to={`${alertsTabPath}${location.search}${location.hash}`} replace={true} />;
   }
 
   if (location.pathname !== alertsTabPath && !isTriggersTab) {
-    return <Navigate to={alertsTabPath} replace={true} />;
+    return <Navigate to={`${alertsTabPath}${location.search}${location.hash}`} replace={true} />;
   }
 
   setTitle(pageTitle);
