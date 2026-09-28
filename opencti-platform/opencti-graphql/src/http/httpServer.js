@@ -2,6 +2,7 @@ import https from 'node:https';
 import http from 'node:http';
 import { promisify } from 'node:util';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
+import bytes from 'bytes';
 
 import nconf from 'nconf';
 import express from 'express';
@@ -149,6 +150,9 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
+  // Multipart 'operations' field carries the GraphQL variables (e.g. markdown with data URI images),
+  // align its limit with the JSON body limit instead of graphql-upload 1MB default
+  const graphqlUpload = graphqlUploadExpress({ maxFieldSize: bytes.parse(requestSizeLimit) ?? undefined });
   // IP whitelist middleware — must be after session middleware to detect session-based auth
   app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
   app.use(`${basePath}/graphql`, graphqlMethodRestriction);
@@ -157,7 +161,7 @@ const createHttpServer = async () => {
     if (req.path.startsWith(`${basePath}/chatbot/`)) {
       return next();
     }
-    return graphqlUploadExpress()(req, res, next);
+    return graphqlUpload(req, res, next);
   });
   app.use(
     `${basePath}/graphql`,
