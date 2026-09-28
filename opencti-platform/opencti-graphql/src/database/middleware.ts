@@ -4290,7 +4290,7 @@ export const createEntity = async (
   user: AuthUser,
   input: Record<string, any>,
   type: string,
-  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+  opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   // Option B (plan 0009 s9.8.3): the ||M|| marks were stripped at the HTTP edge
   // (httpAuthenticatedContext, BEFORE scalar validation) and the collected ids ride
