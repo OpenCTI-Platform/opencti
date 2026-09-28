@@ -363,6 +363,7 @@ export const migrateConnectorToManaged = async (
     manager_contract_image: contract.container_image,
     manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(contractData),
     manager_contract_configuration: filteredConfigurations,
+    manager_upgrade_strategy: 'latest',
     manager_requested_status: 'stopped',
   };
 

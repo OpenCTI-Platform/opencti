@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { BasicStoreEntityCatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import {
   compareContractVersionDesc,
+  compareContractVersions,
   filterAndSortLatestCompatibleContracts,
   isSupportVersionCompatible,
   parseCatalogSemver,
@@ -65,6 +66,21 @@ describe('catalog-version-utils', () => {
     ];
     const sorted = contracts.sort(compareContractVersionDesc);
     expect(sorted.map((contract) => contract.contract_id)).toEqual(['c2', 'c3', 'c1']);
+  });
+
+  it('should treat rolling as newer than semantic versions', () => {
+    expect(compareContractVersions('rolling', '2.0.0')).toBeGreaterThan(0);
+    expect(compareContractVersions('2.0.0', 'rolling')).toBeLessThan(0);
+    expect(compareContractVersions('rolling', 'rolling')).toBe(0);
+
+    const contracts = [
+      buildContract({ contract_id: 'semantic', contract_version: '2.0.0' }),
+      buildContract({ contract_id: 'rolling', contract_version: 'rolling' }),
+    ];
+    expect(contracts.sort(compareContractVersionDesc).map((contract) => contract.contract_id)).toEqual([
+      'rolling',
+      'semantic',
+    ]);
   });
 
   it('should filter incompatible contracts and keep latest versions first', () => {

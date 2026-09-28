@@ -74,6 +74,7 @@ import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/c
 import { loadCreator } from '../database/members';
 import { readSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { findIngestionLogsForFeed } from '../modules/ingestion/ingestion-common';
+import { waitForManagedConnectorAutoUpgrade } from '../modules/connector/managed-connector-auto-upgrade-readiness';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -81,7 +82,10 @@ const connectorResolvers = {
   Query: {
     connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
-    connectorsForManagers: (_, __, context) => connectorsForManagers(context, context.user),
+    connectorsForManagers: async (_, __, context) => {
+      await waitForManagedConnectorAutoUpgrade();
+      return connectorsForManagers(context, context.user);
+    },
     connectorsForWorker: (_, __, context) => connectorsForWorker(context, context.user),
     connectorsForExport: (_, __, context) => connectorsForExport(context, context.user),
     connectorsForImport: (_, __, context) => connectorsForImport(context, context.user),
