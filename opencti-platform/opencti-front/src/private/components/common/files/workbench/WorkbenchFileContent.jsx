@@ -3556,7 +3556,7 @@ const WorkbenchFileContentComponent = ({
         </List>
         <Button
           onClick={() => handleOpenObservable(null, null)}
-          variant="secondary"
+          variant="primary"
           startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
@@ -4103,7 +4103,7 @@ const WorkbenchFileContentComponent = ({
         </List>
         <Button
           onClick={() => handleOpenContainer(null, null)}
-          variant="secondary"
+          variant="primary"
           startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
