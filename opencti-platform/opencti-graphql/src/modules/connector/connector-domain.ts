@@ -107,12 +107,22 @@ const autoUpgradeManagedConnector = async (
         },
       });
     } else {
-      // Shouldn't happen: either a Release issue or a logic/code error.
-      logApp.warn('[OPENCTI-MODULE] Inconsistent connector data, same connector version with different contract content hash', {
-        module: 'connector',
-        contractSlug: slug,
-        contractVersion: contract_version,
-      });
+      if (contract_version === 'rolling') {
+        logApp.info('[OPENCTI-MODULE] Upgraded connector to latest compatible rolling', {
+          module: 'connector',
+          connectorId: managedConnector.id,
+          contractSlug: slug,
+          previousVersion: contract_version,
+          newVersion: latestCompatibleContract.contract_version,
+        });
+      } else {
+        // Shouldn't happen: either a Release issue or a logic/code error.
+        logApp.warn('[OPENCTI-MODULE] Inconsistent connector data, same connector version with different contract content hash', {
+          module: 'connector',
+          contractSlug: slug,
+          contractVersion: contract_version,
+        });
+      }
       // Activity log
       void publishUserAction({
         event_type: 'mutation',
