@@ -8,7 +8,7 @@ import { findManagedConnectorsByCatalogId } from './connector-repository';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { patchAttribute } from '../../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
-import { redisSetManagedConnectorAutoUpgradeStatus } from './connector-redis';
+import { redisGetManagedConnectorAutoUpgradeStatus, redisSetManagedConnectorAutoUpgradeStatus } from './connector-redis';
 
 const autoUpgradeManagedConnector = async (
   context: AuthContext,
@@ -159,11 +159,16 @@ export const autoUpgradeManagedConnectors = async (
   synchronizedCatalogIds: string[],
 ) => {
   const startedAt = Date.now();
-  await redisSetManagedConnectorAutoUpgradeStatus({
-    status: 'running',
-    platformVersion: PLATFORM_VERSION,
-    startedAt,
-  });
+  const currentStatus = await redisGetManagedConnectorAutoUpgradeStatus();
+  const shouldUpdateReadiness = currentStatus?.platformVersion !== PLATFORM_VERSION
+    || currentStatus.status === 'running';
+  if (shouldUpdateReadiness) {
+    await redisSetManagedConnectorAutoUpgradeStatus({
+      status: 'running',
+      platformVersion: PLATFORM_VERSION,
+      startedAt,
+    });
+  }
   try {
     let hasErrors = false;
     for (const catalogId of synchronizedCatalogIds) {
@@ -173,26 +178,30 @@ export const autoUpgradeManagedConnectors = async (
         hasErrors ||= !upgradedSuccessfully;
       };
     };
-    await redisSetManagedConnectorAutoUpgradeStatus({
-      status: hasErrors ? 'failed' : 'ready',
-      platformVersion: PLATFORM_VERSION,
-      startedAt,
-      completedAt: Date.now(),
-      ...(hasErrors ? { error: 'One or more managed connectors failed to auto-upgrade' } : {}),
-    });
+    if (shouldUpdateReadiness) {
+      await redisSetManagedConnectorAutoUpgradeStatus({
+        status: hasErrors ? 'failed' : 'ready',
+        platformVersion: PLATFORM_VERSION,
+        startedAt,
+        completedAt: Date.now(),
+        ...(hasErrors ? { error: 'One or more managed connectors failed to auto-upgrade' } : {}),
+      });
+    }
     return { hasErrors };
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Failed to auto-upgrade managed connectors', {
       module: 'connector',
       cause: error,
     });
-    await redisSetManagedConnectorAutoUpgradeStatus({
-      status: 'failed',
-      platformVersion: PLATFORM_VERSION,
-      startedAt,
-      completedAt: Date.now(),
-      error: error instanceof Error ? error.message : String(error),
-    });
+    if (shouldUpdateReadiness) {
+      await redisSetManagedConnectorAutoUpgradeStatus({
+        status: 'failed',
+        platformVersion: PLATFORM_VERSION,
+        startedAt,
+        completedAt: Date.now(),
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
     return { hasErrors: true };
   }
 };

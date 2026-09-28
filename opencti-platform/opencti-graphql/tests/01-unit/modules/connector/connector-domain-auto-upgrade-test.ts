@@ -7,6 +7,7 @@ const {
   mockMapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mockPatchAttribute,
   mockPublishUserAction,
+  mockRedisGetManagedConnectorAutoUpgradeStatus,
   mockRedisSetManagedConnectorAutoUpgradeStatus,
 } = vi.hoisted(() => ({
   mockFindManagedConnectorsByCatalogId: vi.fn(),
@@ -14,6 +15,7 @@ const {
   mockMapContractEntityFieldsToEmbeddedConnectorManagerContract: vi.fn((c) => ({ ...c })),
   mockPatchAttribute: vi.fn(),
   mockPublishUserAction: vi.fn(),
+  mockRedisGetManagedConnectorAutoUpgradeStatus: vi.fn(),
   mockRedisSetManagedConnectorAutoUpgradeStatus: vi.fn(),
 }));
 
@@ -48,6 +50,7 @@ vi.mock('../../../../src/config/conf', () => ({
 }));
 
 vi.mock('../../../../src/modules/connector/connector-redis', () => ({
+  redisGetManagedConnectorAutoUpgradeStatus: mockRedisGetManagedConnectorAutoUpgradeStatus,
   redisSetManagedConnectorAutoUpgradeStatus: mockRedisSetManagedConnectorAutoUpgradeStatus,
 }));
 
@@ -97,6 +100,7 @@ describe('connector-domain auto-upgrade', () => {
     vi.clearAllMocks();
     mockFindManagedConnectorsByCatalogId.mockResolvedValue([]);
     mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(undefined);
+    mockRedisGetManagedConnectorAutoUpgradeStatus.mockResolvedValue(null);
     mockRedisSetManagedConnectorAutoUpgradeStatus.mockResolvedValue(undefined);
   });
 
@@ -124,6 +128,29 @@ describe('connector-domain auto-upgrade', () => {
     expect(mockFindLatestCompatibleCatalogContractBySlug).not.toHaveBeenCalled();
     expect(mockPatchAttribute).not.toHaveBeenCalled();
   });
+
+  it.each(['ready', 'failed'] as const)(
+    'should not reopen readiness after the startup run is %s',
+    async (status) => {
+      mockRedisGetManagedConnectorAutoUpgradeStatus.mockResolvedValue({
+        status,
+        platformVersion: '7.2.0-test',
+        startedAt: 1,
+        completedAt: 2,
+      });
+      mockFindManagedConnectorsByCatalogId.mockResolvedValue([buildManagedConnector()]);
+      mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(latestCompatibleContract);
+
+      await autoUpgradeManagedConnectors(
+        { source: 'test' } as any,
+        { id: 'user-1' } as any,
+        ['catalog-1'],
+      );
+
+      expect(mockPatchAttribute).toHaveBeenCalled();
+      expect(mockRedisSetManagedConnectorAutoUpgradeStatus).not.toHaveBeenCalled();
+    },
+  );
 
   it('should skip patch when connector already has latest compatible contract', async () => {
     mockFindManagedConnectorsByCatalogId.mockResolvedValue([
