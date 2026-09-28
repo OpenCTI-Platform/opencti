@@ -8,6 +8,7 @@ import useGranted, {
   SETTINGS_SETDISSEMINATION,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
+  SETTINGS_SETMANAGEMENT,
   SETTINGS_SETMANAGEXTMHUB,
   SETTINGS_SETMARKINGS,
   SETTINGS_SETPARAMETERS,
@@ -37,6 +38,7 @@ const useSettingsFallbackUrl = (): string => {
   const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
+  const isGrantedToManagement = useGranted([SETTINGS_SETMANAGEMENT]);
 
   if (isGrantedToParameters) return '/dashboard/settings';
   if (isGrantedToSecurityAccess) return '/dashboard/settings/accesses';
@@ -48,6 +50,7 @@ const useSettingsFallbackUrl = (): string => {
   if (isGrantedToActivity) return '/dashboard/settings/activity';
   if (isGrantedToFileIndexing) return '/dashboard/settings/file_indexing';
   if (isGrantedToExperience) return '/dashboard/settings/experience';
+  if (isGrantedToManagement) return '/dashboard/settings/management';
   return '/dashboard';
 };
 

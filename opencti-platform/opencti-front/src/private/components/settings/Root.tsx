@@ -7,6 +7,7 @@ import {
   SETTINGS_FILEINDEXING,
   SETTINGS_SUPPORT,
   SETTINGS_SETPARAMETERS,
+  SETTINGS_SETMANAGEMENT,
   SETTINGS_SETMANAGEXTMHUB,
   SETTINGS_SETVOCABULARIES,
   SETTINGS_SETKILLCHAINPHASES,
@@ -30,6 +31,7 @@ const RootAccesses = lazy(() => import('./accesses/Root'));
 const RootActivity = lazy(() => import('./activity/Root'));
 const RootCustomization = lazy(() => import('./customization/Root'));
 const RootVocabularies = lazy(() => import('./vocabularies/Root'));
+const RootManagement = lazy(() => import('./management/Root'));
 
 const ExperienceUnauthorizedRedirect = ({ fallbackUrl }: { fallbackUrl: string }) => {
   const location = useLocation();
@@ -109,6 +111,14 @@ const Root = () => {
             element={(
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
                 <RootCustomization />
+              </Security>
+            )}
+          />
+          <Route
+            path="/management/*"
+            element={(
+              <Security needs={[SETTINGS_SETMANAGEMENT]} placeholder={<Navigate to={fallbackUrl} />}>
+                <RootManagement />
               </Security>
             )}
           />

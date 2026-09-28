@@ -3,7 +3,7 @@ import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../../da
 import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from './retentionRules-types';
 import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { elIndex, elPaginate } from '../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_STIX_INDICES } from '../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_STIX_INDICES } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { utcDate } from '../../utils/format';
 import { RETENTION_MANAGER_USER } from '../../utils/access';
@@ -17,6 +17,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
@@ -44,6 +45,11 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'timestamp' });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: 1 });
+    return result.pageInfo.globalCount;
+  } else if (scope === 'draft') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'created_at' });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { ...queryOptions, types: [ENTITY_TYPE_DRAFT_WORKSPACE], first: 1 });
     return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });

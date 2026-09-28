@@ -55,6 +55,7 @@ export const SETTINGS_SETKILLCHAINPHASES = 'SETTINGS_SETKILLCHAINPHASES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_FILEINDEXING = 'SETTINGS_FILEINDEXING';
 export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
+export const SETTINGS_SETMANAGEMENT = 'SETTINGS_SETMANAGEMENT';
 
 export const hasCapabilitiesInDraft = (capabilities: string[]) => {
   const { me } = useAuth();
