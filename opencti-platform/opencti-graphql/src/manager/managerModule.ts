@@ -20,6 +20,7 @@ export interface HandlerInput {
 export interface ManagerCronScheduler {
   handler: (input?: any) => Promise<void>;
   shutdown?: () => void;
+  runOnStart?: boolean;
   interval: number;
   lockKey: string;
   infiniteInterval?: number;
@@ -160,6 +161,9 @@ const initManager = (manager: ManagerDefinition) => {
         const asyncInterval = manager.cronSchedulerHandler.dynamicSchedule ? setDynamicIntervalAsync : setIntervalAsync;
         logApp.info(`[OPENCTI-MODULE] Starting ${manager.label} every ${manager.cronSchedulerHandler.interval}`);
         const { handlerInitializer } = manager.cronSchedulerHandler;
+        if (manager.cronSchedulerHandler.runOnStart) {
+          void cronHandler(handlerInitializer);
+        }
         scheduler = asyncInterval(async () => {
           await cronHandler(handlerInitializer);
         }, manager.cronSchedulerHandler.interval);

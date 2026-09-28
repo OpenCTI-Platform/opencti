@@ -466,7 +466,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'manager_contract_image', label: 'Connector manager image', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'manager_contract_configuration', label: 'Connector manager', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'manager_contract', label: 'Connector manager contract', type: 'object', format: 'standard', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, mappings: CATALOG_CONTRACT_MAPPINGS },
-    { name: 'manager_upgrade_strategy', label: 'Connector upgrade strategy', type: 'string', format: 'enum', values: ['latest'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'manager_upgrade_strategy', label: 'Connector upgrade strategy', type: 'string', format: 'enum', values: ['latest'], mandatoryType: 'no', defaultValue: 'latest', editDefault: false, multiple: false, upsert: false, isFilterable: false },
 
     // endregion
   ],
