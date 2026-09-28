@@ -118,6 +118,27 @@ const resolveAttributeFilter = ({ attribute, perspective, isTo }: BucketSelectio
   return ATTRIBUTE_TO_FILTER[attribute] ?? null;
 };
 
+/**
+ * Bucket labels naming an entity or relationship type come back `pascalize`d
+ * (`engine.ts:3402` and `:3530`), which mangles every type whose canonical
+ * spelling is not pure Pascal case: `IPv4-Addr` is returned as `Ipv4-Addr`,
+ * `StixFile` as `Stixfile`, `targets` as `Targets`. Such a value filters
+ * nothing, so the list would open empty next to a non-zero widget.
+ *
+ * The filter keys schema is keyed by the canonical type names, which makes it
+ * the reference to map a mangled label back.
+ */
+const TYPE_VALUED_FILTER_KEYS = ['entity_type', 'relationship_type', 'fromTypes', 'toTypes'];
+
+export const canonicalEntityType = (value: string, schema: FilterKeysSchema): string => {
+  if (schema.size === 0 || schema.has(value)) return value;
+  const target = value.toLowerCase();
+  for (const key of schema.keys()) {
+    if (key.toLowerCase() === target) return key;
+  }
+  return value;
+};
+
 /** Filters the platform can express in a widget but a list page cannot reproduce. */
 const NON_TRANSPOSABLE_KEYS = ['dynamicFrom', 'dynamicTo'];
 
@@ -168,8 +189,11 @@ export const buildBucketValueFilter = (
 
   if (bucket.rawValue === MISSING_VALUE_BUCKET) return null;
 
-  const value = mapping.source === 'entityId' ? bucket.entityId : bucket.rawValue;
-  if (!value) return null;
+  const rawValue = mapping.source === 'entityId' ? bucket.entityId : bucket.rawValue;
+  if (!rawValue) return null;
+  const value = TYPE_VALUED_FILTER_KEYS.includes(mapping.key)
+    ? canonicalEntityType(rawValue, filterKeysSchema)
+    : rawValue;
 
   // A dedicated destination pins that very type on its own query, so the bucket
   // is already isolated. Keeping the filter would be redundant, and the page

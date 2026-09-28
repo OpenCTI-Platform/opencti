@@ -55,6 +55,21 @@ const handleNavigate = (event, navigate, link) => {
 };
 
 /**
+ * `mouseMove` fires on every pointer move over the chart, and resolving a link
+ * walks the filter keys schema then serialises a URL. A surface is identified by
+ * its index pair, and the resolver lives exactly as long as the buckets it was
+ * built from, so the answer is computed once per surface.
+ */
+const memoizeByPoint = (resolve) => {
+  const cache = new Map();
+  return (config) => {
+    const key = `${config?.seriesIndex}:${config?.dataPointIndex}`;
+    if (!cache.has(key)) cache.set(key, resolve(config));
+    return cache.get(key);
+  };
+};
+
+/**
  * ApexCharts calls `click` and `mouseMove` with `Object.assign({}, w, {
  * seriesIndex, dataPointIndex })` (Events.js:73-76): the series sit under
  * `config.config`, and both indices come from `getAttribute`, so they are
@@ -78,23 +93,26 @@ const pointIndexes = (config) => {
  * Builds both ApexCharts handlers from a single link resolver, so the pointer
  * cursor can never promise a navigation that the click does not perform.
  */
-const drilldownHandlers = (linkAt, navigate) => ({
-  click: (event, chartContext, config) => {
-    handleNavigate(event, navigate, linkAt(config));
-  },
-  mouseMove: (event, chartContext, config) => {
-    if (!event?.target?.style) return;
-    if (linkAt(config)) {
-      event.target.style.cursor = 'pointer';
-      // The surfaces are SVG nodes ApexCharts creates itself, so the class
-      // that tells react-grid-layout not to drag has to be set here.
-      event.target.classList?.add('noDrag');
-    } else {
-      event.target.style.cursor = 'default';
-      event.target.classList?.remove('noDrag');
-    }
-  },
-});
+const drilldownHandlers = (rawLinkAt, navigate) => {
+  const linkAt = memoizeByPoint(rawLinkAt);
+  return {
+    click: (event, chartContext, config) => {
+      handleNavigate(event, navigate, linkAt(config));
+    },
+    mouseMove: (event, chartContext, config) => {
+      if (!event?.target?.style) return;
+      if (linkAt(config)) {
+        event.target.style.cursor = 'pointer';
+        // The surfaces are SVG nodes ApexCharts creates itself, so the class
+        // that tells react-grid-layout not to drag has to be set here.
+        event.target.classList?.add('noDrag');
+      } else {
+        event.target.style.cursor = 'default';
+        event.target.classList?.remove('noDrag');
+      }
+    },
+  };
+};
 
 /**
  * `resolveBucket` receives the resolved indexes and returns the clicked bucket,
@@ -537,7 +555,8 @@ export const horizontalBarsChartOptions = (
   // used by every Home dashboard bar chart) resolves no link. The drill-down only
   // takes over the surfaces it can actually serve, so the others keep navigating
   // to the entity page instead of going inert.
-  const hasDrilldownLink = (config) => !!drilldown && !!distributionBucketLink(drilldown)(config);
+  const bucketLinkAt = drilldown ? memoizeByPoint(distributionBucketLink(drilldown)) : null;
+  const hasDrilldownLink = (config) => !!bucketLinkAt?.(config);
   return {
     events: ['xAxisLabelClick'],
     chart: {

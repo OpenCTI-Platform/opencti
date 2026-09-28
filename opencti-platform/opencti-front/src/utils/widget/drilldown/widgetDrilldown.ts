@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { buildFiltersAndOptionsForWidgets, isFilterGroupNotEmpty } from '../../filters/filtersUtils';
-import { areWidgetFiltersSupported, assertRepresentable, buildBucketDateFilter, buildBucketValueFilter } from './widgetDrilldownFilters';
+import { areWidgetFiltersSupported, assertRepresentable, buildBucketDateFilter, buildBucketValueFilter, canonicalEntityType } from './widgetDrilldownFilters';
 import { resolveListRoute } from './widgetDrilldownRoutes';
 import type { DrilldownInput, FilterGroup } from './widgetDrilldown-types';
 import type { Filter } from '../../filters/filtersHelpers-types';
@@ -123,7 +123,7 @@ export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
     && bucket.kind === 'distribution'
     && typeof bucket.rawValue === 'string'
     && bucket.rawValue !== ''
-    ? bucket.rawValue
+    ? canonicalEntityType(bucket.rawValue, filterKeysSchema)
     : null;
 
   const destination = resolveListRoute(

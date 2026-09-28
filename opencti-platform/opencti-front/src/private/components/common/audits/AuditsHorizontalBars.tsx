@@ -15,16 +15,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { CSSProperties, FunctionComponent, ReactNode, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import type { ApexOptions } from 'apexcharts';
 import ApexCharts from 'apexcharts';
-import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router';
 import { AuditsHorizontalBarsDistributionQuery } from '@components/common/audits/__generated__/AuditsHorizontalBarsDistributionQuery.graphql';
-import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
-import { horizontalBarsChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
 import useDistributionGraphData, { DistributionQueryData } from '../../../../utils/hooks/useDistributionGraphData';
+import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
@@ -100,6 +96,7 @@ interface AuditsHorizontalBarsComponentProps {
   selection: WidgetDataSelection;
   distributed?: boolean;
   onMounted: (chart: ApexCharts) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const AuditsHorizontalBarsComponent: FunctionComponent<AuditsHorizontalBarsComponentProps> = ({
@@ -107,9 +104,8 @@ const AuditsHorizontalBarsComponent: FunctionComponent<AuditsHorizontalBarsCompo
   selection,
   distributed,
   onMounted,
+  drilldown,
 }) => {
-  const theme = useTheme();
-  const navigate = useNavigate();
   const { buildWidgetProps } = useDistributionGraphData();
   const data = usePreloadedQuery<AuditsHorizontalBarsDistributionQuery>(
     auditsHorizontalBarsDistributionQuery,
@@ -117,26 +113,18 @@ const AuditsHorizontalBarsComponent: FunctionComponent<AuditsHorizontalBarsCompo
   );
 
   if (data.auditsDistribution && data.auditsDistribution.length > 0) {
-    const { series, redirectionUtils } = buildWidgetProps(
+    const { series, redirectionUtils, drilldownBuckets } = buildWidgetProps(
       data.auditsDistribution as unknown as DistributionQueryData,
       selection,
       'Number of history entries',
     );
     return (
-      <Chart
-        options={horizontalBarsChartOptions(
-          theme,
-          true,
-          simpleNumberFormat,
-          undefined,
-          distributed,
-          navigate,
-          redirectionUtils,
-        ) as ApexOptions}
+      <WidgetHorizontalBars
+        drilldown={drilldown}
+        drilldownBuckets={drilldownBuckets}
         series={series}
-        type="bar"
-        width="100%"
-        height="100%"
+        distributed={distributed}
+        redirectionUtils={redirectionUtils}
         onMounted={onMounted}
       />
     );
@@ -189,7 +177,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -222,6 +210,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
           selection={selection}
           distributed={parameters.distributed ?? undefined}
           onMounted={setChart}
+          drilldown={drilldown}
         />
       </AuditsWidgetRenderContent>
     </WidgetContainer>

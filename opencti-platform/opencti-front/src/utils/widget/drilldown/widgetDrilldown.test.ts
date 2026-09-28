@@ -16,6 +16,7 @@ const SCHEMA = new Map([
     ['entity_type', {} as never], ['createdBy', {} as never], ['created_at', {} as never],
   ])],
   ['Malware', new Map([['createdBy', {} as never], ['created_at', {} as never]])],
+  ['IPv4-Addr', new Map([['createdBy', {} as never], ['created_at', {} as never]])],
   ['stix-core-relationship', new Map([
     ['entity_type', {} as never], ['relationship_type', {} as never], ['createdBy', {} as never],
     ['created_at', {} as never], ['fromId', {} as never], ['toId', {} as never],
@@ -441,12 +442,20 @@ describe('resolveDrilldownLink on an entity_type distribution', () => {
     expect(allFilters(parseFilters(link)).some((f) => f.key === 'entity_type')).toBe(false);
   });
 
+  // The API pascalizes the bucket label (`engine.ts:3402`), so an observable
+  // widget really reports `Ipv4-Addr`. Filtering on that spelling would open an
+  // empty list next to a non-zero bar.
   it('opens the observables list with the clicked type kept, that list being shared', () => {
-    const link = resolveDrilldownLink(onEntityType(['Malware', 'IPv4-Addr'], 'IPv4-Addr')) as string;
+    const link = resolveDrilldownLink(onEntityType(['Malware', 'IPv4-Addr'], 'Ipv4-Addr')) as string;
     expect(link.startsWith('/dashboard/observations/observables?filters=')).toBe(true);
     expect(allFilters(parseFilters(link))).toContainEqual(
       expect.objectContaining({ key: 'entity_type', values: ['IPv4-Addr'] }),
     );
+  });
+
+  it('opens the dedicated list of a pascalized type too', () => {
+    const link = resolveDrilldownLink(onEntityType(['Malware', 'Report'], 'malware')) as string;
+    expect(link.startsWith('/dashboard/arsenal/malwares?filters=')).toBe(true);
   });
 
   it('works without any widget type restriction, the bucket pinning the type', () => {
