@@ -1,5 +1,5 @@
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
-import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, PUBLIC_DASHBOARD_REFERER, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
@@ -104,7 +104,7 @@ export const getWidgetArguments = async (
   // Construct a fake user to be able to call private API
   const user = {
     ...platformUser,
-    origin: { user_id: platformUser.id, referer: 'public-dashboard' },
+    origin: { user_id: platformUser.id, referer: PUBLIC_DASHBOARD_REFERER },
     capabilities: [accessKnowledgeCapability],
     allowed_marking: allowedMaxMarkings, // ACL - Markings
     // ACL - Authorized members

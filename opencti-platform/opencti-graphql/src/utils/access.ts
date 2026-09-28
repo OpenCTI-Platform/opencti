@@ -33,6 +33,9 @@ import { pushAll } from './arrayUtil';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
+// Used in publicDashboard-utils.ts to construct a fake user to be able to call private API
+export const PUBLIC_DASHBOARD_REFERER = 'public-dashboard';
+
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
 export const BYPASS = 'BYPASS';
