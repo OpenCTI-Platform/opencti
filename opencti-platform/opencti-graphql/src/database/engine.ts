@@ -1383,7 +1383,8 @@ export const elCreateIndex = async (index: string) => {
   const mappingProperties = engineMappingGenerator(engine);
   return elCreateIndexWithMapping(index, mappingProperties);
 };
-const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
+// exported for the sequencer's own stores (pending intents / pending refs), which carry their own mapping
+export const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;

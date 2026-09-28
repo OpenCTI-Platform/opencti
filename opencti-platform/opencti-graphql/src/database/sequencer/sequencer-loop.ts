@@ -22,7 +22,7 @@ import { idLabel } from '../../schema/schema-labels';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
-import { elCreateIndex, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
+import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps, withStripSink } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
@@ -562,7 +562,7 @@ const runBatchLoop = async () => {
   if (SEQUENCER_CONFIG.stripReconcile) {
     registerPendingRefsEsOps({
       indexExists: (index) => elIndexExists(index),
-      createIndex: (index, mappingProperties) => elCreateIndex(index, mappingProperties),
+      createIndex: (index, mappingProperties) => elCreateIndexWithMapping(index, mappingProperties),
       bulk: async (body) => {
         const esContext = executionContext('sequencer', SYSTEM_USER);
         return elRawBulk(esContext, { body });
@@ -578,7 +578,7 @@ const runBatchLoop = async () => {
   // today the chunk intake manager's)
   registerPendingIntentsEsOps({
     indexExists: (index) => elIndexExists(index),
-    createIndex: (index, mappingProperties) => elCreateIndex(index, mappingProperties),
+    createIndex: (index, mappingProperties) => elCreateIndexWithMapping(index, mappingProperties),
     bulk: async (body) => {
       const esContext = executionContext('sequencer', SYSTEM_USER);
       return elRawBulk(esContext, { body });
