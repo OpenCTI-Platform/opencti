@@ -313,6 +313,7 @@ export const managedConnectorAdd = async (
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
     manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(targetContract),
+    manager_upgrade_strategy: 'latest',
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
     built_in: false,

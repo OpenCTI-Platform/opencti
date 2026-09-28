@@ -12,6 +12,7 @@ import * as UserActionListener from '../../../src/listener/UserActionListener';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
 import conf from '../../../src/config/conf';
+import { connector } from '../../../src/database/repository';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -1358,6 +1359,8 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(managedConnectorAdd.manager_contract_hash).toBeDefined();
       expect(managedConnectorAdd.manager_contract_configuration).toBeDefined();
       expect(managedConnectorAdd.manager_contract_configuration.length).toBeGreaterThan(0);
+      const storedConnector = await connector(testContext, ADMIN_USER, managedConnectorId);
+      expect(storedConnector?.manager_upgrade_strategy).toEqual('latest');
     });
 
     it('should return stable manager contract endpoint output formats', async () => {
