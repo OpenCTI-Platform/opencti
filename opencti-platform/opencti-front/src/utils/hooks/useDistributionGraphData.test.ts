@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDistributionRedirectionUtils, type DistributionQueryData } from './useDistributionGraphData';
+import { buildDistributionBuckets, buildDistributionRedirectionUtils, type DistributionQueryData } from './useDistributionGraphData';
 
 /**
  * ApexCharts reports the index of the clicked bar, and every other builder in
@@ -44,5 +44,34 @@ describe('buildDistributionRedirectionUtils', () => {
 
   it('keeps a null bucket as a gap', () => {
     expect(buildDistributionRedirectionUtils([null, undefined] as DistributionQueryData)).toEqual([null, null]);
+  });
+});
+
+describe('buildDistributionBuckets', () => {
+  it('carries the raw label, never the displayed one', () => {
+    const data = [{ label: 'Intrusion-Set', value: 3, entity: null }] as DistributionQueryData;
+    expect(buildDistributionBuckets(data)).toEqual([
+      { kind: 'distribution', rawValue: 'Intrusion-Set', entityId: null },
+    ]);
+  });
+
+  it('carries the entity id when the bucket resolves to one', () => {
+    const data = [{ label: 'author-1', value: 2, entity: { id: 'author-1', entity_type: 'Organization' } }] as DistributionQueryData;
+    expect(buildDistributionBuckets(data)[0]).toEqual({
+      kind: 'distribution',
+      rawValue: 'author-1',
+      entityId: 'author-1',
+    });
+  });
+
+  it('stays index-aligned with the series by keeping gaps', () => {
+    const data = [
+      null,
+      { label: 'B', value: 1, entity: null },
+    ] as DistributionQueryData;
+    expect(buildDistributionBuckets(data)).toEqual([
+      null,
+      { kind: 'distribution', rawValue: 'B', entityId: null },
+    ]);
   });
 });

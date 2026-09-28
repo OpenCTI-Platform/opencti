@@ -3,6 +3,7 @@ import { useFormatter } from '../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
 import type { Widget } from '../widget/widget';
+import type { DrilldownBucket } from '../widget/drilldown/widgetDrilldown-types';
 
 // common type compatible with all distribution queries
 type DistributionNode = {
@@ -50,6 +51,24 @@ export const buildDistributionRedirectionUtils = (
 };
 
 type Selection = Widget['dataSelection'][0];
+
+/**
+ * One drill-down bucket per chart index, `null` where the bucket carries no
+ * reproducible value. Kept aligned with the series for the same reason as
+ * `buildDistributionRedirectionUtils`.
+ *
+ * Only the raw label and the entity id are exposed: the labels produced for
+ * display are translated or replaced by the entity representative, and would
+ * not match anything if used as a filter value.
+ */
+export const buildDistributionBuckets = (
+  distributionData: DistributionQueryData,
+): (DrilldownBucket | null)[] => {
+  return distributionData.map((n) => {
+    if (!n) return null;
+    return { kind: 'distribution' as const, rawValue: n.label, entityId: n.entity?.id ?? null };
+  });
+};
 
 const useDistributionGraphData = () => {
   const { t_i18n } = useFormatter();
@@ -111,6 +130,7 @@ const useDistributionGraphData = () => {
         data: buildDistributionGraphData(distributionData, selection),
       }],
       redirectionUtils: buildDistributionRedirectionUtils(distributionData),
+      drilldownBuckets: buildDistributionBuckets(distributionData),
     };
   };
 

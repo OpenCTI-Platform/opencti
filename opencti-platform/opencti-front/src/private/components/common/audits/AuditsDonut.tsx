@@ -21,6 +21,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -84,9 +85,11 @@ interface AuditsDonutComponentProps {
   queryRef: PreloadedQuery<AuditsDonutDistributionQuery>;
   selection: WidgetDataSelection;
   onMounted: (chart: ApexCharts) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const AuditsDonutComponent: FunctionComponent<AuditsDonutComponentProps> = ({
+  drilldown,
   queryRef,
   selection,
   onMounted,
@@ -99,6 +102,7 @@ const AuditsDonutComponent: FunctionComponent<AuditsDonutComponentProps> = ({
   if (data.auditsDistribution && data.auditsDistribution.length > 0) {
     return (
       <WidgetDonut
+        drilldown={drilldown}
         data={data.auditsDistribution}
         groupBy={selection.attribute!}
         onMounted={onMounted}
@@ -153,7 +157,7 @@ const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsDonutDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsDonutDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -182,6 +186,7 @@ const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
         host={host}
       >
         <AuditsDonutComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           selection={selection}
           onMounted={setChart}

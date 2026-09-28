@@ -1,5 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { areaChartOptions, horizontalBarsChartOptions, lineChartOptions, simpleLabelTooltip, verticalBarsChartOptions } from './Charts';
+import {
+  areaChartOptions,
+  donutChartOptions,
+  horizontalBarsChartOptions,
+  lineChartOptions,
+  polarAreaChartOptions,
+  radarChartOptions,
+  simpleLabelTooltip,
+  treeMapOptions,
+  verticalBarsChartOptions,
+} from './Charts';
 
 interface ThemeOverrides {
   background?: { nav?: unknown };
@@ -177,6 +187,20 @@ describe.each([
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('stays inert when ApexCharts reports no index at all', () => {
+    // `Events.js` yields the raw `getAttribute` result, so a click on the chart
+    // background before any point was hovered gives null -- and `Number(null)`
+    // is 0, which would otherwise resolve the first bucket.
+    const navigate = vi.fn();
+    const getLink = vi.fn(() => '/x');
+    const options = build({ getLink, navigate });
+
+    chartEvents(options).click!(mouseEvent(), {}, apexConfig(POINTS, null, null));
+
+    expect(getLink).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('shows a pointer exactly where clicking would navigate', () => {
     const getLink = (_i: number, bucket: { date: string }) => (bucket.date === '2024-03-01T00:00:00.000Z' ? '/x' : null);
     const options = build({ getLink, navigate: vi.fn() });
@@ -249,5 +273,120 @@ describe('horizontalBarsChartOptions with gapped redirections', () => {
   it('does not throw when a bar with no entity is clicked', () => {
     const options = build();
     expect(() => chartEvents(options).click!(mouseEvent(), {}, { dataPointIndex: 0, seriesIndex: -1 })).not.toThrow();
+  });
+});
+
+type DistributionBucket = { kind: 'distribution'; rawValue: string | null; entityId?: string | null };
+
+const BUCKETS: (DistributionBucket | null)[] = [
+  { kind: 'distribution', rawValue: 'Malware', entityId: null },
+  { kind: 'distribution', rawValue: 'author-1', entityId: 'author-1' },
+  null,
+];
+
+type TestDistributionDrilldown = {
+  getLink: (selectionIndex: number, bucket: DistributionBucket) => string | null;
+  navigate: (to: string) => void;
+  buckets: (DistributionBucket | null)[];
+};
+
+/**
+ * Distribution charts report the clicked bucket through `dataPointIndex` only:
+ * pie slices and radar markers carry a `j` attribute but no `i`, so the series
+ * index is not reliable -- and it is not needed either, these widgets always
+ * render a single data selection.
+ */
+const distributionConfig = (dataPointIndex: unknown) => ({ seriesIndex: 0, dataPointIndex });
+
+describe.each([
+  ['donutChartOptions', (d?: TestDistributionDrilldown) => donutChartOptions(chartTheme, ['A', 'B', 'C'], 'bottom', false, [], true, true, true, true, 70, true, d)],
+  ['polarAreaChartOptions', (d?: TestDistributionDrilldown) => polarAreaChartOptions(chartTheme, ['A', 'B', 'C'], identityFormatter, 'bottom', [], d)],
+  ['radarChartOptions', (d?: TestDistributionDrilldown) => radarChartOptions(chartTheme, ['A', 'B', 'C'], identityFormatter, [], true, undefined, undefined, undefined, d)],
+  ['treeMapOptions', (d?: TestDistributionDrilldown) => treeMapOptions(chartTheme, identityFormatter, 'bottom', false, d)],
+  ['horizontalBarsChartOptions', (d?: TestDistributionDrilldown) => horizontalBarsChartOptions(chartTheme, false, identityFormatter, identityFormatter, false, undefined, undefined, false, false, undefined, false, 'normal', d)],
+])('%s distribution drill-down wiring', (_name, build) => {
+  const drilldown = (getLink: () => string | null, navigate = vi.fn()) => ({ getLink, navigate, buckets: BUCKETS });
+
+  it('navigates to the link resolved for the clicked bucket', () => {
+    const navigate = vi.fn();
+    const getLink = vi.fn(() => '/dashboard/entities/organizations?filters=%7B%7D');
+    const options = build({ getLink, navigate, buckets: BUCKETS });
+
+    chartEvents(options).click!(mouseEvent(), {}, distributionConfig('1'));
+
+    expect(getLink).toHaveBeenCalledWith(0, BUCKETS[1]);
+    expect(navigate).toHaveBeenCalledWith('/dashboard/entities/organizations?filters=%7B%7D');
+  });
+
+  it('stays inert when the resolver refuses the bucket', () => {
+    const navigate = vi.fn();
+    const options = build(drilldown(() => null, navigate));
+
+    chartEvents(options).click!(mouseEvent(), {}, distributionConfig('0'));
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('stays inert on a bucket that carries no value', () => {
+    const navigate = vi.fn();
+    const getLink = vi.fn(() => '/x');
+    const options = build({ getLink, navigate, buckets: BUCKETS });
+
+    chartEvents(options).click!(mouseEvent(), {}, distributionConfig('2'));
+
+    expect(getLink).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('stays inert when ApexCharts reports no index at all', () => {
+    const navigate = vi.fn();
+    const getLink = vi.fn(() => '/x');
+    const options = build({ getLink, navigate, buckets: BUCKETS });
+
+    chartEvents(options).click!(mouseEvent(), {}, distributionConfig(null));
+
+    expect(getLink).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('stays inert past the end of the buckets', () => {
+    const navigate = vi.fn();
+    const options = build(drilldown(() => '/x', navigate));
+
+    chartEvents(options).click!(mouseEvent(), {}, distributionConfig('9'));
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('shows a pointer exactly where clicking would navigate', () => {
+    const options = build(drilldown(() => '/x'));
+    const event = mouseEvent();
+
+    chartEvents(options).mouseMove!(event, {}, distributionConfig('0'));
+
+    expect(event.target.style.cursor).toBe('pointer');
+    expect(event.target.classList.add).toHaveBeenCalledWith('noDrag');
+  });
+
+  it('gives the cursor and the drag back on an inert surface', () => {
+    const options = build(drilldown(() => null));
+    const event = mouseEvent();
+
+    chartEvents(options).mouseMove!(event, {}, distributionConfig('0'));
+
+    expect(event.target.style.cursor).toBe('default');
+    expect(event.target.classList.remove).toHaveBeenCalledWith('noDrag');
+  });
+
+  it('opens a new tab on ctrl-click instead of navigating', () => {
+    const navigate = vi.fn();
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const options = build(drilldown(() => '/x', navigate));
+
+    chartEvents(options).click!(mouseEvent({ ctrlKey: true }), {}, distributionConfig('0'));
+
+    expect(open).toHaveBeenCalledWith('/x', '_blank');
+    expect(navigate).not.toHaveBeenCalled();
+    open.mockRestore();
   });
 });
