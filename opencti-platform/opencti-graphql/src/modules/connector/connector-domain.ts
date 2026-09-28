@@ -17,7 +17,8 @@ const autoUpgradeManagedConnector = async (
 ) => {
   const { manager_upgrade_strategy, manager_contract } = managedConnector;
   // Currently we only support the "upgrade to latest compatible version" strategy
-  if (manager_upgrade_strategy !== 'latest') {
+  const managerUpgradeStrategy = manager_upgrade_strategy ?? 'latest';
+  if (managerUpgradeStrategy !== 'latest') {
     return true;
   }
   if (!manager_contract) {

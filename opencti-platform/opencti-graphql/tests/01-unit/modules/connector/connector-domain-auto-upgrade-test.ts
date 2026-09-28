@@ -120,6 +120,21 @@ describe('connector-domain auto-upgrade', () => {
     }));
   });
 
+  it('should default a missing strategy to latest', async () => {
+    mockFindManagedConnectorsByCatalogId.mockResolvedValue([
+      buildManagedConnector({ manager_upgrade_strategy: undefined }),
+    ]);
+    mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(latestCompatibleContract);
+
+    await autoUpgradeManagedConnectors(
+      { source: 'test' } as any,
+      { id: 'user-1' } as any,
+      ['catalog-1'],
+    );
+
+    expect(mockPatchAttribute).toHaveBeenCalled();
+  });
+
   it('should skip connectors without manager_contract snapshot', async () => {
     mockFindManagedConnectorsByCatalogId.mockResolvedValue([
       buildManagedConnector({ manager_contract: undefined }),
