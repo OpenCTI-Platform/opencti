@@ -24,6 +24,8 @@ interface UserOrigin {
   synchronized_upsert?: boolean;
   user_metadata?: object;
   call_retry_number?: number;
+  // Real credential owner id when authenticatedUser was swapped via opencti-applicant-id impersonation.
+  real_authentication_id?: string;
 }
 
 interface UserApiToken {
