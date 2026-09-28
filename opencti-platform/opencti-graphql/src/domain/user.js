@@ -2149,7 +2149,11 @@ const internalAuthenticateUser = async (context, req, user) => {
     }
   }
   validateUser(authenticatedUser, settings);
-  return userWithOrigin(req, authenticatedUser, { synchronized_upsert: synchronizedUpsert });
+  return userWithOrigin(
+    req,
+    authenticatedUser,
+    { synchronized_upsert: synchronizedUpsert, real_authentication_id: user.id },
+  );
 };
 
 /**
