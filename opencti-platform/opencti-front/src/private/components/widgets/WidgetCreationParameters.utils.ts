@@ -20,6 +20,11 @@ export const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): stri
   return undefined;
 };
 
+const hasEntityTypeFilter = (group: FilterGroup): boolean => {
+  return group.filters.some(({ key }) => key === 'entity_type')
+    || group.filterGroups.some(hasEntityTypeFilter);
+};
+
 export const getWidgetColumnsEntityType = (
   filterGroup: FilterGroup | null | undefined,
   perspective: WidgetPerspective | null | undefined,
@@ -28,6 +33,10 @@ export const getWidgetColumnsEntityType = (
   const entityTypeFromFilters = getEntityTypeFromFilters(filterGroup);
   if (entityTypeFromFilters) {
     return entityTypeFromFilters;
+  }
+
+  if (filterGroup && hasEntityTypeFilter(filterGroup)) {
+    return undefined;
   }
 
   if (perspective !== 'entities') {

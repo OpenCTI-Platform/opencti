@@ -102,4 +102,22 @@ describe('WidgetCreationParameters.utils', () => {
     };
     expect(getWidgetColumnsEntityType(filterGroup, 'entities', host)).toBe('Indicator');
   });
+
+  it('does not fallback to host type when entity_type filter is ambiguous', () => {
+    const filterGroup: FilterGroup = {
+      mode: 'or',
+      filters: [
+        { key: 'entity_type', values: ['Vulnerability'], operator: 'eq', mode: 'or' },
+        { key: 'name', values: ['CVE'], operator: 'search', mode: 'or' },
+      ],
+      filterGroups: [],
+    };
+    const host: WidgetHost = {
+      kind: 'fintelTemplate',
+      fintelWidgets: [],
+      fintelEntityType: 'Malware',
+      fintelEditorValue: '',
+    };
+    expect(getWidgetColumnsEntityType(filterGroup, 'entities', host)).toBeUndefined();
+  });
 });
