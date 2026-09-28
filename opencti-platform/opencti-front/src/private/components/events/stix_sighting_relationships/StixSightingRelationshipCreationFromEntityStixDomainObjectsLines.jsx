@@ -225,6 +225,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = ({
       }}
       lineFragment={stixSightingRelationshipCreationFromEntityStixDomainObjectsLineFragment}
       entityTypes={stixCoreObjectTypes}
+      availableEntityTypes={stixCoreObjectTypes}
       rootRef={rootRef}
       disableNavigation
       disableLineSelection
