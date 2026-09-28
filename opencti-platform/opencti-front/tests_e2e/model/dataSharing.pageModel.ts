@@ -15,7 +15,7 @@ export default class SharingPage {
   }
 
   async navigateRightMenu(menu: string) {
-    await this.page.getByRole('menuitem', { name: menu, exact: true }).click();
+    await this.page.getByRole('link', { name: menu, exact: true }).click();
   }
 
   getDataSharingPages(name: string) {
