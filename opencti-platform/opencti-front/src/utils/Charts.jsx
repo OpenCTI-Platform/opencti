@@ -153,6 +153,7 @@ export const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
  * @param {number | 'dataPoints'} tickAmount
  * @param {boolean} dataLabels
  * @param {boolean} legend
+ * @param {{ getLink: function, navigate: function }} [drilldown] Drill-down descriptor, carrying the router navigate.
  */
 export const lineChartOptions = (
   theme,
@@ -249,6 +250,7 @@ export const lineChartOptions = (
  * @param {number | 'dataPoints'} tickAmount
  * @param {boolean} isStacked
  * @param {boolean} legend
+ * @param {{ getLink: function, navigate: function }} [drilldown] Drill-down descriptor, carrying the router navigate.
  */
 export const areaChartOptions = (
   theme,
@@ -360,6 +362,7 @@ export const areaChartOptions = (
  * @param {boolean} isStacked
  * @param {boolean} legend
  * @param {number | 'dataPoints'} tickAmount
+ * @param {{ getLink: function, navigate: function }} [drilldown] Drill-down descriptor, carrying the router navigate.
  */
 export const verticalBarsChartOptions = (
   theme,
@@ -462,7 +465,7 @@ export const verticalBarsChartOptions = (
  * @param {function} yFormatter
  * @param {boolean} distributed
  * @param {function} navigate
- * @param {object[]} redirectionUtils
+ * @param {(object|null)[]} redirectionUtils One entry per bucket, null where the bucket resolves to no entity.
  * @param {boolean} stacked
  * @param {boolean} total
  * @param {string[]} categories
@@ -497,13 +500,13 @@ export const horizontalBarsChartOptions = (
       xAxisLabelClick: (event, chartContext, config) => {
         if (redirectionUtils) {
           const { labelIndex } = config;
-          if (redirectionUtils[labelIndex].name === 'Restricted') {
+          if (redirectionUtils[labelIndex]?.name === 'Restricted') {
             return;
           }
-          const entityType = redirectionUtils[labelIndex].entity_type;
+          const entityType = redirectionUtils[labelIndex]?.entity_type;
           const link = resolveLink(entityType);
           if (link) {
-            const entityId = redirectionUtils[labelIndex].id;
+            const entityId = redirectionUtils[labelIndex]?.id;
             handleNavigate(event, navigate, `${link}/${entityId}`);
           }
         }
@@ -542,7 +545,7 @@ export const horizontalBarsChartOptions = (
             // click on a bar
             if (
               seriesIndex >= 0
-              && redirectionUtils[dataPointIndex].series
+              && redirectionUtils[dataPointIndex]?.series
             ) {
               // for multi horizontal bars representing entities
               if (redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type) {
@@ -554,12 +557,12 @@ export const horizontalBarsChartOptions = (
                 }
               }
             } else {
-              if (redirectionUtils[dataPointIndex].name === 'Restricted') {
+              if (redirectionUtils[dataPointIndex]?.name === 'Restricted') {
                 return;
               }
-              const link = resolveLink(redirectionUtils[dataPointIndex].entity_type);
+              const link = resolveLink(redirectionUtils[dataPointIndex]?.entity_type);
               if (link) {
-                const entityId = redirectionUtils[dataPointIndex].id;
+                const entityId = redirectionUtils[dataPointIndex]?.id;
                 handleNavigate(event, navigate, `${link}/${entityId}`);
               }
             }

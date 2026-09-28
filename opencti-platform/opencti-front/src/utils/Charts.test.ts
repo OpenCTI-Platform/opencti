@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { areaChartOptions, lineChartOptions, simpleLabelTooltip, verticalBarsChartOptions } from './Charts';
+import { areaChartOptions, horizontalBarsChartOptions, lineChartOptions, simpleLabelTooltip, verticalBarsChartOptions } from './Charts';
 
 interface ThemeOverrides {
   background?: { nav?: unknown };
@@ -98,8 +98,9 @@ const chartTheme = {
   palette: {
     mode: 'dark',
     background: { paper: '#111111' },
-    text: { secondary: '#cccccc' },
+    text: { secondary: '#cccccc', primary: '#ffffff' },
     primary: { main: '#00ff00' },
+    common: { white: '#ffffff', black: '#000000' },
   },
 };
 
@@ -119,22 +120,38 @@ const mouseEvent = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+type ChartEvents = {
+  click?: (event: unknown, ctx: unknown, config: unknown) => void;
+  mouseMove?: (event: unknown, ctx: unknown, config: unknown) => void;
+  xAxisLabelClick?: (event: unknown, ctx: unknown, config: unknown) => void;
+};
+
+/** The factories are plain JS, so the events bag needs naming before use. */
+const chartEvents = (options: { chart: { events?: unknown } }) => (options.chart.events ?? {}) as ChartEvents;
+
+type TestDrilldown = {
+  getLink: (selectionIndex: number, bucket: { kind: string; date: string }) => string | null;
+  navigate: (to: string) => void;
+};
+
+const identityFormatter = (value: unknown) => String(value);
+
 const POINTS = [
   { x: new Date('2024-02-01T00:00:00.000Z'), y: 3 },
   { x: new Date('2024-03-01T00:00:00.000Z'), y: 7 },
 ];
 
 describe.each([
-  ['lineChartOptions', (drilldown: unknown) => lineChartOptions(chartTheme, true, null, null, undefined, false, true, drilldown)],
-  ['areaChartOptions', (drilldown: unknown) => areaChartOptions(chartTheme, true, null, null, undefined, false, true, drilldown)],
-  ['verticalBarsChartOptions', (drilldown: unknown) => verticalBarsChartOptions(chartTheme, null, null, false, false, false, false, undefined, drilldown)],
+  ['lineChartOptions', (drilldown?: TestDrilldown) => lineChartOptions(chartTheme, true, undefined, undefined, undefined, false, true, drilldown)],
+  ['areaChartOptions', (drilldown?: TestDrilldown) => areaChartOptions(chartTheme, true, undefined, undefined, undefined, false, true, drilldown)],
+  ['verticalBarsChartOptions', (drilldown?: TestDrilldown) => verticalBarsChartOptions(chartTheme, identityFormatter, identityFormatter, false, false, false, false, undefined, drilldown)],
 ])('%s drill-down wiring', (_name, build) => {
   it('navigates to the link resolved for the clicked bucket', () => {
     const navigate = vi.fn();
     const getLink = vi.fn(() => '/dashboard/arsenal/malwares?filters=%7B%7D');
     const options = build({ getLink, navigate });
 
-    options.chart.events.click(mouseEvent(), {}, apexConfig(POINTS));
+    chartEvents(options).click!(mouseEvent(), {}, apexConfig(POINTS));
 
     expect(getLink).toHaveBeenCalledWith(0, { kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' });
     expect(navigate).toHaveBeenCalledWith('/dashboard/arsenal/malwares?filters=%7B%7D');
@@ -144,7 +161,7 @@ describe.each([
     const navigate = vi.fn();
     const options = build({ getLink: () => null, navigate });
 
-    options.chart.events.click(mouseEvent(), {}, apexConfig(POINTS));
+    chartEvents(options).click!(mouseEvent(), {}, apexConfig(POINTS));
 
     expect(navigate).not.toHaveBeenCalled();
   });
@@ -154,7 +171,7 @@ describe.each([
     const getLink = vi.fn(() => '/x');
     const options = build({ getLink, navigate });
 
-    options.chart.events.click(mouseEvent(), {}, apexConfig(POINTS, '-1', '-1'));
+    chartEvents(options).click!(mouseEvent(), {}, apexConfig(POINTS, '-1', '-1'));
 
     expect(getLink).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
@@ -165,11 +182,11 @@ describe.each([
     const options = build({ getLink, navigate: vi.fn() });
 
     const onLink = mouseEvent();
-    options.chart.events.mouseMove(onLink, {}, apexConfig(POINTS));
+    chartEvents(options).mouseMove!(onLink, {}, apexConfig(POINTS));
     expect(onLink.target.style.cursor).toBe('pointer');
 
     const offLink = mouseEvent();
-    options.chart.events.mouseMove(offLink, {}, apexConfig(POINTS, '0', '0'));
+    chartEvents(options).mouseMove!(offLink, {}, apexConfig(POINTS, '0', '0'));
     expect(offLink.target.style.cursor).toBe('default');
     // Charts reuse their SVG nodes between hovers, so leaving an inert surface
     // marked noDrag would silently make part of the widget undraggable.
@@ -180,7 +197,7 @@ describe.each([
     const options = build({ getLink: () => '/x', navigate: vi.fn() });
     const event = mouseEvent();
 
-    options.chart.events.mouseMove(event, {}, apexConfig(POINTS));
+    chartEvents(options).mouseMove!(event, {}, apexConfig(POINTS));
 
     expect(event.target.classList.add).toHaveBeenCalledWith('noDrag');
   });
@@ -190,7 +207,7 @@ describe.each([
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
     const options = build({ getLink: () => '/x', navigate });
 
-    options.chart.events.click(mouseEvent({ ctrlKey: true }), {}, apexConfig(POINTS));
+    chartEvents(options).click!(mouseEvent({ ctrlKey: true }), {}, apexConfig(POINTS));
 
     expect(open).toHaveBeenCalledWith('/x', '_blank');
     expect(navigate).not.toHaveBeenCalled();
@@ -198,6 +215,39 @@ describe.each([
   });
 
   it('installs no handler at all when the widget has no drill-down', () => {
-    expect(build(undefined).chart.events?.click).toBeUndefined();
+    expect(chartEvents(build(undefined)).click).toBeUndefined();
+  });
+});
+
+describe('horizontalBarsChartOptions with gapped redirections', () => {
+  // `buildDistributionRedirectionUtils` now yields `null` for buckets that
+  // resolve to no entity, which is what keeps the array aligned with the bars.
+  const withGap = [null, { id: 'c', entity_type: 'Tool' }];
+
+  const build = () => horizontalBarsChartOptions(
+    chartTheme, false, undefined, undefined, false, vi.fn(), withGap, false, false, undefined, false, 'normal',
+  );
+
+  it('ignores a label click on a bucket with no entity', () => {
+    const navigate = vi.fn();
+    const options = horizontalBarsChartOptions(
+      chartTheme, false, undefined, undefined, false, navigate, withGap, false, false, undefined, false, 'normal',
+    );
+    expect(() => chartEvents(options).xAxisLabelClick!(mouseEvent(), {}, { labelIndex: 0 })).not.toThrow();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('still navigates for the bucket that kept its index', () => {
+    const navigate = vi.fn();
+    const options = horizontalBarsChartOptions(
+      chartTheme, false, undefined, undefined, false, navigate, withGap, false, false, undefined, false, 'normal',
+    );
+    chartEvents(options).xAxisLabelClick!(mouseEvent(), {}, { labelIndex: 1 });
+    expect(navigate).toHaveBeenCalledWith(expect.stringContaining('/c'));
+  });
+
+  it('does not throw when a bar with no entity is clicked', () => {
+    const options = build();
+    expect(() => chartEvents(options).click!(mouseEvent(), {}, { dataPointIndex: 0, seriesIndex: -1 })).not.toThrow();
   });
 });

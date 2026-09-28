@@ -25,6 +25,30 @@ type DistributionNode = {
 
 export type DistributionQueryData = ReadonlyArray<DistributionNode | null | undefined>;
 
+export interface DistributionRedirection {
+  id: string;
+  entity_type?: string;
+}
+
+/**
+ * One entry per bucket, `null` where the bucket resolves to no entity.
+ *
+ * Charts report the index of the clicked bar, so this array must stay aligned
+ * with the series built alongside it: dropping the entity-less buckets instead
+ * would shift every following index and send a click to a neighbouring entity.
+ */
+export const buildDistributionRedirectionUtils = (
+  distributionData: DistributionQueryData,
+): (DistributionRedirection | null)[] => {
+  return distributionData.map((n) => {
+    if (!n || !n.entity || !n.entity.id) return null;
+    return {
+      id: n.entity.id,
+      entity_type: n.entity?.entity_type === 'Workspace' ? n.entity.type : n.entity.entity_type,
+    };
+  });
+};
+
 type Selection = Widget['dataSelection'][0];
 
 const useDistributionGraphData = () => {
@@ -69,16 +93,6 @@ const useDistributionGraphData = () => {
         x: label,
         y: n.value,
         fillColor: getColorFromDistributionNode(n, selection),
-      };
-    });
-  };
-
-  const buildDistributionRedirectionUtils = (distributionData: DistributionQueryData) => {
-    return distributionData.flatMap((n) => {
-      if (!n || !n.entity || !n.entity.id) return [];
-      return {
-        id: n.entity.id,
-        entity_type: n.entity?.entity_type === 'Workspace' ? n.entity.type : n.entity.entity_type,
       };
     });
   };

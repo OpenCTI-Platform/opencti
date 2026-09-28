@@ -15,10 +15,15 @@ interface WidgetHorizontalBarsProps {
   total?: boolean;
   legend?: boolean;
   categories?: string[];
-  redirectionUtils?: {
+  /**
+   * One entry per bucket, `null` where the bucket resolves to no entity.
+   * The gaps are what keeps the array aligned with the bars ApexCharts reports
+   * by index — see `buildDistributionRedirectionUtils`.
+   */
+  redirectionUtils?: ({
     id?: string;
     entity_type?: string;
-  }[];
+  } | null)[];
   stackType?: string;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
