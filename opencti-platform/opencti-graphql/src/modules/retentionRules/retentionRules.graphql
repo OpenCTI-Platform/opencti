@@ -21,6 +21,7 @@ enum RetentionRuleScope {
   workbench
   history
   activity
+  draft
 }
 enum RetentionUnit {
   minutes
@@ -61,6 +62,7 @@ type Query {
     search: String,
     orderBy: RetentionRuleOrdering
     orderMode: OrderingMode
+    filters: FilterGroup
   ): RetentionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 

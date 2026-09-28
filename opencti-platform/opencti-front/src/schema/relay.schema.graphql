@@ -9471,7 +9471,7 @@ type Query {
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   redisStreamInfo: RedisStreamInfo
   retentionRule(id: String!): RetentionRule
-  retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
+  retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode, filters: FilterGroup): RetentionRuleConnection
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
@@ -17007,6 +17007,7 @@ enum RetentionRuleScope {
   workbench
   history
   activity
+  draft
 }
 
 enum RetentionUnit {
