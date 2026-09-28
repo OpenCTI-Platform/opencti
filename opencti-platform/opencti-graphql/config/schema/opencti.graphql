@@ -5079,6 +5079,7 @@ enum CitizenshipDocumentsOrdering {
   firstname
   lastname
   x_opencti_citizenship_document_type
+  x_opencti_citizenship_document_id
   created
   modified
   x_opencti_workflow_id
