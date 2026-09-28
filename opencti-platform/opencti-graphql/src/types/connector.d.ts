@@ -1,44 +1,4 @@
-import type { ConnectorContractConfiguration } from '../generated/graphql';
-import type { CatalogContractEntityFields } from '../modules/catalog/catalog-types';
-import type { BasicStoreEntity, StoreEntity } from './store';
-
-export interface ConnectorInfo {
-  run_and_terminate: boolean;
-  buffering: boolean;
-  queue_threshold: number;
-  queue_messages_size: number;
-  next_run_datetime: DateTime;
-  last_run_datetime: DateTime;
-}
-
-type ConnectorManagerContract = CatalogContractEntityFields;
-
-export interface BasicStoreEntityConnector extends StoreEntity {
-  active: boolean;
-  auto: boolean;
-  auto_update: boolean;
-  enrichment_resolution: string;
-  only_contextual: boolean;
-  connector_type: string;
-  connector_scope: string;
-  connector_state: string;
-  connector_state_reset: boolean;
-  connector_trigger_filters: string;
-  connector_user_id: string;
-  connector_info: ConnectorInfo;
-  playbook_compatible: boolean;
-  xtm_one_intent: string | null;
-  // region composer (set only on composer-managed connectors)
-  catalog_id?: string;
-  manager_contract_image?: string;
-  manager_contract_configuration?: ConnectorContractConfiguration[];
-  manager_contract?: ConnectorManagerContract;
-  manager_upgrade_strategy?: string;
-  // endregion
-}
-export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
-  public_key: string;
-}
+import type { BasicStoreEntity } from './store';
 
 export interface BasicStoreEntitySynchronizer extends BasicStoreEntity {
   name: string;

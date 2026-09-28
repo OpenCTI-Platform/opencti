@@ -1,7 +1,7 @@
 import { Promise } from 'bluebird';
 import { map } from 'ramda';
 import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { getEntitiesListFromCache } from '../database/cache';

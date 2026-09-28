@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
 import { isEngineAlive } from '../../../src/database/engine';
 import { isStorageAlive } from '../../../src/database/raw-file-storage';
-import { rabbitMQIsAlive } from '../../../src/database/rabbitmq';
+import { rabbitMQIsAlive } from '../../../src/modules/connector/connector-rabbitmq';
 import {
   adoptSharedUsageMetrics,
   buildHealthFailures,
@@ -23,7 +23,7 @@ vi.mock('../../../src/database/redis', () => ({
 }));
 vi.mock('../../../src/database/engine', () => ({ isEngineAlive: vi.fn() }));
 vi.mock('../../../src/database/raw-file-storage', () => ({ isStorageAlive: vi.fn() }));
-vi.mock('../../../src/database/rabbitmq', () => ({ rabbitMQIsAlive: vi.fn() }));
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({ rabbitMQIsAlive: vi.fn() }));
 
 const buildStatuses = (overrides: Partial<Record<HealthDependency, DependencyStatus>> = {}): Record<HealthDependency, DependencyStatus> => {
   const alive: DependencyStatus = { isAlive: true, error: null, checkedAt: 1 };

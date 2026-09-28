@@ -10,7 +10,7 @@ import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/no
 import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, internalFindByIds, fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { CACHE_RESET_TOPIC, pubSubSubscription } from '../database/redis';
-import { connectors as findConnectors } from '../database/repository';
+import { connectors as findConnectors } from '../modules/connector/connector-domain';
 import { buildCompleteUsers, resolveUserById } from '../domain/user';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
@@ -47,7 +47,7 @@ import { ENTITY_TYPE_DECAY_RULE, type BasicStoreEntityDecayRule } from '../modul
 import { isNotEmptyField } from '../database/utils';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { emptyFilterGroup } from '../utils/filtering/filtering-utils';

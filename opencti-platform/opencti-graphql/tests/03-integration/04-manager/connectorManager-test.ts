@@ -2,17 +2,18 @@ import { describe, it, expect } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import moment from 'moment/moment';
 import { findById as findWorkById, worksForConnector } from '../../../src/domain/work';
-import { registerConnector } from '../../../src/domain/connector';
+import { registerConnector } from '../../../src/modules/connector/connector-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { RegisterConnectorInput } from '../../../src/generated/graphql';
 import { ConnectorType } from '../../../src/generated/graphql';
 import { elIndex } from '../../../src/database/engine';
 import { ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
 import { INDEX_HISTORY, RABBIT_QUEUE_PREFIX } from '../../../src/database/utils';
-import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
-import type { BasicStoreEntityConnector } from '../../../src/types/connector';
+import { deleteCompletedWorks } from '../../../src/modules/connector/connector-manager';
+import type { BasicStoreEntityConnector } from '../../../src/modules/connector/connector-types';
 import type { Work } from '../../../src/types/work';
-import { unregisterConnector, metrics } from '../../../src/database/rabbitmq';
+import { metrics } from '../../../src/database/rabbitmq';
+import { unregisterConnector } from '../../../src/modules/connector/connector-rabbitmq';
 
 describe('Old work of connector cleanup test', () => {
   let testConnector: BasicStoreEntityConnector;

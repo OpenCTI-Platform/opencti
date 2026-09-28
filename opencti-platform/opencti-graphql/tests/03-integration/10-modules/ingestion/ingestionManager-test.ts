@@ -14,7 +14,7 @@ import { parseCsvMapper } from '../../../../src/modules/internal/csvMapper/csvMa
 import { readCsvFromFileStream } from '../../../utils/testQueryHelper';
 import * as ingestWorkMock from '../../../../src/manager/ingestionManager/ingestionManagerPushToQueue';
 import * as rabbitMock from '../../../../src/database/rabbitmq';
-import * as connectorMock from '../../../../src/domain/connector';
+import * as connectorMock from '../../../../src/modules/connector/connector-domain';
 
 describe('Verify taxii ingestion', () => {
   it('should create taxii ingestion with ssl_verify default (true)', async () => {

@@ -5,7 +5,7 @@ import { registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_CUSTOM_VIEW, type StixCustomView, type StoreEntityCustomView } from './customView-types';
 import convertCustomViewToStix from './customView-converter';
 
-export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, StixCustomView> = {
+const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, StixCustomView> = {
   type: {
     id: 'customView',
     name: ENTITY_TYPE_CUSTOM_VIEW,

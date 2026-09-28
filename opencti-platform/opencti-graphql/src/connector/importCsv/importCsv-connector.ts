@@ -3,7 +3,7 @@ import * as readline from 'node:readline';
 import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { consumeQueue, registerConnectorQueues } from '../../database/rabbitmq';
+import { consumeQueue, registerConnectorQueues } from '../../modules/connector/connector-rabbitmq';
 import { downloadFile } from '../../database/raw-file-storage';
 import { addDraftContext, reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess, type CsvBundlerIngestionOpts, generateAndSendBundleProcess } from '../../parser/csv-bundler';
@@ -14,7 +14,7 @@ import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
-import type { ConnectorConfig } from '../internalConnector';
+import type { ConnectorConfig } from '../../modules/connector/connector-types';
 import { addDraftWorkspace } from '../../modules/draftWorkspace/draftWorkspace-domain';
 
 const RETRY_CONNECTION_PERIOD = 10000;

@@ -17,7 +17,7 @@ import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { worksForSource } from '../domain/work';
 import { loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, askElementEnrichmentForConnectors } from '../domain/stixCoreObject';
-import { connectorsForEnrichment } from '../database/repository';
+import { connectorsForEnrichment } from '../modules/connector/connector-domain';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 

@@ -55,7 +55,7 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { createWork, worksForSource, workToExportFile } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
@@ -82,7 +82,7 @@ import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filter
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
-import { connectorsForAnalysis } from '../database/repository';
+import { connectorsForAnalysis } from '../modules/connector/connector-domain';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator, ValidationMode } from '../generated/graphql';
 import {

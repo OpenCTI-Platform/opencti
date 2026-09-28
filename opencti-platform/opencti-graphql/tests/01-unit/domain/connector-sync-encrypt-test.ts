@@ -20,11 +20,13 @@ vi.mock('../../../src/database/redis', () => ({
   redisSetConnectorLogs: vi.fn(),
 }));
 vi.mock('../../../src/database/rabbitmq', () => ({
+}));
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   unregisterConnector: vi.fn(), registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(), getConnectorQueueDetails: vi.fn(), unregisterExchanges: vi.fn(),
 }));
-vi.mock('../../../src/database/repository', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../src/database/repository')>();
+vi.mock('../../../src/modules/connector/connector-repository', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/modules/connector/connector-repository')>();
   return {
     ...actual,
     connector: vi.fn(),

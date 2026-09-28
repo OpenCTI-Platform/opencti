@@ -54,7 +54,7 @@ import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { connectorsForEnrichment } from '../database/repository';
+import { connectorsForEnrichment } from '../modules/connector/connector-domain';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';

@@ -29,8 +29,11 @@ vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', () => ({
 }));
 
 vi.mock('../../../../src/domain/connector', () => ({
-  queueDetails: queueDetailsMock,
   connectorIdFromIngestId: (id: string) => `connector-${id}`,
+}));
+
+vi.mock('../../../../src/modules/connector/connector-domain', () => ({
+  queueDetails: queueDetailsMock,
 }));
 
 vi.mock('../../../../src/manager/ingestionManager/ingestionManagerPushToQueue', () => ({

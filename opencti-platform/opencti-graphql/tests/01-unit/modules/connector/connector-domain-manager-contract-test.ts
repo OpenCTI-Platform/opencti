@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FunctionalError } from '../../../src/config/errors';
-import { computeManagerConnectorContract, computeManagerConnectorExcerpt, computeManagerConnectorImage } from '../../../src/database/repository';
+import { FunctionalError } from '../../../../src/config/errors';
+import { computeManagerConnectorContract, computeManagerConnectorExcerpt, computeManagerConnectorImage } from '../../../../src/modules/connector/connector-domain';
 
 const connectorWithContract = () => ({
   id: 'connector-1',

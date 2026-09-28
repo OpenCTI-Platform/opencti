@@ -31,7 +31,7 @@ import { getEnrollmentEligibility, excludeEntitiesByIds, matchPlaybooksToEntitie
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
+import { registerConnectorQueues, unregisterConnector } from '../connector/connector-rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';

@@ -47,7 +47,7 @@ vi.mock('../../../src/database/middleware', () => ({
   stixLoadByIds: vi.fn(async () => []),
 }));
 
-vi.mock('../../../src/database/repository', () => ({
+vi.mock('../../../src/modules/connector/connector-domain', () => ({
   connectors: vi.fn(async () => []),
 }));
 
