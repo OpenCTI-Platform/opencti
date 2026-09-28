@@ -64,7 +64,7 @@ test('Widget drill-down opens a list holding exactly the displayed count', { tag
 
   await widgetsPage.createDistributionListOfEntities();
 
-  const firstCount = widgetsPage.getWidgetDistributionCounts().first();
+  const firstCount = widgetsPage.getWidgetDistributionCountLinks().first();
   await expect(firstCount).toBeVisible();
   const displayedBucket = Number((await firstCount.innerText()).replace(/\D/g, ''));
   expect(displayedBucket).toBeGreaterThan(0);
