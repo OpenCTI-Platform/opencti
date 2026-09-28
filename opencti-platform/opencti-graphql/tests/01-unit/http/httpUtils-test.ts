@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   applyKeepAliveTimeout,
   buildDefaultHelmetParameters,
+  buildGraphqlUploadOptions,
   buildPublicHelmetParameters,
   buildRateLimiterOptions,
   decodeOidcState,
@@ -318,5 +319,26 @@ describe('httpUtils: server keep-alive timeout', () => {
     const server = mockServer();
     applyKeepAliveTimeout(server);
     expect(server.headersTimeout).toBe(60000);
+  });
+});
+
+describe('httpUtils: buildGraphqlUploadOptions', () => {
+  it('should align maxFieldSize with the default JSON body limit', () => {
+    expect(buildGraphqlUploadOptions('50mb')).toEqual({ maxFieldSize: 50 * 1024 * 1024 });
+  });
+
+  it('should convert a configured size string to bytes', () => {
+    expect(buildGraphqlUploadOptions('10mb')).toEqual({ maxFieldSize: 10 * 1024 * 1024 });
+    expect(buildGraphqlUploadOptions('512kb')).toEqual({ maxFieldSize: 512 * 1024 });
+    expect(buildGraphqlUploadOptions('1.5gb')).toEqual({ maxFieldSize: 1.5 * 1024 * 1024 * 1024 });
+  });
+
+  it('should keep a configured size already expressed in bytes', () => {
+    expect(buildGraphqlUploadOptions(2097152)).toEqual({ maxFieldSize: 2097152 });
+  });
+
+  it('should not set maxFieldSize for an unparsable size, keeping graphql-upload default', () => {
+    expect(buildGraphqlUploadOptions('not-a-size')).toEqual({});
+    expect(buildGraphqlUploadOptions('')).toEqual({});
   });
 });

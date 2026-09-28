@@ -19,6 +19,7 @@ import type { HelmetOptions } from 'helmet';
 import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 import type { Server } from 'node:http';
+import bytes from 'bytes';
 
 export const setCookieError = (res: Response, message: string) => {
   // Map error messages to safe, non-sensitive codes exposed to the client.
@@ -274,6 +275,14 @@ const logRateLimitThrottled = (ip: string, userAgent: string): void => {
       }
     }
   }
+};
+
+// The multipart 'operations' field carries the GraphQL variables (e.g. markdown with data URI images).
+// Align its limit with the JSON body limit instead of graphql-upload 1MB default.
+// An unparsable size keeps graphql-upload default.
+export const buildGraphqlUploadOptions = (requestSizeLimit: string | number): { maxFieldSize?: number } => {
+  const maxFieldSize = bytes.parse(requestSizeLimit);
+  return maxFieldSize === null ? {} : { maxFieldSize };
 };
 
 export const buildRateLimiterOptions = (): Options => {
