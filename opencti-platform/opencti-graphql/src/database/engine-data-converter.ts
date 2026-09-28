@@ -11,52 +11,44 @@ import type { BasicStoreBase, BasicStoreRelation, StoreConnection } from '../typ
 
 export const INNER_HITS_WINDOWS_SIZE = 100;
 
-type FromRelationData = {
-  from: null;
-  fromId: string;
-  fromRole: string;
-  fromName: string;
-  fromType: string;
-  source_ref: string;
+const elAssignRelation = (
+  concept: Record<string, any>,
+  type: string,
+  connection: StoreConnection,
+) => {
+  concept[type] = null;
+  concept[`${type}Id`] = connection.internal_id;
+  concept[`${type}Role`] = connection.role;
+  concept[`${type}Name`] = connection.name;
+  concept[`${type}Type`] = connection.types.find((connectionType) => !isAbstract(connectionType));
 };
-type ToRelationData = {
-  to: null;
-  toId: string;
-  toRole: string;
-  toName: string;
-  toType: string;
-  target_ref: string;
+const elAssignFromRelation = (
+  concept: Record<string, any>,
+  connection: StoreConnection,
+) => {
+  elAssignRelation(concept, 'from', connection);
+  concept.source_ref = `${convertTypeToStixType(concept.fromType as string)}--temporary`;
+  return concept;
 };
-const elBuildRelation = (type: string, connection: StoreConnection) => {
-  return {
-    [type]: null,
-    [`${type}Id`]: connection.internal_id,
-    [`${type}Role`]: connection.role,
-    [`${type}Name`]: connection.name,
-    [`${type}Type`]: connection.types.find((connectionType) => !isAbstract(connectionType)),
-  };
+const elAssignToRelation = (
+  concept: Record<string, any>,
+  connection: StoreConnection,
+) => {
+  elAssignRelation(concept, 'to', connection);
+  concept.target_ref = `${convertTypeToStixType(concept.toType as string)}--temporary`;
+  return concept;
 };
-const elBuildFromRelation = (connection: StoreConnection): FromRelationData => {
-  const fromRelation = elBuildRelation('from', connection);
-  fromRelation.source_ref = `${convertTypeToStixType(fromRelation.fromType as string)}--temporary`;
-  return fromRelation as FromRelationData;
-};
-const elBuildToRelation = (connection: StoreConnection): ToRelationData => {
-  const toRelation = elBuildRelation('to', connection);
-  toRelation.target_ref = `${convertTypeToStixType(toRelation.toType as string)}--temporary`;
-  return toRelation as ToRelationData;
-};
-const elBuildInnerRelations = (
-  concept: { internal_id: string; base_type: string; entity_type: string },
+const elAssignInnerRelations = (
+  concept: Record<string, any>,
   fromConnection: StoreConnection | undefined,
   toConnection: StoreConnection | undefined,
-): { from: FromRelationData; to: ToRelationData } => {
+) => {
   if (!fromConnection || !toConnection) {
     throw DatabaseError('Reconstruction of the relation fail', concept.internal_id);
   }
-  const from = elBuildFromRelation(fromConnection);
-  const to = elBuildToRelation(toConnection);
-  return { from, to };
+  elAssignFromRelation(concept, fromConnection);
+  elAssignToRelation(concept, toConnection);
+  return concept;
 };
 export const elRebuildRelation = (concept: Record<string, any>) => {
   if (concept.base_type === BASE_TYPE_RELATION) {
@@ -64,8 +56,7 @@ export const elRebuildRelation = (concept: Record<string, any>) => {
     const entityType = concept.entity_type;
     const fromConnection = connections.find((connection) => connection.role === `${entityType}_from`);
     const toConnection = connections.find((connection) => connection.role === `${entityType}_to`);
-    const { from, to } = elBuildInnerRelations(concept as BasicStoreRelation, fromConnection, toConnection);
-    Object.assign(concept, from, to);
+    elAssignInnerRelations(concept as BasicStoreRelation, fromConnection, toConnection);
     concept.relationship_type = concept.entity_type;
     delete concept.connections;
   }
