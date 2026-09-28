@@ -21,6 +21,7 @@ import {
   USER_SECURITY,
 } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
@@ -370,6 +371,12 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
     });
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
+  });
+  it('should not update api_tokens field', async () => {
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'api_tokens', value: [] } },
+    }, undefined, FORBIDDEN_ACCESS);
   });
   it('should update language only if the value is valid', async () => {
     const validQueryResult = await queryAsAdmin({
@@ -1045,6 +1052,14 @@ describe('User has no settings capability and is organization admin query behavi
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
+  it('Org admins should NOT update user_email without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_email must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_email', value: ['test_email@org.com'] }] },
     });
   });
   it('should not update user from an other organization', async () => {

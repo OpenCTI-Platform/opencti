@@ -1,11 +1,19 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE, ENTITY_TYPE_RESOLVED_FILTERS } from '../../../src/schema/stixDomainObject';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
+import type { StixCoreObject } from '../../../src/types/stix-2-1-common';
+import type { StixRelation, StixSighting } from '../../../src/types/stix-2-1-sro';
+import type { AuthContext, AuthUser } from '../../../src/types/user';
+import type { Operation } from 'fast-json-patch';
+import type { DataEvent, SseEvent } from '../../../src/types/event';
+import type { BasicStoreEntityLiveTrigger } from '../../../src/modules/notification/notification-types';
+import { memoize } from '../../../src/utils/memoize';
 import {
-  buildTargetEvents,
+  buildTargetEvents as buildTargetEventsWithUpdateContext,
+  buildUpdateEventContext,
   filterUpdateInstanceIdsFromUpdatePatch,
   generateNotificationMessageForInstance,
   generateNotificationMessageForInstanceWithRefs,
@@ -25,6 +33,22 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 // The modification of these tests should be taken with caution since the code is complex and sensitive,
 // and testing cases numerous and precise.
 // !!!!
+
+// Mirrors notificationLiveStreamHandler: one update context per event, shared by every trigger.
+const buildTargetEvents = (
+  context: AuthContext,
+  users: AuthUser[],
+  streamEvent: SseEvent<DataEvent>,
+  trigger: BasicStoreEntityLiveTrigger,
+  useSideEventMatching = false,
+) => buildTargetEventsWithUpdateContext(
+  context,
+  users,
+  streamEvent,
+  trigger,
+  useSideEventMatching,
+  memoize(() => buildUpdateEventContext(streamEvent)),
+);
 
 // -- PREPARE queries --
 const MARKING_READ_QUERY = gql`
@@ -211,7 +235,7 @@ describe('Notification manager behaviors test', async () => {
   const context = testContext;
   const adminUser = ADMIN_USER; // admin user with all rights
   const greenUserEmail = 'greenUser@mail.com';
-  const greenUserAddResult = await queryAsAdmin({ // create a restricted users with only access to green markings
+  const greenUserAddResult = await queryAsAdminWithSuccess({ // create a restricted users with only access to green markings
     query: CREATE_USER_QUERY,
     variables: {
       input: {
@@ -222,7 +246,7 @@ describe('Notification manager behaviors test', async () => {
     },
   });
   const greenUserId = greenUserAddResult.data.userAdd.id;
-  const greenGroupAddResult = await queryAsAdmin({ // create a group with only green marking allowed
+  const greenGroupAddResult = await queryAsAdminWithSuccess({ // create a group with only green marking allowed
     query: CREATE_GROUP_QUERY,
     variables: {
       input: {
@@ -243,7 +267,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const userOrganizationAddResult = await queryAsAdmin({ // create the user organization
+  const userOrganizationAddResult = await queryAsAdminWithSuccess({ // create the user organization
     query: CREATE_ORGANIZATION_QUERY,
     variables: {
       input: {
@@ -277,9 +301,9 @@ describe('Notification manager behaviors test', async () => {
     default_marking: [],
     all_marking: [],
     api_token: '',
-  };
+  } as unknown as AuthUser;
   // -- create data --
-  const reportAddResult = await queryAsAdmin({
+  const reportAddResult = await queryAsAdminWithSuccess({
     query: CREATE_REPORT_QUERY,
     variables: {
       input: {
@@ -288,7 +312,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const redReportAddResult = await queryAsAdmin({
+  const redReportAddResult = await queryAsAdminWithSuccess({
     query: CREATE_REPORT_QUERY,
     variables: {
       input: {
@@ -298,7 +322,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const malwareAddResult = await queryAsAdmin({
+  const malwareAddResult = await queryAsAdminWithSuccess({
     query: CREATE_MALWARE_QUERY,
     variables: {
       input: {
@@ -306,7 +330,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const greenOrganizationAddResult = await queryAsAdmin({
+  const greenOrganizationAddResult = await queryAsAdminWithSuccess({
     query: CREATE_ORGANIZATION_QUERY,
     variables: {
       input: {
@@ -315,7 +339,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const redOrganizationAddResult = await queryAsAdmin({
+  const redOrganizationAddResult = await queryAsAdminWithSuccess({
     query: CREATE_ORGANIZATION_QUERY,
     variables: {
       input: {
@@ -324,7 +348,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const redAttackPatternAddResult = await queryAsAdmin({
+  const redAttackPatternAddResult = await queryAsAdminWithSuccess({
     query: CREATE_ATTACKPATTERN_QUERY,
     variables: {
       input: {
@@ -342,7 +366,7 @@ describe('Notification manager behaviors test', async () => {
   const [redOrganizationId, redOrganizationStandardId] = [redOrganizationAddResult.data.organizationAdd.id, redOrganizationAddResult.data.organizationAdd.standard_id];
   const [redAttackPatternId, redAttackPatternStandardId] = [redAttackPatternAddResult.data.attackPatternAdd.id, redAttackPatternAddResult.data.attackPatternAdd.standard_id];
   // -- create relationships --
-  const relationshipAddResult = await queryAsAdmin({
+  const relationshipAddResult = await queryAsAdminWithSuccess({
     query: CREATE_RELATIONSHIP_QUERY,
     variables: {
       input: {
@@ -352,7 +376,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
-  const sightingAddResult = await queryAsAdmin({
+  const sightingAddResult = await queryAsAdminWithSuccess({
     query: CREATE_SIGHTING_QUERY,
     variables: {
       input: {
@@ -375,7 +399,7 @@ describe('Notification manager behaviors test', async () => {
         type: ENTITY_TYPE_CONTAINER_REPORT,
       },
     },
-  };
+  } as unknown as StixCoreObject;
   const stixRedReportWithRefs = {
     name: 'redReport_name',
     id: redReportStandardId,
@@ -388,7 +412,7 @@ describe('Notification manager behaviors test', async () => {
         type: ENTITY_TYPE_CONTAINER_REPORT,
       },
     },
-  };
+  } as unknown as StixCoreObject;
   const stixGreenOrganization = {
     name: 'greenOrganization_name',
     id: greenOrganizationStandardId,
@@ -398,7 +422,7 @@ describe('Notification manager behaviors test', async () => {
         type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       },
     },
-  };
+  } as unknown as StixCoreObject;
   const stixRedOrganization = {
     name: 'redOrganization_name',
     id: redOrganizationStandardId,
@@ -408,7 +432,7 @@ describe('Notification manager behaviors test', async () => {
         type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       },
     },
-  };
+  } as unknown as StixCoreObject;
   const stixMalware = {
     name: 'malware_name',
     id: malwareStandardId,
@@ -418,7 +442,7 @@ describe('Notification manager behaviors test', async () => {
         type: ENTITY_TYPE_MALWARE,
       },
     },
-  };
+  } as unknown as StixCoreObject;
   const stixSightingRelationship = {
     name: 'sighting_name',
     id: sightingStandardId,
@@ -444,7 +468,7 @@ describe('Notification manager behaviors test', async () => {
         negative: false,
       },
     },
-  };
+  } as unknown as StixSighting;
   const stixCoreRelationship = {
     name: 'delivers relationship',
     id: relationshipStandardId,
@@ -470,7 +494,7 @@ describe('Notification manager behaviors test', async () => {
         target_ref: malwareId,
       },
     },
-  };
+  } as unknown as StixRelation;
 
   it('Should generate a notification message for an instance with refs', async () => {
     let result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixRedOrganization]);
@@ -558,7 +582,7 @@ describe('Notification manager behaviors test', async () => {
         op: 'remove',
         path: '/created_by_ref',
       }],
-    };
+    } as unknown as { patch: Operation[]; reverse_patch: Operation[] };
     const dataContextAdd2 = {
       patch: [{
         op: 'add',
@@ -578,7 +602,7 @@ describe('Notification manager behaviors test', async () => {
         op: 'remove',
         path: '/granted_refs',
       }],
-    };
+    } as unknown as { patch: Operation[]; reverse_patch: Operation[] };
     const dataContextRemove = {
       patch: [{
         op: 'remove',
@@ -589,7 +613,7 @@ describe('Notification manager behaviors test', async () => {
         path: '/created_by_ref',
         value: greenOrganizationStandardId,
       }],
-    };
+    } as unknown as { patch: Operation[]; reverse_patch: Operation[] };
     const dataContextMultiple = {
       patch: [{
         op: 'add',
@@ -606,7 +630,7 @@ describe('Notification manager behaviors test', async () => {
         path: '/granted_refs',
         value: reportStandardId,
       }],
-    };
+    } as unknown as { patch: Operation[]; reverse_patch: Operation[] };
 
     // ASSERT RESULTS
     let result = filterUpdateInstanceIdsFromUpdatePatch(instancesMap, dataContextAdd1);
@@ -640,7 +664,7 @@ describe('Notification manager behaviors test', async () => {
       data: {
         data: stixRedReportWithRefs,
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventUpdateReport = { // update a report
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -657,7 +681,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventUpdateReportContainingMalware = { // update a report containing a malware
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -677,19 +701,19 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventCreateRelationship = { // create a relationship from a red attack pattern to a green malware
       event: EVENT_TYPE_CREATE,
       data: {
         data: stixCoreRelationship,
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventCreateSighting = { // create a sighting from a green malware to a red report
       event: EVENT_TYPE_CREATE,
       data: {
         data: stixSightingRelationship,
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventUpdateRelationship = { // update a relationship from red attack pattern to green malware
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -706,7 +730,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddMalwareInRedReport = { // add a malware in a red report
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -726,7 +750,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventRemoveMalwareInRedReport = { // remove a malware in a red report
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -745,7 +769,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventRemoveMalwareInReportWithRefs = { // remove a malware in a report containing a green organization 0
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -765,7 +789,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddRedAttackPatternAndMalwareInReport = { // add a red attack pattern and a malware in a report
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -785,7 +809,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddMalwareInReportWithOtherRefs = { // add a malware in a report created by a red organization and containing an attack pattern
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -806,7 +830,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddRedOrganizationInAuthorOfRelationship = { // add a red organization as Author of a relationship
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -826,7 +850,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddGreenOrganizationInAuthorOfSighting = { // add a green organization as Author of a sighting
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -846,7 +870,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventDeleteReportWithMultipleRefs = { // delete a report containing a malware and a red attack pattern, and created by a red organization
       event: EVENT_TYPE_DELETE,
       data: {
@@ -856,7 +880,7 @@ describe('Notification manager behaviors test', async () => {
           object_refs: [malwareStandardId, redAttackPatternStandardId],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventCreateReportCreatedByRedOrganization = { // create a report with a red organization in its creators
       event: EVENT_TYPE_CREATE,
       data: {
@@ -865,7 +889,7 @@ describe('Notification manager behaviors test', async () => {
           created_by_ref: [redOrganizationStandardId],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventCreateReportCreatedByGreenOrganization = { // create a report with a green organization in its creators
       event: EVENT_TYPE_CREATE,
       data: {
@@ -874,7 +898,7 @@ describe('Notification manager behaviors test', async () => {
           created_by_ref: [greenOrganizationStandardId],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventShareMalwareWithRedOrganization = { // share a malware with a red organization
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -899,7 +923,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventShareMalwareWithGreenOrganization = { // share a malware with a green organization
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -924,7 +948,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventShareMalwareWithUserOrganization = { // share a malware with the user organization
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -949,7 +973,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddRedMarkingToRelationship = { // add the red marking to a relationship
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -969,7 +993,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventRemoveRedMarkingFromReport = { // remove the red marking from a report
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -988,7 +1012,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddRedMarkingToReportContainingMalware = { // add the red marking to a report that contains a malware
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -1009,7 +1033,7 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddRedMarkingAndModifyRefsInReport = { // modify 4 refs in a report :
       // add red in markings, remove green organization in author, add a malware and a red attack-pattern in object_refs
       event: EVENT_TYPE_UPDATE,
@@ -1051,7 +1075,7 @@ describe('Notification manager behaviors test', async () => {
           ],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     const streamEventAddRedMarkingAndAuthorInRelationship = { // add 2 refs in a relationship : red in markings, green organization in author
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -1081,9 +1105,9 @@ describe('Notification manager behaviors test', async () => {
           }],
         },
       },
-    };
+    } as unknown as SseEvent<DataEvent>;
     // -- frontend filters
-    const createInstanceFilters = (instanceIds) => {
+    const createInstanceFilters = (instanceIds: string | string[]) => {
       const values = Array.isArray(instanceIds) ? instanceIds : [instanceIds];
       return JSON.stringify({
         mode: 'and',
@@ -1098,111 +1122,111 @@ describe('Notification manager behaviors test', async () => {
       event_types: [EVENT_TYPE_UPDATE],
       notifiers: [],
       filters: createInstanceFilters(reportId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerReportDelete = { // instance trigger on a report, deletion only
       name: 'triggerReportDelete',
       instance_trigger: true,
       event_types: [EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters(reportId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerRedReportUpdate = { // instance trigger on a red report update
       name: 'triggerRedReportUpdate',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
       notifiers: [],
       filters: createInstanceFilters(redReportId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerRedReportAllEvents = { // instance trigger on a red report
       name: 'triggerRedReportAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters(redReportId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerRedAttackPatternAllEvents = { // instance trigger on a red attack pattern
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters(redAttackPatternId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerMalwareAllEvents = { // instance trigger on a malware
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters(malwareId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerMalwareUpdate = { // instance trigger on a malware, update only
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
       notifiers: [],
       filters: createInstanceFilters(malwareId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerMalwareDelete = { // instance trigger on a malware, delete only
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters(malwareId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerRedOrganizationAllEvents = { // instance trigger on an organization with marking red
       name: 'triggerRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters(redOrganizationId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerOrganizationsAllEvents = { // instance trigger on an organization with marking green, an organization with marking red, and the user organization
       name: 'triggerOrganizationsAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters([redOrganizationId, greenOrganizationId, userOrganizationId]),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerAttackPatternAllEvents = { // instance trigger on a red attack pattern
       name: 'triggerAttackPatternAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters(redAttackPatternId),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerMalwareAndRedAttackPatternAllEvents = { // instance trigger on a malware and a red attack pattern
       name: 'triggerMalwareAndRedAttackPatternAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters([malwareId, redAttackPatternId]),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerMalwareAndRedOrganizationAllEvents = { // instance trigger on a malware and a red organization
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters([malwareId, redOrganizationId]),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerMalwareAndGreenOrganizationAllEvents = { // instance trigger on a malware and a green organization
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters([malwareId, greenOrganizationId]),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     const triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents = { // instance trigger on a malware, a red organization and a red attack pattern
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
       notifiers: [],
       filters: createInstanceFilters([malwareId, redOrganizationId, redAttackPatternId]),
-    };
+    } as unknown as BasicStoreEntityLiveTrigger;
     // -- create the triggers
     const triggersToCreate = [triggerReportUpdate, triggerReportDelete, triggerReportUpdate, triggerRedReportAllEvents, triggerMalwareAllEvents, triggerRedOrganizationAllEvents,
       triggerOrganizationsAllEvents, triggerAttackPatternAllEvents, triggerMalwareAndRedAttackPatternAllEvents,
       triggerMalwareAndRedOrganizationAllEvents, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents,
     ];
-    const triggerAddQueryPromise = triggersToCreate.map((triggerInput) => queryAsAdmin({
+    const triggerAddQueryPromise = triggersToCreate.map((triggerInput) => queryAsAdminWithSuccess({
       query: CREATE_LIVE_TRIGGER_QUERY,
       variables: {
         input: triggerInput,

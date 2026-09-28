@@ -24,6 +24,13 @@ interface FintelTemplateTabsProps {
   children: (props: ChildrenProps) => ReactNode;
 }
 
+function a11yProps(index: number) {
+  return {
+    id: `fintel-templates-tab-${index}`,
+    'aria-controls': `fintel-templates-tabpanel-${index}`,
+  };
+}
+
 const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -51,13 +58,13 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
           needs={[KNOWLEDGE]}
           placeholder={(
             <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-              <Tab label={t_i18n('Template Editor')} />
+              <Tab label={t_i18n('Template Editor')} {...a11yProps(0)} />
             </Tabs>
           )}
         >
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Template Editor')} />
-            <Tab label={t_i18n('Template Preview')} />
+            <Tab label={t_i18n('Template Editor')} {...a11yProps(0)} />
+            <Tab label={t_i18n('Template Preview')} {...a11yProps(1)} />
           </Tabs>
         </Security>
 

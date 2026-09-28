@@ -1071,6 +1071,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
+const ORG_ADMIN_FORBIDDEN_EDIT_ATTRIBUTES = ['user_email', 'password'];
 // User related
 export const validateAndNormalizeEmailInput = async (context, userId, input) => {
   if (input.key === 'user_email') {
@@ -1096,6 +1097,9 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
+    if (input.key === 'api_tokens') {
+      throw ForbiddenAccess();
+    }
     if (userToUpdate.external && input.key === 'name') {
       throw FunctionalError('Name cannot be updated for external user', { userId });
     }
@@ -1105,13 +1109,13 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (userToUpdate.external && input.key === 'password_valid_until') {
       throw FunctionalError('Cannot force password change for external user', { userId });
     }
+    // org admin can only edit forbidden attributes on its own user and not other users
+    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && ORG_ADMIN_FORBIDDEN_EDIT_ATTRIBUTES.includes(input.key) && user.id !== userId) {
+      throw ForbiddenAccess();
+    }
     // Check user email is valid and not already used in case of email change
     await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
-      // orgs admins can't update other users passwords
-      if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
-        throw ForbiddenAccess();
-      }
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
       if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
         skipThisInput = true;
@@ -2080,9 +2084,14 @@ const authenticateUserByEmail = async (context, req, email) => {
 };
 
 export const authenticateUserByToken = async (context, req, token) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const hashedToken = await generateTokenHmac(token);
-  const user = platformUsers.get(hashedToken);
+  const user = platformUsers.find((u) => {
+    if ('api_tokens' in u && Array.isArray(u.api_tokens)) {
+      return u.api_tokens.some((t) => t.hash === hashedToken);
+    }
+    return false;
+  });
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
       throw ForbiddenAccess('You are not allowed to use API Access Tokens');

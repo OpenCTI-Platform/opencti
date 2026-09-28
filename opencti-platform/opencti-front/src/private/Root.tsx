@@ -89,6 +89,7 @@ const rootSettingsFragment = graphql`
       license_type
       license_extra_expiration
       license_extra_expiration_days
+      license_source
     }
     platform_theme {
       name

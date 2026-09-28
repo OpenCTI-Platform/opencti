@@ -28,6 +28,8 @@ class MeterManager {
 
   private upserts: Counter | null = null;
 
+  private migrationDurationHistogram: Histogram | null = null;
+
   private directBulkGauge: Gauge | null = null;
 
   private sideBulkGauge: Gauge | null = null;
@@ -62,6 +64,16 @@ class MeterManager {
 
   upsert(outcome: 'write' | 'noop', entityType: string) {
     this.upserts?.add(1, { outcome, entity_type: entityType });
+  }
+
+  migrationDuration(val: number, attributes: {
+    migrationTitle: string;
+    status: 'success' | 'failed';
+  }) {
+    this.migrationDurationHistogram?.record(val, {
+      'opencti.migration.title': attributes.migrationTitle,
+      'opencti.migration.status': attributes.status,
+    });
   }
 
   directBulk(val: number, attributes: any) {
@@ -105,6 +117,12 @@ class MeterManager {
       valueType: ValueType.INT,
       description: 'Lock acquisition wait time in milliseconds',
       advice: { explicitBucketBoundaries: [0, 10, 50, 250, 500, 1000, 2500, 5000, 10000, 25000] },
+    });
+    this.migrationDurationHistogram = meter.createHistogram('opencti_api_migration_duration', {
+      valueType: ValueType.INT,
+      description: 'Duration of each migration',
+      unit: 's',
+      advice: { explicitBucketBoundaries: [1, 5, 15, 30, 60, 120, 300, 600, 1800, 3600, 18000] },
     });
     // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {

@@ -21,7 +21,6 @@ import IngestionJsonLogsTab from '@components/data/ingestionJson/IngestionJsonLo
 import SyncLogsTab from '@components/data/sync/SyncLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -290,7 +289,6 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { t_i18n, nsdt, n } = useFormatter();
   const theme = useTheme();
   const { setTitle } = useConnectedDocumentModifier();
-  const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
   // TAXII, CSV, RSS, JSON and stream feeds get tabs. Stream feeds don't expose
   // works, so they only display Overview + Logs.
@@ -303,8 +301,6 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   };
   // The works API is gated by the MODULES capability, like connector pages.
   const isConnectorReader = useGranted([MODULES]);
-
-  const isIngestionFeedLogsEnabled = isFeatureEnable('INGESTION_FEED_LOGS');
 
   const data = usePreloadedQuery(FEED_QUERIES[kind].query, queryRef) as Record<string, FeedDetailNode | null>;
   const node = data[FEED_QUERIES[kind].rootField];
@@ -431,7 +427,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label={t_i18n('Overview')} />
             {hasWorksTab && <Tab label={t_i18n('Works')} disabled={!isConnectorReader} />}
-            {isIngestionFeedLogsEnabled && <Tab label={t_i18n('Logs')} />}
+            <Tab label={t_i18n('Logs')} />
           </Tabs>
         </Box>
       )}
@@ -582,7 +578,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
       )}
 
       {/* "Logs" tab content for TAXII, CSV, RSS, JSON and stream feeds. */}
-      {isIngestionFeedLogsEnabled && hasTabs && tabValue === logsTabIndex && (
+      {hasTabs && tabValue === logsTabIndex && (
         <>
           {kind === 'sync' && <SyncLogsTab feedId={node.id} feedName={node.name} />}
           {kind === 'taxii' && <IngestionTaxiiLogsTab feedId={node.id} feedName={node.name} />}

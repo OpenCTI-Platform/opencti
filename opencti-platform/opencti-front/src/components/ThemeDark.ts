@@ -384,6 +384,7 @@ const ThemeDark = (
               backgroundColor: hexToRGB('#ffffff', 0.05),
             },
           },
+          '&:focus-visible': { outline: `2px solid ${primary || THEME_DARK_DEFAULT_PRIMARY}`, outlineOffset: 2 },
         },
       },
     },

@@ -29,6 +29,9 @@ const createTestContract = (properties: any, required: string[] = []): CatalogCo
     required,
     additionalProperties: false,
   },
+  license_type: null,
+  solution_categories: [],
+  contact: null,
 });
 
 describe('validateContractConfigurations', () => {

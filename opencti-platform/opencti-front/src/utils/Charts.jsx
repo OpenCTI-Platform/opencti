@@ -1045,7 +1045,7 @@ export const heatMapOptions = (
     strokeDashArray: 3,
   },
   legend: {
-    show: false,
+    show: true,
   },
   tooltip: {
     theme: theme.palette.mode,

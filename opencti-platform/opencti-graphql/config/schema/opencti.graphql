@@ -674,7 +674,7 @@ type Synchronizer {
   current_state_date: DateTime
   last_execution_date: DateTime
   last_execution_status: String
-  ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
+  ingestionLogs: [IngestionEntry]
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -1171,6 +1171,12 @@ type PlatformEE {
   license_global: Boolean!
   license_extra_expiration: Boolean!
   license_extra_expiration_days: Int
+  license_source: PlatformEESource
+}
+
+enum PlatformEESource {
+  OPENCTI_LICENSE
+  XTM_ONE_LICENSE
 }
 
 enum PlatformCriticalAlertType {
@@ -2249,7 +2255,7 @@ type Connector implements BasicObject & InternalObject {
   manager_current_status: String
   manager_requested_status: String
   manager_contract_image: String
-  manager_contract_definition: String
+  manager_contract_definition: String # JSON.Stringified GraphqlCatalogContract item
   manager_contract_excerpt: ManagerContractExcerpt
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
@@ -14700,7 +14706,7 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
-  synchronizerLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
+  synchronizerLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION])
   synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
 
   synchronizers(

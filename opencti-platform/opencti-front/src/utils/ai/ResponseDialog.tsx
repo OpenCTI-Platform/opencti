@@ -30,7 +30,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
-import { isNotEmptyField } from '../utils';
+import { cleanHtmlTags, isNotEmptyField } from '../utils';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import type { AgentAction } from '../../private/components/common/form/TextFieldAskAI';
 // Circular dependency is intentional: TextFieldAskAI opens ResponseDialog,
@@ -41,6 +41,10 @@ import { type AgentOption, fetchAgentsForIntent } from './agentApi';
 import useAgentStream from './useAgentStream';
 
 // region types
+// `report`: the caller built the whole prompt itself (the Ask AI container
+// report), so it is sent as is.
+export type ResponseAgentAction = AgentAction | 'report';
+
 interface ResponseDialogProps {
   id: string;
   isOpen: boolean;
@@ -58,7 +62,7 @@ interface ResponseDialogProps {
   }[];
   agentMode?: {
     intent: string;
-    action: AgentAction;
+    action: ResponseAgentAction;
     inputContent: string;
     format: string;
   } | null;
@@ -73,7 +77,7 @@ const subscription = graphql`
 `;
 
 const buildPrompt = (
-  action: AgentAction,
+  action: ResponseAgentAction,
   inputContent: string,
   format: string,
   tone?: string,
@@ -121,8 +125,12 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | null>(null);
   const [loadingAgents, setLoadingAgents] = useState(false);
-  // Agent streaming hook
-  const { content: streamContent, loading: agentLoading, error: agentError, execute: executeStream, abort: abortStream } = useAgentStream();
+  // Agent streaming hook. A report lands in the container content as is, so the
+  // code fences or document wrappers a model may add are dropped, as the legacy
+  // report mutation and AI Insights do.
+  const { content: streamContent, loading: agentLoading, error: agentError, execute: executeStream, abort: abortStream } = useAgentStream(
+    agentMode?.action === 'report' ? { transformContent: cleanHtmlTags } : undefined,
+  );
 
   // Sync streamed content to parent's setContent
   useEffect(() => {
@@ -172,15 +180,22 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     }
   }, [tone]);
 
+  // Set by Regenerate: the stream endpoint caches by agent and prompt, so the
+  // next run must bypass the cache or it would show the same answer again.
+  const forceRefreshRef = useRef(false);
+
   const executeAgentCall = () => {
     if (!selectedAgent || !agentMode) return;
     setAgentExecuted(true);
     const prompt = buildPrompt(agentMode.action, agentMode.inputContent, agentMode.format, tone);
-    executeStream(selectedAgent.slug, prompt);
+    const forceRefresh = forceRefreshRef.current;
+    forceRefreshRef.current = false;
+    executeStream(selectedAgent.slug, prompt, forceRefresh);
   };
 
   const handleRefresh = () => {
     if (!selectedAgent || !agentMode) return;
+    forceRefreshRef.current = true;
     setContent('');
     setAgentExecuted(false);
   };
@@ -227,6 +242,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 
   const effectiveDisabled = isDisabled || agentLoading;
   const noAgents = agentMode && !loadingAgents && agentOptions.length === 0;
+  // Accepting before the agent answered would hand an empty result to the
+  // caller, which replaces its content with it.
+  const noAgentResult = !!agentMode && !content.trim();
 
   // ── Title ─────────────────────────────────────────────────────────────
 
@@ -440,7 +458,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           </Button>
           {isAcceptable && (
             <Button
-              disabled={effectiveDisabled || !!agentError}
+              disabled={effectiveDisabled || !!agentError || !!noAgents || noAgentResult}
               onClick={() => handleAccept(content)}
             >
               {t_i18n('Accept')}
