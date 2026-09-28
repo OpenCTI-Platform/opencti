@@ -93,11 +93,10 @@ const renderToggleField = ({ field, fieldPrefix }: FieldRendererContext): React.
     <Field name={fieldName}>
       {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
         <SwitchField
+          field={formikField}
+          form={form}
           label={displayLabel}
           checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
-          onChange={(value: boolean) => {
-            form.setFieldValue(fieldName, value);
-          }}
           containerstyle={fieldSpacingContainerStyle}
           helpertext={field.description}
         />
