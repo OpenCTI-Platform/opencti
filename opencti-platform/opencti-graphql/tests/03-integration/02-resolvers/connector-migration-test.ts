@@ -4,6 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { registerConnector } from '../../../src/domain/connector';
 import { ConnectorType } from '../../../src/generated/graphql';
 import * as catalogRepository from '../../../src/modules/catalog/catalog-repository';
+import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
+import conf from '../../../src/config/conf';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
@@ -98,6 +100,14 @@ describe('Check connector migration', () => {
    * - Get catalogId
    */
   beforeAll(async () => {
+    const previousXtmHubUrl = conf.get('xtm:xtmhub_url');
+    conf.set('xtm:xtmhub_url', '');
+    try {
+      await synchronizeCatalogs(testContext, ADMIN_USER);
+    } finally {
+      conf.set('xtm:xtmhub_url', previousXtmHubUrl);
+    }
+
     const user = await queryAsAdminWithSuccess({
       query: CREATE_USER_QUERY,
       variables: { input: {
