@@ -40,7 +40,7 @@ import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
-import { getEntityTypeFromFilters, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
+import { getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 
 const WidgetCreationParameters = () => {
@@ -967,15 +967,15 @@ const WidgetCreationParameters = () => {
             return null;
           }
 
-          const entityType = getEntityTypeFromFilters(filters);
+          const entityType = getWidgetColumnsEntityType(filters, perspective, host);
           const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
           const selectedColumns = [...(columns ?? defaultWidgetColumnsByType)];
-          const availableColumns = host.kind === 'fintelTemplate'
-            ? mergeAvailableAndSelectedColumns(
-                getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined),
-                selectedColumns,
-              )
+          const baseAvailableColumns = host.kind === 'fintelTemplate' && perspective === 'entities'
+            ? getCustomAttributesColumns(entityType || undefined)
             : getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined);
+          const availableColumns = host.kind === 'fintelTemplate'
+            ? mergeAvailableAndSelectedColumns(baseAvailableColumns, selectedColumns)
+            : baseAvailableColumns;
 
           if (host.kind === 'fintelTemplate') {
             return (

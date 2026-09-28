@@ -1,6 +1,6 @@
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { getEntityTypeThreeFirstLevelsFilterValues } from 'src/utils/filters/filtersUtils';
-import type { WidgetColumn } from 'src/utils/widget/widget';
+import type { WidgetColumn, WidgetHost, WidgetPerspective } from 'src/utils/widget/widget';
 
 export const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
   if (!filterGroup) return undefined;
@@ -15,6 +15,31 @@ export const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): stri
 
   if (hasSingleEntityType && filterGroup.mode === 'or' && otherFiltersLength === 0) {
     return entityTypeFilters[0];
+  }
+
+  return undefined;
+};
+
+export const getWidgetColumnsEntityType = (
+  filterGroup: FilterGroup | null | undefined,
+  perspective: WidgetPerspective | null | undefined,
+  host: WidgetHost,
+): string | undefined => {
+  const entityTypeFromFilters = getEntityTypeFromFilters(filterGroup);
+  if (entityTypeFromFilters) {
+    return entityTypeFromFilters;
+  }
+
+  if (perspective !== 'entities') {
+    return undefined;
+  }
+
+  if (host.kind === 'fintelTemplate') {
+    return host.fintelEntityType;
+  }
+
+  if (host.kind === 'custom-view') {
+    return host.customViewTargetEntityType;
   }
 
   return undefined;
