@@ -162,10 +162,18 @@ describe('Hook: useFdsThemeScope', () => {
   it('covers every per-layer family, not the handful a screenshot happened to show', () => {
     renderHook(() => useFdsThemeScope('Corporate', { paper: '#25112a' }));
     // the drawer header and the selected option each live in their own family
-    for (const family of ['bg-elevation-heading', 'bg-elevation-hover', 'bg-elevation-disabled',
+    for (const family of ['bg-elevation-heading', 'bg-elevation-hover',
       'bg-elevation-highlight', 'border-elevation-subtle', 'border-elevation-subtle-soft',
-      'border-elevation-default', 'border-elevation-disabled']) {
+      'border-elevation-default']) {
       expect(token(`--${family}-layer-2`)).toMatch(/^#[0-9a-f]{6}$/);
+    }
+  });
+
+  it('leaves the disabled families grey, because desaturation is what reads as disabled', () => {
+    renderHook(() => useFdsThemeScope('Corporate', { paper: '#25112a' }));
+    for (const layer of [0, 1, 2, 3]) {
+      expect(token(`--bg-elevation-disabled-layer-${layer}`)).toBe('');
+      expect(token(`--border-elevation-disabled-layer-${layer}`)).toBe('');
     }
   });
 

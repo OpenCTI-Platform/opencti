@@ -44,11 +44,9 @@ const LAYER_FAMILY = [
   'bg-elevation-highlight',
   'bg-elevation-hover',
   'bg-elevation-heading',
-  'bg-elevation-disabled',
   'border-elevation-subtle',
   'border-elevation-subtle-soft',
   'border-elevation-default',
-  'border-elevation-disabled',
 ] as const;
 
 const SURFACE_BY_SETTING = {
