@@ -235,6 +235,13 @@ const StixCoreObjectFileExportForm = ({
           }
         }, [values.connector?.value]);
 
+        // Generating FINTEL from a template only ever produces HTML; PDF is reserved for the toggle on HTML content files to PDF.
+        useEffect(() => {
+          if (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format !== 'text/html') {
+            setFieldValue('format', 'text/html');
+          }
+        }, [values.connector?.value]);
+
         useEffect(() => {
           if (values.connector !== null) {
             const connector = connectors.find((c) => c.value === values.connector?.value);
@@ -277,14 +284,7 @@ const StixCoreObjectFileExportForm = ({
             setFieldValue('exportFileName', null);
           }
           if (connector === BUILT_IN_HTML_TO_PDF.value && (values.fileToExport === null || values.fileToExport.value === 'generatedFile')) {
-            const fromTemplateConnector = connectors.find((c) => c.value === BUILT_IN_FROM_TEMPLATE.value);
-            if (!hasPresetFileToExport && (templates?.length ?? 0) > 0 && fromTemplateConnector) {
-              // Turning off the fintel toggle on a fresh-generation shortcut should still
-              // let the user generate an HTML-only FINTEL from a template.
-              setFieldValue('connector', fromTemplateConnector);
-              setFieldValue('format', 'text/html');
-              return;
-            }
+            // Turning off the fintel toggle keeps the same connector; just fall back to a real file to export.
             setFieldValue('fileToExport', defaultFileToExport ?? (fileOptions ?? [])[0] ?? null);
             setFieldValue('fileMarkings', initialValues.fileMarkings);
             setFieldValue('contentMaxMarkings', []);
