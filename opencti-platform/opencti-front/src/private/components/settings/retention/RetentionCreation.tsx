@@ -58,6 +58,7 @@ interface RetentionFormValues {
   max_retention: string;
   retention_unit: 'minutes' | 'hours' | 'days';
   filters: string;
+  scope: string;
 }
 
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
@@ -67,13 +68,14 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeysDrafts = useAvailableFilterKeysForEntityTypes(['DraftWorkspace']);
 
   const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
+      scope: values.scope,
       filters: jsonFilters,
     };
     commitMutation({
@@ -105,7 +107,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
+      scope: values.scope,
       filters: jsonFilters,
     };
     commitMutation({
@@ -159,6 +161,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 label={t_i18n('Unit')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
+                onChange={() => setVerified(false)}
               >
                 <SelectItem value="minutes">{t_i18n('minutes')}</SelectItem>
                 <SelectItem value="hours">{t_i18n('hours')}</SelectItem>
@@ -177,7 +180,9 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                     endAdornment: (
                       <InputAdornment position="end">
                         <Tooltip
-                          title={t_i18n(
+                          title={formValues.scope === 'draft' ? t_i18n(
+                            'All objects matching the filters that have been created prior to this amount of units will be deleted',
+                          ) : t_i18n(
                             'All objects matching the filters that have not been updated since this amount of units will be deleted',
                           )}
                         >
@@ -199,9 +204,13 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 label={t_i18n('Scope')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
-                disabled={true}
+                onChange={() => {
+                  setVerified(false);
+                  helpers.handleClearAllFilters();
+                }}
               >
                 <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
+                <SelectItem value="draft">{t_i18n('Draft')}</SelectItem>
               </Field>
               <Box sx={{
                 paddingTop: 4,
@@ -212,18 +221,18 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               }}
               >
                 <Filters
-                  availableFilterKeys={availableFilterKeys}
+                  availableFilterKeys={formValues.scope === 'draft' ? availableFilterKeysDrafts : availableFilterKeys}
                   helpers={helpers}
-                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  searchContext={{ entityTypes: formValues.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
               </Box>
               <FilterIconButton
                 filters={filters}
                 helpers={helpers}
-                availableFilterKeys={availableFilterKeys}
+                availableFilterKeys={formValues.scope === 'draft' ? availableFilterKeysDrafts : availableFilterKeys}
                 redirection
-                entityTypes={['Stix-Core-Object', 'stix-core-relationship']}
-                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                entityTypes={formValues.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship']}
+                searchContext={{ entityTypes: formValues.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
               <FormButtonContainer>
                 <Button

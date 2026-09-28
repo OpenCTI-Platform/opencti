@@ -149,7 +149,7 @@ class RetentionPopover extends Component {
           render={({ props }) => {
             if (props) {
               const { retentionRule } = props;
-              const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge';
+              const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge' && retentionRule.scope !== 'draft';
               return (
                 <>
                   <Menu
