@@ -43,15 +43,19 @@ export interface DrilldownInput {
   bucket: DrilldownBucket;
   filterKeysSchema: FilterKeysSchema;
   /**
-   * The concrete stix-core-relationship types, from `useAuth().schema.scrs`.
+   * The concrete types each abstract type a list page pins actually covers,
+   * from `useAuth().schema` (`sdos`, `scrs`).
    *
-   * The relationships list pins `stix-core-relationship`
-   * (`Relationships.tsx:281`) while a relationship widget aggregates over
-   * `stix-relationship` by default (`stixRelationship.js:36-38`), sightings and
-   * refs included. Without knowing which types are covered, a widget counting
-   * label refs would link to a list that holds none of them.
+   * Generic list pages hold less than the widgets count: the relationships list
+   * pins `stix-core-relationship` (`Relationships.tsx:281`) while a relationship
+   * widget aggregates over `stix-relationship` by default
+   * (`stixRelationship.js:36-38`), sightings and refs included; the entities
+   * list queries `stixDomainObjects` (`Entities.tsx:45`) while an entity widget
+   * counts every `Stix-Core-Object`, observables included. Without knowing which
+   * concrete types a destination covers, a widget counting label refs or
+   * observables would link to a list that holds none of them.
    */
-  stixCoreRelationshipTypes: string[];
+  subtypesByAbstractType: Record<string, string[]>;
 }
 
 export interface ListRouteResolution {
@@ -61,6 +65,19 @@ export interface ListRouteResolution {
    * removes it from the URL filters because the destination applies it itself.
    */
   consumedEntityType: string | null;
+  /**
+   * The entity types the destination page pins on its own query. They decide
+   * which filter keys survive the URL — the page runs the widget filters through
+   * `removeIdAndIncorrectKeysFromFilterGroupObject` against exactly this list.
+   */
+  scopeTypes: string[];
+  /**
+   * Whether the destination holds strictly less than the widget counts, so the
+   * widget must prove its population is covered before a link can promise the
+   * same number. False for dedicated routes, whose type the widget already
+   * carried, and for the audit log, which the widget queries directly.
+   */
+  requiresScopeProof: boolean;
 }
 
 export type { FilterGroup };

@@ -29,14 +29,19 @@ const useWidgetDrilldown = ({
   range: WidgetDateRange;
   interval?: string | null;
 }): WidgetDrilldown => {
-  const { filterKeysSchema, scrs } = useAuth().schema;
-  const stixCoreRelationshipTypes = useMemo(() => (scrs ?? []).map(({ label }) => label), [scrs]);
+  const { filterKeysSchema, scrs, sdos } = useAuth().schema;
+  // The concrete types behind the abstract ones the destination lists pin, so
+  // the resolver can tell whether a destination really holds what was counted.
+  const subtypesByAbstractType = useMemo(() => ({
+    'Stix-Domain-Object': (sdos ?? []).map(({ label }) => label),
+    'stix-core-relationship': (scrs ?? []).map(({ label }) => label),
+  }), [scrs, sdos]);
 
   const getLink = useCallback((selectionIndex: number, bucket: DrilldownBucket) => {
     const dataSelection = resolvedDataSelection[selectionIndex];
     if (!dataSelection) return null;
-    return resolveDrilldownLink({ perspective, dataSelection, range, interval, bucket, filterKeysSchema, stixCoreRelationshipTypes });
-  }, [perspective, resolvedDataSelection, range, interval, filterKeysSchema, stixCoreRelationshipTypes]);
+    return resolveDrilldownLink({ perspective, dataSelection, range, interval, bucket, filterKeysSchema, subtypesByAbstractType });
+  }, [perspective, resolvedDataSelection, range, interval, filterKeysSchema, subtypesByAbstractType]);
 
   return useMemo(() => ({ getLink }), [getLink]);
 };

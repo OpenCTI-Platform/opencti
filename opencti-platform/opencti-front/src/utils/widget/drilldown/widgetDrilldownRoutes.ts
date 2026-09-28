@@ -9,6 +9,22 @@ const GENERIC_LIST_ROUTES: Record<string, string> = {
 };
 
 /**
+ * The entity types each generic destination pins on its own query, and whether
+ * that makes it hold less than the widget counts.
+ *
+ * `/dashboard/data/entities` queries `stixDomainObjects` (`Entities.tsx:45`) and
+ * `/dashboard/data/relationships` queries `stixCoreRelationships`
+ * (`Relationships.tsx:281`), both narrower than what their widgets aggregate.
+ * The audit page passes the filters through untouched, so it holds exactly what
+ * an audit widget counts.
+ */
+const GENERIC_LIST_SCOPES: Record<string, { types: string[]; requiresScopeProof: boolean }> = {
+  entities: { types: ['Stix-Domain-Object'], requiresScopeProof: true },
+  relationships: { types: ['stix-core-relationship'], requiresScopeProof: true },
+  audits: { types: ['History'], requiresScopeProof: false },
+};
+
+/**
  * Route prefixes whose pages are knowledge lists reading `?filters=` through
  * `useLocalStorage`. Allow-listing rather than deny-listing keeps the behaviour
  * fail-closed: an unlisted route degrades to the generic list, never to a page
@@ -27,6 +43,17 @@ const FILTERABLE_LIST_PREFIXES = [
 ];
 
 const isFilterableListRoute = (route: string) => FILTERABLE_LIST_PREFIXES.some((prefix) => route.startsWith(prefix));
+
+/**
+ * Dedicated lists several entity types share, with the single type their page
+ * really pins on its query. `resolveLink` sends every observable type to the
+ * observables list, which holds them all: consuming the requested type there
+ * would drop the filter and inflate the count by every sibling type.
+ */
+const SHARED_LIST_SCOPES: Record<string, string> = {
+  '/dashboard/observations/observables': 'Stix-Cyber-Observable', // StixCyberObservables.tsx:56
+  '/dashboard/analyses/security_coverages': 'Security-Coverage', // SecurityCoverages.tsx:154
+};
 
 /**
  * Returns the entity type a dedicated destination could be derived from, i.e. a
@@ -55,8 +82,22 @@ export const resolveListRoute = (
   if (entityType) {
     const dedicated = resolveLink(entityType);
     if (dedicated && isFilterableListRoute(dedicated)) {
-      return { route: dedicated, consumedEntityType: entityType };
+      // The widget already carried that single type, so the destination holds
+      // at most the counted population: nothing left to prove.
+      const pinned = SHARED_LIST_SCOPES[dedicated] ?? entityType;
+      return {
+        route: dedicated,
+        consumedEntityType: pinned === entityType ? entityType : null,
+        scopeTypes: [pinned],
+        requiresScopeProof: false,
+      };
     }
   }
-  return { route: genericRoute, consumedEntityType: null };
+  const scope = GENERIC_LIST_SCOPES[perspective];
+  return {
+    route: genericRoute,
+    consumedEntityType: null,
+    scopeTypes: scope?.types ?? [],
+    requiresScopeProof: scope?.requiresScopeProof ?? true,
+  };
 };

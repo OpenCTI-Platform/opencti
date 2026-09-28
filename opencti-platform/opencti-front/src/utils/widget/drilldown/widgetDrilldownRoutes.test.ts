@@ -11,9 +11,32 @@ const group = (filters: FilterGroup['filters']): FilterGroup => ({
 describe('resolveListRoute', () => {
   it('returns the dedicated route for a single known entity type', () => {
     const filters = group([{ key: 'entity_type', values: ['Intrusion-Set'], operator: 'eq', mode: 'or' }]);
-    expect(resolveListRoute('entities', filters)).toEqual({
+    expect(resolveListRoute('entities', filters)).toMatchObject({
       route: '/dashboard/threats/intrusion_sets',
       consumedEntityType: 'Intrusion-Set',
+      scopeTypes: ['Intrusion-Set'],
+      requiresScopeProof: false,
+    });
+  });
+
+  // `resolveLink` sends every observable type to the same list, which pins the
+  // abstract type: the requested one must stay in the URL or the count grows by
+  // every sibling type.
+  it('keeps the entity type when the dedicated list is shared by many types', () => {
+    const filters = group([{ key: 'entity_type', values: ['IPv4-Addr'], operator: 'eq', mode: 'or' }]);
+    expect(resolveListRoute('entities', filters)).toMatchObject({
+      route: '/dashboard/observations/observables',
+      consumedEntityType: null,
+      scopeTypes: ['Stix-Cyber-Observable'],
+      requiresScopeProof: false,
+    });
+  });
+
+  it('consumes the shared type itself when the widget asked for the abstract one', () => {
+    const filters = group([{ key: 'entity_type', values: ['Stix-Cyber-Observable'], operator: 'eq', mode: 'or' }]);
+    expect(resolveListRoute('entities', filters)).toMatchObject({
+      route: '/dashboard/observations/observables',
+      consumedEntityType: 'Stix-Cyber-Observable',
     });
   });
 
@@ -24,9 +47,10 @@ describe('resolveListRoute', () => {
 
   it('falls back to the generic route for multiple entity types', () => {
     const filters = group([{ key: 'entity_type', values: ['Malware', 'Tool'], operator: 'eq', mode: 'or' }]);
-    expect(resolveListRoute('entities', filters)).toEqual({
+    expect(resolveListRoute('entities', filters)).toMatchObject({
       route: '/dashboard/data/entities',
       consumedEntityType: null,
+      scopeTypes: ['Stix-Domain-Object'],
     });
   });
 
@@ -37,9 +61,10 @@ describe('resolveListRoute', () => {
 
   it('falls back to the generic route when the dedicated route is not a filterable list', () => {
     const filters = group([{ key: 'entity_type', values: ['User'], operator: 'eq', mode: 'or' }]);
-    expect(resolveListRoute('entities', filters)).toEqual({
+    expect(resolveListRoute('entities', filters)).toMatchObject({
       route: '/dashboard/data/entities',
       consumedEntityType: null,
+      scopeTypes: ['Stix-Domain-Object'],
     });
   });
 

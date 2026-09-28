@@ -30,41 +30,64 @@ const restrictWith = (base: FilterGroup | undefined, bucketFilters: Filter[]): F
 });
 
 /**
- * The relationships list page only holds stix-core-relationships: it pins that
- * type on every query (`Relationships.tsx:281`). A relationship widget, on the
- * other hand, aggregates over `stix-relationship` unless told otherwise
- * (`stixRelationship.js:36-38`) -- sightings and refs included, which is how
- * "Most active labels" counts `object-label` refs.
+ * Generic list pages hold strictly less than their widgets count: the entities
+ * list queries `stixDomainObjects` (`Entities.tsx:45`) while an entity widget
+ * aggregates every `Stix-Core-Object`, and the relationships list pins
+ * `stix-core-relationship` (`Relationships.tsx:281`) while a relationship widget
+ * aggregates over `stix-relationship` (`stixRelationship.js:36-38`) -- sightings
+ * and refs included, which is how "Most active labels" counts `object-label`
+ * refs.
  *
- * So the widget must prove its own population is covered before a link can
- * promise the same count. Anything the platform cannot vouch for is refused.
+ * So the counted population must be proven covered before a link can promise the
+ * same number. Anything the widget cannot vouch for is refused.
  */
-const isWithinCoreRelationships = (filters: FilterGroup | null, coreTypes: string[]): boolean => {
+const isWithinDestinationScope = (
+  filters: FilterGroup | null,
+  bucketEntityType: string | null,
+  scopeTypes: string[],
+  subtypesByAbstractType: Record<string, string[]>,
+): boolean => {
+  const covered = new Set(
+    scopeTypes.flatMap((type) => [type, ...(subtypesByAbstractType[type] ?? [])]).map((t) => t.toLowerCase()),
+  );
+  const isCovered = (values: unknown[]) => values.length > 0
+    && values.every((v) => typeof v === 'string' && covered.has(v.toLowerCase()));
+
+  // A distribution on the type itself pins it exactly, whatever the widget
+  // filters say: the bucket filter alone isolates a single entity type.
+  if (bucketEntityType) return isCovered([bucketEntityType]);
+
   if (!filters) return false;
-  const covered = new Set(['stix-core-relationship', ...coreTypes].map((t) => t.toLowerCase()));
   const scoping = filters.filters.filter((f) => f.key === 'entity_type' || f.key === 'relationship_type');
   if (scoping.length === 0) return false;
   // Under `or`, a scoping filter no longer narrows the population: anything
-  // matching a sibling filter is counted too, whatever its relationship type.
+  // matching a sibling filter is counted too, whatever its type.
   if (filters.mode !== 'and' && filters.filters.length > 1) return false;
-  return scoping.some((f) => (f.operator ?? 'eq') === 'eq'
-    && f.values.length > 0
-    && f.values.every((v) => typeof v === 'string' && covered.has(v.toLowerCase())));
+  return scoping.some((f) => (f.operator ?? 'eq') === 'eq' && isCovered(f.values));
 };
+
+/**
+ * Replaces the widget's own type restriction with the single type the bucket
+ * isolates, so the destination can be the dedicated list of that type.
+ */
+const withEntityType = (filters: FilterGroup | null, entityType: string): FilterGroup => ({
+  mode: 'and',
+  filters: [
+    ...(filters?.filters ?? []).filter((f) => f.key !== 'entity_type'),
+    { key: 'entity_type', values: [entityType], operator: 'eq', mode: 'or' },
+  ],
+  filterGroups: filters?.filterGroups ?? [],
+});
 
 /**
  * Turns a clicked widget surface into a link to a list reproducing exactly the
  * displayed number, or null when exactness cannot be guaranteed.
  */
 export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
-  const { perspective, dataSelection, range, interval, bucket, filterKeysSchema, stixCoreRelationshipTypes } = input;
+  const { perspective, dataSelection, range, interval, bucket, filterKeysSchema, subtypesByAbstractType } = input;
 
   const widgetFilters = (dataSelection.filters ?? null) as FilterGroup | null;
   if (!assertRepresentable(widgetFilters)) return null;
-
-  if (perspective === 'relationships' && !isWithinCoreRelationships(widgetFilters, stixCoreRelationshipTypes)) {
-    return null;
-  }
 
   // A "distinct" audit selection counts values of a field, not documents:
   // `auditsNumber` switches to `elCardinalityCount` (log.ts:68) and the same
@@ -72,8 +95,27 @@ export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
   // UNIQUE_COUNT_ESTIMATION_THRESHOLD the cardinality is not even exact.
   if (dataSelection.unique) return null;
 
-  const destination = resolveListRoute(perspective, widgetFilters);
+  // Outside the relationships perspective, where the aggregation runs on the
+  // connections of each relationship, an `entity_type` bucket names the type of
+  // the counted documents themselves.
+  const bucketEntityType = perspective !== 'relationships'
+    && dataSelection.attribute === 'entity_type'
+    && bucket.kind === 'distribution'
+    && typeof bucket.rawValue === 'string'
+    && bucket.rawValue !== ''
+    ? bucket.rawValue
+    : null;
+
+  const destination = resolveListRoute(
+    perspective,
+    bucketEntityType ? withEntityType(widgetFilters, bucketEntityType) : widgetFilters,
+  );
   if (!destination) return null;
+
+  if (destination.requiresScopeProof
+    && !isWithinDestinationScope(widgetFilters, bucketEntityType, destination.scopeTypes, subtypesByAbstractType)) {
+    return null;
+  }
 
   const dateAttribute = dataSelection.date_attribute || 'created_at';
 
@@ -85,7 +127,7 @@ export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
     bucketFilters = buildBucketValueFilter(
       { attribute: dataSelection.attribute ?? '', perspective, isTo: dataSelection.isTo },
       bucket,
-      (widgetFilters?.filters.find((f) => f.key === 'entity_type')?.values as string[]) ?? [],
+      destination,
       filterKeysSchema,
     );
   }

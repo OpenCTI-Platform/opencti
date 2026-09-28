@@ -4,11 +4,19 @@ import { resolveDrilldownLink } from './widgetDrilldown';
 import type { DrilldownInput, FilterGroup } from './widgetDrilldown-types';
 import type { Filter } from '../../filters/filtersHelpers-types';
 
+// Mirrors the real schema: `entity_type` is deleted from every concrete type
+// and only survives on the abstract ones (`filterKeysSchema.ts:545`).
 const SCHEMA = new Map([
-  ['Stix-Core-Object', new Map([
+  ['Stix-Domain-Object', new Map([
     ['entity_type', {} as never], ['createdBy', {} as never], ['created_at', {} as never],
   ])],
+  ['Stix-Cyber-Observable', new Map([
+    ['entity_type', {} as never], ['createdBy', {} as never], ['created_at', {} as never],
+  ])],
+  ['Malware', new Map([['createdBy', {} as never], ['created_at', {} as never]])],
 ]);
+
+const SDO_TYPES = ['Malware', 'Tool', 'Report', 'Intrusion-Set', 'Campaign'];
 
 const parseFilters = (link: string): FilterGroup => {
   const raw = new URLSearchParams(link.split('?')[1]).get('filters');
@@ -47,7 +55,11 @@ const baseInput = (overrides: Partial<DrilldownInput> = {}): DrilldownInput => (
   interval: 'month',
   bucket: { kind: 'timeSeries', date: apiBucketDate('2024-03-01') },
   filterKeysSchema: SCHEMA,
-  stixCoreRelationshipTypes: ['targets', 'uses', 'attributed-to'],
+  subtypesByAbstractType: {
+    'Stix-Domain-Object': SDO_TYPES,
+    'Stix-Cyber-Observable': ['IPv4-Addr', 'Url'],
+    'stix-core-relationship': ['targets', 'uses', 'attributed-to'],
+  },
   ...overrides,
 });
 
@@ -97,7 +109,12 @@ describe('resolveDrilldownLink', () => {
 
   it('adds the distribution value filter', () => {
     const input = baseInput({
-      dataSelection: { perspective: 'entities', date_attribute: 'created_at', attribute: 'created-by.internal_id', filters: null } as never,
+      dataSelection: {
+        perspective: 'entities',
+        date_attribute: 'created_at',
+        attribute: 'created-by.internal_id',
+        filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware', 'Report'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+      } as never,
       bucket: { kind: 'distribution', rawValue: 'author-1', entityId: 'author-1' },
     });
     const link = resolveDrilldownLink(input) as string;
@@ -108,7 +125,12 @@ describe('resolveDrilldownLink', () => {
 
   it('applies the widget range to a distribution bucket', () => {
     const input = baseInput({
-      dataSelection: { perspective: 'entities', date_attribute: 'created_at', attribute: 'created-by.internal_id', filters: null } as never,
+      dataSelection: {
+        perspective: 'entities',
+        date_attribute: 'created_at',
+        attribute: 'created-by.internal_id',
+        filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware', 'Report'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+      } as never,
       bucket: { kind: 'distribution', rawValue: 'author-1', entityId: 'author-1' },
       range: { startDate: '2024-01-01T00:00:00.000Z', endDate: '2024-06-01T00:00:00.000Z' },
     });
@@ -117,10 +139,13 @@ describe('resolveDrilldownLink', () => {
     expect(dates.map((f) => f.operator)).toEqual(['gt', 'lt']);
   });
 
+  // Expressed on the audit log, the one destination holding exactly what its
+  // widget counts, so the assertion is about nesting and nothing else.
   it('never merges the bucket filter into a widget filter group using the or mode', () => {
     const input = baseInput({
+      perspective: 'audits',
       dataSelection: {
-        perspective: 'entities',
+        perspective: 'audits',
         date_attribute: 'created_at',
         filters: {
           mode: 'or',
@@ -357,5 +382,96 @@ describe('resolveDrilldownLink on a relationship population the list cannot hold
     expect(resolveDrilldownLink(labelsWidget([
       { key: 'entity_type', values: ['stix-core-relationship'], operator: 'not_eq', mode: 'or' },
     ]))).toBeNull();
+  });
+});
+
+/**
+ * `entity_type` is not a filter key of any concrete type (`filterKeysSchema.ts:545`),
+ * so checking the key against the *widget* types made every entity_type
+ * distribution inert. The question only makes sense at the destination, which
+ * pins abstract types -- and for a single type, the bucket names the dedicated
+ * list itself.
+ */
+describe('resolveDrilldownLink on an entity_type distribution', () => {
+  const onEntityType = (values: string[], bucketValue: string) => baseInput({
+    dataSelection: {
+      perspective: 'entities',
+      date_attribute: 'created_at',
+      attribute: 'entity_type',
+      filters: { mode: 'and', filters: [{ key: 'entity_type', values, operator: 'eq', mode: 'or' }], filterGroups: [] },
+    } as never,
+    bucket: { kind: 'distribution', rawValue: bucketValue, entityId: null },
+  });
+
+  it('opens the dedicated list of the clicked type', () => {
+    const link = resolveDrilldownLink(onEntityType(['Malware', 'Report'], 'Malware')) as string;
+    expect(link.startsWith('/dashboard/arsenal/malwares?filters=')).toBe(true);
+    // The destination pins Malware itself, so repeating it would be dropped anyway.
+    expect(allFilters(parseFilters(link)).some((f) => f.key === 'entity_type')).toBe(false);
+  });
+
+  it('opens the observables list with the clicked type kept, that list being shared', () => {
+    const link = resolveDrilldownLink(onEntityType(['Malware', 'IPv4-Addr'], 'IPv4-Addr')) as string;
+    expect(link.startsWith('/dashboard/observations/observables?filters=')).toBe(true);
+    expect(allFilters(parseFilters(link))).toContainEqual(
+      expect.objectContaining({ key: 'entity_type', values: ['IPv4-Addr'] }),
+    );
+  });
+
+  it('works without any widget type restriction, the bucket pinning the type', () => {
+    const input = baseInput({
+      dataSelection: { perspective: 'entities', date_attribute: 'created_at', attribute: 'entity_type', filters: null } as never,
+      bucket: { kind: 'distribution', rawValue: 'Malware', entityId: null },
+    });
+    expect((resolveDrilldownLink(input) as string).startsWith('/dashboard/arsenal/malwares?')).toBe(true);
+  });
+
+  it('refuses a type the platform does not know', () => {
+    expect(resolveDrilldownLink(onEntityType(['Malware', 'Report'], 'Some-Custom-Type'))).toBeNull();
+  });
+});
+
+/**
+ * The entities list queries `stixDomainObjects` (`Entities.tsx:45`) while the
+ * widget aggregates every `Stix-Core-Object`: without a type restriction the
+ * observables counted by the widget would be missing from the list.
+ */
+describe('resolveDrilldownLink on an entity population the list cannot hold', () => {
+  const byAuthor = (filters: FilterGroup | null) => baseInput({
+    dataSelection: {
+      perspective: 'entities',
+      date_attribute: 'created_at',
+      attribute: 'created-by.internal_id',
+      filters,
+    } as never,
+    bucket: { kind: 'distribution', rawValue: 'author-1', entityId: 'author-1' },
+  });
+
+  it('refuses an unrestricted widget', () => {
+    expect(resolveDrilldownLink(byAuthor(null))).toBeNull();
+  });
+
+  it('refuses a widget spanning observables', () => {
+    expect(resolveDrilldownLink(byAuthor({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware', 'IPv4-Addr'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    }))).toBeNull();
+  });
+
+  it('accepts a widget restricted to stix domain objects', () => {
+    expect(resolveDrilldownLink(byAuthor({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware', 'Report'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    }))).not.toBeNull();
+  });
+
+  it('accepts the abstract Stix-Domain-Object type itself', () => {
+    expect(resolveDrilldownLink(byAuthor({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Stix-Domain-Object'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    }))).not.toBeNull();
   });
 });

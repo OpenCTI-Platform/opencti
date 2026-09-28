@@ -1,6 +1,7 @@
 import moment from 'moment';
+import { getAvailableFilterKeysForEntityTypes } from '../../filters/filtersUtils';
 import type { Filter } from '../../filters/filtersHelpers-types';
-import type { DrilldownBucket, FilterGroup, FilterKeysSchema, WidgetDateRange } from './widgetDrilldown-types';
+import type { DrilldownBucket, FilterGroup, FilterKeysSchema, ListRouteResolution, WidgetDateRange } from './widgetDrilldown-types';
 
 const INTERVAL_UNITS: Record<string, moment.unitOfTime.DurationConstructor> = {
   day: 'day',
@@ -132,10 +133,21 @@ const NON_TRANSPOSABLE_KEYS = ['dynamicFrom', 'dynamicTo'];
  */
 const MISSING_VALUE_BUCKET = 'unknown';
 
-const isFilterKeySupported = (filterKey: string, entityTypes: string[], schema: FilterKeysSchema) => {
+/**
+ * Asks the very question the destination page will ask.
+ *
+ * Every list runs the incoming filters through
+ * `removeIdAndIncorrectKeysFromFilterGroupObject` against the entity types *it*
+ * pins, silently dropping anything unavailable there -- which would change the
+ * count. So the support check must be scoped to the destination, never to the
+ * widget: `entity_type` for instance is deleted from the schema of every
+ * concrete type (`filterKeysSchema.ts:545`), yet the entities list, scoped to
+ * the abstract `Stix-Domain-Object`, accepts it perfectly well.
+ */
+const isFilterKeySupported = (filterKey: string, scopeTypes: string[], schema: FilterKeysSchema) => {
   if (schema.size === 0) return true; // schema not loaded yet: do not block on an empty map
-  const scopes = entityTypes.length > 0 ? entityTypes : [...schema.keys()];
-  return scopes.some((type) => schema.get(type)?.has(filterKey));
+  const scopes = scopeTypes.length > 0 ? scopeTypes : [...schema.keys()];
+  return getAvailableFilterKeysForEntityTypes(schema, scopes, true).includes(filterKey);
 };
 
 /**
@@ -146,7 +158,7 @@ const isFilterKeySupported = (filterKey: string, entityTypes: string[], schema: 
 export const buildBucketValueFilter = (
   selection: BucketSelection,
   bucket: DrilldownBucket,
-  entityTypes: string[],
+  destination: ListRouteResolution,
   filterKeysSchema: FilterKeysSchema,
 ): Filter[] | null => {
   if (bucket.kind !== 'distribution') return [];
@@ -159,7 +171,16 @@ export const buildBucketValueFilter = (
   const value = mapping.source === 'entityId' ? bucket.entityId : bucket.rawValue;
   if (!value) return null;
 
-  if (!isFilterKeySupported(mapping.key, entityTypes, filterKeysSchema)) return null;
+  // A dedicated destination pins that very type on its own query, so the bucket
+  // is already isolated. Keeping the filter would be redundant, and the page
+  // would drop it anyway: `entity_type` is not a filter key of a concrete type.
+  if (mapping.key === 'entity_type'
+    && destination.consumedEntityType
+    && value.toLowerCase() === destination.consumedEntityType.toLowerCase()) {
+    return [];
+  }
+
+  if (!isFilterKeySupported(mapping.key, destination.scopeTypes, filterKeysSchema)) return null;
 
   return [{ key: mapping.key, values: [value], operator: 'eq', mode: 'or' }];
 };
