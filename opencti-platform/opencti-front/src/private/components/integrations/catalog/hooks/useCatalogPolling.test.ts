@@ -285,4 +285,62 @@ describe('useCatalogPolling', () => {
     });
     expect(onChanged).toHaveBeenCalledTimes(2);
   });
+
+  it('ignores a check started by a previous effect run when it resolves after the re-run', async () => {
+    const deferredRevisionCheck = createDeferred<RevisionsPayload>();
+    const nextResponses: RevisionsPayload[] = [
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] },
+      { catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] },
+    ];
+    mocks.fetchQuery
+      .mockImplementationOnce(() => ({
+        toPromise: () => Promise.resolve({ catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-1' }] }),
+      }))
+      .mockImplementationOnce(() => ({
+        toPromise: () => deferredRevisionCheck.promise,
+      }))
+      .mockImplementation(() => ({
+        toPromise: () => Promise.resolve(nextResponses.shift() ?? nextResponses[nextResponses.length - 1]),
+      }));
+    const onChangedFirst = vi.fn();
+    const onChangedSecond = vi.fn();
+
+    const { rerender } = renderHook(
+      ({ onChanged }) => useCatalogPolling({ enabled: true, onCatalogRevisionsChanged: onChanged }),
+      { initialProps: { onChanged: onChangedFirst } },
+    );
+    await act(async () => {
+      await flushPromises();
+    });
+
+    // second check is in flight when the callback changes and the effect re-runs
+    await act(async () => {
+      vi.advanceTimersByTime(CATALOG_POLLING_INTERVAL_MS);
+      await flushPromises();
+    });
+    expect(mocks.fetchQuery).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      rerender({ onChanged: onChangedSecond });
+      await flushPromises();
+    });
+    // the new run checks immediately instead of being blocked by the previous run's in-flight check
+    expect(mocks.fetchQuery).toHaveBeenCalledTimes(3);
+
+    // the previous run's check resolves with a change: it must not act, nor schedule a timer
+    await act(async () => {
+      deferredRevisionCheck.resolve({ catalogsRevisions: [{ catalog_id: 'catalog-1', revision: 'rev-2' }] });
+      await flushPromises();
+    });
+    expect(onChangedFirst).not.toHaveBeenCalled();
+
+    // only the new run keeps polling, and it uses the new callback
+    await act(async () => {
+      vi.advanceTimersByTime(CATALOG_POLLING_INTERVAL_MS);
+      await flushPromises();
+    });
+    expect(mocks.fetchQuery).toHaveBeenCalledTimes(4);
+    expect(onChangedFirst).not.toHaveBeenCalled();
+    expect(onChangedSecond).toHaveBeenCalledTimes(1);
+  });
 });

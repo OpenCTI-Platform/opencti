@@ -30,10 +30,10 @@ const haveRevisionsChanged = (baseline: RevisionByCatalogId, next: RevisionByCat
 };
 
 const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPollingProps) => {
+  // The baseline and the paused state survive effect re-runs; everything tied to
+  // a single run (timer, in-flight check, cancellation) is local to that run so a
+  // check started by a previous run can never act after its cleanup.
   const baselineRef = useRef<RevisionByCatalogId | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isUnmountedRef = useRef(false);
-  const isCheckInFlightRef = useRef(false);
   const wasPausedRef = useRef(false);
 
   useEffect(() => {
@@ -41,30 +41,32 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
       return undefined;
     }
 
-    isUnmountedRef.current = false;
+    let cancelled = false;
+    let isCheckInFlight = false;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
 
     const clearScheduledCheck = () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
       }
     };
 
     const scheduleNextCheck = () => {
-      if (isUnmountedRef.current || document.hidden) {
+      if (cancelled || document.hidden) {
         return;
       }
       clearScheduledCheck();
-      timeoutRef.current = setTimeout(() => {
+      timeout = setTimeout(() => {
         void checkCatalogRevisions();
       }, CATALOG_POLLING_INTERVAL_MS);
     };
 
     const checkCatalogRevisions = async () => {
-      if (isCheckInFlightRef.current || isUnmountedRef.current || document.hidden) {
+      if (isCheckInFlight || cancelled || document.hidden) {
         return;
       }
-      isCheckInFlightRef.current = true;
+      isCheckInFlight = true;
       try {
         const result = await fetchQuery<IngestionConnectorsCatalogRevisionsQuery>(
           ingestionConnectorsCatalogRevisionsQuery,
@@ -72,7 +74,7 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
           { fetchPolicy: 'network-only' },
         ).toPromise().catch(() => null);
 
-        if (!result || isUnmountedRef.current) {
+        if (!result || cancelled) {
           return;
         }
 
@@ -95,7 +97,7 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
         }
         baselineRef.current = nextBaseline;
       } finally {
-        isCheckInFlightRef.current = false;
+        isCheckInFlight = false;
         scheduleNextCheck();
       }
     };
@@ -116,7 +118,7 @@ const useCatalogPolling = ({ enabled, onCatalogRevisionsChanged }: UseCatalogPol
     void checkCatalogRevisions();
 
     return () => {
-      isUnmountedRef.current = true;
+      cancelled = true;
       clearScheduledCheck();
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
