@@ -220,6 +220,16 @@ const ipWhitelistMiddleware = async (req, res, next) => {
       if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
         return next();
       }
+      // A connector can authenticate with an excluded bypass token while impersonating
+      // another user via opencti-applicant-id.
+      // In this case, also check the real token/session identity.
+      const realAuthId = authenticatedUser.origin?.real_authentication_id;
+      if (realAuthId && realAuthId !== authenticatedUser.id) {
+        const realUser = platformUsers.get(realAuthId);
+        if (realUser && isUserExcluded(realUser, exclusionIds)) {
+          return next();
+        }
+      }
     }
 
     // Authenticated but not excluded and IP not in whitelist → block
