@@ -39,7 +39,7 @@ export const dataSanityForceRunHandler = async (context: AuthContext) => {
     } catch (e: any) {
       const executionTimeMs = Date.now() - startTime;
       const errorMessage = e?.message || String(e);
-      logApp.error('[DATA_SANITY_MANAGER] Force_run data sanity operation failed', { operation: operation.identifier, error: e });
+      logApp.warn('[DATA_SANITY_MANAGER] Force_run data sanity operation failed', { operation: operation.identifier, error: e });
       await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, false, errorMessage).catch(() => {});
     }
   }
@@ -68,7 +68,7 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
     } catch (e: any) {
       const executionTimeMs = Date.now() - startTime;
       const errorMessage = e?.message || String(e);
-      logApp.error('[DATA_SANITY_MANAGER] Data sanity operation failed', { operation: operation.identifier, error: e });
+      logApp.warn('[DATA_SANITY_MANAGER] Data sanity operation failed', { operation: operation.identifier, error: e });
       await markOperationAsExecuted(context, DATA_SANITY_MANAGER_USER, operation.identifier, executionTimeMs, false, errorMessage).catch(() => {});
     }
   }

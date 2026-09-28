@@ -51,7 +51,7 @@ export const workflowStatusCleanupHandler = async () => {
         await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, WORKFLOW_MANAGER_USER);
       }
     } catch (e) {
-      logApp.error('[OPENCTI-MODULE] Workflow status cleanup error', { cause: e, manager: 'WORKFLOW_STATUS_CLEANUP_MANAGER', id: status.id, errorCount });
+      logApp.warn('[OPENCTI-MODULE] Workflow status cleanup error', { cause: e, manager: 'WORKFLOW_STATUS_CLEANUP_MANAGER', id: status.id, errorCount });
       errorCount += 1;
     } finally {
       await lock.unlock();

@@ -134,12 +134,7 @@ export async function handleUINotification(
     is_read: false,
   } as NotificationAddInput;
 
-  try {
-    await addNotification(context, SYSTEM_USER, notificationPayload);
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager add notification error', { cause: error, manager: 'PUBLISHER_MANAGER' });
-    throw error;
-  }
+  await addNotification(context, SYSTEM_USER, notificationPayload);
 }
 
 export async function handleEmailNotification(
@@ -315,7 +310,7 @@ export const processNotificationEvent = async (
     // There is no await in purpose; the goal is to send notification and continue without waiting result.
     internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap)
       .catch((reason) => {
-        logApp.error('[OPENCTI-MODULE] Publisher manager notification processing error', {
+        logApp.warn('[OPENCTI-MODULE] Publisher manager notification processing error', {
           cause: reason,
           manager: 'PUBLISHER_MANAGER',
           notifierType: notifier.notifier_connector_id,
@@ -436,7 +431,7 @@ const processBufferedEvents = async (
             triggersInDataToSend as BasicStoreEntityTrigger[],
             usersFromCache,
           ).catch((reason) => {
-            logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification processing error', {
+            logApp.warn('[OPENCTI-MODULE] Publisher manager buffered notification processing error', {
               cause: reason,
               manager: 'PUBLISHER_MANAGER',
               notifierType: notifierEntity.notifier_connector_id,
@@ -445,7 +440,7 @@ const processBufferedEvents = async (
             });
           });
         } else {
-          logApp.error('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
+          logApp.warn('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
         }
       }
     }

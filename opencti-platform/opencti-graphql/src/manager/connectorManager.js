@@ -55,7 +55,7 @@ const closeOldWorks = async (context, connector) => {
             logApp.info('Work completed by force due to age', { workId: element.internal_id });
           }
         } catch (e) {
-          logApp.error('[OPENCTI-MODULE] Connector manager error processing work closing', { cause: e });
+          logApp.warn('[OPENCTI-MODULE] Connector manager error processing work closing', { cause: e });
         }
       }
     };
