@@ -47,7 +47,7 @@ describe('buildStixRelationshipsTimelineData', () => {
     expect(timelineData).toHaveLength(1);
     expect(timelineData[0]?.value.id).toBe('to-1');
     expect(timelineData[0]?.value.created).toBe('2020-01-01T00:00:00.000Z');
-    expect(timelineData[0]?.value[RELATIONSHIP_TIMELINE_DATE_KEY]).toBe('2024-02-01T00:00:00.000Z');
+    expect((timelineData[0]?.value as Record<string, unknown>)[RELATIONSHIP_TIMELINE_DATE_KEY]).toBe('2024-02-01T00:00:00.000Z');
   });
 
   it('supports non-created relationship date attributes (e.g. start_time)', () => {
@@ -74,6 +74,6 @@ describe('buildStixRelationshipsTimelineData', () => {
     );
 
     expect(timelineData).toHaveLength(1);
-    expect(timelineData[0]?.value[RELATIONSHIP_TIMELINE_DATE_KEY]).toBe('2024-03-01T00:00:00.000Z');
+    expect((timelineData[0]?.value as Record<string, unknown>)[RELATIONSHIP_TIMELINE_DATE_KEY]).toBe('2024-03-01T00:00:00.000Z');
   });
 });

@@ -131,6 +131,7 @@ import {
   isDateNumericOrBooleanAttribute,
   isNumericAttribute,
   isObjectFlatAttribute,
+  isObjectRawAttribute,
   schemaAttributesDefinition,
   validateDataBeforeIndexing,
 } from '../schema/schema-attributes';
@@ -3204,7 +3205,7 @@ export const elLoadBy = async <T extends BasicStoreBase>(
   user: AuthUser,
   field: string,
   value: any,
-  type = null,
+  type: string | null = null,
   indices: string[] = READ_DATA_INDICES,
 ) => {
   const filters = {
@@ -4493,7 +4494,7 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
     } else if (isNumericAttribute(key)) {
       thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
-    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
+    } else if (R.is(Object, value) && Object.keys(value).length > 0 && !isObjectRawAttribute(key)) { // For complex object, prepare inner elements
       thing[key] = await prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default
       thing[key] = value.trim();
@@ -4978,6 +4979,23 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
     return oebp(engineIndicesStats)._all.primaries;
   };
   return retryElOperations(statsOperation);
+};
+
+// Branches are kept separate: ELK types the metric as an array, OpenSearch as a string,
+// and their client signatures are not mutually assignable.
+// Scoped to `${ES_INDEX_PREFIX}*` (not '*'): on a cluster shared with other applications,
+// a plain wildcard would sum every index in the cluster, not just OpenCTI's own size.
+const fetchEngineUsedSize = async (): Promise<number> => {
+  if (engine instanceof ElkClient) {
+    const engineIndicesStats = await engine.indices.stats({ index: `${ES_INDEX_PREFIX}*`, metric: ['store'], expand_wildcards: 'all' as any });
+    return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
+  }
+  const engineIndicesStats = await engine.indices.stats({ index: `${ES_INDEX_PREFIX}*`, metric: 'store', expand_wildcards: 'all' as any });
+  return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
+};
+
+export const getEngineUsedSize = async (): Promise<number> => {
+  return retryElOperations(fetchEngineUsedSize);
 };
 
 export const isEngineAlive = async () => {

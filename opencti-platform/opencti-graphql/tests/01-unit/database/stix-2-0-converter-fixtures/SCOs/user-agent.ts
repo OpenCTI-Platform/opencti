@@ -28,4 +28,3 @@ export const EXPECTED_USER_AGENT = {
   score: 50,
   external_references: [],
 };
-

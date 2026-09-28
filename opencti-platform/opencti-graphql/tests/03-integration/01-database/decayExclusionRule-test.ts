@@ -1,11 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  checkDecayExclusionRules,
-  type ResolvedDecayExclusionRule,
-} from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
-import {
-  type BasicStoreEntityDecayExclusionRule,
-} from '../../../src/modules/decayRule/exclusions/decayExclusionRule-types'
+import { checkDecayExclusionRules, type ResolvedDecayExclusionRule } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
+import { type BasicStoreEntityDecayExclusionRule } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-types';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 const decayExclusionRuleEmptyFilterGroupModel = {
@@ -54,7 +49,7 @@ const resolvedIndicator = {
   objectLabel: null,
   externalReferences: [],
   createObservables: false,
-  entity_type: 'Indicator'
+  entity_type: 'Indicator',
 } as ResolvedDecayExclusionRule;
 
 const decayExclusionRuleModelList = [

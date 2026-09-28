@@ -19,6 +19,7 @@ import { type AgentOption } from '../../../../utils/ai/agentApi';
 import useAgentStream from '../../../../utils/ai/useAgentStream';
 import { useChatbot } from '../../chatbox/ChatbotContext';
 import XtmOneAISummaryDisplay from './XtmOneAISummaryDisplay';
+import AISummaryContent from './AISummaryContent';
 
 const subscription = graphql`
   subscription AISummaryActivitySubscription($id: ID!) {
@@ -118,7 +119,9 @@ const AISummaryActivityComponent = ({
   return (
     <>
       {generateTrend(result?.stixCoreObjectAskAiActivity?.trend ?? 'unknown')}
-      {parse(content)}
+      <AISummaryContent loading={loading}>
+        {parse(content)}
+      </AISummaryContent>
       {!loading && (
         <>
           <Divider />

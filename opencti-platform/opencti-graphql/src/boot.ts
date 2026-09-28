@@ -7,6 +7,7 @@ import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
+import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
 
 // region platform start and stop
 // Track the in-flight startup so a shutdown signal received while the platform is still
@@ -61,6 +62,12 @@ const doPlatformStart = async () => {
       logApp.error('[OPENCTI] Platform default initialization failed', { cause: platformError });
       throw platformError;
     }
+    // Start the platform health monitoring before the API so /health can answer from collected state
+    try {
+      await startPlatformHealthMonitor();
+    } catch (healthMonitorError) {
+      logApp.error('[OPENCTI] Platform health monitoring startup failed', { cause: healthMonitorError });
+    }
     // Init the modules
     try {
       await startModules();
@@ -82,6 +89,8 @@ export const platformStop = async () => {
   await stopLivenessServer();
   // Stop the engine health monitoring CRON
   stopEngineHealthMonitor();
+  // Stop the platform health monitoring
+  stopPlatformHealthMonitor();
   // Shutdown the cache manager
   await cacheManager.shutdown();
   // Destroy the modules

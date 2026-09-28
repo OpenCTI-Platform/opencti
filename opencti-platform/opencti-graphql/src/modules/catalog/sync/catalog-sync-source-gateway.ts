@@ -1,0 +1,375 @@
+import { readFile } from 'node:fs/promises';
+import { logApp } from '../../../config/conf';
+import { isEmptyField } from '../../../database/utils';
+import { UnsupportedError } from '../../../config/errors';
+import { getOrCompileValidator } from '../catalog-domain';
+import { getHttpClient } from '../../../utils/http-client';
+import type { CatalogContract, CatalogDefinition, TypedProperty } from '../catalog-types';
+import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
+
+/**
+ * Data Transfer Objects (DTOs), in several versions.
+ * - V0: the format used in the embedded catalog manifest, before the decoupling project
+ * - V1: the format specced during the decoupling project
+ */
+const MANIFEST_SCHEMA_VERSION_1 = '1';
+
+type CatalogContractDtoV0 = CatalogContract;
+type CatalogDtoV0 = CatalogDefinition;
+type CatalogContractDtoV1 = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo: string | null;
+  use_cases: string[];
+  verified: boolean;
+  last_verified_date: string;
+  subscription_link: string | null;
+  source_code: string | null;
+  manager_supported: boolean;
+  support_version: string | null;
+  license_type: 'Free' | 'Commercial' | null;
+  contact: string | null;
+  solution_categories: string[];
+  version: string;
+  image_name: string;
+  image_type: string;
+  additional_properties: Record<string, unknown>;
+  config_schema: Record<string, unknown>;
+};
+type CatalogDtoV1 = {
+  id: string;
+  name: string;
+  description: string;
+  manifest_schema_version: typeof MANIFEST_SCHEMA_VERSION_1;
+  manifest_version: string;
+  product_version: string;
+  contracts: Array<CatalogContractDtoV1>;
+};
+
+interface CatalogDtoWithExplicitSchemaVersion {
+  manifest_schema_version: string;
+}
+
+interface CatalogSyncSourceAdapter {
+  fetch: () => Promise<unknown>;
+  fetchRevisionHint?: () => Promise<string | undefined>;
+}
+
+const DEFAULT_REMOTE_CATALOG_TIMEOUT_MS = 30000;
+export type CatalogSyncSourceGatewayOptions = {
+  remoteCatalogTimeoutMs?: number;
+};
+
+const resolveRemoteCatalogTimeoutMs = (options?: CatalogSyncSourceGatewayOptions) => {
+  const configuredTimeout = Number(options?.remoteCatalogTimeoutMs);
+  if (!Number.isFinite(configuredTimeout) || configuredTimeout <= 0) {
+    return DEFAULT_REMOTE_CATALOG_TIMEOUT_MS;
+  }
+  return configuredTimeout;
+};
+
+const withAbortTimeout = async <T>(timeoutMs: number, call: (signal: AbortSignal) => Promise<T>): Promise<T> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await call(controller.signal);
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+class EmbeddedCatalogSyncSource implements CatalogSyncSourceAdapter {
+  constructor(_sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'embedded' }>) {}
+
+  async fetch() {
+    const data = await import('../../../__generated__/opencti-manifest.json');
+    return data.default as unknown as CatalogDefinition;
+  }
+}
+
+class LocalCatalogSyncSource implements CatalogSyncSourceAdapter {
+  constructor(private sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'local' }>) {}
+
+  async fetch() {
+    const catalog = await readFile(this.sourceConfig.filepath, { encoding: 'utf8', flag: 'r' });
+    return JSON.parse(catalog);
+  }
+}
+
+class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
+  constructor(
+    private sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'remote' }>,
+    private options?: CatalogSyncSourceGatewayOptions,
+  ) {}
+
+  async fetch() {
+    const timeout = resolveRemoteCatalogTimeoutMs(this.options);
+    const client = getHttpClient({ responseType: 'text', timeout });
+    const response = await withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal }));
+    return JSON.parse(response.data);
+  }
+
+  async fetchRevisionHint() {
+    const timeout = resolveRemoteCatalogTimeoutMs(this.options);
+    const client = getHttpClient({ responseType: 'text', timeout });
+    const response = await withAbortTimeout(timeout, (signal) => client.head(this.sourceConfig.uri, { signal }));
+    const etagHeader = response.headers?.etag;
+    const etag = Array.isArray(etagHeader) ? etagHeader[0] : etagHeader;
+    if (!etag || typeof etag !== 'string') {
+      return undefined;
+    }
+    return etag;
+  }
+}
+
+const getCatalogSourceAdapter = (
+  config: CatalogSyncSourceConfig,
+  options?: CatalogSyncSourceGatewayOptions,
+): CatalogSyncSourceAdapter => {
+  switch (config.kind) {
+    case 'local': {
+      return new LocalCatalogSyncSource(config);
+    }
+    case 'embedded': {
+      return new EmbeddedCatalogSyncSource(config);
+    }
+    case 'remote': {
+      return new RemoteCatalogSyncSource(config, options);
+    }
+    default:
+      throw UnsupportedError(`Unknown catalog sync source kind (${JSON.stringify(config)})`);
+  };
+};
+
+const validateSyncSource = (syncSource: CatalogSyncSource) => {
+  // Validate each contract
+  for (let contractIndex = 0; contractIndex < syncSource.contracts.length; contractIndex += 1) {
+    const contract = syncSource.contracts[contractIndex];
+    if (contract.manager_supported) {
+      if (!contract.config_schema) {
+        logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
+      } else {
+        if (isEmptyField(contract.container_image)) {
+          throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
+        }
+        if (isEmptyField(contract.container_type)) {
+          throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
+        }
+
+        if (contract.config_schema) {
+          const jsonValidation = {
+            type: contract.config_schema.type,
+            properties: contract.config_schema.properties,
+            required: contract.config_schema.required,
+            additionalProperties: contract.config_schema.additionalProperties,
+          };
+          try {
+            getOrCompileValidator(`catalog-contract:${syncSource.id}:${contract.slug}`, jsonValidation);
+          } catch (err) {
+            throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+          }
+        }
+      }
+    }
+  }
+};
+
+const DEFAULT_CONFIG_SCHEMA: CatalogContractDtoV0['config_schema'] = {
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+  $id: '',
+  type: 'object',
+  properties: {},
+  required: [],
+  additionalProperties: true,
+};
+
+const DEFAULT_PLAYBOOK_SUPPORTED = false;
+
+const DEFAULT_MAX_CONFIDENCE = 100;
+
+const normalizeConfigSchema = (configSchema: unknown): CatalogContractDtoV0['config_schema'] => {
+  if (!configSchema || typeof configSchema !== 'object' || Array.isArray(configSchema)) {
+    return DEFAULT_CONFIG_SCHEMA;
+  }
+  const schema = configSchema as Record<string, unknown>;
+  return {
+    $schema: typeof schema.$schema === 'string' ? schema.$schema : DEFAULT_CONFIG_SCHEMA.$schema,
+    $id: typeof schema.$id === 'string' ? schema.$id : DEFAULT_CONFIG_SCHEMA.$id,
+    type: typeof schema.type === 'string' ? schema.type : DEFAULT_CONFIG_SCHEMA.type,
+    properties: schema.properties && typeof schema.properties === 'object' && !Array.isArray(schema.properties)
+      ? schema.properties as Record<string, TypedProperty>
+      : DEFAULT_CONFIG_SCHEMA.properties,
+    required: Array.isArray(schema.required)
+      ? schema.required.filter((item): item is string => typeof item === 'string')
+      : DEFAULT_CONFIG_SCHEMA.required,
+    additionalProperties: typeof schema.additionalProperties === 'boolean'
+      ? schema.additionalProperties
+      : DEFAULT_CONFIG_SCHEMA.additionalProperties,
+  };
+};
+
+const normalizeSupportVersion = (supportVersion: string | null | undefined): string | null => {
+  if (!supportVersion) {
+    return null;
+  }
+  const normalized = supportVersion.replace(/^\s*>=\s*/, '').trim();
+  return normalized.length > 0 ? normalized : null;
+};
+
+const mapCatalogContractDtoV1ToCatalogContractSyncSource = (contractDto: CatalogContractDtoV1): CatalogContractSyncSource => {
+  const playbook_supported = contractDto.additional_properties['playbook_supported'];
+  const max_confidence_level = contractDto.additional_properties['max_confidence_level'];
+  return {
+    id: contractDto.id,
+    title: contractDto.title,
+    slug: contractDto.slug,
+    description: contractDto.description,
+    short_description: contractDto.short_description,
+    logo: contractDto.logo,
+    use_cases: contractDto.use_cases,
+    verified: contractDto.verified,
+    last_verified_date: contractDto.last_verified_date,
+    playbook_supported:
+      typeof playbook_supported === 'boolean'
+        ? playbook_supported
+        : DEFAULT_PLAYBOOK_SUPPORTED,
+    max_confidence_level:
+      typeof max_confidence_level === 'number'
+        ? max_confidence_level
+        : DEFAULT_MAX_CONFIDENCE,
+    support_version: contractDto.support_version,
+    subscription_link: contractDto.subscription_link,
+    source_code: contractDto.source_code ?? '',
+    manager_supported: contractDto.manager_supported,
+    container_version: contractDto.version,
+    container_image: contractDto.image_name,
+    container_type: contractDto.image_type,
+    config_schema: normalizeConfigSchema(contractDto.config_schema),
+    license_type: contractDto.license_type,
+    solution_categories: contractDto.solution_categories,
+    contact: contractDto.contact,
+  };
+};
+
+const isCatalogDtoV1 = (catalog: CatalogDtoWithExplicitSchemaVersion): catalog is CatalogDtoV1 => {
+  return catalog.manifest_schema_version === MANIFEST_SCHEMA_VERSION_1;
+};
+
+const isCatalogDtoV0 = (catalog: unknown): catalog is CatalogDtoV0 => {
+  return typeof catalog === 'object'
+    && catalog !== null
+    && 'id' in catalog
+    && 'version' in catalog
+    && typeof catalog.id === 'string'
+    && typeof catalog.version === 'string';
+};
+
+const isCatalogDtoWithExplicitSchemaVersion = (
+  catalog: unknown,
+): catalog is CatalogDtoWithExplicitSchemaVersion => {
+  return typeof catalog === 'object'
+    && catalog !== null
+    && 'manifest_schema_version' in catalog
+    && typeof catalog.manifest_schema_version === 'string';
+};
+
+export const mapCatalogContractDtoToCatalogContractSyncSource = (
+  contractDto: CatalogContractDtoV0,
+): CatalogContractSyncSource => {
+  const normalizedSupportVersion = normalizeSupportVersion(contractDto.support_version);
+  return {
+    id: `${contractDto.slug}-${contractDto.container_version}`,
+    ...contractDto,
+    support_version: normalizedSupportVersion,
+  };
+};
+
+const mapCatalogDtoToCatalogSyncSource = (catalog: unknown): CatalogSyncSource => {
+  if (isCatalogDtoV0(catalog)) {
+    return mapCatalogDtoV0ToCatalogSyncSource(catalog);
+  }
+  if (!isCatalogDtoWithExplicitSchemaVersion(catalog)) {
+    throw UnsupportedError('Unrecognized catalog format: no manifest_schema_version');
+  }
+  if (isCatalogDtoV1(catalog)) {
+    return mapCatalogDtoV1ToCatalogSyncSource(catalog);
+  }
+  throw UnsupportedError('Unsupported catalog schema version', {
+    cause: {
+      manifest_schema_version: catalog.manifest_schema_version,
+    },
+  });
+};
+
+const mapCatalogDtoV1ToCatalogSyncSource = (catalog: CatalogDtoV1): CatalogSyncSource => {
+  return {
+    id: catalog.id,
+    name: catalog.name,
+    description: catalog.description,
+    product_version: catalog.product_version,
+    manifest_version: catalog.manifest_version,
+    manifest_schema_version: catalog.manifest_schema_version,
+    contracts: catalog.contracts.map((contractDto) => {
+      return mapCatalogContractDtoV1ToCatalogContractSyncSource(contractDto);
+    }),
+  };
+};
+
+const mapCatalogDtoV0ToCatalogSyncSource = (catalog: CatalogDtoV0): CatalogSyncSource => {
+  return {
+    ...catalog,
+    product_version: catalog.version,
+    manifest_version: null,
+    manifest_schema_version: '0' as const,
+    contracts: catalog.contracts.map(mapCatalogContractDtoToCatalogContractSyncSource),
+  };
+};
+
+export const fetchSourceCatalog = async (
+  sourceConfig: CatalogSyncSourceConfig,
+  options?: CatalogSyncSourceGatewayOptions,
+): Promise<CatalogSyncSource> => {
+  const adapter = getCatalogSourceAdapter(sourceConfig, options);
+  const raw = await adapter.fetch();
+  const syncSource = mapCatalogDtoToCatalogSyncSource(raw);
+  validateSyncSource(syncSource);
+  logApp.debug('[OPENCTI-MODULE] Fetched and validated catalog source', {
+    module: 'catalog',
+    sourceKind: sourceConfig.kind,
+    sourceUri: sourceConfig.uri,
+    catalogId: syncSource.id,
+    contractsCount: syncSource.contracts.length,
+    manifestSchemaVersion: syncSource.manifest_schema_version,
+    productVersion: syncSource.product_version,
+    manifestVersion: syncSource.manifest_version,
+  });
+  return syncSource;
+};
+
+export const fetchSourceCatalogRevisionHint = async (
+  sourceConfig: CatalogSyncSourceConfig,
+  options?: CatalogSyncSourceGatewayOptions,
+): Promise<string | undefined> => {
+  const adapter = getCatalogSourceAdapter(sourceConfig, options);
+  const revisionHint = await adapter.fetchRevisionHint?.();
+  if (sourceConfig.kind === 'remote') {
+    if (revisionHint) {
+      logApp.debug('[OPENCTI-MODULE] Fetched catalog source revision hint', {
+        module: 'catalog',
+        sourceKind: sourceConfig.kind,
+        sourceUri: sourceConfig.uri,
+        revisionHint,
+      });
+    } else {
+      logApp.debug('[OPENCTI-MODULE] Catalog source revision hint unavailable', {
+        module: 'catalog',
+        sourceKind: sourceConfig.kind,
+        sourceUri: sourceConfig.uri,
+      });
+    }
+  }
+  return revisionHint;
+};

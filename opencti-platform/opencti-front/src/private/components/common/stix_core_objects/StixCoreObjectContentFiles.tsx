@@ -20,7 +20,7 @@ import {
 import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/CreateFileForm';
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { useFormatter } from '../../../../components/i18n';
@@ -326,8 +326,8 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               scoName={stixCoreObjectName}
               scoEntityType={stixCoreObjectType}
               defaultValues={{
-                connector: BUILT_IN_FROM_TEMPLATE.value,
-                format: 'text/html',
+                connector: BUILT_IN_HTML_TO_PDF.value,
+                format: 'application/pdf',
               }}
               onExportCompleted={onFileChange}
               OpenFormComponent={({ onOpen }) => (

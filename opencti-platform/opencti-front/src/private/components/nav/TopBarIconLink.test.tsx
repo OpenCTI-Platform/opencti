@@ -7,7 +7,7 @@ import TopBarIconLink from './TopBarIconLink';
 const renderLink = (active: boolean) => testRender(
   <TopBarIconLink
     aria-label="Notifications"
-    to="/dashboard/profile/notifications/alerts"
+    to="/dashboard/profile/notifications"
     active={active}
     icon={<svg data-testid="glyph" />}
   />,
@@ -18,7 +18,7 @@ describe('TopBarIconLink', () => {
     renderLink(false);
     const link = screen.getByRole('link', { name: 'Notifications' });
     expect(link.tagName).toBe('A');
-    expect(link).toHaveAttribute('href', '/dashboard/profile/notifications/alerts');
+    expect(link).toHaveAttribute('href', '/dashboard/profile/notifications');
   });
 
   it('marks the current page and tints it from the library token', () => {
@@ -53,7 +53,7 @@ describe('TopBarIconLink', () => {
     const renderBadged = (unread: number, invisible = false) => testRender(
       <TopBarIconLink
         aria-label="Notifications"
-        to="/dashboard/profile/notifications/alerts"
+        to="/dashboard/profile/notifications"
         icon={<svg data-testid="glyph" />}
         badge={{ content: unread, dot: true, invisible, accessibleText: `${unread} unread` }}
       />,

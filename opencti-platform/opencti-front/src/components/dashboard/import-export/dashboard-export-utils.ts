@@ -1,6 +1,7 @@
 import fileDownload from 'js-file-download';
 import type { ExportableDashboardLike } from '../dashboard-types';
 import { MESSAGING$ } from '../../../relay/environment';
+import type { RelayError } from '../../../relay/relayTypes';
 
 interface getDashboardImportExportHandlerParams {
   onExport: (entityId: string) => Promise<string | null>;
@@ -28,7 +29,7 @@ export const getDashboardExportHandler = ({
       const fileName = `${year}${month}${day}_octi_${configType}_${entity.name}.json`;
       fileDownload(blob, fileName);
     } catch (error) {
-      MESSAGING$.notifyCustomRelayError(error, {
+      MESSAGING$.notifyCustomRelayError(error as RelayError, {
         name: 'An unknown error has occurred! Please try again later.',
       });
     }

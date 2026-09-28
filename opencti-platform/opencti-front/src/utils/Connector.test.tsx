@@ -15,8 +15,7 @@ const baseConnector: Connector = {
 };
 
 // Minimal schema fixture with one stixFilters-eligible key ('entity_type'), one SSVC key
-// (feature-flagged, only usable through useStixFilters), and one non-stix key that must
-// always be filtered out regardless of the SSVC_ATTRIBUTES feature flag.
+// (now part of stixFilters), and one non-stix key that must always be filtered out.
 const buildFilterKeysSchema = () => {
   const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>();
   filterKeysSchema.set('Stix-Core-Object', new Map([
@@ -42,28 +41,12 @@ describe('useGetConnectorAvailableFilterKeys', () => {
     expect(hook.result.current).toEqual([]);
   });
 
-  it('should exclude the SSVC filter keys when the SSVC_ATTRIBUTES feature flag is disabled', () => {
+  it('should include the stix filter keys, including SSVC, and exclude non-stix keys', () => {
     const { hook } = testRenderHook(
       () => useGetConnectorAvailableFilterKeys(baseConnector),
       {
         userContext: createMockUserContext({
           schema: { scrs: [], sdos: [], scos: [], smos: [], filterKeysSchema: buildFilterKeysSchema() },
-          settings: { platform_feature_flags: [] },
-        }),
-      },
-    );
-    expect(hook.result.current).toContain('entity_type');
-    expect(hook.result.current).not.toContain('x_opencti_ssvc_exploitation');
-    expect(hook.result.current).not.toContain('not_a_stix_filter');
-  });
-
-  it('should include the SSVC filter keys when the SSVC_ATTRIBUTES feature flag is enabled', () => {
-    const { hook } = testRenderHook(
-      () => useGetConnectorAvailableFilterKeys(baseConnector),
-      {
-        userContext: createMockUserContext({
-          schema: { scrs: [], sdos: [], scos: [], smos: [], filterKeysSchema: buildFilterKeysSchema() },
-          settings: { platform_feature_flags: [{ id: 'SSVC_ATTRIBUTES', enable: true }] },
         }),
       },
     );

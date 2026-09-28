@@ -170,7 +170,7 @@ const StixCoreObjectKnowledgeBar = ({
         { id, relatedRelationshipTypes: relatedRelationshipTypes ?? ['related-to'] },
         { fetchPolicy: 'network-only' },
       ).subscribe({
-        error: (error) => console.error('Knowledge bar refresh failed', error),
+        error: (error: unknown) => console.error('Knowledge bar refresh failed', error),
       });
     };
     window.addEventListener(KnowledgeBarRefreshEvent, onKnowledgeBarRefresh);

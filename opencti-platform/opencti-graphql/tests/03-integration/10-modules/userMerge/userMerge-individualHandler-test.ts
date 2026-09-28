@@ -57,7 +57,13 @@ describe('userMerge individual handler', () => {
     // Both users have to exist for real: `patchAttribute` refuses to touch an individual whose
     // contact information answers to a user, which is exactly the state the re-point runs in.
     const source = await addUser(testContext, ADMIN_USER, { name: 'userMerge individual source user', password: 'userMerge', user_email: SOURCE_EMAIL });
-    const target = await addUser(testContext, ADMIN_USER, { name: 'userMerge individual target user', password: 'userMerge', user_email: TARGET_EMAIL });
+    const target = await addUser(testContext, ADMIN_USER, {
+      name: 'userMerge individual target user',
+      firstname: 'Target',
+      lastname: 'User',
+      password: 'userMerge',
+      user_email: TARGET_EMAIL,
+    });
     sourceId = source.id;
     targetId = target.id;
   });
@@ -87,6 +93,15 @@ describe('userMerge individual handler', () => {
     expect(result.status).toEqual(UserMergeStatus.Success);
     expect(await individualsCarrying(SOURCE_EMAIL)).toHaveLength(0);
     expect(await individualsCarrying(TARGET_EMAIL)).toHaveLength(1);
+  });
+
+  it('should carry the target identity over to the re-pointed individual', async () => {
+    // The platform re-applies name, firstname and lastname on every user update, so an
+    // individual left under the source name is only repaired at the next edit of the target.
+    const [individual] = await individualsCarrying(TARGET_EMAIL);
+    expect(individual.name).toEqual('userMerge individual target user');
+    expect(individual.x_opencti_firstname).toEqual('Target');
+    expect(individual.x_opencti_lastname).toEqual('User');
   });
 
   it('should fold the source individual into the target one', async () => {

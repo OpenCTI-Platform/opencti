@@ -44,6 +44,19 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).not.toContain('workflowInstance');
     });
 
+    describe('getWidgetColumns with no entity type', () => {
+      it('returns generic Stix-Core-Object columns by default', () => {
+        const columns = getWidgetColumns('entities', undefined);
+        const attributes = columns.map((c) => c.attribute);
+        expect(attributes).toContain('entity_type');
+        expect(attributes).toContain('name');
+        expect(attributes).toContain('created_at');
+        expect(attributes).toContain('objectLabel');
+        expect(attributes).not.toContain('report_types');
+        expect(attributes).not.toContain('published');
+      });
+    });
+
     it('DOES include the legacy Report columns already present in availableWidgetColumns', () => {
       // These are NOT custom-attributes-only additions: they were already part of the
       // historical 'availableWidgetColumns.Report' entry, so getWidgetColumns must keep them.

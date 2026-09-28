@@ -619,6 +619,8 @@ const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.Sti
         extension_type: 'property-extension',
         content: instance.content,
         content_mapping: instance.content_mapping,
+        number_seen: instance.number_seen,
+        max_distinct_count: instance.max_distinct_count,
         object_refs_inferred: convertObjectReferences(instance, true),
       }),
     },

@@ -3,6 +3,7 @@ import readline from 'node:readline';
 import fs from 'node:fs';
 import Upload from 'graphql-upload/Upload.mjs';
 import { ApolloServer } from '@apollo/server';
+import type { FormattedExecutionResult } from 'graphql';
 import createSchema from '../../src/graphql/schema';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
@@ -199,7 +200,9 @@ const queryAsTestUser = async <T = Record<string, any>>(testUser: UserTestData, 
   return query<T>({ user, request, draftContext });
 };
 
-const query = async <T = Record<string, any>>(params: { user?: AuthUser; request: Request; draftContext?: any }) => {
+const query = async <T = Record<string, any>>(
+  params: { user?: AuthUser; request: Request; draftContext?: any },
+): Promise<FormattedExecutionResult<T>> => {
   const execContext = executionContext('test', params.user, params.draftContext ?? undefined);
   execContext.changeDraftContext = (draftId) => {
     execContext.draft_context = draftId;
@@ -209,7 +212,9 @@ const query = async <T = Record<string, any>>(params: { user?: AuthUser; request
   if (body.kind === 'single') {
     return body.singleResult;
   }
-  return body.initialResult;
+  // Incremental delivery (@defer / @stream) is not used by the test schema; the
+  // first chunk carries the same shape as a single result.
+  return body.initialResult as FormattedExecutionResult<T>;
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {
@@ -284,12 +289,6 @@ const AWAIT_MIN_INTERVAL = 200;
 const AWAIT_MAX_INTERVAL = 2000;
 const AWAIT_TARGET_POLLS = 20;
 
-/**
- * Polling interval derived from the budget, so callers only have to express how long they
- * accept to wait. Aiming at AWAIT_TARGET_POLLS attempts keeps short budgets responsive and
- * long ones cheap, and the bounds avoid both a busy loop and a wait that overshoots the
- * budget on its first sleep.
- */
 const intervalForBudget = (budgetMs: number) => {
   const target = Math.round(budgetMs / AWAIT_TARGET_POLLS);
   return Math.min(AWAIT_MAX_INTERVAL, Math.max(AWAIT_MIN_INTERVAL, target));
@@ -314,14 +313,9 @@ interface AwaitUntilConditionOptions {
 /**
  * Waits until a condition holds, within a time budget.
  *
- * Every call reports how much of its budget it actually consumed, so the budgets can be set
- * from observed timings rather than from guesses.
- *
  * @param conditionPromise A function checking if the condition is verified.
- * @param budgetMs How long polling may go on, in ms. A poll is only started while the budget
- *                holds, so the budget bounds when polls start, not the total duration: a poll
- *                already in flight is never interrupted. Always stated by the caller: what a
- *                wait is allowed to cost is a decision of the test, never a default.
+ * @param budgetMs How long polling may go on, in ms. The budget bounds when a poll starts, not
+ *                the total duration: a poll already in flight is never interrupted.
  * @param options Message, forced polling interval, expected result.
  */
 export const awaitUntilCondition = async (

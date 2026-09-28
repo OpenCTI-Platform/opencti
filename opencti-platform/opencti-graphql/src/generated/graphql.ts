@@ -14699,6 +14699,11 @@ export enum IntrusionSetsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type InvestigationDuplicateInput = {
+  id: Scalars['ID']['input'];
+  name: Scalars['String']['input'];
+};
+
 export type JsonAttributeBasedOn = {
   __typename?: 'JsonAttributeBasedOn';
   identifier?: Maybe<Array<Maybe<JsonIdentifier>>>;
@@ -17452,6 +17457,7 @@ export type Mutation = {
   ingestionTaxiiResetState?: Maybe<IngestionTaxii>;
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
+  investigationDuplicate?: Maybe<Workspace>;
   jsonMapperAdd?: Maybe<JsonMapper>;
   jsonMapperDelete?: Maybe<Scalars['ID']['output']>;
   jsonMapperFieldPatch?: Maybe<JsonMapper>;
@@ -18944,6 +18950,11 @@ export type MutationIntrusionSetAddArgs = {
 
 export type MutationIntrusionSetEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationInvestigationDuplicateArgs = {
+  input: InvestigationDuplicateInput;
 };
 
 
@@ -21873,12 +21884,14 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_observed: Scalars['DateTime']['output'];
+  max_distinct_count?: Maybe<Scalars['Int']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   number_observed: Scalars['Int']['output'];
+  number_seen?: Maybe<Scalars['Int']['output']>;
   objectAssignee?: Maybe<Array<Assignee>>;
   objectLabel?: Maybe<Array<Label>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
@@ -22111,9 +22124,11 @@ export type ObservedDataAddInput = {
   first_observed: Scalars['DateTime']['input'];
   lang?: InputMaybe<Scalars['String']['input']>;
   last_observed: Scalars['DateTime']['input'];
+  max_distinct_count?: InputMaybe<Scalars['Int']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   noTriggerImport?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   number_observed: Scalars['Int']['input'];
+  number_seen?: InputMaybe<Scalars['Int']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -22180,8 +22195,10 @@ export enum ObservedDatasOrdering {
   CreatedAt = 'created_at',
   FirstObserved = 'first_observed',
   LastObserved = 'last_observed',
+  MaxDistinctCount = 'max_distinct_count',
   Modified = 'modified',
   NumberObserved = 'number_observed',
+  NumberSeen = 'number_seen',
   ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -23861,11 +23878,17 @@ export type PlatformEe = {
   license_global: Scalars['Boolean']['output'];
   license_platform: Scalars['String']['output'];
   license_platform_match: Scalars['Boolean']['output'];
+  license_source?: Maybe<PlatformEeSource>;
   license_start_date: Scalars['DateTime']['output'];
   license_type: Scalars['String']['output'];
   license_valid_cert: Scalars['Boolean']['output'];
   license_validated: Scalars['Boolean']['output'];
 };
+
+export enum PlatformEeSource {
+  OpenctiLicense = 'OPENCTI_LICENSE',
+  XtmOneLicense = 'XTM_ONE_LICENSE'
+}
 
 export type PlatformProtectedSensitiveConfig = {
   __typename?: 'PlatformProtectedSensitiveConfig';
@@ -31568,7 +31591,7 @@ export enum SsvcAutomatable {
 export enum SsvcExploitation {
   Active = 'active',
   None = 'none',
-  Poc = 'poc'
+  ProofOfConcept = 'proof_of_concept'
 }
 
 export enum SsvcTechnicalImpact {
@@ -33016,10 +33039,12 @@ export enum StixDomainObjectsOrdering {
   LastObserved = 'last_observed',
   LastPirScoreDate = 'last_pir_score_date',
   LastSeen = 'last_seen',
+  MaxDistinctCount = 'max_distinct_count',
   Modified = 'modified',
   Name = 'name',
   NoteTypes = 'note_types',
   NumberObserved = 'number_observed',
+  NumberSeen = 'number_seen',
   ObjectMarking = 'objectMarking',
   OperatingSystem = 'operatingSystem',
   Opinion = 'opinion',
@@ -41021,6 +41046,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetEdge: ResolverTypeWrapper<Omit<IntrusionSetEdge, 'node'> & { node: ResolversTypes['IntrusionSet'] }>;
   IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
+  InvestigationDuplicateInput: InvestigationDuplicateInput;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
   JsonAttributeColumnConfiguration: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['JsonAttributeColumnConfiguration']>;
@@ -41245,6 +41271,7 @@ export type ResolversTypes = ResolversObject<{
   PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
   PlatformCriticalAlertType: PlatformCriticalAlertType;
   PlatformEE: ResolverTypeWrapper<PlatformEe>;
+  PlatformEESource: PlatformEeSource;
   PlatformProtectedSensitiveConfig: ResolverTypeWrapper<PlatformProtectedSensitiveConfig>;
   PlatformProtectedSubConfig: ResolverTypeWrapper<PlatformProtectedSubConfig>;
   PlatformType: PlatformType;
@@ -42130,6 +42157,7 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetConnection: Omit<IntrusionSetConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IntrusionSetEdge']>>> };
   IntrusionSetEdge: Omit<IntrusionSetEdge, 'node'> & { node: ResolversParentTypes['IntrusionSet'] };
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
+  InvestigationDuplicateInput: InvestigationDuplicateInput;
   JSON: Scalars['JSON']['output'];
   JsonAttributeBasedOn: JsonAttributeBasedOn;
   JsonAttributeColumnConfiguration: ResolversInterfaceTypes<ResolversParentTypes>['JsonAttributeColumnConfiguration'];
@@ -48867,6 +48895,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionTaxiiResetState?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiResetStateArgs, 'id'>>;
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
+  investigationDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationInvestigationDuplicateArgs, 'input'>>;
   jsonMapperAdd?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperAddArgs, 'input'>>;
   jsonMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationJsonMapperDeleteArgs, 'id'>>;
   jsonMapperFieldPatch?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperFieldPatchArgs, 'id' | 'input'>>;
@@ -49605,12 +49634,14 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ObservedDataJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_observed?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  max_distinct_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ObservedDataNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   number_observed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  number_seen?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   objectAssignee?: Resolver<Maybe<Array<ResolversTypes['Assignee']>>, ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
@@ -50203,6 +50234,7 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_global?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_source?: Resolver<Maybe<ResolversTypes['PlatformEESource']>, ParentType, ContextType>;
   license_start_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   license_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_valid_cert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

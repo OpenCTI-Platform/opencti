@@ -49,9 +49,9 @@ describe('Exclusion list cache build manager tests ', () => {
           name: 'test_ip_list',
           description: 'test_description',
           exclusion_list_entity_types: [ENTITY_IPV4_ADDR],
-          file: ipValuesUpload
-        }
-      }
+          file: ipValuesUpload,
+        },
+      },
     });
     exclusionListIPId = exclusionListIP.data?.exclusionListFileAdd.id;
     const domainValuesUpload = createUploadFile('./tests/data/exclusionLists/', exclusionListDomainValuesFIle);
@@ -62,9 +62,9 @@ describe('Exclusion list cache build manager tests ', () => {
           name: 'test_domain_list',
           description: 'test_description',
           exclusion_list_entity_types: [ENTITY_DOMAIN_NAME],
-          file: domainValuesUpload
-        }
-      }
+          file: domainValuesUpload,
+        },
+      },
     });
     exclusionListDomainId = exclusionListDomain.data?.exclusionListFileAdd.id;
   });
@@ -72,14 +72,14 @@ describe('Exclusion list cache build manager tests ', () => {
     await queryAsAdminWithSuccess({
       query: DELETE_MUTATION,
       variables: {
-        id: exclusionListIPId
-      }
+        id: exclusionListIPId,
+      },
     });
     await queryAsAdminWithSuccess({
       query: DELETE_MUTATION,
       variables: {
-        id: exclusionListDomainId
-      }
+        id: exclusionListDomainId,
+      },
     });
   });
   it('should build cache from current exclusion lists', async () => {

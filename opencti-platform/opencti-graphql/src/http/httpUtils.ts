@@ -148,7 +148,7 @@ const buildObjectSrc = () => {
   return objectSrc;
 };
 
-export const buildPublicHelmetParameters = () => {
+export const buildPublicHelmetParameters = (): HelmetOptions => {
   const ancestorsFromConfig = getPublicAuthorizedDomainsFromConfiguration();
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
@@ -181,7 +181,7 @@ export const buildPublicHelmetParameters = () => {
   return helmetConfiguration;
 };
 
-export const buildDefaultHelmetParameters = () => {
+export const buildDefaultHelmetParameters = (): HelmetOptions => {
   const helmetConfiguration: HelmetOptions = {
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     crossOriginEmbedderPolicy: false,

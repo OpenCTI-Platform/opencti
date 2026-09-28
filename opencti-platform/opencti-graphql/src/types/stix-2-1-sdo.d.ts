@@ -200,6 +200,8 @@ export interface StixNote extends StixContainer {
 export interface StixObservedDataExtension extends StixOpenctiExtension {
   content: string;
   content_mapping: string;
+  number_seen?: number; // optional
+  max_distinct_count?: number; // optional
   object_refs_inferred?: Array<StixId>; // optional
 }
 

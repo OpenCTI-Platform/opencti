@@ -5,8 +5,10 @@ import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 import { spawn } from 'node:child_process';
 import * as path from 'node:path';
 
-// Handle ESM/CJS interop for vite-plugin-monaco-editor
-const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default;
+// ESM/CJS interop: Vite's loader nests the callable under `.default`, knip's hands it over
+// directly. Without the fallback knip cannot load this config at all.
+const monacoEditorPlugin = (monacoEditorPluginImport as unknown as { default: typeof monacoEditorPluginImport }).default
+  ?? monacoEditorPluginImport;
 
 const runRelayCompiler = () => new Promise<void>((resolve, reject) => {
   const relayProcess = spawn('yarn', ['relay'], {
@@ -33,7 +35,6 @@ const runRelayCompiler = () => new Promise<void>((resolve, reject) => {
 });
 
 const watchGraphQL = process.env.WATCH_GRAPHQL === 'true';
-
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
@@ -81,7 +82,7 @@ export default defineConfig(({ mode, command }) => {
         apply: 'serve',
         transformIndexHtml: (html) =>
           html.replace(/%BASE_PATH%/g, basePath)
-            .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
+            .replace(/%APP_SCRIPT_SNIPPET%/g, '')
             .replace(/%APP_TITLE%/g, 'OpenCTI Dev')
             .replace(/%APP_DESCRIPTION%/g, 'OpenCTI Development platform')
             .replace(/%APP_FAVICON%/g, `${basePath}/assets/static/favicon.png`),
@@ -91,10 +92,10 @@ export default defineConfig(({ mode, command }) => {
         apply: 'serve',
         configureServer(server) {
           const schemaPath = path.resolve(__dirname, './src/schema/relay.schema.graphql');
-          
+
           // Watch the schema file
           server.watcher.add(schemaPath);
-          
+
           let relayTimeout: NodeJS.Timeout | null = null;
           let isRelayRunning = false;
           let pendingRerun = false;
@@ -140,7 +141,7 @@ export default defineConfig(({ mode, command }) => {
             }
           });
         },
-      }: undefined),
+      } : undefined),
       react(),
       relay,
       monacoEditorPlugin({
@@ -166,6 +167,7 @@ export default defineConfig(({ mode, command }) => {
         [`${basePath}/logout`]: backProxy(),
         [`${basePath}/stream`]: backProxy(),
         [`${basePath}/storage`]: backProxy(),
+        [`${basePath}/catalog`]: backProxy(),
         [`${basePath}/schema`]: backProxy(),
         '^/.*/embedded/.*': backProxy(),
         [`${basePath}/taxii2`]: backProxy(),

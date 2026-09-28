@@ -19,6 +19,15 @@ const Root = () => (
       path="/notifications"
       element={boundaryWrapper(Notifications)}
     />
+    {/* Legacy nested paths from before the news feed page extraction: keep bookmarks working. */}
+    <Route
+      path="/notifications/alerts"
+      element={<Navigate to="/dashboard/profile/notifications" replace={true} />}
+    />
+    <Route
+      path="/notifications/news-feed"
+      element={<Navigate to="/dashboard/news-feed" replace={true} />}
+    />
     <Route
       path="/triggers"
       element={boundaryWrapper(Triggers)}

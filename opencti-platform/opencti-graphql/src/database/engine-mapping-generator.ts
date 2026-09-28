@@ -48,6 +48,10 @@ const attributeMappingGenerator = (entityAttribute: AttributeDefinition, engine:
     if (entityAttribute.format === 'flat') {
       return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
     }
+    // For non-indexed objects
+    if (entityAttribute.format === 'raw') {
+      return { type: 'object', enabled: false };
+    }
     // For standard object
     const properties: Record<string, any> = {};
     for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
@@ -252,6 +256,12 @@ export const getRetroCompatibleMappings = (engine: ElkClient | OpenClient): any 
       type: 'boolean',
     },
     number_observed: {
+      type: 'integer',
+    },
+    number_seen: {
+      type: 'integer',
+    },
+    max_distinct_count: {
       type: 'integer',
     },
     x_opencti_negative: {

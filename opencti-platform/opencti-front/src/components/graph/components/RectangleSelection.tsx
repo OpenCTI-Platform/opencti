@@ -3,12 +3,12 @@ import { useTheme } from '@mui/material/styles';
 import { hexToRGB } from '../../../utils/Colors';
 import type { Theme } from '../../Theme';
 
-interface RectangleCoordinates {
+export interface RectangleCoordinates {
   origin: [number, number];
   target: [number, number];
 }
 
-interface RectangleKeys {
+export interface RectangleKeys {
   altKey: boolean;
   shiftKey: boolean;
 }

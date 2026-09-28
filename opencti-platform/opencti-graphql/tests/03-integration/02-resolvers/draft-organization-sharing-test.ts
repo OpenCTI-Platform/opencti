@@ -206,7 +206,7 @@ describe.skip('Draft organization sharing', () => {
       expect(taskRes.data?.queryTaskAdd).toBeDefined();
       expect(taskRes.errors).toBeUndefined();
 
-      // Wait for task completion. Budget unverified: this describe is skipped.
+      // Wait for task completion.
       await awaitUntilCondition(
         async () => {
           const tRes = await queryAsAdmin({

@@ -7,6 +7,7 @@ import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Widget } from '../../../../../utils/widget/widget';
 import { SELF_ID } from '../../../../../utils/filters/filtersUtils';
+import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 
 export interface FintelTemplateWidget {
   variable_name: string;
@@ -31,6 +32,8 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
 
   const widgetSelfInstance = widgets.find(({ widget }) => widget.dataSelection[0].instance_id === SELF_ID);
   const widgetsNoSelf = widgets.filter(({ widget }) => widget.dataSelection[0].instance_id !== SELF_ID);
+  const hasWideTableWidget = widgets.some(({ widget }) => widget.dataSelection
+    .some((selection) => (selection.columns?.length ?? 0) >= WIDE_TABLE_COLUMN_THRESHOLD));
 
   return (
     <>
@@ -80,6 +83,14 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       >
         {t_i18n('Add related data')}
       </Button>
+
+      {hasWideTableWidget && (
+        <Alert severity="warning" sx={{ marginLeft: 2, marginRight: 2, marginTop: 1 }}>
+          {t_i18n('More than {threshold} columns selected — when applied the export will switch to landscape format.', {
+            values: { threshold: WIDE_TABLE_COLUMN_THRESHOLD },
+          })}
+        </Alert>
+      )}
 
       <List>
         {widgetsNoSelf.length === 0 && (

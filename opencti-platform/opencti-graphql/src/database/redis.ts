@@ -72,7 +72,9 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 };
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
-  const redisOpts = await redisOptions(provider, false, conf.get('redis:tls_servername'));
+  const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
+  const omitTLSServerName = booleanConf('tls_cluster_node_mode');
+  const redisOpts = await redisOptions(provider, false, omitTLSServerName ? undefined : tlsServername);
   return {
     keyPrefix: REDIS_PREFIX,
     lazyConnect: true,
@@ -410,7 +412,15 @@ const getStackTrace = () => {
   Error.captureStackTrace(obj, getStackTrace);
   return obj.stack;
 };
-export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
+export interface LockHandle {
+  signal: AbortSignal;
+  extend: () => Promise<void>;
+  acquireWaitMs: number;
+  acquireAttempts: number;
+  unlock: () => Promise<void>;
+}
+
+export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
@@ -780,6 +790,29 @@ export const redisClearTelemetryGauge = async (gaugeName: string) => {
   return getClientBase().hdel(TELEMETRY_EVENT_KEY, gaugeName);
 };
 // endregion - telemetry gauges
+
+// region - platform usage metrics cluster cache
+// Usage metrics are expensive to compute (full bucket scan, engine stats), so the
+// value is shared cluster wide instead of being recomputed on every node.
+const PLATFORM_USAGE_METRICS_KEY = 'platform_usage_metrics';
+
+export const redisGetPlatformUsageMetrics = async (): Promise<object | null> => {
+  const raw = await getClientBase().get(PLATFORM_USAGE_METRICS_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    logApp.error('[HEALTH] Platform usage metrics in Redis could not be parsed', { raw });
+    return null;
+  }
+};
+
+export const redisSetPlatformUsageMetrics = async (metrics: object, ttlSeconds: number) => {
+  await getClientBase().set(PLATFORM_USAGE_METRICS_KEY, JSON.stringify(metrics), 'EX', ttlSeconds);
+};
+// endregion - platform usage metrics cluster cache
 
 // region - manager stream state
 const MANAGER_EVENT_STATE_KEY = 'manager_stream_state_';

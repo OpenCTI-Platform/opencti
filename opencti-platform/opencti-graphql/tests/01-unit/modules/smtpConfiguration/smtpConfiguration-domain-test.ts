@@ -263,8 +263,6 @@ describe('smtpConfigurationDelete', () => {
       expect.objectContaining({ event_scope: 'delete', event_access: 'administration' }),
     );
   });
-
-
 });
 
 // ---------- smtpConfigurationTest ----------
@@ -285,4 +283,3 @@ describe('smtpConfigurationTest', () => {
       .rejects.toThrow('connection refused');
   });
 });
-

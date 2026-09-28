@@ -115,14 +115,14 @@ describe('StixRefRelationship', () => {
     `;
     const queryResult1 = await queryAsAdmin({
       query: ALLOWED_TYPES_QUERY,
-      variables: { type: ENTITY_TYPE_MALWARE_ANALYSIS }
+      variables: { type: ENTITY_TYPE_MALWARE_ANALYSIS },
     });
     expect(queryResult1.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(1);
     expect(queryResult1.data.stixSchemaRefRelationshipsPossibleTypes[0]).toEqual(ABSTRACT_STIX_CYBER_OBSERVABLE);
     // Malware
     const queryResult2 = await queryAsAdmin({
       query: ALLOWED_TYPES_QUERY,
-      variables: { type: 'Malware' }
+      variables: { type: 'Malware' },
     });
     expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(3);
     expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBeTruthy();
@@ -131,7 +131,7 @@ describe('StixRefRelationship', () => {
     // File
     const queryResult3 = await queryAsAdmin({
       query: ALLOWED_TYPES_QUERY,
-      variables: { type: ENTITY_HASHED_OBSERVABLE_STIX_FILE }
+      variables: { type: ENTITY_HASHED_OBSERVABLE_STIX_FILE },
     });
     expect(queryResult3.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(1);
     expect(queryResult3.data.stixSchemaRefRelationshipsPossibleTypes[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);

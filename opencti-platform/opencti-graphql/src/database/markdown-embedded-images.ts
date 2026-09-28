@@ -69,6 +69,8 @@ type EmbeddedStoragePathContext = {
 
 export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'] as const;
 
+const MARKDOWN_FIELD_KEY_SET: ReadonlySet<string> = new Set(MARKDOWN_FIELD_KEYS);
+
 interface ParsedMarkdownDestination {
   url: string;
   title?: string;
@@ -478,27 +480,23 @@ export const collectEmbeddedStoragePathsFromMarkdownFields = (
     }
 
     const valueByKey = node as Record<string, unknown>;
-    for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
-      const markdownField = MARKDOWN_FIELD_KEYS[i];
-      const fieldValue = valueByKey[markdownField];
-      if (typeof fieldValue === 'string') {
-        addIfEmbeddedPath(fieldValue);
-      } else if (Array.isArray(fieldValue)) {
-        for (let j = 0; j < fieldValue.length; j += 1) {
-          if (typeof fieldValue[j] === 'string') {
-            addIfEmbeddedPath(fieldValue[j]);
+    const keys = Object.keys(valueByKey);
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      const value = valueByKey[key];
+      if (MARKDOWN_FIELD_KEY_SET.has(key)) {
+        if (typeof value === 'string') {
+          addIfEmbeddedPath(value);
+        } else if (Array.isArray(value)) {
+          for (let j = 0; j < value.length; j += 1) {
+            if (typeof value[j] === 'string') {
+              addIfEmbeddedPath(value[j]);
+            }
           }
         }
+      } else {
+        visit(value);
       }
-    }
-
-    const entries = Object.entries(valueByKey);
-    for (let i = 0; i < entries.length; i += 1) {
-      const [key, value] = entries[i];
-      if (MARKDOWN_FIELD_KEYS.includes(key as (typeof MARKDOWN_FIELD_KEYS)[number])) {
-        continue;
-      }
-      visit(value);
     }
   };
 

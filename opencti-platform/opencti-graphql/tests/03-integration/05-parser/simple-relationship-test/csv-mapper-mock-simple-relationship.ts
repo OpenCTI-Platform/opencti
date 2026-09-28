@@ -25,8 +25,8 @@ export const csvMapperMockSimpleRelationship: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'A',
           },
-        }
-      ]
+        },
+      ],
     }, {
       id: 'representation02',
       type: CsvMapperRepresentationType.Entity,
@@ -45,8 +45,8 @@ export const csvMapperMockSimpleRelationship: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'D',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'representation01-PART_OF-representation02',
@@ -59,21 +59,21 @@ export const csvMapperMockSimpleRelationship: Partial<CsvMapperParsed> = {
           key: 'from',
           based_on: {
             representations: ['representation01'],
-          }
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: ['representation02'],
-          }
+          },
         },
         {
           key: 'confidence',
           column: {
             column_name: 'E',
           },
-        }
-      ]
+        },
+      ],
     },
-  ]
+  ],
 };
