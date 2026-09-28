@@ -186,3 +186,41 @@ describe('resolveDrilldownLink', () => {
     expect(resolveDrilldownLink(baseInput({ perspective: '%future added value' as never }))).toBeNull();
   });
 });
+
+describe('resolveDrilldownLink — distinct (unique) selections', () => {
+  const distinct = (bucket: DrilldownInput['bucket']) => resolveDrilldownLink(baseInput({
+    bucket,
+    dataSelection: {
+      perspective: 'audits',
+      date_attribute: 'timestamp',
+      attribute: 'user_id',
+      unique: true,
+      filters: { mode: 'and', filters: [], filterGroups: [] },
+    } as never,
+    perspective: 'audits',
+  }));
+
+  it('refuses a distinct total: it counts values, not documents', () => {
+    expect(distinct({ kind: 'total' })).toBeNull();
+  });
+
+  it('refuses a distinct time-series bucket', () => {
+    expect(distinct({ kind: 'timeSeries', date: '2024-03-01T00:00:00.000Z' })).toBeNull();
+  });
+
+  it('still resolves the same audit selection when distinct is off', () => {
+    const link = resolveDrilldownLink(baseInput({
+      bucket: { kind: 'total' },
+      perspective: 'audits',
+      dataSelection: {
+        perspective: 'audits',
+        date_attribute: 'timestamp',
+        attribute: 'user_id',
+        unique: false,
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      } as never,
+    }));
+    expect(link).not.toBeNull();
+    expect((link as string).startsWith('/dashboard/audits?filters=')).toBe(true);
+  });
+});

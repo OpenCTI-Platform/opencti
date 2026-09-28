@@ -39,6 +39,12 @@ export const resolveDrilldownLink = (input: DrilldownInput): string | null => {
   const widgetFilters = (dataSelection.filters ?? null) as FilterGroup | null;
   if (!assertRepresentable(widgetFilters)) return null;
 
+  // A "distinct" audit selection counts values of a field, not documents:
+  // `auditsNumber` switches to `elCardinalityCount` (log.ts:68) and the same
+  // applies to its time series. A list page counts documents, and above
+  // UNIQUE_COUNT_ESTIMATION_THRESHOLD the cardinality is not even exact.
+  if (dataSelection.unique) return null;
+
   const destination = resolveListRoute(perspective, widgetFilters);
   if (!destination) return null;
 

@@ -12,6 +12,7 @@ import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/
 import { StixCoreObjectsDistributionListDistributionQuery } from './__generated__/StixCoreObjectsDistributionListDistributionQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 
 const stixCoreObjectsDistributionListDistributionQuery = graphql`
   query StixCoreObjectsDistributionListDistributionQuery(
@@ -89,12 +90,14 @@ interface StixCoreObjectsDistributionListComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectsDistributionListDistributionQuery>;
   dataSelection: Widget['dataSelection'];
   hasSetAccess: boolean;
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsDistributionListComponent = ({
   queryRef,
   dataSelection,
   hasSetAccess,
+  drilldown,
 }: StixCoreObjectsDistributionListComponentProps) => {
   const data = usePreloadedQuery(stixCoreObjectsDistributionListDistributionQuery, queryRef);
   const selection = dataSelection[0];
@@ -127,6 +130,13 @@ const StixCoreObjectsDistributionListComponent = ({
     <WidgetDistributionList
       data={formatted}
       hasSettingAccess={hasSetAccess}
+      getDrilldownLink={(index) => drilldown.getLink(0, {
+        kind: 'distribution',
+        // The raw node, never `formatted`: the displayed label is translated
+        // or replaced by a representative, neither of which is a filter value.
+        rawValue: raw[index]?.label ?? null,
+        entityId: raw[index]?.entity?.id ?? null,
+      })}
     />
   );
 };
@@ -171,7 +181,9 @@ const StixCoreObjectsDistributionList = ({
 }: StixCoreObjectsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
+  const {
+    resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown,
+  } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -200,6 +212,7 @@ const StixCoreObjectsDistributionList = ({
             queryRef={queryRef!}
             dataSelection={resolvedDataSelection}
             hasSetAccess={hasSetAccess}
+            drilldown={drilldown}
           />
         </WidgetRenderContent>
       </div>
