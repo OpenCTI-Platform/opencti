@@ -574,6 +574,28 @@ type Log {
   user_metadata: JSON
 }
 
+enum FrontendLogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+input FrontendLogExceptionInput {
+  type: String
+  message: String
+  stacktrace: String
+}
+
+input FrontendLogInput {
+  timestamp: DateTime!
+  level: FrontendLogLevel!
+  message: String!
+  eventName: String!
+  data: JSON
+  exception: FrontendLogExceptionInput
+}
+
 type AttributesMap {
   type: String!
   attributes: [TypeAttribute!]!
@@ -9995,7 +10017,8 @@ type Mutation {
   ruleClear(elementId: ID!, ruleId: ID!): Boolean
   rulesRescan(elementId: ID!): Boolean
   rulesRescanAsync(elementId: ID!, executionId: ID!): Boolean
-  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
+  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @deprecated(reason: "Replaced by frontendLogsAdd (#17400)")
+  frontendLogsAdd(logs: [FrontendLogInput!]!): Boolean
   connectorJWT: String!
   settingsEdit(id: ID!): SettingsEditMutations
   setupEnterpriseLicense(input: LicenseActivationInput!): Settings

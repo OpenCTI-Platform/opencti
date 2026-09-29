@@ -10214,6 +10214,28 @@ export enum FormsOrdering {
   UpdatedAt = 'updated_at'
 }
 
+export type FrontendLogExceptionInput = {
+  message?: InputMaybe<Scalars['String']['input']>;
+  stacktrace?: InputMaybe<Scalars['String']['input']>;
+  type?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type FrontendLogInput = {
+  data?: InputMaybe<Scalars['JSON']['input']>;
+  eventName: Scalars['String']['input'];
+  exception?: InputMaybe<FrontendLogExceptionInput>;
+  level: FrontendLogLevel;
+  message: Scalars['String']['input'];
+  timestamp: Scalars['DateTime']['input'];
+};
+
+export enum FrontendLogLevel {
+  Debug = 'DEBUG',
+  Error = 'ERROR',
+  Info = 'INFO',
+  Warn = 'WARN'
+}
+
 export type GetMetrics = {
   __typename?: 'GetMetrics';
   total?: Maybe<Scalars['String']['output']>;
@@ -17416,7 +17438,9 @@ export type Mutation = {
   formFieldPatch?: Maybe<Form>;
   formImport?: Maybe<Form>;
   formSubmit?: Maybe<FormSubmissionResponse>;
+  /** @deprecated Replaced by frontendLogsAdd (#17400) */
   frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
+  frontendLogsAdd?: Maybe<Scalars['Boolean']['output']>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -18680,6 +18704,11 @@ export type MutationFrontendErrorLogArgs = {
   codeStack?: InputMaybe<Scalars['String']['input']>;
   componentStack?: InputMaybe<Scalars['String']['input']>;
   message: Scalars['String']['input'];
+};
+
+
+export type MutationFrontendLogsAddArgs = {
+  logs: Array<FrontendLogInput>;
 };
 
 
@@ -40967,6 +40996,9 @@ export type ResolversTypes = ResolversObject<{
   FormSubmissionResponse: ResolverTypeWrapper<FormSubmissionResponse>;
   Format: Format;
   FormsOrdering: FormsOrdering;
+  FrontendLogExceptionInput: FrontendLogExceptionInput;
+  FrontendLogInput: FrontendLogInput;
+  FrontendLogLevel: FrontendLogLevel;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
   Group: ResolverTypeWrapper<BasicGroupEntity>;
   GroupAddInput: GroupAddInput;
@@ -42099,6 +42131,8 @@ export type ResolversParentTypes = ResolversObject<{
   FormEdge: Omit<FormEdge, 'node'> & { node: ResolversParentTypes['Form'] };
   FormSubmissionInput: FormSubmissionInput;
   FormSubmissionResponse: FormSubmissionResponse;
+  FrontendLogExceptionInput: FrontendLogExceptionInput;
+  FrontendLogInput: FrontendLogInput;
   GetMetrics: GetMetrics;
   Group: BasicGroupEntity;
   GroupAddInput: GroupAddInput;
@@ -48904,6 +48938,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   formImport?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<MutationFormImportArgs, 'file'>>;
   formSubmit?: Resolver<Maybe<ResolversTypes['FormSubmissionResponse']>, ParentType, ContextType, RequireFields<MutationFormSubmitArgs, 'input' | 'isDraft'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
+  frontendLogsAdd?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendLogsAddArgs, 'logs'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;

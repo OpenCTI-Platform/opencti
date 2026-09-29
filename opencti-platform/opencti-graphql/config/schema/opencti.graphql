@@ -542,6 +542,27 @@ type Log {
   user_metadata: JSON
 }
 
+############## Frontend logs
+enum FrontendLogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+input FrontendLogExceptionInput {
+  type: String
+  message: String
+  stacktrace: String
+}
+input FrontendLogInput {
+  timestamp: DateTime!
+  level: FrontendLogLevel!
+  message: String!
+  eventName: String!
+  data: JSON
+  exception: FrontendLogExceptionInput
+}
+
 ############## Attributes
 type AttributesMap {
   type: String!
@@ -15996,7 +16017,8 @@ type Mutation {
   rulesRescanAsync(elementId: ID!, executionId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
-  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
+  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth @deprecated(reason: "Replaced by frontendLogsAdd (#17400)")
+  frontendLogsAdd(logs: [FrontendLogInput!]!): Boolean @auth
   connectorJWT: String! @auth(for: [SETTINGS_SETACCESSES])
   settingsEdit(id: ID!): SettingsEditMutations @auth
   setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB]) @allowUnlicensedLTS
