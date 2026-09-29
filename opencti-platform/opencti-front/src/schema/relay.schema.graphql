@@ -9483,6 +9483,7 @@ type Query {
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
+  catalogsRevisions: [CatalogRevision!]!
   contract(slug: String!): ExtendedContract
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
@@ -10982,6 +10983,11 @@ type Catalog implements InternalObject & BasicObject {
 type ExtendedContract {
   catalog_id: String!
   contract: String!
+}
+
+type CatalogRevision {
+  catalog_id: String!
+  revision: String
 }
 
 enum CatalogsOrdering {
