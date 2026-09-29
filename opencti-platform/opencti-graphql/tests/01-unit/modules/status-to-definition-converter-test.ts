@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { StatusScope } from '../../../src/generated/graphql';
-import { convertStatusToDefinition } from '../../../src/modules/workflow/migration/status-to-definition-converter';
+import { buildWorkflowMigrationPreviewResult, convertStatusToDefinition } from '../../../src/modules/workflow/migration/status-to-definition-converter';
 import type { WorkflowSerializedTransition } from '../../../src/modules/workflow/types/workflow-types';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../src/types/store';
 
@@ -84,6 +84,47 @@ describe('convertStatusToDefinition', () => {
 
     const { diagnostics } = byScope[StatusScope.Global]!;
     expect(diagnostics.filter((d) => d.type === 'NAME_CONFLICT')).toHaveLength(2);
+  });
+
+  it('does not report a false NAME_CONFLICT when multiple templates have blank/whitespace-only names', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+    ];
+    const templates = [
+      buildTemplate({ id: 't1', name: '' }),
+      buildTemplate({ id: 't2', name: '   ' }),
+    ];
+
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { diagnostics } = byScope[StatusScope.Global]!;
+    expect(diagnostics.filter((d) => d.type === 'NAME_CONFLICT')).toHaveLength(0);
+  });
+
+  it('adds a DUPLICATE_ORDER diagnostic when two statuses share the same order in a scope group', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 1 }),
+    ];
+    const templates = [
+      buildTemplate({ id: 't1', name: 'New' }),
+      buildTemplate({ id: 't2', name: 'In Progress' }),
+    ];
+
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { diagnostics } = byScope[StatusScope.Global]!;
+    expect(diagnostics.filter((d) => d.type === 'DUPLICATE_ORDER')).toHaveLength(2);
+  });
+
+  it('adds a MISSING_TEMPLATE diagnostic when a status references a template that no longer exists', () => {
+    const statuses = [buildStatus({ id: 's1', template_id: 't1', order: 1 })];
+
+    const { byScope } = convertStatusToDefinition(statuses, []);
+
+    const { diagnostics } = byScope[StatusScope.Global]!;
+    expect(diagnostics).toContainEqual(expect.objectContaining({ type: 'MISSING_TEMPLATE', statusId: 's1' }));
   });
 
   it('returns two separate byScope entries, never merged, for a mixed-scope entity type', () => {
@@ -198,5 +239,34 @@ describe('convertStatusToDefinition', () => {
     const { byScope } = convertStatusToDefinition(statuses, templates);
 
     expect(byScope[StatusScope.Global]!.definition.transitions).toEqual([]);
+  });
+});
+
+describe('buildWorkflowMigrationPreviewResult', () => {
+  it('shapes byScope into a results array per scope, with published/hasPublishedVersion always false', () => {
+    const statuses = [buildStatus({ id: 's1', template_id: 't1', order: 1 })];
+    const templates = [buildTemplate({ id: 't1', name: 'New' })];
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const result = buildWorkflowMigrationPreviewResult('Incident', byScope);
+
+    expect(result).toEqual({
+      entityType: 'Incident',
+      results: [
+        {
+          scope: StatusScope.Global,
+          initialState: 't1',
+          published: false,
+          hasPublishedVersion: false,
+          states: [{ statusId: 't1', order: 0 }],
+          transitions: [],
+          diagnostics: [],
+        },
+      ],
+    });
+  });
+
+  it('returns an empty results array when byScope has no entries', () => {
+    expect(buildWorkflowMigrationPreviewResult('Incident', {})).toEqual({ entityType: 'Incident', results: [] });
   });
 });
