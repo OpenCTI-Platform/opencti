@@ -1,8 +1,60 @@
 import { UnsupportedError } from '../../config/errors';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { UserMergeHandler } from './userMerge-handler';
+import { USER_MERGE_SOURCE_DISABLE_HANDLER } from './userMerge-handler';
 import { findRegisterRow } from './userMerge-register';
 
 const HANDLERS: UserMergeHandler[] = [];
+
+/**
+ * Identity fields a merge never writes, on either account.
+ *
+ * The merge moves owned objects, it does not reconcile identities: the target keeps its own
+ * profile whatever the source carries. Only one handler comes close to writing these — the
+ * one closing the source account, exempted below — so this guards against a future one rather
+ * than fixing a present bug.
+ *
+ * Both accounts are protected, not just the target: nothing in the feature asks to rewrite the
+ * source's identity either, and a rule stated on one side only would need the handler to
+ * declare which account it writes to, which `writes` does not express.
+ *
+ * When the target is SSO-provisioned the platform already refuses the write and re-patches the
+ * fields from the IdP at every login. This covers the case where both accounts are local, where
+ * nothing stops it.
+ *
+ * `password_valid_until` and `account_lock_after_date` are here for what they do, not because the
+ * register groups them with `password` and `account_status`: a date in the past forces a password
+ * reset on the target, and a lock date locks it out. Guarding the status without them would leave
+ * a handler able to reach the same authentication state by another field.
+ */
+const PROTECTED_USER_FIELDS = [
+  'name', 'user_email', 'firstname', 'lastname', 'external',
+  'password', 'password_valid_until',
+  'account_status', 'account_lock_after_date',
+];
+
+/**
+ * The one exemption, named rather than inferred.
+ *
+ * `account_status` belongs to the retained identity row, and the merge still writes it: closing
+ * the source is an invalidate row of its own (`user.account-status`). Since `writes` carries no
+ * source/target axis, naming the single handler allowed to touch it is the only way to state
+ * "on the source, by this handler alone". Any other handler asking for the field is refused,
+ * which is what stops a future one from overwriting the target's status.
+ */
+const SOURCE_STATUS_FIELD = `${ENTITY_TYPE_USER}.account_status`;
+
+const assertNoProfileWrite = (handler: UserMergeHandler): void => {
+  const protectedPaths = PROTECTED_USER_FIELDS.map((field) => `${ENTITY_TYPE_USER}.${field}`);
+  const exempted = (field: string) => field === SOURCE_STATUS_FIELD && handler.identifier === USER_MERGE_SOURCE_DISABLE_HANDLER;
+  const violations = handler.writes.filter((field) => protectedPaths.includes(field) && !exempted(field));
+  if (violations.length > 0) {
+    throw UnsupportedError('Merge handler writes user identity fields, which a merge never rewrites', {
+      handler: handler.identifier,
+      fields: violations,
+    });
+  }
+};
 
 const assertCoverageIsValid = (handler: UserMergeHandler): void => {
   const unknownRows = handler.covers.filter((rowId) => !findRegisterRow(rowId));
@@ -64,6 +116,7 @@ export const registerUserMergeHandler = (handler: UserMergeHandler): void => {
   if (HANDLERS.some((existing) => existing.identifier === handler.identifier)) {
     throw UnsupportedError('A merge handler with this identifier is already registered', { handler: handler.identifier });
   }
+  assertNoProfileWrite(handler);
   HANDLERS.push(handler);
 };
 

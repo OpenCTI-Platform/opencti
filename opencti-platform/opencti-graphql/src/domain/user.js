@@ -114,6 +114,7 @@ import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
 import { pushAll } from '../utils/arrayUtil';
 import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
+import { USER_MERGED_INTO_FIELD } from '../modules/userMerge/userMerge-types';
 import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
 import { verifyXtmJwt, isOwnIssuer } from './xtm-auth';
 import { getSettings } from './settings';
@@ -1090,7 +1091,7 @@ export const validateAndNormalizeEmailInput = async (context, userId, input) => 
   }
 };
 
-export const userEditField = async (context, user, userId, rawInputs) => {
+export const userEditField = async (context, user, userId, rawInputs, opts = {}) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
@@ -1202,7 +1203,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
-  const { element } = await updateAttribute(editContext, editUser, userId, ENTITY_TYPE_USER, inputs);
+  const { element } = await updateAttribute(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
@@ -1424,7 +1425,21 @@ export const deleteAllNotificationByUser = async (userId) => {
  */
 export const userDelete = async (context, user, userId) => {
   // check rights
-  await loadUserToUpdateWithAccessCheck(context, user, userId);
+  const userToDelete = await loadUserToUpdateWithAccessCheck(context, user, userId);
+
+  // The four cascades below all select by a reference to the account being deleted. On an account
+  // a merge has emptied that is the wrong trade: they are no-ops when the merge moved everything,
+  // and destructive when it missed something — a Trigger or a Workspace the merge failed to
+  // re-point now belongs to the target, and the cascade deletes it rather than skipping it.
+  // Refusing here keeps a coverage gap re-runnable instead of turning it into a deletion.
+  // Deliberately not absolute: clearing `merged_into` through the ordinary field patch re-opens
+  // this path, so an operator who has checked userMergeSourceDeletionReadiness is never stuck.
+  if (isNotEmptyField(userToDelete[USER_MERGED_INTO_FIELD])) {
+    throw FunctionalError('This user was merged into another account and cannot be deleted through the ordinary path', {
+      userId,
+      mergedInto: userToDelete[USER_MERGED_INTO_FIELD],
+    });
+  }
 
   await deleteAllTriggerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
