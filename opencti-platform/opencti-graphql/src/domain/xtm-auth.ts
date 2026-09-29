@@ -27,6 +27,10 @@ const canonicalUrl = (url: string): string | undefined => {
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       return undefined;
     }
+    // User info, a query or a fragment would make two different identities compare equal.
+    if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+      return undefined;
+    }
     return `${parsed.protocol}//${parsed.host}${parsed.pathname.replace(/\/+$/, '')}`;
   } catch {
     return undefined;
@@ -61,10 +65,14 @@ const fetchXtmOneIssuer = async (): Promise<string | undefined> => {
     const response = await httpClient.get('/xtm/auth/metadata', { timeout: 10000 });
     const published = response.data?.issuer;
     const issuer = typeof published === 'string' ? canonicalUrl(published) : undefined;
-    if (issuer && issuer !== previous && issuer !== xtmOneCanonicalUrl) {
+    if (!issuer) {
+      // Only a 404 says XTM One publishes no identity: a document without one is a failed read.
+      throw new Error('XTM One metadata names no usable issuer');
+    }
+    if (issuer !== previous && issuer !== xtmOneCanonicalUrl) {
       logApp.info('[XTM_AUTH] XTM One publishes an identity other than its configured URL', { url: xtmOneUrl, issuer });
     }
-    xtmOneIdentity = { issuer, expiresAt: Date.now() + (issuer ? XTM_ONE_IDENTITY_TTL : XTM_ONE_IDENTITY_RETRY) };
+    xtmOneIdentity = { issuer, expiresAt: Date.now() + XTM_ONE_IDENTITY_TTL };
     return issuer;
   } catch (err: any) {
     // A 404 says XTM One publishes no identity (it predates the document or no

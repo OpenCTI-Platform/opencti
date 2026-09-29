@@ -100,6 +100,17 @@ describe('XTM One reached on an internal URL', () => {
     expect(mocks.get).toHaveBeenCalledWith(`${XTM_ONE_URL}/xtm/auth/metadata`, expect.anything());
   });
 
+  it.each([
+    `http://user@${XTM_ONE_ISSUER.slice('http://'.length)}`,
+    `${XTM_ONE_ISSUER}/?target=other`,
+    `${XTM_ONE_ISSUER}/#fragment`,
+  ])('never reads %s as the issuer it spells', async (issuer) => {
+    mocks.get.mockResolvedValue({ data: { issuer: XTM_ONE_ISSUER } });
+    const { isTrustedIssuer } = await loadXtmAuth();
+    expect(await isTrustedIssuer(XTM_ONE_ISSUER)).toBe(true);
+    expect(await isTrustedIssuer(issuer)).toBe(false);
+  });
+
   it('addresses the tokens sent to XTM One to its published identity', async () => {
     mocks.get.mockResolvedValue({ data: { issuer: XTM_ONE_ISSUER } });
     const { issueXtmJwt } = await loadXtmAuth();
@@ -138,6 +149,31 @@ describe('XTM One reached on an internal URL', () => {
       expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
       await vi.waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(2));
       expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it.each([
+    ['no issuer', {}],
+    ['a null issuer', { issuer: null }],
+    ['a non-textual issuer', { issuer: 42 }],
+    ['a non-http issuer', { issuer: 'ftp://xtm.example.com' }],
+    ['an issuer with user info', { issuer: 'https://user@xtm.example.com' }],
+    ['a body that is not JSON', '<html>'],
+  ])('a 200 with %s is a failed read: the last identity is kept', async (_, data) => {
+    vi.useFakeTimers();
+    try {
+      mocks.get.mockResolvedValueOnce({ data: { issuer: XTM_ONE_ISSUER } });
+      const { getXtmOneIssuer, isTrustedIssuer } = await loadXtmAuth();
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      vi.advanceTimersByTime(3_600_001);
+      mocks.get.mockResolvedValueOnce({ data });
+      await getXtmOneIssuer();
+      await vi.waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(2));
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      expect(await isTrustedIssuer(XTM_ONE_ISSUER)).toBe(true);
+      expect(mocks.get).toHaveBeenCalledTimes(2);
     } finally {
       vi.useRealTimers();
     }
