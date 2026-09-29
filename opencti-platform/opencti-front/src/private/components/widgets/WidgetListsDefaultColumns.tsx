@@ -30,8 +30,10 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
 const fintelTemplateDefaultWidgetColumns = {
   entities: [
     { attribute: 'entity_type', label: 'Entity type' },
-    { attribute: 'representative.main', label: 'Representative' },
+    { attribute: 'name', label: 'Name' },
+    { attribute: 'description', label: 'Description' },
     { attribute: 'created_at', label: 'Creation date' },
+    { attribute: 'createdBy', label: 'Author' },
   ],
   relationships: [
     { attribute: 'relationship_type', label: 'Relationship type' },

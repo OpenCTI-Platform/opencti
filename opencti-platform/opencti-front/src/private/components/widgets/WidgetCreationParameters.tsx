@@ -968,20 +968,28 @@ const WidgetCreationParameters = () => {
           }
 
           const entityType = getWidgetColumnsEntityType(filters, perspective, host);
+          const isFintelEntityList = host.kind === 'fintelTemplate' && perspective === 'entities';
           const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
           const selectedColumns = [...(columns ?? defaultWidgetColumnsByType)];
           const baseAvailableColumns = host.kind === 'fintelTemplate' && perspective === 'entities'
             ? getCustomAttributesColumns(entityType || undefined)
             : getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined);
-          const availableColumns = host.kind === 'fintelTemplate'
+          const availableColumnsRaw = host.kind === 'fintelTemplate'
             ? mergeAvailableAndSelectedColumns(baseAvailableColumns, selectedColumns)
             : baseAvailableColumns;
+          const availableColumns = isFintelEntityList
+            ? availableColumnsRaw.filter((column) => column.attribute !== 'representative.main')
+            : availableColumnsRaw;
+          const availableColumnsWithEntityType = isFintelEntityList
+            && !availableColumns.some((column) => column.attribute === 'entity_type')
+            ? [{ attribute: 'entity_type', label: 'Entity type' }, ...availableColumns]
+            : availableColumns;
 
           if (host.kind === 'fintelTemplate') {
             return (
               <WidgetCustomAttributesColumnsInput
                 key={index}
-                availableColumns={availableColumns}
+                availableColumns={availableColumnsWithEntityType}
                 defaultColumns={defaultWidgetColumnsByType}
                 value={selectedColumns}
                 onChange={(newColumns) => setColumns(index, newColumns)}
