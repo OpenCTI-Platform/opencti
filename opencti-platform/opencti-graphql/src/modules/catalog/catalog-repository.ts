@@ -95,7 +95,7 @@ export const findAllCatalogsExcluding = async (
   return findAllCatalogs(context, user, filters);
 };
 
-export const findCatalogsRevisions = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
+export const findAllCatalogsRevisions = async (context: AuthContext, user: AuthUser, excludedIds?: string[]) => {
   const filters: FilterGroupWithNested | undefined = excludedIds?.length
     ? {
         filters: excludedIds.map((catalogId) => ({

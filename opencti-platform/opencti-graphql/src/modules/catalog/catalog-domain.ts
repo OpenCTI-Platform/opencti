@@ -18,7 +18,7 @@ import type { ValidateFunction } from 'ajv';
 import {
   findAllCatalogs,
   findCatalogByCatalogId,
-  findCatalogsRevisions,
+  findAllCatalogsRevisions,
   findLatestCompatibleCatalogContractBySlug,
   findLatestCompatibleCatalogContractsByCatalogId,
 } from './catalog-repository';
@@ -475,7 +475,7 @@ export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
 
 export const findCatalogRevisions = async (context: AuthContext, user: AuthUser): Promise<GraphqlCatalogRevision[]> => {
   try {
-    const catalogsRevisions = await findCatalogsRevisions(context, user);
+    const catalogsRevisions = await findAllCatalogsRevisions(context, user);
     const revisions = catalogsRevisions.map((catalog) => ({
       catalog_id: catalog.catalog_id,
       revision: catalog.revision ?? null,

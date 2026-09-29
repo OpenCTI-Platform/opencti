@@ -5,7 +5,7 @@ import {
   deleteCatalogContracts,
   findAllCatalogs,
   findAllCatalogsExcluding,
-  findCatalogsRevisions,
+  findAllCatalogsRevisions,
   updateCatalogContracts,
   upsertCatalog,
 } from '../../../../src/modules/catalog/catalog-repository';
@@ -102,7 +102,7 @@ describe('catalog repository', () => {
   it('should find catalog revisions excluding the specified catalog ids', async () => {
     vi.mocked(fullEntitiesList).mockResolvedValue([]);
 
-    await findCatalogsRevisions(context, user, ['catalog-1', 'catalog-2']);
+    await findAllCatalogsRevisions(context, user, ['catalog-1', 'catalog-2']);
 
     expect(fullEntitiesList).toHaveBeenCalledWith(
       context,
