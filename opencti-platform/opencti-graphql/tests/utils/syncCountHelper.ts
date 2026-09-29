@@ -63,7 +63,7 @@ testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
-testCreatedCounter['security-coverage'] = 20;
+testCreatedCounter['security-coverage'] = 22;
 testCreatedCounter['security-coverage-result'] = 18;
 
 export const testUpdatedCounter: Record<string, number> = {};
@@ -104,7 +104,7 @@ testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
-testUpdatedCounter['security-coverage'] = 1;
+testUpdatedCounter['security-coverage'] = 2;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 1;
@@ -161,7 +161,7 @@ testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
-testDeletedCounter['security-coverage'] = 18;
+testDeletedCounter['security-coverage'] = 20;
 testDeletedCounter['security-coverage-result'] = 16;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
