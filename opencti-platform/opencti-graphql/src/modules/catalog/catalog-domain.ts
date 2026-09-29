@@ -494,12 +494,6 @@ export const mapContractDtoV0ToContractEntityFields = (params: {
   logoUri: string | null;
 }): CatalogContractEntityFields => {
   const { catalogId, contractDto, contractContentHash, logoUri } = params;
-  const supportVersionValue = contractDto.support_version
-    ? contractDto.support_version.replace(/^\s*>=\s*/, '').trim()
-    : null;
-  const normalizedSupportVersion = supportVersionValue && supportVersionValue.length > 0
-    ? supportVersionValue
-    : null;
   return {
     catalog_id: catalogId,
     contract_id: `${contractDto.slug}-${contractDto.container_version}`,
@@ -514,7 +508,7 @@ export const mapContractDtoV0ToContractEntityFields = (params: {
     last_verified_date: contractDto.last_verified_date ?? undefined,
     playbook_supported: contractDto.playbook_supported,
     max_confidence_level: contractDto.max_confidence_level,
-    support_version: normalizedSupportVersion ?? undefined,
+    support_version: contractDto.support_version ?? undefined,
     subscription_link: contractDto.subscription_link ?? undefined,
     source_code: contractDto.source_code ?? undefined,
     manager_supported: contractDto.manager_supported,

@@ -31,19 +31,28 @@ describe('catalog-version-utils', () => {
     expect(parseCatalogSemver(undefined)).toBeNull();
   });
 
-  it('should evaluate support version compatibility', () => {
+  it('should evaluate support version ranges', () => {
     expect(isSupportVersionCompatible(
       buildContract({ contract_id: 'c1', contract_version: '1.0.0' }),
       { platformVersion: '7.2.0' },
     )).toBe(true);
 
     expect(isSupportVersionCompatible(
-      buildContract({ contract_id: 'c2', contract_version: '1.0.0', support_version: '7.1.0' }),
+      buildContract({ contract_id: 'c2', contract_version: '1.0.0', support_version: '>= 7.1.0' }),
       { platformVersion: '7.2.0' },
     )).toBe(true);
 
     expect(isSupportVersionCompatible(
-      buildContract({ contract_id: 'c3', contract_version: '1.0.0', support_version: '8.0.0' }),
+      buildContract({ contract_id: 'c3', contract_version: '1.0.0', support_version: '>= 8.0.0' }),
+      { platformVersion: '7.2.0' },
+    )).toBe(false);
+
+    expect(isSupportVersionCompatible(
+      buildContract({ contract_id: 'c4', contract_version: '1.0.0', support_version: '>= 7.1.0 < 7.3.0' }),
+      { platformVersion: '7.2.0' },
+    )).toBe(true);
+    expect(isSupportVersionCompatible(
+      buildContract({ contract_id: 'c5', contract_version: '1.0.0', support_version: '>= 7.1.0 < 7.2.0' }),
       { platformVersion: '7.2.0' },
     )).toBe(false);
   });
@@ -61,6 +70,15 @@ describe('catalog-version-utils', () => {
       version: 'not-a-version',
       platformVersion: '7.2.0',
     });
+  });
+
+  it('should throw when the platform version cannot be parsed', () => {
+    const onUnparsableVersion = vi.fn();
+    expect(() => isSupportVersionCompatible(
+      buildContract({ contract_id: 'c6', contract_version: '1.0.0', support_version: '>= 7.0.0' }),
+      { platformVersion: 'not-a-version', onUnparsableVersion },
+    )).toThrowError('Invalid platform version for catalog contract compatibility');
+    expect(onUnparsableVersion).not.toHaveBeenCalled();
   });
 
   it('should evaluate inclusive minimum and maximum platform versions', () => {
@@ -129,7 +147,7 @@ describe('catalog-version-utils', () => {
   it('should filter incompatible contracts and keep latest versions first', () => {
     const onUnparsableVersion = vi.fn();
     const contracts = [
-      buildContract({ contract_id: 'latest-compatible', contract_version: '2.0.0', support_version: '7.0.0' }),
+      buildContract({ contract_id: 'latest-compatible', contract_version: '2.0.0', support_version: '>= 7.0.0' }),
       buildContract({ contract_id: 'older-compatible', contract_version: '1.5.0', support_version: '>= 6.5.2' }),
       buildContract({ contract_id: 'no-support-version', contract_version: '1.0.0' }),
       buildContract({ contract_id: 'too-new', contract_version: '3.0.0', support_version: '8.0.0' }),

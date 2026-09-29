@@ -1,4 +1,6 @@
 import semver from 'semver';
+import validRange from 'semver/ranges/valid.js';
+import { UnsupportedError } from '../../config/errors';
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import type { BasicStoreEntityCatalogContract } from './catalog-types';
 
@@ -28,9 +30,10 @@ export const isSupportVersionCompatible = (
   contract: SupportVersionContract,
   options: CompatibilityOptions = {},
 ) => {
-  const minVersion = contract.min_version || contract.support_version;
+  const supportVersion = contract.support_version;
+  const minVersion = contract.min_version;
   const maxVersion = contract.max_version;
-  if (!minVersion && !maxVersion) {
+  if (!supportVersion && !minVersion && !maxVersion) {
     return true;
   }
   const platformVersion = options.platformVersion ?? PLATFORM_VERSION;
@@ -51,35 +54,36 @@ export const isSupportVersionCompatible = (
     }
   };
   if (!parsedPlatformVersion) {
-    const field = minVersion ? (contract.min_version ? 'min_version' : 'support_version') : 'max_version';
-    reportUnparsableVersion(field, minVersion ?? maxVersion ?? '');
+    throw UnsupportedError('Invalid platform version for catalog contract compatibility', { platformVersion });
+  }
+
+  if (supportVersion) {
+    const validSupportRange = validRange(supportVersion);
+    if (!validSupportRange) {
+      reportUnparsableVersion('support_version', supportVersion);
+      return false;
+    }
+    return semver.satisfies(parsedPlatformVersion, validSupportRange);
+  }
+
+  const parsedMinVersion = minVersion ? semver.valid(minVersion) : null;
+  if (minVersion && !parsedMinVersion) {
+    reportUnparsableVersion('min_version', minVersion);
+    return false;
+  }
+  const parsedMaxVersion = maxVersion ? semver.valid(maxVersion) : null;
+  if (maxVersion && !parsedMaxVersion) {
+    reportUnparsableVersion('max_version', maxVersion);
     return false;
   }
 
-  if (minVersion) {
-    const minField = contract.min_version ? 'min_version' : 'support_version';
-    const parsedMinVersion = minField === 'support_version'
-      ? parseCatalogSemver(minVersion)
-      : semver.valid(minVersion) ? semver.parse(minVersion) : null;
-    if (!parsedMinVersion) {
-      reportUnparsableVersion(minField, minVersion);
-      return false;
-    }
-    if (semver.gt(parsedMinVersion, parsedPlatformVersion)) {
-      return false;
-    }
+  if (parsedMinVersion && semver.lt(parsedPlatformVersion, parsedMinVersion)) {
+    return false;
+  }
+  if (parsedMaxVersion && semver.gt(parsedPlatformVersion, parsedMaxVersion)) {
+    return false;
   }
 
-  if (maxVersion) {
-    const parsedMaxVersion = semver.valid(maxVersion) ? semver.parse(maxVersion) : null;
-    if (!parsedMaxVersion) {
-      reportUnparsableVersion('max_version', maxVersion);
-      return false;
-    }
-    if (semver.gt(parsedPlatformVersion, parsedMaxVersion)) {
-      return false;
-    }
-  }
   return true;
 };
 

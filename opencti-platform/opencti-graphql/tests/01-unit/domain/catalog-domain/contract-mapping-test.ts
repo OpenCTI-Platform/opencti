@@ -47,7 +47,7 @@ const buildContractEntityFields = (): CatalogContractEntityFields => ({
 });
 
 describe('catalog contract mappings', () => {
-  it('should normalize V0 support_version when mapping to entity fields', () => {
+  it('should preserve V0 support_version range when mapping to entity fields', () => {
     const dto: CatalogContract = {
       title: 'IPinfo',
       slug: 'ipinfo',
@@ -85,7 +85,7 @@ describe('catalog contract mappings', () => {
       logoUri: null,
     });
     expect(mapped.contract_id).toBe('ipinfo-1.2.3');
-    expect(mapped.support_version).toBe('6.7.0');
+    expect(mapped.support_version).toBe('>= 6.7.0');
     expect(mapped.contract_version).toBe('1.2.3');
   });
 

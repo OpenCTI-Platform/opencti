@@ -212,14 +212,6 @@ const normalizeConfigSchema = (configSchema: unknown): CatalogContractDtoV0['con
   };
 };
 
-const normalizeSupportVersion = (supportVersion: string | null | undefined): string | null => {
-  if (!supportVersion) {
-    return null;
-  }
-  const normalized = supportVersion.replace(/^\s*>=\s*/, '').trim();
-  return normalized.length > 0 ? normalized : null;
-};
-
 const mapCatalogContractDtoV1ToCatalogContractSyncSource = (contractDto: CatalogContractDtoV1): CatalogContractSyncSource => {
   const playbook_supported = contractDto.additional_properties['playbook_supported'];
   const max_confidence_level = contractDto.additional_properties['max_confidence_level'];
@@ -282,11 +274,9 @@ const isCatalogDtoWithExplicitSchemaVersion = (
 export const mapCatalogContractDtoToCatalogContractSyncSource = (
   contractDto: CatalogContractDtoV0,
 ): CatalogContractSyncSource => {
-  const normalizedSupportVersion = normalizeSupportVersion(contractDto.support_version);
   return {
     id: `${contractDto.slug}-${contractDto.container_version}`,
     ...contractDto,
-    support_version: normalizedSupportVersion,
   };
 };
 

@@ -127,10 +127,10 @@ describe('catalog-sync-source-gateway', () => {
     mockGetOrCompileValidator.mockReturnValue({});
   });
 
-  it('should normalize support_version and id from V0 contract DTO', () => {
+  it('should preserve support_version range and id from V0 contract DTO', () => {
     const mapped = mapCatalogContractDtoToCatalogContractSyncSource(baseV0Contract as any);
     expect(mapped.id).toBe('ipinfo-1.2.3');
-    expect(mapped.support_version).toBe('6.7.0');
+    expect(mapped.support_version).toBe('>= 6.7.0');
   });
 
   it('should map V0 catalog sources', async () => {
@@ -150,6 +150,7 @@ describe('catalog-sync-source-gateway', () => {
     expect(source.manifest_version).toBeNull();
     expect(source.product_version).toBe('6.8.0');
     expect(source.contracts).toHaveLength(1);
+    expect(source.contracts[0].support_version).toBe('>= 6.7.0');
   });
 
   it('should map V1 catalog sources', async () => {
