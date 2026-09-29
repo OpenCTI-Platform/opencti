@@ -13,18 +13,25 @@ import Button from '@common/button/Button';
 import { useFormatter } from 'src/components/i18n';
 import type { Theme } from 'src/components/Theme';
 import Drawer from '@components/common/drawer/Drawer';
-import { fetchQuery } from '../../../../../relay/environment';
+import { APP_BASE_PATH } from '../../../../../relay/environment';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EXPORT_CATEGORIES, getDefaultCheckedCategoryItems } from './globalExportBundleDrawer-utils';
 import ExportBundleInstancesAccordion, { InstanceSelectionMode } from './ExportBundleInstancesAccordion';
 import ExportBundleCategoryFlat from './ExportBundleCategoryFlat';
 import ExportBundleCategoryPlaceholder from './ExportBundleCategoryPlaceholder';
 import ExportBundleCategoryChecklist from './ExportBundleCategoryChecklist';
 import { EXPORT_INSTANCE_CONFIGS } from './exportBundleInstances';
-import { PlatformBundleDrawerExportQuery$data } from '@components/settings/experience/__generated__/PlatformBundleDrawerExportQuery.graphql';
+import {
+  PlatformBundleDrawerExportMutation,
+  PlatformBundleDrawerExportMutation$data,
+} from '@components/settings/experience/globalExportBundle/__generated__/PlatformBundleDrawerExportMutation.graphql';
 
-const platformBundleDrawerExportQuery = graphql`
-  query PlatformBundleDrawerExportQuery($entityTypes: [String!]!, $selections: [GlobalExportSelectionInput!]) {
-    globalConfigurationExport(entityTypes: $entityTypes, selections: $selections)
+const platformBundleDrawerExportMutation = graphql`
+  mutation PlatformBundleDrawerExportMutation($entityTypes: [String!]!, $selections: [GlobalExportSelectionInput!]) {
+    globalConfigurationExport(entityTypes: $entityTypes, selections: $selections) {
+      id
+      name
+    }
   }
 `;
 
@@ -32,14 +39,22 @@ const getDefaultInstanceModes = (): Record<string, InstanceSelectionMode> => Obj
   EXPORT_INSTANCE_CONFIGS.map((config) => [config.entityType, 'all' as InstanceSelectionMode]),
 );
 
-const base64ToBytes = (base64: string): Uint8Array<ArrayBuffer> => {
-  const binary = atob(base64);
-  const buffer = new ArrayBuffer(binary.length);
-  const bytes = new Uint8Array(buffer);
-  for (let i = 0; i < binary.length; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
+const buildExportFileName = (bundleName: string): string => {
+  const safeBundleName = bundleName.trim().replace(/[^a-z0-9-_]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80);
+  const suffix = safeBundleName ? `_${safeBundleName}` : '';
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  return `${year}${month}${day}_opencti_config_export${suffix}.zip`;
+};
+
+const downloadStoredFile = async (fileId: string): Promise<Blob> => {
+  const response = await fetch(`${APP_BASE_PATH}/storage/get/${encodeURIComponent(fileId)}`, { credentials: 'include' });
+  if (!response.ok) {
+    throw new Error(`Failed to download export file (${response.status})`);
   }
-  return bytes;
+  return response.blob();
 };
 
 interface GlobalExportBundleDrawerProps {
@@ -55,7 +70,9 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
   const [instanceModes, setInstanceModes] = useState<Record<string, InstanceSelectionMode>>(getDefaultInstanceModes());
   const [instanceSelectedIds, setInstanceSelectedIds] = useState<Record<string, string[]>>({});
   const [bundleName, setBundleName] = useState('');
-  const [exporting, setExporting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [commitExportMutation, exportInFlight] = useApiMutation<PlatformBundleDrawerExportMutation>(platformBundleDrawerExportMutation);
+  const exporting = exportInFlight || downloading;
 
   const handleInstanceModeChange = (entityType: string) => (mode: InstanceSelectionMode) => {
     setInstanceModes((prev) => ({ ...prev, [entityType]: mode }));
@@ -89,7 +106,18 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     });
   };
 
-  const exportConfiguration = async () => {
+  const downloadExport = async (fileId: string) => {
+    setDownloading(true);
+    try {
+      const blob = await downloadStoredFile(fileId);
+      fileDownload(blob, buildExportFileName(bundleName));
+      onClose();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const onExport = () => {
     const entityTypes = Object.values(checkedCategoryItems).flat();
     const selections: { entityType: string; ids: string[] }[] = [];
 
@@ -104,30 +132,17 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
       }
     });
 
-    setExporting(true);
-    try {
-      const result = await fetchQuery(
-        platformBundleDrawerExportQuery,
-        { entityTypes, selections },
-      ).toPromise() as PlatformBundleDrawerExportQuery$data;
-      if (result?.globalConfigurationExport) {
-        const blob = new Blob([base64ToBytes(result.globalConfigurationExport)], { type: 'application/zip' });
-        const safeBundleName = bundleName.trim().replace(/[^a-z0-9-_]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 80);
-        const suffix = safeBundleName ? `_${safeBundleName}` : '';
-        const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        fileDownload(blob, `${year}${month}${day}_opencti_config_export${suffix}.zip`);
-      }
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  const onExport = async () => {
-    await exportConfiguration();
-    onClose();
+    commitExportMutation({
+      variables: { entityTypes, selections },
+      onCompleted: (result: PlatformBundleDrawerExportMutation$data) => {
+        const fileId = result?.globalConfigurationExport?.id;
+        if (fileId) {
+          downloadExport(fileId);
+        } else {
+          onClose();
+        }
+      },
+    });
   };
 
   const accordionSx = {

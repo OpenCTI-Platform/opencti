@@ -1,9 +1,16 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import { ZipArchive } from 'archiver';
 import pjson from '../../../package.json';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { BYPASS, isUserHasCapability } from '../../utils/access';
 import { ForbiddenAccess } from '../../config/errors';
+import { logApp } from '../../config/conf';
 import { fullEntitiesList } from '../../database/middleware-loader';
+import { type LoadedFile, uploadToStorage } from '../../database/file-storage';
+import { GLOBAL_EXPORT_STORAGE_PATH } from '../internal/document/document-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
 import { playbookExport } from '../playbook/playbook-domain';
 import { ENTITY_TYPE_FORM } from '../form/form-types';
@@ -213,7 +220,7 @@ export const generateGlobalConfigurationExport = async (
   user: AuthUser,
   entityTypes: string[],
   selections?: { entityType: string; ids?: string[] | null }[] | null,
-): Promise<string> => {
+): Promise<LoadedFile> => {
   if (!isUserHasCapability(user, BYPASS)) {
     throw ForbiddenAccess();
   }
@@ -225,55 +232,72 @@ export const generateGlobalConfigurationExport = async (
     }
   });
 
+  const uniqueEntityTypes = Array.from(new Set(entityTypes));
+  const tmpZipPath = path.join(os.tmpdir(), `opencti-global-export-${crypto.randomUUID()}.zip`);
   const archive = new ZipArchive();
-  const chunks: Buffer[] = [];
+  const writeStream = fs.createWriteStream(tmpZipPath);
   const zipReady = new Promise<void>((resolve, reject) => {
-    archive.on('data', (chunk: Buffer) => chunks.push(chunk));
-    archive.on('end', resolve);
+    writeStream.on('close', resolve);
+    writeStream.on('error', reject);
     archive.on('error', reject);
   });
+  archive.pipe(writeStream);
 
-  const counts: Record<string, number> = {};
-  const requestedCounts: Record<string, number> = {};
-  const uniqueEntityTypes = Array.from(new Set(entityTypes));
+  try {
+    const counts: Record<string, number> = {};
+    const requestedCounts: Record<string, number> = {};
 
-  for (let i = 0; i < uniqueEntityTypes.length; i += 1) {
-    const entityType = uniqueEntityTypes[i];
-    const requestedIds = idsByEntityType.get(entityType);
-    if (requestedIds && requestedIds.length > 0) {
-      requestedCounts[entityType] = requestedIds.length;
+    for (let i = 0; i < uniqueEntityTypes.length; i += 1) {
+      const entityType = uniqueEntityTypes[i];
+      const requestedIds = idsByEntityType.get(entityType);
+      if (requestedIds && requestedIds.length > 0) {
+        requestedCounts[entityType] = requestedIds.length;
+      }
+      counts[entityType] = await exportCategory(context, user, entityType, archive, requestedIds);
     }
-    counts[entityType] = await exportCategory(context, user, entityType, archive, requestedIds);
+
+    const meta = {
+      openCTI_version: pjson.version,
+      generated_at: new Date().toISOString(),
+      generated_by: user.id,
+      entity_types: uniqueEntityTypes,
+      counts,
+      requested_counts: requestedCounts,
+    };
+    archive.append(JSON.stringify(meta), { name: 'meta.json' });
+
+    await archive.finalize();
+    await zipReady;
+
+    const filename = `platform_configuration_export_${new Date().toISOString().replace(/[:.]/g, '-')}.zip`;
+    const { upload } = await uploadToStorage(
+      context,
+      user,
+      GLOBAL_EXPORT_STORAGE_PATH,
+      { createReadStream: () => fs.createReadStream(tmpZipPath), filename },
+      { noTriggerImport: true, meta: { description: 'Global platform configuration export' } },
+    );
+
+    const contextData = buildContextDataForFile(
+      null,
+      'global_configuration_export',
+      'platform_configuration_export.zip',
+      [],
+      { entity_types: uniqueEntityTypes, counts },
+    );
+    await publishUserAction({
+      user,
+      event_type: 'file',
+      event_access: 'administration',
+      event_scope: 'create',
+      context_data: contextData,
+    });
+    addGlobalExportPlatformCount();
+
+    return upload;
+  } finally {
+    await fs.promises.unlink(tmpZipPath).catch((err) => {
+      logApp.warn('[GLOBAL EXPORT] Failed to remove temporary export file', { cause: err, tmpZipPath });
+    });
   }
-
-  const meta = {
-    openCTI_version: pjson.version,
-    generated_at: new Date().toISOString(),
-    generated_by: user.id,
-    entity_types: uniqueEntityTypes,
-    counts,
-    requested_counts: requestedCounts,
-  };
-  archive.append(JSON.stringify(meta), { name: 'meta.json' });
-
-  const contextData = buildContextDataForFile(
-    null,
-    'global_configuration_export',
-    'platform_configuration_export.zip',
-    [],
-    { entity_types: uniqueEntityTypes, counts },
-  );
-  await publishUserAction({
-    user,
-    event_type: 'file',
-    event_access: 'administration',
-    event_scope: 'create',
-    context_data: contextData,
-  });
-  addGlobalExportPlatformCount();
-
-  await archive.finalize();
-  await zipReady;
-  const zipBuffer = Buffer.concat(chunks);
-  return zipBuffer.toString('base64');
 };
