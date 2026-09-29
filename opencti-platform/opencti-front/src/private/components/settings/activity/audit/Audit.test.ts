@@ -12,6 +12,15 @@ describe('toCsvSafeJson', () => {
     expect(toCsvSafeJson(undefined)).toBe('undefined');
     expect(toCsvSafeJson(null)).toBe('undefined');
   });
+
+  it('keeps falsy scalars instead of treating them as missing', () => {
+    expect(toCsvSafeJson(false)).toBe('false');
+    expect(toCsvSafeJson(0)).toBe('0');
+  });
+
+  it('falls back instead of throwing on non-serializable values', () => {
+    expect(toCsvSafeJson(() => {})).toBe('undefined');
+  });
 });
 
 describe('buildAuditCsvData', () => {
@@ -39,5 +48,28 @@ describe('buildAuditCsvData', () => {
     }]);
 
     expect(csvRow.user_metadata).toBe(toCsvSafeJson(userMetadata));
+  });
+
+  it('exports the relationship and change fields shown in the UI', () => {
+    const changes = [{ field: 'description', changes_added: ['new'], changes_removed: ['old'] }];
+
+    const [csvRow] = buildAuditCsvData([{
+      node: {
+        id: 'activity-id',
+        event_type: 'mutation',
+        event_status: 'success',
+        timestamp: '2026-09-25T10:00:00.000Z',
+        context_data: {
+          message: 'updates the relationship',
+          from_id: 'from-entity-id',
+          to_id: 'to-entity-id',
+          changes,
+        },
+      },
+    }]);
+
+    expect(csvRow.context_data_from_id).toBe('from-entity-id');
+    expect(csvRow.context_data_to_id).toBe('to-entity-id');
+    expect(csvRow.context_data_changes).toBe(toCsvSafeJson(changes));
   });
 });
