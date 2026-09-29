@@ -12,9 +12,29 @@ import { updateAttribute } from '../../../database/middleware';
 import { storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
+import { WORKFLOW_MANAGER_USER } from '../../../utils/access';
+import { lockResources } from '../../../lock/master-lock';
 import { ActionRegistry } from '../registry/workflow-actions';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE, type WorkflowPendingTransition } from '../types/workflow-types';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE, type AsyncActionSlot, type Context, type WorkflowPendingTransition } from '../types/workflow-types';
 import { projectWorkflowState, resolveProjectionScope } from './workflow-projection';
+
+export const runWorkflowBypassActions = async (workflowContext: Context, pendingTransition: WorkflowPendingTransition): Promise<void> => {
+  const slots: AsyncActionSlot[] = [];
+  workflowContext.pendingAsyncSlots = slots;
+  workflowContext.__asyncActionSlots = slots;
+  while (pendingTransition.syncActions.length > 0) {
+    const action = pendingTransition.syncActions[0];
+    const actionFn = ActionRegistry[action.type];
+    if (!actionFn) throw new Error(`Unknown workflow action type: ${action.type}`);
+    await actionFn(workflowContext, typeof action.params === 'string' ? JSON.parse(action.params) : action.params);
+    pendingTransition.syncActions.shift();
+    if (slots.length > 0) {
+      pendingTransition.asyncActions = slots.map(({ id, workId, type, status }) => ({ id, workId, type, status }));
+      return;
+    }
+  }
+  pendingTransition.asyncActions = [];
+};
 
 /**
  * Called when a background task associated with a workflow async action completes.
@@ -23,20 +43,22 @@ import { projectWorkflowState, resolveProjectionScope } from './workflow-project
  *
  * This is the single callback point from work.js (via updateWorkTaskToComplete).
  */
-export const reportWorkflowAsyncActionResult = async (
+const completeWorkflowAsyncActionResult = async (
   context: AuthContext,
   user: AuthUser,
   workflowInstanceId: string,
   workflowActionId: string,
   status: 'success' | 'failed',
   error?: string,
+  loadedInstance?: any,
 ): Promise<void> => {
   const executionContext = bypassDraftContext(context);
   // Use the explicitly-passed `user`, not `context.user`: some callers (e.g. work.js via
   // `executionContext(source)`) build a context with no `.user` and thread the identity separately.
   const executionUser: AuthUser = { ...user, draft_context: undefined };
 
-  const instanceEntity = await storeLoadById<any>(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
+  const instanceEntity = loadedInstance !== undefined ? loadedInstance
+    : await storeLoadById<any>(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
   if (!instanceEntity) {
     logApp.warn('[workflow-async-completion] WorkflowInstance not found', { workflowInstanceId });
     return;
@@ -57,12 +79,16 @@ export const reportWorkflowAsyncActionResult = async (
     return;
   }
 
+  if (pendingTransition.event === 'event_bypass' && instanceEntity.pendingStatus !== 'pending') return;
+
   // Find the matching slot and update its status
   const slotIndex = pendingTransition.asyncActions.findIndex((s) => s.id === workflowActionId);
   if (slotIndex === -1) {
     logApp.warn('[workflow-async-completion] Slot not found in pendingTransition', { workflowInstanceId, workflowActionId });
     return;
   }
+
+  if (pendingTransition.event === 'event_bypass' && pendingTransition.asyncActions[slotIndex].status !== 'pending') return;
 
   pendingTransition.asyncActions[slotIndex].status = status;
 
@@ -102,6 +128,33 @@ export const reportWorkflowAsyncActionResult = async (
     context: executionContext,
     runtimeParams: pendingTransition.runtimeParams ?? {},
   };
+
+  if (pendingTransition.event === 'event_bypass') {
+    try {
+      if (!fullEntity) throw new Error('Entity not found during workflow bypass completion');
+      const { createListTask } = await import('../../../domain/backgroundTask-common');
+      await runWorkflowBypassActions({
+        ...workflowContext,
+        user: WORKFLOW_MANAGER_USER,
+        __createListTask: createListTask,
+        __workflowInstanceId: workflowInstanceId,
+        __draftEntityIds: pendingTransition.draftEntityIds ?? [],
+      }, pendingTransition);
+      if (pendingTransition.asyncActions.length > 0) {
+        await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+          { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        ]);
+        return;
+      }
+    } catch (bypassError) {
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: [bypassError instanceof Error ? bypassError.message : String(bypassError)] },
+      ]);
+      return;
+    }
+  }
 
   for (const actionConfig of pendingTransition.syncActions) {
     const actionFn = ActionRegistry[actionConfig.type];
@@ -192,4 +245,24 @@ export const reportWorkflowAsyncActionResult = async (
     toState: pendingTransition.toState,
     event: pendingTransition.event,
   });
+};
+
+export const reportWorkflowAsyncActionResult = async (
+  context: AuthContext,
+  user: AuthUser,
+  workflowInstanceId: string,
+  workflowActionId: string,
+  status: 'success' | 'failed',
+  error?: string,
+): Promise<void> => {
+  const instance = await storeLoadById<any>(bypassDraftContext(context), { ...user, draft_context: undefined }, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
+  if (!instance) {
+    return completeWorkflowAsyncActionResult(context, user, workflowInstanceId, workflowActionId, status, error, instance);
+  }
+  const lock = await lockResources([`workflow-mutation-${instance.entity_id}`], { retryCount: -1 });
+  try {
+    await completeWorkflowAsyncActionResult(context, user, workflowInstanceId, workflowActionId, status, error);
+  } finally {
+    await lock.unlock();
+  }
 };
