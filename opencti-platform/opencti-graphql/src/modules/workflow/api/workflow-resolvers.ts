@@ -13,6 +13,8 @@ import {
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
+  setWorkflowStatus,
+  getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
 
 const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
@@ -30,6 +32,9 @@ const workflowResolvers = {
     },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);
+    },
+    workflowBypassStatuses: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
+      return getWorkflowBypassStatuses(context, context.user!, entityId);
     },
   },
   Mutation: {
@@ -59,6 +64,25 @@ const workflowResolvers = {
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
+    },
+    setWorkflowStatus: (_: any, {
+      entityId,
+      targetStatusId,
+      applyTransitionActions,
+      comment,
+      runtimeParams,
+    }: {
+      entityId: string;
+      targetStatusId: string;
+      applyTransitionActions: boolean;
+      comment?: string | null;
+      runtimeParams?: Record<string, unknown> | null;
+    }, context: AuthContext) => {
+      const normalizedComment = comment?.trim() || undefined;
+      if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
+        throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+      }
+      return setWorkflowStatus(context, context.user!, entityId, targetStatusId, applyTransitionActions, normalizedComment, runtimeParams ?? {});
     },
     reportWorkflowAsyncActionResult: async (_: any, args: { workflowInstanceId: string; workflowActionId: string; status: string; error?: string }, context: AuthContext) => {
       await reportWorkflowAsyncActionResult(
