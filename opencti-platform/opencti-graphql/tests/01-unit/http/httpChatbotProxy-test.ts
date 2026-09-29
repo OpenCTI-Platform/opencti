@@ -107,6 +107,7 @@ vi.mock('../../../src/domain/user', () => ({
 
 vi.mock('../../../src/domain/xtm-auth', () => ({
   issueXtmJwt: vi.fn(() => Promise.resolve('jwt-token-123')),
+  getXtmOneIdentity: vi.fn(),
 }));
 
 // Only `setCookieError` is stubbed here. `isBrowserSessionRequest` must stay
@@ -157,8 +158,11 @@ vi.mock('../../../src/utils/http-client', () => ({
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
+import { getXtmOneIdentity } from '../../../src/domain/xtm-auth';
+import xtmOneClient from '../../../src/modules/xtm/one/xtm-one-client';
 import {
   deleteChatbotSession,
+  getChatbotConfig,
   getChatbotFileDownload,
   getChatbotPendingApprovals,
   getChatbotSessions,
@@ -1410,5 +1414,45 @@ describe('httpChatbotProxy: getChatbotPendingApprovals', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotConfig', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should hand the browser the identity XTM One publishes, not the URL OpenCTI reaches it on', async () => {
+    vi.mocked(getXtmOneIdentity).mockResolvedValue('http://localhost:8090');
+
+    await getChatbotConfig(buildReq(), res);
+
+    expect(res.json).toHaveBeenCalledWith({ xtm_one_url: 'http://localhost:8090', xtm_one_configured: true });
+  });
+
+  it('should serve no URL when XTM One is not configured', async () => {
+    vi.mocked(getXtmOneIdentity).mockResolvedValue(undefined);
+    vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
+
+    await getChatbotConfig(buildReq(), res);
+
+    expect(res.json).toHaveBeenCalledWith({ xtm_one_url: null, xtm_one_configured: false });
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotConfig(buildReq(), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(getXtmOneIdentity).not.toHaveBeenCalled();
   });
 });

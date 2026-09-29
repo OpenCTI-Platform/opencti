@@ -170,7 +170,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 !!! note "XTM One reached on an internal URL"
 
-    OpenCTI signs the requests of its users to XTM One, and verifies the requests XTM One sends back, with short-lived tokens. When `XTM__XTM_ONE_URL` is an internal address, OpenCTI reads XTM One's public identity (its `BASE_URL`) from `/xtm/auth/metadata` on that address and fetches XTM One's signing keys there too, so the two URLs may differ. On the XTM One side, set `OPENCTI_API_URL` to the address XTM One reaches OpenCTI on. `APP__BASE_URL` stays the public URL of OpenCTI: it is the identity XTM One trusts.
+    OpenCTI signs the requests of its users to XTM One, and verifies the requests XTM One sends back, with short-lived tokens. When `XTM__XTM_ONE_URL` is an internal address, OpenCTI reads XTM One's public identity (its `BASE_URL`) from `/xtm/auth/metadata` on that address and fetches XTM One's signing keys there too, so the two URLs may differ. The links that open XTM One in the browser (Ask Ariane, the CTEM Command Center, the MCP card of the profile) use that public identity as well. On the XTM One side, set `OPENCTI_API_URL` to the address XTM One reaches OpenCTI on. `APP__BASE_URL` stays the public URL of OpenCTI: it is the identity XTM One trusts.
 
 !!! note "Enterprise Edition granted through XTM One"
 
