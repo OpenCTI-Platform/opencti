@@ -67,11 +67,18 @@ const fetchXtmOneIssuer = async (): Promise<string | undefined> => {
     xtmOneIdentity = { issuer, expiresAt: Date.now() + (issuer ? XTM_ONE_IDENTITY_TTL : XTM_ONE_IDENTITY_RETRY) };
     return issuer;
   } catch (err: any) {
-    // An XTM One that predates the metadata document answers 404: its tokens
-    // then carry the configured URL, the only issuer trusted until it answers.
-    logApp.debug('[XTM_AUTH] XTM One identity unavailable', { url: xtmOneUrl, message: err?.message });
-    xtmOneIdentity = { issuer: previous, expiresAt: Date.now() + XTM_ONE_IDENTITY_RETRY };
-    return previous;
+    // A 404 says XTM One publishes no identity (it predates the document or no
+    // longer serves it): its tokens carry the configured URL again. Any other
+    // failure is transient and keeps the last identity it published.
+    const notPublished = err?.response?.status === 404;
+    const issuer = notPublished ? undefined : previous;
+    if (notPublished && previous) {
+      logApp.info('[XTM_AUTH] XTM One no longer publishes an identity, using its configured URL', { url: xtmOneUrl });
+    } else {
+      logApp.debug('[XTM_AUTH] XTM One identity unavailable', { url: xtmOneUrl, message: err?.message });
+    }
+    xtmOneIdentity = { issuer, expiresAt: Date.now() + XTM_ONE_IDENTITY_RETRY };
+    return issuer;
   }
 };
 

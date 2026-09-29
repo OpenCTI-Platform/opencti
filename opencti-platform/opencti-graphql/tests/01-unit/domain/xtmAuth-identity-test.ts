@@ -143,6 +143,25 @@ describe('XTM One reached on an internal URL', () => {
     }
   });
 
+  it('drops the published identity once XTM One answers 404, and falls back to the configured URL', async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.get.mockResolvedValueOnce({ data: { issuer: XTM_ONE_ISSUER } });
+      const { getXtmOneIssuer, isTrustedIssuer, issueXtmJwt } = await loadXtmAuth();
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      vi.advanceTimersByTime(3_600_001);
+      mocks.get.mockRejectedValueOnce(Object.assign(new Error('Request failed with status code 404'), { response: { status: 404 } }));
+      await getXtmOneIssuer();
+      await vi.waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(2));
+      await vi.waitFor(async () => expect(await getXtmOneIssuer()).toBeUndefined());
+      expect(await isTrustedIssuer(XTM_ONE_ISSUER)).toBe(false);
+      const token = await issueXtmJwt({ id: 'user-1', user_email: 'analyst@example.com' }, XTM_ONE_URL);
+      expect(payloadOf(token).aud).toBe(XTM_ONE_URL);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('only the first call waits for XTM One: an expired identity is served while it is read again', async () => {
     vi.useFakeTimers();
     try {
