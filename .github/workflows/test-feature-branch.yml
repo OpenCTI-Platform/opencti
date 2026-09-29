@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       octi_config:
-        description: Env var to use in front deployment
+        description: JSON object (or object fields) for front-end environment variables
         type: string
         default: '{}'
         required: false
@@ -47,14 +47,30 @@ jobs:
         run: pip install awxkit
 
       - name: Deploy feature environment via AWX
+        env:
+          AWX_URL: ${{ secrets.AWX_URL }}
+          AWX_USER: ${{ secrets.AWX_USER }}
+          AWX_PASSWORD: ${{ secrets.AWX_PASSWORD }}
+          OCTI_VERSION: ${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}
+          OCTI_CONFIG: ${{ inputs.octi_config }}
+          REDIS_CLUSTER: ${{ inputs.redis_cluster }}
         run: |
-          awx --conf.host ${{ secrets.AWX_URL }} \
-            --conf.username ${{ secrets.AWX_USER }} \
-            --conf.password ${{ secrets.AWX_PASSWORD }} \
+          octi_config="$OCTI_CONFIG"
+          if ! jq -e 'type == "object"' <<< "$octi_config" >/dev/null 2>&1; then
+            octi_config="{$octi_config}"
+          fi
+          extra_vars=$(jq -cn \
+            --arg octi_version "$OCTI_VERSION" \
+            --argjson octi_config "$octi_config" \
+            --argjson redis_cluster "$REDIS_CLUSTER" \
+            '{octi_version: $octi_version, octi_config: $octi_config, redis_cluster: $redis_cluster}')
+          awx --conf.host "$AWX_URL" \
+            --conf.username "$AWX_USER" \
+            --conf.password "$AWX_PASSWORD" \
             job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --wait \
             --inventory eu-west-staging \
-            --extra_vars '{"octi_version":"${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}","octi_config": ${{ inputs.octi_config }},"redis_cluster": ${{ inputs.redis_cluster }} }' \
+            --extra_vars "$extra_vars" \
             -f human
       - name: Forge URL to match playbook limitations
         id: urlforge
