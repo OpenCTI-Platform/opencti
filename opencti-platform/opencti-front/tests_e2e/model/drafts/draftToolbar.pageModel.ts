@@ -141,17 +141,21 @@ export default class DraftToolbarPageModel {
   /** Exits without an associated container entity navigates to the drafts list
    * (`DraftExit.tsx`'s `onCompleted` fallback) - wait for it to actually load. */
   async exitDraft() {
+    // The unseen-comment modal (`useDraftCommentPopup`) can (re)open at any point, including after
+    // the "Exit draft" click - e.g. the toolbar's periodic background refetch surfaces a comment
+    // from another persona's transition made while this one was on the page. A single dismiss
+    // isn't enough, so this retries dismiss-then-click as a unit, like `assertLastCommentVisible`,
+    // instead of relying on `addLocatorHandler` (whose own dismiss click can stall indefinitely if
+    // the dialog reopens mid-click).
     const commentDialog = this.getLastCommentDialog();
-    // The unseen-comment modal can open after the toolbar has already mounted.
-    await this.page.addLocatorHandler(commentDialog, async () => {
-      await commentDialog.getByRole('button', { name: 'Close', exact: true }).click();
-    });
-    try {
-      await this.getToolbar().getByRole('button', { name: 'Exit draft' }).click({ timeout: 30000 });
-      await expect(this.page.getByTestId('draft-page')).toBeVisible();
-    } finally {
-      await this.page.removeLocatorHandler(commentDialog);
-    }
+    await expect(async () => {
+      if (await commentDialog.isVisible()) {
+        await commentDialog.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(commentDialog).toBeHidden();
+      }
+      await this.getToolbar().getByRole('button', { name: 'Exit draft' }).click({ timeout: 2000 });
+    }).toPass({ timeout: 30000 });
+    await expect(this.page.getByTestId('draft-page')).toBeVisible();
   }
 
   /** Check the authenticated navigation's draft context instead of treating a slow toolbar as absent. */
