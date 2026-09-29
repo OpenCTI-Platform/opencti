@@ -4,6 +4,7 @@ import { redisGetPlatformStorageUsageMetrics, redisGetPlatformUsageMetrics, redi
 import { getEngineUsedSize } from '../../../src/database/engine';
 import { getStorageUsedSize } from '../../../src/database/raw-file-storage';
 import { getQueueConsumersByType } from '../../../src/database/rabbitmq';
+import { registerManager } from '../../../src/manager/managerModule';
 
 vi.mock('../../../src/database/redis', () => ({
   redisGetPlatformUsageMetrics: vi.fn(),
@@ -15,6 +16,20 @@ vi.mock('../../../src/database/redis', () => ({
 vi.mock('../../../src/database/engine', () => ({ getEngineUsedSize: vi.fn(), isEngineAlive: vi.fn() }));
 vi.mock('../../../src/database/raw-file-storage', () => ({ getStorageUsedSize: vi.fn(), isStorageAlive: vi.fn() }));
 vi.mock('../../../src/database/rabbitmq', () => ({ getQueueConsumersByType: vi.fn(), rabbitMQIsAlive: vi.fn() }));
+vi.mock('../../../src/manager/managerModule', () => ({ registerManager: vi.fn() }));
+
+describe('platformUsageMetricsManager: registration', () => {
+  // Captured before any clearAllMocks: registration happens once, when the module is imported.
+  const registered = vi.mocked(registerManager).mock.calls.map(([definition]) => definition);
+
+  it('should collect on start instead of waiting a full interval after boot', () => {
+    expect(registered.map((definition) => definition.id)).toEqual(['PLATFORM_USAGE_METRICS_MANAGER', 'PLATFORM_STORAGE_USAGE_METRICS_MANAGER']);
+    registered.forEach((definition) => {
+      expect(definition.cronSchedulerHandler?.runOnStart).toBe(true);
+    });
+    expect(registered[1].cronSchedulerHandler?.interval).toBe(3_600_000);
+  });
+});
 
 describe('platformUsageMetricsManager: platformUsageMetricsHandler function', () => {
   const collected = { es_used_size: 10, queue_consumers: { EXTERNAL_IMPORT: 3 } };

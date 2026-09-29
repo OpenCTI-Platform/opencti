@@ -98,11 +98,14 @@ export const platformStorageUsageMetricsHandler = buildSharedMetricsHandler(
   STORAGE_SCHEDULE_TIME,
 );
 
+// Run on start: the first scheduled tick only fires one interval after boot, which would leave
+// the metrics empty for up to an hour after a deploy. Concurrent starts across nodes are still
+// deduplicated by the lock and the shared cache check.
 const buildManagerDefinition = (id: string, label: string, handler: () => Promise<void>, interval: number, lockKey: string): ManagerDefinition => ({
   id,
   label,
   executionContext: 'platform_usage_metrics_manager',
-  cronSchedulerHandler: { handler, interval, lockKey },
+  cronSchedulerHandler: { handler, interval, lockKey, runOnStart: true },
   enabledByConfig: PLATFORM_USAGE_METRICS_MANAGER_ENABLED && interval > 0,
   enabledToStart(): boolean {
     return this.enabledByConfig;
