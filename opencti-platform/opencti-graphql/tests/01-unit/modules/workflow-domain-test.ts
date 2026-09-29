@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
-import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../src/database/middleware-loader';
 import { createStatus } from '../../../src/domain/status';
 import { resolveUserById } from '../../../src/domain/user';
 import * as ee from '../../../src/enterprise-edition/ee';
@@ -47,6 +47,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(),
   internalLoadById: vi.fn(),
   storeLoadById: vi.fn(),
+  storeLoadByIds: vi.fn(),
 }));
 
 vi.mock('../../../src/domain/user', () => ({
@@ -2998,14 +2999,12 @@ describe('getWorkflowMigrationPreview', () => {
           { id: 's2', template_id: 't2', type: 'Incident', scope: StatusScope.RequestAccess, order: 1 },
         ]);
       }
-      if (types.includes(ENTITY_TYPE_STATUS_TEMPLATE)) {
-        return Promise.resolve([
-          { id: 't1', name: 'New' },
-          { id: 't2', name: 'Pending Approval' },
-        ]);
-      }
       return Promise.resolve([]);
     });
+    (storeLoadByIds as any).mockResolvedValue([
+      { id: 't1', name: 'New' },
+      { id: 't2', name: 'Pending Approval' },
+    ]);
 
     const { byScope } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
 
@@ -3015,11 +3014,24 @@ describe('getWorkflowMigrationPreview', () => {
 
   it('filters Status lookup by entity type only, so both scopes are included', async () => {
     (fullEntitiesList as any).mockResolvedValue([]);
+    (storeLoadByIds as any).mockResolvedValue([]);
 
     await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
 
     const statusCall = (fullEntitiesList as any).mock.calls.find(([, , types]: [any, any, string[]]) => types.includes(ENTITY_TYPE_STATUS));
     const [, , , args] = statusCall;
     expect(args.filters.filters).toEqual([{ key: ['type'], values: ['Incident'] }]);
+  });
+
+  it('loads only the templates referenced by the fetched statuses (deduplicated), not every StatusTemplate', async () => {
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 's1', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 1 },
+      { id: 's2', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 2 },
+    ]);
+    (storeLoadByIds as any).mockResolvedValue([{ id: 't1', name: 'New' }]);
+
+    await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    expect(storeLoadByIds).toHaveBeenCalledWith(mockContext, mockUser, ['t1'], ENTITY_TYPE_STATUS_TEMPLATE);
   });
 });
