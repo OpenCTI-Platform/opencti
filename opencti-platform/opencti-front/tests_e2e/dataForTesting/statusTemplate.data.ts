@@ -33,7 +33,7 @@ const addStatusTemplate = (input: AddStatusTemplateInput) => `
 export const addStatusTemplates = async (request: APIRequestContext, statusTemplates: AddStatusTemplateInput[]) => {
   const existingStatusTemplatesResponse = await request.post('/graphql', { data: { query: getStatusTemplates() } });
   const existingStatusTemplatesResponseData = JSON.parse((await existingStatusTemplatesResponse.body()).toString());
-  const existingStatusTemplates = existingStatusTemplatesResponseData.data.statusTemplates.edges.map((e: any) => e.node.name);
+  const existingStatusTemplates = existingStatusTemplatesResponseData.data.statusTemplates.edges.map((e: { node: { name: string } }) => e.node.name);
 
   await Promise.all(statusTemplates.map(async (statusTemplate) => {
     if (!existingStatusTemplates.includes(statusTemplate.name)) {

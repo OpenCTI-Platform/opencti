@@ -68,7 +68,7 @@ export default defineConfig({
     },
     {
       name: 'workflow setup',
-      testMatch: "workflow/threatAdvisoryWorkflowSetup.spec.ts",
+      testMatch: 'workflow/threatAdvisoryWorkflowSetup.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         trace: 'retain-on-failure',
@@ -82,15 +82,15 @@ export default defineConfig({
     },
     {
       name: 'form intake setup',
-      testMatch: "formIntake/threatAdvisorySetup.spec.ts",
+      testMatch: 'formIntake/threatAdvisorySetup.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         trace: 'retain-on-failure',
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
-          height: 1080
-        }
+          height: 1080,
+        },
       },
       dependencies: ['init data', 'workflow setup'],
     },
@@ -119,8 +119,8 @@ export default defineConfig({
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
-          height: 1080
-        }
+          height: 1080,
+        },
       },
       dependencies: ['init data', 'workflow setup', 'form intake setup'],
     },
@@ -136,8 +136,8 @@ export default defineConfig({
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
-          height: 1080
-        }
+          height: 1080,
+        },
       },
       dependencies: ['init data', 'workflow setup', 'form intake setup'],
     },
@@ -154,8 +154,8 @@ export default defineConfig({
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
-          height: 1080
-        }
+          height: 1080,
+        },
       },
       dependencies: ['init data', 'workflow setup', 'form intake setup'],
     },
@@ -166,8 +166,8 @@ export default defineConfig({
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
-          height: 1080
-        }
+          height: 1080,
+        },
       },
       testIgnore: [
         'workflow/threatAdvisoryWorkflowSetup.spec.ts',

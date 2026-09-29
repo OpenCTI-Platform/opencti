@@ -85,7 +85,11 @@ export default class ReportDetailsPage {
     await expect(this.getTextForHeading('Author', 'Restricted')).toBeVisible();
   }
 
-  /** Asserts the current user's access level to this report via visible UI affordances: the report title (canView), "Update" button (canEdit), and "Manage access restriction" menu item (canManageAuthorizedMembers). */
+  /**
+   * Asserts the current user's access level to this report via visible UI affordances: the report
+   * title (canView), "Update" button (canEdit), and "Manage access restriction" menu item
+   * (canManageAuthorizedMembers).
+   */
   async assertReportAccess({ name, canView = true, canEdit = false, canManageAuthorizedMembers = false }: {
     name: string;
     canView?: boolean;

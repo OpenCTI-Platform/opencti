@@ -83,7 +83,10 @@ export default class WorkflowEditorPageModel {
     return previous;
   }
 
-  /** Drags a connection from one status node to another, auto-creating the linking transition node. Needed only when the source status already has an outgoing edge (no "+" placeholder available). */
+  /**
+   * Drags a connection from one status node to another, auto-creating the linking transition node.
+   * Needed only when the source status already has an outgoing edge (no "+" placeholder available).
+   */
   async dragConnectStatuses(sourceStatusLabel: string, targetStatusLabel: string) {
     const sourceHandle = this.getNodeByLabel(sourceStatusLabel).locator('.react-flow__handle-bottom');
     const targetHandle = this.getNodeByLabel(targetStatusLabel).locator('.react-flow__handle-top');

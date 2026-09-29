@@ -5,7 +5,10 @@ import ImportFilesDialogPageModel from '../model/formIntake/importFilesDialog.pa
 import FormIntakeFillPageModel from '../model/formIntake/formIntakeFill.pageModel';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 
-/** Shared helpers for the Threat Advisory rejection & org-sharing-retry specs, which fast-forward a fresh draft to the status they assume instead of replaying `threatAdvisoryHappyFlow.spec.ts`. */
+/**
+ * Shared helpers for the Threat Advisory rejection & org-sharing-retry specs, which fast-forward a
+ * fresh draft to the status they assume instead of replaying `threatAdvisoryHappyFlow.spec.ts`.
+ */
 export const USERS = {
   analystOrgA: { email: 'analystorga@filigran.test', password: 'analystorga' },
   managerOrgA: { email: 'managerorga@filigran.test', password: 'managerorga' },
