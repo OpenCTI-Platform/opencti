@@ -4,7 +4,7 @@ import { meterManager } from '../config/tracing';
 import { isEngineAlive } from '../database/engine';
 import { isStorageAlive } from '../database/raw-file-storage';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
-import { redisGetPlatformUsageMetrics, redisIsAlive } from '../database/redis';
+import { redisGetPlatformStorageUsageMetrics, redisGetPlatformUsageMetrics, redisIsAlive } from '../database/redis';
 
 export const HEALTH_DEPENDENCIES = ['elasticsearch', 'storage', 'rabbitmq', 'redis'] as const;
 export type HealthDependency = typeof HEALTH_DEPENDENCIES[number];
@@ -21,6 +21,11 @@ export interface PlatformUsageMetrics {
   queue_consumers: Record<string, number> | null;
 }
 
+// The bucket size is published apart from the other usage metrics: a full bucket scan is
+// the one collection whose cost grows with the data, so it gets its own interval and timeout.
+export type SharedUsageMetrics = Omit<PlatformUsageMetrics, 's3_used_size'>;
+export type SharedStorageUsageMetrics = Pick<PlatformUsageMetrics, 's3_used_size'>;
+
 export interface PlatformHealthStatus {
   initialized: boolean;
   isHealthy: boolean;
@@ -32,6 +37,10 @@ const CHECK_TIMEOUT_MS = 15_000;
 const DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS = 30_000;
 // Also the cadence at which `platformUsageMetricsManager` recomputes and republishes the shared value.
 export const DEFAULT_USAGE_METRICS_INTERVAL_MS = 300_000;
+// Listing a bucket holding hundreds of thousands of objects takes tens of seconds,
+// so the bucket size is collected less often and with a larger timeout than the other metrics.
+export const DEFAULT_STORAGE_USAGE_METRICS_INTERVAL_MS = 3_600_000;
+export const DEFAULT_STORAGE_USAGE_METRICS_TIMEOUT_MS = 120_000;
 
 const buildInitialStatuses = (): Record<HealthDependency, DependencyStatus> => {
   return HEALTH_DEPENDENCIES.reduce((statuses, dependency) => {
@@ -57,10 +66,10 @@ const dependencyProbes: Record<HealthDependency, () => Promise<unknown>> = {
 
 // Bound a probe so one unresponsive dependency cannot stall the whole refresh cycle.
 // Exported so `platformUsageMetricsManager` bounds its own collection the same way.
-export const withTimeout = async <T>(promise: Promise<T>, message: string): Promise<T> => {
+export const withTimeout = async <T>(promise: Promise<T>, message: string, timeoutMs = CHECK_TIMEOUT_MS): Promise<T> => {
   let timer: NodeJS.Timeout | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(Error(message)), CHECK_TIMEOUT_MS);
+    timer = setTimeout(() => reject(Error(message)), timeoutMs);
   });
   try {
     return await Promise.race([promise, timeout]);
@@ -94,18 +103,29 @@ const isNullableNumber = (value: unknown): value is number | null => value === n
 
 // Redis holds whatever the node that won the last collection wrote, so the payload is
 // validated before being adopted rather than trusted to still match the current shape.
-export const parseCachedUsageMetrics = (cached: unknown): PlatformUsageMetrics | null => {
+export const parseCachedUsageMetrics = (cached: unknown): SharedUsageMetrics | null => {
   if (cached === null || typeof cached !== 'object') {
     return null;
   }
-  const { es_used_size, s3_used_size, queue_consumers } = cached as Record<keyof PlatformUsageMetrics, unknown>;
-  if (!isNullableNumber(es_used_size) || !isNullableNumber(s3_used_size)) {
+  const { es_used_size, queue_consumers } = cached as Record<keyof SharedUsageMetrics, unknown>;
+  if (!isNullableNumber(es_used_size)) {
     return null;
   }
   if (queue_consumers !== null && (typeof queue_consumers !== 'object' || !Object.values(queue_consumers as object).every((count) => typeof count === 'number'))) {
     return null;
   }
-  return { es_used_size, s3_used_size, queue_consumers: queue_consumers as Record<string, number> | null };
+  return { es_used_size, queue_consumers: queue_consumers as Record<string, number> | null };
+};
+
+export const parseCachedStorageUsageMetrics = (cached: unknown): SharedStorageUsageMetrics | null => {
+  if (cached === null || typeof cached !== 'object') {
+    return null;
+  }
+  const { s3_used_size } = cached as Record<keyof SharedStorageUsageMetrics, unknown>;
+  if (!isNullableNumber(s3_used_size)) {
+    return null;
+  }
+  return { s3_used_size };
 };
 
 // Collection (full bucket scan, engine stats) is expensive and cluster wide, so it's owned by
@@ -113,9 +133,13 @@ export const parseCachedUsageMetrics = (cached: unknown): PlatformUsageMetrics |
 // This node only adopts whatever is currently published; if nothing has been published yet
 // (cold start, or between the TTL expiring and the manager's next tick), metrics stay empty rather
 // than serving a stale in-memory value as if it were still current.
+// The bucket size and the other metrics expire independently, so each part is reset on its own.
 export const adoptSharedUsageMetrics = async (): Promise<void> => {
-  const cached = parseCachedUsageMetrics(await redisGetPlatformUsageMetrics());
-  usageMetrics = cached ?? buildInitialUsageMetrics();
+  const [cached, cachedStorage] = await Promise.all([redisGetPlatformUsageMetrics(), redisGetPlatformStorageUsageMetrics()]);
+  usageMetrics = {
+    ...(parseCachedUsageMetrics(cached) ?? { es_used_size: null, queue_consumers: null }),
+    ...(parseCachedStorageUsageMetrics(cachedStorage) ?? { s3_used_size: null }),
+  };
 };
 
 const registerHealthGauges = () => {
@@ -189,7 +213,11 @@ export const startPlatformHealthMonitor = async (): Promise<void> => {
   }
   registerHealthGauges();
   const dependencyCheckIntervalMs = conf.get('app:health_monitoring:dependency_check_interval') ?? DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS;
-  const usageMetricsIntervalMs = conf.get('app:health_monitoring:usage_metrics_interval') ?? DEFAULT_USAGE_METRICS_INTERVAL_MS;
+  const sharedUsageMetricsIntervalMs = conf.get('app:health_monitoring:usage_metrics_interval') ?? DEFAULT_USAGE_METRICS_INTERVAL_MS;
+  const storageUsageMetricsIntervalMs = conf.get('app:health_monitoring:storage_usage_metrics_interval') ?? DEFAULT_STORAGE_USAGE_METRICS_INTERVAL_MS;
+  // Polling follows the most frequent enabled collection, so either one still gets adopted when the other is disabled.
+  const enabledIntervals = [sharedUsageMetricsIntervalMs, storageUsageMetricsIntervalMs].filter((interval) => interval > 0);
+  const usageMetricsIntervalMs = enabledIntervals.length > 0 ? Math.min(...enabledIntervals) : 0;
   // Awaited when it works so the health endpoint exposes a meaningful state as soon as the API accepts traffic,
   // but startup keeps going if this first refresh fails unexpectedly.
   try {

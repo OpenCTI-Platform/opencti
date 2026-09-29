@@ -10,15 +10,17 @@ import {
   getPlatformHealthStatus,
   getPlatformUsageMetrics,
   type HealthDependency,
+  parseCachedStorageUsageMetrics,
   parseCachedUsageMetrics,
   refreshDependencyStatus,
   startPlatformHealthMonitor,
   stopPlatformHealthMonitor,
 } from '../../../src/telemetry/platformHealthMetrics';
-import { redisGetPlatformUsageMetrics, redisIsAlive } from '../../../src/database/redis';
+import { redisGetPlatformStorageUsageMetrics, redisGetPlatformUsageMetrics, redisIsAlive } from '../../../src/database/redis';
 
 vi.mock('../../../src/database/redis', () => ({
   redisGetPlatformUsageMetrics: vi.fn(),
+  redisGetPlatformStorageUsageMetrics: vi.fn(),
   redisIsAlive: vi.fn(),
 }));
 vi.mock('../../../src/database/engine', () => ({ isEngineAlive: vi.fn() }));
@@ -71,15 +73,21 @@ describe('platformHealthMetrics: buildHealthFailures function', () => {
 
 describe('platformHealthMetrics: parseCachedUsageMetrics function', () => {
   it('should adopt a payload shared by another node', () => {
-    const cached = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
+    const cached = { es_used_size: 10, queue_consumers: { EXTERNAL_IMPORT: 3 } };
 
     expect(parseCachedUsageMetrics(cached)).toEqual(cached);
   });
 
   it('should adopt a payload where a metric could not be collected', () => {
-    const cached = { es_used_size: null, s3_used_size: 20, queue_consumers: null };
+    const cached = { es_used_size: null, queue_consumers: null };
 
     expect(parseCachedUsageMetrics(cached)).toEqual(cached);
+  });
+
+  it('should ignore the bucket size of a payload published before it had its own key', () => {
+    const cached = { es_used_size: 10, s3_used_size: 20, queue_consumers: null };
+
+    expect(parseCachedUsageMetrics(cached)).toEqual({ es_used_size: 10, queue_consumers: null });
   });
 
   it('should ignore an empty cache', () => {
@@ -87,50 +95,89 @@ describe('platformHealthMetrics: parseCachedUsageMetrics function', () => {
   });
 
   it('should ignore a payload whose sizes are not numbers', () => {
-    expect(parseCachedUsageMetrics({ es_used_size: '10', s3_used_size: 20, queue_consumers: null })).toBeNull();
-    expect(parseCachedUsageMetrics({ es_used_size: 10, queue_consumers: null })).toBeNull();
+    expect(parseCachedUsageMetrics({ es_used_size: '10', queue_consumers: null })).toBeNull();
+    expect(parseCachedUsageMetrics({ queue_consumers: null })).toBeNull();
   });
 
   it('should ignore a payload whose consumer counts are not numbers', () => {
-    const cached = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 'many' } };
+    const cached = { es_used_size: 10, queue_consumers: { EXTERNAL_IMPORT: 'many' } };
 
     expect(parseCachedUsageMetrics(cached)).toBeNull();
   });
 });
 
+describe('platformHealthMetrics: parseCachedStorageUsageMetrics function', () => {
+  it('should adopt a bucket size shared by another node', () => {
+    expect(parseCachedStorageUsageMetrics({ s3_used_size: 20 })).toEqual({ s3_used_size: 20 });
+  });
+
+  it('should adopt a bucket size that could not be collected', () => {
+    expect(parseCachedStorageUsageMetrics({ s3_used_size: null })).toEqual({ s3_used_size: null });
+  });
+
+  it('should ignore an empty or invalid cache', () => {
+    expect(parseCachedStorageUsageMetrics(null)).toBeNull();
+    expect(parseCachedStorageUsageMetrics({ s3_used_size: '20' })).toBeNull();
+    expect(parseCachedStorageUsageMetrics({})).toBeNull();
+  });
+});
+
 describe('platformHealthMetrics: adoptSharedUsageMetrics function', () => {
-  const shared = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
+  const shared = { es_used_size: 10, queue_consumers: { EXTERNAL_IMPORT: 3 } };
+  const sharedStorage = { s3_used_size: 20 };
+  const empty = { es_used_size: null, s3_used_size: null, queue_consumers: null };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should adopt the value shared by the manager through Redis', async () => {
+  it('should adopt and merge the values shared by the manager through Redis', async () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
+    vi.mocked(redisGetPlatformStorageUsageMetrics).mockResolvedValue(sharedStorage);
 
     await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual(shared);
+    expect(getPlatformUsageMetrics()).toEqual({ ...shared, ...sharedStorage });
   });
 
   it('should reset metrics when nothing has been published yet', async () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
+    vi.mocked(redisGetPlatformStorageUsageMetrics).mockResolvedValue(sharedStorage);
     await adoptSharedUsageMetrics();
 
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
+    vi.mocked(redisGetPlatformStorageUsageMetrics).mockResolvedValue(null);
     await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, s3_used_size: null, queue_consumers: null });
+    expect(getPlatformUsageMetrics()).toEqual(empty);
+  });
+
+  it('should reset only the part whose shared value expired', async () => {
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
+    vi.mocked(redisGetPlatformStorageUsageMetrics).mockResolvedValue(null);
+
+    await adoptSharedUsageMetrics();
+
+    expect(getPlatformUsageMetrics()).toEqual({ ...shared, s3_used_size: null });
+
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
+    vi.mocked(redisGetPlatformStorageUsageMetrics).mockResolvedValue(sharedStorage);
+
+    await adoptSharedUsageMetrics();
+
+    expect(getPlatformUsageMetrics()).toEqual({ ...empty, ...sharedStorage });
   });
 
   it('should reset metrics when the published payload is invalid', async () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(shared);
+    vi.mocked(redisGetPlatformStorageUsageMetrics).mockResolvedValue(sharedStorage);
     await adoptSharedUsageMetrics();
 
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue({ es_used_size: 'nope' });
+    vi.mocked(redisGetPlatformStorageUsageMetrics).mockResolvedValue({ s3_used_size: 'nope' });
     await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, s3_used_size: null, queue_consumers: null });
+    expect(getPlatformUsageMetrics()).toEqual(empty);
   });
 });
 

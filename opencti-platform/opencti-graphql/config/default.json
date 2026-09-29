@@ -89,7 +89,9 @@
     "health_access_key": "ChangeMe",
     "health_monitoring": {
       "dependency_check_interval": 30000,
-      "usage_metrics_interval": 300000
+      "usage_metrics_interval": 300000,
+      "storage_usage_metrics_interval": 3600000,
+      "storage_usage_metrics_timeout": 120000
     },
     "request_timeout": 1200000,
     "keep_alive_timeout": 65000,
@@ -308,7 +310,8 @@
   },
   "platform_usage_metrics_manager": {
     "enabled": true,
-    "lock_key": "platform_usage_metrics_manager_lock"
+    "lock_key": "platform_usage_metrics_manager_lock",
+    "storage_lock_key": "platform_storage_usage_metrics_manager_lock"
   },
   "garbage_collection_manager": {
     "enabled": true,

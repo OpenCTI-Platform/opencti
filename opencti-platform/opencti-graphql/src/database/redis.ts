@@ -794,24 +794,31 @@ export const redisClearTelemetryGauge = async (gaugeName: string) => {
 // region - platform usage metrics cluster cache
 // Usage metrics are expensive to compute (full bucket scan, engine stats), so the
 // value is shared cluster wide instead of being recomputed on every node.
+// The bucket size lives under its own key since it's collected on its own, longer, interval.
 const PLATFORM_USAGE_METRICS_KEY = 'platform_usage_metrics';
+const PLATFORM_STORAGE_USAGE_METRICS_KEY = 'platform_storage_usage_metrics';
 
-export const redisGetPlatformUsageMetrics = async (): Promise<object | null> => {
-  const raw = await getClientBase().get(PLATFORM_USAGE_METRICS_KEY);
+const redisGetSharedMetrics = async (key: string): Promise<object | null> => {
+  const raw = await getClientBase().get(key);
   if (!raw) {
     return null;
   }
   try {
     return JSON.parse(raw);
   } catch {
-    logApp.error('[HEALTH] Platform usage metrics in Redis could not be parsed', { raw });
+    logApp.error('[HEALTH] Platform usage metrics in Redis could not be parsed', { key, raw });
     return null;
   }
 };
 
-export const redisSetPlatformUsageMetrics = async (metrics: object, ttlSeconds: number) => {
-  await getClientBase().set(PLATFORM_USAGE_METRICS_KEY, JSON.stringify(metrics), 'EX', ttlSeconds);
+const redisSetSharedMetrics = async (key: string, metrics: object, ttlSeconds: number) => {
+  await getClientBase().set(key, JSON.stringify(metrics), 'EX', ttlSeconds);
 };
+
+export const redisGetPlatformUsageMetrics = async () => redisGetSharedMetrics(PLATFORM_USAGE_METRICS_KEY);
+export const redisSetPlatformUsageMetrics = async (metrics: object, ttlSeconds: number) => redisSetSharedMetrics(PLATFORM_USAGE_METRICS_KEY, metrics, ttlSeconds);
+export const redisGetPlatformStorageUsageMetrics = async () => redisGetSharedMetrics(PLATFORM_STORAGE_USAGE_METRICS_KEY);
+export const redisSetPlatformStorageUsageMetrics = async (metrics: object, ttlSeconds: number) => redisSetSharedMetrics(PLATFORM_STORAGE_USAGE_METRICS_KEY, metrics, ttlSeconds);
 // endregion - platform usage metrics cluster cache
 
 // region - manager stream state
