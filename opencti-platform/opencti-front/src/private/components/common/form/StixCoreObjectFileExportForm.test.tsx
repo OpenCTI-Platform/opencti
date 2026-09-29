@@ -168,7 +168,7 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     expect(onSubmit.mock.calls[0][0].exportAsFintel).toBe(exportAsFintel);
   });
 
-  it('forces HTML format and hides page options when the template connector is selected while format is still PDF', async () => {
+  it.each([false, true])('forces HTML format and hides page options with the template connector (reselect PDF: %s)', async (reselectPdf) => {
     const onSubmit = vi.fn();
     const { user } = testRender(
       <StixCoreObjectFileExportForm
@@ -183,6 +183,11 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
 
     await user.click(screen.getByLabelText('Connector'));
     await user.click(await screen.findByRole('option', { name: 'Generate FINTEL from template' }));
+
+    if (reselectPdf) {
+      await user.click(screen.getByRole('button', { name: 'Format' }));
+      await user.click(screen.getByRole('button', { name: 'PDF' }));
+    }
 
     // Page options (cover/back page) are PDF-only and must not show for the template-generated HTML export.
     await waitFor(() => expect(screen.queryByLabelText('Include cover page')).not.toBeInTheDocument());

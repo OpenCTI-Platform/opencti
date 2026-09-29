@@ -240,7 +240,7 @@ const StixCoreObjectFileExportForm = ({
           if (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format !== 'text/html') {
             setFieldValue('format', 'text/html');
           }
-        }, [values.connector?.value]);
+        }, [values.connector?.value, values.format]);
 
         useEffect(() => {
           if (values.connector !== null) {
