@@ -120,11 +120,13 @@ jobs:
             # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
             # against the schema in this checkout, not a possibly-stale committed file.
             cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
-            # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
-            # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
-            # is production bundle output nothing here touches - do not copy it wholesale.
+            # Only the safeEjs worker_thread entry point and the ejs sources it evaluates are loaded
+            # from build/ at test runtime (see src/utils/safeEjs.pool.ts and src/utils/safeEjs.sandbox.ts).
+            # The rest of build/ (~1GB: back.mjs, scripts, sourcemaps) is production bundle output
+            # nothing here touches - do not copy it wholesale.
             mkdir -p ./build
             cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
+            cp -a /opt/opencti/opencti-graphql/build/ejs ./build/ejs
             apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
@@ -270,11 +272,13 @@ jobs:
               # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
               # against the schema in this checkout, not a possibly-stale committed file.
               cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
-              # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
-              # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
-              # is production bundle output nothing here touches - do not copy it wholesale.
+              # Only the safeEjs worker_thread entry point and the ejs sources it evaluates are loaded
+              # from build/ at test runtime (see src/utils/safeEjs.pool.ts and src/utils/safeEjs.sandbox.ts).
+              # The rest of build/ (~1GB: back.mjs, scripts, sourcemaps) is production bundle output
+              # nothing here touches - do not copy it wholesale.
               mkdir -p ./build
               cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
+              cp -a /opt/opencti/opencti-graphql/build/ejs ./build/ejs
               apk add --no-cache git # required by pip to install pycti from a git reference
               yarn install:python
               NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
@@ -360,11 +364,13 @@ jobs:
             # src/generated/graphql.ts from the current schema - copy it so check-ts/tests validate
             # against the schema in this checkout, not a possibly-stale committed file.
             cp -a /opt/opencti/opencti-graphql/src/generated/graphql.ts ./src/generated/graphql.ts
-            # Only the safeEjs worker_thread entry point is loaded from build/ at test runtime (see
-            # src/utils/safeEjs.client.ts). The rest of build/ (~1GB: back.mjs, scripts, sourcemaps)
-            # is production bundle output nothing here touches - do not copy it wholesale.
+            # Only the safeEjs worker_thread entry point and the ejs sources it evaluates are loaded
+            # from build/ at test runtime (see src/utils/safeEjs.pool.ts and src/utils/safeEjs.sandbox.ts).
+            # The rest of build/ (~1GB: back.mjs, scripts, sourcemaps) is production bundle output
+            # nothing here touches - do not copy it wholesale.
             mkdir -p ./build
             cp -a /opt/opencti/opencti-graphql/build/safeEjs.worker.mjs ./build/safeEjs.worker.mjs
+            cp -a /opt/opencti/opencti-graphql/build/ejs ./build/ejs
         '
 
     - name: Backend type checking, linting and dependency check
