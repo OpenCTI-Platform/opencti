@@ -1,0 +1,122 @@
+/* Custom theme: the tokens a platform theme has no setting for.
+
+   A theme carries seven colours; the library paints from a family of tokens
+   around each of them. useFdsThemeScope writes the seven onto the document root
+   and puts `fds-custom-<setting>` next to `.dark`/`.light` for each one that
+   differs from the library. Every rule below is scoped to one of those classes,
+   so a built-in theme never matches one and keeps the library's own values.
+
+   Each member is its root mixed toward something, never an invented colour:
+   - surface members move toward the text colour, so the direction follows the
+     theme's real contrast rather than its mode — every custom theme resolves to
+     `.dark`, including a light-looking one;
+   - dark members that sit below their surface move toward black instead;
+   - brand and tonic members move toward white or black, as the library does.
+   The percentages reproduce the library's own lightness step on its own palette,
+   which custom-theme-tokens.test.ts checks. When the library ships these as
+   relative colours this file goes: fds-migration/LIBRARY-FEEDBACK.md #61.
+
+   The disabled families are left alone on purpose: their greyness is what reads
+   as disabled. `nav` needs no rule — it owns --bg-elevation-heading-layer-0 as an
+   inline value, which wins over the derivation below. */
+
+:root.dark.fds-custom-background {
+  --bg-elevation-highlight-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 12%);
+  --bg-elevation-hover-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 6%);
+  --bg-elevation-heading-layer-0: var(--bg-elevation-default-layer-0);
+  --border-elevation-subtle-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 24%);
+  --border-elevation-subtle-soft-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 34%);
+  --border-elevation-default-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 43%);
+  --bg-elevation-default-layer-0-gradient: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 5%);
+}
+
+:root.light.fds-custom-background {
+  --bg-elevation-highlight-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 5%);
+  --bg-elevation-hover-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 16%);
+  --bg-elevation-heading-layer-0: var(--bg-elevation-default-layer-0);
+  --border-elevation-subtle-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 16%);
+  --border-elevation-subtle-soft-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 38%);
+  --border-elevation-default-layer-0: color-mix(in oklab, var(--bg-elevation-default-layer-0), var(--text-default-primary) 50%);
+}
+
+:root.dark.fds-custom-paper {
+  --bg-elevation-default-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 6%);
+  --bg-elevation-highlight-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 11%);
+  --bg-elevation-hover-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 3%);
+  --bg-elevation-heading-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), black 23%);
+  --border-elevation-subtle-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 30%);
+  --border-elevation-subtle-soft-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 30%);
+  --border-elevation-default-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 64%);
+  --bg-elevation-highlight-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), black 22%);
+  --bg-elevation-hover-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), black 37%);
+  --bg-elevation-heading-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), black 10%);
+  --border-elevation-subtle-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 26%);
+  --border-elevation-subtle-soft-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 62%);
+  --border-elevation-default-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 62%);
+}
+
+:root.light.fds-custom-paper {
+  --bg-elevation-default-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 4%);
+  --bg-elevation-highlight-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 5%);
+  --bg-elevation-hover-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 10%);
+  --bg-elevation-heading-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 4%);
+  --border-elevation-subtle-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 20%);
+  --border-elevation-subtle-soft-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 41%);
+  --border-elevation-default-layer-1: color-mix(in oklab, var(--bg-elevation-default-layer-1), var(--text-default-primary) 31%);
+  --bg-elevation-highlight-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 6%);
+  --bg-elevation-hover-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 17%);
+  --bg-elevation-heading-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 17%);
+  --border-elevation-subtle-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 17%);
+  --border-elevation-subtle-soft-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 39%);
+  --border-elevation-default-layer-2: color-mix(in oklab, var(--bg-elevation-default-layer-2), var(--text-default-primary) 39%);
+}
+
+:root.dark.fds-custom-accent {
+  --bg-elevation-highlight-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), black 28%);
+  --bg-elevation-hover-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), black 41%);
+  --bg-elevation-heading-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), black 17%);
+  --border-elevation-subtle-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 14%);
+  --border-elevation-subtle-soft-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 56%);
+  --border-elevation-default-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 56%);
+}
+
+:root.light.fds-custom-accent {
+  --bg-elevation-highlight-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), white 59%);
+  --bg-elevation-hover-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 11%);
+  --bg-elevation-heading-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 23%);
+  --border-elevation-subtle-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 23%);
+  --border-elevation-subtle-soft-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 35%);
+  --border-elevation-default-layer-3: color-mix(in oklab, var(--bg-elevation-default-layer-3), var(--text-default-primary) 47%);
+}
+
+:root.dark.fds-custom-text {
+  --text-default-secondary: color-mix(in oklab, var(--text-default-primary), var(--bg-elevation-default-layer-0) 25%);
+  --text-default-disabled: color-mix(in oklab, var(--text-default-primary), var(--bg-elevation-default-layer-0) 36%);
+}
+
+:root.light.fds-custom-text {
+  --text-default-secondary: color-mix(in oklab, var(--text-default-primary), var(--bg-elevation-default-layer-0) 26%);
+  --text-default-disabled: color-mix(in oklab, var(--text-default-primary), var(--bg-elevation-default-layer-0) 38%);
+}
+
+:root.dark.fds-custom-primary {
+  --color-filigran-brand-secondary: color-mix(in oklab, var(--color-filigran-brand-primary), white 50%);
+  --color-filigran-brand-tertiary: color-mix(in oklab, var(--color-filigran-brand-primary), black 16%);
+}
+
+:root.light.fds-custom-primary {
+  --color-filigran-brand-secondary: color-mix(in oklab, var(--color-filigran-brand-primary), white 49%);
+  --color-filigran-brand-tertiary: color-mix(in oklab, var(--color-filigran-brand-primary), black 46%);
+}
+
+:root.dark.fds-custom-secondary {
+  --color-filigran-tonic-secondary: color-mix(in oklab, var(--color-filigran-tonic-primary), white 67%);
+  --color-filigran-tonic-tertiary: color-mix(in oklab, var(--color-filigran-tonic-primary), black 30%);
+  --color-filigran-tonic-accent: var(--color-filigran-tonic-primary);
+}
+
+:root.light.fds-custom-secondary {
+  --color-filigran-tonic-secondary: color-mix(in oklab, var(--color-filigran-tonic-primary), black 61%);
+  --color-filigran-tonic-tertiary: color-mix(in oklab, var(--color-filigran-tonic-primary), white 80%);
+  --color-filigran-tonic-accent: color-mix(in oklab, var(--color-filigran-tonic-primary), black 31%);
+}
