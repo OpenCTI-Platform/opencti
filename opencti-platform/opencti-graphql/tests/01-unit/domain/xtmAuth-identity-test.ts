@@ -1,0 +1,121 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { generateKeyPair, SignJWT } from 'jose';
+
+// OpenCTI reaches XTM One on an internal URL while XTM One signs with, and
+// expects as audience, its public BASE_URL, published at /xtm/auth/metadata.
+const XTM_ONE_URL = 'http://xtm-one:4000';
+const XTM_ONE_ISSUER = 'http://localhost:8090';
+
+const mocks = vi.hoisted(() => ({
+  get: vi.fn(),
+  createRemoteJWKSet: vi.fn(),
+}));
+
+vi.mock('../../../src/config/conf', () => ({
+  default: {
+    get: (key: string) => ({ 'xtm:xtm_one_url': `${XTM_ONE_URL}/`, 'xtm:auth:token_ttl': 300 } as Record<string, any>)[key],
+  },
+  getBaseUrl: () => 'http://localhost:8080',
+  logApp: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+}));
+
+vi.mock('../../../src/utils/platformCrypto', () => ({
+  getPlatformCrypto: vi.fn(async () => {
+    const { privateKey } = await generateKeyPair('EdDSA');
+    return {
+      deriveEd25519KeyPair: async () => ({
+        jwks: { keys: [] },
+        publicKeys: {},
+        signJwt: (builder: SignJWT) => builder.setProtectedHeader({ alg: 'EdDSA', kid: 'opencti' }).sign(privateKey),
+      }),
+    };
+  }),
+}));
+
+vi.mock('../../../src/utils/http-client', () => ({
+  getHttpClient: ({ baseURL }: { baseURL: string }) => ({ get: (url: string, opts: unknown) => mocks.get(`${baseURL}${url}`, opts) }),
+}));
+
+vi.mock('jose', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('jose')>()),
+  createRemoteJWKSet: mocks.createRemoteJWKSet,
+}));
+
+const loadXtmAuth = async () => {
+  vi.resetModules();
+  return import('../../../src/domain/xtm-auth');
+};
+
+const payloadOf = (token: string) => JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
+
+const signAsXtmOne = async (issuer: string) => {
+  const { publicKey, privateKey } = await generateKeyPair('EdDSA');
+  mocks.createRemoteJWKSet.mockReturnValue(async () => publicKey);
+  return new SignJWT({ email: 'analyst@example.com' })
+    .setSubject('xtm-user')
+    .setIssuer(issuer)
+    .setAudience('http://localhost:8080')
+    .setIssuedAt()
+    .setExpirationTime('5m')
+    .setProtectedHeader({ alg: 'EdDSA', kid: 'xtm-one' })
+    .sign(privateKey);
+};
+
+beforeEach(() => {
+  mocks.get.mockReset();
+  mocks.createRemoteJWKSet.mockReset();
+});
+
+describe('XTM One reached on an internal URL', () => {
+  it('trusts the issuer XTM One publishes and the configured URL, nothing else', async () => {
+    mocks.get.mockResolvedValue({ data: { issuer: `${XTM_ONE_ISSUER}/` } });
+    const { isTrustedIssuer } = await loadXtmAuth();
+    expect(await isTrustedIssuer(XTM_ONE_ISSUER)).toBe(true);
+    expect(await isTrustedIssuer(XTM_ONE_URL)).toBe(true);
+    expect(await isTrustedIssuer('http://evil.example.com')).toBe(false);
+    expect(mocks.get).toHaveBeenCalledTimes(1);
+    expect(mocks.get).toHaveBeenCalledWith(`${XTM_ONE_URL}/xtm/auth/metadata`, expect.anything());
+  });
+
+  it('addresses the tokens sent to XTM One to its published identity', async () => {
+    mocks.get.mockResolvedValue({ data: { issuer: XTM_ONE_ISSUER } });
+    const { issueXtmJwt } = await loadXtmAuth();
+    const user = { id: 'user-1', user_email: 'analyst@example.com' };
+    expect(payloadOf(await issueXtmJwt(user, `${XTM_ONE_URL}/`)).aud).toBe(XTM_ONE_ISSUER);
+    expect(payloadOf(await issueXtmJwt(user, 'https://other.example.com')).aud).toBe('https://other.example.com');
+  });
+
+  it('verifies an XTM One token with the keys served on the configured URL', async () => {
+    mocks.get.mockResolvedValue({ data: { issuer: XTM_ONE_ISSUER } });
+    const { verifyXtmJwt } = await loadXtmAuth();
+    const token = await signAsXtmOne(XTM_ONE_ISSUER);
+    const { payload } = await verifyXtmJwt(token);
+    expect(payload.email).toBe('analyst@example.com');
+    expect(mocks.createRemoteJWKSet).toHaveBeenCalledTimes(1);
+    expect(String(mocks.createRemoteJWKSet.mock.calls[0][0])).toBe(`${XTM_ONE_URL}/xtm/auth/jwks`);
+  });
+
+  it('falls back to the configured URL when XTM One publishes no identity', async () => {
+    mocks.get.mockRejectedValue(new Error('Request failed with status code 404'));
+    const { isTrustedIssuer, issueXtmJwt } = await loadXtmAuth();
+    expect(await isTrustedIssuer(XTM_ONE_ISSUER)).toBe(false);
+    expect(await isTrustedIssuer(XTM_ONE_URL)).toBe(true);
+    const token = await issueXtmJwt({ id: 'user-1', user_email: 'analyst@example.com' }, XTM_ONE_URL);
+    expect(payloadOf(token).aud).toBe(XTM_ONE_URL);
+  });
+
+  it('keeps the last identity XTM One published while it cannot be reached', async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.get.mockResolvedValueOnce({ data: { issuer: XTM_ONE_ISSUER } });
+      const { getXtmOneIssuer } = await loadXtmAuth();
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      vi.advanceTimersByTime(3_600_001);
+      mocks.get.mockRejectedValueOnce(new Error('connect ECONNREFUSED'));
+      expect(await getXtmOneIssuer()).toBe(XTM_ONE_ISSUER);
+      expect(mocks.get).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
